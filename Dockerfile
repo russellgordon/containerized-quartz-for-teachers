@@ -14,6 +14,10 @@ RUN apt-get update && apt-get install -y curl git lsof \
 WORKDIR /opt
 RUN git clone --branch v4.5.0 https://github.com/jackyzha0/quartz.git quartz
 
+# Copy patched Quartz components into place
+COPY patches/Explorer.tsx /opt/quartz/quartz/components/Explorer.tsx
+COPY patches/explorer.inline.ts /opt/quartz/quartz/components/scripts/explorer.inline.ts
+
 # Copy Quartz scaffold to /opt/quartz-site
 RUN cp -r /opt/quartz /opt/quartz-site
 

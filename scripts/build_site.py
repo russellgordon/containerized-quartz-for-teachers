@@ -16,27 +16,22 @@ def toggle_custom_og_images(config_path: str, enable: bool):
 
     for line in lines:
         stripped = line.strip()
-
         if re.search(r'Plugin\.CustomOgImages\(\)', stripped):
             if enable and stripped.startswith("//"):
-                # Uncomment the line
                 line = line.replace("//", "", 1)
                 changed = True
             elif not enable and not stripped.startswith("//"):
-                # Comment the line
                 line = "//" + line
                 changed = True
-
         modified_lines.append(line)
 
     if changed:
-        # Workaround for silent write failures: use tee to overwrite the file
         content = ''.join(modified_lines)
         result = subprocess.run(["tee", config_path], input=content.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if result.returncode != 0:
-            print("Error updating quartz.config.ts:", result.stderr.decode())
+            print("⚠️ Error updating quartz.config.ts:", result.stderr.decode())
         else:
-            print("Updated quartz.config.ts to", "enable" if enable else "disable", "social media previews")
+            print("✅ Updated quartz.config.ts to", "enable" if enable else "disable", "social media previews")
     else:
         print("No changes needed to quartz.config.ts")
 
@@ -54,7 +49,6 @@ def kill_existing_quartz():
 def prompt_for_hidden_components(content_dir: Path):
     print("\n🕵️ Select files and folders to hide from the sidebar (Explorer):")
     hidden = []
-
     for item in sorted(content_dir.iterdir()):
         if item.name in {"index.md", ".gitkeep"} or item.name.startswith("."):
             continue
@@ -62,6 +56,17 @@ def prompt_for_hidden_components(content_dir: Path):
         if response == "y":
             hidden.append(item.name)
     return hidden
+
+def prompt_for_expandable_components(content_dir: Path):
+    print("\n📂 Select files and folders that should be *expandable* in the Explorer sidebar:")
+    expandable = []
+    for item in sorted(content_dir.iterdir()):
+        if item.name in {"index.md", ".gitkeep"} or item.name.startswith("."):
+            continue
+        response = input(f"Make '{item.name}' expandable? [y/N]: ").strip().lower()
+        if response == "y":
+            expandable.append(item.name)
+    return expandable
 
 def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
     if not quartz_layout_path.exists():
@@ -81,15 +86,17 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
 
     with open(quartz_layout_path, "w", encoding="utf-8") as f:
         f.writelines(new_lines)
+
     print("✅ Updated quartz.layout.ts with Explorer omit list.")
 
-def build_section_site(course_code: str, section_number: int, reset_hidden: bool, include_social_media_previews: bool):
+def build_section_site(course_code: str, section_number: int, reset_hidden: bool, include_social_media_previews: bool, reset_expandable: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
     section_name = f"section{section_number}"
     section_dir = course_dir / section_name
     output_dir = course_dir / f"{section_name}_output"
     hidden_path = course_dir / "hidden_explorer_components.json"
+    expandable_path = course_dir / "expandable_explorer_components.json"
 
     if not course_dir.exists():
         print(f"❌ Course folder '{course_code}' not found in {base_dir}")
@@ -152,7 +159,6 @@ def build_section_site(course_code: str, section_number: int, reset_hidden: bool
             for filename in files:
                 src_file = Path(root) / filename
                 dest_file = dest_path / filename
-
                 if filename.endswith(".md"):
                     try:
                         post = frontmatter.load(src_file)
@@ -191,7 +197,7 @@ def build_section_site(course_code: str, section_number: int, reset_hidden: bool
 
     print(f"\n✅ Site for {section_name} built at: {output_dir}")
 
-    # Update hidden Explorer components
+    # Load or prompt hidden items
     if reset_hidden or not hidden_path.exists():
         hidden_list = prompt_for_hidden_components(content_root)
         with open(hidden_path, "w", encoding="utf-8") as f:
@@ -202,10 +208,20 @@ def build_section_site(course_code: str, section_number: int, reset_hidden: bool
             hidden_list = json.load(f)
         print(f"📄 Loaded hidden Explorer components from: {hidden_path}")
 
+    # Load or prompt expandable items
+    if reset_expandable or not expandable_path.exists():
+        expandable_list = prompt_for_expandable_components(content_root)
+        with open(expandable_path, "w", encoding="utf-8") as f:
+            json.dump(expandable_list, f, indent=2)
+        print(f"✅ Saved expandable Explorer components to: {expandable_path}")
+    else:
+        with open(expandable_path, "r", encoding="utf-8") as f:
+            expandable_list = json.load(f)
+        print(f"📄 Loaded expandable Explorer components from: {expandable_path}")
+
     quartz_layout_ts = output_dir / "quartz.layout.ts"
     update_quartz_layout(quartz_layout_ts, hidden_list)
 
-    # Toggle social media preview image plugin
     config_path = os.path.join(output_dir, "quartz.config.ts")
     if os.path.exists(config_path):
         toggle_custom_og_images(config_path, enable=include_social_media_previews)
@@ -225,6 +241,7 @@ if __name__ == "__main__":
     parser.add_argument("--course", required=True, help="Course code (e.g., ICS3U)")
     parser.add_argument("--section", required=True, type=int, help="Section number (e.g., 1)")
     parser.add_argument("--reset-hidden", action="store_true", help="Prompt again for hidden Explorer items")
+    parser.add_argument("--reset-expandable", action="store_true", help="Prompt again for expandable Explorer items")
     parser.add_argument("--include-social-media-previews", action="store_true", help="Enable social media preview images via CustomOgImages emitter")
     args = parser.parse_args()
 
@@ -232,5 +249,6 @@ if __name__ == "__main__":
         course_code=args.course,
         section_number=args.section,
         reset_hidden=args.reset_hidden,
-        include_social_media_previews=args.include_social_media_previews
+        include_social_media_previews=args.include_social_media_previews,
+        reset_expandable=args.reset_expandable
     )

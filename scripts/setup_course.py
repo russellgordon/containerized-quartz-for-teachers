@@ -79,8 +79,9 @@ def setup_course():
         with open(quartz_layout_path, "r", encoding="utf-8") as f:
             content = f.read()
             
-            print("EXISTING quartz.layout.ts IS:")
-            print(content)
+            # DEBUG
+            # print("EXISTING quartz.layout.ts IS:")
+            # print(content)
 
         explorer_code = '''
 Component.Explorer({
@@ -113,9 +114,9 @@ Component.Explorer({
         # Regex replacement for all Component.Explorer() calls
         modified_content = re.sub(r'Component\.Explorer\(\)', explorer_code, content)
         
-        print("MODIFIED quartz.layout.ts IS:")
-        print(modified_content)
-
+        # DEBUG
+        # print("MODIFIED quartz.layout.ts IS:")
+        # print(modified_content)
 
         try:
             result = subprocess.run(
