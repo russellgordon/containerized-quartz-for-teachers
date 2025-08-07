@@ -6,10 +6,35 @@ cd "$(dirname "$0")"
 # Arguments
 COURSE="$1"
 SECTION="$2"
-RESET_FLAG="$3"
 
+# Shift COURSE and SECTION out of the way
+shift 2
+
+# Initialize flags
+RESET_FLAG=""
+INCLUDE_SOCIAL=""
+
+# Parse optional flags
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    --reset-hidden)
+      RESET_FLAG="--reset-hidden"
+      ;;
+    --include-social-media-previews)
+      INCLUDE_SOCIAL="--include-social-media-previews"
+      ;;
+    *)
+      echo "❌ Unknown option: $1"
+      echo "Usage: ./run.sh <COURSE_CODE> <SECTION_NUMBER> [--reset-hidden] [--include-social-media-previews]"
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+# Validate course and section
 if [ -z "$COURSE" ] || [ -z "$SECTION" ]; then
-  echo "❌ Usage: ./run.sh <COURSE_CODE> <SECTION_NUMBER> [--reset-hidden]"
+  echo "❌ Usage: ./run.sh <COURSE_CODE> <SECTION_NUMBER> [--reset-hidden] [--include-social-media-previews]"
   exit 1
 fi
 
@@ -26,8 +51,8 @@ docker start teaching-quartz >/dev/null 2>&1 || {
 
 echo "🔧 Building site for $COURSE, section $SECTION..."
 
-if [ "$RESET_FLAG" == "--reset-hidden" ]; then
-  docker exec -it teaching-quartz python3 /opt/scripts/build_site.py --course="$COURSE" --section="$SECTION" --reset-hidden
-else
-  docker exec -it teaching-quartz python3 /opt/scripts/build_site.py --course="$COURSE" --section="$SECTION"
-fi
+docker exec -it teaching-quartz python3 /opt/scripts/build_site.py \
+  --course="$COURSE" \
+  --section="$SECTION" \
+  $RESET_FLAG \
+  $INCLUDE_SOCIAL

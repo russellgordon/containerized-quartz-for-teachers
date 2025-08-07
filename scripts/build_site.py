@@ -4,7 +4,41 @@ import argparse
 import frontmatter
 import subprocess
 import json
+import re
 from pathlib import Path
+
+def toggle_custom_og_images(config_path: str, enable: bool):
+    with open(config_path, 'r') as file:
+        lines = file.readlines()
+
+    modified_lines = []
+    changed = False
+
+    for line in lines:
+        stripped = line.strip()
+
+        if re.search(r'Plugin\.CustomOgImages\(\)', stripped):
+            if enable and stripped.startswith("//"):
+                # Uncomment the line
+                line = line.replace("//", "", 1)
+                changed = True
+            elif not enable and not stripped.startswith("//"):
+                # Comment the line
+                line = "//" + line
+                changed = True
+
+        modified_lines.append(line)
+
+    if changed:
+        # Workaround for silent write failures: use tee to overwrite the file
+        content = ''.join(modified_lines)
+        result = subprocess.run(["tee", config_path], input=content.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if result.returncode != 0:
+            print("Error updating quartz.config.ts:", result.stderr.decode())
+        else:
+            print("Updated quartz.config.ts to", "enable" if enable else "disable", "social media previews")
+    else:
+        print("No changes needed to quartz.config.ts")
 
 def kill_existing_quartz():
     try:
@@ -49,7 +83,7 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
         f.writelines(new_lines)
     print("✅ Updated quartz.layout.ts with Explorer omit list.")
 
-def build_section_site(course_code: str, section_number: int, reset_hidden: bool):
+def build_section_site(course_code: str, section_number: int, reset_hidden: bool, include_social_media_previews: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
     section_name = f"section{section_number}"
@@ -171,6 +205,13 @@ def build_section_site(course_code: str, section_number: int, reset_hidden: bool
     quartz_layout_ts = output_dir / "quartz.layout.ts"
     update_quartz_layout(quartz_layout_ts, hidden_list)
 
+    # Toggle social media preview image plugin
+    config_path = os.path.join(output_dir, "quartz.config.ts")
+    if os.path.exists(config_path):
+        toggle_custom_og_images(config_path, enable=include_social_media_previews)
+    else:
+        print("Warning: quartz.config.ts not found to toggle CustomOgImages")
+
     kill_existing_quartz()
 
     print("\n📦 Installing dependencies...")
@@ -184,5 +225,12 @@ if __name__ == "__main__":
     parser.add_argument("--course", required=True, help="Course code (e.g., ICS3U)")
     parser.add_argument("--section", required=True, type=int, help="Section number (e.g., 1)")
     parser.add_argument("--reset-hidden", action="store_true", help="Prompt again for hidden Explorer items")
+    parser.add_argument("--include-social-media-previews", action="store_true", help="Enable social media preview images via CustomOgImages emitter")
     args = parser.parse_args()
-    build_section_site(course_code=args.course, section_number=args.section, reset_hidden=args.reset_hidden)
+
+    build_section_site(
+        course_code=args.course,
+        section_number=args.section,
+        reset_hidden=args.reset_hidden,
+        include_social_media_previews=args.include_social_media_previews
+    )
