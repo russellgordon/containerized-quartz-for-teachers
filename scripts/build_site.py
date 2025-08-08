@@ -51,7 +51,6 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
         print(f"⚠️ quartz.layout.ts not found at {quartz_layout_path}")
         return
 
-    # Normalize hidden items: strip .md from file names
     normalized_hidden = [
         item[:-3] if item.endswith(".md") else item
         for item in hidden_components
@@ -73,7 +72,7 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
 
     print("✅ Updated quartz.layout.ts with Explorer omit list.")
 
-def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool):
+def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
     section_name = f"section{section_number}"
@@ -126,8 +125,7 @@ def build_section_site(course_code: str, section_number: int, include_social_med
 
     content_root = output_dir / "content"
     content_root.mkdir(exist_ok=True)
-    
-    # Copy section-level index.md to content/index.md if it exists
+
     section_index = section_dir / "index.md"
     if section_index.exists():
         shutil.copy2(section_index, content_root / "index.md")
@@ -169,7 +167,6 @@ def build_section_site(course_code: str, section_number: int, include_social_med
             shutil.copy2(src, dest)
             print(f"  📄 Copied per-section file: {file_name}")
 
-    # ✅ Copy course_config.json for static import use in explorer.inline.ts
     shutil.copy2(config_file, output_dir / "course_config.json")
     print("✅ Copied course_config.json to output directory")
 
@@ -184,8 +181,23 @@ def build_section_site(course_code: str, section_number: int, include_social_med
 
     kill_existing_quartz()
 
-    print("\n📦 Installing dependencies...")
-    subprocess.run(["npm", "install", "--no-audit", "--silent"], cwd=output_dir, check=True)
+    # 🧠 Smarter npm install: only if necessary, unless forced
+    node_modules_dir = output_dir / "node_modules"
+    package_json = output_dir / "package.json"
+    package_lock = output_dir / "package-lock.json"
+
+    needs_install = (
+        force_npm_install or
+        not node_modules_dir.exists() or
+        not package_lock.exists() or
+        package_lock.stat().st_mtime < package_json.stat().st_mtime
+    )
+
+    if needs_install:
+        print("\n📦 Installing dependencies...")
+        subprocess.run(["npm", "install", "--no-audit", "--silent"], cwd=output_dir, check=True)
+    else:
+        print("✅ Skipping npm install (dependencies already present)")
 
     print("\n🚀 Launching Quartz preview on http://localhost:8081\n")
     subprocess.run(["npx", "quartz", "build", "--serve", "--port", "8081"], cwd=output_dir)
@@ -195,10 +207,12 @@ if __name__ == "__main__":
     parser.add_argument("--course", required=True, help="Course code (e.g., ICS3U)")
     parser.add_argument("--section", required=True, type=int, help="Section number (e.g., 1)")
     parser.add_argument("--include-social-media-previews", action="store_true", help="Enable social media preview images via CustomOgImages emitter")
+    parser.add_argument("--force-npm-install", action="store_true", help="Force npm install even if dependencies are present")
     args = parser.parse_args()
 
     build_section_site(
         course_code=args.course,
         section_number=args.section,
-        include_social_media_previews=args.include_social_media_previews
+        include_social_media_previews=args.include_social_media_previews,
+        force_npm_install=args.force_npm_install
     )
