@@ -11,25 +11,17 @@ SECTION="$2"
 shift 2
 
 # Initialize flags
-RESET_HIDDEN=""
-RESET_EXPANDABLE=""
 INCLUDE_SOCIAL=""
 
 # Parse optional flags
 while [[ "$#" -gt 0 ]]; do
   case $1 in
-    --reset-hidden)
-      RESET_HIDDEN="--reset-hidden"
-      ;;
-    --reset-expandable-items)
-      RESET_EXPANDABLE="--reset-expandable"
-      ;;
     --include-social-media-previews)
       INCLUDE_SOCIAL="--include-social-media-previews"
       ;;
     *)
       echo "❌ Unknown option: $1"
-      echo "Usage: ./run.sh <COURSE_CODE> <SECTION_NUMBER> [--reset-hidden] [--reset-expandable-items] [--include-social-media-previews]"
+      echo "Usage: ./run.sh <COURSE_CODE> <SECTION_NUMBER> [--include-social-media-previews]"
       exit 1
       ;;
   esac
@@ -38,7 +30,7 @@ done
 
 # Validate course and section
 if [ -z "$COURSE" ] || [ -z "$SECTION" ]; then
-  echo "❌ Usage: ./run.sh <COURSE_CODE> <SECTION_NUMBER> [--reset-hidden] [--reset-expandable-items] [--include-social-media-previews]"
+  echo "❌ Usage: ./run.sh <COURSE_CODE> <SECTION_NUMBER> [--include-social-media-previews]"
   exit 1
 fi
 
@@ -58,6 +50,4 @@ echo "🔧 Building site for $COURSE, section $SECTION..."
 docker exec -it teaching-quartz python3 /opt/scripts/build_site.py \
   --course="$COURSE" \
   --section="$SECTION" \
-  $RESET_HIDDEN \
-  $RESET_EXPANDABLE \
   $INCLUDE_SOCIAL

@@ -73,7 +73,7 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
 
     print("✅ Updated quartz.layout.ts with Explorer omit list.")
 
-def build_section_site(course_code: str, section_number: int, reset_hidden: bool, include_social_media_previews: bool, reset_expandable: bool):
+def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
     section_name = f"section{section_number}"
@@ -134,7 +134,6 @@ def build_section_site(course_code: str, section_number: int, reset_hidden: bool
         print(f"  🏠 Copied section index.md to content/index.md")
     else:
         print("⚠️ Section index.md not found — site may not render correctly.")
-    
 
     print(f"\n📥 Copying shared folders into {content_root}...")
     for src_folder in shared_paths:
@@ -195,15 +194,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Build Quartz site for a course section.")
     parser.add_argument("--course", required=True, help="Course code (e.g., ICS3U)")
     parser.add_argument("--section", required=True, type=int, help="Section number (e.g., 1)")
-    parser.add_argument("--reset-hidden", action="store_true", help="Prompt again for hidden Explorer items")
-    parser.add_argument("--reset-expandable", action="store_true", help="Prompt again for expandable Explorer items")
     parser.add_argument("--include-social-media-previews", action="store_true", help="Enable social media preview images via CustomOgImages emitter")
     args = parser.parse_args()
 
     build_section_site(
         course_code=args.course,
         section_number=args.section,
-        reset_hidden=args.reset_hidden,
-        include_social_media_previews=args.include_social_media_previews,
-        reset_expandable=args.reset_expandable
+        include_social_media_previews=args.include_social_media_previews
     )
