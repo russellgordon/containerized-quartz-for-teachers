@@ -101,6 +101,60 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
 
     print("✅ Updated quartz.layout.ts with Explorer omit list.")
 
+def inject_custom_footer_components(quartz_layout_path: Path, footer_component_path: Path, footer_html: str):
+    if quartz_layout_path.exists():
+        with open(quartz_layout_path, "r", encoding="utf-8") as f:
+            layout_content = f.read()
+
+        modified_layout = re.sub(
+            r'footer:\s*Component\.Footer\(\{[\s\S]*?\}\)',
+            'footer: Component.Footer()',
+            layout_content
+        )
+
+        result = subprocess.run(
+            ["tee", str(quartz_layout_path)],
+            input=modified_layout.encode(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        if result.returncode != 0:
+            print("❌ Failed to update quartz.layout.ts:", result.stderr.decode())
+        else:
+            print("✅ Updated quartz.layout.ts to use Component.Footer()")
+    else:
+        print(f"⚠️ quartz.layout.ts not found at {quartz_layout_path}")
+
+    if footer_component_path.exists():
+        with open(footer_component_path, "r", encoding="utf-8") as f:
+            footer_code = f.read()
+
+        escaped_html = footer_html.replace("\\", "\\\\").replace('"', '\\"')
+
+        replacement = f"""<footer class={{displayClass ?? ""}}>
+                <div dangerouslySetInnerHTML={{{{ __html: "{escaped_html}" }}}} />
+              </footer>"""
+
+        modified_code = re.sub(
+            r'<footer class=\{.*?\}>(.*?)</footer>',
+            replacement,
+            footer_code,
+            flags=re.DOTALL
+        )
+
+        result = subprocess.run(
+            ["tee", str(footer_component_path)],
+            input=modified_code.encode(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        if result.returncode != 0:
+            print("❌ Failed to update Footer.tsx:", result.stderr.decode())
+        else:
+            print("✅ Injected custom HTML into Footer.tsx")
+    else:
+        print(f"⚠️ Footer.tsx not found at {footer_component_path}")
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -156,7 +210,6 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     else:
         print(f"♻️ Reusing existing output directory: {output_dir}")
 
-    # Always refresh content/
     content_root = output_dir / "content"
     if content_root.exists():
         print(f"\n🧹 Clearing previous content folder at: {content_root}")
@@ -209,9 +262,11 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     print("✅ Copied course_config.json to output directory")
 
     quartz_layout_ts = output_dir / "quartz.layout.ts"
+    quartz_footer_tsx = output_dir / "quartz/components/Footer.tsx"
     update_quartz_layout(quartz_layout_ts, hidden_list)
+    footer_html = config.get("footer_html", "")
+    inject_custom_footer_components(quartz_layout_ts, quartz_footer_tsx, footer_html)
 
-    # Update pageTitle in quartz.config.ts
     config_path = output_dir / "quartz.config.ts"
     update_page_title(config_path, course_code, section_number)
 
@@ -222,7 +277,6 @@ def build_section_site(course_code: str, section_number: int, include_social_med
 
     kill_existing_quartz()
 
-    # 🧠 Smarter npm install: only if necessary, unless forced
     node_modules_dir = output_dir / "node_modules"
     package_json = output_dir / "package.json"
     package_lock = output_dir / "package-lock.json"

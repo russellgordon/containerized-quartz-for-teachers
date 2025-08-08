@@ -141,6 +141,18 @@ def setup_course():
 
     expandable_items = prompt_select_multiple("Select folders/files that should be EXPANDABLE:", visible_items, default_expandable)
 
+    # New: Prompt for custom footer HTML
+    if saved_config.get("footer_html") is not None:
+        default_footer = saved_config["footer_html"]
+    else:
+        default_footer = ""
+
+    footer_html = default_footer
+    if input("\nWould you like to add custom footer HTML? (y/n): ").strip().lower() == "y":
+        print("\nEnter the full HTML content you want to display in the footer (e.g.):")
+        print('The resources on this site by Russell Gordon are licensed under <a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY 4.0</a> unless otherwise noted.')
+        footer_html = input("\nPaste your footer HTML here:\n> ").strip()
+
     config = {
         "course_code": course_code,
         "course_name": course_name,
@@ -150,7 +162,8 @@ def setup_course():
         "per_section_folders": per_section_folders,
         "per_section_files": per_section_files,
         "hidden": hidden_items,
-        "expandable": expandable_items
+        "expandable": expandable_items,
+        "footer_html": footer_html
     }
 
     with open(config_path, "w", encoding="utf-8") as f:
