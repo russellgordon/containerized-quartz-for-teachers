@@ -20,6 +20,8 @@ DEFAULT_PER_SECTION_FILES = [
     "Private Notes.md", "Scratch Page.md", "Key Links.md"
 ]
 
+COURSE_LOOKUP_PATH = Path("/opt/support/ontario_secondary_courses.json")
+
 def prompt_with_default(prompt_text, default_value):
     response = input(f"{prompt_text} [Default: {default_value}]: ").strip()
     return response if response else default_value
@@ -58,7 +60,6 @@ def prompt_select_multiple(prompt_text, options, default_selection=None):
         print("Invalid input. Please try again.")
         return prompt_select_multiple(prompt_text, options, default_selection)
 
-
 def prompt_type_list(prompt_text, default_list=None, add_md_extension=False):
     print(f"\n{prompt_text}")
     if default_list:
@@ -71,12 +72,34 @@ def prompt_type_list(prompt_text, default_list=None, add_md_extension=False):
     raw = [name.strip() for name in entry.split(",") if name.strip()]
     return [name + ".md" if add_md_extension and not name.endswith(".md") else name for name in raw]
 
+def get_course_name_from_json(course_code):
+    if not COURSE_LOOKUP_PATH.exists():
+        return None
+    try:
+        with open(COURSE_LOOKUP_PATH, "r", encoding="utf-8") as f:
+            course_data = json.load(f)
+        course_info = course_data.get(course_code.upper())
+        if not course_info:
+            return None
+
+        print(f"\n🔎 Found course info for {course_code}:")
+        formal = course_info["formal_name"]
+        short = course_info["short_name"]
+
+        if input(f"Use formal name \"{formal}\"? (y/n): ").strip().lower() == "y":
+            return formal
+        if input(f"Use short name \"{short}\"? (y/n): ").strip().lower() == "y":
+            return short
+        return input("Enter a custom course name: ").strip()
+    except Exception:
+        return None
+
 def setup_course():
     print("\U0001F4DA Welcome to the Course Setup Script!\n")
 
     base_path = Path("/teaching/courses")
     default_code = "ICS3U"
-    course_code = prompt_with_default("Enter the course code (e.g. ICS3U)", default_code)
+    course_code = prompt_with_default("Enter the course code (e.g. ICS3U)", default_code).upper()
     course_path = base_path / course_code
     course_path.mkdir(parents=True, exist_ok=True)
 
@@ -86,7 +109,12 @@ def setup_course():
         with open(config_path, "r", encoding="utf-8") as f:
             saved_config = json.load(f)
 
-    course_name = prompt_with_default("Enter the formal course name", saved_config.get("course_name", "Intro to Computer Science"))
+    if saved_config.get("course_name"):
+        course_name = prompt_with_default("Enter the formal course name", saved_config["course_name"])
+    else:
+        looked_up_name = get_course_name_from_json(course_code) or "Course Website"
+        course_name = prompt_with_default("Enter the formal course name", looked_up_name)
+
     num_sections = int(prompt_with_default("How many sections are you teaching of this course?", saved_config.get("num_sections", 2)))
 
     shared_folders = prompt_type_list("Enter folder names to be shared across all sections – defaults are:", saved_config.get("shared_folders", DEFAULT_SHARED_FOLDERS))
