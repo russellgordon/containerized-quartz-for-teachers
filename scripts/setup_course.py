@@ -25,19 +25,28 @@ def prompt_with_default(prompt_text, default_value):
     return response if response else default_value
 
 def prompt_select_multiple(prompt_text, options, default_selection=None):
+    GREEN = "\033[92m"
+    RESET = "\033[0m"
+
     print(f"\n{prompt_text}")
     for idx, option in enumerate(options):
-        print(f"{idx + 1}. {option}")
+        if default_selection and option in default_selection:
+            print(f"{GREEN}{idx + 1}. {option}{RESET}")
+        else:
+            print(f"{idx + 1}. {option}")
+
     if default_selection:
         default_indices = [str(options.index(item) + 1) for item in default_selection if item in options]
         print(f"Enter comma-separated numbers (e.g., 1,3,5) or leave blank to accept default: {','.join(default_indices)}")
     else:
         print("Enter comma-separated numbers (e.g., 1,3,5) or leave blank for none:")
+
     selection = input("> ").strip()
     if not selection and default_selection is not None:
         return default_selection
     if not selection:
         return []
+
     try:
         indices = [int(i) - 1 for i in selection.split(",")]
         return [options[i] for i in indices if 0 <= i < len(options)]
@@ -72,13 +81,13 @@ def setup_course():
         with open(config_path, "r", encoding="utf-8") as f:
             saved_config = json.load(f)
 
-    course_name = prompt_with_default("Enter the formal course name (e.g. Introduction to Computer Science)", saved_config.get("course_name", "Intro to Computer Science"))
+    course_name = prompt_with_default("Enter the formal course name", saved_config.get("course_name", "Intro to Computer Science"))
     num_sections = int(prompt_with_default("How many sections are you teaching of this course?", saved_config.get("num_sections", 2)))
 
-    shared_folders = prompt_type_list("Enter folder names to be shared across all sections:", saved_config.get("shared_folders", DEFAULT_SHARED_FOLDERS))
-    shared_files = prompt_type_list("Enter Markdown file names to be shared across all sections:", saved_config.get("shared_files", DEFAULT_SHARED_FILES), add_md_extension=True)
-    per_section_folders = prompt_type_list("Enter folder names to be duplicated per section:", saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS))
-    per_section_files = prompt_type_list("Enter Markdown file names to be duplicated per section:", saved_config.get("per_section_files", DEFAULT_PER_SECTION_FILES), add_md_extension=True)
+    shared_folders = prompt_type_list("Enter folder names to be shared across all sections – defaults are:", saved_config.get("shared_folders", DEFAULT_SHARED_FOLDERS))
+    shared_files = prompt_type_list("Enter Markdown file names to be shared across all sections – defaults are:", saved_config.get("shared_files", DEFAULT_SHARED_FILES), add_md_extension=True)
+    per_section_folders = prompt_type_list("Enter folder names to be duplicated per section – defaults are:", saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS))
+    per_section_files = prompt_type_list("Enter Markdown file names to be duplicated per section – defaults are:", saved_config.get("per_section_files", DEFAULT_PER_SECTION_FILES), add_md_extension=True)
 
     all_selected = shared_folders + shared_files + per_section_folders + per_section_files
 
