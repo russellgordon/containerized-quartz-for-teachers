@@ -12,20 +12,21 @@ fi
 # Make sure it's writable (necessary for Docker container access on macOS)
 chmod a+rwx courses
 
-# If container exists and is running, stop it to re-bind mount cleanly
-if docker ps -q -f name=teaching-quartz >/dev/null; then
-  echo "🛑 Stopping running container teaching-quartz to refresh volume mount..."
-  docker stop teaching-quartz >/dev/null
-fi
+CONTAINER_NAME="teaching-quartz"
 
-# Start container (create if needed)
-if docker ps -a -q -f name=teaching-quartz >/dev/null; then
-  echo "🚀 Starting existing container teaching-quartz..."
-  docker start teaching-quartz >/dev/null
+# Check if the container exists
+if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+  # Container exists
+  if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+    echo "🛑 Stopping running container $CONTAINER_NAME to refresh volume mount..."
+    docker stop "$CONTAINER_NAME" >/dev/null
+  fi
+  echo "🚀 Starting existing container $CONTAINER_NAME..."
+  docker start "$CONTAINER_NAME" >/dev/null
 else
-  echo "🚀 Creating a new container named teaching-quartz..."
+  echo "🚀 Creating a new container named $CONTAINER_NAME..."
   docker run -dit \
-    --name teaching-quartz \
+    --name "$CONTAINER_NAME" \
     -v "$(pwd)/courses":/teaching/courses \
     -p 8081:8081 \
     teaching-quartz \
@@ -34,4 +35,4 @@ fi
 
 # Run the setup script inside the container
 echo "📚 Running setup_course.py inside the Docker container..."
-docker exec -it teaching-quartz python3 /opt/scripts/setup_course.py
+docker exec -it "$CONTAINER_NAME" python3 /opt/scripts/setup_course.py
