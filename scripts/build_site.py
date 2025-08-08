@@ -7,6 +7,35 @@ import json
 import re
 from pathlib import Path
 
+def update_page_title(config_path: Path, course_code: str, section_number: int):
+    if not config_path.exists():
+        print(f"⚠️ quartz.config.ts not found at {config_path}")
+        return
+
+    with open(config_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    new_lines = []
+    updated = False
+    new_title = f'📚 {course_code.upper()} S{section_number}'
+
+    for line in lines:
+        if "pageTitle:" in line:
+            new_lines.append(f'  pageTitle: "{new_title}",\n')
+            updated = True
+        else:
+            new_lines.append(line)
+
+    if updated:
+        content = ''.join(new_lines)
+        result = subprocess.run(["tee", str(config_path)], input=content.encode(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if result.returncode != 0:
+            print("⚠️ Error updating pageTitle in quartz.config.ts:", result.stderr.decode())
+        else:
+            print(f"✅ Updated pageTitle to '{new_title}' in quartz.config.ts")
+    else:
+        print("⚠️ Could not find pageTitle in quartz.config.ts to update")
+
 def toggle_custom_og_images(config_path: str, enable: bool):
     with open(config_path, 'r') as file:
         lines = file.readlines()
@@ -182,7 +211,10 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     quartz_layout_ts = output_dir / "quartz.layout.ts"
     update_quartz_layout(quartz_layout_ts, hidden_list)
 
+    # Update pageTitle in quartz.config.ts
     config_path = output_dir / "quartz.config.ts"
+    update_page_title(config_path, course_code, section_number)
+
     if config_path.exists():
         toggle_custom_og_images(str(config_path), include_social_media_previews)
     else:
