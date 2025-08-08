@@ -25,13 +25,17 @@ def prompt_with_default(prompt_text, default_value):
     return response if response else default_value
 
 def prompt_select_multiple(prompt_text, options, default_selection=None):
-    GREEN = "\033[92m"
+    BLUE = "\033[94m"
     RESET = "\033[0m"
+
+    # Highlight "HIDE" or "EXPANDABLE" in blue if present in prompt_text
+    prompt_text = prompt_text.replace("HIDE", f"{BLUE}HIDE{RESET}")
+    prompt_text = prompt_text.replace("EXPANDABLE", f"{BLUE}EXPANDABLE{RESET}")
 
     print(f"\n{prompt_text}")
     for idx, option in enumerate(options):
         if default_selection and option in default_selection:
-            print(f"{GREEN}{idx + 1}. {option}{RESET}")
+            print(f"{BLUE}{idx + 1}. {option}{RESET}")
         else:
             print(f"{idx + 1}. {option}")
 
@@ -50,9 +54,10 @@ def prompt_select_multiple(prompt_text, options, default_selection=None):
     try:
         indices = [int(i) - 1 for i in selection.split(",")]
         return [options[i] for i in indices if 0 <= i < len(options)]
-    except Exception as e:
+    except Exception:
         print("Invalid input. Please try again.")
         return prompt_select_multiple(prompt_text, options, default_selection)
+
 
 def prompt_type_list(prompt_text, default_list=None, add_md_extension=False):
     print(f"\n{prompt_text}")
