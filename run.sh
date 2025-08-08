@@ -13,6 +13,7 @@ shift 2
 # Initialize flags
 INCLUDE_SOCIAL=""
 FORCE_NPM_INSTALL=""
+FULL_REBUILD=""
 
 # Display help text if requested
 if [[ "$1" == "--help" || "$1" == "-h" ]]; then
@@ -27,6 +28,7 @@ if [[ "$1" == "--help" || "$1" == "-h" ]]; then
   echo "⚙️ Optional flags:"
   echo "  --include-social-media-previews    Enable Quartz CustomOgImages emitter"
   echo "  --force-npm-install                Force npm install even if dependencies are present"
+  echo "  --full-rebuild                    Clear entire output folder and re-copy Quartz scaffold"
   echo "  --help, -h                         Show this help message"
   echo ""
   exit 0
@@ -40,6 +42,9 @@ while [[ "$#" -gt 0 ]]; do
       ;;
     --force-npm-install)
       FORCE_NPM_INSTALL="--force-npm-install"
+      ;;
+    --full-rebuild)
+      FULL_REBUILD="--full-rebuild"
       ;;
     *)
       echo "❌ Unknown option: $1"
@@ -74,4 +79,5 @@ docker exec -it teaching-quartz python3 /opt/scripts/build_site.py \
   --course="$COURSE" \
   --section="$SECTION" \
   $INCLUDE_SOCIAL \
-  $FORCE_NPM_INSTALL
+  $FORCE_NPM_INSTALL \
+  $FULL_REBUILD

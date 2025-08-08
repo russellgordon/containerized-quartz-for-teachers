@@ -72,7 +72,7 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
 
     print("✅ Updated quartz.layout.ts with Explorer omit list.")
 
-def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool):
+def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
     section_name = f"section{section_number}"
@@ -106,25 +106,34 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     for folder in shared_paths:
         print(f" - {folder.name}")
 
-    if output_dir.exists():
-        print(f"\n🧹 Clearing previous build directory at: {output_dir}")
-        shutil.rmtree(output_dir)
-    output_dir.mkdir(parents=True)
-    print(f"📂 Created fresh output directory: {output_dir}")
-
     quartz_src = Path("/opt/quartz")
-    print(f"📦 Copying Quartz scaffold from {quartz_src}...")
-    for item in quartz_src.iterdir():
-        dest = output_dir / item.name
-        if item.is_dir():
-            shutil.copytree(item, dest, symlinks=False)
-            print(f"  📁 Copied directory: {item.name}")
-        else:
-            shutil.copy2(item, dest)
-            print(f"  📄 Copied file: {item.name}")
 
+    if full_rebuild or not output_dir.exists():
+        if output_dir.exists():
+            print(f"\n🧹 Full rebuild: clearing output directory at: {output_dir}")
+            shutil.rmtree(output_dir)
+        output_dir.mkdir(parents=True)
+        print(f"📂 Created fresh output directory: {output_dir}")
+
+        print(f"📦 Copying Quartz scaffold from {quartz_src}...")
+        for item in quartz_src.iterdir():
+            dest = output_dir / item.name
+            if item.is_dir():
+                shutil.copytree(item, dest, symlinks=False)
+                print(f"  📁 Copied directory: {item.name}")
+            else:
+                shutil.copy2(item, dest)
+                print(f"  📄 Copied file: {item.name}")
+    else:
+        print(f"♻️ Reusing existing output directory: {output_dir}")
+
+    # Always refresh content/
     content_root = output_dir / "content"
+    if content_root.exists():
+        print(f"\n🧹 Clearing previous content folder at: {content_root}")
+        shutil.rmtree(content_root)
     content_root.mkdir(exist_ok=True)
+    print(f"📂 Created fresh content folder: {content_root}")
 
     section_index = section_dir / "index.md"
     if section_index.exists():
@@ -208,11 +217,13 @@ if __name__ == "__main__":
     parser.add_argument("--section", required=True, type=int, help="Section number (e.g., 1)")
     parser.add_argument("--include-social-media-previews", action="store_true", help="Enable social media preview images via CustomOgImages emitter")
     parser.add_argument("--force-npm-install", action="store_true", help="Force npm install even if dependencies are present")
+    parser.add_argument("--full-rebuild", action="store_true", help="Clear the full output folder and re-copy Quartz scaffold")
     args = parser.parse_args()
 
     build_section_site(
         course_code=args.course,
         section_number=args.section,
         include_social_media_previews=args.include_social_media_previews,
-        force_npm_install=args.force_npm_install
+        force_npm_install=args.force_npm_install,
+        full_rebuild=args.full_rebuild
     )
