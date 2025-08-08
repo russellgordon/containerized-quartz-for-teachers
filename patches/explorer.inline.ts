@@ -4,7 +4,7 @@ import { ContentDetails } from "../../plugins/emitters/contentIndex"
 
 // ✅ Static import of expandable folder list
 // @ts-ignore
-import expandableList from "../../../../expandable_explorer_components.json"
+import expandableList from "../../../../../expandable_explorer_components.json"
 
 type MaybeHTMLElement = HTMLElement | undefined
 

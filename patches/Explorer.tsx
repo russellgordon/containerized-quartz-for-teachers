@@ -1,5 +1,5 @@
 // @ts-ignore
-import expandableList from "../../../expandable_explorer_components.json"
+import expandableList from "../../../../expandable_explorer_components.json"
 
 
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"

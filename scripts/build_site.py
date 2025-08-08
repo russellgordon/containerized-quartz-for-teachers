@@ -94,7 +94,7 @@ def build_section_site(course_code: str, section_number: int, reset_hidden: bool
     course_dir = base_dir / course_code
     section_name = f"section{section_number}"
     section_dir = course_dir / section_name
-    output_dir = course_dir / f"{section_name}_output"
+    output_dir = course_dir / "merged_output" / section_name
     hidden_path = course_dir / "hidden_explorer_components.json"
     expandable_path = course_dir / "expandable_explorer_components.json"
 
