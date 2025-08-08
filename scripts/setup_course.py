@@ -5,12 +5,10 @@ from pathlib import Path
 import re
 
 DEFAULT_SHARED_FOLDERS = [
-    "All Classes",
     "Concepts",
     "Discussions",
     "Examples",
     "Exercises",
-    "Learning Goals",
     "Media",
     "Ontario Curriculum",
     "College Board Curriculum",
@@ -22,6 +20,47 @@ DEFAULT_SHARED_FOLDERS = [
     "Tutorials"
 ]
 
+DEFAULT_SHARED_FILES = [
+    "SIC Drop-In Sessions.md",
+    "Grove Time.md",
+    "Learning Goals.md"
+]
+
+DEFAULT_PER_SECTION_FOLDERS = ["All Classes"]
+
+DEFAULT_PER_SECTION_FILES = [
+    "Private Notes.md",
+    "Scratch Page.md",
+    "Key Links.md"
+]
+
+def prompt_select_multiple(prompt_text, options):
+    print(f"\n{prompt_text}")
+    for idx, option in enumerate(options):
+        print(f"{idx + 1}. {option}")
+    print("Enter comma-separated numbers (e.g., 1,3,5) or leave blank for none:")
+    selection = input("> ").strip()
+    if not selection:
+        return []
+    try:
+        indices = [int(i) - 1 for i in selection.split(",")]
+        return [options[i] for i in indices if 0 <= i < len(options)]
+    except Exception as e:
+        print("Invalid input. Please try again.")
+        return prompt_select_multiple(prompt_text, options)
+
+def prompt_type_list(prompt_text, default_list=None, add_md_extension=False):
+    print(f"\n{prompt_text}")
+    if default_list:
+        for item in default_list:
+            print(f" - {item}")
+    print("Enter comma-separated names or leave blank to accept default:")
+    entry = input("> ").strip()
+    if not entry:
+        return default_list if default_list else []
+    raw = [name.strip() for name in entry.split(",") if name.strip()]
+    return [name + ".md" if add_md_extension and not name.endswith(".md") else name for name in raw]
+
 def setup_course():
     print("📚 Welcome to the Course Setup Script!\n")
 
@@ -29,27 +68,35 @@ def setup_course():
     course_name = input("Enter the formal course name (e.g. Introduction to Computer Science): ").strip()
     num_sections = int(input("How many sections are you teaching of this course? "))
 
-    print("\n📁 Default shared folders:")
-    for folder in DEFAULT_SHARED_FOLDERS:
-        print(f" - {folder}")
-
-    print("\nEnter the names of folders to be shared across all sections.")
-    print("Use commas to separate folder names, or just press Enter to accept the default list above.")
-    shared_input = input("Shared folders: ").strip()
-
-    shared_folders = (
-        [name.strip() for name in shared_input.split(",")] if shared_input else DEFAULT_SHARED_FOLDERS
-    )
-
-    # Create course directory
     base_path = Path("/teaching/courses")
     course_path = base_path / course_code
     course_path.mkdir(exist_ok=True)
 
-    # Save shared folders config
-    shared_config_path = course_path / ".shared_folders.json"
-    with open(shared_config_path, "w", encoding="utf-8") as f:
-        json.dump({"shared_folders": shared_folders}, f, indent=2)
+    all_items = os.listdir(course_path)
+    all_folders = [f for f in all_items if os.path.isdir(course_path / f) and not f.startswith(".")]
+    all_md_files = [f for f in all_items if f.endswith(".md") and not f.startswith(".")]
+
+    shared_folders = prompt_type_list("Enter folder names to be shared across all sections:", DEFAULT_SHARED_FOLDERS)
+    shared_files = prompt_type_list("Enter Markdown file names to be shared across all sections:", DEFAULT_SHARED_FILES, add_md_extension=True)
+    per_section_folders = prompt_type_list("Enter folder names to be duplicated per section:", DEFAULT_PER_SECTION_FOLDERS)
+    per_section_files = prompt_type_list("Enter Markdown file names to be duplicated per section:", DEFAULT_PER_SECTION_FILES, add_md_extension=True)
+
+    all_selected = shared_folders + shared_files + per_section_folders + per_section_files
+    hidden_items = prompt_select_multiple("Select folders/files to HIDE from the sidebar:", all_selected)
+    visible_items = [item for item in all_selected if item not in hidden_items]
+    expandable_items = prompt_select_multiple("Select folders/files that should be EXPANDABLE:", visible_items)
+
+    config = {
+        "shared_folders": shared_folders,
+        "shared_files": shared_files,
+        "per_section_folders": per_section_folders,
+        "per_section_files": per_section_files,
+        "hidden": hidden_items,
+        "expandable": expandable_items
+    }
+
+    with open(course_path / "course_config.json", "w", encoding="utf-8") as f:
+        json.dump(config, f, indent=2)
 
     # Create shared folders with index.md
     for folder in shared_folders:
@@ -63,7 +110,15 @@ def setup_course():
                 f.write(f"---\n")
                 f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site.\n")
 
-    # Create section folders and section-specific index.md
+    # Create shared files if they don't exist
+    for file in shared_files:
+        file_path = course_path / file
+        if not file_path.exists():
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(f"---\ntitle: {file.replace('.md', '')}\n---\n")
+                f.write(f"This is the shared file **{file}**.\n")
+
+    # Create section folders, index.md, per-section folders/files
     for i in range(1, num_sections + 1):
         section_name = f"section{i}"
         section_path = course_path / section_name
@@ -73,15 +128,29 @@ def setup_course():
         with open(index_md_path, "w", encoding="utf-8") as f:
             f.write(f"---\ntitle: Grade 11 {course_name}, Section {i}\n---\n")
 
-    # Modify quartz.layout.ts to replace Component.Explorer()
+        for folder in per_section_folders:
+            folder_path = section_path / folder
+            folder_path.mkdir(parents=True, exist_ok=True)
+            index_md_path = folder_path / "index.md"
+            if not index_md_path.exists():
+                with open(index_md_path, "w", encoding="utf-8") as f:
+                    f.write(f"---\n")
+                    f.write(f"title: {folder}\n")
+                    f.write(f"---\n")
+                    f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site.\n")
+
+        for file in per_section_files:
+            file_path = section_path / file
+            if not file_path.exists():
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(f"---\ntitle: {file.replace('.md', '')}\n---\n")
+                    f.write(f"This is the per-section file **{file}**.\n")
+
+    # Modify quartz.layout.ts
     quartz_layout_path = Path("/opt/quartz/quartz.layout.ts")
     if quartz_layout_path.exists():
         with open(quartz_layout_path, "r", encoding="utf-8") as f:
             content = f.read()
-            
-            # DEBUG
-            # print("EXISTING quartz.layout.ts IS:")
-            # print(content)
 
         explorer_code = '''
 Component.Explorer({
@@ -89,34 +158,16 @@ Component.Explorer({
     folderClickBehavior: "link", 
     filterFn: (node) => {
         console.log("Explorer node:", node)
-        // set containing names of everything you want to filter out
-        const omit = new Set([""])
-
-        // can also use node.slug or by anything on node.data
-        // note that node.data is only present for files that exist on disk
-        // (e.g. implicit folder nodes that have no associated index.md)
+        const omit = new Set(["" ])
         if (node.isFolder) {
-            if (omit.has(node.fileSegmentHint)) {
-                return false
-            } else {
-                return true
-            }
+            return !omit.has(node.fileSegmentHint)
         } else {
-            if (omit.has(node.data.title)) {
-                return false
-            } else {
-                return true
-            }
+            return !omit.has(node.data.title)
         }
     } 
 })'''.strip()
 
-        # Regex replacement for all Component.Explorer() calls
         modified_content = re.sub(r'Component\.Explorer\(\)', explorer_code, content)
-        
-        # DEBUG
-        # print("MODIFIED quartz.layout.ts IS:")
-        # print(modified_content)
 
         try:
             result = subprocess.run(

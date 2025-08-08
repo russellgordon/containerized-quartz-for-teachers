@@ -1,5 +1,7 @@
 // @ts-ignore
-import expandableList from "../../../../expandable_explorer_components.json"
+import courseConfig from "../../../../course_config.json"
+
+const expandableList = courseConfig.expandable ?? []
 
 
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"

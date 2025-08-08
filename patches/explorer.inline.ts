@@ -4,7 +4,9 @@ import { ContentDetails } from "../../plugins/emitters/contentIndex"
 
 // ✅ Static import of expandable folder list
 // @ts-ignore
-import expandableList from "../../../../../expandable_explorer_components.json"
+import courseConfig from "../../../../../course_config.json"
+
+const expandableList: string[] = courseConfig.expandable || []
 
 type MaybeHTMLElement = HTMLElement | undefined
 
@@ -103,7 +105,6 @@ function createFolderNode(
 
   const isExpandable = expandableList.includes(node.displayName)
 
-  // Update folder title
   if (opts.folderClickBehavior === "link") {
     const button = titleContainer.querySelector(".folder-button") as HTMLElement
     const a = document.createElement("a")
@@ -117,15 +118,13 @@ function createFolderNode(
     span.textContent = node.displayName
   }
 
-  // ❌ Not expandable? Remove chevron and child nodes entirely
   if (!isExpandable) {
     const icon = folderContainer.querySelector(".folder-icon") as HTMLElement
     icon.remove()
-    folderOuter.remove() // remove the <ul> wrapper for children
+    folderOuter.remove()
     return li
   }
 
-  // ✅ Expandable logic
   const isCollapsed =
     currentExplorerState.find((item) => item.path === folderPath)?.collapsed ??
     opts.folderDefaultState === "collapsed"
@@ -147,7 +146,6 @@ function createFolderNode(
 
   return li
 }
-
 
 async function setupExplorer(currentSlug: FullSlug) {
   const allExplorers = document.querySelectorAll("div.explorer") as NodeListOf<HTMLElement>

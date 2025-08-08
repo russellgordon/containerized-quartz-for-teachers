@@ -46,32 +46,16 @@ def kill_existing_quartz():
     except subprocess.CalledProcessError:
         pass
 
-def prompt_for_hidden_components(content_dir: Path):
-    print("\n🕵️ Select files and folders to hide from the sidebar (Explorer):")
-    hidden = []
-    for item in sorted(content_dir.iterdir()):
-        if item.name in {"index.md", ".gitkeep"} or item.name.startswith("."):
-            continue
-        response = input(f"Hide '{item.name}' from Explorer? [y/N]: ").strip().lower()
-        if response == "y":
-            hidden.append(item.name)
-    return hidden
-
-def prompt_for_expandable_components(content_dir: Path):
-    print("\n📂 Select files and folders that should be *expandable* in the Explorer sidebar:")
-    expandable = []
-    for item in sorted(content_dir.iterdir()):
-        if item.name in {"index.md", ".gitkeep"} or item.name.startswith("."):
-            continue
-        response = input(f"Make '{item.name}' expandable? [y/N]: ").strip().lower()
-        if response == "y":
-            expandable.append(item.name)
-    return expandable
-
 def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
     if not quartz_layout_path.exists():
         print(f"⚠️ quartz.layout.ts not found at {quartz_layout_path}")
         return
+
+    # Normalize hidden items: strip .md from file names
+    normalized_hidden = [
+        item[:-3] if item.endswith(".md") else item
+        for item in hidden_components
+    ]
 
     with open(quartz_layout_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
@@ -79,7 +63,7 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
     new_lines = []
     for line in lines:
         if "const omit = new Set(" in line:
-            formatted_names = ', '.join(f'"{name}"' for name in hidden_components)
+            formatted_names = ', '.join(f'"{name}"' for name in normalized_hidden)
             new_lines.append(f'const omit = new Set([{formatted_names}])\n')
         else:
             new_lines.append(line)
@@ -95,8 +79,7 @@ def build_section_site(course_code: str, section_number: int, reset_hidden: bool
     section_name = f"section{section_number}"
     section_dir = course_dir / section_name
     output_dir = course_dir / "merged_output" / section_name
-    hidden_path = course_dir / "hidden_explorer_components.json"
-    expandable_path = course_dir / "expandable_explorer_components.json"
+    config_file = course_dir / "course_config.json"
 
     if not course_dir.exists():
         print(f"❌ Course folder '{course_code}' not found in {base_dir}")
@@ -104,14 +87,20 @@ def build_section_site(course_code: str, section_number: int, reset_hidden: bool
     if not section_dir.exists():
         print(f"❌ Section folder '{section_name}' not found in {course_dir}")
         return
-
-    config_file = course_dir / ".shared_folders.json"
     if not config_file.exists():
-        print(f"❌ Shared folder config file not found: {config_file}")
+        print(f"❌ course_config.json not found in {course_dir}")
         return
+
     with open(config_file, "r", encoding="utf-8") as f:
         config = json.load(f)
-        shared_folders = config.get("shared_folders", [])
+
+    shared_folders = config.get("shared_folders", [])
+    shared_files = config.get("shared_files", [])
+    per_section_folders = config.get("per_section_folders", [])
+    per_section_files = config.get("per_section_files", [])
+    hidden_list = config.get("hidden", [])
+    expandable_list = config.get("expandable", [])
+
     shared_paths = [course_dir / folder for folder in shared_folders]
 
     print(f"\n📁 Shared folders to include for '{section_name}':")
@@ -135,96 +124,62 @@ def build_section_site(course_code: str, section_number: int, reset_hidden: bool
             shutil.copy2(item, dest)
             print(f"  📄 Copied file: {item.name}")
 
-    all_sources = shared_paths
     content_root = output_dir / "content"
     content_root.mkdir(exist_ok=True)
-    print(f"\n📥 Copying shared content into {content_root}...")
+    
+    # Copy section-level index.md to content/index.md if it exists
+    section_index = section_dir / "index.md"
+    if section_index.exists():
+        shutil.copy2(section_index, content_root / "index.md")
+        print(f"  🏠 Copied section index.md to content/index.md")
+    else:
+        print("⚠️ Section index.md not found — site may not render correctly.")
+    
 
-    for src_folder in all_sources:
-        print(f"🔍 Processing content from: {src_folder}")
+    print(f"\n📥 Copying shared folders into {content_root}...")
+    for src_folder in shared_paths:
+        print(f"🔍 Processing: {src_folder}")
         for root, dirs, files in os.walk(src_folder):
             rel_path = Path(root).relative_to(course_dir)
             dest_path = content_root / rel_path
             dest_path.mkdir(parents=True, exist_ok=True)
+            for file in files:
+                shutil.copy2(Path(root) / file, dest_path / file)
 
-            if root == str(src_folder):
-                folder_title = rel_path.name
-                index_md = dest_path / "index.md"
-                if not index_md.exists():
-                    with open(index_md, "w", encoding="utf-8") as f:
-                        f.write(f"---\ntitle: {folder_title}\n---\n")
-                        f.write(f"This is the **{folder_title}** folder. Add Markdown files to this folder to build out your site.\n")
-                    print(f"  📝 Created index.md in {dest_path}")
+    print(f"\n📥 Copying shared files into {content_root}...")
+    for file_name in shared_files:
+        src = course_dir / file_name
+        dest = content_root / file_name
+        if src.exists():
+            shutil.copy2(src, dest)
+            print(f"  📄 Copied shared file: {file_name}")
 
-            for filename in files:
-                src_file = Path(root) / filename
-                dest_file = dest_path / filename
-                if filename.endswith(".md"):
-                    try:
-                        post = frontmatter.load(src_file)
-                        section_key = f"createdForSection{section_number}"
-                        if section_key in post.metadata:
-                            post.metadata["created"] = post.metadata.pop(section_key)
-                        with open(dest_file, "w", encoding="utf-8") as f:
-                            f.write(frontmatter.dumps(post))
-                        print(f"    ✅ Copied markdown: {rel_path / filename}")
-                    except Exception as e:
-                        print(f"⚠️ Skipping malformed Markdown file: {src_file} ({e})")
-                else:
-                    shutil.copy2(src_file, dest_file)
-                    print(f"    📄 Copied asset: {rel_path / filename}")
+    print(f"\n📥 Copying per-section folders...")
+    for folder in per_section_folders:
+        src = section_dir / folder
+        dest = content_root / folder
+        if src.exists():
+            shutil.copytree(src, dest, dirs_exist_ok=True)
+            print(f"  📁 Copied per-section folder: {folder}")
 
-    print(f"\n📥 Copying section-specific content from {section_dir} into {content_root}...")
-    for item in section_dir.iterdir():
-        if item.name == "quartz.layout.ts":
-            shutil.copy2(item, output_dir / item.name)
-            print(f"  🎨 Copied quartz.layout.ts to {output_dir}")
-        elif item.is_file() and item.suffix == ".md":
-            try:
-                post = frontmatter.load(item)
-                section_key = f"createdForSection{section_number}"
-                if section_key in post.metadata:
-                    post.metadata["created"] = post.metadata.pop(section_key)
-                dest = content_root / item.name
-                with open(dest, "w", encoding="utf-8") as f:
-                    f.write(frontmatter.dumps(post))
-                print(f"  📄 Copied section Markdown file to content/: {item.name}")
-            except Exception as e:
-                print(f"⚠️ Skipping malformed Markdown file: {item} ({e})")
-        elif item.is_file():
-            shutil.copy2(item, content_root / item.name)
-            print(f"  📦 Copied section asset: {item.name}")
+    print(f"\n📥 Copying per-section files...")
+    for file_name in per_section_files:
+        src = section_dir / file_name
+        dest = content_root / file_name
+        if src.exists():
+            shutil.copy2(src, dest)
+            print(f"  📄 Copied per-section file: {file_name}")
 
-    print(f"\n✅ Site for {section_name} built at: {output_dir}")
-
-    # Load or prompt hidden items
-    if reset_hidden or not hidden_path.exists():
-        hidden_list = prompt_for_hidden_components(content_root)
-        with open(hidden_path, "w", encoding="utf-8") as f:
-            json.dump(hidden_list, f, indent=2)
-        print(f"✅ Saved hidden Explorer components to: {hidden_path}")
-    else:
-        with open(hidden_path, "r", encoding="utf-8") as f:
-            hidden_list = json.load(f)
-        print(f"📄 Loaded hidden Explorer components from: {hidden_path}")
-
-    # Load or prompt expandable items
-    if reset_expandable or not expandable_path.exists():
-        expandable_list = prompt_for_expandable_components(content_root)
-        with open(expandable_path, "w", encoding="utf-8") as f:
-            json.dump(expandable_list, f, indent=2)
-        print(f"✅ Saved expandable Explorer components to: {expandable_path}")
-    else:
-        with open(expandable_path, "r", encoding="utf-8") as f:
-            expandable_list = json.load(f)
-        print(f"📄 Loaded expandable Explorer components from: {expandable_path}")
+    # ✅ Copy course_config.json for static import use in explorer.inline.ts
+    shutil.copy2(config_file, output_dir / "course_config.json")
+    print("✅ Copied course_config.json to output directory")
 
     quartz_layout_ts = output_dir / "quartz.layout.ts"
     update_quartz_layout(quartz_layout_ts, hidden_list)
 
-    config_path = os.path.join(output_dir, "quartz.config.ts")
-    if os.path.exists(config_path):
-        toggle_custom_og_images(config_path, enable=include_social_media_previews)
+    config_path = output_dir / "quartz.config.ts"
+    if config_path.exists():
+        toggle_custom_og_images(str(config_path), include_social_media_previews)
     else:
         print("Warning: quartz.config.ts not found to toggle CustomOgImages")
 
