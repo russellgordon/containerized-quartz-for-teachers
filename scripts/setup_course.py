@@ -75,48 +75,33 @@ def setup_course():
     print("📚 Welcome to the Course Setup Script!\n")
 
     base_path = Path("/teaching/courses")
-    course_code = "ICS3U"
+    default_code = "ICS3U"
+    course_code = prompt_with_default("Enter the course code (e.g. ICS3U)", default_code)
     course_path = base_path / course_code
-    saved_config = {}
-
-    # Load saved config if exists
-    if course_path.exists() and (course_path / "course_config.json").exists():
-        with open(course_path / "course_config.json", "r", encoding="utf-8") as f:
-            saved_config = json.load(f)
-        course_code = saved_config.get("course_code", course_code)
-        course_path = base_path / course_code
-
-    course_code = prompt_with_default("Enter the course code (e.g. ICS3U)", course_code)
-    course_name = prompt_with_default("Enter the formal course name (e.g. Introduction to Computer Science)",
-                                      saved_config.get("course_name", "Intro to Computer Science"))
-    num_sections = int(prompt_with_default("How many sections are you teaching of this course?",
-                                           saved_config.get("num_sections", 2)))
-
     course_path.mkdir(parents=True, exist_ok=True)
+
+    config_path = course_path / "course_config.json"
+    saved_config = {}
+    if config_path.exists():
+        with open(config_path, "r", encoding="utf-8") as f:
+            saved_config = json.load(f)
+
+    course_name = prompt_with_default("Enter the formal course name (e.g. Introduction to Computer Science)", saved_config.get("course_name", "Intro to Computer Science"))
+    num_sections = int(prompt_with_default("How many sections are you teaching of this course?", saved_config.get("num_sections", 2)))
 
     all_items = os.listdir(course_path)
     all_folders = [f for f in all_items if os.path.isdir(course_path / f) and not f.startswith(".")]
     all_md_files = [f for f in all_items if f.endswith(".md") and not f.startswith(".")]
 
-    shared_folders = prompt_type_list("Enter folder names to be shared across all sections:",
-                                      saved_config.get("shared_folders", DEFAULT_SHARED_FOLDERS))
-    shared_files = prompt_type_list("Enter Markdown file names to be shared across all sections:",
-                                    saved_config.get("shared_files", DEFAULT_SHARED_FILES),
-                                    add_md_extension=True)
-    per_section_folders = prompt_type_list("Enter folder names to be duplicated per section:",
-                                           saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS))
-    per_section_files = prompt_type_list("Enter Markdown file names to be duplicated per section:",
-                                         saved_config.get("per_section_files", DEFAULT_PER_SECTION_FILES),
-                                         add_md_extension=True)
+    shared_folders = prompt_type_list("Enter folder names to be shared across all sections:", saved_config.get("shared_folders", DEFAULT_SHARED_FOLDERS))
+    shared_files = prompt_type_list("Enter Markdown file names to be shared across all sections:", saved_config.get("shared_files", DEFAULT_SHARED_FILES), add_md_extension=True)
+    per_section_folders = prompt_type_list("Enter folder names to be duplicated per section:", saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS))
+    per_section_files = prompt_type_list("Enter Markdown file names to be duplicated per section:", saved_config.get("per_section_files", DEFAULT_PER_SECTION_FILES), add_md_extension=True)
 
     all_selected = shared_folders + shared_files + per_section_folders + per_section_files
-    hidden_items = prompt_select_multiple("Select folders/files to HIDE from the sidebar:",
-                                          all_selected,
-                                          saved_config.get("hidden", []))
+    hidden_items = prompt_select_multiple("Select folders/files to HIDE from the sidebar:", all_selected, saved_config.get("hidden", []))
     visible_items = [item for item in all_selected if item not in hidden_items]
-    expandable_items = prompt_select_multiple("Select folders/files that should be EXPANDABLE:",
-                                              visible_items,
-                                              saved_config.get("expandable", []))
+    expandable_items = prompt_select_multiple("Select folders/files that should be EXPANDABLE:", visible_items, saved_config.get("expandable", []))
 
     config = {
         "course_code": course_code,
@@ -130,10 +115,9 @@ def setup_course():
         "expandable": expandable_items
     }
 
-    with open(course_path / "course_config.json", "w", encoding="utf-8") as f:
+    with open(config_path, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2)
 
-    # Create shared folders with index.md
     for folder in shared_folders:
         folder_path = course_path / folder
         folder_path.mkdir(parents=True, exist_ok=True)
@@ -145,7 +129,6 @@ def setup_course():
                 f.write(f"---\n")
                 f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site.\n")
 
-    # Create shared files if they don't exist
     for file in shared_files:
         file_path = course_path / file
         if not file_path.exists():
@@ -153,7 +136,6 @@ def setup_course():
                 f.write(f"---\ntitle: {file.replace('.md', '')}\n---\n")
                 f.write(f"This is the shared file **{file}**.\n")
 
-    # Create section folders and content
     for i in range(1, num_sections + 1):
         section_name = f"section{i}"
         section_path = course_path / section_name
@@ -180,11 +162,13 @@ def setup_course():
                     f.write(f"---\ntitle: {file.replace('.md', '')}\n---\n")
                     f.write(f"This is the per-section file **{file}**.\n")
 
-    # Modify quartz.layout.ts
     quartz_layout_path = Path("/opt/quartz/quartz.layout.ts")
     if quartz_layout_path.exists():
         with open(quartz_layout_path, "r", encoding="utf-8") as f:
             content = f.read()
+            # DEBUG
+            # print("ORIGINAL quartz.layout.ts is...")
+            # print(content)
 
         explorer_code = '''
 Component.Explorer({
@@ -202,6 +186,9 @@ Component.Explorer({
 })'''.strip()
 
         modified_content = re.sub(r'Component\.Explorer\(\)', explorer_code, content)
+        # DEBUG
+        # print("MODIFIED quartz.layout.ts is...")
+        # print(modified_content)
 
         try:
             result = subprocess.run(
