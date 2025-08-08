@@ -151,7 +151,7 @@ containerized-quartz-for-teachers/
 
 ## 🙏 Credits
 
-- [Quartz](https://github.com/jackyzha0/quartz) by [Jacky Zhao](https://https://jzhao.xyz/)
+- [Quartz](https://github.com/jackyzha0/quartz) by [Jacky Zhao](https://jzhao.xyz/)
 - Docker integration and teacher-friendly workflow: © [Russell Gordon](https://github.com/russellgordon)
 
 ---
