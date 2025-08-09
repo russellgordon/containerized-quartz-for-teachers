@@ -36,6 +36,7 @@ def update_page_title(config_path: Path, course_code: str, section_number: int):
     else:
         print("⚠️ Could not find pageTitle in quartz.config.ts to update")
 
+
 def toggle_custom_og_images(config_path: str, enable: bool):
     with open(config_path, 'r') as file:
         lines = file.readlines()
@@ -64,6 +65,7 @@ def toggle_custom_og_images(config_path: str, enable: bool):
     else:
         print("No changes needed to quartz.config.ts")
 
+
 def kill_existing_quartz():
     try:
         output = subprocess.check_output(["lsof", "-ti", ":8081"])
@@ -74,6 +76,7 @@ def kill_existing_quartz():
                 print(f"🛑 Killed existing process on port 8081 (PID: {pid})")
     except subprocess.CalledProcessError:
         pass
+
 
 def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
     if not quartz_layout_path.exists():
@@ -155,9 +158,6 @@ def inject_custom_footer_components(quartz_layout_path: Path, footer_component_p
     else:
         print(f"⚠️ Footer.tsx not found at {footer_component_path}")
 
-# ---------------------------
-# New: Colour scheme support
-# ---------------------------
 
 COLOUR_JSON_CANDIDATES = [
     Path("support/colour_schemes.json"),
@@ -187,13 +187,6 @@ def find_scheme_by_id(schemes, scheme_id):
     return None
 
 def format_colors_block(colors: dict) -> str:
-    """
-    Return a TS snippet:
-        colors: {
-          lightMode: { ... },
-          darkMode: { ... },
-        },
-    """
     def dict_to_ts(d, indent="          "):
         order = ["light", "lightgray", "gray", "darkgray", "dark", "secondary", "tertiary", "highlight", "textHighlight"]
         lines = []
@@ -219,15 +212,11 @@ def format_colors_block(colors: dict) -> str:
     )
 
 def _replace_colors_block_ts(content: str, new_colors_block: str) -> str:
-    """
-    Replace the entire 'colors: { ... }' block with new_colors_block using brace counting.
-    Preserves a trailing comma if present.
-    """
-    m = re.search(r'colors\\s*:\\s*\\{', content)
+    m = re.search(r'colors\s*:\s*\{', content)
     if not m:
-        return content  # colors block not found
+        return content
 
-    start = m.start()  # index of 'c' in 'colors'
+    start = m.start()
     brace_open = content.find('{', m.end() - 1)
     if brace_open == -1:
         return content
@@ -244,7 +233,7 @@ def _replace_colors_block_ts(content: str, new_colors_block: str) -> str:
         i += 1
 
     if depth != 0:
-        return content  # Unbalanced braces
+        return content
 
     brace_close = i - 1
     end = brace_close + 1
@@ -254,7 +243,6 @@ def _replace_colors_block_ts(content: str, new_colors_block: str) -> str:
     return content[:start] + new_colors_block + content[end:]
 
 def apply_color_scheme_to_quartz_config(quartz_config_path: Path, scheme_colors: dict):
-    """Replace (or insert) the theme.colors block with the chosen scheme; write via tee."""
     if not quartz_config_path.exists():
         print(f"⚠️ quartz.config.ts not found at {quartz_config_path}")
         return
@@ -266,10 +254,9 @@ def apply_color_scheme_to_quartz_config(quartz_config_path: Path, scheme_colors:
 
     updated = _replace_colors_block_ts(content, new_colors_block)
     if updated == content:
-        # No colors block found — insert after typography config inside theme
         updated = re.sub(
-            r'(theme:\\s*\\{\\s*[\\s\\S]*?typography:\\s*\\{[\\s\\S]*?\\},\\s*)',
-            r'\\1\\n' + new_colors_block + "\\n",
+            r'(theme:\s*\{\s*[\s\S]*?typography:\s*\{[\s\S]*?\},\s*)',
+            r'\1\n' + new_colors_block + "\n",
             content,
             count=1
         )
@@ -285,9 +272,6 @@ def apply_color_scheme_to_quartz_config(quartz_config_path: Path, scheme_colors:
     else:
         print("✅ Applied selected colour scheme to quartz.config.ts")
 
-# ---------------------------
-# New: Patched Backlinks.tsx support
-# ---------------------------
 
 BACKLINKS_TS_CANDIDATES = [
     Path("support/Backlinks.tsx"),
@@ -297,10 +281,6 @@ BACKLINKS_TS_CANDIDATES = [
 ]
 
 def install_patched_backlinks(output_dir: Path):
-    """
-    Copy a patched Backlinks.tsx into the section's Quartz components folder if available.
-    Does not fail the build if the file isn't present.
-    """
     target = output_dir / "quartz" / "components" / "Backlinks.tsx"
     src = None
     for p in BACKLINKS_TS_CANDIDATES:
@@ -315,7 +295,6 @@ def install_patched_backlinks(output_dir: Path):
     try:
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, target)
-        rel = None
         try:
             rel = target.relative_to(output_dir)
         except Exception:
@@ -324,9 +303,6 @@ def install_patched_backlinks(output_dir: Path):
     except Exception as e:
         print(f"❌ Failed to install patched Backlinks.tsx: {e}")
 
-# ---------------------------
-# New: Locales copy support
-# ---------------------------
 
 LOCALES_SRC_CANDIDATES = [
     Path("support/locales"),
@@ -356,16 +332,43 @@ def install_locales(output_dir: Path):
     except Exception as e:
         print(f"❌ Failed to install custom locales: {e}")
 
+
+# NEW: process frontmatter for draft/created fields
+def process_frontmatter(file_path: Path, section_number: int):
+    if file_path.suffix.lower() != ".md":
+        return
+    try:
+        post = frontmatter.load(file_path)
+    except Exception as e:
+        print(f"⚠️ Could not read frontmatter from {file_path}: {e}")
+        return
+
+    draft_key = f"draftSection{section_number}"
+    created_key = f"createdSection{section_number}"
+
+    if draft_key in post:
+        post["draft"] = post[draft_key]
+    if created_key in post:
+        post["created"] = post[created_key]
+
+    for key in list(post.keys()):
+        if re.match(r"draftSection\d+", key) or re.match(r"createdSection\d+", key):
+            del post[key]
+
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(frontmatter.dumps(post))
+    except Exception as e:
+        print(f"⚠️ Could not write updated frontmatter to {file_path}: {e}")
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
     section_name = f"section{section_number}"
 
-    # --- CHANGED: hide output by using a dot-folder at the vault root ---
     visible_output_root = course_dir / "merged_output"
     hidden_output_root = course_dir / ".merged_output"
 
-    # One-time migration if the old visible folder exists
     if visible_output_root.exists() and not hidden_output_root.exists():
         try:
             print(f"📦 Migrating existing output '{visible_output_root.name}' → '{hidden_output_root.name}'...")
@@ -374,7 +377,6 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         except Exception as e:
             print(f"⚠️ Migration failed (will continue using hidden target): {e}")
 
-    # Use the hidden root for all future builds
     output_dir = hidden_output_root / section_name
     config_file = course_dir / "course_config.json"
 
@@ -424,12 +426,10 @@ def build_section_site(course_code: str, section_number: int, include_social_med
             else:
                 shutil.copy2(item, dest)
                 print(f"  📄 Copied file: {item.name}")
-        # Install custom locales on fresh builds
         install_locales(output_dir)
     else:
         print(f"♻️ Reusing existing (hidden) output directory: {output_dir}")
 
-    # Always try to install the patched Backlinks.tsx (overwrites if present)
     install_patched_backlinks(output_dir)
 
     content_root = output_dir / "content"
@@ -441,7 +441,9 @@ def build_section_site(course_code: str, section_number: int, include_social_med
 
     section_index = section_dir / "index.md"
     if section_index.exists():
-        shutil.copy2(section_index, content_root / "index.md")
+        dest = content_root / "index.md"
+        shutil.copy2(section_index, dest)
+        process_frontmatter(dest, section_number)
         print(f"  🏠 Copied section index.md to content/index.md")
     else:
         print("⚠️ Section index.md not found — site may not render correctly.")
@@ -454,7 +456,10 @@ def build_section_site(course_code: str, section_number: int, include_social_med
             dest_path = content_root / rel_path
             dest_path.mkdir(parents=True, exist_ok=True)
             for file in files:
-                shutil.copy2(Path(root) / file, dest_path / file)
+                src_file = Path(root) / file
+                dest_file = dest_path / file
+                shutil.copy2(src_file, dest_file)
+                process_frontmatter(dest_file, section_number)
 
     print(f"\n📥 Copying shared files into {content_root}...")
     for file_name in shared_files:
@@ -462,6 +467,7 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         dest = content_root / file_name
         if src.exists():
             shutil.copy2(src, dest)
+            process_frontmatter(dest, section_number)
             print(f"  📄 Copied shared file: {file_name}")
 
     print(f"\n📥 Copying per-section folders...")
@@ -470,6 +476,9 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         dest = content_root / folder
         if src.exists():
             shutil.copytree(src, dest, dirs_exist_ok=True)
+            for root, dirs, files in os.walk(dest):
+                for file in files:
+                    process_frontmatter(Path(root) / file, section_number)
             print(f"  📁 Copied per-section folder: {folder}")
 
     print(f"\n📥 Copying per-section files...")
@@ -478,21 +487,25 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         dest = content_root / file_name
         if src.exists():
             shutil.copy2(src, dest)
+            process_frontmatter(dest, section_number)
             print(f"  📄 Copied per-section file: {file_name}")
 
+    # Copy course config into output
     shutil.copy2(config_file, output_dir / "course_config.json")
     print("✅ Copied course_config.json to output directory")
 
+    # Update Quartz layout & footer
     quartz_layout_ts = output_dir / "quartz.layout.ts"
     quartz_footer_tsx = output_dir / "quartz/components/Footer.tsx"
     update_quartz_layout(quartz_layout_ts, hidden_list)
     footer_html = config.get("footer_html", "")
     inject_custom_footer_components(quartz_layout_ts, quartz_footer_tsx, footer_html)
 
+    # Update page title
     config_path = output_dir / "quartz.config.ts"
     update_page_title(config_path, course_code, section_number)
 
-    # --- NEW: apply per-section colour scheme, if configured ---
+    # Apply per-section colour scheme, if configured
     color_map = config.get("color_schemes", {})
     section_key = f"section{section_number}"
     chosen_scheme_id = color_map.get(section_key)
@@ -507,13 +520,16 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     else:
         print(f"ℹ️ No colour scheme selected for {section_key} — leaving default Quartz colors.")
 
+    # Toggle CustomOgImages emitter
     if config_path.exists():
         toggle_custom_og_images(str(config_path), include_social_media_previews)
     else:
         print("Warning: quartz.config.ts not found to toggle CustomOgImages")
 
+    # Kill existing Quartz server
     kill_existing_quartz()
 
+    # Install npm dependencies if needed
     node_modules_dir = output_dir / "node_modules"
     package_json = output_dir / "package.json"
     package_lock = output_dir / "package-lock.json"
@@ -531,8 +547,10 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     else:
         print("✅ Skipping npm install (dependencies already present)")
 
+    # Launch preview
     print("\n🚀 Launching Quartz preview on http://localhost:8081\n")
     subprocess.run(["npx", "quartz", "build", "--serve", "--port", "8081"], cwd=output_dir)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Build Quartz site for a course section.")
