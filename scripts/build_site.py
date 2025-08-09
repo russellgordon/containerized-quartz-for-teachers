@@ -223,7 +223,7 @@ def _replace_colors_block_ts(content: str, new_colors_block: str) -> str:
     Replace the entire 'colors: { ... }' block with new_colors_block using brace counting.
     Preserves a trailing comma if present.
     """
-    m = re.search(r'colors\s*:\s*\{', content)
+    m = re.search(r'colors\\s*:\\s*\\{', content)
     if not m:
         return content  # colors block not found
 
@@ -268,8 +268,8 @@ def apply_color_scheme_to_quartz_config(quartz_config_path: Path, scheme_colors:
     if updated == content:
         # No colors block found — insert after typography config inside theme
         updated = re.sub(
-            r'(theme:\s*\{\s*[\s\S]*?typography:\s*\{[\s\S]*?\},\s*)',
-            r'\1\n' + new_colors_block + "\n",
+            r'(theme:\\s*\\{\\s*[\\s\\S]*?typography:\\s*\\{[\\s\\S]*?\\},\\s*)',
+            r'\\1\\n' + new_colors_block + "\\n",
             content,
             count=1
         )
@@ -284,6 +284,45 @@ def apply_color_scheme_to_quartz_config(quartz_config_path: Path, scheme_colors:
         print("⚠️ Error writing colors to quartz.config.ts:", result.stderr.decode())
     else:
         print("✅ Applied selected colour scheme to quartz.config.ts")
+
+# ---------------------------
+# New: Patched Backlinks.tsx support
+# ---------------------------
+
+BACKLINKS_TS_CANDIDATES = [
+    Path("support/Backlinks.tsx"),
+    Path("/opt/support/Backlinks.tsx"),
+    Path(__file__).resolve().parent.parent / "support" / "Backlinks.tsx",
+    Path(__file__).resolve().parent / "support" / "Backlinks.tsx",
+]
+
+def install_patched_backlinks(output_dir: Path):
+    """
+    Copy a patched Backlinks.tsx into the section's Quartz components folder if available.
+    Does not fail the build if the file isn't present.
+    """
+    target = output_dir / "quartz" / "components" / "Backlinks.tsx"
+    src = None
+    for p in BACKLINKS_TS_CANDIDATES:
+        if p.exists():
+            src = p
+            break
+
+    if src is None:
+        print("ℹ️ Patched Backlinks.tsx not found — leaving Quartz default.")
+        return
+
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, target)
+        rel = None
+        try:
+            rel = target.relative_to(output_dir)
+        except Exception:
+            rel = target
+        print(f"✅ Installed patched Backlinks.tsx → {rel}")
+    except Exception as e:
+        print(f"❌ Failed to install patched Backlinks.tsx: {e}")
 
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
@@ -355,6 +394,9 @@ def build_section_site(course_code: str, section_number: int, include_social_med
                 print(f"  📄 Copied file: {item.name}")
     else:
         print(f"♻️ Reusing existing (hidden) output directory: {output_dir}")
+
+    # Always try to install the patched Backlinks.tsx (overwrites if present)
+    install_patched_backlinks(output_dir)
 
     content_root = output_dir / "content"
     if content_root.exists():
