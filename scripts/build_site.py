@@ -324,6 +324,38 @@ def install_patched_backlinks(output_dir: Path):
     except Exception as e:
         print(f"❌ Failed to install patched Backlinks.tsx: {e}")
 
+# ---------------------------
+# New: Locales copy support
+# ---------------------------
+
+LOCALES_SRC_CANDIDATES = [
+    Path("support/locales"),
+    Path("/opt/support/locales"),
+    Path(__file__).resolve().parent.parent / "support" / "locales",
+    Path(__file__).resolve().parent / "support" / "locales",
+]
+
+def install_locales(output_dir: Path):
+    target = output_dir / "quartz" / "i18n" / "locales"
+    src = None
+    for p in LOCALES_SRC_CANDIDATES:
+        if p.exists() and p.is_dir():
+            src = p
+            break
+    if src is None:
+        print("ℹ️ Locales folder not found — leaving Quartz default locales.")
+        return
+    try:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(src, target, dirs_exist_ok=True)
+        try:
+            rel = target.relative_to(output_dir)
+        except Exception:
+            rel = target
+        print(f"✅ Installed custom locales → {rel}")
+    except Exception as e:
+        print(f"❌ Failed to install custom locales: {e}")
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -392,6 +424,8 @@ def build_section_site(course_code: str, section_number: int, include_social_med
             else:
                 shutil.copy2(item, dest)
                 print(f"  📄 Copied file: {item.name}")
+        # Install custom locales on fresh builds
+        install_locales(output_dir)
     else:
         print(f"♻️ Reusing existing (hidden) output directory: {output_dir}")
 
