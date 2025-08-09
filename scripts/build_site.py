@@ -7,6 +7,40 @@ import json
 import re
 from pathlib import Path
 
+def adjust_created_modified_priority(config_path: Path):
+    """Remove 'git' from Plugin.CreatedModifiedDate priority array."""
+    if not config_path.exists():
+        print(f"⚠️ quartz.config.ts not found at {config_path}")
+        return
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Replace only inside Plugin.CreatedModifiedDate block
+        new_content = re.sub(
+            r'Plugin\.CreatedModifiedDate\(\{\s*priority:\s*\["git",\s*"frontmatter",\s*"filesystem"\]\s*,?\s*\}\)',
+            'Plugin.CreatedModifiedDate({\n        priority: ["frontmatter", "filesystem"],\n      })',
+            content
+        )
+
+        if new_content != content:
+            result = subprocess.run(
+                ["tee", str(config_path)],
+                input=new_content.encode(),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to update CreatedModifiedDate priority:", result.stderr.decode())
+            else:
+                print("✅ Updated CreatedModifiedDate priority to exclude 'git'")
+        else:
+            print("ℹ️ No matching CreatedModifiedDate priority array found — no changes made.")
+
+    except Exception as e:
+        print(f"❌ Error adjusting CreatedModifiedDate priority: {e}")
+
 def update_page_title(config_path: Path, course_code: str, section_number: int):
     if not config_path.exists():
         print(f"⚠️ quartz.config.ts not found at {config_path}")
@@ -427,6 +461,9 @@ def build_section_site(course_code: str, section_number: int, include_social_med
                 shutil.copy2(item, dest)
                 print(f"  📄 Copied file: {item.name}")
         install_locales(output_dir)
+        # Adjust CreatedModifiedDate priority on first build/full rebuild
+        config_path = output_dir / "quartz.config.ts"
+        adjust_created_modified_priority(config_path)
     else:
         print(f"♻️ Reusing existing (hidden) output directory: {output_dir}")
 
