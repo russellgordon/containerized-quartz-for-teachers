@@ -155,6 +155,136 @@ def inject_custom_footer_components(quartz_layout_path: Path, footer_component_p
     else:
         print(f"⚠️ Footer.tsx not found at {footer_component_path}")
 
+# ---------------------------
+# New: Colour scheme support
+# ---------------------------
+
+COLOUR_JSON_CANDIDATES = [
+    Path("support/colour_schemes.json"),
+    Path("/opt/support/colour_schemes.json"),
+    Path(__file__).resolve().parent.parent / "support" / "colour_schemes.json",
+    Path(__file__).resolve().parent / "support" / "colour_schemes.json",
+]
+
+def load_colour_schemes():
+    for p in COLOUR_JSON_CANDIDATES:
+        if p.exists():
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                if isinstance(data, dict) and "schemes" in data:
+                    return data["schemes"]
+                return data
+            except Exception as e:
+                print(f"⚠️ Failed to load colour_schemes.json from {p}: {e}")
+    print("⚠️ colour_schemes.json not found — using existing Quartz colors.")
+    return []
+
+def find_scheme_by_id(schemes, scheme_id):
+    for s in schemes:
+        if s.get("id") == scheme_id:
+            return s
+    return None
+
+def format_colors_block(colors: dict) -> str:
+    """
+    Return a TS snippet:
+        colors: {
+          lightMode: { ... },
+          darkMode: { ... },
+        },
+    """
+    def dict_to_ts(d, indent="          "):
+        order = ["light", "lightgray", "gray", "darkgray", "dark", "secondary", "tertiary", "highlight", "textHighlight"]
+        lines = []
+        for k in order:
+            if k in d:
+                v = d[k]
+                if isinstance(v, str):
+                    lines.append(f'{indent}{k}: "{v}",')
+        return "\n".join(lines)
+
+    lm = colors.get("lightMode", {})
+    dm = colors.get("darkMode", {})
+
+    return (
+        "      colors: {\n"
+        "        lightMode: {\n"
+        f"{dict_to_ts(lm)}\n"
+        "        },\n"
+        "        darkMode: {\n"
+        f"{dict_to_ts(dm)}\n"
+        "        },\n"
+        "      },"
+    )
+
+def _replace_colors_block_ts(content: str, new_colors_block: str) -> str:
+    """
+    Replace the entire 'colors: { ... }' block with new_colors_block using brace counting.
+    Preserves a trailing comma if present.
+    """
+    m = re.search(r'colors\s*:\s*\{', content)
+    if not m:
+        return content  # colors block not found
+
+    start = m.start()  # index of 'c' in 'colors'
+    brace_open = content.find('{', m.end() - 1)
+    if brace_open == -1:
+        return content
+
+    depth = 1
+    i = brace_open + 1
+    n = len(content)
+    while i < n and depth > 0:
+        ch = content[i]
+        if ch == '{':
+            depth += 1
+        elif ch == '}':
+            depth -= 1
+        i += 1
+
+    if depth != 0:
+        return content  # Unbalanced braces
+
+    brace_close = i - 1
+    end = brace_close + 1
+    if end < n and content[end] == ',':
+        end += 1
+
+    return content[:start] + new_colors_block + content[end:]
+
+def apply_color_scheme_to_quartz_config(quartz_config_path: Path, scheme_colors: dict):
+    """Replace (or insert) the theme.colors block with the chosen scheme; write via tee."""
+    if not quartz_config_path.exists():
+        print(f"⚠️ quartz.config.ts not found at {quartz_config_path}")
+        return
+
+    with open(quartz_config_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    new_colors_block = format_colors_block(scheme_colors)
+
+    updated = _replace_colors_block_ts(content, new_colors_block)
+    if updated == content:
+        # No colors block found — insert after typography config inside theme
+        updated = re.sub(
+            r'(theme:\s*\{\s*[\s\S]*?typography:\s*\{[\s\S]*?\},\s*)',
+            r'\1\n' + new_colors_block + "\n",
+            content,
+            count=1
+        )
+
+    result = subprocess.run(
+        ["tee", str(quartz_config_path)],
+        input=updated.encode(),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    if result.returncode != 0:
+        print("⚠️ Error writing colors to quartz.config.ts:", result.stderr.decode())
+    else:
+        print("✅ Applied selected colour scheme to quartz.config.ts")
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -269,6 +399,21 @@ def build_section_site(course_code: str, section_number: int, include_social_med
 
     config_path = output_dir / "quartz.config.ts"
     update_page_title(config_path, course_code, section_number)
+
+    # --- NEW: apply per-section colour scheme, if configured ---
+    color_map = config.get("color_schemes", {})
+    section_key = f"section{section_number}"
+    chosen_scheme_id = color_map.get(section_key)
+    if chosen_scheme_id:
+        schemes = load_colour_schemes()
+        scheme = find_scheme_by_id(schemes, chosen_scheme_id)
+        if scheme and "colors" in scheme:
+            apply_color_scheme_to_quartz_config(config_path, scheme["colors"])
+            print(f"🎨 Applied colour scheme for {section_key}: {scheme.get('name', chosen_scheme_id)}")
+        else:
+            print(f"⚠️ Scheme '{chosen_scheme_id}' not found or missing 'colors' — leaving default Quartz colors.")
+    else:
+        print(f"ℹ️ No colour scheme selected for {section_key} — leaving default Quartz colors.")
 
     if config_path.exists():
         toggle_custom_og_images(str(config_path), include_social_media_previews)

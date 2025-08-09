@@ -1,0 +1,366 @@
+[
+  {
+    "id": "quartz-standard",
+    "name": "Quartz Standard Colours",
+    "colors": {
+      "lightMode": {
+        "light": "#faf8f8",
+        "lightgray": "#e5e5e5",
+        "gray": "#b8b8b8",
+        "darkgray": "#4e4e4e",
+        "dark": "#2b2b2b",
+        "secondary": "#284b63",
+        "tertiary": "#84a59d",
+        "highlight": "rgba(143, 159, 169, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#161618",
+        "lightgray": "#393639",
+        "gray": "#646464",
+        "darkgray": "#d4d4d4",
+        "dark": "#ebebec",
+        "secondary": "#7b97aa",
+        "tertiary": "#84a59d",
+        "highlight": "rgba(143, 159, 169, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  },
+  {
+    "id": "lakefield-college-school",
+    "name": "Lakefield College School Colours",
+    "colors": {
+      "lightMode": {
+        "light": "#faf8f8",
+        "lightgray": "#e5e5e5",
+        "gray": "#b9c2be",
+        "darkgray": "#3c4a43",
+        "dark": "#22342c",
+        "secondary": "#28634e",
+        "tertiary": "#84a59d",
+        "highlight": "rgba(143, 159, 169, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#151718",
+        "lightgray": "#303635",
+        "gray": "#5f6d65",
+        "darkgray": "#d0d6d2",
+        "dark": "#dfe6e2",
+        "secondary": "#6d845f",
+        "tertiary": "#99af8c",
+        "highlight": "rgba(143, 159, 169, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  },
+  {
+    "id": "coastal-breeze",
+    "name": "Coastal Breeze",
+    "colors": {
+      "lightMode": {
+        "light": "#f7fbfd",
+        "lightgray": "#e1e8ee",
+        "gray": "#a7b3bf",
+        "darkgray": "#42515e",
+        "dark": "#233140",
+        "secondary": "#2b6cb0",
+        "tertiary": "#68d391",
+        "highlight": "rgba(104, 211, 145, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#0f1419",
+        "lightgray": "#27313b",
+        "gray": "#5a6a79",
+        "darkgray": "#ccd6df",
+        "dark": "#e7edf2",
+        "secondary": "#7fb2e3",
+        "tertiary": "#7ae7b9",
+        "highlight": "rgba(104, 211, 145, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  },
+  {
+    "id": "desert-sandstone",
+    "name": "Desert Sandstone",
+    "colors": {
+      "lightMode": {
+        "light": "#fcf7f1",
+        "lightgray": "#eadfce",
+        "gray": "#c2b29f",
+        "darkgray": "#6e5b48",
+        "dark": "#3f2f22",
+        "secondary": "#c06c43",
+        "tertiary": "#2f7366",
+        "highlight": "rgba(192, 108, 67, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#1a1410",
+        "lightgray": "#3a3027",
+        "gray": "#756557",
+        "darkgray": "#e1d6c7",
+        "dark": "#f1e8dd",
+        "secondary": "#f0a277",
+        "tertiary": "#5bc7b3",
+        "highlight": "rgba(192, 108, 67, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  },
+  {
+    "id": "midnight-orchid",
+    "name": "Midnight Orchid",
+    "colors": {
+      "lightMode": {
+        "light": "#f8f7fb",
+        "lightgray": "#dedcf0",
+        "gray": "#a9a5c4",
+        "darkgray": "#494a67",
+        "dark": "#2b2c44",
+        "secondary": "#7a4ae0",
+        "tertiary": "#0ea5a1",
+        "highlight": "rgba(122, 74, 224, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#14141b",
+        "lightgray": "#2e3046",
+        "gray": "#636792",
+        "darkgray": "#d5d6ea",
+        "dark": "#eceeff",
+        "secondary": "#b9a5ff",
+        "tertiary": "#5eead4",
+        "highlight": "rgba(122, 74, 224, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  },
+  {
+    "id": "forest-moss",
+    "name": "Forest Moss",
+    "colors": {
+      "lightMode": {
+        "light": "#f7faf5",
+        "lightgray": "#e1e8dd",
+        "gray": "#aab7a2",
+        "darkgray": "#4a574a",
+        "dark": "#2a352c",
+        "secondary": "#3b7a57",
+        "tertiary": "#b8c480",
+        "highlight": "rgba(59, 122, 87, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#121512",
+        "lightgray": "#2a332b",
+        "gray": "#5a6a5c",
+        "darkgray": "#cfe0c9",
+        "dark": "#eaf4e5",
+        "secondary": "#63c89a",
+        "tertiary": "#d2dd9e",
+        "highlight": "rgba(59, 122, 87, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  },
+  {
+    "id": "coral-reef",
+    "name": "Coral Reef",
+    "colors": {
+      "lightMode": {
+        "light": "#fff9f7",
+        "lightgray": "#f0e0dd",
+        "gray": "#c7b1ab",
+        "darkgray": "#6a524d",
+        "dark": "#3a2b28",
+        "secondary": "#ef6c57",
+        "tertiary": "#168a8a",
+        "highlight": "rgba(239, 108, 87, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#171212",
+        "lightgray": "#342a2a",
+        "gray": "#6c5957",
+        "darkgray": "#e6d5d3",
+        "dark": "#f3ebea",
+        "secondary": "#ff9c8a",
+        "tertiary": "#4ed4d4",
+        "highlight": "rgba(239, 108, 87, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  },
+  {
+    "id": "nordic-frost",
+    "name": "Nordic Frost",
+    "colors": {
+      "lightMode": {
+        "light": "#f5f8fb",
+        "lightgray": "#e0e6ee",
+        "gray": "#a8b2bf",
+        "darkgray": "#465260",
+        "dark": "#27303a",
+        "secondary": "#2e7da6",
+        "tertiary": "#8fd3ff",
+        "highlight": "rgba(46, 125, 166, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#0f1318",
+        "lightgray": "#26303a",
+        "gray": "#566476",
+        "darkgray": "#cdd7e3",
+        "dark": "#e8eef6",
+        "secondary": "#7ab8e0",
+        "tertiary": "#c3e8ff",
+        "highlight": "rgba(46, 125, 166, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  },
+  {
+    "id": "vintage-sepia",
+    "name": "Vintage Sepia",
+    "colors": {
+      "lightMode": {
+        "light": "#fbf8f3",
+        "lightgray": "#e9decd",
+        "gray": "#c8b59b",
+        "darkgray": "#6b5a48",
+        "dark": "#3e3328",
+        "secondary": "#8b5e34",
+        "tertiary": "#b8926a",
+        "highlight": "rgba(139, 94, 52, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#14110d",
+        "lightgray": "#2f2921",
+        "gray": "#5f5346",
+        "darkgray": "#e1d2be",
+        "dark": "#f2e7d7",
+        "secondary": "#d7a774",
+        "tertiary": "#e2c19a",
+        "highlight": "rgba(139, 94, 52, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  },
+  {
+    "id": "graphite-neon",
+    "name": "Graphite Neon",
+    "colors": {
+      "lightMode": {
+        "light": "#f4f5f7",
+        "lightgray": "#dcdfe4",
+        "gray": "#a7adb7",
+        "darkgray": "#3d4350",
+        "dark": "#1b1f29",
+        "secondary": "#00a3a3",
+        "tertiary": "#ffb703",
+        "highlight": "rgba(0, 163, 163, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#0f1116",
+        "lightgray": "#262a33",
+        "gray": "#545c6b",
+        "darkgray": "#cfd5e0",
+        "dark": "#e9ecf2",
+        "secondary": "#4fd6d6",
+        "tertiary": "#ffd272",
+        "highlight": "rgba(0, 163, 163, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  },
+  {
+    "id": "terracotta-sage",
+    "name": "Terracotta Sage",
+    "colors": {
+      "lightMode": {
+        "light": "#fcf6f3",
+        "lightgray": "#ead7cd",
+        "gray": "#c6a99a",
+        "darkgray": "#6f5449",
+        "dark": "#3f2f29",
+        "secondary": "#c86b4a",
+        "tertiary": "#7a9a8a",
+        "highlight": "rgba(200, 107, 74, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#181210",
+        "lightgray": "#342a26",
+        "gray": "#6c5a53",
+        "darkgray": "#e6d6ce",
+        "dark": "#f1e7e1",
+        "secondary": "#f49c7b",
+        "tertiary": "#a9c9ba",
+        "highlight": "rgba(200, 107, 74, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  },
+  {
+    "id": "solar-dawn",
+    "name": "Solar Dawn",
+    "colors": {
+      "lightMode": {
+        "light": "#fffaf1",
+        "lightgray": "#f1e3c8",
+        "gray": "#cdb98d",
+        "darkgray": "#6b5d3f",
+        "dark": "#3c3220",
+        "secondary": "#f59e0b",
+        "tertiary": "#ef4444",
+        "highlight": "rgba(245, 158, 11, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#17130b",
+        "lightgray": "#332a18",
+        "gray": "#6e634a",
+        "darkgray": "#e7d9bb",
+        "dark": "#f5ecd6",
+        "secondary": "#ffd166",
+        "tertiary": "#ff8b8b",
+        "highlight": "rgba(245, 158, 11, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  },
+  {
+    "id": "ocean-slate",
+    "name": "Ocean Slate",
+    "colors": {
+      "lightMode": {
+        "light": "#f5f9f8",
+        "lightgray": "#dfe7e6",
+        "gray": "#a5b4b6",
+        "darkgray": "#435457",
+        "dark": "#243035",
+        "secondary": "#0f766e",
+        "tertiary": "#3b82f6",
+        "highlight": "rgba(59, 130, 246, 0.15)",
+        "textHighlight": "#fff23688"
+      },
+      "darkMode": {
+        "light": "#0f1415",
+        "lightgray": "#263132",
+        "gray": "#546566",
+        "darkgray": "#cfdcdb",
+        "dark": "#e8f2f1",
+        "secondary": "#2dd4bf",
+        "tertiary": "#93c5fd",
+        "highlight": "rgba(59, 130, 246, 0.15)",
+        "textHighlight": "#b3aa0288"
+      }
+    }
+  }
+]

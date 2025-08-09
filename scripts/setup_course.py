@@ -3,6 +3,9 @@ import json
 import subprocess
 from pathlib import Path
 import re
+import sys
+import tty
+import termios
 
 DEFAULT_SHARED_FOLDERS = [
     "Concepts", "Discussions", "Examples", "Exercises", "Media",
@@ -22,22 +25,146 @@ DEFAULT_PER_SECTION_FILES = [
 
 COURSE_LOOKUP_PATH = Path("/opt/support/ontario_secondary_courses.json")
 
+# ---------- Colour scheme support (added) -----------------------------------
+
+CANDIDATE_COLOUR_JSON_PATHS = [
+    Path("support/colour_schemes.json"),
+    Path("/opt/support/colour_schemes.json"),
+    Path(__file__).resolve().parent.parent / "support" / "colour_schemes.json",
+    Path(__file__).resolve().parent / "support" / "colour_schemes.json",
+]
+
+def load_colour_schemes():
+    for p in CANDIDATE_COLOUR_JSON_PATHS:
+        if p.exists():
+            with open(p, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            # Accept either list or {"schemes":[...]}
+            if isinstance(data, dict) and "schemes" in data:
+                data = data["schemes"]
+            return data
+    print("⚠️  colour_schemes.json not found. Skipping scheme selection.")
+    return []
+
+def hex_to_rgb(s):
+    s = s.strip()
+    if s.startswith("#") and len(s) == 7:
+        return int(s[1:3], 16), int(s[3:5], 16), int(s[5:7], 16)
+    if s.startswith("#") and len(s) == 4:
+        r = int(s[1]*2, 16)
+        g = int(s[2]*2, 16)
+        b = int(s[3]*2, 16)
+        return r, g, b
+    if s.lower().startswith("rgba"):
+        try:
+            nums = s[s.find("(")+1:s.find(")")].split(",")
+            r, g, b = [int(float(x.strip())) for x in nums[:3]]
+            return r, g, b
+        except Exception:
+            pass
+    return (128, 128, 128)
+
+def bg_rgb(r, g, b): 
+    return f"\x1b[48;2;{r};{g};{b}m"
+
+RESET = "\033[0m"
+BOLD  = "\x1b[1m"
+
+def block(color_hex, width=10):
+    r, g, b = hex_to_rgb(color_hex)
+    return f"{bg_rgb(r,g,b)}{' ' * width}{RESET}"
+
+def clear_screen():
+    sys.stdout.write("\x1b[2J\x1b[H")
+    sys.stdout.flush()
+
+def getch():
+    """Read single keypress (supports arrow left/right) without Enter."""
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        ch1 = sys.stdin.read(1)
+        if ch1 == '\x1b':  # escape
+            ch2 = sys.stdin.read(1)
+            if ch2 == '[':
+                ch3 = sys.stdin.read(1)
+                if ch3 == 'C': return 'RIGHT'
+                if ch3 == 'D': return 'LEFT'
+            return 'ESC'
+        if ch1 in ('\r', '\n'):
+            return 'ENTER'
+        return ch1
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+def render_scheme_preview_for_section(scheme, idx, total, section_number):
+    name = scheme.get("name", scheme.get("id", f"Scheme {idx+1}"))
+    colors = scheme.get("colors", {})
+    lm = colors.get("lightMode", {})
+    dm = colors.get("darkMode", {})
+
+    clear_screen()
+    print(f"{BOLD}Colour Scheme for Section {section_number}{RESET}")
+    print(f"{BOLD}({idx+1}/{total}) {name}{RESET}\n")
+
+    keys = ["light", "lightgray", "gray", "darkgray", "dark", "secondary", "tertiary", "textHighlight"]
+
+    def column(mode_dict, title):
+        print(f"{BOLD}{title}:{RESET}")
+        for k in keys:
+            sw = block(mode_dict.get(k, "#888888"))
+            # Plain text key name with a simple color block beside it
+            print(f"  {k:<13} {sw}")
+        print()
+
+    column(lm, "Light Mode")
+    column(dm, "Dark Mode")
+
+    print("Use ← / → (or 'p' / 'n') to browse, Enter to select. Press 'q' to keep previous choice.")
+
+def interactive_pick_scheme_for_section(schemes, section_number, default_id=None):
+    if not schemes:
+        return default_id
+    start = 0
+    if default_id:
+        for i, s in enumerate(schemes):
+            if s.get("id") == default_id:
+                start = i
+                break
+
+    i = start
+    total = len(schemes)
+    while True:
+        render_scheme_preview_for_section(schemes[i], i, total, section_number)
+        key = getch()
+        if key in ('RIGHT', 'n'):
+            i = (i + 1) % total
+        elif key in ('LEFT', 'p'):
+            i = (i - 1 + total) % total
+        elif key in ('q', 'Q', 'ESC'):
+            return default_id
+        elif key == 'ENTER':
+            return schemes[i].get("id")
+
+# ---------- Original helpers (preserved) ------------------------------------
+
 def prompt_with_default(prompt_text, default_value):
     response = input(f"{prompt_text} [Default: {default_value}]: ").strip()
     return response if response else default_value
 
 def prompt_select_multiple(prompt_text, options, default_selection=None):
     BLUE = "\033[94m"
-    RESET = "\033[0m"
+    RESET_LOCAL = "\033[0m"
 
     # Highlight "HIDE" or "EXPANDABLE" in blue if present in prompt_text
-    prompt_text = prompt_text.replace("HIDE", f"{BLUE}HIDE{RESET}")
-    prompt_text = prompt_text.replace("EXPANDABLE", f"{BLUE}EXPANDABLE{RESET}")
+    prompt_text = prompt_text.replace("HIDE", f"{BLUE}HIDE{RESET_LOCAL}")
+    prompt_text = prompt_text.replace("EXPANDABLE", f"{BLUE}EXPANDABLE{RESET_LOCAL}")
 
     print(f"\n{prompt_text}")
     for idx, option in enumerate(options):
         if default_selection and option in default_selection:
-            print(f"{BLUE}{idx + 1}. {option}{RESET}")
+            print(f"{BLUE}{idx + 1}. {option}{RESET_LOCAL}")
         else:
             print(f"{idx + 1}. {option}")
 
@@ -94,6 +221,8 @@ def get_course_name_from_json(course_code):
     except Exception:
         return None
 
+# ---------- Main setup flow (baseline preserved + color selection added) ----
+
 def setup_course():
     print("\U0001F4DA Welcome to the Course Setup Script!\n")
 
@@ -117,10 +246,43 @@ def setup_course():
 
     num_sections = int(prompt_with_default("How many sections are you teaching of this course?", saved_config.get("num_sections", 2)))
 
-    shared_folders = prompt_type_list("Enter folder names to be shared across all sections – defaults are:", saved_config.get("shared_folders", DEFAULT_SHARED_FOLDERS))
-    shared_files = prompt_type_list("Enter Markdown file names to be shared across all sections – defaults are:", saved_config.get("shared_files", DEFAULT_SHARED_FILES), add_md_extension=True)
-    per_section_folders = prompt_type_list("Enter folder names to be duplicated per section – defaults are:", saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS))
-    per_section_files = prompt_type_list("Enter Markdown file names to be duplicated per section – defaults are:", saved_config.get("per_section_files", DEFAULT_PER_SECTION_FILES), add_md_extension=True)
+    # ---- New: per-section colour scheme selection (interactive) ----
+    schemes = load_colour_schemes()
+    previous_map = saved_config.get("color_schemes", {})
+    color_schemes_map = {}
+    if schemes:
+        print("\n🎨 Choose a colour scheme for each section.\n")
+        for i in range(1, num_sections + 1):
+            section_key = f"section{i}"
+            default_scheme_id = previous_map.get(section_key)
+            chosen_id = interactive_pick_scheme_for_section(
+                schemes, section_number=i, default_id=default_scheme_id
+            )
+            # If user cancels, keep previous; else pick current or fallback to first
+            if not chosen_id:
+                chosen_id = default_scheme_id or (schemes[0].get("id") if schemes else None)
+            color_schemes_map[section_key] = chosen_id
+        clear_screen()
+
+    # ---------- Original prompts (unchanged) ----------
+    shared_folders = prompt_type_list(
+        "Enter folder names to be shared across all sections – defaults are:",
+        saved_config.get("shared_folders", DEFAULT_SHARED_FOLDERS)
+    )
+    shared_files = prompt_type_list(
+        "Enter Markdown file names to be shared across all sections – defaults are:",
+        saved_config.get("shared_files", DEFAULT_SHARED_FILES),
+        add_md_extension=True
+    )
+    per_section_folders = prompt_type_list(
+        "Enter folder names to be duplicated per section – defaults are:",
+        saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS)
+    )
+    per_section_files = prompt_type_list(
+        "Enter Markdown file names to be duplicated per section – defaults are:",
+        saved_config.get("per_section_files", DEFAULT_PER_SECTION_FILES),
+        add_md_extension=True
+    )
 
     all_selected = shared_folders + shared_files + per_section_folders + per_section_files
 
@@ -131,7 +293,6 @@ def setup_course():
     ] if not saved_config else saved_config.get("hidden", [])
 
     hidden_items = prompt_select_multiple("Select folders/files to HIDE from the sidebar:", all_selected, default_hidden)
-
     visible_items = [item for item in all_selected if item not in hidden_items]
 
     default_expandable = [
@@ -141,7 +302,7 @@ def setup_course():
 
     expandable_items = prompt_select_multiple("Select folders/files that should be EXPANDABLE:", visible_items, default_expandable)
 
-    # New: Prompt for custom footer HTML
+    # New (previously added in baseline): Prompt for custom footer HTML
     if saved_config.get("footer_html") is not None:
         default_footer = saved_config["footer_html"]
     else:
@@ -153,6 +314,7 @@ def setup_course():
         print('The resources on this site by Russell Gordon are licensed under <a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY 4.0</a> unless otherwise noted.')
         footer_html = input("\nPaste your footer HTML here:\n> ").strip()
 
+    # ---------- Save configuration (preserving new color_schemes) ----------
     config = {
         "course_code": course_code,
         "course_name": course_name,
@@ -165,10 +327,13 @@ def setup_course():
         "expandable": expandable_items,
         "footer_html": footer_html
     }
+    if schemes:
+        config["color_schemes"] = color_schemes_map or previous_map
 
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2)
 
+    # ---------- Create shared structure (unchanged) ----------
     for folder in shared_folders:
         folder_path = course_path / folder
         folder_path.mkdir(parents=True, exist_ok=True)
@@ -185,6 +350,7 @@ def setup_course():
                 f.write(f"---\ntitle: {file.replace('.md', '')}\n---\n")
                 f.write(f"This is the shared file **{file}**.\n")
 
+    # ---------- Create per-section structure (unchanged) ----------
     for i in range(1, num_sections + 1):
         section_name = f"section{i}"
         section_path = course_path / section_name
@@ -211,6 +377,7 @@ def setup_course():
                     f.write(f"---\ntitle: {file.replace('.md', '')}\n---\n")
                     f.write(f"This is the per-section file **{file}**.\n")
 
+    # ---------- Patch Quartz Explorer (baseline behavior preserved) ----------
     quartz_layout_path = Path("/opt/quartz/quartz.layout.ts")
     if quartz_layout_path.exists():
         with open(quartz_layout_path, "r", encoding="utf-8") as f:

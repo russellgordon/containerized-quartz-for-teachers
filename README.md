@@ -19,6 +19,7 @@ In the session, optionally complete a series of “quests” to learn how to use
 
 - Install [Docker Desktop](https://www.docker.com/products/docker-desktop) (required)
 - Install [Obsidian](https://obsidian.md/) (optional, but recommended for editing Markdown)
+- *(macOS users)* Install [iTerm2](https://iterm2.com) for full 24-bit ANSI colour support in the colour scheme picker
 
 > 💡 No need to install Node.js, Python, or Quartz. Everything runs inside Docker!
 
@@ -44,6 +45,7 @@ cd containerized-quartz-for-teachers
 This will:
 - Prompt you for the course code, name, and number of sections
 - Let you select shared folders (e.g., “Exercises”, “Examples”)
+- Let you choose a colour scheme for each section with a live swatch preview
 - Create everything under `./courses/<CourseCode>` ready for editing
 
 ---
@@ -121,7 +123,7 @@ containerized-quartz-for-teachers/
 │       ├── Examples/
 │       └── Exercises/
 ├── scripts/
-│   ├── setup_course.py         # Wizard to scaffold course + folders
+│   ├── setup_course.py         # Wizard to scaffold course + folders + colour schemes
 │   └── build_site.py           # Builds site, applies filters, runs preview
 ├── Dockerfile                  # Defines container image
 ├── run.sh                      # Build + preview a section site
@@ -146,13 +148,14 @@ containerized-quartz-for-teachers/
 | **Port 8081 already in use** | Close other Quartz tabs or processes. Or change the port inside `build_site.py`. |
 | **Changes not showing up** | Rerun `./run.sh ...` to rebuild. Quartz does not always detect all file changes. |
 | **File not appearing in Explorer sidebar** | Check if it was marked hidden (`hidden_explorer_components.json`). Use `--reset-hidden` to reselect. |
+| **Colour picker not showing correct colours** | If on macOS, make sure you are using [iTerm2](https://iterm2.com) instead of the default Terminal app for full colour support. |
 
 ---
 
 ## 🙏 Credits
 
 - [Quartz](https://github.com/jackyzha0/quartz) by [Jacky Zhao](https://jzhao.xyz/)
-- Docker integration and teacher-friendly workflow: © [Russell Gordon](https://github.com/russellgordon)
+- Docker integration and teacher-friendly workflow by [Russell Gordon](https://github.com/russellgordon)
 
 ---
 
