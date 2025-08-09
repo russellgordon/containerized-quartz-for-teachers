@@ -6,6 +6,7 @@ import re
 import sys
 import tty
 import termios
+from datetime import datetime, timezone, timedelta
 
 DEFAULT_SHARED_FOLDERS = [
     "Concepts", "Discussions", "Examples", "Exercises", "Media",
@@ -333,48 +334,82 @@ def setup_course():
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2)
 
-    # ---------- Create shared structure (unchanged) ----------
+    # Get current timestamp in ISO8601 with milliseconds and timezone offset
+    # Determine timestamp with correct timezone
+    tz_offset_str = os.environ.get("HOST_TZ_OFFSET")
+    if tz_offset_str and len(tz_offset_str) == 5 and tz_offset_str[1:].isdigit():
+        sign = 1 if tz_offset_str[0] == '+' else -1
+        hours = int(tz_offset_str[1:3])
+        minutes = int(tz_offset_str[3:])
+        tzinfo = timezone(sign * timedelta(hours=hours, minutes=minutes))
+        now_str = datetime.now(tzinfo).strftime("%Y-%m-%dT%H:%M:%S.000%z")
+    else:
+        now_str = datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S.000%z")
+    
+    # ---------- Create shared structure (with createdSectionN + draftSectionN) ----------
     for folder in shared_folders:
         folder_path = course_path / folder
         folder_path.mkdir(parents=True, exist_ok=True)
         index_md_path = folder_path / "index.md"
         if not index_md_path.exists():
             with open(index_md_path, "w", encoding="utf-8") as f:
-                f.write(f"---\ntitle: {folder}\n---\n")
+                f.write("---\n")
+                f.write(f"title: {folder}\n")
+                for i in range(1, num_sections + 1):
+                    f.write(f"createdSection{i}: {now_str}\n")
+                    f.write(f"draftSection{i}: false\n")
+                f.write("---\n")
                 f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site.\n")
-
+    
     for file in shared_files:
         file_path = course_path / file
         if not file_path.exists():
             with open(file_path, "w", encoding="utf-8") as f:
-                f.write(f"---\ntitle: {file.replace('.md', '')}\n---\n")
+                f.write("---\n")
+                f.write(f"title: {file.replace('.md', '')}\n")
+                for i in range(1, num_sections + 1):
+                    f.write(f"createdSection{i}: {now_str}\n")
+                    f.write(f"draftSection{i}: false\n")
+                f.write("---\n")
                 f.write(f"This is the shared file **{file}**.\n")
-
-    # ---------- Create per-section structure (unchanged) ----------
+    
+    # ---------- Create per-section structure (with created + draft) ----------
     for i in range(1, num_sections + 1):
         section_name = f"section{i}"
         section_path = course_path / section_name
         section_path.mkdir(exist_ok=True)
-
+    
         index_md_path = section_path / "index.md"
         if not index_md_path.exists():
             with open(index_md_path, "w", encoding="utf-8") as f:
-                f.write(f"---\ntitle: Grade 11 {course_name}, Section {i}\n---\n")
-
+                f.write("---\n")
+                f.write(f"title: Grade 11 {course_name}, Section {i}\n")
+                f.write(f"created: {now_str}\n")
+                f.write("draft: false\n")
+                f.write("---\n")
+    
         for folder in per_section_folders:
             folder_path = section_path / folder
             folder_path.mkdir(parents=True, exist_ok=True)
             index_md = folder_path / "index.md"
             if not index_md.exists():
                 with open(index_md, "w", encoding="utf-8") as f:
-                    f.write(f"---\ntitle: {folder}\n---\n")
+                    f.write("---\n")
+                    f.write(f"title: {folder}\n")
+                    f.write(f"created: {now_str}\n")
+                    f.write("draft: false\n")
+                    f.write("---\n")
                     f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site.\n")
-
+    
         for file in per_section_files:
             file_path = section_path / file
             if not file_path.exists():
                 with open(file_path, "w", encoding="utf-8") as f:
-                    f.write(f"---\ntitle: {file.replace('.md', '')}\n---\n")
+                    f.write("---\n")
+                    f.write(f"title: {file.replace('.md', '')}\n")
+                    f.write(f"created: {now_str}\n")
+                    f.write("draft: false\n")
+                    f.write("---\n")
                     f.write(f"This is the per-section file **{file}**.\n")
 
     # ---------- Patch Quartz Explorer (baseline behavior preserved) ----------

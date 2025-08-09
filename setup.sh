@@ -33,6 +33,10 @@ else
     tail -f /dev/null
 fi
 
-# Run the setup script inside the container
+# Detect host timezone offset in ±HHMM format
+HOST_TZ_OFFSET=$(date +%z)
+echo "🕒 Detected host timezone offset: $HOST_TZ_OFFSET"
+
+# Run the setup script inside the container, passing the timezone offset
 echo "📚 Running setup_course.py inside the Docker container..."
-docker exec -it "$CONTAINER_NAME" python3 /opt/scripts/setup_course.py
+docker exec -e HOST_TZ_OFFSET="$HOST_TZ_OFFSET" -it "$CONTAINER_NAME" python3 /opt/scripts/setup_course.py
