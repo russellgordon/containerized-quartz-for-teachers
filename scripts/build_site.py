@@ -289,19 +289,35 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
     section_name = f"section{section_number}"
-    section_dir = course_dir / section_name
-    output_dir = course_dir / "merged_output" / section_name
+
+    # --- CHANGED: hide output by using a dot-folder at the vault root ---
+    visible_output_root = course_dir / "merged_output"
+    hidden_output_root = course_dir / ".merged_output"
+
+    # One-time migration if the old visible folder exists
+    if visible_output_root.exists() and not hidden_output_root.exists():
+        try:
+            print(f"📦 Migrating existing output '{visible_output_root.name}' → '{hidden_output_root.name}'...")
+            visible_output_root.rename(hidden_output_root)
+            print("✅ Migration complete.")
+        except Exception as e:
+            print(f"⚠️ Migration failed (will continue using hidden target): {e}")
+
+    # Use the hidden root for all future builds
+    output_dir = hidden_output_root / section_name
     config_file = course_dir / "course_config.json"
 
     if not course_dir.exists():
         print(f"❌ Course folder '{course_code}' not found in {base_dir}")
         return
-    if not section_dir.exists():
+    if not (course_dir / section_name).exists():
         print(f"❌ Section folder '{section_name}' not found in {course_dir}")
         return
     if not config_file.exists():
         print(f"❌ course_config.json not found in {course_dir}")
         return
+
+    section_dir = course_dir / section_name
 
     with open(config_file, "r", encoding="utf-8") as f:
         config = json.load(f)
@@ -326,7 +342,7 @@ def build_section_site(course_code: str, section_number: int, include_social_med
             print(f"\n🧹 Full rebuild: clearing output directory at: {output_dir}")
             shutil.rmtree(output_dir)
         output_dir.mkdir(parents=True)
-        print(f"📂 Created fresh output directory: {output_dir}")
+        print(f"📂 Created fresh (hidden) output directory: {output_dir}")
 
         print(f"📦 Copying Quartz scaffold from {quartz_src}...")
         for item in quartz_src.iterdir():
@@ -338,7 +354,7 @@ def build_section_site(course_code: str, section_number: int, include_social_med
                 shutil.copy2(item, dest)
                 print(f"  📄 Copied file: {item.name}")
     else:
-        print(f"♻️ Reusing existing output directory: {output_dir}")
+        print(f"♻️ Reusing existing (hidden) output directory: {output_dir}")
 
     content_root = output_dir / "content"
     if content_root.exists():

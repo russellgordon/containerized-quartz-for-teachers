@@ -23,13 +23,16 @@ if [[ "$1" == "--help" || "$1" == "-h" ]]; then
   echo ""
   echo "📘 Required arguments:"
   echo "  <COURSE_CODE>               The course code (e.g., ICS3U)"
-  echo "  <SECTION_NUMBER>           The section number (e.g., 1)"
+  echo "  <SECTION_NUMBER>            The section number (e.g., 1)"
   echo ""
   echo "⚙️ Optional flags:"
   echo "  --include-social-media-previews    Enable Quartz CustomOgImages emitter"
   echo "  --force-npm-install                Force npm install even if dependencies are present"
-  echo "  --full-rebuild                    Clear entire output folder and re-copy Quartz scaffold"
+  echo "  --full-rebuild                     Clear entire output folder and re-copy Quartz scaffold"
   echo "  --help, -h                         Show this help message"
+  echo ""
+  echo "📂 Output location (hidden in Obsidian Files pane):"
+  echo "  courses/<COURSE_CODE>/.merged_output/section<SECTION_NUMBER>"
   echo ""
   exit 0
 fi
@@ -62,6 +65,8 @@ if [ -z "$COURSE" ] || [ -z "$SECTION" ]; then
   exit 1
 fi
 
+OUTPUT_PATH="courses/$COURSE/.merged_output/section$SECTION"
+
 echo "🚀 Starting container if needed..."
 docker start teaching-quartz >/dev/null 2>&1 || {
   echo "🚀 Creating new container named teaching-quartz..."
@@ -74,6 +79,7 @@ docker start teaching-quartz >/dev/null 2>&1 || {
 }
 
 echo "🔧 Building site for $COURSE, section $SECTION..."
+echo "📂 Output will be written to: $OUTPUT_PATH"
 
 docker exec -it teaching-quartz python3 /opt/scripts/build_site.py \
   --course="$COURSE" \
