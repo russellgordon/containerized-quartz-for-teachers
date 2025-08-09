@@ -1,5 +1,9 @@
 # An Even Faster Workflow for Publishing Teaching Materials
 
+> 💡 **Note**
+> 
+> This software will be discussed in person on Thursday, August 13, 2025 at the [Summer Conference for Computer Studies and Mathematics Educators](https://cemc.uwaterloo.ca/workshops/educator-development/summer-conference-educators), organized by the [Centre for Education in Mathematics and Computing](https://www.cemc.uwaterloo.ca/).
+
 **Workshop Description:**
 
 Content management systems such as Edsby, Brightspace, Google Classroom... the list of third-party platforms we depend on as teachers to share information with our students is long. The user interfaces of these systems? Questionable, often requiring a time-consuming series of clicks and selections to publish even the simplest information. Further, it is often difficult to move your valuable content out of these systems.
