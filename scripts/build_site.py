@@ -396,6 +396,57 @@ def process_frontmatter(file_path: Path, section_number: int):
     except Exception as e:
         print(f"⚠️ Could not write updated frontmatter to {file_path}: {e}")
 
+# --- ADD: Remove Graph from the right column in quartz.layout.ts (prints once) ---
+_GRAPH_REMOVAL_LOGGED = False
+
+def remove_graph_from_right(layout_path: Path):
+    """Remove Component.Graph(...) from the 'right' layout array in quartz.layout.ts."""
+    global _GRAPH_REMOVAL_LOGGED
+
+    if not layout_path.exists():
+        return
+
+    try:
+        with open(layout_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Target only the right: [ ... ] block and remove any Component.Graph(...) entry inside it
+        def _strip_graph_block(match: re.Match) -> str:
+            before, inside, after = match.group(1), match.group(2), match.group(3)
+            # Remove lines containing Component.Graph(...) with optional config and trailing comma/newlines
+            cleaned = re.sub(
+                r'^\s*Component\.Graph\(\s*(?:\{[\s\S]*?\}\s*)?\)\s*,?\s*\n?',
+                '',
+                inside,
+                flags=re.MULTILINE
+            )
+            # Tidy extraneous blank lines
+            cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+            return before + cleaned + after
+
+        new_content = re.sub(
+            r'(right:\s*\[\s*)(.*?)(\s*\],)',
+            _strip_graph_block,
+            content,
+            flags=re.DOTALL
+        )
+
+        if new_content != content:
+            # Use tee to avoid silent write failures in this environment
+            subprocess.run(
+                ["tee", str(layout_path)],
+                input=new_content.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            if not _GRAPH_REMOVAL_LOGGED:
+                print(f"🗑️  Removed Graph component from {layout_path}")
+                _GRAPH_REMOVAL_LOGGED = True
+    except Exception as e:
+        print(f"⚠️ Could not modify {layout_path} to remove Graph: {e}")
+# --- END ADD ---
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -461,6 +512,11 @@ def build_section_site(course_code: str, section_number: int, include_social_med
             else:
                 shutil.copy2(item, dest)
                 print(f"  📄 Copied file: {item.name}")
+
+        # --- ADD: Remove Graph once on first build / full rebuild ---
+        remove_graph_from_right(output_dir / "quartz.layout.ts")
+        # ------------------------------------------------------------
+
         install_locales(output_dir)
         # Adjust CreatedModifiedDate priority on first build/full rebuild
         config_path = output_dir / "quartz.config.ts"
