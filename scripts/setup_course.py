@@ -793,6 +793,16 @@ def setup_course():
                 f.write(f"This is the shared file **{file}**.\n")
     
     # ---------- Create per-section structure (with created + draft) ----------
+    # Determine grade level from 4th character of course code
+    grade_map = {
+        "1": "Grade 9",
+        "2": "Grade 10",
+        "3": "Grade 11",
+        "4": "Grade 12"
+    }
+    grade_char = course_code[3] if len(course_code) >= 4 else ""
+    grade_label = grade_map.get(grade_char, "Grade ?")
+
     for i in range(1, num_sections + 1):
         section_name = f"section{i}"
         section_path = course_path / section_name
@@ -802,11 +812,15 @@ def setup_course():
         if not index_md_path.exists():
             with open(index_md_path, "w", encoding="utf-8") as f:
                 f.write("---\n")
-                f.write(f"title: Grade 11 {course_name}, Section {i}\n")
+                f.write(f"title: {grade_label} {course_name}, Section {i}\n")
                 f.write(f"created: {now_str}\n")
                 f.write("draft: false\n")
                 f.write("---\n")
     
+        for folder in DEFAULT_PER_SECTION_FOLDERS if not DEFAULT_PER_SECTION_FOLDERS else []:
+            # (kept for compatibility; actual per_section_folders handled below)
+            pass
+
         for folder in per_section_folders:
             folder_path = section_path / folder
             folder_path.mkdir(parents=True, exist_ok=True)
