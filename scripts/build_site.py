@@ -132,6 +132,53 @@ def patch_internal_link_highlight(base_scss_path: Path):
         print(f"⚠️ Error patching base.scss: {e}")
 # --- END ADD ---
 
+# --- ADD: Append transclusion styles to base.scss ---
+def append_transclusion_styles(base_scss_path: Path):
+    """
+    Appends styles for transcluded content to the bottom of base.scss, idempotently.
+    """
+    if not base_scss_path.exists():
+        print(f"⚠️ base.scss not found at {base_scss_path}")
+        return
+    try:
+        marker = "/* Additions for containerized Quartz for teachers styles */"
+        block = (
+            "\n\n"
+            "/* Additions for containerized Quartz for teachers styles */\n"
+            "a.transclude-src {\n"
+            "  display: none;\n"
+            "}\n\n"
+            "blockquote.transclude {\n"
+            "  padding-left: 0;\n"
+            "  border-left: none;\n"
+            "}\n\n"
+            "#quartz-body > div.center > div.page-header > div > h1 {\n"
+            "  font-size: 2rem;\n"
+            "}\n"
+        )
+
+        with open(base_scss_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        if marker in content:
+            print("ℹ️ Transclusion styles already present in base.scss (no change).")
+            return
+
+        new_content = content + block
+        result = subprocess.run(
+            ["tee", str(base_scss_path)],
+            input=new_content.encode("utf-8"),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        if result.returncode != 0:
+            print("❌ Failed to append transclusion styles to base.scss:", result.stderr.decode())
+        else:
+            print("✅ Appended transclusion styles to base.scss")
+    except Exception as e:
+        print(f"⚠️ Error appending transclusion styles: {e}")
+# --- END ADD ---
+
 # --- ADD: Patch ContentMeta.tsx date format ---
 def patch_date_format(date_tsx_file_path: Path):
     """Update formatDate in Date.tsx to show full weekday, month, and day."""
@@ -794,6 +841,56 @@ def patch_content_meta_options(date_tsx_file_path: Path, show_reading_time: bool
         print(f"⚠️ Error patching ContentMeta.tsx: {e}")
 # --- END ADD ---
 
+# --- ADD: Patch renderPage.tsx to allow transcludeTitleSize frontmatter ---
+def patch_render_page_transclude_title(render_page_tsx_path: Path):
+    """
+    Change tagName: "h1" to tagName: page.frontmatter?.transcludeTitleSize ?? "h1"
+    in the node.children = [ { type: "element", tagName: "h1", ... } ] block.
+    """
+    if not render_page_tsx_path.exists():
+        print(f"⚠️ renderPage.tsx not found at {render_page_tsx_path}")
+        return
+    try:
+        with open(render_page_tsx_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Target the first occurrence within node.children creation
+        pattern_specific = re.compile(
+            r'(node\.children\s*=\s*\[\s*\{\s*type:\s*"element",\s*tagName:\s*)"h1"(\s*,\s*properties:\s*\{\s*\}\s*,\s*children\s*:\s*\[)',
+            flags=re.DOTALL
+        )
+        replaced = pattern_specific.sub(
+            r'\1page.frontmatter?.transcludeTitleSize ?? "h1"\2',
+            content,
+            count=1
+        )
+
+        if replaced == content:
+            # Fallback: replace the first tagName: "h1" occurrence only
+            pattern_fallback = re.compile(r'(tagName:\s*)"h1"')
+            replaced, n = pattern_fallback.subn(
+                r'\1page.frontmatter?.transcludeTitleSize ?? "h1"',
+                content,
+                count=1
+            )
+            if n == 0:
+                print("ℹ️ Could not locate target 'tagName: \"h1\"' to replace in renderPage.tsx (no change).")
+                return
+
+        result = subprocess.run(
+            ["tee", str(render_page_tsx_path)],
+            input=replaced.encode("utf-8"),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        if result.returncode != 0:
+            print("❌ Failed to patch renderPage.tsx for transcludeTitleSize:", result.stderr.decode())
+        else:
+            print("✅ Patched renderPage.tsx to use frontmatter transcludeTitleSize for tagName")
+    except Exception as e:
+        print(f"⚠️ Error patching renderPage.tsx: {e}")
+# --- END ADD ---
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -891,7 +988,16 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         base_scss = output_dir / "quartz" / "styles" / "base.scss"
         patch_internal_link_highlight(base_scss)
         # ---------------------------------------------------
-        
+
+        # --- ADD: Append transclusion styles to base.scss ---
+        append_transclusion_styles(base_scss)
+        # ----------------------------------------------------
+
+        # --- ADD: Patch renderPage.tsx for transcludeTitleSize ---
+        render_page_tsx = output_dir / "quartz" / "components" / "renderPage.tsx"
+        patch_render_page_transclude_title(render_page_tsx)
+        # ---------------------------------------------------------
+
         # --- ADD: Apply selected fonts to quartz.config.ts on first build/full rebuild ---
         fonts_cfg = config.get("fonts", {})
         section_key = f"section{section_number}"
@@ -910,6 +1016,8 @@ def build_section_site(course_code: str, section_number: int, include_social_med
 
     else:
         print(f"♻️ Reusing existing (hidden) output directory: {output_dir}")
+        # Ensure we still have paths used later in the function
+        base_scss = output_dir / "quartz" / "styles" / "base.scss"
 
     # --- ALWAYS: Apply teacher preference to ContentMeta on each build ---
     content_meta_tsx = output_dir / "quartz" / "components" / "ContentMeta.tsx"
