@@ -392,7 +392,7 @@ def kill_existing_quartz():
         pass
 
 
-# --- HARDENING TWEAK #1: Future-proof omit replacement -----------------------
+# --- HARDENING TWEAK #1: Future-proof omit replacement (update all matches) --
 def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
     if not quartz_layout_path.exists():
         print(f"⚠️ quartz.layout.ts not found at {quartz_layout_path}")
@@ -405,23 +405,37 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
 
     content = Path(quartz_layout_path).read_text(encoding="utf-8")
     formatted = ", ".join(f'"{n}"' for n in normalized_hidden)
-    replacement = f"const omit = new Set([{formatted}])"
+    replacement_line = f"const omit = new Set([{formatted}])"
 
-    # Matches:
+    # Match both:
     #   const omit = new Set([...])
-    #   const omit = new Set<string>([...] )
+    #   const omit = new Set<string>([ ... ])
+    # and keep the CQ4T-OMIT-ANCHOR line if it's directly above.
     pattern_omit = re.compile(
-        r'const\s+omit\s*=\s*new\s+Set\s*(?:<[^>]*>)?\s*\(\s*\[\s*[\s\S]*?\s*\]\s*\)\s*;?',
-        flags=re.DOTALL,
+        r'(?P<anchor>^[ \t]*//[ \t]*CQ4T-OMIT-ANCHOR:.*?\n)?'  # optional anchor line
+        r'[ \t]*const[ \t]+omit[ \t]*=[ \t]*new[ \t]+Set'     # const omit = new Set
+        r'(?:<[^>]*>)?'                                       # optional generic, e.g., <string>
+        r'[ \t]*\([ \t]*\[[\s\S]*?\][ \t]*\)[ \t]*;?',        # ([ ... ])
+        flags=re.DOTALL | re.MULTILINE,
     )
 
-    new_content, replaced = pattern_omit.subn(replacement, content, count=1)
+    def _repl(m: re.Match) -> str:
+        anchor = m.group('anchor') or ''
+        return f"{anchor}{replacement_line}"
 
-    if replaced == 0:
+    new_content, replaced_count = pattern_omit.subn(_repl, content, count=0)  # replace ALL
+
+    if replaced_count == 0:
         # If not found, insert right after the imports block (or at top)
         m = re.search(r'^(?:import .*?;\s*)+', content, flags=re.MULTILINE | re.DOTALL)
         insert_at = m.end() if m else 0
-        new_content = content[:insert_at] + ("" if insert_at == 0 else "\n") + replacement + "\n" + content[insert_at:]
+        new_content = (
+            content[:insert_at]
+            + ("" if insert_at == 0 else "\n")
+            + replacement_line
+            + "\n"
+            + content[insert_at:]
+        )
 
     result = subprocess.run(
         ["tee", str(quartz_layout_path)],
@@ -432,7 +446,8 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
     if result.returncode != 0:
         print("❌ Failed to write omit list to quartz.layout.ts:", result.stderr.decode())
     else:
-        print("✅ Updated quartz.layout.ts with Explorer omit list.")
+        plural = "entries" if replaced_count != 1 else "entry"
+        print(f"✅ Updated quartz.layout.ts omit set ({replaced_count} {plural} replaced or inserted).")
 # -----------------------------------------------------------------------------
 
 def inject_custom_footer_components(quartz_layout_path: Path, footer_component_path: Path, footer_html: str):

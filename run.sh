@@ -67,6 +67,16 @@ fi
 
 OUTPUT_PATH="courses/$COURSE/.merged_output/section$SECTION"
 
+# Preflight: ensure this course has been set up (host-side)
+COURSE_CFG="courses/$COURSE/course_config.json"
+if [[ ! -f "$COURSE_CFG" ]]; then
+  echo "⚠️  $COURSE_CFG not found."
+  echo "   It looks like you haven't completed setup for '$COURSE' yet."
+  echo "   Run: ./setup.sh"
+  echo "   (Then select or create the course '$COURSE' when prompted.)"
+  exit 1
+fi
+
 echo "🚀 Starting container if needed..."
 docker start teaching-quartz >/dev/null 2>&1 || {
   echo "🚀 Creating new container named teaching-quartz..."
@@ -77,6 +87,14 @@ docker start teaching-quartz >/dev/null 2>&1 || {
     teaching-quartz \
     tail -f /dev/null
 }
+
+# Preflight: nudge if quartz.layout.ts in the container wasn't initialized by setup.sh
+echo "🔎 Preflight: checking Quartz sidebar anchor..."
+if ! docker exec -i teaching-quartz bash -lc 'test -f /opt/quartz/quartz.layout.ts && grep -q "const omit = new Set" /opt/quartz/quartz.layout.ts'; then
+  echo "⚠️  Sidebar omit anchor not found in container's Quartz layout."
+  echo "   Did you run: ./setup.sh and complete setup for '$COURSE'?"
+  echo "   (Continuing anyway; the build will attempt a safe fallback.)"
+fi
 
 echo "🔧 Building site for $COURSE, section $SECTION..."
 echo "📂 Output will be written to: $OUTPUT_PATH"
