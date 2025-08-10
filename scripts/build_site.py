@@ -513,6 +513,54 @@ def patch_folder_content_defaults(folder_content_path: Path):
         print(f"⚠️ Error patching FolderContent.tsx: {e}")
 # --- END ADD ---
 
+# --- ADD: Patch ContentMeta defaultOptions based on course_config.show_reading_time ---
+def patch_content_meta_options(content_meta_path: Path, show_reading_time: bool):
+    """
+    Ensure ContentMeta defaultOptions reflects teacher preference:
+      showReadingTime := show_reading_time
+      showComma       := show_reading_time
+    Runs EVERY build so a changed preference takes effect without a full rebuild.
+    """
+    if not content_meta_path.exists():
+        print(f"⚠️ ContentMeta.tsx not found at {content_meta_path}")
+        return
+    try:
+        with open(content_meta_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Capture the defaultOptions block and rewrite only showReadingTime/showComma within it
+        def repl(match: re.Match) -> str:
+            head, body, tail = match.group(1), match.group(2), match.group(3)
+            desired = "true" if show_reading_time else "false"
+            body2 = re.sub(r'(showReadingTime\s*:\s*)(true|false)', r'\1' + desired, body)
+            body3 = re.sub(r'(showComma\s*:\s*)(true|false)', r'\1' + desired, body2)
+            return head + body3 + tail
+
+        new_content = re.sub(
+            r'(const\s+defaultOptions\s*:\s*ContentMetaOptions\s*=\s*\{)([\s\S]*?)(\})',
+            repl,
+            content,
+            count=1
+        )
+
+        if new_content != content:
+            result = subprocess.run(
+                ["tee", str(content_meta_path)],
+                input=new_content.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to patch ContentMeta.tsx:", result.stderr.decode())
+            else:
+                label = "show" if show_reading_time else "hide"
+                print(f"✅ Patched ContentMeta defaultOptions to {label} reading-time")
+        else:
+            print("ℹ️ ContentMeta defaultOptions already match desired settings (no change).")
+    except Exception as e:
+        print(f"⚠️ Error patching ContentMeta.tsx: {e}")
+# --- END ADD ---
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -553,6 +601,8 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     per_section_files = config.get("per_section_files", [])
     hidden_list = config.get("hidden", [])
     expandable_list = config.get("expandable", [])
+    # NEW: teacher preference for reading-time
+    show_reading_time = bool(config.get("show_reading_time", False))
 
     shared_paths = [course_dir / folder for folder in shared_folders]
 
@@ -597,6 +647,11 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         # --------------------------------------------------------------------
     else:
         print(f"♻️ Reusing existing (hidden) output directory: {output_dir}")
+
+    # --- ALWAYS: Apply teacher preference to ContentMeta on each build ---
+    content_meta_tsx = output_dir / "quartz" / "components" / "ContentMeta.tsx"
+    patch_content_meta_options(content_meta_tsx, show_reading_time)
+    # --------------------------------------------------------------------
 
     install_patched_backlinks(output_dir)
 

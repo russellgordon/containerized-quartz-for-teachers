@@ -280,6 +280,25 @@ def prompt_footer_html_stateful(saved_config: dict) -> str:
         return capture_multiline()
     return ""
 
+# ---------- New helper: yes/no boolean with default -------------------------
+
+def prompt_yes_no_default(prompt_text: str, default: bool) -> bool:
+    """
+    Ask a yes/no question with a boolean default.
+    Example prompt: 'Show page read time estimates to students?'
+    Displays [Default: y] or [Default: n] accordingly.
+    """
+    default_label = "y" if default else "n"
+    resp = input(f"\n{prompt_text} (y/n) [Default: {default_label}]: ").strip().lower()
+    if resp == "":
+        return default
+    if resp in ("y", "yes"):
+        return True
+    if resp in ("n", "no"):
+        return False
+    print("↪️ Unrecognized input; keeping default.")
+    return default
+
 # ---------- Main setup flow (baseline preserved + color selection added) ----
 
 def setup_course():
@@ -364,6 +383,14 @@ def setup_course():
     # ---------- New: Stateful footer prompt (replaces previous footer block) ----------
     footer_html = prompt_footer_html_stateful(saved_config)
 
+    # ---------- New: Ask about showing reading-time estimates (stateful) ----------
+    # Default to previous choice if present; otherwise default to False (hidden)
+    show_reading_time_default = bool(saved_config.get("show_reading_time", False))
+    show_reading_time = prompt_yes_no_default(
+        "Show page read time estimates to students?",
+        show_reading_time_default
+    )
+
     # ---------- Save configuration (preserving new color_schemes) ----------
     config = {
         "course_code": course_code,
@@ -375,7 +402,9 @@ def setup_course():
         "per_section_files": per_section_files,
         "hidden": hidden_items,
         "expandable": expandable_items,
-        "footer_html": footer_html
+        "footer_html": footer_html,
+        # New flag stored for build_site.py to consume
+        "show_reading_time": show_reading_time,
     }
     if schemes:
         config["color_schemes"] = color_schemes_map or previous_map
