@@ -7,6 +7,42 @@ import json
 import re
 from pathlib import Path
 
+# --- ADD: Patch base.scss internal link highlight ---
+def patch_internal_link_highlight(base_scss_path: Path):
+    """Comment out background-color for .internal links in base.scss."""
+    if not base_scss_path.exists():
+        print(f"⚠️ base.scss not found at {base_scss_path}")
+        return
+    try:
+        with open(base_scss_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        pattern = re.compile(
+            r'(&\.internal\s*\{[^}]*?)background-color:\s*var\(--highlight\);\s*',
+            flags=re.DOTALL
+        )
+
+        replacement = r'\1/*    background-color: var(--highlight); */\n'
+
+        new_content = pattern.sub(replacement, content)
+
+        if new_content != content:
+            result = subprocess.run(
+                ["tee", str(base_scss_path)],
+                input=new_content.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to patch base.scss internal link highlight:", result.stderr.decode())
+            else:
+                print("✅ Patched base.scss to comment out internal link background-color")
+        else:
+            print("ℹ️ base.scss internal link background-color already commented out (no change).")
+    except Exception as e:
+        print(f"⚠️ Error patching base.scss: {e}")
+# --- END ADD ---
+
 # --- ADD: Patch ContentMeta.tsx date format ---
 def patch_date_format(date_tsx_file_path: Path):
     """Update formatDate in Date.tsx to show full weekday, month, and day."""
@@ -740,6 +776,11 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         list_page_scss = output_dir / "quartz" / "components" / "styles" / "listPage.scss"
         patch_list_page_meta_width(list_page_scss)
         # --------------------------------------------------------------------
+        
+        # --- ADD: Patch base.scss internal link highlight ---
+        base_scss = output_dir / "quartz" / "styles" / "base.scss"
+        patch_internal_link_highlight(base_scss)
+        # ---------------------------------------------------
 
     else:
         print(f"♻️ Reusing existing (hidden) output directory: {output_dir}")
