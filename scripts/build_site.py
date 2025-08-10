@@ -7,6 +7,93 @@ import json
 import re
 from pathlib import Path
 
+# --- ADD: Patch ContentMeta.tsx date format ---
+def patch_date_format(date_tsx_file_path: Path):
+    """Update formatDate in Date.tsx to show full weekday, month, and day."""
+    if not date_tsx_file_path.exists():
+        print(f"⚠️ Date.tsx not found at {date_tsx_file_path}")
+        return
+    try:
+        with open(date_tsx_file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        pattern = re.compile(
+            r'export function formatDate\(d: Date, locale: ValidLocale = "en-US"\): string \{\s*return d\.toLocaleDateString\(locale, \{\s*year: "numeric",\s*month: "short",\s*day: "2-digit",\s*\}\s*\)\s*\}',
+            flags=re.DOTALL
+        )
+
+        replacement = (
+            'export function formatDate(d: Date, locale: ValidLocale = "en-US"): string {\n'
+            '  return d.toLocaleDateString(locale, {\n'
+            '    weekday: "long",\n'
+            '    year: "numeric",\n'
+            '    month: "long",\n'
+            '    day: "numeric",\n'
+            '  })\n'
+            '}'
+        )
+
+        new_content = pattern.sub(replacement, content)
+
+        if new_content != content:
+            result = subprocess.run(
+                ["tee", str(date_tsx_file_path)],
+                input=new_content.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to patch Date.tsx date format:", result.stderr.decode())
+            else:
+                print("✅ Patched Date.tsx to show full weekday/month/day date format")
+        else:
+            print("ℹ️ Date.tsx date format already matches desired settings.")
+    except Exception as e:
+        print(f"⚠️ Error patching Date.tsx date format: {e}")
+# --- END ADD ---
+
+# --- ADD: Patch listPage.scss meta width ---
+def patch_list_page_meta_width(list_page_scss_path: Path):
+    """Add width: 240px; to .meta in listPage.scss."""
+    if not list_page_scss_path.exists():
+        print(f"⚠️ listPage.scss not found at {list_page_scss_path}")
+        return
+    try:
+        with open(list_page_scss_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        pattern = re.compile(
+            r'(&\s*\.meta\s*\{\s*margin:\s*0\s*1em\s*0\s*0;\s*opacity:\s*0\.6;\s*\})',
+            flags=re.DOTALL
+        )
+
+        replacement = (
+            "& .meta {\n"
+            "      margin: 0 1em 0 0;\n"
+            "      opacity: 0.6;\n"
+            "      width: 240px;\n"
+            "    }"
+        )
+
+        new_content = pattern.sub(replacement, content)
+
+        if new_content != content:
+            result = subprocess.run(
+                ["tee", str(list_page_scss_path)],
+                input=new_content.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to patch listPage.scss .meta width:", result.stderr.decode())
+            else:
+                print("✅ Patched listPage.scss to set .meta width to 240px")
+        else:
+            print("ℹ️ listPage.scss .meta already has desired width.")
+    except Exception as e:
+        print(f"⚠️ Error patching listPage.scss: {e}")
+# --- END ADD ---
+
 def adjust_created_modified_priority(config_path: Path):
     """Remove 'git' from Plugin.CreatedModifiedDate priority array."""
     if not config_path.exists():
@@ -514,18 +601,18 @@ def patch_folder_content_defaults(folder_content_path: Path):
 # --- END ADD ---
 
 # --- ADD: Patch ContentMeta defaultOptions based on course_config.show_reading_time ---
-def patch_content_meta_options(content_meta_path: Path, show_reading_time: bool):
+def patch_content_meta_options(date_tsx_file_path: Path, show_reading_time: bool):
     """
     Ensure ContentMeta defaultOptions reflects teacher preference:
       showReadingTime := show_reading_time
       showComma       := show_reading_time
     Runs EVERY build so a changed preference takes effect without a full rebuild.
     """
-    if not content_meta_path.exists():
-        print(f"⚠️ ContentMeta.tsx not found at {content_meta_path}")
+    if not date_tsx_file_path.exists():
+        print(f"⚠️ ContentMeta.tsx not found at {date_tsx_file_path}")
         return
     try:
-        with open(content_meta_path, "r", encoding="utf-8") as f:
+        with open(date_tsx_file_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         # Capture the defaultOptions block and rewrite only showReadingTime/showComma within it
@@ -545,18 +632,18 @@ def patch_content_meta_options(content_meta_path: Path, show_reading_time: bool)
 
         if new_content != content:
             result = subprocess.run(
-                ["tee", str(content_meta_path)],
+                ["tee", str(date_tsx_file_path)],
                 input=new_content.encode("utf-8"),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
             if result.returncode != 0:
-                print("❌ Failed to patch ContentMeta.tsx:", result.stderr.decode())
+                print("❌ Failed to patch ContentMeta.tsx to adjust reading time estimates:", result.stderr.decode())
             else:
                 label = "show" if show_reading_time else "hide"
                 print(f"✅ Patched ContentMeta defaultOptions to {label} reading-time")
         else:
-            print("ℹ️ ContentMeta defaultOptions already match desired settings (no change).")
+            print("ℹ️ ContentMeta defaultOptions already match desired settings for showing reading time (no change).")
     except Exception as e:
         print(f"⚠️ Error patching ContentMeta.tsx: {e}")
 # --- END ADD ---
@@ -645,6 +732,15 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         folder_content_tsx = output_dir / "quartz" / "components" / "pages" / "FolderContent.tsx"
         patch_folder_content_defaults(folder_content_tsx)
         # --------------------------------------------------------------------
+        
+        # --- ADD: Patch Date.tsx date format & listPage.scss meta width ---
+        date_tsx = output_dir / "quartz" / "components" / "Date.tsx"
+        patch_date_format(date_tsx)
+
+        list_page_scss = output_dir / "quartz" / "components" / "styles" / "listPage.scss"
+        patch_list_page_meta_width(list_page_scss)
+        # --------------------------------------------------------------------
+
     else:
         print(f"♻️ Reusing existing (hidden) output directory: {output_dir}")
 
