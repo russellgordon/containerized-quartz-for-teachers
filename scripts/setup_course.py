@@ -299,6 +299,132 @@ def prompt_yes_no_default(prompt_text: str, default: bool) -> bool:
     print("↪️ Unrecognized input; keeping default.")
     return default
 
+# ---------- New: Font selection helpers -------------------------------------
+
+FONT_PAIRINGS = [
+    # (Header, Body)
+    ("Playfair Display", "Source Sans 3"),
+    ("Source Serif 4", "Inter"),
+    ("Montserrat", "Lora"),
+    ("Raleway", "Roboto"),
+    ("Poppins", "Merriweather"),
+    ("Archivo", "Noto Sans"),
+]
+
+CODE_FONTS = [
+    "JetBrains Mono",
+    "Fira Code",
+    "IBM Plex Mono",
+    "Source Code Pro",
+    "Inconsolata",
+    "Ubuntu Mono",
+]
+
+def _print_font_pair_menu(default_idx: int | None = None):
+    print("\n🅰️  Choose a header/body font pairing (Google Fonts):")
+    for i, (hdr, body) in enumerate(FONT_PAIRINGS, start=1):
+        suffix = "  ← recommended pairing" if default_idx and (i == default_idx) else ""
+        print(f"  {i}. {hdr}  —  {body}{suffix}")
+    print("  7. System fonts (Helvetica, Arial)")
+    print("  8. Enter a custom pair (e.g., 'DM Sans, Inter')")
+
+def _print_code_font_menu(default_idx: int | None = None):
+    print("\n👨‍💻 Choose a code font (monospaced, Google Fonts):")
+    for i, name in enumerate(CODE_FONTS, start=1):
+        suffix = "  ← default" if default_idx and (i == default_idx) else ""
+        print(f"  {i}. {name}{suffix}")
+    print("  7. Enter a custom code font (e.g., 'Cascadia Code')")
+
+def prompt_font_pairing(previous_default: dict | None) -> tuple[str, str]:
+    """
+    Returns (header, body)
+    """
+    recommended_idx = 1  # Highlight the first pairing by default
+    _print_font_pair_menu(default_idx=recommended_idx)
+    if previous_default:
+        print(f"\nLast used fonts: header='{previous_default.get('header')}', body='{previous_default.get('body')}'")
+
+    while True:
+        choice = input("Select 1-8 [Default: 1]: ").strip()
+        if choice == "":
+            choice = "1"
+        if choice in [str(i) for i in range(1, 9)]:
+            choice = int(choice)
+            if 1 <= choice <= 6:
+                hdr, body = FONT_PAIRINGS[choice - 1]
+                print(f"✅ Selected: Header '{hdr}' with Body '{body}'")
+                return hdr, body
+            if choice == 7:
+                print("Using system-safe fonts. (Quartz will use CSS fallbacks.)")
+                return "Helvetica, Arial", "Helvetica, Arial"
+            if choice == 8:
+                hdr = input("Enter header font family (comma-separated list OK): ").strip()
+                body = input("Enter body font family (comma-separated list OK): ").strip()
+                hdr = hdr if hdr else "Schibsted Grotesk"
+                body = body if body else "Source Sans Pro"
+                print(f"✅ Selected: Header '{hdr}' with Body '{body}'")
+                return hdr, body
+        print("Please choose a number between 1 and 8.")
+
+def prompt_code_font(previous_default: str | None) -> str:
+    _print_code_font_menu(default_idx=None)
+    if previous_default:
+        print(f"\nLast used code font: '{previous_default}'")
+    while True:
+        choice = input("Select 1-7 [Default: 3 (IBM Plex Mono)]: ").strip()
+        if choice == "":
+            return "IBM Plex Mono"
+        if choice in [str(i) for i in range(1, 8)]:
+            choice = int(choice)
+            if 1 <= choice <= 6:
+                print(f"✅ Selected code font: '{CODE_FONTS[choice - 1]}'")
+                return CODE_FONTS[choice - 1]
+            if choice == 7:
+                custom = input("Enter code font family (comma-separated list OK): ").strip()
+                custom = custom if custom else "IBM Plex Mono"
+                print(f"✅ Selected code font: '{custom}'")
+                return custom
+        print("Please choose a number between 1 and 7.")
+
+def select_fonts_for_sections(num_sections: int, saved_config: dict) -> dict:
+    """
+    Prompts for per-section font choices, suggesting consistency across sections.
+    Returns a dict like:
+    {
+      "default": {"header": "...", "body": "...", "code": "..."},
+      "sections": {"section1": {...}, "section2": {...}}
+    }
+    """
+    print("\n🔤 Typography")
+    print("You'll now choose fonts. We strongly recommend keeping font choices consistent across sections.\n")
+
+    prev = (saved_config.get("fonts") or {}).get("default") or {}
+    header, body = prompt_font_pairing(prev)
+    code_font = prompt_code_font(prev.get("code") if prev else None)
+
+    fonts = {
+        "default": {"header": header, "body": body, "code": code_font},
+        "sections": {}
+    }
+
+    for i in range(1, num_sections + 1):
+        section_key = f"section{i}"
+        prior = ((saved_config.get("fonts") or {}).get("sections") or {}).get(section_key, {})
+        print(f"\nSection {i}:")
+        print(f"Press ENTER to use default → header='{header}', body='{body}', code='{code_font}'")
+        if prior:
+            print(f"(Last time you used: header='{prior.get('header')}', body='{prior.get('body')}', code='{prior.get('code')}')")
+
+        use_default = input("Keep defaults for this section? (y/ENTER to keep, 'n' to customize): ").strip().lower()
+        if use_default in ("", "y", "yes"):
+            fonts["sections"][section_key] = {"header": header, "body": body, "code": code_font}
+        else:
+            sh, sb = prompt_font_pairing(prior or fonts["default"])
+            sc = prompt_code_font((prior or fonts["default"]).get("code"))
+            fonts["sections"][section_key] = {"header": sh, "body": sb, "code": sc}
+
+    return fonts
+
 # ---------- Main setup flow (baseline preserved + color selection added) ----
 
 def setup_course():
@@ -341,6 +467,9 @@ def setup_course():
                 chosen_id = default_scheme_id or (schemes[0].get("id") if schemes else None)
             color_schemes_map[section_key] = chosen_id
         clear_screen()
+
+    # ---- New: typography selection (after colours) ----
+    fonts_config = select_fonts_for_sections(num_sections, saved_config)
 
     # ---------- Original prompts (unchanged) ----------
     shared_folders = prompt_type_list(
@@ -391,7 +520,7 @@ def setup_course():
         show_reading_time_default
     )
 
-    # ---------- Save configuration (preserving new color_schemes) ----------
+    # ---------- Save configuration (preserving new color_schemes + fonts) ----------
     config = {
         "course_code": course_code,
         "course_name": course_name,
@@ -405,6 +534,8 @@ def setup_course():
         "footer_html": footer_html,
         # New flag stored for build_site.py to consume
         "show_reading_time": show_reading_time,
+        # New: fonts configuration to be applied by build_site.py per section
+        "fonts": fonts_config,
     }
     if schemes:
         config["color_schemes"] = color_schemes_map or previous_map

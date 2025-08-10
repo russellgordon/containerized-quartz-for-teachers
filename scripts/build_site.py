@@ -7,6 +7,95 @@ import json
 import re
 from pathlib import Path
 
+# --- ADD: Patch typography fonts in quartz.config.ts -------------------------
+def _escape_font(val: str) -> str:
+    # Guard against stray quotes in family names
+    return val.replace('"', r'\"')
+
+def patch_typography_fonts(quartz_config_path: Path, header_font: str, body_font: str, code_font: str):
+    """
+    Updates the typography block in quartz.config.ts to use the selected fonts.
+      typography: {
+        header: "<header_font>",
+        body: "<body_font>",
+        code: "<code_font>",
+      },
+    Tries targeted replacements first; if not found, replaces the whole block.
+    """
+    if not quartz_config_path.exists():
+        print(f"⚠️ quartz.config.ts not found at {quartz_config_path}")
+        return
+
+    try:
+        with open(quartz_config_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        hf = _escape_font(header_font)
+        bf = _escape_font(body_font)
+        cf = _escape_font(code_font)
+
+        changed = False
+
+        # Targeted replacements within existing typography block
+        def replace_field(src: str, field: str, value: str) -> tuple[str, bool]:
+            # Replace the value of e.g. header: "Old"
+            pattern = re.compile(
+                rf'(typography\s*:\s*\{{[\s\S]*?{field}\s*:\s*)"(.*?)"',
+                flags=re.DOTALL
+            )
+            new_src, n = pattern.subn(rf'\1"{value}"', src, count=1)
+            return new_src, (n > 0)
+
+        new_content, hit_h = replace_field(content, "header", hf)
+        new_content, hit_b = replace_field(new_content, "body", bf)
+        new_content, hit_c = replace_field(new_content, "code", cf)
+
+        changed = hit_h or hit_b or hit_c
+
+        if not changed:
+            # Replace the entire typography block if targeted replacements failed
+            block_re = re.compile(r'typography\s*:\s*\{[\s\S]*?\}\s*,?', flags=re.DOTALL)
+            new_block = (
+                'typography: {\n'
+                f'        header: "{hf}",\n'
+                f'        body: "{bf}",\n'
+                f'        code: "{cf}",\n'
+                '      },'
+            )
+            new_content2, n2 = block_re.subn(new_block, new_content, count=1)
+            if n2 == 0:
+                # As a last resort, try to inject a typography block next to colors/theme
+                # Insert after "theme: {" opening if present
+                theme_open = re.search(r'(theme\s*:\s*\{)', new_content)
+                if theme_open:
+                    insert_at = theme_open.end()
+                    new_content2 = new_content[:insert_at] + "\n      " + new_block + new_content[insert_at:]
+                    changed = True
+                else:
+                    new_content2 = new_content
+            else:
+                changed = True
+            new_content = new_content2
+
+        if changed:
+            result = subprocess.run(
+                ["tee", str(quartz_config_path)],
+                input=new_content.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to update typography fonts in quartz.config.ts:", result.stderr.decode())
+            else:
+                print(f"✅ Set fonts → header: '{header_font}', body: '{body_font}', code: '{code_font}'")
+        else:
+            print("ℹ️ Typography fonts already match desired values (no change).")
+
+    except Exception as e:
+        print(f"⚠️ Error patching typography fonts: {e}")
+# --- END ADD -----------------------------------------------------------------
+
+
 # --- ADD: Patch base.scss internal link highlight ---
 def patch_internal_link_highlight(base_scss_path: Path):
     """Comment out background-color for .internal links in base.scss."""
@@ -781,6 +870,22 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         base_scss = output_dir / "quartz" / "styles" / "base.scss"
         patch_internal_link_highlight(base_scss)
         # ---------------------------------------------------
+        
+        # --- ADD: Apply selected fonts to quartz.config.ts on first build/full rebuild ---
+        fonts_cfg = config.get("fonts", {})
+        section_key = f"section{section_number}"
+        section_fonts = (fonts_cfg.get("sections") or {}).get(section_key) or fonts_cfg.get("default")
+
+        if section_fonts:
+            patch_typography_fonts(
+                quartz_config_path=config_path,
+                header_font=section_fonts.get("header", "Schibsted Grotesk"),
+                body_font=section_fonts.get("body", "Source Sans Pro"),
+                code_font=section_fonts.get("code", "IBM Plex Mono"),
+            )
+        else:
+            print("ℹ️ No font selections found in course_config.json — leaving Quartz defaults.")
+        # -------------------------------------------------------------------------------
 
     else:
         print(f"♻️ Reusing existing (hidden) output directory: {output_dir}")
