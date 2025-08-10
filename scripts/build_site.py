@@ -392,6 +392,7 @@ def kill_existing_quartz():
         pass
 
 
+# --- HARDENING TWEAK #1: Future-proof omit replacement -----------------------
 def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
     if not quartz_layout_path.exists():
         print(f"⚠️ quartz.layout.ts not found at {quartz_layout_path}")
@@ -402,21 +403,37 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
         for item in hidden_components
     ]
 
-    with open(quartz_layout_path, "r", encoding="utf-8") as f:
-        lines = f.readlines()
+    content = Path(quartz_layout_path).read_text(encoding="utf-8")
+    formatted = ", ".join(f'"{n}"' for n in normalized_hidden)
+    replacement = f"const omit = new Set([{formatted}])"
 
-    new_lines = []
-    for line in lines:
-        if "const omit = new Set(" in line:
-            formatted_names = ', '.join(f'"{name}"' for name in normalized_hidden)
-            new_lines.append(f'const omit = new Set([{formatted_names}])\n')
-        else:
-            new_lines.append(line)
+    # Matches:
+    #   const omit = new Set([...])
+    #   const omit = new Set<string>([...] )
+    pattern_omit = re.compile(
+        r'const\s+omit\s*=\s*new\s+Set\s*(?:<[^>]*>)?\s*\(\s*\[\s*[\s\S]*?\s*\]\s*\)\s*;?',
+        flags=re.DOTALL,
+    )
 
-    with open(quartz_layout_path, "w", encoding="utf-8") as f:
-        f.writelines(new_lines)
+    new_content, replaced = pattern_omit.subn(replacement, content, count=1)
 
-    print("✅ Updated quartz.layout.ts with Explorer omit list.")
+    if replaced == 0:
+        # If not found, insert right after the imports block (or at top)
+        m = re.search(r'^(?:import .*?;\s*)+', content, flags=re.MULTILINE | re.DOTALL)
+        insert_at = m.end() if m else 0
+        new_content = content[:insert_at] + ("" if insert_at == 0 else "\n") + replacement + "\n" + content[insert_at:]
+
+    result = subprocess.run(
+        ["tee", str(quartz_layout_path)],
+        input=new_content.encode("utf-8"),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    if result.returncode != 0:
+        print("❌ Failed to write omit list to quartz.layout.ts:", result.stderr.decode())
+    else:
+        print("✅ Updated quartz.layout.ts with Explorer omit list.")
+# -----------------------------------------------------------------------------
 
 def inject_custom_footer_components(quartz_layout_path: Path, footer_component_path: Path, footer_html: str):
     if quartz_layout_path.exists():
@@ -891,6 +908,31 @@ def patch_render_page_transclude_title(render_page_tsx_path: Path):
         print(f"⚠️ Error patching renderPage.tsx: {e}")
 # --- END ADD ---
 
+# --- HARDENING TWEAK #2: Preflight to ensure omit anchor exists --------------
+def ensure_quartz_layout_anchor(quartz_layout_path: Path) -> bool:
+    """
+    Make sure quartz.layout.ts contains an 'omit' Set declaration.
+    If missing, warn (likely setup.sh wasn't run) and inject a safe default.
+    """
+    if not quartz_layout_path.exists():
+        print(f"⚠️ quartz.layout.ts not found at {quartz_layout_path}")
+        return False
+
+    txt = quartz_layout_path.read_text(encoding="utf-8")
+    if "const omit = new Set" in txt:
+        return True
+
+    print("⚠️ Expected omit set not found in quartz.layout.ts.")
+    print("   Did you run setup.sh? (which runs setup_course.py)")
+    # Insert a default omit line after imports to unblock the build
+    m = re.search(r'^(?:import .*?;\s*)+', txt, flags=re.MULTILINE | re.DOTALL)
+    insert_at = m.end() if m else 0
+    injected = txt[:insert_at] + ("" if insert_at == 0 else "\n") + "const omit = new Set([])\n" + txt[insert_at:]
+    quartz_layout_path.write_text(injected, encoding="utf-8")
+    print("ℹ️ Inserted a default omit set; running setup.sh is still recommended.")
+    return True
+# -----------------------------------------------------------------------------
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -1091,7 +1133,8 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     # Update Quartz layout & footer
     quartz_layout_ts = output_dir / "quartz.layout.ts"
     quartz_footer_tsx = output_dir / "quartz/components/Footer.tsx"
-    update_quartz_layout(quartz_layout_ts, hidden_list)
+    ensure_quartz_layout_anchor(quartz_layout_ts)  # HARDENING: make sure anchor exists
+    update_quartz_layout(quartz_layout_ts, hidden_list)  # ensure omit is present and updated
     footer_html = config.get("footer_html", "")
     inject_custom_footer_components(quartz_layout_ts, quartz_footer_tsx, footer_html)
 

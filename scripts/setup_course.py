@@ -575,6 +575,62 @@ def select_header_emojis_for_sections(num_sections: int, saved_config: dict) -> 
 
     return result
 
+# ---------- Hardened Explorer patch helpers ---------------------------------
+
+EXPLORER_BLOCK = """Component.Explorer({
+    title: "Navigate this site",
+    folderClickBehavior: "link",
+    filterFn: (node) => {
+      // CQ4T-OMIT-ANCHOR: do not remove this line; build script overwrites this Set
+      const omit = new Set<string>([""]);
+      if (node.isFolder) {
+        return !omit.has(node.fileSegmentHint);
+      } else {
+        return !omit.has(node.data.title);
+      }
+    },
+  })"""
+
+def _patch_explorer_with_anchor(layout_src: str) -> tuple[str, bool]:
+    """
+    Replace the Explorer component (simple or configured) with our anchored version.
+    Returns (new_src, changed).
+    """
+    changed = False
+
+    # 1) Replace the simplest call: Component.Explorer()
+    new_src, n1 = re.subn(r'Component\.Explorer\(\s*\)', EXPLORER_BLOCK, layout_src)
+    if n1 > 0:
+        return new_src, True
+
+    # 2) Replace any configured Explorer: Component.Explorer({ ... })
+    new_src, n2 = re.subn(r'Component\.Explorer\(\s*\{[\s\S]*?\}\s*\)', EXPLORER_BLOCK, new_src)
+    if n2 > 0:
+        return new_src, True
+
+    # 3) If there's an Explorer somewhere *without* our anchor but our regex failed, try a lighter touch:
+    #    Ensure an omit Set line with anchor exists inside any existing filterFn.
+    def ensure_anchor_in_filterfn(m: re.Match) -> str:
+        block = m.group(0)
+        if "CQ4T-OMIT-ANCHOR" in block:
+            return block  # already anchored
+
+        # Try to insert our omit line after the opening brace of filterFn
+        block2, n = re.subn(
+            r'(filterFn\s*:\s*\(\s*node\s*\)\s*=>\s*\{\s*)',
+            r'\1\n      // CQ4T-OMIT-ANCHOR: do not remove this line; build script overwrites this Set\n'
+            r'      const omit = new Set<string>([""]);\n',
+            block,
+            count=1
+        )
+        return block2 if n > 0 else block
+
+    new_src2, n3 = re.subn(r'Component\.Explorer\(\s*\{[\s\S]*?\}\s*\)', ensure_anchor_in_filterfn, layout_src)
+    if n3 > 0 and new_src2 != layout_src:
+        return new_src2, True
+
+    return layout_src, changed
+
 # ---------- Main setup flow (baseline preserved + color selection added) ----
 
 def setup_course():
@@ -775,40 +831,32 @@ def setup_course():
                     f.write("---\n")
                     f.write(f"This is the per-section file **{file}**.\n")
 
-    # ---------- Patch Quartz Explorer (baseline behavior preserved) ----------
+    # ---------- Patch Quartz Explorer (hardened + idempotent) ----------
     quartz_layout_path = Path("/opt/quartz/quartz.layout.ts")
     if quartz_layout_path.exists():
         with open(quartz_layout_path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        explorer_code = '''
-Component.Explorer({
-    title: "Navigate this site",
-    folderClickBehavior: "link", 
-    filterFn: (node) => {
-        console.log("Explorer node:", node)
-        const omit = new Set(["" ])
-        if (node.isFolder) {
-            return !omit.has(node.fileSegmentHint)
-        } else {
-            return !omit.has(node.data.title)
-        }
-    } 
-})'''.strip()
+        new_content, changed = _patch_explorer_with_anchor(content)
 
-        modified_content = re.sub(r'Component\.Explorer\(\)', explorer_code, content)
-
-        try:
-            subprocess.run(
-                ["tee", str(quartz_layout_path)],
-                input=modified_content.encode("utf-8"),
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
-            print(f"✅ Replaced Component.Explorer() for sidebar navigation in {quartz_layout_path}")
-        except subprocess.CalledProcessError as e:
-            print(f"❌ Failed to write updated layout. Error:\n{e.stderr.decode()}")
+        if changed:
+            try:
+                subprocess.run(
+                    ["tee", str(quartz_layout_path)],
+                    input=new_content.encode("utf-8"),
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+                print(f"✅ Ensured Explorer has omit anchor in {quartz_layout_path}")
+            except subprocess.CalledProcessError as e:
+                print(f"❌ Failed to write updated layout. Error:\n{e.stderr.decode()}")
+        else:
+            # If no change, at least warn if we cannot find the anchor anywhere
+            if "CQ4T-OMIT-ANCHOR" in content:
+                print("ℹ️ Explorer already contains omit anchor (no change).");
+            else:
+                print("⚠️ Could not locate Component.Explorer() to patch. You may need to update quartz.layout.ts manually.")
     else:
         print(f"⚠️ quartz.layout.ts not found at: {quartz_layout_path}")
 
