@@ -23,7 +23,7 @@ export default {
     },
     backlinks: {
       title: "Kiedy to zrobiliśmy?",
-      noBacklinksFound: "Brak połączeń zwrotnych",
+      noBacklinksFound: "Jeszcze nie omówione na zajęciach.",
     },
     themeToggle: {
       lightMode: "Trzyb jasny",
@@ -51,7 +51,7 @@ export default {
       searchBarPlaceholder: "Search for something",
     },
     tableOfContents: {
-      title: "Spis treści",
+      title: "Nawiguj po tej stronie",
     },
     contentMeta: {
       readingTime: ({ minutes }) => `${minutes} min. czytania `,

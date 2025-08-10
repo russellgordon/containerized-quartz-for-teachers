@@ -23,7 +23,7 @@ export default {
     },
     backlinks: {
       title: "Quan vam fer això?",
-      noBacklinksFound: "No s'han trobat retroenllaços",
+      noBacklinksFound: "Encara no s'ha tractat a classe.",
     },
     themeToggle: {
       lightMode: "Mode clar",
@@ -51,7 +51,7 @@ export default {
       searchBarPlaceholder: "Cerca alguna cosa",
     },
     tableOfContents: {
-      title: "Taula de Continguts",
+      title: "Navega per aquesta pàgina",
     },
     contentMeta: {
       readingTime: ({ minutes }) => `Es llegeix en ${minutes} min`,

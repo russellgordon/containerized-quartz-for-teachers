@@ -23,7 +23,7 @@ export default {
     },
     backlinks: {
       title: "Wanneer hebben we dit gedaan?",
-      noBacklinksFound: "Geen backlinks gevonden",
+      noBacklinksFound: "Nog niet behandeld in de les.",
     },
     themeToggle: {
       lightMode: "Lichte modus",
@@ -51,7 +51,7 @@ export default {
       searchBarPlaceholder: "Doorzoek de website",
     },
     tableOfContents: {
-      title: "Inhoudsopgave",
+      title: "Navigeer op deze pagina",
     },
     contentMeta: {
       readingTime: ({ minutes }) =>

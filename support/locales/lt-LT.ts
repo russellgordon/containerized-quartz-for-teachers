@@ -23,7 +23,7 @@ export default {
     },
     backlinks: {
       title: "Kada mes tai padarėme?",
-      noBacklinksFound: "Atgalinių Nuorodų Nerasta",
+      noBacklinksFound: "Dar neaptarta pamokoje.",
     },
     themeToggle: {
       lightMode: "Šviesus Režimas",
@@ -51,7 +51,7 @@ export default {
       searchBarPlaceholder: "Ieškoti",
     },
     tableOfContents: {
-      title: "Turinys",
+      title: "Naršykite šiame puslapyje",
     },
     contentMeta: {
       readingTime: ({ minutes }) => `${minutes} min skaitymo`,

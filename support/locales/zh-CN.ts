@@ -23,7 +23,7 @@ export default {
     },
     backlinks: {
       title: "我们什么时候做的？",
-      noBacklinksFound: "无法找到反向链接",
+      noBacklinksFound: "课堂上尚未涉及。",
     },
     themeToggle: {
       lightMode: "亮色模式",
@@ -51,7 +51,7 @@ export default {
       searchBarPlaceholder: "搜索些什么",
     },
     tableOfContents: {
-      title: "目录",
+      title: "浏览此页面",
     },
     contentMeta: {
       readingTime: ({ minutes }) => `${minutes}分钟阅读`,

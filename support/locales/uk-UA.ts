@@ -23,7 +23,7 @@ export default {
     },
     backlinks: {
       title: "Коли ми це зробили?",
-      noBacklinksFound: "Зворотних посилань не знайдено",
+      noBacklinksFound: "Ще не розглядалося на заняттях.",
     },
     themeToggle: {
       lightMode: "Світлий режим",
@@ -51,7 +51,7 @@ export default {
       searchBarPlaceholder: "Шукати щось",
     },
     tableOfContents: {
-      title: "Зміст",
+      title: "Навігуйте цією сторінкою",
     },
     contentMeta: {
       readingTime: ({ minutes }) => `${minutes} хв читання`,

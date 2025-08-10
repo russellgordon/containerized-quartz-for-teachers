@@ -23,7 +23,7 @@ export default {
     },
     backlinks: {
       title: "Kdy jsme to udělali?",
-      noBacklinksFound: "Nenalezeny žádné příchozí odkazy",
+      noBacklinksFound: "Zatím neprobráno ve třídě.",
     },
     themeToggle: {
       lightMode: "Světlý režim",
@@ -51,7 +51,7 @@ export default {
       searchBarPlaceholder: "Hledejte něco",
     },
     tableOfContents: {
-      title: "Obsah",
+      title: "Navigujte na této stránce",
     },
     contentMeta: {
       readingTime: ({ minutes }) => `${minutes} min čtení`,

@@ -23,7 +23,7 @@ export default {
     },
     backlinks: {
       title: "เราทำสิ่งนี้เมื่อไหร่?",
-      noBacklinksFound: "ไม่มีหน้าที่โยงมาหน้านี้",
+      noBacklinksFound: "ยังไม่ได้กล่าวถึงในชั้นเรียน",
     },
     themeToggle: {
       lightMode: "โหมดสว่าง",
@@ -51,7 +51,7 @@ export default {
       searchBarPlaceholder: "ค้นหาบางอย่าง",
     },
     tableOfContents: {
-      title: "สารบัญ",
+      title: "นำทางหน้านี้",
     },
     contentMeta: {
       readingTime: ({ minutes }) => `อ่านราว ${minutes} นาที`,

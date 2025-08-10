@@ -23,7 +23,7 @@ export default {
     },
     backlinks: {
       title: "Milloin me teimme tämän?",
-      noBacklinksFound: "Takalinkkejä ei löytynyt",
+      noBacklinksFound: "Ei ole vielä käsitelty tunnilla.",
     },
     themeToggle: {
       lightMode: "Vaalea tila",
@@ -51,7 +51,7 @@ export default {
       searchBarPlaceholder: "Hae jotain",
     },
     tableOfContents: {
-      title: "Sisällysluettelo",
+      title: "Navigoi tällä sivulla",
     },
     contentMeta: {
       readingTime: ({ minutes }) => `${minutes} min lukuaika`,

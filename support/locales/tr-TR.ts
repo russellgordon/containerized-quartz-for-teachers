@@ -23,7 +23,7 @@ export default {
     },
     backlinks: {
       title: "Bunu ne zaman yaptık?",
-      noBacklinksFound: "Backlink bulunamadı",
+      noBacklinksFound: "Henüz derste ele alınmadı.",
     },
     themeToggle: {
       lightMode: "Açık mod",
@@ -51,7 +51,7 @@ export default {
       searchBarPlaceholder: "Bir şey arayın",
     },
     tableOfContents: {
-      title: "İçindekiler",
+      title: "Bu sayfada gezin",
     },
     contentMeta: {
       readingTime: ({ minutes }) => `${minutes} dakika okuma süresi`,
