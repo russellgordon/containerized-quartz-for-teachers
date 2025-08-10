@@ -253,7 +253,26 @@ def adjust_created_modified_priority(config_path: Path):
     except Exception as e:
         print(f"❌ Error adjusting CreatedModifiedDate priority: {e}")
 
-def update_page_title(config_path: Path, course_code: str, section_number: int):
+# --- ADD: Resolve per-section emoji from course_config.json ------------------
+def resolve_section_emoji(config: dict, section_number: int) -> str:
+    """
+    Returns the emoji to use for the page title, preferring the per-section choice,
+    then the course default, falling back to 📚.
+    """
+    try:
+        emojis = config.get("emojis", {})
+        if isinstance(emojis, dict):
+            default_emo = emojis.get("default") or "📚"
+            sec_map = emojis.get("sections") or {}
+            sec_emo = sec_map.get(f"section{section_number}")
+            chosen = (sec_emo or default_emo or "📚").strip()
+            return chosen if chosen else "📚"
+    except Exception:
+        pass
+    return "📚"
+# --- END ADD -----------------------------------------------------------------
+
+def update_page_title(config_path: Path, course_code: str, section_number: int, emoji: str):
     if not config_path.exists():
         print(f"⚠️ quartz.config.ts not found at {config_path}")
         return
@@ -263,7 +282,9 @@ def update_page_title(config_path: Path, course_code: str, section_number: int):
 
     new_lines = []
     updated = False
-    new_title = f'📚 {course_code.upper()} S{section_number}'
+    # --- MODIFIED: use resolved emoji instead of hard-coded 📚 ---
+    safe_emoji = (emoji or "📚").strip()
+    new_title = f'{safe_emoji} {course_code.upper()} S{section_number}'
 
     for line in lines:
         if "pageTitle:" in line:
@@ -966,9 +987,11 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     footer_html = config.get("footer_html", "")
     inject_custom_footer_components(quartz_layout_ts, quartz_footer_tsx, footer_html)
 
-    # Update page title
+    # Update page title (now with per-section emoji)
     config_path = output_dir / "quartz.config.ts"
-    update_page_title(config_path, course_code, section_number)
+    # --- ADD: resolve emoji then pass into title update ---
+    page_emoji = resolve_section_emoji(config, section_number)
+    update_page_title(config_path, course_code, section_number, page_emoji)
 
     # Apply per-section colour scheme, if configured
     color_map = config.get("color_schemes", {})

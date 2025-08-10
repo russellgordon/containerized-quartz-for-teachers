@@ -424,6 +424,103 @@ def select_fonts_for_sections(num_sections: int, saved_config: dict) -> dict:
             fonts["sections"][section_key] = {"header": sh, "body": sb, "code": sc}
 
     return fonts
+    
+# ---------- New: Header emoji selection helpers -----------------------------
+
+PRESET_HEADER_EMOJIS = [
+    "📚", "🎓", "🏫", "✏️", "📝", "📐",
+    "📊", "🧪", "🔬", "🔭", "🧬", "🖥️",
+]
+
+def _looks_like_single_emoji(s: str) -> bool:
+    """
+    Heuristic to accept a single emoji (optionally with variation selectors/skin tone).
+    Rejects spaces/alphanumerics; allows one primary symbol plus modifiers.
+    Note: complex ZWJ sequences (e.g., family emojis) are intentionally rejected.
+    """
+    s = (s or "").strip()
+    if not s or any(ch.isspace() for ch in s):
+        return False
+    # Quick reject: letters/digits/punctuation other than emoji modifiers
+    for ch in s:
+        if ch.isalnum():
+            return False
+    # Count "base" codepoints (exclude VS-16/FE0F, VS-15/FE0E, zero-width-joiner, skin tones)
+    SKIN_TONES = {0x1F3FB, 0x1F3FC, 0x1F3FD, 0x1F3FE, 0x1F3FF}
+    ZWJ = 0x200D
+    VARIATION_SELECTORS = {0xFE0E, 0xFE0F}
+    base_count = 0
+    for ch in s:
+        cp = ord(ch)
+        if cp in VARIATION_SELECTORS or cp == ZWJ or cp in SKIN_TONES:
+            continue
+        base_count += 1
+        if base_count > 1:
+            return False
+    return base_count == 1
+
+def prompt_single_emoji(prompt_text: str, default_emoji: str) -> str:
+    """Prompt for one emoji with a menu of presets or custom entry; stateful default supported."""
+    print(f"\n{prompt_text}")
+    print("Choose one of the presets, or enter your own single emoji.")
+    for i, emo in enumerate(PRESET_HEADER_EMOJIS, start=1):
+        print(f"  {i:>2}. {emo}")
+    print("  13. Enter a custom emoji")
+    choice = input(f"Select 1-13 [Default: {default_emoji}]: ").strip()
+
+    if choice == "":
+        return default_emoji
+    if choice.isdigit():
+        n = int(choice)
+        if 1 <= n <= 12:
+            return PRESET_HEADER_EMOJIS[n - 1]
+        if n == 13:
+            custom = input("Enter a single emoji: ").strip()
+            if _looks_like_single_emoji(custom):
+                return custom
+            print("⚠️ That doesn't look like a single emoji. Keeping default.")
+            return default_emoji
+    # Fallback: treat the whole input as a custom attempt
+    if _looks_like_single_emoji(choice):
+        return choice
+    print("⚠️ Invalid selection. Keeping default.")
+    return default_emoji
+
+def select_header_emojis_for_sections(num_sections: int, saved_config: dict) -> dict:
+    """
+    Returns:
+    {
+      "default": "📚",
+      "sections": { "section1": "📚", "section2": "🔬", ... }
+    }
+    """
+    print("\n🔣 Site Header Emoji")
+    print("This emoji appears at the top-left of every page for the section.")
+    print("It must be a single emoji (e.g., 📚).")
+
+    prev = (saved_config.get("emojis") or {})
+    prev_default = prev.get("default", "📚")
+    default_emoji = prompt_single_emoji(
+        "Pick a default header emoji for this course:", prev_default
+    )
+
+    result = {"default": default_emoji, "sections": {}}
+    prev_sections = (prev.get("sections") or {})
+
+    for i in range(1, num_sections + 1):
+        section_key = f"section{i}"
+        prior_for_section = prev_sections.get(section_key, default_emoji)
+        print(f"\nSection {i}: Press ENTER to use default → {default_emoji}")
+        custom = input("Type 'c' to choose a different emoji, or press ENTER to accept default: ").strip().lower()
+        if custom in ("c", "choose"):
+            chosen = prompt_single_emoji(
+                f"Choose emoji for Section {i}:", prior_for_section
+            )
+            result["sections"][section_key] = chosen
+        else:
+            result["sections"][section_key] = default_emoji
+
+    return result
 
 # ---------- Main setup flow (baseline preserved + color selection added) ----
 
@@ -470,6 +567,9 @@ def setup_course():
 
     # ---- New: typography selection (after colours) ----
     fonts_config = select_fonts_for_sections(num_sections, saved_config)
+    
+    # ---- New: per-section header emoji selection (stateful) ----
+    emojis_config = select_header_emojis_for_sections(num_sections, saved_config)
 
     # ---------- Original prompts (unchanged) ----------
     shared_folders = prompt_type_list(
@@ -524,6 +624,7 @@ def setup_course():
     config = {
         "course_code": course_code,
         "course_name": course_name,
+        "emojis": emojis_config,
         "num_sections": num_sections,
         "shared_folders": shared_folders,
         "shared_files": shared_files,
