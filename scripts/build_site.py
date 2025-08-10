@@ -447,6 +447,72 @@ def remove_graph_from_right(layout_path: Path):
         print(f"⚠️ Could not modify {layout_path} to remove Graph: {e}")
 # --- END ADD ---
 
+# --- ADD: Patch folder page title and defaults on first build/full rebuild ---
+def patch_folder_page_title(folder_page_path: Path):
+    """Set folder page frontmatter title to `${folder}`."""
+    if not folder_page_path.exists():
+        print(f"⚠️ folderPage.tsx not found at {folder_page_path}")
+        return
+    try:
+        with open(folder_page_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Replace: title: `${i18n(locale).pages.folderContent.folder}: ${folder}`,
+        pattern = re.compile(
+            r'(frontmatter:\s*\{\s*[^}]*?title:\s*)`?\$\{i18n\(locale\)\.pages\.folderContent\.folder\}\s*:\s*\$\{folder\}`?(\s*,)',
+            flags=re.DOTALL
+        )
+        new_content = pattern.sub(r'\1`${folder}`\2', content)
+
+        if new_content != content:
+            result = subprocess.run(
+                ["tee", str(folder_page_path)],
+                input=new_content.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to patch folderPage.tsx:", result.stderr.decode())
+            else:
+                print("✅ Patched folderPage.tsx to use folder name as title")
+        else:
+            print("ℹ️ folderPage.tsx already uses folder name as title (no change).")
+    except Exception as e:
+        print(f"⚠️ Error patching folderPage.tsx: {e}")
+
+def patch_folder_content_defaults(folder_content_path: Path):
+    """Set FolderContent defaultOptions.showFolderCount to false."""
+    if not folder_content_path.exists():
+        print(f"⚠️ FolderContent.tsx not found at {folder_content_path}")
+        return
+    try:
+        with open(folder_content_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Only change inside the defaultOptions object
+        pattern = re.compile(
+            r'(const\s+defaultOptions\s*:\s*FolderContentOptions\s*=\s*\{\s*[^}]*?showFolderCount:\s*)true',
+            flags=re.DOTALL
+        )
+        new_content = pattern.sub(r'\1false', content)
+
+        if new_content != content:
+            result = subprocess.run(
+                ["tee", str(folder_content_path)],
+                input=new_content.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to patch FolderContent.tsx:", result.stderr.decode())
+            else:
+                print("✅ Set FolderContent default showFolderCount to false")
+        else:
+            print("ℹ️ FolderContent defaultOptions already set as desired (no change).")
+    except Exception as e:
+        print(f"⚠️ Error patching FolderContent.tsx: {e}")
+# --- END ADD ---
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -521,6 +587,14 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         # Adjust CreatedModifiedDate priority on first build/full rebuild
         config_path = output_dir / "quartz.config.ts"
         adjust_created_modified_priority(config_path)
+
+        # --- ADD: Patch folder page & defaults on first build/full rebuild ---
+        folder_page_tsx = output_dir / "quartz" / "plugins" / "emitters" / "folderPage.tsx"
+        patch_folder_page_title(folder_page_tsx)
+
+        folder_content_tsx = output_dir / "quartz" / "components" / "pages" / "FolderContent.tsx"
+        patch_folder_content_defaults(folder_content_tsx)
+        # --------------------------------------------------------------------
     else:
         print(f"♻️ Reusing existing (hidden) output directory: {output_dir}")
 
