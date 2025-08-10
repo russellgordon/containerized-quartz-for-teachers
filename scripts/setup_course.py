@@ -7,6 +7,7 @@ import sys
 import tty
 import termios
 from datetime import datetime, timezone, timedelta
+import textwrap
 
 DEFAULT_SHARED_FOLDERS = [
     "Concepts", "Discussions", "Examples", "Exercises", "Media",
@@ -222,6 +223,63 @@ def get_course_name_from_json(course_code):
     except Exception:
         return None
 
+# ---------- New helpers: stateful footer prompt -----------------------------
+
+def capture_multiline() -> str:
+    """Capture multi-line input until a single line 'EOF' is entered."""
+    print("\nPaste your footer HTML below.")
+    print("When finished, type a single line: EOF")
+    lines = []
+    while True:
+        try:
+            line = input()
+        except EOFError:
+            break
+        if line.strip() == "EOF":
+            break
+        lines.append(line)
+    return "\n".join(lines).strip()
+
+def prompt_footer_html_stateful(saved_config: dict) -> str:
+    current = (saved_config.get("footer_html") or "").strip()
+    if current:
+        preview = textwrap.shorten(current.replace("\n", " "), width=80, placeholder="…")
+        print(f"\n🦶 A custom footer is already set:\n   {preview}")
+        choice = input("Press ENTER to keep it, 'e' to edit, or 'c' to clear: ").strip().lower()
+        if choice == "":
+            print("✅ Keeping existing footer.")
+            return current
+        if choice == "c":
+            print("🧹 Footer cleared.")
+            return ""
+        if choice != "e":
+            print("↪️ Unrecognized choice; keeping existing footer.")
+            return current
+
+        # Edit path
+        print("\nEnter the full HTML content you want to display in the footer (example shown):")
+        print('The resources on this site by Russell Gordon are licensed under '
+              '<a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" '
+              'target="_blank" rel="license noopener noreferrer" style="display:inline-block;">'
+              'CC BY 4.0</a> unless otherwise noted.')
+        new_html = capture_multiline()
+        if not new_html:
+            print("↪️ No changes entered; keeping existing footer.")
+            return current
+        print("✅ Footer updated.")
+        return new_html
+
+    # No footer set yet — original y/n flow
+    yn = input("\nWould you like to add custom footer HTML? (y/n) [Default: n]: ").strip().lower()
+    if yn == "y":
+        print("\nEnter the full HTML content you want to display in the footer (example shown):")
+        print('The resources on this site by Russell Gordon are licensed under '
+              '<a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" '
+              'target="_blank" rel="license noopener noreferrer" style="display:inline-block;">'
+              'CC BY 4.0</a> unless otherwise noted.')
+        return capture_multiline()
+    return ""
+
 # ---------- Main setup flow (baseline preserved + color selection added) ----
 
 def setup_course():
@@ -303,17 +361,8 @@ def setup_course():
 
     expandable_items = prompt_select_multiple("Select folders/files that should be EXPANDABLE:", visible_items, default_expandable)
 
-    # New (previously added in baseline): Prompt for custom footer HTML
-    if saved_config.get("footer_html") is not None:
-        default_footer = saved_config["footer_html"]
-    else:
-        default_footer = ""
-
-    footer_html = default_footer
-    if input("\nWould you like to add custom footer HTML? (y/n): ").strip().lower() == "y":
-        print("\nEnter the full HTML content you want to display in the footer (e.g.):")
-        print('The resources on this site by Russell Gordon are licensed under <a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY 4.0</a> unless otherwise noted.')
-        footer_html = input("\nPaste your footer HTML here:\n> ").strip()
+    # ---------- New: Stateful footer prompt (replaces previous footer block) ----------
+    footer_html = prompt_footer_html_stateful(saved_config)
 
     # ---------- Save configuration (preserving new color_schemes) ----------
     config = {

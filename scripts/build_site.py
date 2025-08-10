@@ -166,10 +166,11 @@ def inject_custom_footer_components(quartz_layout_path: Path, footer_component_p
         with open(footer_component_path, "r", encoding="utf-8") as f:
             footer_code = f.read()
 
-        escaped_html = footer_html.replace("\\", "\\\\").replace('"', '\\"')
+        # Use a JS template literal to preserve multi-line HTML and quotes safely
+        safe_html = footer_html.replace("`", "\\`")
 
         replacement = f"""<footer class={{displayClass ?? ""}}>
-                <div dangerouslySetInnerHTML={{{{ __html: "{escaped_html}" }}}} />
+                <div dangerouslySetInnerHTML={{{{ __html: `{safe_html}` }}}} />
               </footer>"""
 
         modified_code = re.sub(
