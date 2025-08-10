@@ -323,67 +323,120 @@ CODE_FONTS = [
 def _print_font_pair_menu(default_idx: int | None = None):
     print("\n🅰️  Choose a header/body font pairing (Google Fonts):")
     for i, (hdr, body) in enumerate(FONT_PAIRINGS, start=1):
-        suffix = "  ← recommended pairing" if default_idx and (i == default_idx) else ""
-        print(f"  {i}. {hdr}  —  {body}{suffix}")
-    print("  7. System fonts (Helvetica, Arial)")
-    print("  8. Enter a custom pair (e.g., 'DM Sans, Inter')")
+        marker = "  ← default" if default_idx == i else ""
+        print(f"  {i}. {hdr}  —  {body}{marker}")
+    marker7 = "  ← default" if default_idx == 7 else ""
+    marker8 = "  ← default" if default_idx == 8 else ""
+    print(f"  7. System fonts (Helvetica, Arial){marker7}")
+    print(f"  8. Enter a custom pair (e.g., 'DM Sans, Inter'){marker8}")
 
 def _print_code_font_menu(default_idx: int | None = None):
     print("\n👨‍💻 Choose a code font (monospaced, Google Fonts):")
     for i, name in enumerate(CODE_FONTS, start=1):
-        suffix = "  ← default" if default_idx and (i == default_idx) else ""
-        print(f"  {i}. {name}{suffix}")
-    print("  7. Enter a custom code font (e.g., 'Cascadia Code')")
+        marker = "  ← default" if default_idx == i else ""
+        print(f"  {i}. {name}{marker}")
+    marker7 = "  ← default" if default_idx == 7 else ""
+    print(f"  7. Enter a custom code font (e.g., 'Cascadia Code'){marker7}")
 
 def prompt_font_pairing(previous_default: dict | None) -> tuple[str, str]:
     """
-    Returns (header, body)
+    Returns (header, body). If a previous default exists, it becomes the real default:
+      - If it matches one of the 1–6 pairings, that index is default.
+      - If it's Helvetica/Arial, option 7 is default.
+      - Otherwise, option 8 (custom) is default, pressing ENTER keeps the prior values.
     """
-    recommended_idx = 1  # Highlight the first pairing by default
-    _print_font_pair_menu(default_idx=recommended_idx)
-    if previous_default:
-        print(f"\nLast used fonts: header='{previous_default.get('header')}', body='{previous_default.get('body')}'")
+    # Compute which option should be the default based on previous_default
+    def find_pair_index(h: str, b: str) -> int | None:
+        for i, (hdr, body) in enumerate(FONT_PAIRINGS, start=1):
+            if hdr == h and body == b:
+                return i
+        return None
 
+    prev_header = (previous_default or {}).get("header")
+    prev_body   = (previous_default or {}).get("body")
+
+    default_idx: int
+    if prev_header and prev_body:
+        if prev_header.strip() == "Helvetica, Arial" and prev_body.strip() == "Helvetica, Arial":
+            default_idx = 7
+        else:
+            idx = find_pair_index(prev_header.strip(), prev_body.strip())
+            default_idx = idx if idx is not None else 8
+    else:
+        default_idx = 1  # first run: show our first recommended pairing as default
+
+    _print_font_pair_menu(default_idx=default_idx)
+    if previous_default:
+        print(f"\nLast used fonts: header='{prev_header}', body='{prev_body}'")
+
+    prompt_label = f"Select 1-8 [Default: {default_idx}]: "
     while True:
-        choice = input("Select 1-8 [Default: 1]: ").strip()
+        choice = input(prompt_label).strip()
         if choice == "":
-            choice = "1"
+            # User accepts the default
+            if 1 <= default_idx <= 6:
+                return FONT_PAIRINGS[default_idx - 1]
+            if default_idx == 7:
+                return "Helvetica, Arial", "Helvetica, Arial"
+            # default_idx == 8 → keep the previous custom values if available
+            if prev_header and prev_body:
+                return prev_header, prev_body
+            # fallback if somehow no previous custom
+            return "Schibsted Grotesk", "Source Sans Pro"
+
         if choice in [str(i) for i in range(1, 9)]:
-            choice = int(choice)
-            if 1 <= choice <= 6:
-                hdr, body = FONT_PAIRINGS[choice - 1]
+            n = int(choice)
+            if 1 <= n <= 6:
+                hdr, body = FONT_PAIRINGS[n - 1]
                 print(f"✅ Selected: Header '{hdr}' with Body '{body}'")
                 return hdr, body
-            if choice == 7:
+            if n == 7:
                 print("Using system-safe fonts. (Quartz will use CSS fallbacks.)")
                 return "Helvetica, Arial", "Helvetica, Arial"
-            if choice == 8:
-                hdr = input("Enter header font family (comma-separated list OK): ").strip()
-                body = input("Enter body font family (comma-separated list OK): ").strip()
-                hdr = hdr if hdr else "Schibsted Grotesk"
-                body = body if body else "Source Sans Pro"
+            if n == 8:
+                # Let the user easily keep prior custom values via defaults
+                hdr = prompt_with_default("Enter header font family", prev_header or "Schibsted Grotesk")
+                body = prompt_with_default("Enter body font family",   prev_body   or "Source Sans Pro")
                 print(f"✅ Selected: Header '{hdr}' with Body '{body}'")
                 return hdr, body
+
         print("Please choose a number between 1 and 8.")
 
 def prompt_code_font(previous_default: str | None) -> str:
-    _print_code_font_menu(default_idx=None)
+    # Determine default index from previous_default
+    if previous_default and previous_default in CODE_FONTS:
+        default_idx = CODE_FONTS.index(previous_default) + 1
+    elif previous_default:
+        default_idx = 7  # custom previously used
+    else:
+        default_idx = 3  # IBM Plex Mono
+
+    _print_code_font_menu(default_idx=default_idx)
     if previous_default:
         print(f"\nLast used code font: '{previous_default}'")
+
+    prompt_label = f"Select 1-7 [Default: {default_idx}]: "
     while True:
-        choice = input("Select 1-7 [Default: 3 (IBM Plex Mono)]: ").strip()
+        choice = input(prompt_label).strip()
         if choice == "":
+            # Accept default
+            if 1 <= default_idx <= 6:
+                return CODE_FONTS[default_idx - 1]
+            if default_idx == 7:
+                return previous_default or "IBM Plex Mono"
+            # Fallback
             return "IBM Plex Mono"
+
         if choice in [str(i) for i in range(1, 8)]:
-            choice = int(choice)
-            if 1 <= choice <= 6:
-                print(f"✅ Selected code font: '{CODE_FONTS[choice - 1]}'")
-                return CODE_FONTS[choice - 1]
-            if choice == 7:
-                custom = input("Enter code font family (comma-separated list OK): ").strip()
-                custom = custom if custom else "IBM Plex Mono"
+            n = int(choice)
+            if 1 <= n <= 6:
+                print(f"✅ Selected code font: '{CODE_FONTS[n - 1]}'")
+                return CODE_FONTS[n - 1]
+            if n == 7:
+                custom = prompt_with_default("Enter code font family", previous_default or "IBM Plex Mono")
                 print(f"✅ Selected code font: '{custom}'")
                 return custom
+
         print("Please choose a number between 1 and 7.")
 
 def select_fonts_for_sections(num_sections: int, saved_config: dict) -> dict:
