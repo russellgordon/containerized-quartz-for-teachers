@@ -1,0 +1,197 @@
+{
+  "main": {
+    "id": "dd1e33777b4585ee",
+    "type": "split",
+    "children": [
+      {
+        "id": "8300103bc7ecaf04",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7cc8c8e0d9efc55c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Discussions/Gig Posters Task.md",
+                "mode": "source",
+                "source": true
+              },
+              "icon": "lucide-file",
+              "title": "Gig Posters Task"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "25a51a5303edaf94",
+    "type": "split",
+    "children": [
+      {
+        "id": "e60296a9f3cd7970",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "dd4f5838116cf2e5",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "54fa9e5780402aae",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "0ae545bf8bb888e3",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 331.5
+  },
+  "right": {
+    "id": "15cb08d219d2e59c",
+    "type": "split",
+    "children": [
+      {
+        "id": "4e1a1e1a830141d0",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "81cb41f9e8bf8330",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "SIC Drop-In Sessions.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for SIC Drop-In Sessions"
+            }
+          },
+          {
+            "id": "0367682421aa632e",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "SIC Drop-In Sessions.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from SIC Drop-In Sessions"
+            }
+          },
+          {
+            "id": "b2ab46a7a3732c90",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "dd78745514181aab",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "SIC Drop-In Sessions.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of SIC Drop-In Sessions"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "dd4f5838116cf2e5",
+  "lastOpenFiles": [
+    "Discussions/Art and Programming.md",
+    "Exercises/Applying Abstraction.md",
+    "Exercises/Superdrag.md",
+    "Exercises/Selection Statements.md",
+    "Exercises/Computer Security.md",
+    "Exercises/Going Home Again.md",
+    "Exercises/Applying Iteration.md",
+    "Discussions/Gig Posters Task.md",
+    "SIC Drop-In Sessions.md",
+    "Learning Goals.md",
+    "Tutorials/index.md",
+    "Tasks/index.md",
+    "Style/index.md",
+    "Setup/index.md",
+    "section2/All Classes/index.md",
+    "section1/All Classes/index.md",
+    "Portfolios/index.md",
+    "Exercises/Analysing an Image.md",
+    "Exercises/Parsing Instructions.md",
+    "Curriculum/index.md",
+    "Exercises/index.md",
+    "Discussions/index.md",
+    "Concepts/index.md"
+  ]
+}

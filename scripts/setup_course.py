@@ -10,6 +10,9 @@ from datetime import datetime, timezone, timedelta
 import textwrap
 import zipfile  # NEW: for backups
 import argparse  # NEW: for --no-backup flag
+import shutil   # NEW: needed for copying example course
+import random   # NEW: for generating alternate example course code
+import string   # NEW: for generating alternate example course code
 
 DEFAULT_SHARED_FOLDERS = [
     "Concepts", "Discussions", "Examples", "Exercises", "Media",
@@ -755,6 +758,117 @@ def _patch_explorer_with_anchor(layout_src: str) -> tuple[str, bool]:
 
     return layout_src, changed
 
+def ensure_quartz_explorer_anchor():
+    """Idempotently ensure quartz.layout.ts includes the omit anchor block."""
+    quartz_layout_path = Path("/opt/quartz/quartz.layout.ts")
+    if quartz_layout_path.exists():
+        with open(quartz_layout_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        new_content, changed = _patch_explorer_with_anchor(content)
+
+        if changed:
+            try:
+                subprocess.run(
+                    ["tee", str(quartz_layout_path)],
+                    input=new_content.encode("utf-8"),
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+                print(f"✅ Ensured Explorer has omit anchor in {quartz_layout_path}")
+            except subprocess.CalledProcessError as e:
+                print(f"❌ Failed to write updated layout. Error:\n{e.stderr.decode()}")
+        else:
+            if "CQ4T-OMIT-ANCHOR" in content:
+                print("ℹ️ Explorer already contains omit anchor (no change).")
+            else:
+                print("⚠️ Could not locate Component.Explorer() to patch. You may need to update quartz.layout.ts manually.")
+    else:
+        print(f"⚠️ quartz.layout.ts not found at: {quartz_layout_path}")
+
+# ---------- NEW: Example Course installer -----------------------------------
+
+EXAMPLE_COURSE_CODE = "EXC2O"
+
+CANDIDATE_EXAMPLE_SOURCE_PATHS = [
+    Path("support/example_course") / EXAMPLE_COURSE_CODE,
+    Path("/opt/support/example_course") / EXAMPLE_COURSE_CODE,
+    Path(__file__).resolve().parent.parent / "support" / "example_course" / EXAMPLE_COURSE_CODE,
+    Path(__file__).resolve().parent / "support" / "example_course" / EXAMPLE_COURSE_CODE,
+]
+
+def _find_example_source_dir() -> Path | None:
+    for p in CANDIDATE_EXAMPLE_SOURCE_PATHS:
+        if p.exists() and p.is_dir():
+            return p
+    return None
+
+def _generate_alt_example_code(dest_root: Path) -> str:
+    """
+    Generate a 5-char alternative course code ending with '2O' that does not collide.
+    Uses three random uppercase letters for the prefix.
+    """
+    letters = string.ascii_uppercase
+    for _ in range(100):
+        prefix = "".join(random.choice(letters) for _ in range(3))
+        candidate = f"{prefix}2O"
+        if not (dest_root / candidate).exists():
+            return candidate
+    # Fallback deterministic slug if somehow everything collides
+    i = 1
+    while (dest_root / f"EX{i:02d}2O").exists():
+        i += 1
+    return f"EX{i:02d}2O"
+
+def maybe_install_example_course(courses_root: Path) -> bool:
+    """
+    Offer to install the Example Course (EXC2O) for new users.
+    Copies support/example_course/EXC2O → /teaching/courses/EXC2O (or alt code if taken).
+    If installed, ensure the Quartz Explorer omit anchor is present, show hint, and exit.
+    Returns True if installed, False otherwise.
+    """
+    print("\n📦 Optional: Install an Example Course")
+    print("The 'EXC2O' course (stands for 'Example Course') demonstrates how content is organized in Obsidian and how Quartz renders it into a site.")
+    print("Recommended if you're NEW to this workflow — you can remove it later.")
+    install = prompt_yes_no_default("Install the Example Course now?", default=False)
+    if not install:
+        return False
+
+    src = _find_example_source_dir()
+    if not src:
+        print("⚠️ Could not find example course content at expected locations. Skipping installation.")
+        return False
+
+    dest_code = EXAMPLE_COURSE_CODE
+    dest = courses_root / dest_code
+    if dest.exists():
+        # Generate an alternate code preserving '2O' as the final two characters
+        alt = _generate_alt_example_code(courses_root)
+        print(f"ℹ️ A course named '{dest_code}' already exists. Using alternate code: {alt}")
+        dest_code = alt
+        dest = courses_root / dest_code
+
+    try:
+        shutil.copytree(src, dest, dirs_exist_ok=False)
+        print(f"✅ Example Course installed to: {dest}")
+    except FileExistsError:
+        print(f"⚠️ Destination {dest} already exists; skipping copy.")
+    except Exception as e:
+        print(f"❌ Failed to install Example Course: {e}")
+        return False
+
+    # Ensure Quartz Explorer has the omit anchor so hidden items work in preview
+    ensure_quartz_explorer_anchor()
+
+    # Print final hint and exit early (as requested)
+    print("✅ Example Course installed: EXC2O")
+    print("ℹ️ To preview this site, run:")
+    print("   ./run.sh EXC2O 1")
+    print("   (Then open http://localhost:8081 in your browser.)")
+    sys.exit(0)
+    return True  # not reached
+
 # ---------- NEW: Timetable section numbers prompt ---------------------------
 
 def prompt_section_numbers(num_sections: int, saved_config: dict) -> list[int]:
@@ -798,9 +912,19 @@ def prompt_section_numbers(num_sections: int, saved_config: dict) -> list[int]:
 # ---------- Main setup flow (baseline preserved + backups + defaults) -------
 
 def setup_course(no_backup: bool = False):
-    print("\U0001F4DA Welcome to the Course Setup Script!\n")
+    print("📚 Welcome to the Course Setup Script!\n")
 
     base_path = Path("/teaching/courses")
+
+    # --- NEW: Offer to install the Example Course (EXC2O) -------------------
+    try:
+        maybe_install_example_course(base_path)
+    except SystemExit:
+        # early exit is expected after example install
+        return
+    except Exception as e:
+        print(f"⚠️ Example Course installation step encountered an error and will be skipped: {e}")
+
     default_code = "ICS3U"
     course_code = prompt_with_default("Enter the course code (e.g. ICS3U)", default_code).upper()
     course_path = base_path / course_code
@@ -992,7 +1116,7 @@ def setup_course(no_backup: bool = False):
                     f.write(f"createdSection{sec}: {now_str}\n")
                     f.write(f"draftSection{sec}: false\n")
                 f.write("---\n")
-                f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site. Or, remove this file and Quartz will show only a listing of files that exist in this folder instead.\n")
+                f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site. Optionally, you can remove this `index.md` file and Quartz will then show only a listing of files that exist in this folder instead.\n")
     
     for file in shared_files:
         file_path = Path("/teaching/courses") / course_code / file
@@ -1060,33 +1184,7 @@ def setup_course(no_backup: bool = False):
                     f.write(f"This is the per-section file **{file}**.\n")
 
     # ---------- Patch Quartz Explorer (hardened + idempotent) ----------
-    quartz_layout_path = Path("/opt/quartz/quartz.layout.ts")
-    if quartz_layout_path.exists():
-        with open(quartz_layout_path, "r", encoding="utf-8") as f:
-            content = f.read()
-
-        new_content, changed = _patch_explorer_with_anchor(content)
-
-        if changed:
-            try:
-                subprocess.run(
-                    ["tee", str(quartz_layout_path)],
-                    input=new_content.encode("utf-8"),
-                    check=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE
-                )
-                print(f"✅ Ensured Explorer has omit anchor in {quartz_layout_path}")
-            except subprocess.CalledProcessError as e:
-                print(f"❌ Failed to write updated layout. Error:\n{e.stderr.decode()}")
-        else:
-            # If no change, at least warn if we cannot find the anchor anywhere
-            if "CQ4T-OMIT-ANCHOR" in content:
-                print("ℹ️ Explorer already contains omit anchor (no change).");
-            else:
-                print("⚠️ Could not locate Component.Explorer() to patch. You may need to update quartz.layout.ts manually.")
-    else:
-        print(f"⚠️ quartz.layout.ts not found at: {quartz_layout_path}")
+    ensure_quartz_explorer_anchor()
 
     print(f"\n✅ Course '{course_code}' set up successfully at: {course_path}")
 

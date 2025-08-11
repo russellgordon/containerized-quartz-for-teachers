@@ -1,0 +1,88 @@
+{
+  "course_code": "EXC2O",
+  "course_name": "Digital Tech",
+  "emojis": {
+    "default": "\u270f\ufe0f",
+    "sections": {
+      "section1": "\u270f\ufe0f",
+      "section2": "\ud83c\udf93"
+    }
+  },
+  "num_sections": 2,
+  "section_numbers": [
+    1,
+    2
+  ],
+  "shared_folders": [
+    "Concepts",
+    "Discussions",
+    "Exercises",
+    "Portfolios",
+    "Setup",
+    "Style",
+    "Tasks",
+    "Tutorials",
+    "Curriculum"
+  ],
+  "shared_files": [
+    "SIC Drop-In Sessions.md",
+    "Learning Goals.md"
+  ],
+  "per_section_folders": [
+    "All Classes"
+  ],
+  "per_section_files": [
+    "Private Notes.md",
+    "Scratch Page.md",
+    "Key Links.md",
+    "Grove Time.md"
+  ],
+  "hidden": [
+    "Curriculum",
+    "SIC Drop-In Sessions.md",
+    "Learning Goals.md",
+    "Media",
+    "Private Notes.md",
+    "Scratch Page.md",
+    "Key Links.md",
+    "Grove Time.md"
+  ],
+  "expandable": [
+    "Concepts",
+    "Discussions",
+    "Examples",
+    "Exercises",
+    "Portfolios",
+    "Recaps",
+    "Setup",
+    "Style",
+    "Tasks",
+    "Tutorials"
+  ],
+  "expandOnFolderClick": false,
+  "footer_html": "The resources on this site by Russell Gordon and David Jones are licensed under <a href=\"http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1\" target=\"_blank\" rel=\"license noopener noreferrer\" style=\"display:inline-block;\">CC BY 4.0</a> unless otherwise noted.",
+  "show_reading_time": true,
+  "fonts": {
+    "default": {
+      "header": "Helvetica, Arial",
+      "body": "Helvetica, Arial",
+      "code": "IBM Plex Mono"
+    },
+    "sections": {
+      "section1": {
+        "header": "Helvetica, Arial",
+        "body": "Helvetica, Arial",
+        "code": "IBM Plex Mono"
+      },
+      "section2": {
+        "header": "Helvetica, Arial",
+        "body": "Helvetica, Arial",
+        "code": "IBM Plex Mono"
+      }
+    }
+  },
+  "color_schemes": {
+    "section1": "lakefield-college-school",
+    "section2": "lakefield-college-school"
+  }
+}

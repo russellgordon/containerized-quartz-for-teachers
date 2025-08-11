@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="210mm"
+   viewBox="0 0 210 210"
+   version="1.1"
+   id="svg152"
+   inkscape:version="1.2.2 (b0a84865, 2022-12-01)"
+   sodipodi:docname="ipad-square.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview154"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.2102413"
+     inkscape:cx="397.16269"
+     inkscape:cy="561.25984"
+     inkscape:window-width="1309"
+     inkscape:window-height="456"
+     inkscape:window-x="0"
+     inkscape:window-y="314"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs149" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g256"
+       transform="matrix(0.35277777,0,0,0.35277777,14.936609,12.881954)">
+      <path
+         d="m 445.03,159.44 -15.359,-13.414 -170.7,197.73 -3.3281,3.8398 -10.598,24.883 c -0.28516,0.83203 -0.0391,1.7539 0.625,2.3281 0.66797,0.57422 1.6133,0.6875 2.3945,0.28125 l 23.09,-14.078 1.8945,-2.2031 h 0.004 c 0.44531,-0.35156 0.85547,-0.74609 1.2266,-1.1758 l 109.72,-127.23 v 204.8 H 76.799406 v -368.64 H 383.99941 v 125.39 l 15.359,-17.871 v -132.5 c 0,-4.2383 -1.6836,-8.3008 -4.6797,-11.297 -2.9961,-2.9961 -7.0586,-4.6758 -11.293,-4.6758 H 77.415706 c -4.2383,0 -8.3008,1.6797 -11.297,4.6758 -2.9961,2.9961 -4.6758,7.0586 -4.6758,11.297 v 428.85 c 0,4.2383 1.6797,8.3008 4.6758,11.297 2.9961,2.9961 7.0586,4.6758 11.297,4.6758 H 383.38571 c 4.2344,0 8.2969,-1.6797 11.293,-4.6758 2.9961,-2.9961 4.6797,-7.0586 4.6797,-11.297 v -258.1 z M 230.4,465.92 c -4.1406,0 -7.875,-2.4961 -9.457,-6.3242 -1.5859,-3.8242 -0.71094,-8.2305 2.2188,-11.16 2.9258,-2.9258 7.332,-3.8047 11.16,-2.2188 3.8242,1.5859 6.3203,5.3203 6.3203,9.4609 0,2.7148 -1.0781,5.3203 -3,7.2422 -1.9219,1.918 -4.5234,3 -7.2422,3 z"
+         id="path252" />
+      <path
+         d="m 472.11,128 c 3.6914,-4.2852 3.2109,-10.746 -1.0742,-14.438 -4.2852,-3.6914 -10.746,-3.207 -14.438,1.0742 l -20.379,23.602 15.359,13.363 z"
+         id="path254" />
+    </g>
+  </g>
+</svg>
