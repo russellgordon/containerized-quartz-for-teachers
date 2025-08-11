@@ -23,7 +23,7 @@ if [[ "$1" == "--help" || "$1" == "-h" ]]; then
   echo ""
   echo "📘 Required arguments:"
   echo "  <COURSE_CODE>               The course code (e.g., ICS3U)"
-  echo "  <SECTION_NUMBER>            The section number (e.g., 1)"
+  echo "  <SECTION_NUMBER>            The TIMETABLE section number (e.g., 1, 3, 4)"
   echo ""
   echo "⚙️ Optional flags:"
   echo "  --include-social-media-previews    Enable Quartz CustomOgImages emitter"
@@ -65,6 +65,12 @@ if [ -z "$COURSE" ] || [ -z "$SECTION" ]; then
   exit 1
 fi
 
+# Ensure SECTION looks like a positive integer
+if ! [[ "$SECTION" =~ ^[0-9]+$ ]]; then
+  echo "❌ SECTION must be a positive integer (the timetable section number)."
+  exit 1
+fi
+
 OUTPUT_PATH="courses/$COURSE/.merged_output/section$SECTION"
 
 # Preflight: ensure this course has been set up (host-side)
@@ -75,6 +81,14 @@ if [[ ! -f "$COURSE_CFG" ]]; then
   echo "   Run: ./setup.sh"
   echo "   (Then select or create the course '$COURSE' when prompted.)"
   exit 1
+fi
+
+# Preflight: the section folder should exist (setup_course.py creates 'section<N>')
+if [[ ! -d "courses/$COURSE/section$SECTION" ]]; then
+  echo "⚠️  courses/$COURSE/section$SECTION does not exist."
+  echo "   If this is one of your timetable sections, run './setup.sh' again and include section $SECTION."
+  echo "   Otherwise, choose one of YOUR assigned sections when running this command."
+  # don't exit here yet; we'll validate against section_numbers below
 fi
 
 echo "🚀 Starting container if needed..."
@@ -94,6 +108,45 @@ if ! docker exec -i teaching-quartz bash -lc 'test -f /opt/quartz/quartz.layout.
   echo "⚠️  Sidebar omit anchor not found in container's Quartz layout."
   echo "   Did you run: ./setup.sh and complete setup for '$COURSE'?"
   echo "   (Continuing anyway; the build will attempt a safe fallback.)"
+fi
+
+# NEW: Validate that SECTION is one of the allowed timetable sections for this course
+echo "📋 Checking allowed timetable sections for $COURSE..."
+ALLOWED_SECTIONS="$(docker exec -e COURSE="$COURSE" teaching-quartz python3 - <<'PY'
+import os, json, sys
+course = os.environ.get("COURSE")
+p = f"/teaching/courses/{course}/course_config.json"
+try:
+    with open(p, "r", encoding="utf-8") as f:
+        cfg = json.load(f)
+    secs = cfg.get("section_numbers")
+    if isinstance(secs, list) and secs:
+        print(",".join(str(int(x)) for x in secs))
+    else:
+        n = int(cfg.get("num_sections", 1))
+        print(",".join(str(i) for i in range(1, n+1)))
+except Exception as e:
+    print("")
+PY
+)"
+
+if [[ -n "$ALLOWED_SECTIONS" ]]; then
+  echo "   Allowed sections: $ALLOWED_SECTIONS"
+  IFS=',' read -ra ARR <<< "$ALLOWED_SECTIONS"
+  FOUND=0
+  for s in "${ARR[@]}"; do
+    if [[ "$s" == "$SECTION" ]]; then
+      FOUND=1
+      break
+    fi
+  done
+  if [[ "$FOUND" -ne 1 ]]; then
+    echo "❌ Section $SECTION is not one of YOUR timetable sections for $COURSE."
+    echo "   Choose one of: $ALLOWED_SECTIONS"
+    exit 1
+  fi
+else
+  echo "ℹ️ Could not read allowed sections from course_config.json (continuing)."
 fi
 
 echo "🔧 Building site for $COURSE, section $SECTION..."

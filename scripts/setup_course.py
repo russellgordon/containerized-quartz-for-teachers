@@ -467,13 +467,13 @@ def prompt_code_font(previous_default: str | None) -> str:
 
         print("Please choose a number between 1 and 7.")
 
-def select_fonts_for_sections(num_sections: int, saved_config: dict) -> dict:
+def select_fonts_for_sections(section_numbers: list[int], saved_config: dict) -> dict:
     """
     Prompts for per-section font choices, suggesting consistency across sections.
     Returns a dict like:
     {
       "default": {"header": "...", "body": "...", "code": "..."},
-      "sections": {"section1": {...}, "section2": {...}}
+      "sections": {"section3": {...}, "section4": {...}}
     }
     """
     print("\n🔤 Typography")
@@ -488,10 +488,12 @@ def select_fonts_for_sections(num_sections: int, saved_config: dict) -> dict:
         "sections": {}
     }
 
-    for i in range(1, num_sections + 1):
-        section_key = f"section{i}"
-        prior = ((saved_config.get("fonts") or {}).get("sections") or {}).get(section_key, {})
-        print(f"\nSection {i}:")
+    prev_sections = ((saved_config.get("fonts") or {}).get("sections") or {})
+
+    for sec in section_numbers:
+        section_key = f"section{sec}"
+        prior = prev_sections.get(section_key, {})
+        print(f"\nSection {sec}:")
         print(f"Press ENTER to use default → header='{header}', body='{body}', code='{code_font}'")
         if prior:
             print(f"(Last time you used: header='{prior.get('header')}', body='{prior.get('body')}', code='{prior.get('code')}')")
@@ -567,12 +569,12 @@ def prompt_single_emoji(prompt_text: str, default_emoji: str) -> str:
     print("⚠️ Invalid selection. Keeping default.")
     return default_emoji
 
-def select_header_emojis_for_sections(num_sections: int, saved_config: dict) -> dict:
+def select_header_emojis_for_sections(section_numbers: list[int], saved_config: dict) -> dict:
     """
     Returns:
     {
       "default": "📚",
-      "sections": { "section1": "📚", "section2": "🔬", ... }
+      "sections": { "section1": "📚", "section3": "🔬", ... }
     }
     """
     print("\n🔣 Site Header Emoji")
@@ -588,14 +590,14 @@ def select_header_emojis_for_sections(num_sections: int, saved_config: dict) -> 
     result = {"default": default_emoji, "sections": {}}
     prev_sections = (prev.get("sections") or {})
 
-    for i in range(1, num_sections + 1):
-        section_key = f"section{i}"
+    for sec in section_numbers:
+        section_key = f"section{sec}"
         prior_for_section = prev_sections.get(section_key, default_emoji)
-        print(f"\nSection {i}: Press ENTER to use default → {default_emoji}")
+        print(f"\nSection {sec}: Press ENTER to use default → {default_emoji}")
         custom = input("Type 'c' to choose a different emoji, or press ENTER to accept default: ").strip().lower()
         if custom in ("c", "choose"):
             chosen = prompt_single_emoji(
-                f"Choose emoji for Section {i}:", prior_for_section
+                f"Choose emoji for Section {sec}:", prior_for_section
             )
             result["sections"][section_key] = chosen
         else:
@@ -659,7 +661,47 @@ def _patch_explorer_with_anchor(layout_src: str) -> tuple[str, bool]:
 
     return layout_src, changed
 
-# ---------- Main setup flow (baseline preserved + color selection added) ----
+# ---------- NEW: Timetable section numbers prompt ---------------------------
+
+def prompt_section_numbers(num_sections: int, saved_config: dict) -> list[int]:
+    """
+    Ask the teacher to enter the timetable section numbers (e.g., 1,3,4).
+    Enforces uniqueness and exact count == num_sections.
+    """
+    prev = saved_config.get("section_numbers")
+    if isinstance(prev, list) and prev:
+        default_list = [int(x) for x in prev]
+    else:
+        default_list = list(range(1, num_sections + 1))
+    default_str = ",".join(str(x) for x in default_list)
+
+    print(f"\nYou indicated you teach {num_sections} section(s).")
+    print("Enter the timetable section numbers for YOUR sections (e.g., 1,3,4).")
+    entry = input(f"> [Default: {default_str}]: ").strip()
+
+    if not entry:
+        return default_list
+
+    try:
+        parts = [p.strip() for p in entry.split(",") if p.strip() != ""]
+        nums = [int(p) for p in parts]
+    except ValueError:
+        print("Invalid input. Please enter comma-separated integers like 1,3,4.")
+        return prompt_section_numbers(num_sections, saved_config)
+
+    if len(nums) != num_sections:
+        print(f"Please provide exactly {num_sections} unique numbers.")
+        return prompt_section_numbers(num_sections, saved_config)
+    if len(set(nums)) != len(nums):
+        print("Duplicate numbers detected. Please enter unique section numbers.")
+        return prompt_section_numbers(num_sections, saved_config)
+    if any(n <= 0 for n in nums):
+        print("Section numbers must be positive integers.")
+        return prompt_section_numbers(num_sections, saved_config)
+
+    return nums
+
+# ---------- Main setup flow (baseline preserved + color/font/emoji updates) --
 
 def setup_course():
     print("\U0001F4DA Welcome to the Course Setup Script!\n")
@@ -682,19 +724,23 @@ def setup_course():
         looked_up_name = get_course_name_from_json(course_code) or "Course Website"
         course_name = prompt_with_default("Enter the formal course name", looked_up_name)
 
+    # Count first (kept for compatibility / UX), then timetable section numbers
     num_sections = int(prompt_with_default("How many sections are you teaching of this course?", saved_config.get("num_sections", 2)))
+    section_numbers = prompt_section_numbers(num_sections, saved_config)
+    # Normalize num_sections to entered list length
+    num_sections = len(section_numbers)
 
-    # ---- New: per-section colour scheme selection (interactive) ----
+    # ---- Per-section colour scheme selection (interactive) ----
     schemes = load_colour_schemes()
     previous_map = saved_config.get("color_schemes", {})
     color_schemes_map = {}
     if schemes:
         print("\n🎨 Choose a colour scheme for each section.\n")
-        for i in range(1, num_sections + 1):
-            section_key = f"section{i}"
+        for sec in section_numbers:
+            section_key = f"section{sec}"
             default_scheme_id = previous_map.get(section_key)
             chosen_id = interactive_pick_scheme_for_section(
-                schemes, section_number=i, default_id=default_scheme_id
+                schemes, section_number=sec, default_id=default_scheme_id
             )
             # If user cancels, keep previous; else pick current or fallback to first
             if not chosen_id:
@@ -702,11 +748,11 @@ def setup_course():
             color_schemes_map[section_key] = chosen_id
         clear_screen()
 
-    # ---- New: typography selection (after colours) ----
-    fonts_config = select_fonts_for_sections(num_sections, saved_config)
+    # ---- Typography selection (after colours) ----
+    fonts_config = select_fonts_for_sections(section_numbers, saved_config)
     
-    # ---- New: per-section header emoji selection (stateful) ----
-    emojis_config = select_header_emojis_for_sections(num_sections, saved_config)
+    # ---- Per-section header emoji selection (stateful) ----
+    emojis_config = select_header_emojis_for_sections(section_numbers, saved_config)
 
     # ---------- Original prompts (unchanged) ----------
     shared_folders = prompt_type_list(
@@ -746,26 +792,26 @@ def setup_course():
 
     expandable_items = prompt_select_multiple("Select folders/files that should be EXPANDABLE:", visible_items, default_expandable)
 
-    # ---------- New: Explorer expansion behaviour (stateful, applies to all sections) ----------
+    # ---------- Explorer expansion behaviour (stateful, applies to all sections) ----------
     expand_on_click = prompt_explorer_expansion_behavior(saved_config)
 
-    # ---------- New: Stateful footer prompt (replaces previous footer block) ----------
+    # ---------- Stateful footer prompt ----------
     footer_html = prompt_footer_html_stateful(saved_config)
 
-    # ---------- New: Ask about showing reading-time estimates (stateful) ----------
-    # Default to previous choice if present; otherwise default to False (hidden)
+    # ---------- Show reading-time estimates (stateful) ----------
     show_reading_time_default = bool(saved_config.get("show_reading_time", False))
     show_reading_time = prompt_yes_no_default(
         "Show page read time estimates to students?",
         show_reading_time_default
     )
 
-    # ---------- Save configuration (preserving new color_schemes + fonts) ----------
+    # ---------- Save configuration (now includes section_numbers) ----------
     config = {
         "course_code": course_code,
         "course_name": course_name,
         "emojis": emojis_config,
         "num_sections": num_sections,
+        "section_numbers": section_numbers,  # NEW: timetable-based identifiers
         "shared_folders": shared_folders,
         "shared_files": shared_files,
         "per_section_folders": per_section_folders,
@@ -787,7 +833,6 @@ def setup_course():
         json.dump(config, f, indent=2)
 
     # Get current timestamp in ISO8601 with milliseconds and timezone offset
-    # Determine timestamp with correct timezone
     tz_offset_str = os.environ.get("HOST_TZ_OFFSET")
     if tz_offset_str and len(tz_offset_str) == 5 and tz_offset_str[1:].isdigit():
         sign = 1 if tz_offset_str[0] == '+' else -1
@@ -807,9 +852,9 @@ def setup_course():
             with open(index_md_path, "w", encoding="utf-8") as f:
                 f.write("---\n")
                 f.write(f"title: {folder}\n")
-                for i in range(1, num_sections + 1):
-                    f.write(f"createdSection{i}: {now_str}\n")
-                    f.write(f"draftSection{i}: false\n")
+                for sec in section_numbers:
+                    f.write(f"createdSection{sec}: {now_str}\n")
+                    f.write(f"draftSection{sec}: false\n")
                 f.write("---\n")
                 f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site.\n")
     
@@ -819,9 +864,9 @@ def setup_course():
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write("---\n")
                 f.write(f"title: {file.replace('.md', '')}\n")
-                for i in range(1, num_sections + 1):
-                    f.write(f"createdSection{i}: {now_str}\n")
-                    f.write(f"draftSection{i}: false\n")
+                for sec in section_numbers:
+                    f.write(f"createdSection{sec}: {now_str}\n")
+                    f.write(f"draftSection{sec}: false\n")
                 f.write("---\n")
                 f.write(f"This is the shared file **{file}**.\n")
     
@@ -836,8 +881,8 @@ def setup_course():
     grade_char = course_code[3] if len(course_code) >= 4 else ""
     grade_label = grade_map.get(grade_char, "Grade ?")
 
-    for i in range(1, num_sections + 1):
-        section_name = f"section{i}"
+    for sec in section_numbers:
+        section_name = f"section{sec}"
         section_path = course_path / section_name
         section_path.mkdir(exist_ok=True)
     
@@ -845,7 +890,7 @@ def setup_course():
         if not index_md_path.exists():
             with open(index_md_path, "w", encoding="utf-8") as f:
                 f.write("---\n")
-                f.write(f"title: {grade_label} {course_name}, Section {i}\n")
+                f.write(f"title: {grade_label} {course_name}, Section {sec}\n")
                 f.write(f"created: {now_str}\n")
                 f.write("draft: false\n")
                 f.write("---\n")

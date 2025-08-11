@@ -320,6 +320,31 @@ def resolve_section_emoji(config: dict, section_number: int) -> str:
     return "📚"
 # --- END ADD -----------------------------------------------------------------
 
+# --- NEW: Read/validate timetable section numbers ---------------------------
+def get_allowed_section_numbers(config: dict) -> list[int]:
+    """
+    Returns the list of timetable section numbers for this course.
+    Falls back to [1..num_sections] if 'section_numbers' is not present.
+    """
+    try:
+        seq = config.get("section_numbers")
+        if isinstance(seq, list) and seq:
+            # Ensure ints
+            return [int(x) for x in seq]
+        n = int(config.get("num_sections", 1))
+        return list(range(1, n + 1))
+    except Exception:
+        return [1]
+
+def validate_requested_section(allowed: list[int], requested: int) -> bool:
+    if requested in allowed:
+        return True
+    print("❌ The requested section is not part of this course's timetable sections.")
+    print(f"   Allowed sections for this course: {allowed}")
+    print("   Tip: Re-run with e.g. '--section 3' to build Section 3 if that's assigned to you.")
+    return False
+# ---------------------------------------------------------------------------
+
 def update_page_title(config_path: Path, course_code: str, section_number: int, emoji: str):
     if not config_path.exists():
         print(f"⚠️ quartz.config.ts not found at {config_path}")
@@ -1196,6 +1221,7 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         return
     if not (course_dir / section_name).exists():
         print(f"❌ Section folder '{section_name}' not found in {course_dir}")
+        print("   Tip: run setup.sh again and include this section number in your timetable sections.")
         return
     if not config_file.exists():
         print(f"❌ course_config.json not found in {course_dir}")
@@ -1205,6 +1231,12 @@ def build_section_site(course_code: str, section_number: int, include_social_med
 
     with open(config_file, "r", encoding="utf-8") as f:
         config = json.load(f)
+
+    # NEW: Validate the requested section number against timetable sections
+    allowed_sections = get_allowed_section_numbers(config)
+    print(f"📋 Timetable sections for this course: {allowed_sections}")
+    if not validate_requested_section(allowed_sections, section_number):
+        return
 
     shared_folders = config.get("shared_folders", [])
     shared_files = config.get("shared_files", [])
@@ -1447,7 +1479,7 @@ def build_section_site(course_code: str, section_number: int, include_social_med
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Build Quartz site for a course section.")
     parser.add_argument("--course", required=True, help="Course code (e.g., ICS3U)")
-    parser.add_argument("--section", required=True, type=int, help="Section number (e.g., 1)")
+    parser.add_argument("--section", required=True, type=int, help="Timetable section number (e.g., 1, 3, 4)")
     parser.add_argument("--include-social-media-previews", action="store_true", help="Enable social media preview images via CustomOgImages emitter")
     parser.add_argument("--force-npm-install", action="store_true", help="Force npm install even if dependencies are present")
     parser.add_argument("--full-rebuild", action="store_true", help="Clear the full output folder and re-copy Quartz scaffold")
