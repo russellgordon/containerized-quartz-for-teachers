@@ -6,6 +6,7 @@ import subprocess
 import json
 import re
 from pathlib import Path
+from datetime import datetime
 
 # --- ADD: Patch typography fonts in quartz.config.ts -------------------------
 def _escape_font(val: str) -> str:
@@ -680,6 +681,27 @@ def install_locales(output_dir: Path):
         print(f"❌ Failed to install custom locales: {e}")
 
 
+# --- NEW: helper to generate timestamp string in desired format --------------
+def _current_created_timestamp() -> str:
+    """
+    Returns current timestamp like: 2025-08-10T12:30:24.000-0400
+    Uses America/Toronto when available, otherwise system local time.
+    """
+    ts = None
+    try:
+        # Prefer explicit TZ when tzdata is available
+        from zoneinfo import ZoneInfo  # Python 3.11+
+        ts = datetime.now(ZoneInfo("America/Toronto"))
+    except Exception:
+        ts = datetime.now().astimezone()
+    # Build string with fixed millisecond precision ".000" (as requested)
+    return ts.strftime("%Y-%m-%dT%H:%M:%S") + ".000" + ts.strftime("%z")
+# ---------------------------------------------------------------------------
+
+
+# Track curriculum folders we've already logged this build
+_logged_curriculum_folders = set()
+
 # NEW: process frontmatter for draft/created fields
 def process_frontmatter(file_path: Path, section_number: int):
     if file_path.suffix.lower() != ".md":
@@ -701,6 +723,20 @@ def process_frontmatter(file_path: Path, section_number: int):
     for key in list(post.keys()):
         if re.match(r"draftSection\d+", key) or re.match(r"createdSection\d+", key):
             del post[key]
+
+    # --- NEW: Auto-set/refresh 'created' for any file under a '*Curriculum*' folder ---
+    try:
+        for part in file_path.parts:
+            if "Curriculum" in part:
+                post["created"] = _current_created_timestamp()
+                folder_path = str(Path(*file_path.parts[:file_path.parts.index(part)+1]))
+                if folder_path not in _logged_curriculum_folders:
+                    print(f"🕒 Updated 'created' timestamps for all files in: {folder_path}")
+                    _logged_curriculum_folders.add(folder_path)
+                break
+    except Exception as e:
+        print(f"⚠️ Could not apply Curriculum timestamp to {file_path}: {e}")
+    # -----------------------------------------------------------------------------------
 
     try:
         with open(file_path, "w", encoding="utf-8") as f:
