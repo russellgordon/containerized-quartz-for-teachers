@@ -472,7 +472,7 @@ def inject_custom_footer_components(quartz_layout_path: Path, footer_component_p
         else:
             print("✅ Updated quartz.layout.ts to use Component.Footer()")
     else:
-        print(f"⚠️ quartz.layout.ts not found at {quartz_layout_path}")
+        print(f"⚠️ quartz.layout.ts not found at: {quartz_layout_path}")
 
     if footer_component_path.exists():
         with open(footer_component_path, "r", encoding="utf-8") as f:
@@ -948,6 +948,194 @@ def ensure_quartz_layout_anchor(quartz_layout_path: Path) -> bool:
     return True
 # -----------------------------------------------------------------------------
 
+# --- NEW ADD: Patch Explorer.tsx to wire expand-on-navigate flag -------------
+def patch_explorer_tsx_expand_behavior(explorer_tsx_path: Path):
+    """
+    Ensures Explorer.tsx reads expandOnFolderClick from course_config.json and exposes it via
+    data-expand-on-navigate, so explorer.inline.ts can decide whether to auto-open on navigation.
+    Idempotent.
+    """
+    if not explorer_tsx_path.exists():
+        print(f"⚠️ Explorer.tsx not found at {explorer_tsx_path}")
+        return
+    try:
+        src = explorer_tsx_path.read_text(encoding="utf-8")
+        changed = False
+
+        # Inject const expandOnFolderClick = courseConfig.expandOnFolderClick ?? true
+        if "expandOnFolderClick" not in src:
+            # Prefer inserting after expandableList definition
+            src2, n = re.subn(
+                r'(const\s+expandableList\s*=\s*courseConfig\.expandable\s*\?\?\s*\[\]\s*)',
+                r'\1\n\nconst expandOnFolderClick = courseConfig.expandOnFolderClick ?? true\n',
+                src, count=1
+            )
+            if n == 0:
+                # Fallback: insert after courseConfig import
+                src2, n = re.subn(
+                    r'(import\s+courseConfig\s+from\s+["\'][^"\']*course_config\.json["\']\s*)',
+                    r'\1\nconst expandOnFolderClick = courseConfig.expandOnFolderClick ?? true\n',
+                    src, count=1
+                )
+            if src2 != src:
+                src = src2
+                changed = True
+
+        # Add data-expand-on-navigate to wrapper div
+        if "data-expand-on-navigate" not in src:
+            src2, n = re.subn(
+                r'(<div\s+class=\{classNames\(displayClass,\s*"explorer"\)\}[^>]*?)>',
+                r'\1 data-expand-on-navigate={expandOnFolderClick}>',
+                src, flags=re.DOTALL, count=1
+            )
+            if n > 0:
+                src = src2
+                changed = True
+
+        if changed:
+            result = subprocess.run(
+                ["tee", str(explorer_tsx_path)],
+                input=src.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to patch Explorer.tsx:", result.stderr.decode())
+            else:
+                print("✅ Patched Explorer.tsx to wire expand-on-navigate flag")
+        else:
+            print("ℹ️ Explorer.tsx already has expand-on-navigate wiring (no change).")
+
+    except Exception as e:
+        print(f"⚠️ Error patching Explorer.tsx: {e}")
+# -----------------------------------------------------------------------------
+
+# --- NEW ADD: Patch explorer.inline.ts to honor expand-on-navigate -----------
+def patch_explorer_inline_expand_on_navigate(inline_path: Path):
+    """
+    Ensures explorer.inline.ts:
+      - adds 'expandOnNavigate: boolean' to ParsedOptions
+      - reads dataset.expandOnNavigate into opts
+      - gates auto-open on navigate with opts.expandOnNavigate
+    Idempotent.
+    """
+    if not inline_path.exists():
+        print(f"⚠️ explorer.inline.ts not found at {inline_path}")
+        return
+    try:
+        src = inline_path.read_text(encoding="utf-8")
+        changed = False
+
+        # 1) Interface: add field if missing
+        if "expandOnNavigate" not in src:
+            src = re.sub(
+                r'(interface\s+ParsedOptions\s*\{)([\s\S]*?)(\})',
+                lambda m: m.group(1) + m.group(2) + "\n  expandOnNavigate: boolean\n" + m.group(3),
+                src, count=1
+            )
+            changed = True
+
+        # 2) opts object: add property if missing
+        if "expandOnNavigate:" not in src:
+            src = re.sub(
+                r'(const\s+opts\s*:\s*ParsedOptions\s*=\s*\{[\s\S]*?)(\n\s*\})',
+                r'\1\n      expandOnNavigate: (explorer.dataset.expandOnNavigate ?? "true") == "true",\2',
+                src, count=1
+            )
+            changed = True
+
+        # 3) Gate auto-open on navigate
+        if re.search(r'if\s*\(\s*!isCollapsed\s*\|\|\s*folderIsPrefixOfCurrentSlug\s*\)\s*\{', src):
+            src = re.sub(
+                r'if\s*\(\s*!isCollapsed\s*\|\|\s*folderIsPrefixOfCurrentSlug\s*\)\s*\{',
+                r'if (!isCollapsed || (opts.expandOnNavigate and folderIsPrefixOfCurrentSlug)) {',
+                src, count=1
+            )
+            # Fix accidental 'and' if TS; replace with '&&'
+            src = src.replace(' and folderIsPrefixOfCurrentSlug', ' && folderIsPrefixOfCurrentSlug')
+            changed = True
+        elif "opts.expandOnNavigate" not in src:
+            # If condition already changed differently, we won't force it
+            pass
+
+        if changed:
+            result = subprocess.run(
+                ["tee", str(inline_path)],
+                input=src.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to patch explorer.inline.ts:", result.stderr.decode())
+            else:
+                print("✅ Patched explorer.inline.ts to honor expand-on-navigate")
+        else:
+            print("ℹ️ explorer.inline.ts already supports expand-on-navigate (no change).")
+
+    except Exception as e:
+        print(f"⚠️ Error patching explorer.inline.ts: {e}")
+        
+def patch_folder_click_behavior(quartz_layout_path: Path, expand_on_name: bool):
+    """
+    Ensure Component.Explorer(...) uses the desired folderClickBehavior:
+      - 'collapse'  → clicking the folder name toggles expansion
+      - 'link'      → clicking the folder name navigates
+    Patches ALL Explorer option objects it finds, idempotently.
+    """
+    if not quartz_layout_path.exists():
+        print(f"⚠️ quartz.layout.ts not found at {quartz_layout_path}")
+        return
+    try:
+        content = quartz_layout_path.read_text(encoding="utf-8")
+        desired = "collapse" if expand_on_name else "link"
+
+        # 1) Replace existing field values
+        pattern = re.compile(
+            r'(Component\.Explorer\(\s*\{[\s\S]*?folderClickBehavior\s*:\s*")(?:(?:link)|(?:collapse))(")',
+            flags=re.DOTALL
+        )
+        new_content, n1 = pattern.subn(rf'\1{desired}\2', content, count=0)
+
+        # 2) If the field is missing, insert it after the title field
+        if n1 == 0:
+            def insert_field(m: re.Match) -> str:
+                block = m.group(0)
+                inserted, n2 = re.subn(
+                    r'(title\s*:\s*"[^"]*"\s*,?)',
+                    r'\1\n    folderClickBehavior: "' + desired + '",',
+                    block,
+                    count=1
+                )
+                return inserted if n2 > 0 else block
+
+            new_content, n2 = re.subn(
+                r'Component\.Explorer\(\s*\{\s*[\s\S]*?\}\s*\)',
+                insert_field,
+                new_content,
+                count=0
+            )
+            changed = (n2 > 0)
+        else:
+            changed = True
+
+        if changed and new_content != content:
+            result = subprocess.run(
+                ["tee", str(quartz_layout_path)],
+                input=new_content.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to patch folderClickBehavior:", result.stderr.decode())
+            else:
+                print(f"✅ Set folderClickBehavior → '{desired}' in quartz.layout.ts")
+        else:
+            print("ℹ️ folderClickBehavior already set as desired (no change).")
+    except Exception as e:
+        print(f"⚠️ Error patching folderClickBehavior: {e}")
+
+# -----------------------------------------------------------------------------
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -1081,6 +1269,13 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     patch_content_meta_options(content_meta_tsx, show_reading_time)
     # --------------------------------------------------------------------
 
+    # --- ALWAYS: Patch Explorer expansion behaviour (idempotent) ---------
+    explorer_tsx = output_dir / "quartz" / "components" / "Explorer.tsx"
+    explorer_inline = output_dir / "quartz" / "components" / "scripts" / "explorer.inline.ts"
+    patch_explorer_tsx_expand_behavior(explorer_tsx)
+    patch_explorer_inline_expand_on_navigate(explorer_inline)
+    # --------------------------------------------------------------------
+
     install_patched_backlinks(output_dir)
 
     content_root = output_dir / "content"
@@ -1098,6 +1293,8 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         print(f"  🏠 Copied section index.md to content/index.md")
     else:
         print("⚠️ Section index.md not found — site may not render correctly.")
+
+    shared_paths = [course_dir / folder for folder in shared_folders]
 
     print(f"\n📥 Copying shared folders into {content_root}...")
     for src_folder in shared_paths:
@@ -1150,6 +1347,11 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     quartz_footer_tsx = output_dir / "quartz/components/Footer.tsx"
     ensure_quartz_layout_anchor(quartz_layout_ts)  # HARDENING: make sure anchor exists
     update_quartz_layout(quartz_layout_ts, hidden_list)  # ensure omit is present and updated
+    
+    # NEW: honor expandOnFolderClick from course_config.json
+    expand_on_name = bool(config.get("expandOnFolderClick", False))
+    patch_folder_click_behavior(quartz_layout_ts, expand_on_name)
+    
     footer_html = config.get("footer_html", "")
     inject_custom_footer_components(quartz_layout_ts, quartz_footer_tsx, footer_html)
 

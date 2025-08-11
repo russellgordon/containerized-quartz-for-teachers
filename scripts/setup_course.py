@@ -299,6 +299,34 @@ def prompt_yes_no_default(prompt_text: str, default: bool) -> bool:
     print("↪️ Unrecognized input; keeping default.")
     return default
 
+# ---------- New helper: Explorer expansion behaviour (stateful) -------------
+
+def prompt_explorer_expansion_behavior(saved_config: dict) -> bool:
+    """
+    Returns True if folder should expand when name OR chevron is clicked.
+    Returns False if folder should expand ONLY when chevron is clicked.
+    Default: False (expand only on chevron).
+    """
+    last = saved_config.get("expandOnFolderClick")
+    default = bool(last) if last is not None else False  # default to chevron-only
+    default_idx = 1 if default else 2
+
+    print("\n🧭 Explorer item expansion behaviour")
+    print("When clicking folders in the sidebar, choose what should happen:")
+    print(f"  1. Expand when chevron or name is clicked{'  ← default' if default_idx == 1 else ''}")
+    print(f"  2. Expand only when chevron is clicked{'  ← default' if default_idx == 2 else ''}")
+
+    choice = input(f"Select 1-2 [Default: {default_idx}]: ").strip()
+    if choice == "":
+        return default
+    if choice == "1":
+        return True
+    if choice == "2":
+        return False
+
+    print("↪️ Unrecognized input; keeping default.")
+    return default
+
 # ---------- New: Font selection helpers -------------------------------------
 
 FONT_PAIRINGS = [
@@ -718,6 +746,9 @@ def setup_course():
 
     expandable_items = prompt_select_multiple("Select folders/files that should be EXPANDABLE:", visible_items, default_expandable)
 
+    # ---------- New: Explorer expansion behaviour (stateful, applies to all sections) ----------
+    expand_on_click = prompt_explorer_expansion_behavior(saved_config)
+
     # ---------- New: Stateful footer prompt (replaces previous footer block) ----------
     footer_html = prompt_footer_html_stateful(saved_config)
 
@@ -741,6 +772,8 @@ def setup_course():
         "per_section_files": per_section_files,
         "hidden": hidden_items,
         "expandable": expandable_items,
+        # NEW: global Explorer expansion behaviour for this course
+        "expandOnFolderClick": expand_on_click,
         "footer_html": footer_html,
         # New flag stored for build_site.py to consume
         "show_reading_time": show_reading_time,
