@@ -8,6 +8,8 @@ import tty
 import termios
 from datetime import datetime, timezone, timedelta
 import textwrap
+import zipfile  # NEW: for backups
+import argparse  # NEW: for --no-backup flag
 
 DEFAULT_SHARED_FOLDERS = [
     "Concepts", "Discussions", "Examples", "Exercises", "Media",
@@ -26,6 +28,73 @@ DEFAULT_PER_SECTION_FILES = [
 ]
 
 COURSE_LOOKUP_PATH = Path("/opt/support/ontario_secondary_courses.json")
+
+# ---------- NEW: Backup exclusion set ---------------------------------------
+BACKUP_DEFAULT_EXCLUDES = {
+    "node_modules",
+    ".git",
+    ".quartz-cache",
+    ".cache",
+    "dist",
+    "build",
+    "out",
+    ".DS_Store",
+    "__pycache__",
+    ".merged_output",  # constructed output – exclude from backups
+}
+
+def _iter_nonempty(p: Path) -> bool:
+    """Return True if directory exists and has at least one entry."""
+    if not p.exists() or not p.is_dir():
+        return False
+    try:
+        next(p.iterdir())
+        return True
+    except StopIteration:
+        return False
+
+def backup_existing_course_dir(course_dir: Path, backup_root: Path, excludes: set[str] | None = None) -> Path | None:
+    """
+    If course_dir exists and is non-empty, create a zip backup at:
+      backup_root / course_dir.name / YYYY-MM-DD_HHMMSS.zip
+    Skips folders/files listed in `excludes` (merged_output, caches, etc.).
+    Returns the created zip path, or None if nothing was backed up.
+    """
+    excludes = (excludes or set()) | BACKUP_DEFAULT_EXCLUDES
+
+    if not _iter_nonempty(course_dir):
+        return None
+
+    backup_base = backup_root / course_dir.name
+    backup_base.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d_%H%M%S")
+    zip_path = backup_base / f"{ts}.zip"
+
+    print(f"🛟 Backing up existing course folder: {course_dir}")
+    print(f"    → Excluding: {', '.join(sorted(excludes)) or '(none)'}")
+    print(f"    → Writing:   {zip_path}")
+
+    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for root, dirs, files in os.walk(course_dir):
+            # Prune excluded directories in-place
+            dirs[:] = [d for d in dirs if d not in excludes]
+            rel_root = os.path.relpath(root, course_dir)
+            if rel_root == ".":
+                rel_root = ""
+            for name in files:
+                if name in excludes:
+                    continue
+                src = Path(root) / name
+                rel = Path(rel_root) / name
+                try:
+                    if src.is_file():
+                        zf.write(src, rel.as_posix())
+                except FileNotFoundError:
+                    # Ignore broken symlinks / races
+                    pass
+
+    print("✅ Backup complete.\n")
+    return zip_path
 
 # ---------- Colour scheme support (added) -----------------------------------
 
@@ -726,18 +795,29 @@ def prompt_section_numbers(num_sections: int, saved_config: dict) -> list[int]:
 
     return nums
 
-# ---------- Main setup flow (baseline preserved + color/font/emoji updates) --
+# ---------- Main setup flow (baseline preserved + backups + defaults) -------
 
-def setup_course():
+def setup_course(no_backup: bool = False):
     print("\U0001F4DA Welcome to the Course Setup Script!\n")
 
     base_path = Path("/teaching/courses")
     default_code = "ICS3U"
     course_code = prompt_with_default("Enter the course code (e.g. ICS3U)", default_code).upper()
     course_path = base_path / course_code
+
+    # --- NEW: Automatic backup BEFORE any mutations -------------------------
+    try:
+        if course_path.exists() and not no_backup:
+            backup_root = base_path / "_backups"
+            backup_existing_course_dir(course_path, backup_root)
+    except Exception as e:
+        print(f"⚠️ Backup warning: {e}")
+        print("   Proceeding without backup due to the error above.")
+
+    # Ensure the course directory exists (original behavior)
     course_path.mkdir(parents=True, exist_ok=True)
 
-    # --- NEW: Always ensure a course-level Media folder exists & announce purpose ---
+    # --- NEW: Always ensure a course-level Media folder & announce purpose ---
     media_path = course_path / "Media"
     media_path.mkdir(parents=True, exist_ok=True)
     # Drop a .gitkeep so it appears in version control even when empty
@@ -878,7 +958,11 @@ def setup_course():
         # New: fonts configuration to be applied by build_site.py per section
         "fonts": fonts_config,
     }
+    schemes = load_colour_schemes()  # ensure schemes defined for following line if earlier branch skipped
+    previous_map = saved_config.get("color_schemes", {})
     if schemes:
+        # If no new choices (e.g., schemes missing), keep previous mapping
+        color_schemes_map = {f"section{sec}": previous_map.get(f"section{sec}") for sec in section_numbers} if 'color_schemes_map' not in globals() else color_schemes_map
         config["color_schemes"] = color_schemes_map or previous_map
 
     with open(config_path, "w", encoding="utf-8") as f:
@@ -897,7 +981,7 @@ def setup_course():
     
     # ---------- Create shared structure (with createdSectionN + draftSectionN) ----------
     for folder in shared_folders:
-        folder_path = course_path / folder
+        folder_path = Path("/teaching/courses") / course_code / folder
         folder_path.mkdir(parents=True, exist_ok=True)
         index_md_path = folder_path / "index.md"
         if not index_md_path.exists():
@@ -911,7 +995,7 @@ def setup_course():
                 f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site.\n")
     
     for file in shared_files:
-        file_path = course_path / file
+        file_path = Path("/teaching/courses") / course_code / file
         if not file_path.exists():
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write("---\n")
@@ -935,7 +1019,7 @@ def setup_course():
 
     for sec in section_numbers:
         section_name = f"section{sec}"
-        section_path = course_path / section_name
+        section_path = Path("/teaching/courses") / course_code / section_name
         section_path.mkdir(exist_ok=True)
     
         index_md_path = section_path / "index.md"
@@ -1006,5 +1090,11 @@ def setup_course():
 
     print(f"\n✅ Course '{course_code}' set up successfully at: {course_path}")
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Course setup with automatic backups")
+    parser.add_argument("--no-backup", action="store_true", help="Skip creating a backup of the existing course folder.")
+    return parser.parse_args()
+
 if __name__ == "__main__":
-    setup_course()
+    args = parse_args()
+    setup_course(no_backup=args.no_backup)
