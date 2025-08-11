@@ -430,7 +430,7 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
     ]
 
     content = Path(quartz_layout_path).read_text(encoding="utf-8")
-    formatted = ", ".join(f'"{n}"' for n in normalized_hidden)
+    formatted = ", ".join(f'\"{n}\"' for n in normalized_hidden)
     replacement_line = f"const omit = new Set([{formatted}])"
 
     # Match both:
@@ -1197,6 +1197,39 @@ def patch_folder_click_behavior(quartz_layout_path: Path, expand_on_name: bool):
 
 # -----------------------------------------------------------------------------
 
+# --- NEW ADD: Media handling helpers -----------------------------------------
+def _ensure_media_symlink(content_root: Path, course_dir: Path):
+    """
+    Ensure `content/Media` is a relative symlink to the course-level `Media` folder.
+    Replaces any existing real folder with a symlink (to avoid duplication).
+    """
+    link_path = content_root / "Media"
+    target_abs = course_dir / "Media"
+    rel_target = os.path.relpath(target_abs, start=content_root)
+
+    # If a file/dir already exists at link_path, remove it first (carefully)
+    if link_path.exists() or link_path.is_symlink():
+        try:
+            if link_path.is_symlink() or link_path.is_file():
+                link_path.unlink()
+            else:
+                # It's a real directory; remove it to avoid duplication
+                shutil.rmtree(link_path)
+            print(f"♻️ Replaced existing 'Media' at {link_path} with a symlink.")
+        except Exception as e:
+            print(f"⚠️ Could not remove existing 'Media' at {link_path}: {e}")
+
+    try:
+        os.symlink(rel_target, link_path)
+        print(f"🔗 Created symlink: {link_path} -> {rel_target}")
+    except Exception as e:
+        print(f"❌ Failed to create Media symlink at {link_path}: {e}")
+
+def _filter_out_media(items: list[str]) -> list[str]:
+    """Return a copy of items with 'Media' removed (case-sensitive)."""
+    return [x for x in (items or []) if x != "Media"]
+# -----------------------------------------------------------------------------
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -1247,7 +1280,10 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     # NEW: teacher preference for reading-time
     show_reading_time = bool(config.get("show_reading_time", False))
 
-    shared_paths = [course_dir / folder for folder in shared_folders]
+    # --- NEW: exclude 'Media' from shared folder processing (we symlink it) ---
+    if "Media" in shared_folders:
+        print("ℹ️ Skipping 'Media' in shared folders (handled via symlink).")
+    shared_paths = [course_dir / folder for folder in _filter_out_media(shared_folders)]
 
     print(f"\n📁 Shared folders to include for '{section_name}':")
     for folder in shared_paths:
@@ -1353,6 +1389,9 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     content_root.mkdir(exist_ok=True)
     print(f"📂 Created fresh content folder: {content_root}")
 
+    # --- NEW: Ensure Media symlink is present inside content/ ---
+    _ensure_media_symlink(content_root, course_dir)
+
     section_index = section_dir / "index.md"
     if section_index.exists():
         dest = content_root / "index.md"
@@ -1362,8 +1401,7 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     else:
         print("⚠️ Section index.md not found — site may not render correctly.")
 
-    shared_paths = [course_dir / folder for folder in shared_folders]
-
+    # (shared_folders already filtered to exclude 'Media')
     print(f"\n📥 Copying shared folders into {content_root}...")
     for src_folder in shared_paths:
         print(f"🔍 Processing: {src_folder}")
@@ -1414,6 +1452,11 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     quartz_layout_ts = output_dir / "quartz.layout.ts"
     quartz_footer_tsx = output_dir / "quartz/components/Footer.tsx"
     ensure_quartz_layout_anchor(quartz_layout_ts)  # HARDENING: make sure anchor exists
+
+    # --- NEW: ensure 'Media' is always hidden in Explorer omit set ---
+    if "Media" not in hidden_list:
+        hidden_list.append("Media")
+
     update_quartz_layout(quartz_layout_ts, hidden_list)  # ensure omit is present and updated
     
     # NEW: honor expandOnFolderClick from course_config.json

@@ -189,7 +189,13 @@ def prompt_select_multiple(prompt_text, options, default_selection=None):
         print("Invalid input. Please try again.")
         return prompt_select_multiple(prompt_text, options, default_selection)
 
-def prompt_type_list(prompt_text, default_list=None, add_md_extension=False):
+def prompt_type_list(prompt_text, default_list=None, add_md_extension=False, forbidden_names=None):
+    """
+    Prompt the user for a comma-separated list of items.
+    - If forbidden_names is provided, any matches are removed and a warning is printed.
+    - If add_md_extension is True, ensure items end with .md.
+    """
+    forbidden_names = set((forbidden_names or []))
     print(f"\n{prompt_text}")
     if default_list:
         for item in default_list:
@@ -197,9 +203,28 @@ def prompt_type_list(prompt_text, default_list=None, add_md_extension=False):
     print("Enter comma-separated names or leave blank to accept default:")
     entry = input("> ").strip()
     if not entry:
-        return default_list if default_list else []
+        # Remove forbidden names from defaults silently but warn if they were present
+        defaults = default_list if default_list else []
+        filtered = [x for x in defaults if x not in forbidden_names]
+        removed = [x for x in defaults if x in forbidden_names]
+        if removed:
+            print(f"ℹ️  Skipping reserved name(s): {', '.join(removed)}")
+        return filtered
+
     raw = [name.strip() for name in entry.split(",") if name.strip()]
-    return [name + ".md" if add_md_extension and not name.endswith(".md") else name for name in raw]
+    # Remove forbidden names from provided list and warn
+    cleaned = []
+    removed = []
+    for name in raw:
+        if name in forbidden_names:
+            removed.append(name)
+            continue
+        cleaned.append(name + ".md" if add_md_extension and not name.endswith(".md") else name)
+
+    if removed:
+        print(f"⚠️  The following name(s) are reserved and will be skipped: {', '.join(removed)}. A course-level 'Media' folder is created automatically for storing images/videos and is hidden from the site sidebar.")
+
+    return cleaned
 
 def get_course_name_from_json(course_code):
     if not COURSE_LOOKUP_PATH.exists():
@@ -712,6 +737,21 @@ def setup_course():
     course_path = base_path / course_code
     course_path.mkdir(parents=True, exist_ok=True)
 
+    # --- NEW: Always ensure a course-level Media folder exists & announce purpose ---
+    media_path = course_path / "Media"
+    media_path.mkdir(parents=True, exist_ok=True)
+    # Drop a .gitkeep so it appears in version control even when empty
+    try:
+        (media_path / ".gitkeep").touch(exist_ok=True)
+    except Exception:
+        pass
+    print("\n🗂️  'Media' folder")
+    print("A course-level folder named 'Media' has been ensured at:")
+    print(f"   {media_path}")
+    print("Use it to store larger binary assets (images, short videos, PDFs).")
+    print("It is automatically hidden from the site's Explorer and shared across all sections.")
+    print("Note: You do not need to add 'Media' to any folder lists below—it's created for you.\n")
+
     config_path = course_path / "course_config.json"
     saved_config = {}
     if config_path.exists():
@@ -754,10 +794,15 @@ def setup_course():
     # ---- Per-section header emoji selection (stateful) ----
     emojis_config = select_header_emojis_for_sections(section_numbers, saved_config)
 
-    # ---------- Original prompts (unchanged) ----------
+    # ---------- Original prompts (unchanged except for Media handling) ----------
+    # Remove 'Media' from defaults so it never appears in the selection prompt
+    shared_default_candidates = saved_config.get("shared_folders", DEFAULT_SHARED_FOLDERS)
+    shared_default_filtered = [x for x in (shared_default_candidates or []) if x != "Media"]
+
     shared_folders = prompt_type_list(
         "Enter folder names to be shared across all sections – defaults are:",
-        saved_config.get("shared_folders", DEFAULT_SHARED_FOLDERS)
+        shared_default_filtered,
+        forbidden_names=["Media"]  # prevent user from adding 'Media'
     )
     shared_files = prompt_type_list(
         "Enter Markdown file names to be shared across all sections – defaults are:",
@@ -766,7 +811,8 @@ def setup_course():
     )
     per_section_folders = prompt_type_list(
         "Enter folder names to be duplicated per section – defaults are:",
-        saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS)
+        saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS),
+        forbidden_names=["Media"]  # prevent user from adding 'Media'
     )
     per_section_files = prompt_type_list(
         "Enter Markdown file names to be duplicated per section – defaults are:",
@@ -782,6 +828,8 @@ def setup_course():
         "Private Notes.md", "Scratch Page.md", "Key Links.md"
     ] if not saved_config else saved_config.get("hidden", [])
 
+    # IMPORTANT: 'Media' will NOT appear in this prompt because it's not in all_selected,
+    # but we still want it hidden in config. We'll enforce that after the prompt.
     hidden_items = prompt_select_multiple("Select folders/files to HIDE from the sidebar:", all_selected, default_hidden)
     visible_items = [item for item in all_selected if item not in hidden_items]
 
@@ -804,6 +852,10 @@ def setup_course():
         "Show page read time estimates to students?",
         show_reading_time_default
     )
+
+    # Ensure 'Media' is always in hidden list even though it wasn't prompted
+    if "Media" not in hidden_items:
+        hidden_items.append("Media")
 
     # ---------- Save configuration (now includes section_numbers) ----------
     config = {
