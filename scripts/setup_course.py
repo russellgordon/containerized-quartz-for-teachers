@@ -992,7 +992,7 @@ def setup_course(no_backup: bool = False):
                     f.write(f"createdSection{sec}: {now_str}\n")
                     f.write(f"draftSection{sec}: false\n")
                 f.write("---\n")
-                f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site.\n")
+                f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site. Or, remove this file and Quartz will show only a listing of files that exist in this folder instead.\n")
     
     for file in shared_files:
         file_path = Path("/teaching/courses") / course_code / file
