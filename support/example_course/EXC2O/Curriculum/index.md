@@ -1,6 +1,7 @@
 ---
 title: Curriculum
 excludeFromExplorer: true
+renderFolderPages: false
 ---
 # Digital Technologies and Innovations in the Changing World
 > [!NOTE]
