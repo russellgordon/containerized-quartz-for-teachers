@@ -1366,7 +1366,9 @@ def _atomic_write_json_with_backup(path: Path, data: dict):
             pass
 
 def preflight_update_course_config(course_dir: Path, section_dir: Path, config_path: Path) -> dict:
-    """Discover new items and append them to course_config.json (add-only). Return updated config dict."""
+    """Discover new items and append them to course_config.json (add-only). Return updated config dict.
+    Also: any newly discovered folders are marked not hidden and added to the expandable list.
+    """
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             cfg = json.load(f)
@@ -1379,27 +1381,50 @@ def preflight_update_course_config(course_dir: Path, section_dir: Path, config_p
     shared_files = list(cfg.get("shared_files", []))
     per_section_folders = list(cfg.get("per_section_folders", []))
     per_section_files = list(cfg.get("per_section_files", []))
+    hidden_list = list(cfg.get("hidden", []))
+    expandable_list = list(cfg.get("expandable", []))
 
     # Discover
     disc_shared_folders, disc_shared_files = discover_shared_items(course_dir)
     disc_sec_folders, disc_sec_files = discover_section_items(section_dir)
 
-    # Append-only updates
+    # Determine which folders are *new* (before mutating lists)
+    new_shared_folders = [x for x in disc_shared_folders if x not in shared_folders]
+    new_sec_folders = [x for x in disc_sec_folders if x not in per_section_folders]
+
+    # Append-only updates for copy lists
     added_sf = _safe_unique_append(shared_folders, disc_shared_folders)
     added_sfi = _safe_unique_append(shared_files, disc_shared_files)
     added_psf = _safe_unique_append(per_section_folders, disc_sec_folders)
     added_psfi = _safe_unique_append(per_section_files, disc_sec_files)
+
+    # For newly discovered folders: ensure NOT hidden + ensure in expandable
+    hidden_changed = False
+    expandable_changed = False
+    for name in new_shared_folders + new_sec_folders:
+        if name in hidden_list:
+            hidden_list = [h for h in hidden_list if h != name]
+            hidden_changed = True
+            print(f"👁️‍🗨️ Un-hid newly discovered folder: {name}")
+        if name not in expandable_list:
+            expandable_list.append(name)
+            expandable_changed = True
+            print(f"➕ Marked newly discovered folder as expandable: {name}")
 
     print(f"\n📌 Auto-discovered shared folders: {disc_shared_folders or '—'}")
     print(f"📌 Auto-discovered shared files: {disc_shared_files or '—'}")
     print(f"📌 Auto-discovered per-section folders: {disc_sec_folders or '—'}")
     print(f"📌 Auto-discovered per-section files: {disc_sec_files or '—'}")
 
-    if any([added_sf, added_sfi, added_psf, added_psfi]):
+    if any([added_sf, added_sfi, added_psf, added_psfi, hidden_changed, expandable_changed]):
         cfg["shared_folders"] = shared_folders
         cfg["shared_files"] = shared_files
         cfg["per_section_folders"] = per_section_folders
         cfg["per_section_files"] = per_section_files
+        if hidden_changed:
+            cfg["hidden"] = hidden_list
+        if expandable_changed:
+            cfg["expandable"] = expandable_list
         _atomic_write_json_with_backup(config_path, cfg)
     else:
         print("ℹ️ No new items discovered; course_config.json unchanged.")
