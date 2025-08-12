@@ -1142,12 +1142,13 @@ def setup_course(no_backup: bool = False):
         # New: fonts configuration to be applied by build_site.py per section
         "fonts": fonts_config,
     }
-    schemes = load_colour_schemes()  # ensure schemes defined for following line if earlier branch skipped
-    previous_map = saved_config.get("color_schemes", {})
+    previous_map = saved_config.get("color_schemes", {}) or {}
     if schemes:
-        # If no new choices (e.g., schemes missing), keep previous mapping
-        color_schemes_map = {f"section{sec}": previous_map.get(f"section{sec}") for sec in section_numbers} if 'color_schemes_map' not in globals() else color_schemes_map
-        config["color_schemes"] = color_schemes_map or previous_map
+        # Use the choices gathered earlier in this run
+        config["color_schemes"] = color_schemes_map
+    else:
+        # No schemes available now; keep whatever was previously saved
+        config["color_schemes"] = previous_map
 
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2)
