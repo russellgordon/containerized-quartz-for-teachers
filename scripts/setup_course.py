@@ -605,7 +605,7 @@ def select_fonts_for_sections(section_numbers: list[int], saved_config: dict) ->
 
     return fonts
     
-# ---------- New: Header emoji selection helpers -----------------------------
+# ---------- Header emoji selection helpers (per-section only) ----------------
 
 PRESET_HEADER_EMOJIS = [
     "📚", "🎓", "🏫", "✏️", "📝", "📐",
@@ -621,11 +621,9 @@ def _looks_like_single_emoji(s: str) -> bool:
     s = (s or "").strip()
     if not s or any(ch.isspace() for ch in s):
         return False
-    # Quick reject: letters/digits/punctuation other than emoji modifiers
     for ch in s:
         if ch.isalnum():
             return False
-    # Count "base" codepoints (exclude VS-16/FE0F, VS-15/FE0E, zero-width-joiner, skin tones)
     SKIN_TONES = {0x1F3FB, 0x1F3FC, 0x1F3FD, 0x1F3FE, 0x1F3FF}
     ZWJ = 0x200D
     VARIATION_SELECTORS = {0xFE0E, 0xFE0F}
@@ -660,7 +658,6 @@ def prompt_single_emoji(prompt_text: str, default_emoji: str) -> str:
                 return custom
             print("⚠️ That doesn't look like a single emoji. Keeping default.")
             return default_emoji
-    # Fallback: treat the whole input as a custom attempt
     if _looks_like_single_emoji(choice):
         return choice
     print("⚠️ Invalid selection. Keeping default.")
@@ -670,37 +667,31 @@ def select_header_emojis_for_sections(section_numbers: list[int], saved_config: 
     """
     Returns:
     {
-      "default": "📚",
       "sections": { "section1": "📚", "section3": "🔬", ... }
     }
+    (No course-level default is stored.)
     """
-    print("\n🔣 Site Header Emoji")
-    print("This emoji appears at the top-left of every page for the section.")
-    print("It must be a single emoji (e.g., 📚).")
+    print("\n🔣 Section Header Emojis")
+    print("Pick a single emoji for each section. (e.g., 📚)")
+    print("Tip: Press ENTER to keep the shown default from a previous run.\n")
 
-    prev = (saved_config.get("emojis") or {})
-    prev_default = prev.get("default", "📚")
-    default_emoji = prompt_single_emoji(
-        "Pick a default header emoji for this course:", prev_default
-    )
+    prev_emojis = (saved_config.get("emojis") or {})
+    # Back-compat: if an older config had a course-level default, we only use it as a suggestion
+    prev_default = prev_emojis.get("default")
+    prev_sections = prev_emojis.get("sections") if isinstance(prev_emojis.get("sections"), dict) else {}
 
-    result = {"default": default_emoji, "sections": {}}
-    prev_sections = (prev.get("sections") or {})
-
+    result_sections = {}
     for sec in section_numbers:
         section_key = f"section{sec}"
-        prior_for_section = prev_sections.get(section_key, default_emoji)
-        print(f"\nSection {sec}: Press ENTER to use default → {default_emoji}")
-        custom = input("Type 'c' to choose a different emoji, or press ENTER to accept default: ").strip().lower()
-        if custom in ("c", "choose"):
-            chosen = prompt_single_emoji(
-                f"Choose emoji for Section {sec}:", prior_for_section
-            )
-            result["sections"][section_key] = chosen
-        else:
-            result["sections"][section_key] = default_emoji
+        prior_for_section = prev_sections.get(section_key)
+        suggested = prior_for_section or prev_default or PRESET_HEADER_EMOJIS[0]
+        chosen = prompt_single_emoji(
+            f"Choose header emoji for Section {sec}:", suggested
+        )
+        result_sections[section_key] = chosen
 
-    return result
+    return {"sections": result_sections}
+
 
 # ---------- Hardened Explorer patch helpers ---------------------------------
 
@@ -1151,7 +1142,8 @@ def setup_course(no_backup: bool = False):
         config["color_schemes"] = previous_map
 
     with open(config_path, "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=2)
+        json.dump(config, f, indent=2, ensure_ascii=False)
+        f.write("\n")  # nice-to-have: trailing newline
 
     # Get current timestamp in ISO8601 with milliseconds and timezone offset
     tz_offset_str = os.environ.get("HOST_TZ_OFFSET")

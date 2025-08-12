@@ -304,17 +304,20 @@ def adjust_created_modified_priority(config_path: Path):
 # --- ADD: Resolve per-section emoji from course_config.json ------------------
 def resolve_section_emoji(config: dict, section_number: int) -> str:
     """
-    Returns the emoji to use for the page title, preferring the per-section choice,
-    then the course default, falling back to 📚.
+    Returns the emoji to use for the page title, preferring the per-section choice.
+    Falls back to a legacy course-level default only if present; otherwise '📚'.
     """
     try:
         emojis = config.get("emojis", {})
         if isinstance(emojis, dict):
-            default_emo = emojis.get("default") or "📚"
             sec_map = emojis.get("sections") or {}
             sec_emo = sec_map.get(f"section{section_number}")
-            chosen = (sec_emo or default_emo or "📚").strip()
-            return chosen if chosen else "📚"
+            if isinstance(sec_emo, str) and sec_emo.strip():
+                return sec_emo.strip()
+            # Back-compat: if older configs stored a course-level "default", use it as a fallback
+            legacy_default = emojis.get("default")
+            if isinstance(legacy_default, str) and legacy_default.strip():
+                return legacy_default.strip()
     except Exception:
         pass
     return "📚"
