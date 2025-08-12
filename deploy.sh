@@ -39,6 +39,21 @@ SECTION_DIR_HOST="${MERGED_DIR_HOST}/section${SECTION_NUM}"
 HOST_TZ_OFFSET="$(date +%z)"
 echo "🕒 Host timezone offset: $HOST_TZ_OFFSET"
 
+# Extra friendly preflight: ensure the course folder exists
+if [[ ! -d "${COURSE_DIR_HOST}" ]]; then
+  echo "❌ Course folder not found on host:"
+  echo "   ${COURSE_DIR_HOST}"
+  echo
+  echo "👉 Make sure you've run the course setup and/or preview steps."
+  echo "   Try: ./preview.sh ${COURSE_CODE} ${SECTION_NUM}"
+  if [[ -d "$(pwd)/courses" ]]; then
+    echo
+    echo "📚 Available course folders:"
+    ls -1 "$(pwd)/courses" | sed 's/^/   - /'
+  fi
+  exit 1
+fi
+
 # Friendly preflight: ensure the merged output for this section exists
 if [[ ! -d "${SECTION_DIR_HOST}" ]]; then
   echo "❌ Section directory not found on host:"
