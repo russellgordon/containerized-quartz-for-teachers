@@ -1274,6 +1274,146 @@ def _filter_out_media(items: list[str]) -> list[str]:
     return [x for x in (items or []) if x != "Media"]
 # -----------------------------------------------------------------------------
 
+# === NEW: Discovery + preflight config update ================================
+_IGNORED_SHARED_FOLDERS = {
+    "merged_output", ".merged_output", ".obsidian", "node_modules", "Media"
+}
+_IGNORED_SHARED_FILES = {
+    "course_config.json",
+    "hidden_explorer_components.json",
+    "expandable_explorer_components.json",
+    "preview.sh",
+    "setup.sh",
+    "setup_course.py",
+    "build_script.py",
+    "build_site.py",
+    ".DS_Store",
+    "Thumbs.db",
+}
+
+def _is_hidden(name: str) -> bool:
+    return name.startswith(".")
+
+def _is_section_folder(name: str) -> bool:
+    return re.fullmatch(r"section\d+", name or "") is not None
+
+def _safe_unique_append(dst: list[str], items: list[str]) -> int:
+    """Append items to dst if not present; return how many were added."""
+    added = 0
+    for x in items:
+        if x not in dst:
+            dst.append(x)
+            added += 1
+    return added
+
+def discover_shared_items(course_dir: Path) -> tuple[list[str], list[str]]:
+    """Scan the course root and discover shared folders & files (top-level only)."""
+    found_folders = []
+    found_files = []
+    try:
+        for item in course_dir.iterdir():
+            name = item.name
+            if _is_hidden(name):
+                continue
+            if item.is_dir():
+                if name in _IGNORED_SHARED_FOLDERS or _is_section_folder(name):
+                    continue
+                found_folders.append(name)
+            elif item.is_file():
+                if name in _IGNORED_SHARED_FILES or name.startswith("hidden_explorer_components") or name.startswith("expandable_explorer_components"):
+                    continue
+                found_files.append(name)
+    except Exception as e:
+        print(f"⚠️ Could not scan course root for discovery: {e}")
+    return found_folders, found_files
+
+def discover_section_items(section_dir: Path) -> tuple[list[str], list[str]]:
+    """Scan section root and discover per-section folders & files (top-level only)."""
+    found_folders = []
+    found_files = []
+    try:
+        for item in section_dir.iterdir():
+            name = item.name
+            if _is_hidden(name):
+                continue
+            if item.is_dir():
+                if name == "Media":
+                    continue
+                found_folders.append(name)
+            elif item.is_file():
+                if name in {".DS_Store", "Thumbs.db", "index.md"}:
+                    continue
+                found_files.append(name)
+    except Exception as e:
+        print(f"⚠️ Could not scan section root for discovery: {e}")
+    return found_folders, found_files
+
+def _atomic_write_json_with_backup(path: Path, data: dict):
+    """Write JSON atomically and back up original as .bak."""
+    try:
+        if path.exists():
+            backup = path.with_suffix(".json.bak")
+            shutil.copy2(path, backup)
+            print(f"🧾 Backed up course_config.json → {backup.name}")
+    except Exception as e:
+        print(f"⚠️ Could not create backup: {e}")
+    tmp = path.with_suffix(".json.tmp")
+    try:
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+            f.write("\n")
+        os.replace(tmp, path)
+        print("✅ Updated course_config.json with discovered items.")
+    except Exception as e:
+        print(f"❌ Failed to write updated course_config.json: {e}")
+        try:
+            if tmp.exists():
+                tmp.unlink()
+        except Exception:
+            pass
+
+def preflight_update_course_config(course_dir: Path, section_dir: Path, config_path: Path) -> dict:
+    """Discover new items and append them to course_config.json (add-only). Return updated config dict."""
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    except Exception as e:
+        print(f"❌ Could not read course_config.json for preflight: {e}")
+        return {}
+
+    # Read current lists (copy so we can mutate safely)
+    shared_folders = list(cfg.get("shared_folders", []))
+    shared_files = list(cfg.get("shared_files", []))
+    per_section_folders = list(cfg.get("per_section_folders", []))
+    per_section_files = list(cfg.get("per_section_files", []))
+
+    # Discover
+    disc_shared_folders, disc_shared_files = discover_shared_items(course_dir)
+    disc_sec_folders, disc_sec_files = discover_section_items(section_dir)
+
+    # Append-only updates
+    added_sf = _safe_unique_append(shared_folders, disc_shared_folders)
+    added_sfi = _safe_unique_append(shared_files, disc_shared_files)
+    added_psf = _safe_unique_append(per_section_folders, disc_sec_folders)
+    added_psfi = _safe_unique_append(per_section_files, disc_sec_files)
+
+    print(f"\n📌 Auto-discovered shared folders: {disc_shared_folders or '—'}")
+    print(f"📌 Auto-discovered shared files: {disc_shared_files or '—'}")
+    print(f"📌 Auto-discovered per-section folders: {disc_sec_folders or '—'}")
+    print(f"📌 Auto-discovered per-section files: {disc_sec_files or '—'}")
+
+    if any([added_sf, added_sfi, added_psf, added_psfi]):
+        cfg["shared_folders"] = shared_folders
+        cfg["shared_files"] = shared_files
+        cfg["per_section_folders"] = per_section_folders
+        cfg["per_section_files"] = per_section_files
+        _atomic_write_json_with_backup(config_path, cfg)
+    else:
+        print("ℹ️ No new items discovered; course_config.json unchanged.")
+
+    return cfg
+# =============================================================================
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -1314,6 +1454,12 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     print(f"📋 Timetable sections for this course: {allowed_sections}")
     if not validate_requested_section(allowed_sections, section_number):
         return
+
+    # === NEW: Preflight discovery → append into course_config.json ============
+    print("\n🔎 Preflight: discovering new shared and per-section items...")
+    config = preflight_update_course_config(course_dir, section_dir, config_file) or config
+    # Re-read lists from (possibly) updated config
+    # ========================================================================
 
     shared_folders = config.get("shared_folders", [])
     shared_files = config.get("shared_files", [])
