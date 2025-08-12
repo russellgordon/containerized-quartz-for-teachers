@@ -1014,10 +1014,10 @@ def setup_course(no_backup: bool = False):
             saved_config = json.load(f)
 
     if saved_config.get("course_name"):
-        course_name = prompt_with_default("Enter the formal course name", saved_config["course_name"])
+        course_name = prompt_with_default("Enter the course name you wish to use", saved_config["course_name"])
     else:
         looked_up_name = get_course_name_from_json(course_code) or "Course Website"
-        course_name = prompt_with_default("Enter the formal course name", looked_up_name)
+        course_name = prompt_with_default("Enter the course name you wish to use", looked_up_name)
 
     # Count first (kept for compatibility / UX), then timetable section numbers
     num_sections = int(prompt_with_default("How many sections are you teaching of this course?", saved_config.get("num_sections", 2)))
