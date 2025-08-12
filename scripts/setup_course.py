@@ -228,7 +228,7 @@ def prompt_with_default(prompt_text, default_value):
     return response if response else default_value
 
 def prompt_select_multiple(prompt_text, options, default_selection=None):
-    BLUE = "\033[94m"
+    BLUE = "\033[34m"
     RESET_LOCAL = "\033[0m"
 
     # Highlight "HIDE" or "EXPANDABLE" in blue if present in prompt_text
