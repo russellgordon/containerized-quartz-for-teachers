@@ -25,6 +25,7 @@ RUN cp -r /opt/quartz /opt/quartz-site
 # Copy in setup_course.py, build_site.py
 COPY scripts/setup_course.py /opt/scripts/setup_course.py
 COPY scripts/build_site.py /opt/scripts/build_site.py
+COPY scripts/deploy.py /opt/scripts/deploy.py
 
 # Copy course metadata lookup file into container
 COPY support/ /opt/support/
