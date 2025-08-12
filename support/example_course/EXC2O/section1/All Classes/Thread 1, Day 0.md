@@ -7,10 +7,10 @@ excludeBacklinks: true
 tags:
 ---
 ## Agenda
-1. Activity: [[Ultimate Rock-Paper-Scissors]]
-1. [Course Outline](https://drive.google.com/file/d/1uWps8Mk0a7KohiR-1P2B0QDOiw0gyL9o/view?usp=drive_link)
-1. Portfolio: [[Creating a Notion Account]]
-1. Portfolio: [[First Entry]]
+1. Activity: [[Rock-Paper-Scissors]]
+2. [Course Outline](https://drive.google.com/file/d/1uWps8Mk0a7KohiR-1P2B0QDOiw0gyL9o/view?usp=drive_link)
+3. Portfolio: [[Creating a Notion Account]]
+4. Portfolio: [[First Entry]]
 
 ## Things to do before our next class
 - [ ] Be sure you have [[First Entry|written your first portfolio post]] to introduce yourself and identify your areas of interest.

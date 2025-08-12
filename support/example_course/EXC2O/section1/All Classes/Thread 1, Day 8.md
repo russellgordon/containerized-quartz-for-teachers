@@ -7,10 +7,10 @@ excludeBacklinks: true
 tags:
 ---
 ## Agenda
-1. Task: [[T-Shirt Shadow Prints]]
+1. Task: [[T-shirt Shadow Prints]]
 	> [!TIP]
 	> 
-	> If you finish early, here is [[T-Shirt Shadow Prints#Reflection prompts|how to hand in your work]].
+	> If you finish early, here is [[T-shirt Shadow Prints#Reflection prompts|how to hand in your work]].
 
 ## Things to do before our next class
 - [ ] Make significant progress on your shadow prints task.

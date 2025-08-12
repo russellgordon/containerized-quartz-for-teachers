@@ -28,7 +28,7 @@ After making a bookmark, you can edit it's name to be more concise:
 
 ![[Making a Bookmark in Chrome.mp4]]
 
-### Making a bookmark using Safari
+### Safari
 
 #### Showing the favourites bar
 

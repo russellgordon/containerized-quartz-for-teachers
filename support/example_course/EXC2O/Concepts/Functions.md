@@ -6,11 +6,13 @@ createdSection2: 2024-10-17T07:00:00.000-0400
 tags:
   - C3.3
 ---
+## Introduction
+
 Once a person has learned to tie their shoelaces, they stop consciously thinking about the individual steps involved.
 
 If someone asks them to tie their shoelaces, the person can do just that.
 
-In the same way, once we have worked out the individual steps of a task, we can teach the computer how to carry them out with a single command.
+In the same way, once we have worked out the individual steps of a task, we can teach the computer how to carry them out with a single command. This is an example of *abstraction*. One way that we can apply abstraction is by defining a *function*.
 
 ## Defining a function
 
@@ -83,7 +85,7 @@ Now, since we have used, or *invoked* the function, we see a star drawn on the s
 Make a playground that uses the `star` function and a loop to draw many stars within the playground's canvas.
 
 > [!NOTE]
-> This exercise assumes that you have completed the steps described in [[Introduction to Loops]].
+> This exercise assumes that you have completed the steps described in [[Loops]].
 
 Here is one example – see if you could create even more stars!
 

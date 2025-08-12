@@ -15,7 +15,6 @@ tags:
   - C2.6
   - C2.7
 ---
-
 ## Objective
 
 Create a scene that includes a passable reproduction of a panda (or other animal) to refresh your understanding of why *sequence* – order of statements – matters when writing code.
@@ -73,4 +72,5 @@ When you finish your work on this task, please make a post in your portfolio on 
 - Provide examples showing how you made your code as readable as possible, and describe specific strategies you used to author readable code.
 
 ## Learning goals
+
 Successful completion of this task is great evidence of progress toward mastering  learning goals 1, 4, and 5.

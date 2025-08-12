@@ -10,7 +10,7 @@ tags:
 1. Exercise: [[Ramones]]
 	- Show that you really understand iteration and sequence by reproducing this gig poster. 🎸
 	- You are meant to work largely independently today – but as always, are encouraged to consult with and help your peers.
-1. Activity: [[Computer Security]]
+2. Exercise: [[Computer Security]]
 	- With any time you have remaining, you are welcome to continue working on Hacktivate challenges.
 	  
 ## Things to do before our next class

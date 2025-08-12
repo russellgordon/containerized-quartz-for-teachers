@@ -9,8 +9,8 @@ notes: Remember to have students start their portfolio entry before leaving clas
 ---
 ## Agenda
 1. Concept: [[Driver-Navigator Pattern]]
-4. Concept: [[Introduction to Loops]]
-5. Concept: [[Introduction to Functions]]
+4. Concept: [[Loops]]
+5. Concept: [[Functions]]
 6. Exercise: [[Shapes]]
 
 ## Things to do before our next class

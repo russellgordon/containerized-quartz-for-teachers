@@ -1,19 +1,19 @@
 {
   "main": {
-    "id": "dd1e33777b4585ee",
+    "id": "935f3509d358e345",
     "type": "split",
     "children": [
       {
-        "id": "6c98fd18ba9f4efd",
+        "id": "2e608f0c4dba9b19",
         "type": "tabs",
         "children": [
           {
-            "id": "fb1f6129045cfbc1",
+            "id": "35278108c42983b7",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "section2/index.md",
+                "file": "section1/index.md",
                 "mode": "source",
                 "source": true
               },
@@ -27,15 +27,15 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "25a51a5303edaf94",
+    "id": "0f52f910a1bf044b",
     "type": "split",
     "children": [
       {
-        "id": "e60296a9f3cd7970",
+        "id": "6e9fa3d9f6753594",
         "type": "tabs",
         "children": [
           {
-            "id": "dd4f5838116cf2e5",
+            "id": "0b56cc6365daa23b",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
@@ -48,12 +48,12 @@
             }
           },
           {
-            "id": "54fa9e5780402aae",
+            "id": "1a16ef8465dfad98",
             "type": "leaf",
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "update to macos 14.7",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -65,7 +65,7 @@
             }
           },
           {
-            "id": "0ae545bf8bb888e3",
+            "id": "7dc8b7e8eca269b2",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -78,23 +78,23 @@
       }
     ],
     "direction": "horizontal",
-    "width": 331.5
+    "width": 300
   },
   "right": {
-    "id": "15cb08d219d2e59c",
+    "id": "f9cb5e006f7594cd",
     "type": "split",
     "children": [
       {
-        "id": "4e1a1e1a830141d0",
+        "id": "e9b521be400f3048",
         "type": "tabs",
         "children": [
           {
-            "id": "81cb41f9e8bf8330",
+            "id": "a9491637d76cebb5",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "SIC Drop-In Sessions.md",
+                "file": "section1/index.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,25 +104,25 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for SIC Drop-In Sessions"
+              "title": "Backlinks for index"
             }
           },
           {
-            "id": "0367682421aa632e",
+            "id": "830b83aeeb1046f9",
             "type": "leaf",
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "SIC Drop-In Sessions.md",
+                "file": "section1/index.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from SIC Drop-In Sessions"
+              "title": "Outgoing links from index"
             }
           },
           {
-            "id": "b2ab46a7a3732c90",
+            "id": "faaf0c3c8278b2a4",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -137,18 +137,18 @@
             }
           },
           {
-            "id": "dd78745514181aab",
+            "id": "e4167ea94631a293",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "SIC Drop-In Sessions.md",
+                "file": "section1/index.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of SIC Drop-In Sessions"
+              "title": "Outline of index"
             }
           }
         ]
@@ -168,33 +168,35 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "fb1f6129045cfbc1",
+  "active": "35278108c42983b7",
   "lastOpenFiles": [
-    "section2/index.md",
-    "section2/All Classes/Thread 2, Day 10.md",
-    "section1/index.md",
-    "Discussions/Gig Posters Task.md",
-    "Discussions/Art and Programming.md",
-    "Exercises/Applying Abstraction.md",
-    "Exercises/Superdrag.md",
-    "Exercises/Selection Statements.md",
-    "Exercises/Computer Security.md",
-    "Exercises/Going Home Again.md",
-    "Exercises/Applying Iteration.md",
-    "SIC Drop-In Sessions.md",
-    "Learning Goals.md",
-    "Tutorials/index.md",
-    "Tasks/index.md",
-    "Style/index.md",
-    "Setup/index.md",
     "section2/All Classes/index.md",
     "section1/All Classes/index.md",
-    "Portfolios/index.md",
+    "section1/All Classes/Thread 1, Day 3.md",
+    "section1/All Classes/Thread 1, Day 2.md",
+    "section2/All Classes/Thread 1, Day 3.md",
+    "section1/All Classes/Thread 2, Day 1.md",
+    "Exercises/Panda Scene.md",
+    "section1/All Classes/Thread 2, Day 2.md",
+    "section1/All Classes/Thread 2, Day 3.md",
+    "section1/All Classes/Thread 2, Day 4.md",
+    "Exercises/Superdrag.md",
+    "Exercises/Shapes.md",
+    "Exercises/Ramones.md",
+    "Exercises/Plans, Patterns, and Iteration.md",
+    "Exercises/Name Plate.md",
+    "Exercises/Going Home Again.md",
+    "Exercises/Computer Security.md",
     "Exercises/Analysing an Image.md",
-    "Exercises/Parsing Instructions.md",
-    "Curriculum/index.md",
-    "Exercises/index.md",
-    "Discussions/index.md",
-    "Concepts/index.md"
+    "Tutorials/Taking Screenshots.md",
+    "Tutorials/index.md",
+    "Tutorials/Creating Bookmarks.md",
+    "Discussions/Gig Posters.md",
+    "Discussions/Art and Programming.md",
+    "Activities/index.md",
+    "section1/All Classes/Thread 1, Day 1.md",
+    "section1/All Classes/Thread 1, Day 0.md",
+    "course_config.json.bak",
+    "Activities"
   ]
 }

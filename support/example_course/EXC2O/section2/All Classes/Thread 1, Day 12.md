@@ -7,7 +7,7 @@ created: 2024-11-01T07:00:00.000-0400
 tags:
 ---
 ## Agenda
-1. Task: [[T-Shirt Shadow Prints]]
+1. Task: [[T-shirt Shadow Prints]]
 	- Any students who did not finish their shirt yesterday will do so today.
 1. Portfolio: Final Portfolio Review
 	- Mr. Gordon will have quick chats with students regarding their portfolio and progress in the course.

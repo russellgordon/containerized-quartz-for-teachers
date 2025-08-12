@@ -7,7 +7,7 @@ created: 2024-10-31T07:00:00.000-0400
 tags:
 ---
 ## Agenda
-1. Task: [[T-Shirt Shadow Prints]]
+1. Task: [[T-shirt Shadow Prints]]
 	- Students will take turns making their shirts today.
 1. Portfolio: [[Thread 1 Self-Assessment]]
 	- When you are not making your shirt, complete this self-assessment and make an estimate for your numeric grade for this module of the course.

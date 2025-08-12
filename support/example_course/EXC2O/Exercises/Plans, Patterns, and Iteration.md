@@ -29,7 +29,7 @@ With your partner, draw the design shown in this animation on your planning shee
 
 ![[Animation - Curves from Lines.mp4|500]]
 
-## Look for Patterns
+## Look for patterns
 
 Assume that the lower left corner is at $(-200, -200)$.
 
@@ -58,7 +58,7 @@ Likewise:
 - the $x$ position of the end of each line stays constant at 200
 - the $y$ position of the end of each line increases by 50 from one line to the next
 
-## Applying Iteration
+## Apply iteration
 
 We can use another form of a *loop* in Swift to express this kind of numerical pattern.
 

@@ -7,9 +7,9 @@ created: 2024-12-02T07:00:00.000-0400
 tags:
 ---
 ## Agenda
-1. Task: [[Patterns, Plans, and Iteration]]
+1. Exercise: [[Plans, Patterns, and Iteration]]
 	- Work with your partner to complete this activity.
-2. Activity: [[Computer Security]]
+2. Exercise: [[Computer Security]]
 	- With any time you have remaining, you are welcome to continue working on Hacktivate challenges.
 	  
 ## Things to do before our next class

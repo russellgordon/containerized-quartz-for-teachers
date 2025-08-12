@@ -7,7 +7,7 @@ excludeBacklinks: true
 tags:
 ---
 ## Agenda
-1. Task: [[Name Plate]]
+1. Exercise: [[Name Plate]]
 	- Complete your name plate in today's class.
 
 ## Things to do before our next class

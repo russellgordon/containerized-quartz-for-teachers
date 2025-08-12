@@ -6,7 +6,9 @@ createdSection2: 2024-10-17T07:00:00.000-0400
 tags:
   - C2.4
 ---
-If we wanted someone to walk 5 steps toward us, it's easier to say just that – rather than say:
+## Introduction
+
+If we wanted someone to walk 5 steps, it's easier to say just that – "walk 5 steps" – rather than:
 
 - walk 1 step
 - walk 1 step
@@ -14,7 +16,8 @@ If we wanted someone to walk 5 steps toward us, it's easier to say just that –
 - walk 1 step
 - walk 1 step
 
-In the same way, we can use a loop to have a computer repeat an instruction – or a block of multiple instructions – more than once.
+In the same way, we can use a *loop* to have a computer repeat an instruction – or a block of multiple instructions – more than once. When a loop repeats, we could also say that it *iterates*. A loop is also considered a form of abstraction.
+
 ## Creating a loop
 
 To make a loop in Swift Playgrounds, just begin typing the keyword `for`, and then press the **Return** key to use autocomplete:

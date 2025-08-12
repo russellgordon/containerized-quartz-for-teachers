@@ -7,7 +7,7 @@ excludeBacklinks: true
 tags:
 ---
 ## Agenda
-1. Activity: [[Selection Statements]]
+1. Concept: [[Selection Statements]]
 	- Learn how to run code only when certain conditions are true. 🤘🏼
 2. Task: [[Gig Poster]]
 	- You may optionally begin this task today.

@@ -7,7 +7,7 @@ excludeBacklinks: true
 tags:
 ---
 ## Agenda
-1. Task: [[T-Shirt Shadow Prints]]
+1. Task: [[T-shirt Shadow Prints]]
 	- Any students who did not finish their shirt yesterday will do so today.
 1. Portfolio: [[Thread 1 Self-Assessment]]
 	- When you are not making your shirt, you will complete this self-assessment.

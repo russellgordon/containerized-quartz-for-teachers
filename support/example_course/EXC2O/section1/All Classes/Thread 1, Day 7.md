@@ -10,7 +10,7 @@ notes: Remember to add the 'Coding Task - Final Entry' template to each student'
 ## Agenda
 1. Concept: [[Rubber Duck Debugging]]
 1. Exercise: [[Going Home Again]]
-2. Task: [[T-Shirt Shadow Prints]]
+2. Task: [[T-shirt Shadow Prints]]
 ## Things to do before our next class
 - [ ] Complete the exercise and, at least, complete the plan for your shadow prints tasks.
 - [ ] Ideally, start writing code for your shadow prints task.

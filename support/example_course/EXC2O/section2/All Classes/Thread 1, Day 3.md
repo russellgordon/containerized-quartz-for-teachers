@@ -8,8 +8,8 @@ tags:
 notes: Remember to emphasize reflection prompts.
 ---
 ## Agenda
-1. Task: [[Name Plate]]
-	- A working period to complete this task.
+1. Exercise: [[Name Plate]]
+	- A working period to complete this exercise.
 	- Be sure you make your portfolio entry [on Notion](https://notion.so) before you leave class today.
 		- Please remember to respond to the [[Name Plate#Reflection prompts|reflection prompts]] as part of your portfolio entry.
 

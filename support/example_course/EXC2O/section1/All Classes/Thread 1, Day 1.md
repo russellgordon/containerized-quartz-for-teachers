@@ -8,9 +8,9 @@ tags:
 ---
 ## Agenda
 1. Activity: [[Parsing Instructions]]
-1. Setup: [[Installing Playgrounds]]
-1. Setup: [[Subscribe to Turtle Sketches]]
-1. Task: [[Name Plate]]
+2. Setup: [[Installing Playgrounds]]
+3. Setup: [[Subscribe to Turtle Sketches]]
+4. Exercise: [[Name Plate]]
 
 ## Things to do before our next class
 - [ ] Complete the [[Name Plate]] task.

@@ -6,7 +6,6 @@ createdSection2: 2024-10-07T07:00:00.000-0400
 tags:
   - B2.1
 ---
-
 ## Local storage
 
 A computer stores information – files that contain *apps* you run or *documents* you write – locally.
@@ -89,6 +88,7 @@ Mr. Gordon has two cloud storage systems connected to his computer:
 ![[Screenshot 2023-09-11 at 5.44.57 AM copy 2.png]]
 
 As a student at LCS you have access to Google Drive, a cloud storage system provided by Google.
+
 ### Advantages of cloud storage
 
 Cloud storage is also finite, but sometimes offers more storage space than you have available to you locally.
@@ -96,11 +96,13 @@ Cloud storage is also finite, but sometimes offers more storage space than you h
 Storing copies of your files "in the cloud" is also one form of *backup*.
 
 If you have a copy of your files in cloud storage, and your computer becomes unusable or inaccesible to you, you can still get at your important information.
+
 ### Disadvantages of cloud storage
 
 Accessing files stored exclusively in cloud storage is much slower than accessing files stored locally – this will be limited by the speed of your connection to the Internet.
 
 When another entity has a copy of your data, you should always think carefully about your privacy – more on that topic in a future class.
+
 ## Installing Google Drive for Desktop
 
 Google Drive for Desktop is an application that synchronizes files between the local storage on your computer and your cloud storage container within Google's server farm.

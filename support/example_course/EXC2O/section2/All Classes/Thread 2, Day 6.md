@@ -11,11 +11,11 @@ tags:
 	- For the first 5-10 minutes of class today, I will ask for your feedback regarding this course.
 	- Your specific and kind feedback is appreciated.
 	- Responses are anonymous.
-1. Activity: [[Applying Abstraction]]
+2. Concept: [[Applying Abstraction]]
 	- Learn how to identify repeated elements in a drawing and then apply abstraction by authoring a function. 🚀
 	- Take note of new vocabulary that is introduced. Try to make use of these terms in your portfolio post for today.
 	- Optionally, use the [[Driver-Navigator Pattern]] to complete this lesson.
-1. Activity: [[Superdrag]]
+3. Exercise: [[Superdrag]]
 	- Show that you really understand sequence, iteration, and abstraction by reproducing this gig poster. 🎸
 
 > [!NOTE]

@@ -9,14 +9,14 @@ tags:
 ## Agenda
 1. Tutorial: [[Creating a Smart Folder]]
 	- A super-short tutorial showing how to quickly find a given type of file...
-1. Activity: [[Applying Abstraction]]
+2. Concept: [[Applying Abstraction]]
 	- Learn how to identify repeated elements in a drawing and then apply abstraction by authoring a function. 🚀
 	> [!TODO]
 	> 
 	> As you complete the activity, take note of new vocabulary that is introduced.
 	> 
 	> Describe your understanding of these new terms in the Notion post that you make for today's class.
-1. Activity: [[Superdrag]]
+3. Exercise: [[Superdrag]]
 	- Show that you really understand sequence, iteration, and abstraction by reproducing this gig poster. 🎸
 	  
 ## Things to do before our next class

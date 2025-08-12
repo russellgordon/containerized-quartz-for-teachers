@@ -8,7 +8,7 @@ tags:
 ---
 ## Gameplay
 
-We broke into pairs and played [Rock-Paper-Scissors](https://wrpsa.com/the-official-rules-of-rock-paper-scissors/).
+We broke into pairs and played [Rock-Paper-Scissors](https://wrpsa.com/the-official-rules-of-rock-paper-scissors/) with everyone in our class.
 
 The winner of each initial match paired with another winner to play a match in the second round. Losers of a match from the first round then cheered for the person who won their first-round match. 
 

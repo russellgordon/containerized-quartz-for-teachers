@@ -1,5 +1,5 @@
 ---
-draftSection1: true
+draftSection1: false
 draftSection2: false
 createdSection1: 2024-09-16T07:00:00.000-0400
 createdSection2: 2024-10-07T07:00:00.000-0400

@@ -9,9 +9,11 @@ tags:
 ## Agenda
 1. Concept: [[Driver-Navigator Pattern]]
 2. Tutorial: [[Taking Screenshots]]
-3. Portfolio: [[Name Plate#Portfolio Entry|Name Plate – Final Entry]]
-4. Concept: [[Introduction to Loops]]
-5. Concept: [[Introduction to Functions]]
+3. Exercise: [[Name Plate#Portfolio Entry|Name Plate]]
+	- Take a few minutes now to [[Name Plate#Portfolio Entry|complete your portfolio entry]] for this exercise [on Notion](https://notion.so), if you have not already done so.
+4. Concept: [[Loops]]
+5. Concept: [[Functions]]
 6. Exercise: [[Shapes]]
+
 ## Things to do before our next class
 - [ ] Do your best to complete the concept explorations and the shapes exercise.

@@ -1,11 +1,11 @@
 {
   "course_code": "EXC2O",
-  "course_name": "Digital Tech",
+  "course_name": "Example Course",
   "emojis": {
-    "default": "\u270f\ufe0f",
+    "default": "📚",
     "sections": {
-      "section1": "\u270f\ufe0f",
-      "section2": "\ud83c\udf93"
+      "section1": "📚",
+      "section2": "✏️"
     }
   },
   "num_sections": 2,
@@ -15,6 +15,7 @@
   ],
   "shared_folders": [
     "Concepts",
+    "Curriculum",
     "Discussions",
     "Exercises",
     "Portfolios",
@@ -22,30 +23,31 @@
     "Style",
     "Tasks",
     "Tutorials",
-    "Curriculum"
+    "Activities"
   ],
   "shared_files": [
+    "Learning Goals.md",
     "SIC Drop-In Sessions.md",
-    "Learning Goals.md"
+    "course_config.json.bak"
   ],
   "per_section_folders": [
     "All Classes"
   ],
   "per_section_files": [
-    "Private Notes.md",
-    "Scratch Page.md",
+    "Grove Time.md",
     "Key Links.md",
-    "Grove Time.md"
+    "Private Notes.md",
+    "Scratch Page.md"
   ],
   "hidden": [
     "Curriculum",
-    "SIC Drop-In Sessions.md",
     "Learning Goals.md",
-    "Media",
+    "SIC Drop-In Sessions.md",
+    "Grove Time.md",
+    "Key Links.md",
     "Private Notes.md",
     "Scratch Page.md",
-    "Key Links.md",
-    "Grove Time.md"
+    "Media"
   ],
   "expandable": [
     "Concepts",
@@ -57,7 +59,8 @@
     "Setup",
     "Style",
     "Tasks",
-    "Tutorials"
+    "Tutorials",
+    "Activities"
   ],
   "expandOnFolderClick": false,
   "footer_html": "The resources on this site by Russell Gordon and David Jones are licensed under <a href=\"http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1\" target=\"_blank\" rel=\"license noopener noreferrer\" style=\"display:inline-block;\">CC BY 4.0</a> unless otherwise noted.",
@@ -82,7 +85,7 @@
     }
   },
   "color_schemes": {
-    "section1": "lakefield-college-school",
-    "section2": "lakefield-college-school"
+    "section1": "mlb-houston-astros",
+    "section2": "forest-moss"
   }
 }

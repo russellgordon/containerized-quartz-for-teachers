@@ -9,7 +9,7 @@ tags:
 ## Agenda
 1. Exercise: [[Applying Iteration]]
 	- Work with your randomly assigned partner to complete this activity.
-2. Activity: [[Computer Security]]
+2. Exercise: [[Computer Security]]
 	- With any time you have remaining, you are welcome to continue working on Hacktivate challenges.
 	  
 ## Things to do before our next class

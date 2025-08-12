@@ -7,9 +7,9 @@ excludeBacklinks: true
 tags:
 ---
 ## Agenda
-1. Activity: [[Nested Loops]]
+1. Concept: [[Nested Loops]]
 	- Learn how to use nested loops to produce a grid of shapes. 💪🏼
-3. Activity: [[Computer Security]]
+2. Exercise: [[Computer Security]]
 	- With any time you have remaining in class today, you are welcome to continue working on Hacktivate challenges.
 	  
 ## Things to do before our next class

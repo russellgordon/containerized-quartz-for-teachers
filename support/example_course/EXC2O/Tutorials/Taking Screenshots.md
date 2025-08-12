@@ -6,6 +6,7 @@ createdSection2: 2024-10-07T07:00:00.000-0400
 tags:
   - B2.1
 ---
+## Introduction
 
 Apple has a very good, brief, [written tutorial that describes the basics of taking screenshots](https://support.apple.com/en-ca/102646).
 

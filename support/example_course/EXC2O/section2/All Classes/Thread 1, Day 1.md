@@ -16,7 +16,7 @@ notes: Remember to set up Notion pages for each student prior to this first clas
 6. Setup: [[Subscribe to Turtle Sketches]]
 7. Tutorial: [[Taking Screenshots]]
 5. Tutorial: [[Hot Corners]]
-1. Tutorial: [[Syncing Files from Cloud Storage]]
+1. Tutorial: [[Cloud Storage File Sync]]
 
 ## Things to do before our next class
 - [ ] Please [[Update macOS to 14.7|update your computer to macOS Sonoma 14.7]].
