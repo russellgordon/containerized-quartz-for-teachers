@@ -8,6 +8,12 @@ import courseConfig from "../../../../../course_config.json"
 
 const expandableList: string[] = courseConfig.expandable || []
 
+// Case-insensitive membership check for expandability
+const isExpandableName = (name: string) =>
+  expandableList.some(
+    (x) => x.localeCompare(name, undefined, { sensitivity: "base" }) === 0,
+  )
+
 type MaybeHTMLElement = HTMLElement | undefined
 
 interface ParsedOptions {
@@ -103,7 +109,7 @@ function createFolderNode(
   const folderPath = node.slug
   folderContainer.dataset.folderpath = folderPath
 
-  const isExpandable = expandableList.includes(node.displayName)
+  const isExpandable = isExpandableName(node.displayName)
 
   if (opts.folderClickBehavior === "link") {
     const button = titleContainer.querySelector(".folder-button") as HTMLElement
@@ -200,7 +206,29 @@ async function setupExplorer(currentSlug: FullSlug) {
     if (!explorerUl) continue
 
     const fragment = document.createDocumentFragment()
-    for (const child of trie.children) {
+
+    // --- TOP-LEVEL TWO-TIER SORT: Non-expandable folders first, then expandable; A→Z within groups.
+    const topLevelChildren = [...trie.children]
+
+    const nonExpandableFolders = topLevelChildren.filter(
+      (c) => c.isFolder && !isExpandableName(c.displayName),
+    )
+    const expandableFolders = topLevelChildren.filter(
+      (c) => c.isFolder && isExpandableName(c.displayName),
+    )
+    const files = topLevelChildren.filter((c) => !c.isFolder)
+
+    // Sort folders within each group, case-insensitive, numeric-aware
+    const alpha = (a: FileTrieNode, b: FileTrieNode) =>
+      a.displayName.localeCompare(b.displayName, undefined, { numeric: true, sensitivity: "base" })
+
+    nonExpandableFolders.sort(alpha)
+    expandableFolders.sort(alpha)
+
+    // Re-assemble: non-expandable folders → expandable folders → files (files retain their order post-trie sort)
+    const orderedTopLevel = [...nonExpandableFolders, ...expandableFolders, ...files]
+
+    for (const child of orderedTopLevel) {
       const node = child.isFolder
         ? createFolderNode(currentSlug, child, opts)
         : createFileNode(currentSlug, child)
