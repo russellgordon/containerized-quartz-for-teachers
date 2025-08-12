@@ -340,8 +340,8 @@ def capture_multiline() -> str:
 def prompt_footer_html_stateful(saved_config: dict) -> str:
     current = (saved_config.get("footer_html") or "").strip()
     if current:
-        preview = textwrap.shorten(current.replace("\n", " "), width=80, placeholder="…")
-        print(f"\n🦶 A custom footer is already set:\n   {preview}")
+        preview = current
+        print(f"\n🦶 A custom footer is already set (blank lines added above and below for clarity within this series of prompts):\n\n{preview}\n")
         choice = input("Press ENTER to keep it, 'e' to edit, or 'c' to clear: ").strip().lower()
         if choice == "":
             print("✅ Keeping existing footer.")
