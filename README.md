@@ -74,7 +74,7 @@ courses/
 ### 4. Preview your site
 
 ```bash
-./run.sh ICS3U 1
+./preview.sh ICS3U 1
 ```
 
 This will:
@@ -96,7 +96,7 @@ This will:
 Example:
 
 ```bash
-./run.sh ICS3U 1 --reset-hidden --include-social-media-previews
+./preview.sh ICS3U 1 --reset-hidden --include-social-media-previews
 ```
 
 ---
@@ -130,7 +130,7 @@ containerized-quartz-for-teachers/
 │   ├── setup_course.py         # Wizard to scaffold course + folders + colour schemes
 │   └── build_site.py           # Builds site, applies filters, runs preview
 ├── Dockerfile                  # Defines container image
-├── run.sh                      # Build + preview a section site
+├── preview.sh                  # Build + preview a section site
 ├── setup.sh                    # Run course setup wizard
 └── README.md
 ```
@@ -150,7 +150,7 @@ containerized-quartz-for-teachers/
 | Problem | Solution |
 |--------|----------|
 | **Port 8081 already in use** | Close other Quartz tabs or processes. Or change the port inside `build_site.py`. |
-| **Changes not showing up** | Rerun `./run.sh ...` to rebuild. Quartz does not always detect all file changes. |
+| **Changes not showing up** | Rerun `./preview.sh ...` to rebuild. Quartz does not always detect all file changes. |
 | **File not appearing in Explorer sidebar** | Check if it was marked hidden (`hidden_explorer_components.json`). Use `--reset-hidden` to reselect. |
 | **Colour picker not showing correct colours** | If on macOS, make sure you are using [iTerm2](https://iterm2.com) instead of the default Terminal app for full colour support. |
 

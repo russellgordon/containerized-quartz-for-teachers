@@ -864,7 +864,7 @@ def maybe_install_example_course(courses_root: Path) -> bool:
     # Print final hint and exit early (as requested)
     print("✅ Example Course installed: EXC2O")
     print("ℹ️ To preview this site, run:")
-    print("   ./run.sh EXC2O 1")
+    print("   ./preview.sh EXC2O 1")
     print("   (Then open http://localhost:8081 in your browser.)")
     sys.exit(0)
     return True  # not reached
