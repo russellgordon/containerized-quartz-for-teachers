@@ -488,7 +488,7 @@ def prompt_font_pairing(previous_default: dict | None) -> tuple[str, str]:
             idx = find_pair_index(prev_header.strip(), prev_body.strip())
             default_idx = idx if idx is not None else 8
     else:
-        default_idx = 1  # first run: show our first recommended pairing as default
+        default_idx = 7  # first run: show system default as recommended pairing
 
     _print_font_pair_menu(default_idx=default_idx)
     if previous_default:
