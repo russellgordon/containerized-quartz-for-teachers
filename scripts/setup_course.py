@@ -909,6 +909,59 @@ def prompt_section_numbers(num_sections: int, saved_config: dict) -> list[int]:
 
     return nums
 
+# ---------- NEW: Obsidian defaults copier -----------------------------------
+
+CANDIDATE_OBSIDIAN_DEFAULTS_PATHS = [
+    Path("support/obsidian_defaults") / ".obsidian",
+    Path("/opt/support/obsidian_defaults") / ".obsidian",
+    Path(__file__).resolve().parent.parent / "support" / "obsidian_defaults" / ".obsidian",
+    Path(__file__).resolve().parent / "support" / "obsidian_defaults" / ".obsidian",
+]
+
+def _find_obsidian_defaults_dir() -> Path | None:
+    for p in CANDIDATE_OBSIDIAN_DEFAULTS_PATHS:
+        if p.exists() and p.is_dir():
+            return p
+    return None
+
+def copy_obsidian_defaults(course_dir: Path) -> None:
+    """
+    Copy support/obsidian_defaults/.obsidian into the given course_dir.
+    - If course_dir/.obsidian already exists, merge without overwriting existing files.
+    - If not found, print a warning and continue silently.
+    """
+    src = _find_obsidian_defaults_dir()
+    if not src:
+        print("⚠️  Obsidian defaults not found (support/obsidian_defaults/.obsidian). Skipping.")
+        return
+
+    dest = course_dir / ".obsidian"
+    copied_count = 0
+    skipped_count = 0
+
+    dest.mkdir(parents=True, exist_ok=True)
+
+    for root, dirs, files in os.walk(src):
+        rel_root = Path(root).relative_to(src)
+        target_root = dest / rel_root
+        target_root.mkdir(parents=True, exist_ok=True)
+        for fname in files:
+            sfile = Path(root) / fname
+            dfile = target_root / fname
+            if dfile.exists():
+                skipped_count += 1
+                continue  # do not clobber teacher's existing settings
+            try:
+                shutil.copy2(sfile, dfile)
+                copied_count += 1
+            except Exception as e:
+                print(f"⚠️  Could not copy '{sfile}' → '{dfile}': {e}")
+
+    if copied_count > 0:
+        print(f"✅ Obsidian defaults installed to {dest} ({copied_count} new file(s); {skipped_count} skipped).")
+    else:
+        print(f"ℹ️  Obsidian defaults already present at {dest} (no changes).")
+
 # ---------- Main setup flow (baseline preserved + backups + defaults) -------
 
 def setup_course(no_backup: bool = False):
@@ -955,6 +1008,13 @@ def setup_course(no_backup: bool = False):
     print("Use it to store larger binary assets (images, short videos, PDFs).")
     print("It is automatically hidden from the site's Explorer and shared across all sections.")
     print("Note: You do not need to add 'Media' to any folder lists below—it's created for you.\n")
+
+    # --- NEW: Copy Obsidian defaults into the new/existing course folder ----
+    # This seeds sensible defaults (e.g., attachments saved to 'Media').
+    try:
+        copy_obsidian_defaults(course_path)
+    except Exception as e:
+        print(f"⚠️  Unable to install Obsidian defaults: {e}")
 
     config_path = course_path / "course_config.json"
     saved_config = {}
