@@ -769,6 +769,50 @@ def process_frontmatter(file_path: Path, section_number: int):
     except Exception as e:
         print(f"⚠️ Could not write updated frontmatter to {file_path}: {e}")
 
+# --- ADD: NEW HELPER — Rewrite wikilinks with section path to alias-only -----
+def rewrite_section_wikilinks(md_path: Path):
+    """
+    Rewrites Obsidian wikilinks that include a section path to alias-only form.
+    Examples:
+      [[section2/All Classes/Thread 2, Day 8|Thread 2, Day 8]] -> [[Thread 2, Day 8]]
+      ![[section1/Bananas/Benefits of Banana Consumption|Benefits of Banana Consumption]] -> ![[Benefits of Banana Consumption]]
+    Only rewrites when:
+      - a '|' alias exists, and
+      - the target contains 'section<digits>/' somewhere in its path.
+    """
+    if md_path.suffix.lower() != ".md" or not md_path.exists():
+        return
+    try:
+        text = md_path.read_text(encoding="utf-8")
+    except Exception as e:
+        print(f"⚠️ Could not read {md_path} to rewrite wikilinks: {e}")
+        return
+
+    pattern = re.compile(r'(!?)\[\[([^\[\]]+?)\]\]')
+    count = 0
+
+    def _repl(m: re.Match) -> str:
+        nonlocal count
+        bang = m.group(1)  # '!' or ''
+        inner = m.group(2) # e.g., 'section2/All Classes/Thread 2, Day 8|Thread 2, Day 8'
+        if '|' not in inner:
+            return m.group(0)
+        target, alias = inner.split('|', 1)
+        # Rewrite only if a section path is present
+        if re.search(r'(?:^|/)section\d+/', target):
+            count += 1
+            return f"{bang}[[{alias.strip()}]]"
+        return m.group(0)
+
+    new_text = pattern.sub(_repl, text)
+    if count > 0 and new_text != text:
+        try:
+            md_path.write_text(new_text, encoding="utf-8")
+            print(f"🔗 Rewrote {count} section-path wikilink(s) in: {md_path}")
+        except Exception as e:
+            print(f"⚠️ Could not write rewritten wikilinks to {md_path}: {e}")
+# --- END ADD -----------------------------------------------------------------
+
 # --- ADD: Remove Graph from the right column in quartz.layout.ts (prints once) ---
 _GRAPH_REMOVAL_LOGGED = False
 
@@ -1397,6 +1441,9 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         dest = content_root / "index.md"
         shutil.copy2(section_index, dest)
         process_frontmatter(dest, section_number)
+        # --- ADD: rewrite section-path wikilinks in the section index ---
+        print("🔍 Checking for wikilinks to rewrite in content/index.md...")
+        rewrite_section_wikilinks(dest)
         print(f"  🏠 Copied section index.md to content/index.md")
     else:
         print("⚠️ Section index.md not found — site may not render correctly.")
@@ -1432,7 +1479,11 @@ def build_section_site(course_code: str, section_number: int, include_social_med
             shutil.copytree(src, dest, dirs_exist_ok=True)
             for root, dirs, files in os.walk(dest):
                 for file in files:
-                    process_frontmatter(Path(root) / file, section_number)
+                    fp = Path(root) / file
+                    process_frontmatter(fp, section_number)
+                    # --- ADD: rewrite section-path wikilinks in per-section folder files ---
+                    if fp.suffix.lower() == ".md":
+                        rewrite_section_wikilinks(fp)
             print(f"  📁 Copied per-section folder: {folder}")
 
     print(f"\n📥 Copying per-section files...")
@@ -1442,6 +1493,9 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         if src.exists():
             shutil.copy2(src, dest)
             process_frontmatter(dest, section_number)
+            # --- ADD: rewrite section-path wikilinks in per-section loose files ---
+            print("🔍 Checking for wikilinks to rewrite in per-section loose files...")
+            rewrite_section_wikilinks(dest)
             print(f"  📄 Copied per-section file: {file_name}")
 
     # Copy course config into output
