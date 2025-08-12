@@ -1280,13 +1280,6 @@ _IGNORED_SHARED_FOLDERS = {
 }
 _IGNORED_SHARED_FILES = {
     "course_config.json",
-    "hidden_explorer_components.json",
-    "expandable_explorer_components.json",
-    "preview.sh",
-    "setup.sh",
-    "setup_course.py",
-    "build_script.py",
-    "build_site.py",
     ".DS_Store",
     "Thumbs.db",
 }
