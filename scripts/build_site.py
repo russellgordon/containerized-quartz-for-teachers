@@ -1345,10 +1345,10 @@ def discover_section_items(section_dir: Path) -> tuple[list[str], list[str]]:
     return found_folders, found_files
 
 def _atomic_write_json_with_backup(path: Path, data: dict):
-    """Write JSON atomically and back up original as .bak."""
+    """Write JSON atomically and back up original"""
     try:
         if path.exists():
-            backup = path.with_suffix(".json.bak")
+            backup = path.with_suffix(".backup.json")
             shutil.copy2(path, backup)
             print(f"🧾 Backed up course_config.json → {backup.name}")
     except Exception as e:
