@@ -12,6 +12,10 @@ In this session, the presenter will share a pre-configured publishing system tha
 
 In the session, optionally complete a series of “quests” to learn how to use this publishing workflow and get assistance from the presenter in setting up your own website on the spot. You will learn how to use Markdown-formatted text files to quickly publish a deeply linked, searchable website, with pages that can include “pretty-print” mathematical formulae and equations, code snippets, diagrams, animations, images, videos, PDF files, or any other type of document.
 
+> 🏗️ **Tip**
+>
+> You can browse [an example of the type of output produced by this workflow here](https://aesthetic-bubblegum-622206.netlify.app). That site represents half of the author's Grade 10 Digital Tech course materials for the most recent school year.
+
 > 💡 **Note**
 > 
 > For those with good memories, this is an update of the 2023 session titled “[A Rapid Workflow for Publishing CS Teaching Materials](https://teaching.russellgordon.ca/cemc/sccst-2023/a-rapid-workflow-for-publishing-cs-teaching-materials/)”, with new software, much less work involved to get a site up and running, and a better end-product. This new session is suitable for and useful for both mathematics and computer science teachers.
