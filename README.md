@@ -40,6 +40,27 @@ In the session, optionally complete a series of “quests” to learn how to use
 
 ---
 
+## 🖥 Opening a Command Prompt or Terminal
+
+Before running the commands below, open a command-line interface:
+
+**On macOS:**
+1. Open **iTerm2** (recommended) or the built‑in **Terminal** app (find it in `Applications > Utilities`).
+2. Use the `cd` command to change into the folder where you want to work. Example:
+   ```bash
+   cd ~/Desktop
+   ```
+
+**On Windows:**
+1. Press `Windows + S` and type **PowerShell**.
+2. Click **Windows PowerShell** to open it.
+3. Use the `cd` command to change into the folder where you want to work. Example:
+   ```powershell
+   cd "$HOME\Desktop"
+   ```
+
+---
+
 ## 🐳 Step-by-Step: From Zero to Website
 
 ### 1. Get the launcher scripts from the Docker image
