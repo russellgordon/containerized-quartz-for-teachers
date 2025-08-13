@@ -29,10 +29,8 @@ In the session, optionally complete a series of “quests” to learn how to use
 
 ### ✅ Prerequisites
 
-- Install [Docker Desktop](https://www.docker.com/products/docker-desktop) (required)
-   - NOTE: Click the blue "Download Docker Desktop" button, then choose your hardware platform.
+- Install and open [Docker Desktop](https://www.docker.com/products/docker-desktop) (required)
 - Install [Obsidian](https://obsidian.md/) (optional, but recommended for editing Markdown)
-   - NOTE: Click the purple "Get Obsidian..." button.
 - *(macOS users)* Install [iTerm2](https://iterm2.com) for full 24-bit ANSI colour support in the colour scheme picker
 - *(Windows users)* You need [PowerShell 5.1 or later](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (comes with Windows 10+; download if on an older version of Windows)
 - [Create a **GitHub account**](https://github.com/join) (if you don’t have one already)
@@ -40,7 +38,7 @@ In the session, optionally complete a series of “quests” to learn how to use
 
 > 💡 **TIP**
 >
-> macOS users, if you are not an Administrator on your computer, install these applications to your home folder's **Applications** folder.
+> Your computer's user account must have Administrator privileges to use this workflow. 
 
 ---
 
