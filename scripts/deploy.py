@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import base64
 import datetime as dt
 import json
 import os
@@ -96,6 +97,122 @@ def prompt(text: str, default: str | None = None) -> str:
         return resp or default
     return input(f"{text}: ").strip()
 
+# =========================================================
+#            GLOBAL token storage (obfuscated)
+#   Location: /teaching/courses/_secrets/{.key,tokens.json}
+# =========================================================
+
+GLOBAL_SECRETS_ROOT = Path("/teaching/courses/_secrets")
+
+def _global_secrets_paths() -> tuple[Path, Path]:
+    """
+    Returns (key_path, tokens_path) under the global secrets root.
+    """
+    key_path = GLOBAL_SECRETS_ROOT / ".key"
+    tokens_path = GLOBAL_SECRETS_ROOT / "tokens.json"
+    return key_path, tokens_path
+
+def _ensure_global_secrets_dir():
+    GLOBAL_SECRETS_ROOT.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chmod(GLOBAL_SECRETS_ROOT, 0o700)
+    except Exception:
+        pass
+
+def _load_or_create_key_global() -> bytes:
+    key_path, _ = _global_secrets_paths()
+    if key_path.exists():
+        k = key_path.read_bytes()
+        if k:
+            return k
+    k = os.urandom(32)
+    key_path.write_bytes(k)
+    try:
+        os.chmod(key_path, 0o600)
+    except Exception:
+        pass
+    return k
+
+def _xor(data: bytes, key: bytes) -> bytes:
+    return bytes([b ^ key[i % len(key)] for i, b in enumerate(data)])
+
+def _save_token_global(label: str, token: str):
+    _ensure_global_secrets_dir()
+    key = _load_or_create_key_global()
+    _, tokens_path = _global_secrets_paths()
+    obf = base64.b64encode(_xor(token.encode("utf-8"), key)).decode("ascii")
+    data = {}
+    if tokens_path.exists():
+        try:
+            data = json.loads(tokens_path.read_text(encoding="utf-8"))
+        except Exception:
+            data = {}
+    if "tokens" not in data:
+        data["tokens"] = {}
+    data["tokens"][label] = {
+        "obf": obf,
+        "ts": NOW.isoformat(timespec="seconds"),
+        "scope": "global",
+        "note": "xor+base64 obfuscated"
+    }
+    tokens_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    try:
+        os.chmod(tokens_path, 0o600)
+    except Exception:
+        pass
+
+def _load_token_global(label: str) -> str | None:
+    key_path, tokens_path = _global_secrets_paths()
+    if not tokens_path.exists() or not key_path.exists():
+        return None
+    try:
+        data = json.loads(tokens_path.read_text(encoding="utf-8"))
+        entry = (data.get("tokens") or {}).get(label)
+        if not entry:
+            return None
+        obf_b = base64.b64decode(entry["obf"])
+        key = key_path.read_bytes()
+        return _xor(obf_b, key).decode("utf-8")
+    except Exception:
+        return None
+
+# --------- Back-compat: per-course token support (migrate) ---------
+
+def _course_secrets_paths(course_dir: Path) -> tuple[Path, Path, Path]:
+    secrets_dir = course_dir / ".secrets"
+    key_path = secrets_dir / ".key"
+    tokens_path = secrets_dir / "tokens.json"
+    return secrets_dir, key_path, tokens_path
+
+def _load_token_course(course_dir: Path, label: str) -> str | None:
+    secrets_dir, key_path, tokens_path = _course_secrets_paths(course_dir)
+    if not tokens_path.exists() or not key_path.exists():
+        return None
+    try:
+        data = json.loads(tokens_path.read_text(encoding="utf-8"))
+        entry = (data.get("tokens") or {}).get(label)
+        if not entry:
+            return None
+        obf_b = base64.b64decode(entry["obf"])
+        key = key_path.read_bytes()
+        return _xor(obf_b, key).decode("utf-8")
+    except Exception:
+        return None
+
+def _maybe_migrate_course_tokens_to_global(course_dir: Path):
+    """
+    If old per-course tokens exist and no global token yet, copy them into global store.
+    """
+    migrated = []
+    for label in ("github", "netlify"):
+        if _load_token_global(label) is None:
+            t = _load_token_course(course_dir, label)
+            if t:
+                _save_token_global(label, t)
+                migrated.append(label)
+    if migrated:
+        print(f"🔁 Migrated per-course tokens to global store: {', '.join(migrated)}")
+
 # ---------- GitHub API ----------
 
 def read_token_secure() -> str:
@@ -105,12 +222,10 @@ def read_token_secure() -> str:
     print("   • GitHub → your avatar (top-right) → Settings")
     print("   • Left sidebar → Developer settings → Personal access tokens")
     print("   • Choose “Tokens (classic)” → Generate new token (classic)")
-    print("   • Scope: ‘repo’,‘workflow’.")
-    print("   • Create by pressing the green ‘Generate token’ button at the bottom.")
-    print("   Tip: Add a note like 'Access for deploy script for COURSE S# YEAR'.")
-    print("   Tip: Keep the token private; you can revoke it anytime.")
-    print("   Tip: Consider ‘No expiration’ or at least through the school year.")
-    return getpass.getpass("GITHUB_TOKEN (token will not be shown when you paste it in): ").strip()
+    print("   • Scope: ‘repo’, ‘workflow’.")
+    print("   • STRONGLY RECOMMENDED: set **No expiration** so you won’t be prompted again across courses/years.")
+    print("   Tip: Add a note like 'Access for deploy script'. You can revoke anytime.")
+    return getpass.getpass("GITHUB_TOKEN (hidden as you type): ").strip()
 
 def github_api(method: str, url: str, token: str, payload: dict | None = None) -> dict:
     req = urllib.request.Request(url, method=method)
@@ -241,9 +356,8 @@ def read_netlify_token_secure() -> str:
     print("\n🔐 A Netlify Personal Access Token is required to create the site via API.")
     print("   Where to create it:")
     print("   • Netlify → User settings → Applications → Personal access tokens → New access token")
+    print("   • STRONGLY RECOMMENDED: set **No expiration** so you won’t be prompted again across courses/years.")
     print("   (You’ll copy the token once. Keep it private.)")
-    # Docs: Get started with the Netlify API (Authentication → Personal access tokens)
-    # https://docs.netlify.com/api-and-cli-guides/api-guides/get-started-with-api/
     return getpass.getpass("NETLIFY_PERSONAL_ACCESS_TOKEN (hidden as you type): ").strip()
 
 def netlify_api(method: str, path: str, token: str, payload: dict | None = None) -> dict:
@@ -287,15 +401,14 @@ def maybe_create_netlify_site(owner: str, repo: str, branch: str, token: str, te
     Returns the site object on success.
     """
     payload = {
-        # null name -> Netlify assigns a random subdomain; teachers can rename later
-        "name": None,
+        "name": None,  # let Netlify assign a subdomain
         "repo": {
             "provider": "github",
             "repo": f"{owner}/{repo}",
             "branch": branch,
             "cmd": "npx quartz build",
             "dir": "public",
-            "private": True,  # ok even for public repos; affects linking workflow only
+            "private": True,
         }
     }
     path = f"/accounts/{team_slug}/sites" if team_slug else "/sites"
@@ -341,6 +454,10 @@ def main():
         print(f"   ./preview.sh {args.course} {args.section}")
         sys.exit(1)
 
+    # Determine course dir (for back-compat migration) and run migration
+    course_dir = section_dir.parent.parent  # .../<COURSE>/.merged_output/section#
+    _maybe_migrate_course_tokens_to_global(course_dir)
+
     print(f"📁 Deploying from: {section_dir}")
     print(f"🕒 Timestamp TZ offset: {NOW.strftime('%z')}")
 
@@ -354,6 +471,10 @@ def main():
     token_for_push = None
 
     if needs_new_remote:
+        # Prefer a saved GLOBAL GitHub token first
+        token_for_push = _load_token_global("github")
+        if token_for_push:
+            print("🔐 Using saved GitHub token (global).")
         repo_name = args.repo or suggest_repo_name(args.course, args.section)
         print(f"💡 Suggested repo name: {repo_name}")
         if not args.repo:
@@ -363,7 +484,10 @@ def main():
             owner = args.owner or prompt("GitHub owner (user/org) for existing repo")
             git_url = f"https://github.com/{owner}/{repo_name}.git"
         else:
-            token_for_push = read_token_secure()
+            if not token_for_push:
+                token_for_push = read_token_secure()
+                _save_token_global("github", token_for_push)
+                print("💾 Saved GitHub token for future deploys (GLOBAL for all courses).")
             try:
                 git_url = create_repo(args.owner, repo_name, args.private, token_for_push)
                 print(f"✅ Remote created: {git_url}")
@@ -383,16 +507,33 @@ def main():
     copy_media_if_symlink(section_dir)
     ensure_netlify_toml(section_dir)
 
-    # If we don't yet have a token and the origin uses HTTPS to GitHub, prompt now
+    # If we don't yet have a token and the origin uses HTTPS to GitHub, load or prompt now
     origin_after = git_remote_url(section_dir, "origin")
-    if token_for_push is None and needs_pat_for_url(origin_after):
-        token_for_push = read_token_secure()
+    if needs_pat_for_url(origin_after):
+        if token_for_push is None:
+            token_for_push = _load_token_global("github")
+            if token_for_push:
+                print("🔐 Using saved GitHub token (global).")
+        if token_for_push is None:
+            token_for_push = read_token_secure()
+            _save_token_global("github", token_for_push)
+            print("💾 Saved GitHub token for future deploys (GLOBAL for all courses).")
 
     # Commit & push (initial or subsequent)
-    commit_and_push(section_dir, token_for_push)
+    try:
+        commit_and_push(section_dir, token_for_push)
+    except subprocess.CalledProcessError as e:
+        # If push failed and we used a token, let teacher re-enter & save it (token might be expired/revoked)
+        if token_for_push is not None:
+            print("⚠️ Push failed. Your saved GitHub token may be invalid or expired.")
+            token_for_push = read_token_secure()
+            _save_token_global("github", token_for_push)
+            print("💾 Updated saved GitHub token (global).")
+            commit_and_push(section_dir, token_for_push)
+        else:
+            raise
 
     # ---------- Default: set up Netlify (first time only) ----------
-    # Skip if marker exists
     existing_netlify = load_netlify_marker(section_dir)
     if existing_netlify:
         print("🌐 Netlify site already recorded for this section (skipping setup).")
@@ -422,12 +563,20 @@ def main():
     print("\n📎 Netlify + GitHub prerequisites (one-time):")
     print("   1) Install the Netlify GitHub App and grant it access to this repo (or your org).")
     print("      • Netlify UI → Site overview (or Team settings) → “Install the Netlify GitHub App”.")
-    print("      • If you don’t see it, check Netlify docs: “Repository permissions and linking”.")  # docs citation in chat
     print("   2) Create a Netlify Personal Access Token (PAT):")
-    print("      • Netlify → User settings → Applications → Personal access tokens → New access token.")  # docs citation in chat
+    print("      • Netlify → User settings → Applications → Personal access tokens → New access token.")
+    print("      • STRONGLY RECOMMENDED: set **No expiration** so you won’t be prompted again across courses/years.")
     print("")
 
-    netlify_token = read_netlify_token_secure()
+    # Load or prompt for Netlify token (GLOBAL)
+    netlify_token = _load_token_global("netlify")
+    if netlify_token:
+        print("🔐 Using saved Netlify token (global).")
+    else:
+        netlify_token = read_netlify_token_secure()
+        _save_token_global("netlify", netlify_token)
+        print("💾 Saved Netlify token for future deploys (GLOBAL for all courses).")
+
     team_slug = prompt("Netlify Team slug (optional; Enter to use your personal team)", default="").strip() or None
 
     try:
@@ -448,7 +597,6 @@ def main():
         print("   • Ensure the Netlify GitHub App is installed and has access to this repo/org.")
         print("   • If your school uses SSO, ensure the Netlify token is authorized for your Team.")
         print("   You can always finish setup in the Netlify UI (Add new site → Import from Git).")
-        # (Docs citations about API & permissions are in the chat above.)
 
     print("\n✅ Deploy complete.")
 
