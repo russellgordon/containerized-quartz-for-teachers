@@ -2,7 +2,7 @@
 
 > 💡 **Note**
 > 
-> This software will be discussed in person on Thursday, August 13, 2025 at the [Summer Conference for Computer Studies and Mathematics Educators](https://cemc.uwaterloo.ca/workshops/educator-development/summer-conference-educators), organized by the [Centre for Education in Mathematics and Computing](https://www.cemc.uwaterloo.ca/).
+> This software will be discussed in person on Thursday, August 13, 2025 at the [Summer Conference for Computer Studies and Mathematics Educators](https://cemc.uwaterloo.ca/workshops/educator-development/summer-conference-educators), organized by the [Centre for Education in Mathematics and Computing](https://www.cemc.uwaterloo.ca/).
 
 **Workshop Description:**
 
@@ -12,8 +12,12 @@ In this session, the presenter will share a pre-configured publishing system tha
 
 In the session, optionally complete a series of “quests” to learn how to use this publishing workflow and get assistance from the presenter in setting up your own website on the spot. You will learn how to use Markdown-formatted text files to quickly publish a deeply linked, searchable website, with pages that can include “pretty-print” mathematical formulae and equations, code snippets, diagrams, animations, images, videos, PDF files, or any other type of document.
 
+> 💡 **Note**
+> 
+> For those with good memories, this is an update of the 2023 session titled “[A Rapid Workflow for Publishing CS Teaching Materials](https://teaching.russellgordon.ca/cemc/sccst-2023/a-rapid-workflow-for-publishing-cs-teaching-materials/)”, with new software, much less work involved to get a site up and running, and a better end-product. This new session is suitable for and useful for both mathematics and computer science teachers.
+
 > 📘 **Info**  
-> This documentation was generated using ChatGPT 4o.
+> This documentation was generated using ChatGPT 4o and ChatGPT 5.
 
 ---
 
@@ -24,26 +28,46 @@ In the session, optionally complete a series of “quests” to learn how to use
 - Install [Docker Desktop](https://www.docker.com/products/docker-desktop) (required)
 - Install [Obsidian](https://obsidian.md/) (optional, but recommended for editing Markdown)
 - *(macOS users)* Install [iTerm2](https://iterm2.com) for full 24-bit ANSI colour support in the colour scheme picker
+- *(Windows users)* You need [PowerShell 5.1 or later](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (comes with Windows 10+; download if on an older version of Windows)
+- [Create a **GitHub account**](https://github.com/join) (if you don’t have one already)
+- [Create a **Netlify account**](https://app.netlify.com/signup) (if you don’t have one already)
 
 > 💡 No need to install Node.js, Python, or Quartz. Everything runs inside Docker!
 
 ---
 
-## 🐳 Step-by-Step: From Markdown to Website
+## 🐳 Step-by-Step: From Zero to Website
 
-### 1. Clone this repository
+### 1. Get the launcher scripts from the Docker image
 
+These scripts (`setup.sh` / `setup.bat`, `preview.sh` / `preview.bat`, `deploy.sh` / `deploy.bat`) are already inside the Docker image.
+
+Run one of the following commands **in an empty folder** where you want to work:
+
+**macOS / Linux (bash/zsh):**
 ```bash
-git clone https://github.com/russellgordon/containerized-quartz-for-teachers.git
-cd containerized-quartz-for-teachers
+docker run --rm -v "$PWD":/out rwhgrwhg/teaching-quartz:latest export-scripts
 ```
+
+**Windows (PowerShell):**
+```powershell
+docker run --rm -v "${PWD}:/out" rwhgrwhg/teaching-quartz:latest export-scripts
+```
+
+This will place the launcher scripts into your current folder, ready to run.
 
 ---
 
 ### 2. Set up your course
 
+On macOS/Linux:
 ```bash
 ./setup.sh
+```
+
+On Windows:
+```powershell
+.\setup.bat
 ```
 
 This will:
@@ -73,8 +97,14 @@ courses/
 
 ### 4. Preview your site
 
+On macOS/Linux:
 ```bash
 ./preview.sh ICS3U 1
+```
+
+On Windows:
+```powershell
+.\preview.bat ICS3U 1
 ```
 
 This will:
@@ -86,33 +116,25 @@ This will:
 
 ---
 
-## ⚙️ Optional Flags
+### 5. Publish your site (Deploy)
 
-| Flag | Description |
-|------|-------------|
-| `--reset-hidden` | Re-prompt to choose which folders/files to **hide from the Explorer sidebar** |
-| `--include-social-media-previews` | Enable [Quartz CustomOgImages](https://github.com/jackyzha0/quartz#plugin-customogimages) to generate Open Graph images for pages (slower builds) |
+Once you’re happy with your preview, you can publish the site so students and others can see it.
 
-Example:
-
+On macOS/Linux:
 ```bash
-./preview.sh ICS3U 1 --reset-hidden --include-social-media-previews
+./deploy.sh ICS3U 1
 ```
 
----
+On Windows:
+```powershell
+.\deploy.bat ICS3U 1
+```
 
-## 🔧 What’s Inside the Docker Image?
-
-The container includes:
-
-- Python 3.11
-- Node.js 20
-- `python-frontmatter`
-- Quartz v4.5.0 (cloned into `/opt/quartz`)
-- Custom scripts to automate course setup and builds
-- Port 8081 exposed for preview
-
-Teacher content is bind-mounted at `/teaching/courses`.
+This will:
+- Package the built site for the chosen section
+- Guide you through pushing it to a new GitHub repository (you’ll log into GitHub during this step)
+- Allow you to link that repository to **Netlify**, which will host your site publicly
+- Any future changes you make and push to GitHub will automatically trigger a rebuild in Netlify
 
 ---
 
@@ -126,22 +148,11 @@ containerized-quartz-for-teachers/
 │       ├── section2/
 │       ├── Examples/
 │       └── Exercises/
-├── scripts/
-│   ├── setup_course.py         # Wizard to scaffold course + folders + colour schemes
-│   └── build_site.py           # Builds site, applies filters, runs preview
-├── Dockerfile                  # Defines container image
-├── preview.sh                  # Build + preview a section site
-├── setup.sh                    # Run course setup wizard
+├── preview.sh / preview.bat    # Build + preview a section site
+├── setup.sh / setup.bat        # Run course setup wizard
+├── deploy.sh / deploy.bat      # Deploy a built site
 └── README.md
 ```
-
----
-
-## 🧠 Tips for Power Users
-
-- You can modify Quartz’s layout or config files directly in the output folder (`section1_output/`) if needed.
-- Add `createdForSection1: 2025-09-08` frontmatter to any Markdown file to make it **only appear in Section 1**.
-- Use image/video/asset files directly inside folders and Quartz will include them in the build.
 
 ---
 
@@ -149,9 +160,6 @@ containerized-quartz-for-teachers/
 
 | Problem | Solution |
 |--------|----------|
-| **Port 8081 already in use** | Close other Quartz tabs or processes. Or change the port inside `build_site.py`. |
-| **Changes not showing up** | Rerun `./preview.sh ...` to rebuild. Quartz does not always detect all file changes. |
-| **File not appearing in Explorer sidebar** | Check if it was marked hidden (`hidden_explorer_components.json`). Use `--reset-hidden` to reselect. |
 | **Colour picker not showing correct colours** | If on macOS, make sure you are using [iTerm2](https://iterm2.com) instead of the default Terminal app for full colour support. |
 
 ---
