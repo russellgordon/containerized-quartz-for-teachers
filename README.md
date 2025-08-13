@@ -48,7 +48,7 @@ Before running the commands below, open a command-line interface:
 1. Open **iTerm2** (recommended) or the built‑in **Terminal** app (find it in `Applications > Utilities`).
 2. Use the `cd` command to change into the folder where you want to work. Example:
    ```bash
-   cd "$HOME/Desktop" && mkdir "class-websites" && cd "class-websites"
+   cd "$HOME/Desktop" && mkdir "class-websites" && cd "class-websites" && pwd
    ```
 
 **On Windows:**
@@ -56,7 +56,7 @@ Before running the commands below, open a command-line interface:
 2. Click **Windows PowerShell** to open it.
 3. Use the `cd` command to change into the folder where you want to work. Example:
    ```powershell
-   cd "$HOME\Desktop"; mkdir "class-websites"; cd "class-websites"
+   cd "$HOME\Desktop"; mkdir "class-websites"; cd "class-websites"; pwd
    ```
 
 ---
