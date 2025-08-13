@@ -222,7 +222,7 @@ def patch_date_format(date_tsx_file_path: Path):
         else:
             print("ℹ️ Date.tsx date format already matches desired settings.")
     except Exception as e:
-        print(f"⚠️ Error patching Date.tsx date format: {e}")
+        print(f"⚠️ Error patching Date.tsx: {e}")
 # --- END ADD ---
 
 # --- ADD: Patch listPage.scss meta width ---
@@ -1435,6 +1435,68 @@ def preflight_update_course_config(course_dir: Path, section_dir: Path, config_p
     return cfg
 # =============================================================================
 
+# === NEW: Fix Netlify static import for course_config.json ====================
+def _copy_course_config_into_quartz(course_dir: Path, output_dir: Path):
+    """
+    Copy <course_dir>/course_config.json into <output_dir>/quartz/course_config.json.
+    If missing at the course root, write a minimal default to prevent build errors.
+    """
+    src = course_dir / "course_config.json"
+    quartz_dir = output_dir / "quartz"
+    quartz_dir.mkdir(parents=True, exist_ok=True)
+    dst = quartz_dir / "course_config.json"
+
+    if src.exists():
+        shutil.copy2(src, dst)
+        print(f"✅ Copied course_config.json → {dst.relative_to(output_dir)}")
+    else:
+        fallback = {"courseCode": course_dir.name, "notes": "auto-generated fallback"}
+        dst.write_text(json.dumps(fallback, indent=2), encoding="utf-8")
+        print(f"ℹ️ No course_config.json found at {src}; wrote a minimal default to {dst}")
+
+def _patch_quartz_imports_to_local_config(quartz_dir: Path):
+    """
+    Ensure Quartz components import course_config.json from the local quartz/ folder.
+    Rewrites any existing import that targets course_config.json to the correct relative path.
+    """
+    targets = [
+        quartz_dir / "components" / "Explorer.tsx",
+        quartz_dir / "components" / "scripts" / "explorer.inline.ts",
+    ]
+    cfg_path = quartz_dir / "course_config.json"
+
+    for fp in targets:
+        if not fp.exists():
+            continue
+        rel_to_cfg = os.path.relpath(cfg_path, start=fp.parent).replace(os.sep, "/")
+        try:
+            src = fp.read_text(encoding="utf-8")
+        except Exception as e:
+            print(f"⚠️ Could not read {fp} to patch imports: {e}")
+            continue
+
+        # Replace any import ... from "....course_config.json"
+        new_src, n = re.subn(
+            r'(import\s+courseConfig\s+from\s+["\'])(.*?course_config\.json)(["\'])',
+            rf'\1{rel_to_cfg}\3',
+            src,
+            flags=re.IGNORECASE,
+        )
+
+        if n == 0 and "course_config.json" not in src:
+            # As a fallback, inject an import at the top
+            new_src = f'import courseConfig from "{rel_to_cfg}"\n' + src
+
+        if new_src != src:
+            try:
+                fp.write_text(new_src, encoding="utf-8")
+                print(f"🔧 Patched import in {fp.relative_to(quartz_dir)} → {rel_to_cfg}")
+            except Exception as e:
+                print(f"⚠️ Could not write patched imports to {fp}: {e}")
+        else:
+            print(f"✔️  Import in {fp.relative_to(quartz_dir)} already points to {rel_to_cfg}")
+# =============================================================================
+
 def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -1579,6 +1641,11 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         # Ensure we still have paths used later in the function
         base_scss = output_dir / "quartz" / "styles" / "base.scss"
 
+    # === ALWAYS: Fix Netlify static import target ============================
+    _copy_course_config_into_quartz(course_dir, output_dir)
+    _patch_quartz_imports_to_local_config(output_dir / "quartz")
+    # =========================================================================
+
     # --- ALWAYS: Apply teacher preference to ContentMeta on each build ---
     content_meta_tsx = output_dir / "quartz" / "components" / "ContentMeta.tsx"
     patch_content_meta_options(content_meta_tsx, show_reading_time)
@@ -1665,9 +1732,9 @@ def build_section_site(course_code: str, section_number: int, include_social_med
             rewrite_section_wikilinks(dest)
             print(f"  📄 Copied per-section file: {file_name}")
 
-    # Copy course config into output
+    # Copy course config into output root (kept for backwards-compat / other tools)
     shutil.copy2(config_file, output_dir / "course_config.json")
-    print("✅ Copied course_config.json to output directory")
+    print("✅ Copied course_config.json to output directory (root copy)")
 
     # Update Quartz layout & footer
     quartz_layout_ts = output_dir / "quartz.layout.ts"
