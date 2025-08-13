@@ -40,7 +40,7 @@ In the session, optionally complete a series of “quests” to learn how to use
 
 > 💡 **TIP**
 >
-> macOS users, if you are not an Administrator on your computer, install applications to your home's folder's Applications folder.
+> macOS users, if you are not an Administrator on your computer, install these applications to your home folder's **Applications** folder.
 
 ---
 
