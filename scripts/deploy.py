@@ -560,11 +560,11 @@ def main():
         return
 
     # Teacher guidance for GitHub App + token
-    print("\n📎 Netlify + GitHub prerequisites (one-time):")
-    print("   1) Install the Netlify GitHub App and grant it access to this repo (or your org).")
-    print("      • Netlify UI → Site overview (or Team settings) → “Install the Netlify GitHub App”.")
+    print("\n📎 Netlify + GitHub prerequisites (one-time only!):")
+    print("   1) Install the Netlify GitHub App and grant it access to the repo.")
+    print("      • Netlify UI → Projects → Add new project → Import an existing project → “GitHub” → Authorize Netlify → If necessary, choose “Configure the Netlify app on GitHub” at bottom of screen → Select the repository you just created → Deploy")
     print("   2) Create a Netlify Personal Access Token (PAT):")
-    print("      • Netlify → User settings → Applications → Personal access tokens → New access token.")
+    print("      • Netlify avatar (bottom left) → User settings → Applications → Personal access tokens → New access token.")
     print("      • STRONGLY RECOMMENDED: set **No expiration** so you won’t be prompted again across courses/years.")
     print("")
 
