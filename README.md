@@ -30,13 +30,17 @@ In the session, optionally complete a series of “quests” to learn how to use
 ### ✅ Prerequisites
 
 - Install [Docker Desktop](https://www.docker.com/products/docker-desktop) (required)
+   - NOTE: Click the blue "Download Docker Desktop" button, then choose your hardware platform.
 - Install [Obsidian](https://obsidian.md/) (optional, but recommended for editing Markdown)
+   - NOTE: Click the purple "Get Obsidian..." button.
 - *(macOS users)* Install [iTerm2](https://iterm2.com) for full 24-bit ANSI colour support in the colour scheme picker
 - *(Windows users)* You need [PowerShell 5.1 or later](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (comes with Windows 10+; download if on an older version of Windows)
 - [Create a **GitHub account**](https://github.com/join) (if you don’t have one already)
 - [Create a **Netlify account**](https://app.netlify.com/signup) (if you don’t have one already)
 
-> 💡 No need to install Node.js, Python, or Quartz. Everything runs inside Docker!
+> 💡 **TIP**
+>
+> macOS users, if you are not an Administrator on your computer, install applications to your home's folder's Applications folder.
 
 ---
 
