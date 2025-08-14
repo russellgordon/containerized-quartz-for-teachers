@@ -1,4 +1,5 @@
 @echo off
+chcp 65001 >nul
 setlocal EnableExtensions EnableDelayedExpansion
 
 REM ==================== Defaults ====================
@@ -212,12 +213,15 @@ exit /b 0
 
 :show_image_info
 set "_img=%~1"
-for /f "usebackq delims=" %%V in (`docker image inspect "%_img%" --format "{{index .Config.Labels ^"org.opencontainers.image.version^"}}" 2^>nul`) do set "ver=%%V"
-for /f "usebackq delims=" %%C in (`docker image inspect "%_img%" --format "{{index .Config.Labels ^"org.opencontainers.image.created^"}}" 2^>nul`) do set "created=%%C"
-for /f "usebackq delims=" %%R in (`docker image inspect "%_img%" --format "{{index .Config.Labels ^"org.opencontainers.image.revision^"}}" 2^>nul`) do set "rev=%%R"
-for /f "usebackq delims=" %%S in (`docker image inspect "%_img%" --format "{{index .Config.Labels ^"org.opencontainers.image.source^"}}" 2^>nul`) do set "src=%%S"
-for /f "usebackq delims=" %%T in (`docker image inspect "%_img%" --format "{{index .Config.Labels ^"org.opencontainers.image.title^"}}" 2^>nul`) do set "title=%%T"
 
+REM Labels / fields (each query is independent & resilient)
+for /f "usebackq delims=" %%V in (`docker image inspect "%_img%" --format "{{index .Config.Labels \"org.opencontainers.image.version\"}}" 2^>nul`) do set "ver=%%V"
+for /f "usebackq delims=" %%C in (`docker image inspect "%_img%" --format "{{index .Config.Labels \"org.opencontainers.image.created\"}}" 2^>nul`) do set "created=%%C"
+for /f "usebackq delims=" %%R in (`docker image inspect "%_img%" --format "{{index .Config.Labels \"org.opencontainers.image.revision\"}}" 2^>nul`) do set "rev=%%R"
+for /f "usebackq delims=" %%S in (`docker image inspect "%_img%" --format "{{index .Config.Labels \"org.opencontainers.image.source\"}}" 2^>nul`) do set "src=%%S"
+for /f "usebackq delims=" %%T in (`docker image inspect "%_img%" --format "{{index .Config.Labels \"org.opencontainers.image.title\"}}" 2^>nul`) do set "title=%%T"
+
+REM Fallbacks
 if not defined ver set "ver=(no version label)"
 if not defined created (
   for /f "usebackq delims=" %%D in (`docker image inspect "%_img%" --format "{{.Created}}" 2^>nul`) do set "created=%%D"
@@ -232,12 +236,14 @@ echo    • Created:    %created%
 echo    • Revision:   %rev%
 if defined src echo    • Source:     %src%
 
-for /f "usebackq delims=" %%G in (`docker image inspect "%_img%" --format "{{range .RepoDigests}}{{.}}{{printf ^"\n^"}}{{end}}" 2^>nul`) do (
-  if not defined printedDigestHeader (
+REM Digests (use println to avoid escaping issues)
+set "hadDigest="
+for /f "usebackq delims=" %%G in (`docker image inspect "%_img%" --format "{{range .RepoDigests}}{{println .}}{{end}}" 2^>nul`) do (
+  if not defined hadDigest (
     echo    • Digests:
-    set "printedDigestHeader=1"
+    set "hadDigest=1"
   )
   echo      - %%G
 )
-set "printedDigestHeader="
+set "hadDigest="
 exit /b 0

@@ -12,7 +12,7 @@ CONTAINER_PORT=8081
 # -------------------- Config (from flags) --------------------
 TAG="$DEFAULT_TAG"
 FORCE_UPDATE_IMAGE="false"
-PASSTHRU_ARGS=()
+declare -a PASSTHRU_ARGS=()   # <-- ensure array is declared even on older bash
 PULL_STATUS=""
 
 # -------------------- Help text --------------------
@@ -193,7 +193,8 @@ HOST_TZ_OFFSET=$(date +%z)
 echo "🕒 Detected host timezone offset: $HOST_TZ_OFFSET"
 echo "🛟 Backups will be written to: $(pwd)/courses/_backups"
 
-if printf '%s\n' "${PASSTHRU_ARGS[@]}" | grep -q -- "--no-backup"; then
+# Only test for --no-backup if there are any passthrough args
+if ((${#PASSTHRU_ARGS[@]})) && printf '%s\n' "${PASSTHRU_ARGS[@]}" | grep -q -- "--no-backup"; then
   echo "⚠️  You are running with --no-backup."
   echo "    This will skip creating a safety ZIP before modifying course folders."
   read -p "❓ Are you sure you want to proceed without a backup? (yes/no) " CONFIRM
@@ -206,4 +207,4 @@ fi
 # -------------------- Run setup inside container --------------------
 echo "📚 Running setup_course.py inside the Docker container..."
 docker exec -e HOST_TZ_OFFSET="$HOST_TZ_OFFSET" -it "$CONTAINER_NAME" \
-  python3 /opt/scripts/setup_course.py "${PASSTHRU_ARGS[@]}"
+  python3 /opt/scripts/setup_course.py ${PASSTHRU_ARGS+"${PASSTHRU_ARGS[@]}"}

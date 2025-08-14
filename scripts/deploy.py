@@ -465,7 +465,7 @@ def main():
 
     # Determine whether we need to create/replace remote
     current_origin = git_remote_url(section_dir, "origin")
-    needs_new_remote = (current_origin is None) or (current_origin == QUARTZ_UPSTREAM)
+    needs_new_remote = (current_origin == QUARTZ_UPSTREAM)
 
     git_url = None
     token_for_push = None
