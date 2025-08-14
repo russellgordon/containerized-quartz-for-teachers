@@ -30,9 +30,10 @@ In the session, optionally complete a series of “quests” to learn how to use
 ### ✅ Prerequisites
 
 - Install and open [Docker Desktop](https://www.docker.com/products/docker-desktop) (required)
+   - A Docker account is not required. You can skip this step during installation.
 - Install [Obsidian](https://obsidian.md/) (optional, but recommended for editing Markdown)
-- *(macOS users)* Install [iTerm2](https://iterm2.com) for full 24-bit ANSI colour support in the colour scheme picker
-- *(Windows users)* You need [PowerShell 5.1 or later](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (comes with Windows 10+; download if on an older version of Windows)
+- **macOS users**, install [iTerm2](https://iterm2.com) for full 24-bit ANSI colour support in the colour scheme picker
+- **Windows users**, you need [PowerShell 5.1 or later](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (comes with Windows 10+; download if on an older version of Windows)
 - [Create a **GitHub account**](https://github.com/join) (if you don’t have one already)
 - [Create a **Netlify account**](https://app.netlify.com/signup) (if you don’t have one already)
 
@@ -98,10 +99,12 @@ On Windows:
 ```
 
 This will:
-- Prompt you for the course code, name, and number of sections
-- Let you select shared folders (e.g., “Exercises”, “Examples”)
-- Let you choose a colour scheme for each section with a live swatch preview
-- Create everything under `./courses/<CourseCode>` ready for editing
+- Offer to install an example course (recommended for first-time users)
+- If you do not install the example course, it will:
+   - Prompt you for the course code, name, and number of sections
+   - Let you select shared folders (e.g., “Exercises”, “Examples”)
+   - Let you choose a colour scheme for each section with a live swatch preview
+   - Create everything under `./courses/<CourseCode>` ready for editing
 
 ---
 
