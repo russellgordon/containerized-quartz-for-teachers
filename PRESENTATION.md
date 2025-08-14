@@ -1,3 +1,4 @@
+# Take Control of Publishing Your Content
 
 > [!NOTE]
 > 
