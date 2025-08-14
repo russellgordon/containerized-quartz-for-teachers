@@ -2,7 +2,7 @@
 
 > 💡 **Note**
 > 
-> This software will be discussed in person on Thursday, August 13, 2025 at the [Summer Conference for Computer Studies and Mathematics Educators](https://cemc.uwaterloo.ca/workshops/educator-development/summer-conference-educators), organized by the [Centre for Education in Mathematics and Computing](https://www.cemc.uwaterloo.ca/).
+> This software will be discussed in person on Thursday, August 14, 2025 at the [Summer Conference for Computer Studies and Mathematics Educators](https://cemc.uwaterloo.ca/workshops/educator-development/summer-conference-educators), organized by the [Centre for Education in Mathematics and Computing](https://www.cemc.uwaterloo.ca/).
 
 **Workshop Description:**
 
