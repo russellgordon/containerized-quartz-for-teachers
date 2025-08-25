@@ -1,8 +1,8 @@
 # An Even Faster Workflow for Publishing Teaching Materials
 
-> 💡 **Note**
+> ℹ️ **Note**
 > 
-> This software will be discussed in person on Thursday, August 14, 2025 at the [Summer Conference for Computer Studies and Mathematics Educators](https://cemc.uwaterloo.ca/workshops/educator-development/summer-conference-educators), organized by the [Centre for Education in Mathematics and Computing](https://www.cemc.uwaterloo.ca/).
+> This software was be discussed in person on Thursday, August 14, 2025 at the [Summer Conference for Computer Studies and Mathematics Educators](https://cemc.uwaterloo.ca/workshops/educator-development/summer-conference-educators), organized by the [Centre for Education in Mathematics and Computing](https://www.cemc.uwaterloo.ca/).
 
 **Workshop Description:**
 
@@ -16,7 +16,7 @@ In the session, optionally complete a series of “quests” to learn how to use
 >
 > You can browse [an example of the type of output produced by this workflow here](https://aesthetic-bubblegum-622206.netlify.app). That site represents half of the author's Grade 10 Digital Tech course materials for the most recent school year.
 
-> 💡 **Note**
+> ℹ️ **Note**
 > 
 > For those with good memories, this is an update of the 2023 session titled “[A Rapid Workflow for Publishing CS Teaching Materials](https://teaching.russellgordon.ca/cemc/sccst-2023/a-rapid-workflow-for-publishing-cs-teaching-materials/)”, with new software, much less work involved to get a site up and running, and a better end-product. This new session is suitable for and useful for both mathematics and computer science teachers.
 
@@ -37,7 +37,7 @@ In the session, optionally complete a series of “quests” to learn how to use
 - [Create a **GitHub account**](https://github.com/join) (if you don’t have one already)
 - [Create a **Netlify account**](https://app.netlify.com/signup) (if you don’t have one already)
 
-> 💡 **TIP**
+> 💡 **Tip**
 >
 > Your computer's user account must have Administrator privileges to use this workflow. 
 
@@ -126,6 +126,10 @@ courses/
 ---
 
 ### 4. Preview your site
+
+> ℹ️ **Note**
+>
+> **`ICS3U`** is used as an example in the command given below – be sure to replace the course code with whatever course you set up in Step 2 above.
 
 On macOS/Linux:
 ```bash
