@@ -152,6 +152,10 @@ This will:
 
 ### 5. Publish your site (Deploy)
 
+> ℹ️ **Note**
+>
+> **`ICS3U`** is used as an example in the command given below – be sure to replace the course code with whatever course you set up in Step 2 above.
+
 Once you’re happy with your preview, you can publish the site so students and others can see it.
 
 On macOS/Linux:
