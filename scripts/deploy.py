@@ -14,6 +14,74 @@ from pathlib import Path
 
 QUARTZ_UPSTREAM = "https://github.com/jackyzha0/quartz.git"
 
+# ---------- Netlify name sanitizer ----------
+
+def sanitize_netlify_name(name: str) -> str:
+    """
+    Produce a Netlify-safe subdomain from a repo or site name.
+    Lowercase, convert spaces/underscores to hyphens, and strip invalid chars.
+    """
+    name = name.lower().replace(" ", "-").replace("_", "-")
+    name = re.sub(r"[^a-z0-9-]", "-", name)
+    # collapse repeated dashes and strip from ends
+    name = re.sub(r"-{2,}", "-", name).strip("-")
+    return name or "site"
+
+# ---------- Teacher profile (NEW) ----------
+
+GLOBAL_SECRETS_ROOT = Path("/teaching/courses/_secrets")
+
+def _profile_path() -> Path:
+    return GLOBAL_SECRETS_ROOT / "profile.json"
+
+def _ensure_global_secrets_dir():
+    GLOBAL_SECRETS_ROOT.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chmod(GLOBAL_SECRETS_ROOT, 0o700)
+    except Exception:
+        pass
+
+def sanitize_last_name(name: str) -> str:
+    """Lowercase and keep letters only; e.g., 'Mc-Donald ' -> 'mcdonald'."""
+    return re.sub(r"[^a-z]", "", name.strip().lower())
+
+def load_teacher_last_name() -> str | None:
+    path = _profile_path()
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        ln = (data or {}).get("teacher_last_name")
+        if ln:
+            return sanitize_last_name(ln)
+    except Exception:
+        return None
+    return None
+
+def save_teacher_last_name(last_name: str):
+    _ensure_global_secrets_dir()
+    data = {"teacher_last_name": sanitize_last_name(last_name)}
+    path = _profile_path()
+    path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    try:
+        os.chmod(path, 0o600)
+    except Exception:
+        pass
+
+def get_or_prompt_teacher_last_name() -> str:
+    ln = load_teacher_last_name()
+    if ln:
+        return ln
+    # First run under this /teaching/courses folder
+    raw = input("👋 First time setup: What is your last name? (letters only) ").strip()
+    ln = sanitize_last_name(raw)
+    while not ln:
+        raw = input("Please enter letters only for your last name (e.g., 'Gordon'): ").strip()
+        ln = sanitize_last_name(raw)
+    save_teacher_last_name(ln)
+    print(f"📝 Saved teacher last name for future deploys: {ln}")
+    return ln
+
 # ---------- Timezone helpers ----------
 
 def parse_host_tz() -> dt.tzinfo:
@@ -102,8 +170,6 @@ def prompt(text: str, default: str | None = None) -> str:
 #   Location: /teaching/courses/_secrets/{.key,tokens.json}
 # =========================================================
 
-GLOBAL_SECRETS_ROOT = Path("/teaching/courses/_secrets")
-
 def _global_secrets_paths() -> tuple[Path, Path]:
     """
     Returns (key_path, tokens_path) under the global secrets root.
@@ -112,19 +178,13 @@ def _global_secrets_paths() -> tuple[Path, Path]:
     tokens_path = GLOBAL_SECRETS_ROOT / "tokens.json"
     return key_path, tokens_path
 
-def _ensure_global_secrets_dir():
-    GLOBAL_SECRETS_ROOT.mkdir(parents=True, exist_ok=True)
-    try:
-        os.chmod(GLOBAL_SECRETS_ROOT, 0o700)
-    except Exception:
-        pass
-
 def _load_or_create_key_global() -> bytes:
     key_path, _ = _global_secrets_paths()
     if key_path.exists():
         k = key_path.read_bytes()
         if k:
             return k
+    _ensure_global_secrets_dir()
     k = os.urandom(32)
     key_path.write_bytes(k)
     try:
@@ -334,7 +394,7 @@ def commit_and_push(cwd: Path, token: str | None):
     try:
         if token:
             askpass_path = cwd / ".git_askpass_tmp.sh"
-            askpass_path.write_text("#!/usr/bin/env bash\necho \"$GITHUB_TOKEN\"\n", encoding="utf-8")
+            askpass_path.write_text('#!/usr/bin/env bash\necho "$GITHUB_TOKEN"\n', encoding="utf-8")
             os.chmod(askpass_path, 0o700)
             env["GIT_ASKPASS"] = str(askpass_path)
             env["GITHUB_TOKEN"] = token
@@ -343,8 +403,10 @@ def commit_and_push(cwd: Path, token: str | None):
         subprocess.run(["git", "push", "-u", "origin", "main"], cwd=cwd, check=True, env=env)
     finally:
         if askpass_path and askpass_path.exists():
-            try: askpass_path.unlink()
-            except: pass
+            try:
+                askpass_path.unlink()
+            except Exception:
+                pass
 
 def needs_pat_for_url(url: str | None) -> bool:
     return bool(url and url.startswith("https://github.com"))
@@ -375,7 +437,46 @@ def netlify_api(method: str, path: str, token: str, payload: dict | None = None)
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         msg = e.read().decode("utf-8", errors="ignore")
+        # keep original behavior: raise RuntimeError with message body
         raise RuntimeError(f"Netlify API error {e.code}: {msg}") from e
+
+def _extract_json_from_error(err: Exception) -> dict | None:
+    """
+    Best-effort: pull trailing JSON object from an exception's string repr.
+    """
+    s = str(err).strip()
+    # Find last '{' and try to parse JSON from there
+    idx = s.rfind("{")
+    if idx == -1:
+        return None
+    candidate = s[idx:]
+    try:
+        return json.loads(candidate)
+    except Exception:
+        return None
+
+def _is_netlify_name_conflict(err: Exception) -> bool:
+    """
+    Returns True when the error indicates the site subdomain is not unique.
+    Handles messages like:
+      {"errors":{"subdomain":["must be unique"]}}
+      {"errors":{"name":["is already taken"]}}
+    And generic phrasing like "already exists"/"taken"/"unique".
+    """
+    s = str(err).lower()
+    if "422" in s and ("unique" in s or "already" in s or "taken" in s or "exists" in s):
+        return True
+    data = _extract_json_from_error(err)
+    if isinstance(data, dict):
+        errs = data.get("errors")
+        if isinstance(errs, dict):
+            for key, messages in errs.items():
+                if isinstance(messages, list):
+                    for m in messages:
+                        lm = (m or "").lower()
+                        if any(x in lm for x in ["unique", "already", "taken", "exists"]):
+                            return True
+    return False
 
 def parse_github_owner_repo(remote_url: str | None) -> tuple[str | None, str | None]:
     """
@@ -394,26 +495,66 @@ def parse_github_owner_repo(remote_url: str | None) -> tuple[str | None, str | N
         return (m.group(1), m.group(2))
     return (None, None)
 
-def maybe_create_netlify_site(owner: str, repo: str, branch: str, token: str, team_slug: str | None = None) -> dict:
+def suggest_site_base(course_code: str, section: str, teacher_last_name: str) -> str:
+    """
+    Example: ICD2O + 1 + gordon -> icd2o-s1-2025-gordon
+    """
+    course = (course_code or "").lower()
+    sec = f"s{section}"
+    base = f"{course}-{sec}-{NOW.year}-{teacher_last_name}"
+    return sanitize_netlify_name(base)
+
+def maybe_create_netlify_site(owner: str, repo: str, branch: str, token: str,
+                              team_slug: str | None = None,
+                              course_code: str | None = None,
+                              section: str | None = None,
+                              teacher_last_name: str | None = None) -> dict:
     """
     Create a Netlify site linked to a GitHub repo.
     Uses POST /api/v1/sites (or /api/v1/accounts/{team_slug}/sites) with a repo block.
+    If the chosen name is taken, we prompt and suggest alternatives until success.
     Returns the site object on success.
     """
-    payload = {
-        "name": None,  # let Netlify assign a subdomain
-        "repo": {
-            "provider": "github",
-            "repo": f"{owner}/{repo}",
-            "branch": branch,
-            "cmd": "npx quartz build",
-            "dir": "public",
-            "private": True,
-        }
-    }
+    # Build a friendly, collision-resistant default
+    if teacher_last_name and course_code and section:
+        base = suggest_site_base(course_code, section, teacher_last_name)
+    else:
+        base = sanitize_netlify_name(repo)
+
+    site_name = prompt("Enter Netlify site name", default=base).strip() or base
+
+    attempt = 0
     path = f"/accounts/{team_slug}/sites" if team_slug else "/sites"
-    site = netlify_api("POST", path, token, payload)
-    return site
+
+    while True:
+        payload = {
+            "name": site_name,
+            "repo": {
+                "provider": "github",
+                "repo": f"{owner}/{repo}",
+                "branch": branch,
+                "cmd": "npx quartz build",
+                "dir": "public",
+                "private": True,
+            }
+        }
+        try:
+            site = netlify_api("POST", path, token, payload)
+            return site
+        except RuntimeError as e:
+            # If the name is taken, suggest an alternative and re-prompt
+            if _is_netlify_name_conflict(e):
+                attempt += 1
+                suggestion = f"{base}-{attempt:02d}"
+                print(f"⚠️  Netlify site name '{site_name}' is not available (already in use).")
+                print("    Tip: names must be globally unique across Netlify and use letters, numbers, and hyphens.")
+                new_name = prompt("Choose a different Netlify site name (or 'q' to cancel)", default=suggestion).strip()
+                if new_name.lower() in {"q", "quit", "exit"}:
+                    raise RuntimeError("User cancelled Netlify site creation after name conflict.") from e
+                site_name = sanitize_netlify_name(new_name) or suggestion
+                continue
+            # Otherwise, bubble up
+            raise
 
 def load_netlify_marker(section_dir: Path) -> dict | None:
     marker = section_dir / ".netlify_site.json"
@@ -429,7 +570,8 @@ def save_netlify_marker(section_dir: Path, site_obj: dict):
     keep = {
         "id": site_obj.get("id"),
         "name": site_obj.get("name"),
-        "url": site_obj.get("url") or site_obj.get("ssl_url"),
+        # prefer ssl_url for canonical https URL
+        "url": site_obj.get("ssl_url") or site_obj.get("url"),
         "admin_url": site_obj.get("admin_url"),
     }
     marker.write_text(json.dumps(keep, indent=2), encoding="utf-8")
@@ -457,6 +599,13 @@ def main():
     # Determine course dir (for back-compat migration) and run migration
     course_dir = section_dir.parent.parent  # .../<COURSE>/.merged_output/section#
     _maybe_migrate_course_tokens_to_global(course_dir)
+
+    # NEW: capture teacher last name once per /teaching/courses
+    try:
+        teacher_last_name = get_or_prompt_teacher_last_name()
+    except Exception:
+        # Non-interactive environments can skip; we'll just omit from suggestion
+        teacher_last_name = None
 
     print(f"📁 Deploying from: {section_dir}")
     print(f"🕒 Timestamp TZ offset: {NOW.strftime('%z')}")
@@ -580,7 +729,10 @@ def main():
     team_slug = prompt("Netlify Team slug (optional; Enter to use your personal team)", default="").strip() or None
 
     try:
-        site = maybe_create_netlify_site(gh_owner, gh_repo, branch="main", token=netlify_token, team_slug=team_slug)
+        site = maybe_create_netlify_site(
+            gh_owner, gh_repo, branch="main", token=netlify_token, team_slug=team_slug,
+            course_code=args.course, section=str(args.section), teacher_last_name=teacher_last_name
+        )
         save_netlify_marker(section_dir, site)
         site_url = site.get("ssl_url") or site.get("url")
         admin_url = site.get("admin_url")
