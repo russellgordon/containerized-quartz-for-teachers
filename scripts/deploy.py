@@ -11,8 +11,9 @@ import sys
 import tempfile
 import urllib.request
 import urllib.error
-import uuid
-import zipfile
+import urllib.parse
+import hashlib
+import unicodedata
 from pathlib import Path
 
 # ---------- Netlify name sanitizer ----------
@@ -312,7 +313,6 @@ def maybe_create_netlify_site_simple(token: str,
     while True:
         payload = {
             "name": site_name,
-            # Optional metadata fields supported by docs/guides
             "created_via": "Dockerized Quartz for Teachers",
         }
         try:
@@ -350,68 +350,115 @@ def save_netlify_marker(section_dir: Path, site_obj: dict):
     }
     marker.write_text(json.dumps(keep, indent=2), encoding="utf-8")
 
-# ---------- Build API: zip + upload to production ----------
+# ---------- Shared path filters ----------
 
-def _zip_folder_to_bytes(root: Path) -> bytes:
-    """
-    Zip contents of 'root' so that files sit at archive top-level.
-    Returns zip file bytes.
-    """
-    buf = io.BytesIO()
-    with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-        for p in sorted(root.rglob("*")):
-            if p.is_file():
-                arcname = str(p.relative_to(root)).replace("\\", "/")
-                zf.write(p, arcname)
-    return buf.getvalue()
+_IGNORED_BASENAMES = {".DS_Store", "Thumbs.db"}
 
-def _encode_multipart(fields: dict[str, str], files: dict[str, tuple[str, bytes, str]]) -> tuple[bytes, str]:
-    """
-    Build a multipart/form-data payload.
-    files: { field_name: (filename, bytes, content_type) }
-    Returns (body_bytes, content_type_header_value).
-    """
-    boundary = "----NetlifyBoundary" + uuid.uuid4().hex
-    CRLF = b"\r\n"
-    body = io.BytesIO()
+def _normalize_rel(rel: str) -> str:
+    # Normalize to NFC, ensure POSIX separators
+    rel = rel.replace("\\", "/")
+    rel = unicodedata.normalize("NFC", rel)
+    return rel
 
-    for name, value in fields.items():
-        body.write(b"--" + boundary.encode("ascii") + CRLF)
-        body.write(f'Content-Disposition: form-data; name="{name}"'.encode("utf-8") + CRLF)
-        body.write(b"" + CRLF)
-        body.write(value.encode("utf-8") + CRLF)
+def _should_skip_rel(rel: str) -> bool:
+    # Skip macOS AppleDouble files and .git artifacts and control chars in paths
+    parts = rel.split("/")
+    if any(part.startswith("._") for part in parts):
+        return True
+    if parts and parts[0].startswith(".git"):
+        return True
+    if parts and parts[-1] in _IGNORED_BASENAMES:
+        return True
+    if any(ord(c) < 32 for c in rel):  # control chars like \r in "Icon\r"
+        return True
+    return False
 
-    for name, (filename, file_bytes, content_type) in files.items():
-        body.write(b"--" + boundary.encode("ascii") + CRLF)
-        disp = f'Content-Disposition: form-data; name="{name}"; filename="{filename}"'
-        body.write(disp.encode("utf-8") + CRLF)
-        body.write(f"Content-Type: {content_type}".encode("utf-8") + CRLF)
-        body.write(b"" + CRLF)
-        body.write(file_bytes + CRLF)
+# ---------- Delta deploy (file digest API) ----------
 
-    body.write(b"--" + boundary.encode("ascii") + b"--" + CRLF)
-    content_type = f"multipart/form-data; boundary={boundary}"
-    return body.getvalue(), content_type
+def _sha1_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
+    h = hashlib.sha1()
+    with path.open("rb") as f:
+        while True:
+            b = f.read(chunk_size)
+            if not b:
+                break
+            h.update(b)
+    return h.hexdigest()
 
-def upload_zip_build_to_netlify(site_id: str, token: str, zip_bytes: bytes, title: str | None = None) -> dict:
+def _build_files_manifest(root: Path):
     """
-    POST /api/v1/sites/<site_id>/builds with multipart fields:
-      - title (optional)
-      - zip (application/zip)
-    This triggers a production deploy. (Netlify Build API guide)
+    Build:
+      - files_map:  { "/remote/path": "sha1hex", ... }
+      - sha_to_pairs: { "sha1hex": [ ("/remote/path", "local/rel"), ... ] }
+    Remote paths are NFC-normalized and start with "/".
     """
-    fields = {}
-    if title:
-        fields["title"] = title
-    files = {"zip": ("site.zip", zip_bytes, "application/zip")}
-    body, content_type = _encode_multipart(fields, files)
-    headers = {"Content-Type": content_type}
-    return netlify_api("POST", f"/sites/{site_id}/builds", token, headers=headers, data=body)
+    files_map: dict[str, str] = {}
+    sha_to_pairs: dict[str, list[tuple[str, str]]] = {}
+    for p in sorted(root.rglob("*")):
+        if not p.is_file():
+            continue
+        local_rel = str(p.relative_to(root))
+        local_rel = _normalize_rel(local_rel)
+        if _should_skip_rel(local_rel):
+            continue
+        remote_key = "/" + local_rel  # Netlify expects leading slash
+        sha = _sha1_file(p)
+        files_map[remote_key] = sha
+        sha_to_pairs.setdefault(sha, []).append((remote_key, local_rel))
+    return files_map, sha_to_pairs
+
+def create_delta_deploy(site_id: str, token: str, root: Path, draft: bool = False, async_req: bool = False) -> dict:
+    """
+    Step 1: POST /sites/{site_id}/deploys with manifest {"files":{...}, "draft":bool?, "async":bool?}
+    Returns deploy object: includes "id" and "required".
+    """
+    files_map, sha_to_pairs = _build_files_manifest(root)
+    payload = {"files": files_map}
+    if draft:
+        payload["draft"] = True
+    if async_req:
+        payload["async"] = True
+    deploy = netlify_api("POST", f"/sites/{site_id}/deploys", token, payload=payload)
+    deploy["_sha_to_pairs"] = sha_to_pairs  # carry through for upload step
+    return deploy
+
+def _upload_required_files(deploy_id: str, token: str, root: Path, required_shas: list[str], sha_to_pairs: dict[str, list[tuple[str, str]]]):
+    """
+    Step 2: PUT each required file to /deploys/{deploy_id}/files/<remote/path>
+    Only one path per required digest is necessary.
+    """
+    if not required_shas:
+        print("📦 No file uploads needed (all content already present on Netlify).")
+        return
+
+    uploaded = 0
+    for sha in required_shas:
+        pairs = sha_to_pairs.get(sha) or []
+        if not pairs:
+            print(f"⚠️  Netlify requested unknown digest {sha[:8]}…; skipping.")
+            continue
+        remote_path, local_rel = pairs[0]
+        local_file = root / local_rel
+        if not local_file.exists():
+            print(f"⚠️  Missing local file for {remote_path}; skipping.")
+            continue
+
+        # Encode remote path for URL; escape reserved chars safely
+        encoded_path = urllib.parse.quote(remote_path.lstrip("/"), safe="/")
+        with local_file.open("rb") as f:
+            data = f.read()
+        headers = {"Content-Type": "application/octet-stream"}
+        netlify_api("PUT", f"/deploys/{deploy_id}/files/{encoded_path}", token, headers=headers, data=data)
+        uploaded += 1
+        if uploaded % 25 == 0:
+            print(f"   …uploaded {uploaded}/{len(required_shas)} required files")
+
+    print(f"⬆️  Uploaded {uploaded} file(s) required by Netlify.")
 
 # ---------- Main ----------
 
 def main():
-    p = argparse.ArgumentParser(description="Deploy a built section site directly to Netlify (no GitHub required).")
+    p = argparse.ArgumentParser(description="Deploy a built section site directly to Netlify using delta (file-digest) uploads only.")
     p.add_argument("--course", required=True, help="Course code, e.g., ICS3U")
     p.add_argument("--section", required=True, help="Section number, e.g., 1")
     args = p.parse_args()
@@ -445,10 +492,10 @@ def main():
     print(f"📁 Deploying from local build: {public_dir}")
     print(f"🕒 Timestamp TZ offset: {NOW.strftime('%z')}")
 
-    # Load or prompt for Netlify token (GLOBAL)
-    netlify_token = _load_token_global("netlify")
+    # Load or prompt for Netlify token (GLOBAL). Also respect env var if present.
+    netlify_token = os.getenv("NETLIFY_AUTH_TOKEN") or _load_token_global("netlify")
     if netlify_token:
-        print("🔐 Using saved Netlify token (global).")
+        print("🔐 Using Netlify token (env or saved global).")
     else:
         netlify_token = read_netlify_token_secure()
         if not netlify_token:
@@ -493,31 +540,24 @@ def main():
         print("❌ Could not determine Netlify site ID.")
         sys.exit(1)
 
-    # Zip the built site and upload via Build API
-    print("📦 Zipping built site (public/)...")
-    zip_bytes = _zip_folder_to_bytes(public_dir)
-    title = f"{args.course}-S{args.section} deploy {NOW.strftime('%Y-%m-%d %H:%M:%S %z')}"
-
-    print("⬆️  Uploading zip to Netlify Build API (production deploy)...")
+    # Always delta deploy
+    print("🧮 Preparing delta deploy manifest…")
     try:
-        deploy_resp = upload_zip_build_to_netlify(site_id, netlify_token, zip_bytes, title=title)
-        # deploy_resp often includes deploy/build metadata; show a friendly summary
-        dep_url = (deploy_resp or {}).get("deploy_ssl_url") or (deploy_resp or {}).get("deploy_url") or site_url
-        state = (deploy_resp or {}).get("state")
-        deploy_id = (deploy_resp or {}).get("id") or (deploy_resp or {}).get("deploy_id")
-        print("✅ Deploy request accepted by Netlify.")
+        manifest_resp = create_delta_deploy(site_id, netlify_token, public_dir, draft=False, async_req=False)
+        deploy_id = manifest_resp.get("id")
+        required = manifest_resp.get("required") or []
+        sha_to_pairs = manifest_resp.get("_sha_to_pairs") or {}
+        print(f"📋 Netlify requires {len(required)} file(s) for this deploy.")
+        _upload_required_files(deploy_id, netlify_token, public_dir, required, sha_to_pairs)
+        print("✅ Delta deploy created.")
         if deploy_id:
             print(f"   Deploy ID: {deploy_id}")
-        if state:
-            print(f"   State:     {state}")
-        if dep_url:
-            print(f"   Live URL:  {dep_url}")
-        else:
+        if site_url:
             print(f"   Site URL:  {site_url}")
     except Exception as e:
-        print("❌ Deploy failed.")
+        print("❌ Delta deploy failed.")
         print(f"   Details: {e}")
-        print("   Tip: Ensure your token has access to the chosen team/site, and that 'public/' contains your built site.")
+        print("   Tip: Check for unusual filenames (control chars) and ensure your token has access to this team/site.")
         sys.exit(1)
 
     print("\n✅ Deploy complete.")
