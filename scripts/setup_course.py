@@ -899,9 +899,9 @@ def maybe_install_example_course(courses_root: Path) -> bool:
     ensure_quartz_overflowlist_static_id()
 
     # Print final hint and exit early (as requested)
-    print("✅ Example Course installed: EXC2O")
+    print(f"✅ Example Course installed: {dest_code}")
     print("ℹ️ To preview this site, run:")
-    print("   ./preview.sh EXC2O 1")
+    print(f"   ./preview.sh {dest_code} 1")
     print("   (Then open http://localhost:8081 in your browser.)")
     sys.exit(0)
     return True  # not reached
