@@ -9,16 +9,18 @@ CONTAINER_NAME="teaching-quartz"
 usage() {
   cat <<'USAGE'
 🧰 Usage:
-  ./deploy.sh <COURSE_CODE> <SECTION_NUMBER> [--diagnose]
+  ./deploy.sh <COURSE_CODE> <SECTION_NUMBER> [--diagnose] [--team <TEAM_SLUG>]
 
 Examples:
   ./deploy.sh ICS3U 1
   ./deploy.sh ICS3U 1 --diagnose
+  ./deploy.sh ICS3U 1 --team my-org-slug
 
 Notes:
 - Deploys from /teaching/courses/<COURSE>/.merged_output/section<SECTION> inside the container.
 - You must build first (the static site goes to 'public/' in that section folder).
 - You'll be prompted for a Netlify Personal Access Token on first deploy; it will be saved globally.
+- The --team/--team-slug option is advanced; omit it to use your personal team.
 USAGE
 }
 
@@ -29,13 +31,30 @@ fi
 COURSE_CODE="$1"; shift
 SECTION_NUM="$1"; shift
 
-# Parse optional flags: currently only --diagnose
+# Parse optional flags: --diagnose and --team/--team-slug
 DIAGNOSE=""
+TEAM_SLUG=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --diagnose) DIAGNOSE="--diagnose" ;;
-    --help|-h) usage; exit 0 ;;
-    *) echo "❌ Unknown option: $1"; echo; usage; exit 1 ;;
+    --diagnose)
+      DIAGNOSE="--diagnose"
+      ;;
+    --team|--team-slug)
+      if [[ $# -lt 2 ]]; then
+        echo "❌ Missing value for $1"; echo; usage; exit 1
+      fi
+      TEAM_SLUG="$2"
+      shift
+      ;;
+    --team=*|--team-slug=*)
+      TEAM_SLUG="${1#*=}"
+      ;;
+    --help|-h)
+      usage; exit 0
+      ;;
+    *)
+      echo "❌ Unknown option: $1"; echo; usage; exit 1
+      ;;
   esac
   shift
 done
@@ -109,10 +128,21 @@ fi
 SECTION_DIR_IN_CONTAINER="/teaching/courses/${COURSE_CODE}/.merged_output/section${SECTION_NUM}"
 echo "🚀 Deploying ${COURSE_CODE} S${SECTION_NUM} from: ${SECTION_DIR_IN_CONTAINER}"
 
-docker exec -it \
-  -e HOST_TZ_OFFSET="${HOST_TZ_OFFSET}" \
-  "${CONTAINER_NAME}" \
-  python3 /opt/scripts/deploy.py \
-    --course "${COURSE_CODE}" \
-    --section "${SECTION_NUM}" \
-    ${DIAGNOSE}
+if [[ -n "${TEAM_SLUG}" ]]; then
+  docker exec -it \
+    -e HOST_TZ_OFFSET="${HOST_TZ_OFFSET}" \
+    "${CONTAINER_NAME}" \
+    python3 /opt/scripts/deploy.py \
+      --course "${COURSE_CODE}" \
+      --section "${SECTION_NUM}" \
+      ${DIAGNOSE} \
+      --team "${TEAM_SLUG}"
+else
+  docker exec -it \
+    -e HOST_TZ_OFFSET="${HOST_TZ_OFFSET}" \
+    "${CONTAINER_NAME}" \
+    python3 /opt/scripts/deploy.py \
+      --course "${COURSE_CODE}" \
+      --section "${SECTION_NUM}" \
+      ${DIAGNOSE}
+fi

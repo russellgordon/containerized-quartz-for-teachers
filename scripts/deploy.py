@@ -563,6 +563,9 @@ def main():
     p.add_argument("--course", required=True, help="Course code, e.g., ICS3U")
     p.add_argument("--section", required=True, help="Section number, e.g., 1")
     p.add_argument("--diagnose", action="store_true", help="Print a breakdown of required files and save list to _required_last_deploy.txt")
+    # NEW: optional team slug flag (advanced users only)
+    p.add_argument("--team", "--team-slug", dest="team", default=None,
+                   help="Netlify team slug (advanced). If omitted, your personal team is used.")
     args = p.parse_args()
 
     # Path: /teaching/courses/<COURSE>/.merged_output/section<NUM>
@@ -617,7 +620,9 @@ def main():
         if site_url:
             print(f"   Site: {site_url}")
     else:
-        team_slug = prompt("Netlify Team slug (optional; Enter to use your personal team)", default="").strip() or None
+        team_slug = args.team  # <-- use CLI flag; no interactive prompt
+        if team_slug:
+            print(f"👥 Using Netlify team: {team_slug}")
         try:
             site = maybe_create_netlify_site_simple(
                 token=netlify_token,
