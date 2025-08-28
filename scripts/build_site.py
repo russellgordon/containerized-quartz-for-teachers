@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import shutil
 import argparse
@@ -6,7 +7,7 @@ import subprocess
 import json
 import re
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 # --- ADD: Patch typography fonts in quartz.config.ts -------------------------
 def _escape_font(val: str) -> str:
@@ -203,7 +204,7 @@ def patch_date_format(date_tsx_file_path: Path):
             '    month: "long",\n'
             '    day: "numeric",\n'
             '  })\n'
-            '}'
+            '}\n'
         )
 
         new_content = pattern.sub(replacement, content)
@@ -300,6 +301,118 @@ def adjust_created_modified_priority(config_path: Path):
 
     except Exception as e:
         print(f"❌ Error adjusting CreatedModifiedDate priority: {e}")
+
+# --- ADD: Ensure configuration.defaultDateType === "created" -----------------
+def patch_default_date_type(quartz_config_path: Path):
+    """
+    Ensure quartz.config.ts has configuration.defaultDateType set to "created".
+    Tries to update if present; otherwise injects into the configuration block.
+    Idempotent.
+    """
+    if not quartz_config_path.exists():
+        print(f"⚠️ quartz.config.ts not found at {quartz_config_path}")
+        return
+
+    try:
+        txt = quartz_config_path.read_text(encoding="utf-8")
+
+        # Find 'configuration: {' and match its balanced braces
+        m = re.search(r'(configuration\s*:\s*\{)', txt)
+        if not m:
+            # No configuration block — inject one after 'theme' block or near top-level
+            inject_block = 'configuration: {\n      defaultDateType: "created",\n    },'
+            # Try to insert after theme: { ... }
+            theme_m = re.search(r'(theme\s*:\s*\{)', txt)
+            if not theme_m:
+                # Insert at the start of the exported object (after first '{')
+                first_brace = txt.find('{')
+                if first_brace != -1:
+                    new_txt = txt[:first_brace+1] + "\n  " + inject_block + "\n" + txt[first_brace+1:]
+                else:
+                    new_txt = txt + "\n" + inject_block + "\n"
+            else:
+                # Find end of theme block by counting braces
+                brace_open = txt.find('{', theme_m.end()-1)
+                if brace_open == -1:
+                    new_txt = txt
+                else:
+                    depth = 1
+                    i = brace_open + 1
+                    n = len(txt)
+                    while i < n and depth > 0:
+                        ch = txt[i]
+                        if ch == '{':
+                            depth += 1
+                        elif ch == '}':
+                            depth -= 1
+                        i += 1
+                    end = i  # position after closing brace
+                    new_txt = txt[:end] + ",\n    " + inject_block + "\n" + txt[end:]
+            if new_txt != txt:
+                result = subprocess.run(
+                    ["tee", str(quartz_config_path)],
+                    input=new_txt.encode("utf-8"),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+                if result.returncode != 0:
+                    print("❌ Failed to inject configuration.defaultDateType:", result.stderr.decode())
+                else:
+                    print('✅ Inserted configuration.defaultDateType = "created"')
+            else:
+                print("ℹ️ Could not locate an insertion point for configuration block (no change).")
+            return
+
+        # We have a configuration block — find its closing brace
+        brace_open = txt.find('{', m.end()-1)
+        if brace_open == -1:
+            print("ℹ️ Malformed configuration block (no change).")
+            return
+        depth = 1
+        i = brace_open + 1
+        n = len(txt)
+        while i < n and depth > 0:
+            ch = txt[i]
+            if ch == '{':
+                depth += 1
+            elif ch == '}':
+                depth -= 1
+            i += 1
+        brace_close = i - 1  # index of matching '}'
+
+        inner = txt[brace_open+1:brace_close]
+
+        # If defaultDateType exists, replace its value; else insert it at the top
+        if re.search(r'\bdefaultDateType\s*:', inner):
+            inner2 = re.sub(r'(defaultDateType\s*:\s*)"(.*?)"', r'\1"created"', inner, count=1)
+        else:
+            # Determine indentation
+            line_start = txt.rfind('\n', 0, m.start()) + 1
+            base_indent = re.match(r'[ \t]*', txt[line_start:m.start()]).group(0)
+            inner_indent = base_indent + "  "
+            if inner.strip():
+                inner2 = "\n" + inner_indent + 'defaultDateType: "created",' + "\n" + inner.lstrip()
+            else:
+                inner2 = "\n" + inner_indent + 'defaultDateType: "created"' + "\n" + base_indent
+
+        new_txt = txt[:brace_open+1] + inner2 + txt[brace_close:]
+        if new_txt != txt:
+            result = subprocess.run(
+                ["tee", str(quartz_config_path)],
+                input=new_txt.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to patch configuration.defaultDateType:", result.stderr.decode())
+            else:
+                print('✅ Ensured configuration.defaultDateType = "created"')
+        else:
+            print("ℹ️ configuration.defaultDateType already set (no change).")
+
+    except Exception as e:
+        print(f"⚠️ Error ensuring configuration.defaultDateType: {e}")
+# --- END ADD -----------------------------------------------------------------
 
 # --- ADD: Resolve per-section emoji from course_config.json ------------------
 def resolve_section_emoji(config: dict, section_number: int) -> str:
@@ -433,7 +546,7 @@ def update_quartz_layout(quartz_layout_path: Path, hidden_components: list):
     ]
 
     content = Path(quartz_layout_path).read_text(encoding="utf-8")
-    formatted = ", ".join(f'\"{n}\"' for n in normalized_hidden)
+    formatted = ", ".join(f'"{n}"' for n in normalized_hidden)
     replacement_line = f"const omit = new Set([{formatted}])"
 
     # Match both:
@@ -657,6 +770,10 @@ BACKLINKS_TS_CANDIDATES = [
 ]
 
 def install_patched_backlinks(output_dir: Path):
+    """
+    Copy a patched Backlinks.tsx into the build, but avoid touching the
+    filesystem if it's already identical (reduces churn).
+    """
     target = output_dir / "quartz" / "components" / "Backlinks.tsx"
     src = None
     for p in BACKLINKS_TS_CANDIDATES:
@@ -670,6 +787,25 @@ def install_patched_backlinks(output_dir: Path):
 
     try:
         target.parent.mkdir(parents=True, exist_ok=True)
+
+        # Only copy if different or missing
+        try:
+            src_bytes = Path(src).read_bytes()
+        except Exception:
+            src_bytes = b""
+        try:
+            dst_bytes = Path(target).read_bytes() if target.exists() else b""
+        except Exception:
+            dst_bytes = b""
+
+        if target.exists() and src_bytes == dst_bytes:
+            try:
+                rel = target.relative_to(output_dir)
+            except Exception:
+                rel = target
+            print(f"✔️  Backlinks.tsx already up to date → {rel}")
+            return
+
         shutil.copy2(src, target)
         try:
             rel = target.relative_to(output_dir)
@@ -727,10 +863,170 @@ def _current_created_timestamp() -> str:
 # ---------------------------------------------------------------------------
 
 
-# Track curriculum folders we've already logged this build
+# === NEW: Curriculum 'created' synchronization helpers ======================
+def _is_in_curriculum_folder(path: Path) -> bool:
+    """
+    True if any directory segment in the file's path contains 'curriculum' (case-insensitive).
+    We check parent folders only; filenames themselves do not trigger this.
+    """
+    parts = list(path.parts)
+    # Drop filename
+    if parts:
+        parts = parts[:-1]
+    for seg in parts:
+        if "curriculum" in seg.lower():
+            return True
+    return False
+
+def _fix_tz_colon(s: str) -> str:
+    # Turn trailing +HHMM/-HHMM into +HH:MM/-HH:MM for fromisoformat
+    return re.sub(r'([+-]\d{2})(\d{2})$', r'\1:\2', s)
+
+def _parse_created_value(val) -> datetime | None:
+    """
+    Parse a frontmatter 'created' value into an aware datetime (best-effort).
+    Supports:
+      - 2025-08-10
+      - 2025-08-10T12:34
+      - 2025-08-10T12:34:56
+      - 2025-08-10 12:34:56
+      - 2025-08-10T12:34:56.000-0400 (no colon offset)
+      - 2025-08-10T12:34:56.000-04:00
+      - 2025-08-10T12:34:56Z
+    Naive datetimes are assumed in America/Toronto.
+    """
+    if isinstance(val, datetime):
+        dt = val
+    elif isinstance(val, str):
+        s = val.strip()
+        if not s:
+            return None
+        # Handle Zulu
+        if s.endswith("Z") or s.endswith("z"):
+            s = s[:-1] + "+00:00"
+        # Fix timezone offset without colon
+        s = _fix_tz_colon(s)
+        # Try fromisoformat
+        try:
+            dt = datetime.fromisoformat(s)
+        except Exception:
+            # Try a few common patterns
+            fmts = [
+                "%Y-%m-%d",
+                "%Y-%m-%d %H:%M",
+                "%Y-%m-%d %H:%M:%S",
+                "%Y-%m-%dT%H:%M",
+                "%Y-%m-%dT%H:%M:%S",
+                "%Y-%m-%dT%H:%M:%S.%f",
+            ]
+            dt = None
+            for fmt in fmts:
+                try:
+                    dt = datetime.strptime(s, fmt)
+                    break
+                except Exception:
+                    continue
+            if dt is None:
+                return None
+    else:
+        return None
+
+    # Ensure timezone-aware
+    try:
+        from zoneinfo import ZoneInfo
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=ZoneInfo("America/Toronto"))
+    except Exception:
+        if dt.tzinfo is None:
+            dt = dt.astimezone()
+    return dt
+
+def _format_created_timestamp_from_dt(dt: datetime) -> str:
+    """
+    Format a datetime using the same canonical style as _current_created_timestamp(),
+    always emitting no-colon offset and fixed '.000' milliseconds, in America/Toronto.
+    """
+    try:
+        from zoneinfo import ZoneInfo
+        dt = dt.astimezone(ZoneInfo("America/Toronto"))
+    except Exception:
+        if dt.tzinfo is None:
+            dt = dt.astimezone()
+    return dt.strftime("%Y-%m-%dT%H:%M:%S") + ".000" + dt.strftime("%z")
+
+def _find_latest_created_in_section(content_root: Path) -> datetime | None:
+    """Scan all .md under content_root and return the max frontmatter 'created' datetime (aware)."""
+    latest = None
+    for root, dirs, files in os.walk(content_root):
+        for name in files:
+            if not name.lower().endswith(".md"):
+                continue
+            fp = Path(root) / name
+            try:
+                post = frontmatter.load(fp)
+                raw = post.get("created")
+                dt = _parse_created_value(raw)
+                if dt is not None:
+                    if (latest is None) or (dt > latest):
+                        latest = dt
+            except Exception:
+                # ignore unreadable files
+                continue
+    return latest
+
+def _sync_curriculum_created(content_root: Path, latest_dt: datetime) -> tuple[int, int, int]:
+    """
+    For each curriculum .md file, if its 'created' is absent or older than latest_dt,
+    update it to latest_dt (formatted canonically). Returns (updated, skipped, folder_count).
+    """
+    if latest_dt is None:
+        return (0, 0, 0)
+
+    updated = 0
+    skipped = 0
+    seen_folders = set()
+
+    for root, dirs, files in os.walk(content_root):
+        for name in files:
+            if not name.lower().endswith(".md"):
+                continue
+            fp = Path(root) / name
+            if not _is_in_curriculum_folder(fp):
+                continue
+            try:
+                post = frontmatter.load(fp)
+            except Exception:
+                skipped += 1
+                continue
+
+            curr = _parse_created_value(post.get("created"))
+            if (curr is None) or (curr < latest_dt):
+                post["created"] = _format_created_timestamp_from_dt(latest_dt)
+                try:
+                    with open(fp, "w", encoding="utf-8") as f:
+                        f.write(frontmatter.dumps(post))
+                    updated += 1
+                    # Track folder for summary
+                    try:
+                        for seg in fp.parents:
+                            if "curriculum" in seg.name.lower():
+                                seen_folders.add(str(seg))
+                                break
+                    except Exception:
+                        pass
+                except Exception:
+                    skipped += 1
+            else:
+                skipped += 1
+
+    return (updated, skipped, len(seen_folders))
+# ===========================================================================
+
+
+# Track curriculum folders we've already logged this build (legacy; no longer used directly)
 _logged_curriculum_folders = set()
 
-# NEW: process frontmatter for draft/created fields
+# UPDATED: process frontmatter for draft/created fields (no unconditional curriculum bump)
 def process_frontmatter(file_path: Path, section_number: int):
     if file_path.suffix.lower() != ".md":
         return
@@ -752,19 +1048,9 @@ def process_frontmatter(file_path: Path, section_number: int):
         if re.match(r"draftSection\d+", key) or re.match(r"createdSection\d+", key):
             del post[key]
 
-    # --- NEW: Auto-set/refresh 'created' for any file under a '*Curriculum*' folder ---
-    try:
-        for part in file_path.parts:
-            if "Curriculum" in part:
-                post["created"] = _current_created_timestamp()
-                folder_path = str(Path(*file_path.parts[:file_path.parts.index(part)+1]))
-                if folder_path not in _logged_curriculum_folders:
-                    print(f"🕒 Updated 'created' timestamps for all files in: {folder_path}")
-                    _logged_curriculum_folders.add(folder_path)
-                break
-    except Exception as e:
-        print(f"⚠️ Could not apply Curriculum timestamp to {file_path}: {e}")
-    # -----------------------------------------------------------------------------------
+    # NOTE: Removed unconditional Curriculum timestamp bump here.
+    # The new logic runs after all files are copied, syncing curriculum files
+    # to the section's latest 'created' value only when newer.
 
     try:
         with open(file_path, "w", encoding="utf-8") as f:
@@ -1014,7 +1300,7 @@ def patch_render_page_transclude_title(render_page_tsx_path: Path):
                 count=1
             )
             if n == 0:
-                print("ℹ️ Could not locate target 'tagName: \"h1\"' to replace in renderPage.tsx (no change).")
+                print('ℹ️ Could not locate target \'tagName: "h1"\' to replace in renderPage.tsx (no change).')
                 return
 
         result = subprocess.run(
@@ -1497,7 +1783,45 @@ def _patch_quartz_imports_to_local_config(quartz_dir: Path):
             print(f"✔️  Import in {fp.relative_to(quartz_dir)} already points to {rel_to_cfg}")
 # =============================================================================
 
-def build_section_site(course_code: str, section_number: int, include_social_media_previews: bool, force_npm_install: bool, full_rebuild: bool):
+# === NEW: Netlify link helper (no deploy here) ===============================
+def _ensure_netlify_link(output_dir: Path, course_dir: Path):
+    """
+    Ensure output_dir contains a .netlify folder so 'netlify deploy' can diff.
+    Prefer a symlink to an existing root .netlify; if that fails, copy.
+    (This script does not deploy; it just makes the eventual deploy faster.)
+    """
+    dst = output_dir / ".netlify"
+    if dst.exists():
+        print("✔️  .netlify already present in output (will enable CLI diff).")
+        return
+
+    candidates = [course_dir / ".netlify", course_dir.parent / ".netlify"]
+    for src in candidates:
+        if src.exists() and src.is_dir():
+            try:
+                rel = os.path.relpath(src, start=output_dir)
+                os.symlink(rel, dst)
+                print(f"🔗 Linked .netlify → {rel}")
+                return
+            except Exception as e:
+                print(f"ℹ️ Symlink failed ({e}); attempting a copy...")
+                try:
+                    shutil.copytree(src, dst)
+                    print("📦 Copied .netlify into output directory.")
+                    return
+                except Exception as e2:
+                    print(f"⚠️ Could not copy .netlify folder: {e2}")
+    print("ℹ️ No .netlify folder found to link/copy (deploy diffs may be slower).")
+# =============================================================================
+
+def build_section_site(
+    course_code: str,
+    section_number: int,
+    include_social_media_previews: bool,
+    force_npm_install: bool,
+    full_rebuild: bool,
+    build_only: bool,       # NEW: if True, do a single static build; if False (default), preview (serve) without extra build
+):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
     section_name = f"section{section_number}"
@@ -1532,16 +1856,15 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     with open(config_file, "r", encoding="utf-8") as f:
         config = json.load(f)
 
-    # NEW: Validate the requested section number against timetable sections
+    # Validate the requested section number against timetable sections
     allowed_sections = get_allowed_section_numbers(config)
     print(f"📋 Timetable sections for this course: {allowed_sections}")
     if not validate_requested_section(allowed_sections, section_number):
         return
 
-    # === NEW: Preflight discovery → append into course_config.json ============
+    # === Preflight discovery → append into course_config.json =================
     print("\n🔎 Preflight: discovering new shared and per-section items...")
     config = preflight_update_course_config(course_dir, section_dir, config_file) or config
-    # Re-read lists from (possibly) updated config
     # ========================================================================
 
     shared_folders = config.get("shared_folders", [])
@@ -1549,11 +1872,10 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     per_section_folders = config.get("per_section_folders", [])
     per_section_files = config.get("per_section_files", [])
     hidden_list = config.get("hidden", [])
-    expandable_list = config.get("expandable", [])
-    # NEW: teacher preference for reading-time
+    # teacher preference for reading-time
     show_reading_time = bool(config.get("show_reading_time", False))
 
-    # --- NEW: exclude 'Media' from shared folder processing (we symlink it) ---
+    # Exclude 'Media' from shared folder processing (we symlink it)
     if "Media" in shared_folders:
         print("ℹ️ Skipping 'Media' in shared folders (handled via symlink).")
     shared_paths = [course_dir / folder for folder in _filter_out_media(shared_folders)]
@@ -1564,6 +1886,7 @@ def build_section_site(course_code: str, section_number: int, include_social_med
 
     quartz_src = Path("/opt/quartz")
 
+    # Fresh/full rebuild path
     if full_rebuild or not output_dir.exists():
         if output_dir.exists():
             print(f"\n🧹 Full rebuild: clearing output directory at: {output_dir}")
@@ -1581,46 +1904,40 @@ def build_section_site(course_code: str, section_number: int, include_social_med
                 shutil.copy2(item, dest)
                 print(f"  📄 Copied file: {item.name}")
 
-        # --- ADD: Remove Graph once on first build / full rebuild ---
+        # Remove Graph once on first build / full rebuild
         remove_graph_from_right(output_dir / "quartz.layout.ts")
-        # ------------------------------------------------------------
 
         install_locales(output_dir)
+
         # Adjust CreatedModifiedDate priority on first build/full rebuild
         config_path = output_dir / "quartz.config.ts"
         adjust_created_modified_priority(config_path)
+        patch_default_date_type(config_path)
 
-        # --- ADD: Patch folder page & defaults on first build/full rebuild ---
+        # Patch folder page & defaults on first build/full rebuild
         folder_page_tsx = output_dir / "quartz" / "plugins" / "emitters" / "folderPage.tsx"
         patch_folder_page_title(folder_page_tsx)
 
         folder_content_tsx = output_dir / "quartz" / "components" / "pages" / "FolderContent.tsx"
         patch_folder_content_defaults(folder_content_tsx)
-        # --------------------------------------------------------------------
         
-        # --- ADD: Patch Date.tsx date format & listPage.scss meta width ---
+        # Patch Date.tsx date format & listPage.scss meta width
         date_tsx = output_dir / "quartz" / "components" / "Date.tsx"
         patch_date_format(date_tsx)
 
         list_page_scss = output_dir / "quartz" / "components" / "styles" / "listPage.scss"
         patch_list_page_meta_width(list_page_scss)
-        # --------------------------------------------------------------------
         
-        # --- ADD: Patch base.scss internal link highlight ---
+        # Patch base.scss + append styles
         base_scss = output_dir / "quartz" / "styles" / "base.scss"
         patch_internal_link_highlight(base_scss)
-        # ---------------------------------------------------
-
-        # --- ADD: Append transclusion styles to base.scss ---
         append_transclusion_styles(base_scss)
-        # ----------------------------------------------------
 
-        # --- ADD: Patch renderPage.tsx for transcludeTitleSize ---
+        # Patch renderPage.tsx for transcludeTitleSize
         render_page_tsx = output_dir / "quartz" / "components" / "renderPage.tsx"
         patch_render_page_transclude_title(render_page_tsx)
-        # ---------------------------------------------------------
 
-        # --- ADD: Apply selected fonts to quartz.config.ts on first build/full rebuild ---
+        # Apply selected fonts (if configured)
         fonts_cfg = config.get("fonts", {})
         section_key = f"section{section_number}"
         section_fonts = (fonts_cfg.get("sections") or {}).get(section_key) or fonts_cfg.get("default")
@@ -1634,29 +1951,27 @@ def build_section_site(course_code: str, section_number: int, include_social_med
             )
         else:
             print("ℹ️ No font selections found in course_config.json — leaving Quartz defaults.")
-        # -------------------------------------------------------------------------------
+
+        # NEW: copy/symlink .netlify into output so deploy CLI can diff (later step)
+        _ensure_netlify_link(output_dir, course_dir)
 
     else:
         print(f"♻️ Reusing existing (hidden) output directory: {output_dir}")
-        # Ensure we still have paths used later in the function
         base_scss = output_dir / "quartz" / "styles" / "base.scss"
 
-    # === ALWAYS: Fix Netlify static import target ============================
+    # ALWAYS: Fix Netlify static import target
     _copy_course_config_into_quartz(course_dir, output_dir)
     _patch_quartz_imports_to_local_config(output_dir / "quartz")
-    # =========================================================================
 
-    # --- ALWAYS: Apply teacher preference to ContentMeta on each build ---
+    # Apply teacher preference to ContentMeta on each build
     content_meta_tsx = output_dir / "quartz" / "components" / "ContentMeta.tsx"
     patch_content_meta_options(content_meta_tsx, show_reading_time)
-    # --------------------------------------------------------------------
 
-    # --- ALWAYS: Patch Explorer expansion behaviour (idempotent) ---------
+    # Patch Explorer expansion behaviour (idempotent)
     explorer_tsx = output_dir / "quartz" / "components" / "Explorer.tsx"
     explorer_inline = output_dir / "quartz" / "components" / "scripts" / "explorer.inline.ts"
     patch_explorer_tsx_expand_behavior(explorer_tsx)
     patch_explorer_inline_expand_on_navigate(explorer_inline)
-    # --------------------------------------------------------------------
 
     install_patched_backlinks(output_dir)
 
@@ -1667,7 +1982,7 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     content_root.mkdir(exist_ok=True)
     print(f"📂 Created fresh content folder: {content_root}")
 
-    # --- NEW: Ensure Media symlink is present inside content/ ---
+    # Ensure Media symlink is present inside content/
     _ensure_media_symlink(content_root, course_dir)
 
     section_index = section_dir / "index.md"
@@ -1675,14 +1990,14 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         dest = content_root / "index.md"
         shutil.copy2(section_index, dest)
         process_frontmatter(dest, section_number)
-        # --- ADD: rewrite section-path wikilinks in the section index ---
+        # rewrite section-path wikilinks in the section index
         print("🔍 Checking for wikilinks to rewrite in content/index.md...")
         rewrite_section_wikilinks(dest)
         print(f"  🏠 Copied section index.md to content/index.md")
     else:
         print("⚠️ Section index.md not found — site may not render correctly.")
 
-    # (shared_folders already filtered to exclude 'Media')
+    # Copy shared folders
     print(f"\n📥 Copying shared folders into {content_root}...")
     for src_folder in shared_paths:
         print(f"🔍 Processing: {src_folder}")
@@ -1696,6 +2011,7 @@ def build_section_site(course_code: str, section_number: int, include_social_med
                 shutil.copy2(src_file, dest_file)
                 process_frontmatter(dest_file, section_number)
 
+    # Copy shared files
     print(f"\n📥 Copying shared files into {content_root}...")
     for file_name in shared_files:
         src = course_dir / file_name
@@ -1705,6 +2021,7 @@ def build_section_site(course_code: str, section_number: int, include_social_med
             process_frontmatter(dest, section_number)
             print(f"  📄 Copied shared file: {file_name}")
 
+    # Copy per-section folders
     print(f"\n📥 Copying per-section folders...")
     for folder in per_section_folders:
         src = section_dir / folder
@@ -1715,11 +2032,11 @@ def build_section_site(course_code: str, section_number: int, include_social_med
                 for file in files:
                     fp = Path(root) / file
                     process_frontmatter(fp, section_number)
-                    # --- ADD: rewrite section-path wikilinks in per-section folder files ---
                     if fp.suffix.lower() == ".md":
                         rewrite_section_wikilinks(fp)
             print(f"  📁 Copied per-section folder: {folder}")
 
+    # Copy per-section files
     print(f"\n📥 Copying per-section files...")
     for file_name in per_section_files:
         src = section_dir / file_name
@@ -1727,12 +2044,22 @@ def build_section_site(course_code: str, section_number: int, include_social_med
         if src.exists():
             shutil.copy2(src, dest)
             process_frontmatter(dest, section_number)
-            # --- ADD: rewrite section-path wikilinks in per-section loose files ---
             print("🔍 Checking for wikilinks to rewrite in per-section loose files...")
             rewrite_section_wikilinks(dest)
             print(f"  📄 Copied per-section file: {file_name}")
 
-    # Copy course config into output root (kept for backwards-compat / other tools)
+    # === NEW: Post-pass — sync Curriculum 'created' timestamps =================
+    print("\n📆 Post-processing: syncing 'created' for Curriculum pages (if needed)...")
+    latest = _find_latest_created_in_section(content_root)
+    if latest is None:
+        print("ℹ️ No parseable 'created' dates found in this section — leaving Curriculum files unchanged.")
+    else:
+        updated, skipped, folders = _sync_curriculum_created(content_root, latest)
+        stamp = _format_created_timestamp_from_dt(latest)
+        print(f"📆 Synced Curriculum 'created' → {stamp} for {updated} file(s) across {folders} folder(s) (skipped {skipped}).")
+    # ===========================================================================
+
+    # Copy course config into output root (back-compat)
     shutil.copy2(config_file, output_dir / "course_config.json")
     print("✅ Copied course_config.json to output directory (root copy)")
 
@@ -1741,13 +2068,13 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     quartz_footer_tsx = output_dir / "quartz/components/Footer.tsx"
     ensure_quartz_layout_anchor(quartz_layout_ts)  # HARDENING: make sure anchor exists
 
-    # --- NEW: ensure 'Media' is always hidden in Explorer omit set ---
+    # ensure 'Media' is always hidden in Explorer omit set
     if "Media" not in hidden_list:
         hidden_list.append("Media")
 
     update_quartz_layout(quartz_layout_ts, hidden_list)  # ensure omit is present and updated
     
-    # NEW: honor expandOnFolderClick from course_config.json
+    # honor expandOnFolderClick from course_config.json
     expand_on_name = bool(config.get("expandOnFolderClick", False))
     patch_folder_click_behavior(quartz_layout_ts, expand_on_name)
     
@@ -1756,9 +2083,9 @@ def build_section_site(course_code: str, section_number: int, include_social_med
 
     # Update page title (now with per-section emoji)
     config_path = output_dir / "quartz.config.ts"
-    # --- ADD: resolve emoji then pass into title update ---
     page_emoji = resolve_section_emoji(config, section_number)
     update_page_title(config_path, course_code, section_number, page_emoji)
+    patch_default_date_type(config_path)
 
     # Apply per-section colour scheme, if configured
     color_map = config.get("color_schemes", {})
@@ -1781,9 +2108,6 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     else:
         print("Warning: quartz.config.ts not found to toggle CustomOgImages")
 
-    # Kill existing Quartz server
-    kill_existing_quartz()
-
     # Install npm dependencies if needed
     node_modules_dir = output_dir / "node_modules"
     package_json = output_dir / "package.json"
@@ -1802,18 +2126,39 @@ def build_section_site(course_code: str, section_number: int, include_social_med
     else:
         print("✅ Skipping npm install (dependencies already present)")
 
-    # Launch preview
-    print("\n🚀 Launching Quartz preview on http://localhost:8081\n")
-    subprocess.run(["npx", "quartz", "build", "--serve", "--port", "8081"], cwd=output_dir)
+    # ===========================
+    # Build or Preview (server?)
+    # ===========================
+    env = os.environ.copy()
+    env.setdefault("TZ", "UTC")
+    env.setdefault("SOURCE_DATE_EPOCH", "1704067200")  # 2024-01-01T00:00:00Z
+
+    if build_only:
+        # Static build ONLY (single build)
+        print("\n🏗️  Building static site with Quartz → public/")
+        subprocess.run(["npx", "quartz", "build"], cwd=output_dir, env=env, check=True)
+
+        public_dir = output_dir / "public"
+        if not public_dir.exists():
+            print("❌ Quartz build did not emit a 'public' directory — cannot deploy.")
+            return
+        print("✅ Static build complete.")
+    else:
+        # Preview mode (default): do NOT pre-build. Build+serve once.
+        kill_existing_quartz()
+        print("\n🚀 Launching Quartz preview on http://localhost:8081\n")
+        subprocess.run(["npx", "quartz", "build", "--serve", "--port", "8081"], cwd=output_dir, env=env, check=True)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Build Quartz site for a course section.")
+def main():
+    parser = argparse.ArgumentParser(description="Build Quartz site for a course section (preview by default; use --build-only for a static build without preview).")
     parser.add_argument("--course", required=True, help="Course code (e.g., ICS3U)")
     parser.add_argument("--section", required=True, type=int, help="Timetable section number (e.g., 1, 3, 4)")
     parser.add_argument("--include-social-media-previews", action="store_true", help="Enable social media preview images via CustomOgImages emitter")
     parser.add_argument("--force-npm-install", action="store_true", help="Force npm install even if dependencies are present")
     parser.add_argument("--full-rebuild", action="store_true", help="Clear the full output folder and re-copy Quartz scaffold")
+    # NEW: default is preview; this flag switches to a plain static build
+    parser.add_argument("--build-only", action="store_true", help="Build the static site only (no preview server)")
     args = parser.parse_args()
 
     build_section_site(
@@ -1821,5 +2166,9 @@ if __name__ == "__main__":
         section_number=args.section,
         include_social_media_previews=args.include_social_media_previews,
         force_npm_install=args.force_npm_install,
-        full_rebuild=args.full_rebuild
+        full_rebuild=args.full_rebuild,
+        build_only=args.build_only,
     )
+
+if __name__ == "__main__":
+    main()

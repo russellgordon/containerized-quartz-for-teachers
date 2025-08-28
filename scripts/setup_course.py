@@ -778,6 +778,51 @@ def ensure_quartz_explorer_anchor():
     else:
         print(f"⚠️ quartz.layout.ts not found at: {quartz_layout_path}")
 
+# ---------- NEW: OverflowList stable ID patch (idempotent) -------------------
+
+def ensure_quartz_overflowlist_static_id():
+    """
+    Idempotently ensure OverflowList uses a stable, non-random id to avoid noisy diffs:
+      const id = randomIdNonSecure()   →   const id = "j8p48f"
+    Targets: /opt/quartz/quartz/components/OverflowList.tsx
+    """
+    tsx_path = Path("/opt/quartz/quartz/components/OverflowList.tsx")
+    if not tsx_path.exists():
+        print(f"⚠️ OverflowList.tsx not found at: {tsx_path}")
+        return
+
+    try:
+        with open(tsx_path, "r", encoding="utf-8") as f:
+            src = f.read()
+    except Exception as e:
+        print(f"❌ Failed to read {tsx_path}: {e}")
+        return
+
+    # Already patched?
+    if re.search(r'const\s+id\s*=\s*["\']j8p48f["\']', src):
+        print("ℹ️ OverflowList already uses a stable id (no change).")
+        return
+
+    # Replace only the first occurrence; be tolerant of an optional namespace (e.g., utils.randomIdNonSecure())
+    pattern = r'const\s+id\s*=\s*(?:\w+\.)?randomIdNonSecure\s*\(\s*\)'
+    new_src, n = re.subn(pattern, 'const id = "j8p48f"', src, count=1)
+
+    if n == 0:
+        print("⚠️ Could not find 'const id = randomIdNonSecure()' in OverflowList.tsx; no changes made.")
+        return
+
+    try:
+        subprocess.run(
+            ["tee", str(tsx_path)],
+            input=new_src.encode("utf-8"),
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        print(f"✅ Patched OverflowList to use a stable id in {tsx_path}")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Failed to write updated OverflowList.tsx. Error:\n{e.stderr.decode()}")
+
 # ---------- NEW: Example Course installer -----------------------------------
 
 EXAMPLE_COURSE_CODE = "EXC2O"
@@ -849,8 +894,9 @@ def maybe_install_example_course(courses_root: Path) -> bool:
         print(f"❌ Failed to install Example Course: {e}")
         return False
 
-    # Ensure Quartz Explorer has the omit anchor so hidden items work in preview
+    # Ensure Quartz patches so hidden items + stable IDs work in preview
     ensure_quartz_explorer_anchor()
+    ensure_quartz_overflowlist_static_id()
 
     # Print final hint and exit early (as requested)
     print("✅ Example Course installed: EXC2O")
@@ -1236,8 +1282,9 @@ def setup_course(no_backup: bool = False):
                     f.write("---\n")
                     f.write(f"This is the per-section file **{file}**.\n")
 
-    # ---------- Patch Quartz Explorer (hardened + idempotent) ----------
+    # ---------- Patch Quartz Explorer + OverflowList (idempotent) ------------
     ensure_quartz_explorer_anchor()
+    ensure_quartz_overflowlist_static_id()
 
     print(f"\n✅ Course '{course_code}' set up successfully at: {course_path}")
 

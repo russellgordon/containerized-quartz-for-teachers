@@ -9,17 +9,16 @@ CONTAINER_NAME="teaching-quartz"
 usage() {
   cat <<'USAGE'
 🧰 Usage:
-  ./deploy.sh <COURSE_CODE> <SECTION_NUMBER> [--owner <github-user-or-org>] [--repo <repo-name>] [--no-create-remote] [--private]
+  ./deploy.sh <COURSE_CODE> <SECTION_NUMBER> [--diagnose]
 
 Examples:
   ./deploy.sh ICS3U 1
-  ./deploy.sh ICS3U 1 --owner my-org --private
-  ./deploy.sh ICS3U 2 --repo ICS3U-S2-2025 --no-create-remote
+  ./deploy.sh ICS3U 1 --diagnose
 
 Notes:
-- Deploys from /teaching/courses/<COURSE_CODE>/.merged_output/section<SECTION_NUMBER> inside the container.
-- You will be prompted for a GitHub Personal Access Token (PAT) when needed.
-- Host timezone offset is detected and passed to the container for accurate timestamps.
+- Deploys from /teaching/courses/<COURSE>/.merged_output/section<SECTION> inside the container.
+- You must build first (the static site goes to 'public/' in that section folder).
+- You'll be prompted for a Netlify Personal Access Token on first deploy; it will be saved globally.
 USAGE
 }
 
@@ -30,16 +29,28 @@ fi
 COURSE_CODE="$1"; shift
 SECTION_NUM="$1"; shift
 
+# Parse optional flags: currently only --diagnose
+DIAGNOSE=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --diagnose) DIAGNOSE="--diagnose" ;;
+    --help|-h) usage; exit 0 ;;
+    *) echo "❌ Unknown option: $1"; echo; usage; exit 1 ;;
+  esac
+  shift
+done
+
 # Host-side paths (bind-mounted into the container at /teaching/courses)
 COURSE_DIR_HOST="$(pwd)/courses/${COURSE_CODE}"
 MERGED_DIR_HOST="${COURSE_DIR_HOST}/.merged_output"
 SECTION_DIR_HOST="${MERGED_DIR_HOST}/section${SECTION_NUM}"
+PUBLIC_DIR_HOST="${SECTION_DIR_HOST}/public"
 
 # Detect host timezone offset in ±HHMM format (e.g., -0400, +0130)
 HOST_TZ_OFFSET="$(date +%z)"
 echo "🕒 Host timezone offset: $HOST_TZ_OFFSET"
 
-# Extra friendly preflight: ensure the course folder exists
+# Preflight: ensure the course folder exists
 if [[ ! -d "${COURSE_DIR_HOST}" ]]; then
   echo "❌ Course folder not found on host:"
   echo "   ${COURSE_DIR_HOST}"
@@ -54,14 +65,13 @@ if [[ ! -d "${COURSE_DIR_HOST}" ]]; then
   exit 1
 fi
 
-# Friendly preflight: ensure the merged output for this section exists
+# Preflight: ensure the merged output for this section exists
 if [[ ! -d "${SECTION_DIR_HOST}" ]]; then
   echo "❌ Section directory not found on host:"
   echo "   ${SECTION_DIR_HOST}"
   echo
   echo "👉 You likely need to build the merged output first:"
   echo "   ./preview.sh ${COURSE_CODE} ${SECTION_NUM}"
-  # If there are any existing section folders, list them to help the teacher
   if [[ -d "${MERGED_DIR_HOST}" ]]; then
     EXISTING_SECTIONS=$(ls -1d "${MERGED_DIR_HOST}"/section* 2>/dev/null | xargs -n1 basename || true)
     if [[ -n "${EXISTING_SECTIONS:-}" ]]; then
@@ -70,6 +80,16 @@ if [[ ! -d "${SECTION_DIR_HOST}" ]]; then
       echo "${EXISTING_SECTIONS}" | sed 's/^/   - /'
     fi
   fi
+  exit 1
+fi
+
+# Preflight: ensure the static output exists
+if [[ ! -d "${PUBLIC_DIR_HOST}" || -z "$(ls -A "${PUBLIC_DIR_HOST}" 2>/dev/null || true)" ]]; then
+  echo "❌ Built site not found at:"
+  echo "   ${PUBLIC_DIR_HOST}"
+  echo
+  echo "👉 Build first:"
+  echo "   ./preview.sh ${COURSE_CODE} ${SECTION_NUM} --build-only"
   exit 1
 fi
 
@@ -92,7 +112,7 @@ echo "🚀 Deploying ${COURSE_CODE} S${SECTION_NUM} from: ${SECTION_DIR_IN_CONTA
 docker exec -it \
   -e HOST_TZ_OFFSET="${HOST_TZ_OFFSET}" \
   "${CONTAINER_NAME}" \
-  python /opt/scripts/deploy.py \
+  python3 /opt/scripts/deploy.py \
     --course "${COURSE_CODE}" \
     --section "${SECTION_NUM}" \
-    "$@"
+    ${DIAGNOSE}

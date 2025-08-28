@@ -15,6 +15,7 @@ import urllib.parse
 import hashlib
 import unicodedata
 from pathlib import Path
+from collections import Counter
 
 # ---------- Netlify name sanitizer ----------
 
@@ -331,24 +332,57 @@ def maybe_create_netlify_site_simple(token: str,
                 continue
             raise
 
-def load_netlify_marker(section_dir: Path) -> dict | None:
-    marker = section_dir / ".netlify_site.json"
-    if marker.exists():
+# ---------- Stable site marker (new) + migration from legacy ----------
+
+def _stable_marker_dir(course_dir: Path) -> Path:
+    return course_dir / ".netlify_sites"
+
+def _stable_marker_path(course_dir: Path, section: str | int) -> Path:
+    return _stable_marker_dir(course_dir) / f"section{section}.json"
+
+def _legacy_marker_path(section_dir: Path) -> Path:
+    return section_dir / ".netlify_site.json"
+
+def load_netlify_marker(course_dir: Path, section_dir: Path, section: str | int) -> dict | None:
+    """
+    Prefer stable marker at <COURSE>/.netlify_sites/section<N>.json.
+    If not found, migrate legacy marker from <SECTION_DIR>/.netlify_site.json.
+    """
+    # Try stable path
+    stable_path = _stable_marker_path(course_dir, section)
+    if stable_path.exists():
         try:
-            return json.loads(marker.read_text(encoding="utf-8"))
+            return json.loads(stable_path.read_text(encoding="utf-8"))
         except Exception:
-            return None
+            pass
+
+    # Migrate legacy marker if present
+    legacy = _legacy_marker_path(section_dir)
+    if legacy.exists():
+        try:
+            data = json.loads(legacy.read_text(encoding="utf-8"))
+        except Exception:
+            data = None
+        if isinstance(data, dict):
+            save_netlify_marker(course_dir, section, data)
+            try:
+                legacy.unlink()
+                print("🔁 Migrated Netlify site marker to stable location and removed legacy file.")
+            except Exception:
+                print("ℹ️ Migrated Netlify site marker; couldn't remove legacy file.")
+            return data
+
     return None
 
-def save_netlify_marker(section_dir: Path, site_obj: dict):
-    marker = section_dir / ".netlify_site.json"
+def save_netlify_marker(course_dir: Path, section: str | int, site_obj: dict):
+    _stable_marker_dir(course_dir).mkdir(parents=True, exist_ok=True)
     keep = {
         "id": site_obj.get("id"),
         "name": site_obj.get("name"),
         "url": site_obj.get("ssl_url") or site_obj.get("url"),
         "admin_url": site_obj.get("admin_url"),
     }
-    marker.write_text(json.dumps(keep, indent=2), encoding="utf-8")
+    _stable_marker_path(course_dir, section).write_text(json.dumps(keep, indent=2), encoding="utf-8")
 
 # ---------- Shared path filters ----------
 
@@ -369,7 +403,7 @@ def _should_skip_rel(rel: str) -> bool:
         return True
     if parts and parts[-1] in _IGNORED_BASENAMES:
         return True
-    if any(ord(c) < 32 for c in rel):  # control chars like \r in "Icon\r"
+    if any(ord(c) < 32 for c in rel):  # control chars
         return True
     return False
 
@@ -419,7 +453,7 @@ def create_delta_deploy(site_id: str, token: str, root: Path, draft: bool = Fals
     if async_req:
         payload["async"] = True
     deploy = netlify_api("POST", f"/sites/{site_id}/deploys", token, payload=payload)
-    deploy["_sha_to_pairs"] = sha_to_pairs  # carry through for upload step
+    deploy["_sha_to_pairs"] = sha_to_pairs  # carry through for upload/diagnostics
     return deploy
 
 def _upload_required_files(deploy_id: str, token: str, root: Path, required_shas: list[str], sha_to_pairs: dict[str, list[tuple[str, str]]]):
@@ -455,12 +489,80 @@ def _upload_required_files(deploy_id: str, token: str, root: Path, required_shas
 
     print(f"⬆️  Uploaded {uploaded} file(s) required by Netlify.")
 
+# ---------- Diagnostics (new) ----------
+
+_IMG_EXT = {"jpg","jpeg","png","gif","webp","svg","bmp","tiff","ico","avif"}
+_FONT_EXT = {"woff","woff2","ttf","otf","eot"}
+_SCRIPT_EXT = {"js","mjs"}
+_STYLE_EXT = {"css"}
+_HTML_EXT = {"html","htm"}
+_DATA_EXT = {"json","xml","txt","map","csv"}
+_MEDIA_EXT = {"mp4","mp3","wav","ogg","webm","m4a"}
+
+def _category_for(rel: str) -> str:
+    ext = rel.rsplit(".", 1)[-1].lower() if "." in rel else ""
+    if ext in _IMG_EXT: return "images"
+    if ext in _FONT_EXT: return "fonts"
+    if ext in _SCRIPT_EXT: return "scripts"
+    if ext in _STYLE_EXT: return "styles"
+    if ext in _HTML_EXT: return "html"
+    if ext in _DATA_EXT: return "data"
+    if ext in _MEDIA_EXT: return "media"
+    return "other"
+
+def print_required_diagnostics(required_shas: list[str], sha_to_pairs: dict[str, list[tuple[str, str]]], public_dir: Path):
+    """
+    Summarize and persist the 'required' list from Netlify.
+    Writes full, ordered list to: public/_required_last_deploy.txt
+    """
+    items: list[tuple[str,str,str]] = []  # (sha, remote_path, local_rel)
+    for sha in required_shas:
+        pairs = sha_to_pairs.get(sha) or []
+        if not pairs:  # shouldn't happen
+            items.append((sha, "<unknown>", "<unknown>"))
+        else:
+            items.append((sha, pairs[0][0], pairs[0][1]))
+
+    # Counts by category
+    cat = Counter(_category_for(rel) for _, _, rel in items)
+    total = len(items)
+
+    print("\n🔎 Diagnostics: Breakdown of 'required' files")
+    for k in ("html","styles","scripts","data","images","fonts","media","other"):
+        if cat.get(k):
+            print(f"  • {k:7s}: {cat[k]}")
+    print(f"  • total  : {total}")
+
+    # Show a small sample (up to 30)
+    print("\n🧾 Sample (first up to 30 paths Netlify requested):")
+    for sha, _, rel in items[:30]:
+        print(f"   - {rel}  [{sha[:8]}…]")
+
+    # Persist full list
+    out = public_dir / "_required_last_deploy.txt"
+    try:
+        with out.open("w", encoding="utf-8") as f:
+            f.write(f"Required files for last deploy — generated {NOW.isoformat(timespec='seconds')}\n")
+            f.write(f"Public root: {public_dir}\n\n")
+            f.write("Count by category:\n")
+            for k in ("html","styles","scripts","data","images","fonts","media","other"):
+                if cat.get(k):
+                    f.write(f"  - {k:7s}: {cat[k]}\n")
+            f.write(f"  - total  : {total}\n\n")
+            f.write("Full list (sha  remote_path  local_rel):\n")
+            for sha, remote, rel in items:
+                f.write(f"{sha}  {remote}  {rel}\n")
+        print(f"\n📝 Wrote full list to: {out}")
+    except Exception as e:
+        print(f"⚠️ Could not write diagnostics file: {e}")
+
 # ---------- Main ----------
 
 def main():
     p = argparse.ArgumentParser(description="Deploy a built section site directly to Netlify using delta (file-digest) uploads only.")
     p.add_argument("--course", required=True, help="Course code, e.g., ICS3U")
     p.add_argument("--section", required=True, help="Section number, e.g., 1")
+    p.add_argument("--diagnose", action="store_true", help="Print a breakdown of required files and save list to _required_last_deploy.txt")
     args = p.parse_args()
 
     # Path: /teaching/courses/<COURSE>/.merged_output/section<NUM>
@@ -476,7 +578,7 @@ def main():
     if not public_dir.exists() or not any(public_dir.iterdir()):
         print(f"❌ Built site not found at: {public_dir}")
         print(f"👉 Please build before deploying. For example:")
-        print(f"   ./preview.sh {args.course} {args.section} --build")
+        print(f"   ./preview.sh {args.course} {args.section}")
         sys.exit(1)
 
     # Determine course dir (for back-compat token migration)
@@ -505,7 +607,9 @@ def main():
         print("💾 Saved Netlify token for future deploys (GLOBAL for all courses).")
 
     # Discover or create the Netlify site (no repo link)
-    site_marker = load_netlify_marker(section_dir)
+    site_marker = load_netlify_marker(course_dir, section_dir, args.section)
+    site_id = None
+    site_url = None
     if site_marker:
         site_id = site_marker.get("id")
         site_url = site_marker.get("url") or site_marker.get("admin_url")
@@ -522,7 +626,7 @@ def main():
                 section=str(args.section),
                 teacher_last_name=teacher_last_name
             )
-            save_netlify_marker(section_dir, site)
+            save_netlify_marker(course_dir, args.section, site)
             site_id = site.get("id")
             site_url = site.get("ssl_url") or site.get("url")
             admin_url = site.get("admin_url")
@@ -540,7 +644,7 @@ def main():
         print("❌ Could not determine Netlify site ID.")
         sys.exit(1)
 
-    # Always delta deploy
+    # Always delta deploy to PRODUCTION (as requested)
     print("🧮 Preparing delta deploy manifest…")
     try:
         manifest_resp = create_delta_deploy(site_id, netlify_token, public_dir, draft=False, async_req=False)
@@ -548,8 +652,10 @@ def main():
         required = manifest_resp.get("required") or []
         sha_to_pairs = manifest_resp.get("_sha_to_pairs") or {}
         print(f"📋 Netlify requires {len(required)} file(s) for this deploy.")
+        if args.diagnose:
+            print_required_diagnostics(required, sha_to_pairs, public_dir)
         _upload_required_files(deploy_id, netlify_token, public_dir, required, sha_to_pairs)
-        print("✅ Delta deploy created.")
+        print("✅ Delta deploy created (production).")
         if deploy_id:
             print(f"   Deploy ID: {deploy_id}")
         if site_url:

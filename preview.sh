@@ -14,6 +14,7 @@ shift 2
 INCLUDE_SOCIAL=""
 FORCE_NPM_INSTALL=""
 FULL_REBUILD=""
+BUILD_ONLY=""   # NEW: replaces --no-preview
 
 # Display help text if requested
 if [[ "$1" == "--help" || "$1" == "-h" ]]; then
@@ -29,10 +30,15 @@ if [[ "$1" == "--help" || "$1" == "-h" ]]; then
   echo "  --include-social-media-previews    Enable Quartz CustomOgImages emitter"
   echo "  --force-npm-install                Force npm install even if dependencies are present"
   echo "  --full-rebuild                     Clear entire output folder and re-copy Quartz scaffold"
+  echo "  --build-only                       Build the static site only (no local preview server)"
   echo "  --help, -h                         Show this help message"
   echo ""
   echo "📂 Output location (hidden in Obsidian Files pane):"
   echo "  courses/<COURSE_CODE>/.merged_output/section<SECTION_NUMBER>"
+  echo ""
+  echo "📝 Notes:"
+  echo "  • Default behavior is to build-and-serve once via Quartz (no double build)."
+  echo "  • Use --build-only if you only want the static 'public/' output without serving."
   echo ""
   exit 0
 fi
@@ -48,6 +54,9 @@ while [[ "$#" -gt 0 ]]; do
       ;;
     --full-rebuild)
       FULL_REBUILD="--full-rebuild"
+      ;;
+    --build-only)
+      BUILD_ONLY="--build-only"
       ;;
     *)
       echo "❌ Unknown option: $1"
@@ -110,7 +119,7 @@ if ! docker exec -i teaching-quartz bash -lc 'test -f /opt/quartz/quartz.layout.
   echo "   (Continuing anyway; the build will attempt a safe fallback.)"
 fi
 
-# NEW: Validate that SECTION is one of the allowed timetable sections for this course
+# Validate that SECTION is one of the allowed timetable sections for this course
 echo "📋 Checking allowed timetable sections for $COURSE..."
 ALLOWED_SECTIONS="$(docker exec -e COURSE="$COURSE" teaching-quartz python3 - <<'PY'
 import os, json, sys
@@ -152,9 +161,15 @@ fi
 echo "🔧 Building site for $COURSE, section $SECTION..."
 echo "📂 Output will be written to: $OUTPUT_PATH"
 
+# With the new build_site.py:
+# - default (no flag) = serve once (no double build)
+# - --build-only = build static site only
+MODE_FLAG="$BUILD_ONLY"
+
 docker exec -it teaching-quartz python3 /opt/scripts/build_site.py \
   --course="$COURSE" \
   --section="$SECTION" \
   $INCLUDE_SOCIAL \
   $FORCE_NPM_INSTALL \
-  $FULL_REBUILD
+  $FULL_REBUILD \
+  $MODE_FLAG
