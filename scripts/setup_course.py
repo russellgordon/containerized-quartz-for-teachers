@@ -445,6 +445,8 @@ CODE_FONTS = [
     "Ubuntu Mono",
 ]
 
+# --- snip (all your existing imports and code stay the same) ---
+
 # ---------- NEW: Locale selection (restricted list, saved to config) --------
 # Note: 'definition.ts' is not an actual locale file, so it is intentionally excluded.
 _LOCALE_FILES = [
@@ -478,12 +480,82 @@ _LOCALE_FILES = [
 ]
 LOCALE_CODES = [f[:-3] for f in _LOCALE_FILES]  # strip '.ts' → 'en-US', etc.
 
+# --- ADD: Human-friendly labels for the supported locale codes ---------------
+# (Mapped only for the LOCALE_CODES above to avoid any behavioral changes.)
+LOCALE_LABELS = {
+    "nb-NO": "Norwegian Bokmål (Norway)",
+    "ar-SA": "Arabic (Saudi Arabia)",
+    "ca-ES": "Catalan (Spain)",
+    "cs-CZ": "Czech (Czechia)",
+    "de-DE": "German (Germany)",
+    "en-GB": "English (United Kingdom)",
+    "en-US": "English (United States)",
+    "es-ES": "Spanish (Spain)",
+    "fa-IR": "Persian (Iran)",
+    "fi-FI": "Finnish (Finland)",
+    "fr-FR": "French (France)",
+    "hu-HU": "Hungarian (Hungary)",
+    "it-IT": "Italian (Italy)",
+    "ja-JP": "Japanese (Japan)",
+    "ko-KR": "Korean (South Korea)",
+    "lt-LT": "Lithuanian (Lithuania)",
+    "nl-NL": "Dutch (Netherlands)",
+    "pl-PL": "Polish (Poland)",
+    "pt-BR": "Portuguese (Brazil)",
+    "ro-RO": "Romanian (Romania)",
+    "ru-RU": "Russian (Russia)",
+    "th-TH": "Thai (Thailand)",
+    "tr-TR": "Turkish (Türkiye)",
+    "uk-UA": "Ukrainian (Ukraine)",
+    "vi-VN": "Vietnamese (Vietnam)",
+    "zh-CN": "Chinese, Simplified (China)",
+    "zh-TW": "Chinese, Traditional (Taiwan)",
+}
+
+# Optional nice-to-have flag icons for the country/region part
+LOCALE_FLAGS = {
+    "NO": "🇳🇴",
+    "SA": "🇸🇦",
+    "ES": "🇪🇸",
+    "CZ": "🇨🇿",
+    "DE": "🇩🇪",
+    "GB": "🇬🇧",
+    "US": "🇺🇸",
+    "IR": "🇮🇷",
+    "FI": "🇫🇮",
+    "FR": "🇫🇷",
+    "HU": "🇭🇺",
+    "IT": "🇮🇹",
+    "JP": "🇯🇵",
+    "KR": "🇰🇷",
+    "LT": "🇱🇹",
+    "NL": "🇳🇱",
+    "PL": "🇵🇱",
+    "BR": "🇧🇷",
+    "RO": "🇷🇴",
+    "RU": "🇷🇺",
+    "TH": "🇹🇭",
+    "TR": "🇹🇷",
+    "UA": "🇺🇦",
+    "VN": "🇻🇳",
+    "CN": "🇨🇳",
+    "TW": "🇹🇼",
+}
+
 def _print_locale_menu(default_code: str | None):
     print("\n🌐 Quartz Locale")
     print("Choose the language/region for Quartz UI (dates, labels, etc.).")
     for i, code in enumerate(LOCALE_CODES, start=1):
+        label = LOCALE_LABELS.get(code, "")
+        # Pull region part (after '-') for flag lookup, if present
+        parts = code.split("-")
+        flag = LOCALE_FLAGS.get(parts[1], "") if len(parts) == 2 else ""
         marker = "  ← default" if default_code == code else ""
-        print(f"  {i:>2}. {code}{marker}")
+        # Show: "  1. fr-FR — French (France) 🇫🇷"
+        if label:
+            print(f"  {i:>2}. {code} — {label} {flag}{marker}")
+        else:
+            print(f"  {i:>2}. {code}{marker}")
 
 def prompt_quartz_locale(saved_config: dict) -> str:
     """
@@ -1353,6 +1425,14 @@ def setup_course(no_backup: bool = False):
     ensure_quartz_overflowlist_static_id()
 
     print(f"\n✅ Course '{course_code}' set up successfully at: {course_path}")
+    print("\n\nWebsite previews")
+    print("----------------")
+    for sec in section_numbers:
+    	print(f"\n🔎 You can preview {course_code}, section {sec} by running this command:\n./preview.sh {course_code} {sec}\n")
+    print("\nWebsite deploys")
+    print("----------------")
+    for sec in section_numbers:
+    	print(f"\n🚀 You can deploy {course_code}, section {sec} by running this command:\n./deploy.sh {course_code} {sec}\n")
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Course setup with automatic backups")
