@@ -16,6 +16,31 @@ FORCE_NPM_INSTALL=""
 FULL_REBUILD=""
 BUILD_ONLY=""   # NEW: replaces --no-preview
 
+# Normalize COURSE to uppercase (avoid 'o' vs 'O' issues)
+COURSE="$(printf '%s' "$COURSE" | tr '[:lower:]' '[:upper:]')"
+
+# Guardrail: catch 'Open' course codes mistyped with trailing zero (e.g., ICD20)
+# Ontario course codes are 3 letters + digit + level letter (U/C/M/E/O). Open ends in 'O' (oh), not zero.
+if [[ "$COURSE" =~ ^[A-Z]{3}[0-9]0$ ]]; then
+  SUGGESTED="${COURSE%0}O"
+  echo ""
+  echo "🤔 It looks like you entered '${COURSE}' (ends with zero)."
+  echo "   Ontario 'Open' level course codes end with the LETTER 'O' (oh)."
+  # If a correctly-named course already exists, mention it to build confidence
+  if [[ -f "courses/$SUGGESTED/course_config.json" && ! -f "courses/$COURSE/course_config.json" ]]; then
+    echo "   I see setup data for '$SUGGESTED' on disk."
+  fi
+  read -rp "   Fix course code to '$SUGGESTED'? [Y/n]: " _ans
+  _ans="${_ans:-Y}"
+  if [[ "$_ans" =~ ^[Yy]$ ]]; then
+    COURSE="$SUGGESTED"
+    echo "✅ Using corrected course code: $COURSE"
+  else
+    echo "ℹ️  Continuing with: $COURSE"
+  fi
+  echo ""
+fi
+
 # Display help text if requested
 if [[ "$1" == "--help" || "$1" == "-h" ]]; then
   echo ""
@@ -39,6 +64,7 @@ if [[ "$1" == "--help" || "$1" == "-h" ]]; then
   echo "📝 Notes:"
   echo "  • Default behavior is to build-and-serve once via Quartz (no double build)."
   echo "  • Use --build-only if you only want the static 'public/' output without serving."
+  echo "  • If your course code ends with '0' (zero), you'll be prompted to correct it to 'O' for Open-level courses."
   echo ""
   exit 0
 fi

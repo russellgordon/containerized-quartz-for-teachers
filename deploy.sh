@@ -21,6 +21,7 @@ Notes:
 - You must build first (the static site goes to 'public/' in that section folder).
 - You'll be prompted for a Netlify Personal Access Token on first deploy; it will be saved globally.
 - The --team/--team-slug option is advanced; omit it to use your personal team.
+- If your course code ends with '0' (zero), you'll be prompted to correct it to 'O' for Open-level courses.
 USAGE
 }
 
@@ -30,6 +31,31 @@ fi
 
 COURSE_CODE="$1"; shift
 SECTION_NUM="$1"; shift
+
+# Normalize course code to uppercase (handles lowercase 'o' -> 'O')
+COURSE_CODE="$(printf '%s' "$COURSE_CODE" | tr '[:lower:]' '[:upper:]')"
+
+# Friendly guard: catch 'Open' course codes mistyped with trailing zero (e.g., ICD20)
+# Ontario course codes: 3 letters + digit + level letter (U/C/M/E/O). Open is 'O' (oh), not zero.
+if [[ "$COURSE_CODE" =~ ^[A-Z]{3}[0-9]0$ ]]; then
+  SUGGESTED="${COURSE_CODE%0}O"
+  echo ""
+  echo "🤔 It looks like you entered '${COURSE_CODE}' (ends with zero)."
+  echo "   Ontario 'Open' level course codes end with the LETTER 'O' (oh)."
+  # If a correctly named course already exists on disk, mention it
+  if [[ -f "courses/$SUGGESTED/course_config.json" && ! -f "courses/$COURSE_CODE/course_config.json" ]]; then
+    echo "   I see setup data for '$SUGGESTED' on disk."
+  fi
+  read -rp "   Fix course code to '$SUGGESTED'? [Y/n]: " _ans
+  _ans="${_ans:-Y}"
+  if [[ "$_ans" =~ ^[Yy]$ ]]; then
+    COURSE_CODE="$SUGGESTED"
+    echo "✅ Using corrected course code: $COURSE_CODE"
+  else
+    echo "ℹ️  Continuing with: $COURSE_CODE"
+  fi
+  echo ""
+fi
 
 # Parse optional flags: --diagnose and --team/--team-slug
 DIAGNOSE=""
