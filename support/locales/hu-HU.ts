@@ -30,7 +30,7 @@ export default {
       darkMode: "Sötét mód",
     },
     explorer: {
-      title: "Fájlböngésző",
+      title: "Navigálás ezen az oldalon",
     },
     footer: {
       createdWith: "Készítve ezzel:",

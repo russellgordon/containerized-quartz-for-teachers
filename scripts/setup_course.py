@@ -445,6 +445,69 @@ CODE_FONTS = [
     "Ubuntu Mono",
 ]
 
+# ---------- NEW: Locale selection (restricted list, saved to config) --------
+# Note: 'definition.ts' is not an actual locale file, so it is intentionally excluded.
+_LOCALE_FILES = [
+    "nb-NO.ts",
+    "ar-SA.ts",
+    "ca-ES.ts",
+    "cs-CZ.ts",
+    "de-DE.ts",
+    "en-GB.ts",
+    "en-US.ts",
+    "es-ES.ts",
+    "fa-IR.ts",
+    "fi-FI.ts",
+    "fr-FR.ts",
+    "hu-HU.ts",
+    "it-IT.ts",
+    "ja-JP.ts",
+    "ko-KR.ts",
+    "lt-LT.ts",
+    "nl-NL.ts",
+    "pl-PL.ts",
+    "pt-BR.ts",
+    "ro-RO.ts",
+    "ru-RU.ts",
+    "th-TH.ts",
+    "tr-TR.ts",
+    "uk-UA.ts",
+    "vi-VN.ts",
+    "zh-CN.ts",
+    "zh-TW.ts",
+]
+LOCALE_CODES = [f[:-3] for f in _LOCALE_FILES]  # strip '.ts' → 'en-US', etc.
+
+def _print_locale_menu(default_code: str | None):
+    print("\n🌐 Quartz Locale")
+    print("Choose the language/region for Quartz UI (dates, labels, etc.).")
+    for i, code in enumerate(LOCALE_CODES, start=1):
+        marker = "  ← default" if default_code == code else ""
+        print(f"  {i:>2}. {code}{marker}")
+
+def prompt_quartz_locale(saved_config: dict) -> str:
+    """
+    Prompt for a locale code restricted to LOCALE_CODES.
+    Returns the selected code (e.g., 'en-US'). Default is saved_config['locale'] or 'en-US'.
+    """
+    saved = (saved_config.get("locale") or "").strip()
+    default_code = saved if saved in LOCALE_CODES else ("en-US" if "en-US" in LOCALE_CODES else LOCALE_CODES[0])
+    _print_locale_menu(default_code)
+    prompt_label = f"Select 1-{len(LOCALE_CODES)} or type a code [Default: {default_code}]: "
+
+    while True:
+        choice = input(prompt_label).strip()
+        if choice == "":
+            return default_code
+        if choice.isdigit():
+            n = int(choice)
+            if 1 <= n <= len(LOCALE_CODES):
+                return LOCALE_CODES[n - 1]
+        # Allow typing the code directly
+        if choice in LOCALE_CODES:
+            return choice
+        print("Please choose a valid number or locale code from the list.")
+
 def _print_font_pair_menu(default_idx: int | None = None):
     print("\n🅰️  Choose a header/body font pairing (Google Fonts):")
     for i, (hdr, body) in enumerate(FONT_PAIRINGS, start=1):
@@ -696,7 +759,6 @@ def select_header_emojis_for_sections(section_numbers: list[int], saved_config: 
 # ---------- Hardened Explorer patch helpers ---------------------------------
 
 EXPLORER_BLOCK = """Component.Explorer({
-    title: "Navigate this site",
     folderClickBehavior: "link",
     filterFn: (node) => {
       // CQ4T-OMIT-ANCHOR: do not remove this line; build script overwrites this Set
@@ -1065,6 +1127,9 @@ def setup_course(no_backup: bool = False):
         looked_up_name = get_course_name_from_json(course_code) or "Course Website"
         course_name = prompt_with_default("Enter the course name you wish to use", looked_up_name)
 
+    # ---------- NEW: Prompt for Quartz locale (restricted list) --------------
+    locale_code = prompt_quartz_locale(saved_config)
+
     # Count first (kept for compatibility / UX), then timetable section numbers
     num_sections = int(prompt_with_default("How many sections are you teaching of this course?", saved_config.get("num_sections", 2)))
     section_numbers = prompt_section_numbers(num_sections, saved_config)
@@ -1162,6 +1227,7 @@ def setup_course(no_backup: bool = False):
     config = {
         "course_code": course_code,
         "course_name": course_name,
+        "locale": locale_code,  # NEW: Quartz locale saved for build_site.py
         "emojis": emojis_config,
         "num_sections": num_sections,
         "section_numbers": section_numbers,  # NEW: timetable-based identifiers

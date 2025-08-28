@@ -30,7 +30,7 @@ export default {
       darkMode: "Tryb ciemny",
     },
     explorer: {
-      title: "Przeglądaj",
+      title: "Nawiguj po tej witrynie",
     },
     footer: {
       createdWith: "Stworzone z użyciem",

@@ -30,7 +30,7 @@ export default {
       darkMode: "الوضع الليلي",
     },
     explorer: {
-      title: "المستعرض",
+      title: "تصفّح هذا الموقع",
     },
     footer: {
       createdWith: "أُنشئ باستخدام",

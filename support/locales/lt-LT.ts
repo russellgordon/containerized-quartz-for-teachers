@@ -30,7 +30,7 @@ export default {
       darkMode: "Tamsus Režimas",
     },
     explorer: {
-      title: "Naršyklė",
+      title: "Naršykite šiame tinklalapyje",
     },
     footer: {
       createdWith: "Sukurta Su",

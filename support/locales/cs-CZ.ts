@@ -30,7 +30,7 @@ export default {
       darkMode: "Tmavý režim",
     },
     explorer: {
-      title: "Procházet",
+      title: "Navigovat na tomto webu",
     },
     footer: {
       createdWith: "Vytvořeno pomocí",

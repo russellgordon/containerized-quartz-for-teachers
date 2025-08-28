@@ -30,7 +30,7 @@ export default {
       darkMode: "Koyu mod",
     },
     explorer: {
-      title: "Gezgin",
+      title: "Bu sitede gezin",
     },
     footer: {
       createdWith: "Şununla oluşturuldu",

@@ -30,7 +30,7 @@ export default {
       darkMode: "Tối",
     },
     explorer: {
-      title: "Trong bài này",
+      title: "Điều hướng trang web này",
     },
     footer: {
       createdWith: "Được tạo bởi",

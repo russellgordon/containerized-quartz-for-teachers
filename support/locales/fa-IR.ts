@@ -30,7 +30,7 @@ export default {
       darkMode: "حالت تاریک",
     },
     explorer: {
-      title: "مطالب",
+      title: "در این سایت پیمایش کنید",
     },
     footer: {
       createdWith: "ساخته شده با",

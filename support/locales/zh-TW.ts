@@ -30,7 +30,7 @@ export default {
       darkMode: "暗色模式",
     },
     explorer: {
-      title: "探索",
+      title: "瀏覽此網站",
     },
     footer: {
       createdWith: "Created with",

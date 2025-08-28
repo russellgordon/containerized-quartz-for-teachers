@@ -30,7 +30,7 @@ export default {
       darkMode: "Modul întunecat",
     },
     explorer: {
-      title: "Explorator",
+      title: "Navighează pe acest site",
     },
     footer: {
       createdWith: "Creat cu",

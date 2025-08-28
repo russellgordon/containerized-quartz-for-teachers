@@ -9,6 +9,52 @@ import re
 from pathlib import Path
 from datetime import datetime, timezone
 
+# --- ADD: PATCH LOCALE helper (placed near the bottom of file in the live code) ---
+def patch_quartz_locale(quartz_config_path: Path, locale_code: str):
+    """
+    Ensure `locale: "<code>",` in quartz.config.ts matches `locale_code`.
+    Tries a targeted replacement first; if not present, injects a locale key
+    at the start of the exported config object.
+    """
+    if not quartz_config_path.exists():
+        print(f"⚠️ quartz.config.ts not found at {quartz_config_path}")
+        return
+    try:
+        src = quartz_config_path.read_text(encoding="utf-8")
+
+        # 1) Targeted replacement: locale: "..." or locale: '...'
+        pattern = re.compile(r'(locale\s*:\s*)(["\'])([^"\']*)(\2)')
+        def _repl(m: re.Match) -> str:
+            quote = m.group(2)
+            return f'{m.group(1)}{quote}{locale_code}{quote}'
+        new_src, n = pattern.subn(_repl, src, count=1)
+
+        # 2) Fallback: inject after the opening of defineConfig({ ... })
+        if n == 0:
+            m = re.search(r'defineConfig\(\s*\{', src)
+            if m:
+                insert_at = m.end()
+                new_src = src[:insert_at] + f'\n  locale: "{locale_code}",' + src[insert_at:]
+                n = 1
+            else:
+                new_src = src
+
+        if n > 0 and new_src != src:
+            result = subprocess.run(
+                ["tee", str(quartz_config_path)],
+                input=new_src.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to set locale in quartz.config.ts:", result.stderr.decode())
+            else:
+                print(f'✅ Set Quartz locale → "{locale_code}"')
+        else:
+            print("ℹ️ Quartz locale already set as desired (no change).")
+    except Exception as e:
+        print(f"⚠️ Error patching Quartz locale: {e}")
+
 # --- ADD: Patch typography fonts in quartz.config.ts -------------------------
 def _escape_font(val: str) -> str:
     # Guard against stray quotes in family names
@@ -2086,6 +2132,11 @@ def build_section_site(
     page_emoji = resolve_section_emoji(config, section_number)
     update_page_title(config_path, course_code, section_number, page_emoji)
     patch_default_date_type(config_path)
+
+    # --- ADD: PATCH LOCALE in quartz.config.ts based on course_config.json ----
+    locale_code = (config.get("locale") or "en-US").strip() or "en-US"
+    patch_quartz_locale(config_path, locale_code)
+    # --------------------------------------------------------------------------
 
     # Apply per-section colour scheme, if configured
     color_map = config.get("color_schemes", {})

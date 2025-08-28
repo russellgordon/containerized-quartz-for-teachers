@@ -30,7 +30,7 @@ export default {
       darkMode: "Темний режим",
     },
     explorer: {
-      title: "Провідник",
+      title: "Навігуйте цим сайтом",
     },
     footer: {
       createdWith: "Створено за допомогою",

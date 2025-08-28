@@ -30,7 +30,7 @@ export default {
       darkMode: "Tumma tila",
     },
     explorer: {
-      title: "Selain",
+      title: "Selaa tätä sivustoa",
     },
     footer: {
       createdWith: "Luotu käyttäen",

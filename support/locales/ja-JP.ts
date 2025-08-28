@@ -30,7 +30,7 @@ export default {
       darkMode: "ダークモード",
     },
     explorer: {
-      title: "エクスプローラー",
+      title: "このサイトをナビゲートする",
     },
     footer: {
       createdWith: "作成",

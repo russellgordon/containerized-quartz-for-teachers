@@ -30,7 +30,7 @@ export default {
       darkMode: "Mørk modus",
     },
     explorer: {
-      title: "Utforsker",
+      title: "Naviger på dette nettstedet",
     },
     footer: {
       createdWith: "Laget med",
