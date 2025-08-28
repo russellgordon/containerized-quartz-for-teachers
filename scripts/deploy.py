@@ -32,12 +32,51 @@ def sanitize_netlify_name(name: str) -> str:
 
 # ---------- Teacher profile (unchanged) ----------
 
-GLOBAL_SECRETS_ROOT = Path("/teaching/courses/_secrets")
+COURSES_ROOT = Path("/teaching/courses")
+# New, hidden, less enticing global secrets root
+GLOBAL_SECRETS_ROOT = COURSES_ROOT / ".internal"
+# Legacy path (for migration)
+OLD_GLOBAL_SECRETS_ROOT = COURSES_ROOT / "_secrets"
 
 def _profile_path() -> Path:
     return GLOBAL_SECRETS_ROOT / "profile.json"
 
+def _ensure_courses_gitignore():
+    """
+    Ensure /teaching/courses/.gitignore exists and ignores:
+      - /.internal/ (new hidden store)
+      - /_backups/  (backups should never be committed)
+    Idempotent: only adds missing lines.
+    """
+    try:
+        COURSES_ROOT.mkdir(parents=True, exist_ok=True)
+        gi_path = COURSES_ROOT / ".gitignore"
+        to_add = [
+            "# Dockerized Quartz for Teachers (auto-ignore)",
+            "/.internal/",
+            "/_backups/",
+            "",  # trailing newline
+        ]
+        existing = []
+        if gi_path.exists():
+            try:
+                existing = gi_path.read_text(encoding="utf-8").splitlines()
+            except Exception:
+                existing = []
+        # Build new content preserving existing lines
+        new_lines = existing[:]
+        def ensure(line: str):
+            if line not in new_lines:
+                new_lines.append(line)
+        for line in to_add:
+            ensure(line)
+        gi_path.write_text("\n".join(new_lines) + ("\n" if not new_lines or new_lines[-1] != "" else ""), encoding="utf-8")
+    except Exception:
+        # Non-fatal: continue silently if we cannot write .gitignore
+        pass
+
 def _ensure_global_secrets_dir():
+    _ensure_courses_gitignore()
     GLOBAL_SECRETS_ROOT.mkdir(parents=True, exist_ok=True)
     try:
         os.chmod(GLOBAL_SECRETS_ROOT, 0o700)
@@ -76,7 +115,7 @@ def get_or_prompt_teacher_last_name() -> str:
     if ln:
         return ln
     # First run under this /teaching/courses folder
-    raw = input("👋 First time setup: What is your last name? (letters only) ").strip()
+    raw = input("👋 First time setup... what is your last name? (letters only): ").strip()
     ln = sanitize_last_name(raw)
     while not ln:
         raw = input("Please enter letters only for your last name (e.g., 'Gordon'): ").strip()
@@ -114,8 +153,9 @@ def prompt(text: str, default: str | None = None) -> str:
     return input(f"{text}: ").strip()
 
 # =========================================================
-#            GLOBAL token storage (obfuscated)
-#   Location: /teaching/courses/_secrets/{.key,tokens.json}
+#   GLOBAL token storage (obfuscated, hidden dotfolder)
+#   Location: /teaching/courses/.internal/{.key,tokens.json}
+#   (migrates from legacy /teaching/courses/_secrets)
 # =========================================================
 
 def _global_secrets_paths() -> tuple[Path, Path]:
@@ -124,6 +164,14 @@ def _global_secrets_paths() -> tuple[Path, Path]:
     """
     key_path = GLOBAL_SECRETS_ROOT / ".key"
     tokens_path = GLOBAL_SECRETS_ROOT / "tokens.json"
+    return key_path, tokens_path
+
+def _legacy_global_secrets_paths() -> tuple[Path, Path]:
+    """
+    Legacy: /teaching/courses/_secrets
+    """
+    key_path = OLD_GLOBAL_SECRETS_ROOT / ".key"
+    tokens_path = OLD_GLOBAL_SECRETS_ROOT / "tokens.json"
     return key_path, tokens_path
 
 def _load_or_create_key_global() -> bytes:
@@ -157,11 +205,11 @@ def _save_token_global(label: str, token: str):
             data = {}
     if "tokens" not in data:
         data["tokens"] = {}
+    # NOTE: omit "note" field entirely
     data["tokens"][label] = {
         "obf": obf,
         "ts": NOW.isoformat(timespec="seconds"),
-        "scope": "global",
-        "note": "xor+base64 obfuscated"
+        "scope": "global"
     }
     tokens_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     try:
@@ -183,6 +231,68 @@ def _load_token_global(label: str) -> str | None:
         return _xor(obf_b, key).decode("utf-8")
     except Exception:
         return None
+
+def _maybe_migrate_global_from_legacy():
+    """
+    If legacy global secrets exist at /teaching/courses/_secrets and the new hidden
+    store doesn't yet have content, migrate tokens (re-obfuscating without 'note')
+    and copy the teacher profile. Then delete the legacy folder.
+    """
+    _ensure_courses_gitignore()
+    old_key_path, old_tokens_path = _legacy_global_secrets_paths()
+    new_key_path, new_tokens_path = _global_secrets_paths()
+
+    migrated_any = False
+
+    # Migrate teacher profile.json if present and missing in new store
+    try:
+        old_profile = OLD_GLOBAL_SECRETS_ROOT / "profile.json"
+        new_profile = GLOBAL_SECRETS_ROOT / "profile.json"
+        if old_profile.exists() and not new_profile.exists():
+            _ensure_global_secrets_dir()
+            new_profile.write_text(old_profile.read_text(encoding="utf-8"), encoding="utf-8")
+            try:
+                os.chmod(new_profile, 0o600)
+            except Exception:
+                pass
+            migrated_any = True
+    except Exception:
+        pass
+
+    # Migrate tokens by *decoding* with old key and *re-saving* with new key (no 'note')
+    try:
+        if old_key_path.exists() and old_tokens_path.exists():
+            with old_tokens_path.open("r", encoding="utf-8") as f:
+                old_data = json.load(f)
+            old_key = old_key_path.read_bytes()
+            old_tokens = (old_data.get("tokens") or {})
+            for label, entry in old_tokens.items():
+                try:
+                    obf_b = base64.b64decode(entry.get("obf", ""))
+                    token_plain = _xor(obf_b, old_key).decode("utf-8")
+                    # Save into new store if missing
+                    if _load_token_global(label) is None:
+                        _save_token_global(label, token_plain)
+                        migrated_any = True
+                except Exception:
+                    continue
+    except Exception:
+        pass
+
+    # Remove legacy folder if it exists
+    removed_legacy = False
+    try:
+        if OLD_GLOBAL_SECRETS_ROOT.exists():
+            shutil.rmtree(OLD_GLOBAL_SECRETS_ROOT)
+            removed_legacy = True
+    except Exception as e:
+        print(f"ℹ️ Couldn't remove legacy /_secrets: {e}")
+
+    if migrated_any or removed_legacy:
+        if removed_legacy:
+            print("🔁 Migrated global secrets to hidden store at /.internal and removed legacy /_secrets folder.")
+        else:
+            print("🔁 Migrated global secrets to hidden store at /.internal.")
 
 # --------- Back-compat: per-course token support (migrate) ---------
 
@@ -269,7 +379,8 @@ def _extract_json_from_error(err: Exception) -> dict | None:
 
 def _is_netlify_name_conflict(err: Exception) -> bool:
     s = str(err).lower()
-    if "422" in s and ("unique" in s or "already" in s or "taken" in s or "exists" in s):
+    if "422" in s and ("unique" in s or "already" in s or "taken" in s or "exists"):
+
         return True
     data = _extract_json_from_error(err)
     if isinstance(data, dict):
@@ -567,6 +678,10 @@ def main():
     p.add_argument("--team", "--team-slug", dest="team", default=None,
                    help="Netlify team slug (advanced). If omitted, your personal team is used.")
     args = p.parse_args()
+
+    # Ensure ignores and migrate legacy global secrets early
+    _ensure_courses_gitignore()
+    _maybe_migrate_global_from_legacy()
 
     # Path: /teaching/courses/<COURSE>/.merged_output/section<NUM>
     section_dir = Path(f"/teaching/courses/{args.course}/.merged_output/section{args.section}").resolve()
