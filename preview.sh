@@ -126,20 +126,58 @@ if [[ ! -d "courses/$COURSE/section$SECTION" ]]; then
   # don't exit here yet; we'll validate against section_numbers below
 fi
 
-echo "🚀 Starting container if needed..."
-docker start teaching-quartz >/dev/null 2>&1 || {
-  echo "🚀 Creating new container named teaching-quartz..."
+# -------------------- Mount-aware container handling --------------------
+CONTAINER_NAME="teaching-quartz"
+HOST_COURSES="$(pwd)/courses"  # desired host mount for this run
+
+run_container_with_mount() {
+  echo "🔗 Binding host courses to container: $HOST_COURSES ➜ /teaching/courses"
   docker run -dit \
-    --name teaching-quartz \
-    -v "$(pwd)/courses":/teaching/courses \
+    --name "$CONTAINER_NAME" \
+    -v "$HOST_COURSES":/teaching/courses \
     -p 8081:8081 \
     teaching-quartz \
     tail -f /dev/null
 }
 
+echo "🚀 Starting container if needed..."
+if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+  # Container exists — check its current /teaching/courses mount
+  CURRENT_MOUNT_SRC=$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/teaching/courses"}}{{.Source}}{{end}}{{end}}' "$CONTAINER_NAME" 2>/dev/null || echo "")
+  if [[ -z "$CURRENT_MOUNT_SRC" ]]; then
+    echo "🧩 Existing container has no /teaching/courses mount; recreating with correct mount…"
+    if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+      docker stop "$CONTAINER_NAME" >/dev/null
+    fi
+    docker rm "$CONTAINER_NAME" >/dev/null || true
+    run_container_with_mount
+  elif [[ "$CURRENT_MOUNT_SRC" != "$HOST_COURSES" ]]; then
+    echo "🔄 Detected different working directory:"
+    echo "   • Existing mount: $CURRENT_MOUNT_SRC"
+    echo "   • Desired mount:  $HOST_COURSES"
+    echo "♻️  Recreating container '$CONTAINER_NAME' to point at the new folder…"
+    if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+      docker stop "$CONTAINER_NAME" >/dev/null
+    fi
+    docker rm "$CONTAINER_NAME" >/dev/null || true
+    run_container_with_mount
+  else
+    # Mounts match; only start if not already running
+    if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+      echo "✅ Container $CONTAINER_NAME is already running with correct mount."
+    else
+      echo "🚀 Starting existing container $CONTAINER_NAME..."
+    docker start "$CONTAINER_NAME" >/dev/null
+    fi
+  fi
+else
+  echo "🚀 Creating new container named $CONTAINER_NAME..."
+  run_container_with_mount
+fi
+
 # Preflight: nudge if quartz.layout.ts in the container wasn't initialized by setup.sh
 echo "🔎 Preflight: checking Quartz sidebar anchor..."
-if ! docker exec -i teaching-quartz bash -lc 'test -f /opt/quartz/quartz.layout.ts && grep -q "const omit = new Set" /opt/quartz/quartz.layout.ts'; then
+if ! docker exec -i "$CONTAINER_NAME" bash -lc 'test -f /opt/quartz/quartz.layout.ts && grep -q "const omit = new Set" /opt/quartz/quartz.layout.ts'; then
   echo "⚠️  Sidebar omit anchor not found in container's Quartz layout."
   echo "   Did you run: ./setup.sh and complete setup for '$COURSE'?"
   echo "   (Continuing anyway; the build will attempt a safe fallback.)"
@@ -147,7 +185,7 @@ fi
 
 # Validate that SECTION is one of the allowed timetable sections for this course
 echo "📋 Checking allowed timetable sections for $COURSE..."
-ALLOWED_SECTIONS="$(docker exec -e COURSE="$COURSE" teaching-quartz python3 - <<'PY'
+ALLOWED_SECTIONS="$(docker exec -e COURSE="$COURSE" "$CONTAINER_NAME" python3 - <<'PY'
 import os, json, sys
 course = os.environ.get("COURSE")
 p = f"/teaching/courses/{course}/course_config.json"
@@ -192,7 +230,7 @@ echo "📂 Output will be written to: $OUTPUT_PATH"
 # - --build-only = build static site only
 MODE_FLAG="$BUILD_ONLY"
 
-docker exec -it teaching-quartz python3 /opt/scripts/build_site.py \
+docker exec -it "$CONTAINER_NAME" python3 /opt/scripts/build_site.py \
   --course="$COURSE" \
   --section="$SECTION" \
   $INCLUDE_SOCIAL \

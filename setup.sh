@@ -159,6 +159,9 @@ fi
 chmod a+rwx courses
 chmod a+rwx courses/_backups
 
+# Compute the desired host mount path for this run
+HOST_COURSES="$(pwd)/courses"
+
 # -------------------- Pull or verify image presence --------------------
 IMAGE_PRESENT="false"
 if docker image inspect "$IMAGE" >/dev/null 2>&1; then
@@ -217,6 +220,17 @@ else
   fi
 fi
 
+# -------------------- Helper: (re)run container with desired mount --------------------
+run_container_with_mount() {
+  echo "🔗 Binding host courses to container: $HOST_COURSES ➜ /teaching/courses"
+  docker run -dit \
+    --name "$CONTAINER_NAME" \
+    -v "$HOST_COURSES":/teaching/courses \
+    -p ${HOST_PORT}:${CONTAINER_PORT} \
+    "$IMAGE" \
+    tail -f /dev/null
+}
+
 # -------------------- Show image version/build info --------------------
 show_image_info() {
   local img="$1"
@@ -249,37 +263,39 @@ show_image_info() {
 
 show_image_info "$IMAGE"
 
-# -------------------- Create/start container --------------------
+# -------------------- Create/start container (mount-aware) --------------------
 if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
-  CURRENT_IMAGE=$(docker inspect -f '{{.Config.Image}}' "$CONTAINER_NAME" || echo "")
-  if [[ "$FORCE_UPDATE_IMAGE" == "true" || "$CURRENT_IMAGE" != "$IMAGE" ]]; then
-    echo "♻️  Recreating container $CONTAINER_NAME to use image: $IMAGE"
+  # Container exists. Check its current /teaching/courses mount.
+  CURRENT_MOUNT_SRC=$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/teaching/courses"}}{{.Source}}{{end}}{{end}}' "$CONTAINER_NAME" 2>/dev/null || echo "")
+  if [[ -z "$CURRENT_MOUNT_SRC" ]]; then
+    echo "🧩 Existing container has no /teaching/courses mount; recreating with correct mount…"
     if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
       docker stop "$CONTAINER_NAME" >/dev/null
     fi
     docker rm "$CONTAINER_NAME" >/dev/null || true
-    docker run -dit \
-      --name "$CONTAINER_NAME" \
-      -v "$(pwd)/courses":/teaching/courses \
-      -p ${HOST_PORT}:${CONTAINER_PORT} \
-      "$IMAGE" \
-      tail -f /dev/null
-  else
+    run_container_with_mount
+  elif [[ "$CURRENT_MOUNT_SRC" != "$HOST_COURSES" ]]; then
+    echo "🔄 Detected different working directory:"
+    echo "   • Existing mount: $CURRENT_MOUNT_SRC"
+    echo "   • Desired mount:  $HOST_COURSES"
+    echo "♻️  Recreating container '$CONTAINER_NAME' to point at the new folder…"
     if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
-      echo "🛑 Stopping running container $CONTAINER_NAME to refresh volume mount..."
       docker stop "$CONTAINER_NAME" >/dev/null
     fi
-    echo "🚀 Starting existing container $CONTAINER_NAME..."
+    docker rm "$CONTAINER_NAME" >/dev/null || true
+    run_container_with_mount
+  else
+    # Mounts match; only start if not already running
+    if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+      echo "✅ Container $CONTAINER_NAME is already running with correct mount."
+    else
+      echo "🚀 Starting existing container $CONTAINER_NAME..."
     docker start "$CONTAINER_NAME" >/dev/null
+    fi
   fi
 else
   echo "🚀 Creating a new container named $CONTAINER_NAME (image: $IMAGE)…"
-  docker run -dit \
-    --name "$CONTAINER_NAME" \
-    -v "$(pwd)/courses":/teaching/courses \
-    -p ${HOST_PORT}:${CONTAINER_PORT} \
-    "$IMAGE" \
-    tail -f /dev/null
+  run_container_with_mount
 fi
 
 # -------------------- Backup confirmation (pass-through option) --------------------

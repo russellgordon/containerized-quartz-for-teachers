@@ -138,17 +138,52 @@ if [[ ! -d "${PUBLIC_DIR_HOST}" || -z "$(ls -A "${PUBLIC_DIR_HOST}" 2>/dev/null 
   exit 1
 fi
 
-# Ensure the container exists
-if ! docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
-  echo "❌ Docker container '${CONTAINER_NAME}' not found."
-  echo "   Please run ./setup.sh first to create and start the container."
-  exit 1
-fi
+# -------------------- Mount-aware container handling --------------------
+HOST_COURSES="$(pwd)/courses"  # desired host mount for this run
 
-# Start container if it exists but isn't running
-if ! docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
-  echo "🐳 Starting container ${CONTAINER_NAME}..."
-  docker start "${CONTAINER_NAME}" >/dev/null
+run_container_with_mount() {
+  echo "🔗 Binding host courses to container: $HOST_COURSES ➜ /teaching/courses"
+  docker run -dit \
+    --name "$CONTAINER_NAME" \
+    -v "$HOST_COURSES":/teaching/courses \
+    -p 8081:8081 \
+    teaching-quartz \
+    tail -f /dev/null
+}
+
+echo "🚀 Ensuring container is running with the correct mount..."
+if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+  # Container exists — check its current /teaching/courses mount
+  CURRENT_MOUNT_SRC=$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/teaching/courses"}}{{.Source}}{{end}}{{end}}' "$CONTAINER_NAME" 2>/dev/null || echo "")
+  if [[ -z "$CURRENT_MOUNT_SRC" ]]; then
+    echo "🧩 Existing container has no /teaching/courses mount; recreating with correct mount…"
+    if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+      docker stop "$CONTAINER_NAME" >/dev/null
+    fi
+    docker rm "$CONTAINER_NAME" >/dev/null || true
+    run_container_with_mount
+  elif [[ "$CURRENT_MOUNT_SRC" != "$HOST_COURSES" ]]; then
+    echo "🔄 Detected different working directory:"
+    echo "   • Existing mount: $CURRENT_MOUNT_SRC"
+    echo "   • Desired mount:  $HOST_COURSES"
+    echo "♻️  Recreating container '$CONTAINER_NAME' to point at the new folder…"
+    if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+      docker stop "$CONTAINER_NAME" >/dev/null
+    fi
+    docker rm "$CONTAINER_NAME" >/dev/null || true
+    run_container_with_mount
+  else
+    # Mounts match; only start if not already running
+    if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+      echo "✅ Container $CONTAINER_NAME is already running with correct mount."
+    else
+      echo "🚀 Starting existing container $CONTAINER_NAME..."
+    docker start "$CONTAINER_NAME" >/dev/null
+    fi
+  fi
+else
+  echo "🐳 Creating new container named $CONTAINER_NAME with correct mount…"
+  run_container_with_mount
 fi
 
 SECTION_DIR_IN_CONTAINER="/teaching/courses/${COURSE_CODE}/.merged_output/section${SECTION_NUM}"
