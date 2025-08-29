@@ -21,9 +21,26 @@ SKIP_PULL="false"              # skip pulling when using local images
 DOCKER_CONTEXT_OVERRIDE=""     # optional docker context override
 
 # -------------------- Help text --------------------
+# ---- Determine host OS for help text ---------------------------------
+_detect_host_os() {
+  local u
+  u="$(uname -s 2>/dev/null || echo "")"
+  case "$u" in
+    Darwin) echo mac ;;
+    MINGW*|MSYS*|CYGWIN*) echo windows ;;
+    *) echo linux ;;
+  esac
+}
+_SETUP_HOST_OS="$(_detect_host_os)"
+if [[ "$_SETUP_HOST_OS" == "windows" ]]; then
+  SELF_CMD=".\\setup.bat"
+else
+  SELF_CMD="./setup.sh"
+fi
+# ----------------------------------------------------------------------
 print_help() {
   cat <<EOF
-Usage: ./setup.sh [options] [-- <args passed to setup_course.py>]
+Usage: ${SELF_CMD} [options] [-- <args passed to setup_course.py>]
 
 Options:
   --tag TAG            Use a specific tag instead of 'latest' (default: ${DEFAULT_TAG})
@@ -45,13 +62,13 @@ Notes:
 - Any arguments after a literal “--” are forwarded directly to setup_course.py.
 
 Examples:
-  ./setup.sh
-  ./setup.sh --tag v2025.08.13
-  ./setup.sh --update-image
-  ./setup.sh --image ghcr.io/acme/teaching-quartz:edge
-  ./setup.sh --local-dev
-  ./setup.sh --context desktop-linux --local-dev
-  ./setup.sh -- --no-backup
+  ${SELF_CMD}
+  ${SELF_CMD} --tag v2025.08.13
+  ${SELF_CMD} --update-image
+  ${SELF_CMD} --image ghcr.io/acme/teaching-quartz:edge
+  ${SELF_CMD} --local-dev
+  ${SELF_CMD} --context desktop-linux --local-dev
+  ${SELF_CMD} -- --no-backup
 EOF
 }
 

@@ -1,3 +1,20 @@
+# ---- Determine host OS for help text ---------------------------------
+_detect_host_os() {
+  local u
+  u="$(uname -s 2>/dev/null || echo "")"
+  case "$u" in
+    Darwin) echo mac ;;
+    MINGW*|MSYS*|CYGWIN*) echo windows ;;
+    *) echo linux ;;
+  esac
+}
+_PREVIEW_HOST_OS="$(_detect_host_os)"
+if [[ "$_PREVIEW_HOST_OS" == "windows" ]]; then
+  SELF_CMD=".\\preview.bat"
+else
+  SELF_CMD="./preview.sh"
+fi
+# ----------------------------------------------------------------------
 #!/bin/bash
 
 # Ensure we're in the same directory as this script
@@ -45,7 +62,7 @@ fi
 if [[ "$1" == "--help" || "$1" == "-h" ]]; then
   echo ""
   echo "🧰 Usage:"
-  echo "  ./preview.sh <COURSE_CODE> <SECTION_NUMBER> [options]"
+  echo "  $SELF_CMD <COURSE_CODE> <SECTION_NUMBER> [options]"
   echo ""
   echo "📘 Required arguments:"
   echo "  <COURSE_CODE>               The course code (e.g., ICS3U)"
@@ -231,6 +248,7 @@ echo "📂 Output will be written to: $OUTPUT_PATH"
 MODE_FLAG="$BUILD_ONLY"
 
 docker exec -it "$CONTAINER_NAME" python3 /opt/scripts/build_site.py \
+  --host-os mac \
   --course="$COURSE" \
   --section="$SECTION" \
   $INCLUDE_SOCIAL \

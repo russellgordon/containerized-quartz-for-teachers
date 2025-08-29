@@ -206,7 +206,7 @@ $OUTPUT_PATH = "courses/{0}/.merged_output/section{1}" -f $COURSE, $SECTION
 Write-Host ("Output will be written to: {0}" -f $OUTPUT_PATH)
 
 # ---- Map flags to build_site.py args ----
-$argList = @("--course=$COURSE","--section=$SECTION")
+$argList = @("--course=$COURSE","--section=$SECTION","--host-os","windows")
 if ($INCLUDE_SOCIAL)    { $argList += "--include-social-media-previews" }
 if ($FORCE_NPM_INSTALL) { $argList += "--force-npm-install" }
 if ($FULL_REBUILD)      { $argList += "--full-rebuild" }

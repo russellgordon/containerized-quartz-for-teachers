@@ -9,6 +9,16 @@ import re
 from pathlib import Path
 from datetime import datetime, timezone
 
+
+# ---- Host OS signaling (for example command rendering) ----------------------
+_HOST_OS = "unknown"
+def _is_windows(host_os: str) -> bool:
+    return (host_os or "").lower() == "windows"
+
+def _cmd_example(script_base: str, course, section, host_os: str) -> str:
+    return (f".\\{script_base}.bat {course} {section}") if _is_windows(host_os) else (f"./{script_base}.sh {course} {section}")
+# ----------------------------------------------------------------------------
+
 # --- ADD: PATCH LOCALE helper (placed near the bottom of file in the live code) ---
 def patch_quartz_locale(quartz_config_path: Path, locale_code: str):
     """
@@ -2319,7 +2329,9 @@ def main():
     parser.add_argument("--full-rebuild", action="store_true", help="Clear the full output folder and re-copy Quartz scaffold")
     # NEW: default is preview; this flag switches to a plain static build
     parser.add_argument("--build-only", action="store_true", help="Build the static site only (no preview server)")
+    parser.add_argument("--host-os", choices=["windows","mac","linux","unknown"], default="unknown", help="Host OS passed by preview.sh/preview.ps1")
     args = parser.parse_args()
+    _HOST_OS = getattr(args, 'host_os', 'unknown')
 
     build_section_site(
         course_code=args.course,
