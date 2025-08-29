@@ -14,7 +14,7 @@ In the session, optionally complete a series of “quests” to learn how to use
 
 > 🏗️ **Tip**
 >
-> You can browse [an example of the type of output produced by this workflow here](https://aesthetic-bubblegum-622206.netlify.app). That site represents half of the author's Grade 10 Digital Tech course materials for the most recent school year.
+> You can browse [an example of the type of output produced by this workflow here](https://exc2o-s1-2024-gordon.netlify.app). That site represents half of the author's Grade 10 Digital Tech course materials for the most recent school year.
 
 > ℹ️ **Note**
 > 
