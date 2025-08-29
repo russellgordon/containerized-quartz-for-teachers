@@ -4,6 +4,37 @@ $ErrorActionPreference = 'Stop'
 
 # ======================
 # Defaults
+# ---- Determine host OS for help text ---------------------------------
+function Get-HostOS {
+    try {
+        if ($IsWindows) { return 'windows' }
+        if ($IsMacOS)   { return 'mac' }
+        if ($IsLinux)   { return 'linux' }
+    } catch {
+        if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Windows)) { return 'windows' }
+        if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::OSX))     { return 'mac' }
+        if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Linux))   { return 'linux' }
+    }
+    return 'unknown'
+}
+$__hostOS = Get-HostOS
+if ($__hostOS -eq 'windows') {
+    $SELF_CMD = '.\setup.ps1'
+} else {
+    $SELF_CMD = './setup.sh'
+}
+# Cross-script command hints for help text
+if ($__hostOS -eq 'windows') {
+    $SETUP_CMD   = '.\setup.ps1'
+    $PREVIEW_CMD = '.\preview.ps1'
+    $DEPLOY_CMD  = '.\deploy.ps1'
+} else {
+    $SETUP_CMD   = './setup.sh'
+    $PREVIEW_CMD = './preview.sh'
+    $DEPLOY_CMD  = './deploy.sh'
+}
+# ----------------------------------------------------------------------
+
 # ======================
 $HUB_USER        = 'rwhgrwhg'
 $DEFAULT_TAG     = 'latest'
@@ -26,7 +57,7 @@ $PassthruArgs            = @()
 
 function Show-Help {
 @"
-Usage: .\setup.ps1 [options] [-- <args passed to setup_course.py>]
+Usage: $SELF_CMD [options] [-- <args passed to setup_course.py>]
 
 Options:
   --tag TAG            Use a specific tag instead of 'latest' (default: $DEFAULT_TAG)
@@ -47,13 +78,13 @@ Notes:
 - Any arguments after a literal "--" are forwarded directly to setup_course.py.
 
 Examples:
-  .\setup.ps1
-  .\setup.ps1 --tag v2025.08.13
-  .\setup.ps1 --update-image
-  .\setup.ps1 --image ghcr.io/acme/teaching-quartz:edge
-  .\setup.ps1 --local-dev
-  .\setup.ps1 --context desktop-linux --local-dev
-  .\setup.ps1 -- --no-backup
+  $SELF_CMD
+  $SELF_CMD --tag v2025.08.13
+  $SELF_CMD --update-image
+  $SELF_CMD --image ghcr.io/acme/teaching-quartz:edge
+  $SELF_CMD --local-dev
+  $SELF_CMD --context desktop-linux --local-dev
+  $SELF_CMD -- --no-backup
 "@ | Out-Host
 }
 

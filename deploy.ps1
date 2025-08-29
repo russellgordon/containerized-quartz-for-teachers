@@ -1,5 +1,36 @@
 #requires -Version 5.1
 $ErrorActionPreference = 'Stop'
+# ---- Determine host OS for help text ---------------------------------
+function Get-HostOS {
+    try {
+        if ($IsWindows) { return 'windows' }
+        if ($IsMacOS)   { return 'mac' }
+        if ($IsLinux)   { return 'linux' }
+    } catch {
+        if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Windows)) { return 'windows' }
+        if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::OSX))     { return 'mac' }
+        if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Linux))   { return 'linux' }
+    }
+    return 'unknown'
+}
+$__hostOS = Get-HostOS
+if ($__hostOS -eq 'windows') {
+    $SELF_CMD = '.\deploy.ps1'
+} else {
+    $SELF_CMD = './deploy.sh'
+}
+# Cross-script command hints for help text
+if ($__hostOS -eq 'windows') {
+    $SETUP_CMD   = '.\setup.ps1'
+    $PREVIEW_CMD = '.\preview.ps1'
+    $DEPLOY_CMD  = '.\deploy.ps1'
+} else {
+    $SETUP_CMD   = './setup.sh'
+    $PREVIEW_CMD = './preview.sh'
+    $DEPLOY_CMD  = './deploy.sh'
+}
+# ----------------------------------------------------------------------
+
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
 
 # ======================
@@ -10,7 +41,7 @@ $ErrorActionPreference = 'Stop'
 if ($args.Count -lt 2 -or $args[0] -in @('--help','-h')) {
     Write-Host ""
     Write-Host "USAGE:"
-    Write-Host "  .\deploy.ps1 <COURSE_CODE> <SECTION_NUMBER> [options]"
+    Write-Host "  $SELF_CMD <COURSE_CODE> <SECTION_NUMBER> [options]"
     Write-Host ""
     Write-Host "Required:"
     Write-Host "  <COURSE_CODE>     e.g., ICS3U"
