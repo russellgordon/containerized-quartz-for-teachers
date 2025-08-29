@@ -316,5 +316,27 @@ fi
 
 # -------------------- Run setup inside container --------------------
 echo "📚 Running setup_course.py inside the Docker container..."
+# Ensure the container knows the host OS (mac). Users never need to pass this.
+# If someone did pass --host-os already, strip it and override to mac.
+if ((${#PASSTHRU_ARGS[@]})); then
+  _cleaned=()
+  _skip_next=0
+  for _a in "${PASSTHRU_ARGS[@]}"; do
+    if (( _skip_next )); then
+      _skip_next=0
+      continue
+    fi
+    if [[ "$_a" == "--host-os" ]]; then
+      _skip_next=1
+      continue
+    fi
+    if [[ "$_a" == --host-os=* ]]; then
+      continue
+    fi
+    _cleaned+=("$_a")
+  done
+  PASSTHRU_ARGS=("${_cleaned[@]}")
+fi
+PASSTHRU_ARGS+=("--host-os" "mac")
 docker exec -e HOST_TZ_OFFSET="$HOST_TZ_OFFSET" -it "$CONTAINER_NAME" \
   python3 /opt/scripts/setup_course.py ${PASSTHRU_ARGS+"${PASSTHRU_ARGS[@]}"}

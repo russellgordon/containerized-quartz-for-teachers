@@ -14,6 +14,26 @@ import shutil   # NEW: needed for copying example course
 import random   # NEW: for generating alternate example course code
 import string   # NEW: for generating alternate example course code
 
+
+# ---- Host OS signaling (injected) -------------------------------------------
+_HOST_OS = "unknown"  # set from --host-os at runtime
+
+def _is_windows(host_os: str) -> bool:
+    return (host_os or "").lower() == "windows"
+
+def _cmd_example(script_base: str, course, section, host_os: str) -> str:
+    """
+    Returns OS-appropriate example command for preview/deploy.
+    script_base: 'preview' or 'deploy'
+    """
+    if _is_windows(host_os):
+        # Windows example: .\preview.bat ICS3U 1
+        return f".\\{script_base}.bat {course} {section}"
+    else:
+        # mac/Linux example: ./preview.sh ICS3U 1
+        return f"./{script_base}.sh {course} {section}"
+# ----------------------------------------------------------------------------
+
 DEFAULT_SHARED_FOLDERS = [
     "Concepts", "Discussions", "Examples", "Exercises", "Media",
     "Ontario Curriculum", "College Board Curriculum", "Portfolios",
@@ -1071,7 +1091,7 @@ def maybe_install_example_course(courses_root: Path) -> bool:
     # Print final hint and exit early (as requested)
     print(f"✅ Example Course installed: {dest_code}")
     print("ℹ️ To preview this site, run:")
-    print(f"   ./preview.sh {dest_code} 1")
+    print("   " + _cmd_example("preview", dest_code, 1, _HOST_OS))
     print("   (Then open http://localhost:8081 in your browser.)")
     sys.exit(0)
     return True  # not reached
@@ -1469,17 +1489,20 @@ def setup_course(no_backup: bool = False):
     print("\n\nWebsite previews")
     print("----------------")
     for sec in section_numbers:
-    	print(f"\n🔎 You can preview {course_code}, section {sec} by running this command:\n./preview.sh {course_code} {sec}\n")
+    	print(f"\n🔎 You can preview {course_code}, section {sec} by running this command:\n{_cmd_example('preview', course_code, sec, _HOST_OS)}\n")
     print("\nWebsite deploys")
     print("----------------")
     for sec in section_numbers:
-    	print(f"\n🚀 You can deploy {course_code}, section {sec} by running this command:\n./deploy.sh {course_code} {sec}\n")
+    	print(f"\n🚀 You can deploy {course_code}, section {sec} by running this command:\n{_cmd_example('deploy', course_code, sec, _HOST_OS)}\n")
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Course setup with automatic backups")
     parser.add_argument("--no-backup", action="store_true", help="Skip creating a backup of the existing course folder.")
+    parser.add_argument("--host-os", choices=["windows","mac","linux","unknown"], default="unknown", help="Host operating system (passed by setup.sh/setup.ps1).")
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_args()
+    # Set module-level host OS for OS-aware examples
+    _HOST_OS = getattr(args, "host_os", "unknown")
     setup_course(no_backup=args.no_backup)

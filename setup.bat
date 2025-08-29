@@ -3,6 +3,7 @@ chcp 65001 >nul
 setlocal EnableExtensions EnableDelayedExpansion
 
 REM Wrapper to run PowerShell script with the same name (setup.ps1)
+REM NOTE: Host OS flag (--host-os windows) is injected inside setup.ps1
 set "_SCRIPT_DIR=%~dp0"
 set "_PS1=%_SCRIPT_DIR%setup.ps1"
 

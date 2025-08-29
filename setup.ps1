@@ -343,6 +343,8 @@ if ($PassthruArgs.Count -gt 0 -and ($PassthruArgs -contains '--no-backup')) {
     }
 }
 
+$PassthruArgs += @('--host-os','windows')
+
 $escaped = @()
 foreach ($p in $PassthruArgs) {
     if ($p -match '\s') {
