@@ -76,12 +76,12 @@ Run one of the following commands **in an empty folder** where you want to work:
 
 **macOS / Linux (bash/zsh):**
 ```bash
-docker run --rm -v "$PWD":/out rwhgrwhg/teaching-quartz:latest export-scripts
+docker run --pull=always --rm -v "$PWD":/out rwhgrwhg/teaching-quartz:latest export-scripts
 ```
 
 **Windows (PowerShell):**
 ```powershell
-docker run --rm -v "${PWD}:/out" rwhgrwhg/teaching-quartz:latest export-scripts
+docker run --pull=always --rm -v "${PWD}:/out" rwhgrwhg/teaching-quartz:latest export-scripts
 ```
 
 This will place the launcher scripts into your current folder, ready to run.
