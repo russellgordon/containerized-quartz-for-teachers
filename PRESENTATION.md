@@ -69,10 +69,6 @@ Please follow [the instructions given here](https://github.com/russellgordon/con
 > 
 > You do need to be an Administrator on your computer to complete this installation.
 
-> [!NOTE]
-> 
-> With apologies in advance, the author has been able to complete only limited testing on with this workflow on Windows. Please report any issues you encounter. It is likely they can be quickly remedied.
-
 ## Install example site
 
 Once you have the workflow scripts available on your computer, it is recommended that you install the example course website:
