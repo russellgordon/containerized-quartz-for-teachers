@@ -2,7 +2,7 @@
 
 > ℹ️ **Note**
 > 
-> This software was be discussed in person on Thursday, August 14, 2025 at the [Summer Conference for Computer Studies and Mathematics Educators](https://cemc.uwaterloo.ca/workshops/educator-development/summer-conference-educators), organized by the [Centre for Education in Mathematics and Computing](https://www.cemc.uwaterloo.ca/).
+> This software was discussed in person on Thursday, August 14, 2025 at the [Summer Conference for Computer Studies and Mathematics Educators](https://cemc.uwaterloo.ca/workshops/educator-development/summer-conference-educators), organized by the [Centre for Education in Mathematics and Computing](https://www.cemc.uwaterloo.ca/).
 
 **Workshop Description:**
 
@@ -21,7 +21,7 @@ In the session, optionally complete a series of “quests” to learn how to use
 > For those with good memories, this is an update of the 2023 session titled “[A Rapid Workflow for Publishing CS Teaching Materials](https://teaching.russellgordon.ca/cemc/sccst-2023/a-rapid-workflow-for-publishing-cs-teaching-materials/)”, with new software, much less work involved to get a site up and running, and a better end-product. This new session is suitable for and useful for both mathematics and computer science teachers.
 
 > 📘 **Info**  
-> This documentation was generated using ChatGPT 4o and ChatGPT 5.
+> Initial drafts of this documentation were generated using ChatGPT 4o and ChatGPT 5, and later edited by Russell Gordon.
 
 ---
 
@@ -29,13 +29,15 @@ In the session, optionally complete a series of “quests” to learn how to use
 
 ### ✅ Prerequisites
 
-- Install and open [Docker Desktop](https://www.docker.com/products/docker-desktop) (required)
-   - A Docker account is not required. You can skip this step during installation.
-- Install [Obsidian](https://obsidian.md/) (optional, but recommended for editing Markdown)
-- **macOS users**, install [iTerm2](https://iterm2.com) for full 24-bit ANSI colour support in the colour scheme picker
-- **Windows users**, you need [PowerShell 5.1 or later](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (comes with Windows 10+; download if on an older version of Windows)
-- [Create a **GitHub account**](https://github.com/join) (if you don’t have one already)
-- [Create a **Netlify account**](https://app.netlify.com/signup) (if you don’t have one already)
+1. Install and open [Docker Desktop](https://www.docker.com/products/docker-desktop) (required)
+> 💡 **Tip**
+>
+> A Docker account is not required. You can skip this step during installation.
+   
+2. Install [Obsidian](https://obsidian.md/) (optional, but strongly recommended for editing Markdown)
+3. **macOS users**, install [iTerm2](https://iterm2.com) for full 24-bit ANSI colour support in the colour scheme picker
+4. **Windows users**, you need [PowerShell 5.1 or later](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (comes with Windows 10+; download if on an older version of Windows)
+5. [Create a **Netlify account**](https://app.netlify.com/signup) (if you don’t have one already)
 
 > 💡 **Tip**
 >
@@ -170,9 +172,8 @@ On Windows:
 
 This will:
 - Package the built site for the chosen section
-- Guide you through pushing it to a new GitHub repository (you’ll log into GitHub during this step)
-- Allow you to link that repository to **Netlify**, which will host your site publicly
-- Any future changes you make and push to GitHub will automatically trigger a rebuild in Netlify
+- Allow you to deploy the site to **Netlify**, which will host your site publicly
+
 
 ---
 
