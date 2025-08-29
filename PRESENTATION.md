@@ -56,7 +56,7 @@ Some comments from students from the author's own course feedback survey:
 
 ## Example site
 
-Before you commit to this double-session – take some time to [explore the type of output](https://aesthetic-bubblegum-622206.netlify.app) produced by this workflow. Will it fit your needs?
+Before you commit to this double-session – take some time to [explore the type of output](https://exc2o-s1-2024-gordon.netlify.app/) produced by this workflow. Will it fit your needs?
 
 <img width="1366" height="999" alt="Pasted image 20250814081337" src="https://github.com/user-attachments/assets/5f440320-2c19-4a4b-a908-90a1d86e0016" />
 
