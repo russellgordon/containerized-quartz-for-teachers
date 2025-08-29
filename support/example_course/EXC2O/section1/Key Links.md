@@ -1,5 +1,6 @@
 ---
 title: Key Links
+created: 2025-08-10T09:25:31.000-0400
 ---
 - [Notion](https://notion.so)
 - [Student Course Outline](https://drive.google.com/file/d/1uWps8Mk0a7KohiR-1P2B0QDOiw0gyL9o/view?usp=drive_link)
