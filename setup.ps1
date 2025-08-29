@@ -6,34 +6,37 @@ $ErrorActionPreference = 'Stop'
 # Defaults
 # ---- Determine host OS for help text ---------------------------------
 function Get-HostOS {
+    try { if ($IsWindows) { return 'windows' } } catch {}
+    try { if ([System.Environment]::OSVersion.Platform.ToString() -eq 'Win32NT') { return 'windows' } } catch {}
     try {
-        if ($IsWindows) { return 'windows' }
-        if ($IsMacOS)   { return 'mac' }
-        if ($IsLinux)   { return 'linux' }
-    } catch {
         if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Windows)) { return 'windows' }
         if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::OSX))     { return 'mac' }
         if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Linux))   { return 'linux' }
-    }
+    } catch {}
+    if ($env:OS -eq 'Windows_NT') { return 'windows' }
+    try {
+        $u = (uname -s 2>$null)
+        if ($u -match 'Darwin') { return 'mac' }
+        if ($u -match 'Linux')  { return 'linux' }
+    } catch {}
     return 'unknown'
 }
 $__hostOS = Get-HostOS
 if ($__hostOS -eq 'windows') {
-    $SELF_CMD = '.\setup.ps1'
+    $SELF_CMD = '.\setup.bat'
 } else {
     $SELF_CMD = './setup.sh'
 }
 # Cross-script command hints for help text
 if ($__hostOS -eq 'windows') {
-    $SETUP_CMD   = '.\setup.ps1'
-    $PREVIEW_CMD = '.\preview.ps1'
-    $DEPLOY_CMD  = '.\deploy.ps1'
+    $SETUP_CMD   = '.\setup.bat'
+    $PREVIEW_CMD = '.\preview.bat'
+    $DEPLOY_CMD  = '.\deploy.bat'
 } else {
     $SETUP_CMD   = './setup.sh'
     $PREVIEW_CMD = './preview.sh'
     $DEPLOY_CMD  = './deploy.sh'
 }
-# ----------------------------------------------------------------------
 
 # ======================
 $HUB_USER        = 'rwhgrwhg'
@@ -374,8 +377,7 @@ if ($PassthruArgs.Count -gt 0 -and ($PassthruArgs -contains '--no-backup')) {
     }
 }
 
-$PassthruArgs += @('--host-os','windows')
-
+    $PassthruArgs += @('--host-os','windows')
 $escaped = @()
 foreach ($p in $PassthruArgs) {
     if ($p -match '\s') {

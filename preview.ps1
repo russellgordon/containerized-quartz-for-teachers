@@ -2,34 +2,37 @@
 $ErrorActionPreference = 'Stop'
 # ---- Determine host OS for help text ---------------------------------
 function Get-HostOS {
+    try { if ($IsWindows) { return 'windows' } } catch {}
+    try { if ([System.Environment]::OSVersion.Platform.ToString() -eq 'Win32NT') { return 'windows' } } catch {}
     try {
-        if ($IsWindows) { return 'windows' }
-        if ($IsMacOS)   { return 'mac' }
-        if ($IsLinux)   { return 'linux' }
-    } catch {
         if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Windows)) { return 'windows' }
         if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::OSX))     { return 'mac' }
         if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Linux))   { return 'linux' }
-    }
+    } catch {}
+    if ($env:OS -eq 'Windows_NT') { return 'windows' }
+    try {
+        $u = (uname -s 2>$null)
+        if ($u -match 'Darwin') { return 'mac' }
+        if ($u -match 'Linux')  { return 'linux' }
+    } catch {}
     return 'unknown'
 }
 $__hostOS = Get-HostOS
 if ($__hostOS -eq 'windows') {
-    $SELF_CMD = '.\preview.ps1'
+    $SELF_CMD = '.\preview.bat'
 } else {
     $SELF_CMD = './preview.sh'
 }
 # Cross-script command hints for help text
 if ($__hostOS -eq 'windows') {
-    $SETUP_CMD   = '.\setup.ps1'
-    $PREVIEW_CMD = '.\preview.ps1'
-    $DEPLOY_CMD  = '.\deploy.ps1'
+    $SETUP_CMD   = '.\setup.bat'
+    $PREVIEW_CMD = '.\preview.bat'
+    $DEPLOY_CMD  = '.\deploy.bat'
 } else {
     $SETUP_CMD   = './setup.sh'
     $PREVIEW_CMD = './preview.sh'
     $DEPLOY_CMD  = './deploy.sh'
 }
-# ----------------------------------------------------------------------
 
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
 
@@ -41,7 +44,7 @@ if ($__hostOS -eq 'windows') {
 if ($args.Count -lt 2 -or ($args[0] -eq '--help') -or ($args[0] -eq '-h')) {
     Write-Host ""
     Write-Host "USAGE:"
-    Write-Host "  $SELF_CMD <COURSE_CODE> <SECTION_NUMBER> [options]"
+    Write-Host " $SELF_CMD <COURSE_CODE> <SECTION_NUMBER> [options]"
     Write-Host ""
     Write-Host "Required:"
     Write-Host "  <COURSE_CODE>     e.g., ICS3U"
