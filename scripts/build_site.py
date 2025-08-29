@@ -529,6 +529,59 @@ def resolve_show_section_marker(config: dict, section_number: int) -> bool:
     return True
 # --- END ADD -----------------------------------------------------------------
 
+# --- ADD: Remove section marker from a full course title ---------------------
+def _strip_section_marker_from_title(title: str, section_number: int) -> str:
+    """
+    Remove a trailing 'Section N' (or 'S N' / 'Sec. N') from a title string.
+    Handles separators like ',', '-', '–', '—', and parenthesized forms.
+    Only trims a suffix at the end of the string (common in 'Grade 10 ..., Section 1').
+    """
+    if not isinstance(title, str) or not title.strip():
+        return title
+
+    n = int(section_number)
+
+    # Examples matched (at end of string):
+    #   ", Section 3"   " - Section 3"   " — Section 3"   " (Section 3)"
+    #   ", S3"          " - S 3"         " (S 3)"         ", Sec. 3"
+    patterns = [
+        rf'\s*(?:[,\-–—]\s*)?(?:Section|Sec\.?|S)\s*{n}\s*\.?\s*$',
+        rf'\s*\(\s*(?:Section|Sec\.?|S)\s*{n}\s*\)\s*$',
+    ]
+
+    out = title
+    for p in patterns:
+        out = re.sub(p, '', out, flags=re.IGNORECASE)
+    return out.strip()
+
+def maybe_adjust_index_title(index_md_path: Path, show_section_marker: bool, section_number: int):
+    """
+    If show_section_marker is False, load index.md frontmatter and strip a trailing section
+    marker from the 'title' field, if present. Idempotent.
+    """
+    if show_section_marker or not index_md_path.exists() or index_md_path.suffix.lower() != ".md":
+        return
+    try:
+        post = frontmatter.load(index_md_path)
+    except Exception as e:
+        print(f"⚠️ Could not read frontmatter from {index_md_path}: {e}")
+        return
+
+    old_title = post.get("title")
+    new_title = _strip_section_marker_from_title(old_title, section_number) if old_title else old_title
+
+    if isinstance(old_title, str) and new_title != old_title:
+        post["title"] = new_title
+        try:
+            with open(index_md_path, "w", encoding="utf-8") as f:
+                f.write(frontmatter.dumps(post))
+            print(f"📝 Updated index title to '{new_title}' (removed section marker)")
+        except Exception as e:
+            print(f"⚠️ Could not write adjusted index title to {index_md_path}: {e}")
+    else:
+        print("ℹ️ Index title had no removable section marker (no change).")
+# --- END ADD -----------------------------------------------------------------
+
 
 # --- NEW: Read/validate timetable section numbers ---------------------------
 def get_allowed_section_numbers(config: dict) -> list[int]:
@@ -1970,6 +2023,8 @@ def build_section_site(
     hidden_list = config.get("hidden", [])
     # teacher preference for reading-time
     show_reading_time = bool(config.get("show_reading_time", False))
+    # NEW: per-section section-marker preference (used for header and index title)
+    show_marker = resolve_show_section_marker(config, section_number)
 
     # Exclude 'Media' from shared folder processing (we symlink it)
     if "Media" in shared_folders:
@@ -2086,6 +2141,10 @@ def build_section_site(
         dest = content_root / "index.md"
         shutil.copy2(section_index, dest)
         process_frontmatter(dest, section_number)
+
+        # NEW: strip trailing "Section N" from full course title if hidden
+        maybe_adjust_index_title(dest, show_marker, section_number)
+
         # rewrite section-path wikilinks in the section index
         print("🔍 Checking for wikilinks to rewrite in content/index.md...")
         rewrite_section_wikilinks(dest)
@@ -2180,7 +2239,6 @@ def build_section_site(
     # Update page title (now with per-section emoji and optional section marker)
     config_path = output_dir / "quartz.config.ts"
     page_emoji = resolve_section_emoji(config, section_number)
-    show_marker = resolve_show_section_marker(config, section_number)
     update_page_title(config_path, course_code, section_number, page_emoji, show_marker)
     patch_default_date_type(config_path)
 
