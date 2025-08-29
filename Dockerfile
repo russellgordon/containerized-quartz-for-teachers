@@ -34,10 +34,12 @@ COPY support/ /opt/support/
 RUN mkdir -p /opt/export
 COPY setup.sh preview.sh deploy.sh /opt/export/
 COPY setup.bat preview.bat deploy.bat /opt/export/
+COPY setup.ps1 preview.ps1 deploy.ps1 /opt/export/
 # Ensure .sh are executable (no-op on .bat)
 RUN chmod +x /opt/export/*.sh || true
 # Convert Windows launchers to CRLF line endings
 RUN unix2dos /opt/export/*.bat
+RUN unix2dos /opt/export/*.ps1
 
 # --- Helper command to export scripts to a mounted folder ---
 # Usage (macOS/Linux):   docker run --rm -v "$PWD":/out <image> export-scripts
