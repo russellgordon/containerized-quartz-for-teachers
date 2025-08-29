@@ -107,7 +107,7 @@ Some useful shortcuts for Obsidian are:
 
 > [!TIP]
 > 
-> Are you a macOS user? [Learn how to take screenshots *without* cluttering up your Desktop with screenshot files](https://aesthetic-bubblegum-622206.netlify.app/tutorials/taking-screenshots). You can simply *paste* captured screenshots into Obsidian.
+> Are you a macOS user? [Learn how to take screenshots *without* cluttering up your Desktop with screenshot files](https://exc2o-s1-2024-gordon.netlify.app/tutorials/taking-screenshots). You can simply *paste* captured screenshots into Obsidian.
 
 By completing the "quests" below, you will become better versed in how to use Obsidian to change the appearance or structure of a class website.
 
