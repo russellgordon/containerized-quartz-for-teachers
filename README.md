@@ -70,16 +70,28 @@ Before running the commands below, open a command-line interface:
 
 ### 1. Get the launcher scripts from the Docker image
 
-These scripts (`setup.sh` / `setup.bat`, `preview.sh` / `preview.bat`, `deploy.sh` / `deploy.bat`) are already inside the Docker image.
-
-Run one of the following commands **in an empty folder** where you want to work:
+These scripts you will need to setup, preview, and deploy your website are already inside the Docker image.
 
 **macOS / Linux (bash/zsh):**
+
+First, start Docker by running this command – be sure that you wait until you see a note that the Docker engine has started:
 ```bash
-docker run --pull=always --rm -v "$PWD":/out rwhgrwhg/teaching-quartz:latest export-scripts
+open -ga Docker
+```
+
+Then, run this command to get the launcher scripts:
+```bash
+docker run --pull=always --rm -v "$PWD:/out" rwhgrwhg/teaching-quartz:latest export-scripts
 ```
 
 **Windows (PowerShell):**
+
+First, start Docker by running this command – be sure that you wait until you see a note that the Docker engine has started:
+```powershell
+start "" "%ProgramFiles%\Docker\Docker\Docker Desktop.exe"
+```
+
+Then, run this command to get the launcher scripts:
 ```powershell
 docker run --pull=always --rm -v "${PWD}:/out" rwhgrwhg/teaching-quartz:latest export-scripts
 ```
