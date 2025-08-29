@@ -5,6 +5,6 @@ createdSection1: 2024-11-05T07:00:00.000-0400
 createdSection2: 2024-11-05T07:00:00.000-0400
 tags:
 ---
-# Showing That Regular Backups Were Made
+Here is how to duplicate a sketch in Playgrounds:
 
-![[Showing That Backups Were Made.gif]]
+![[Duplicating a Sketch in Playgrounds.mp4]]

@@ -78,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 446.5
   },
   "right": {
     "id": "f9cb5e006f7594cd",
@@ -170,6 +170,14 @@
   },
   "active": "35278108c42983b7",
   "lastOpenFiles": [
+    "Tutorials/Using Autocomplete and Keyboard Shortcuts.md",
+    "Tutorials/Duplicating a Sketch in Playgrounds.md",
+    "Tutorials/Showing That Regular Backups Were Made.md",
+    "Tutorials/Creating a Smart Folder.md",
+    "Exercises/Panda Scene.md",
+    "Tasks/Gig Poster.md",
+    "Tutorials/Creating Bookmarks.md",
+    "section1/index.md",
     "Media/Using Autocomplete and Keyboard Shortcuts.md",
     "Media/Using Autocomplete and Keyboard Shortcuts.gif",
     "Media/Using Autocomplete and Keyboard Shortcuts.mp4",
@@ -187,19 +195,11 @@
     "section2/Key Links.md",
     "section2/index.md",
     "section2/Grove Time.md",
-    "section1/index.md",
     "section1/Grove Time.md",
     "section2/All Classes/index.md",
     "section1/All Classes/index.md",
     "section1/All Classes/Thread 1, Day 3.md",
     "section1/All Classes/Thread 1, Day 2.md",
-    "section2/All Classes/Thread 1, Day 3.md",
-    "section1/All Classes/Thread 2, Day 1.md",
-    "Exercises/Panda Scene.md",
-    "section1/All Classes/Thread 2, Day 2.md",
-    "section1/All Classes/Thread 2, Day 3.md",
-    "section1/All Classes/Thread 2, Day 4.md",
-    "Exercises/Superdrag.md",
     "course_config.json.bak",
     "Activities"
   ]
