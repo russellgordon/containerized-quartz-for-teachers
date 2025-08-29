@@ -482,6 +482,54 @@ def resolve_section_emoji(config: dict, section_number: int) -> str:
     return "📚"
 # --- END ADD -----------------------------------------------------------------
 
+# --- ADD: Resolve per-section 'show section marker' flag ---------------------
+def resolve_show_section_marker(config: dict, section_number: int) -> bool:
+    """
+    Return whether 'S{section}' should appear in the page title.
+    Supports several shapes in course_config.json:
+
+      {
+        "show_section_marker": {
+          "sections": { "section3": false, "section4": true },
+          "default": true
+        }
+      }
+
+    Also accepts:
+      - {"show_section_marker": {"section3": false}}
+      - {"show_section_marker": true/false}
+      - Legacy/alt keys: show_section_in_title, showSectionMarkerInTitle, showSectionMarker
+
+    Default when absent: True.
+    """
+    sec_key = f"section{section_number}"
+    candidates = [
+        "show_section_marker",
+        "show_section_in_title",
+        "showSectionMarkerInTitle",
+        "showSectionMarker",
+    ]
+
+    for key in candidates:
+        val = config.get(key)
+        if isinstance(val, dict):
+            # Prefer nested "sections" map
+            sec_map = val.get("sections")
+            if isinstance(sec_map, dict) and sec_key in sec_map:
+                return bool(sec_map[sec_key])
+            # Or direct section key at top-level
+            if sec_key in val:
+                return bool(val[sec_key])
+            # Or a course-level default
+            if "default" in val:
+                return bool(val["default"])
+        elif isinstance(val, bool):
+            return val
+
+    return True
+# --- END ADD -----------------------------------------------------------------
+
+
 # --- NEW: Read/validate timetable section numbers ---------------------------
 def get_allowed_section_numbers(config: dict) -> list[int]:
     """
@@ -507,7 +555,7 @@ def validate_requested_section(allowed: list[int], requested: int) -> bool:
     return False
 # ---------------------------------------------------------------------------
 
-def update_page_title(config_path: Path, course_code: str, section_number: int, emoji: str):
+def update_page_title(config_path: Path, course_code: str, section_number: int, emoji: str, show_section_marker: bool = True):
     if not config_path.exists():
         print(f"⚠️ quartz.config.ts not found at {config_path}")
         return
@@ -517,9 +565,12 @@ def update_page_title(config_path: Path, course_code: str, section_number: int, 
 
     new_lines = []
     updated = False
-    # --- MODIFIED: use resolved emoji instead of hard-coded 📚 ---
+    # --- MODIFIED: use resolved emoji & optional section marker ---
     safe_emoji = (emoji or "📚").strip()
-    new_title = f'{safe_emoji} {course_code.upper()} S{section_number}'
+    if show_section_marker:
+        new_title = f'{safe_emoji} {course_code.upper()} S{section_number}'
+    else:
+        new_title = f'{safe_emoji} {course_code.upper()}'
 
     for line in lines:
         if "pageTitle:" in line:
@@ -537,7 +588,6 @@ def update_page_title(config_path: Path, course_code: str, section_number: int, 
             print(f"✅ Updated pageTitle to '{new_title}' in quartz.config.ts")
     else:
         print("⚠️ Could not find pageTitle in quartz.config.ts to update")
-
 
 def toggle_custom_og_images(config_path: str, enable: bool):
     with open(config_path, 'r') as file:
@@ -2127,10 +2177,11 @@ def build_section_site(
     footer_html = config.get("footer_html", "")
     inject_custom_footer_components(quartz_layout_ts, quartz_footer_tsx, footer_html)
 
-    # Update page title (now with per-section emoji)
+    # Update page title (now with per-section emoji and optional section marker)
     config_path = output_dir / "quartz.config.ts"
     page_emoji = resolve_section_emoji(config, section_number)
-    update_page_title(config_path, course_code, section_number, page_emoji)
+    show_marker = resolve_show_section_marker(config, section_number)
+    update_page_title(config_path, course_code, section_number, page_emoji, show_marker)
     patch_default_date_type(config_path)
 
     # --- ADD: PATCH LOCALE in quartz.config.ts based on course_config.json ----

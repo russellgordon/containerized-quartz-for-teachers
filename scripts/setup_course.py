@@ -827,6 +827,42 @@ def select_header_emojis_for_sections(section_numbers: list[int], saved_config: 
 
     return {"sections": result_sections}
 
+# ---------- NEW: Per-section SECTION MARKER visibility ----------------------
+
+def select_section_marker_visibility_for_sections(section_numbers: list[int], saved_config: dict) -> dict:
+    """
+    Ask for each section whether the title should include the section marker (e.g., 'S1').
+    Default: True (show marker). Saves per-section booleans.
+    Returns:
+    {
+      "sections": { "section1": true, "section3": false, ... }
+    }
+    """
+    print("\n🔖 Section Title Marker")
+    print("Decide whether to show the section indicator (e.g., 'S1') in the site title for each section.")
+    prev_map = {}
+    raw_prev = (saved_config.get("show_section_marker") or {})
+    if isinstance(raw_prev, dict):
+        prev_map = raw_prev.get("sections") or {}
+        if not isinstance(prev_map, dict):
+            prev_map = {}
+
+    result = {}
+    for sec in section_numbers:
+        key = f"section{sec}"
+        prev_val = prev_map.get(key, True)
+        # Coerce previous to bool if it was stored as a string in older configs
+        if isinstance(prev_val, str):
+            prev_val_bool = prev_val.strip().lower() in ("1", "true", "yes", "y")
+        else:
+            prev_val_bool = bool(prev_val)
+        choice = prompt_yes_no_default(
+            f"Show section marker in the site title for Section {sec}? (example: 'S{sec}')",
+            prev_val_bool
+        )
+        result[key] = bool(choice)
+
+    return {"sections": result}
 
 # ---------- Hardened Explorer patch helpers ---------------------------------
 
@@ -1232,6 +1268,9 @@ def setup_course(no_backup: bool = False):
     # ---- Per-section header emoji selection (stateful) ----
     emojis_config = select_header_emojis_for_sections(section_numbers, saved_config)
 
+    # ---- NEW: Per-section section marker visibility (stateful) --------------
+    section_marker_config = select_section_marker_visibility_for_sections(section_numbers, saved_config)
+
     # ---------- Original prompts (unchanged except for Media handling) ----------
     # Remove 'Media' from defaults so it never appears in the selection prompt
     shared_default_candidates = saved_config.get("shared_folders", DEFAULT_SHARED_FOLDERS)
@@ -1316,6 +1355,8 @@ def setup_course(no_backup: bool = False):
         "show_reading_time": show_reading_time,
         # New: fonts configuration to be applied by build_site.py per section
         "fonts": fonts_config,
+        # NEW: per-section section-marker visibility for site title
+        "show_section_marker": section_marker_config,
     }
     previous_map = saved_config.get("color_schemes", {}) or {}
     if schemes:
