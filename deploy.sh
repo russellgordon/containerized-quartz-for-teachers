@@ -6,15 +6,18 @@ cd "$(dirname "$0")"
 
 CONTAINER_NAME="teaching-quartz"
 
+# Defaults so help can expand under `set -u` before OS detection
+SELF_CMD="./deploy.sh"
+PREVIEW_CMD="./preview.sh"
 usage() {
-  cat <<'USAGE'
+  cat <<USAGE
 🧰 Usage:
-  ./deploy.sh <COURSE_CODE> <SECTION_NUMBER> [--diagnose] [--team <TEAM_SLUG>]
+  ${SELF_CMD} <COURSE_CODE> <SECTION_NUMBER> [--diagnose] [--team <TEAM_SLUG>]
 
 Examples:
-  ./deploy.sh ICS3U 1
-  ./deploy.sh ICS3U 1 --diagnose
-  ./deploy.sh ICS3U 1 --team my-org-slug
+  ${SELF_CMD} ICS3U 1
+  ${SELF_CMD} ICS3U 1 --diagnose
+  ${SELF_CMD} ICS3U 1 --team my-org-slug
 
 Notes:
 - Deploys from /teaching/courses/<COURSE>/.merged_output/section<SECTION> inside the container.
@@ -23,6 +26,27 @@ Notes:
 - The --team/--team-slug option is advanced; omit it to use your personal team.
 - If your course code ends with '0' (zero), you'll be prompted to correct it to 'O' for Open-level courses.
 USAGE
+
+# ---- Determine host OS for help text ---------------------------------
+_detect_host_os() {
+  local u
+  u="$(uname -s 2>/dev/null || echo "")"
+  case "$u" in
+    Darwin) echo mac ;;
+    MINGW*|MSYS*|CYGWIN*) echo windows ;;
+    *) echo linux ;;
+  esac
+}
+_DEPLOY_HOST_OS="$(_detect_host_os)"
+if [[ "$_DEPLOY_HOST_OS" == "windows" ]]; then
+  SELF_CMD=".\\deploy.bat"
+  PREVIEW_CMD=".\\preview.bat"
+else
+  SELF_CMD="./deploy.sh"
+  PREVIEW_CMD="./preview.sh"
+fi
+# ----------------------------------------------------------------------
+
 }
 
 if [[ $# -lt 2 ]]; then

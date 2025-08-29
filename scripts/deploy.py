@@ -17,6 +17,16 @@ import unicodedata
 from pathlib import Path
 from collections import Counter
 
+
+# ---- Host OS signaling & example command helper -----------------------------
+_HOST_OS = "unknown"
+def _is_windows(host_os: str) -> bool:
+    return (host_os or "").lower() == "windows"
+
+def _cmd_example(script_base: str, course, section, host_os: str) -> str:
+    return (f".\\{script_base}.bat {course} {section}") if _is_windows(host_os) else (f"./{script_base}.sh {course} {section}")
+# ----------------------------------------------------------------------------
+
 # ---------- Netlify name sanitizer ----------
 
 def sanitize_netlify_name(name: str) -> str:
@@ -671,6 +681,7 @@ def print_required_diagnostics(required_shas: list[str], sha_to_pairs: dict[str,
 
 def main():
     p = argparse.ArgumentParser(description="Deploy a built section site directly to Netlify using delta (file-digest) uploads only.")
+    p.add_argument("--host-os", choices=["windows","mac","linux","unknown"], default="unknown", help="Host OS passed by deploy launchers")
     p.add_argument("--course", required=True, help="Course code, e.g., ICS3U")
     p.add_argument("--section", required=True, help="Section number, e.g., 1")
     p.add_argument("--diagnose", action="store_true", help="Print a breakdown of required files and save list to _required_last_deploy.txt")
@@ -678,6 +689,8 @@ def main():
     p.add_argument("--team", "--team-slug", dest="team", default=None,
                    help="Netlify team slug (advanced). If omitted, your personal team is used.")
     args = p.parse_args()
+    global _HOST_OS
+    _HOST_OS = getattr(args, 'host_os', 'unknown')
 
     # Ensure ignores and migrate legacy global secrets early
     _ensure_courses_gitignore()
@@ -688,7 +701,7 @@ def main():
     if not section_dir.exists():
         print(f"❌ Section directory not found: {section_dir}")
         print(f"👉 Please run the preview/build first:")
-        print(f"   ./preview.sh {args.course} {args.section}")
+        print(f"{_cmd_example('preview', args.course, args.section, _HOST_OS)}")
         sys.exit(1)
 
     # Require the built site (public/)
@@ -696,7 +709,7 @@ def main():
     if not public_dir.exists() or not any(public_dir.iterdir()):
         print(f"❌ Built site not found at: {public_dir}")
         print(f"👉 Please build before deploying. For example:")
-        print(f"   ./preview.sh {args.course} {args.section}")
+        print(f"{_cmd_example('preview', args.course, args.section, _HOST_OS)}")
         sys.exit(1)
 
     # Determine course dir (for back-compat token migration)

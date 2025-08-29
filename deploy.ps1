@@ -154,7 +154,7 @@ $SECTION_PATH_IN_CONTAINER = "/teaching/courses/$COURSE/.merged_output/section$S
 Write-Host ("Deploying {0} S{1} from: {2}" -f $COURSE, $SECTION, $SECTION_PATH_IN_CONTAINER)
 
 # ---- Build deploy.py args ----
-$argList = @("--course", $COURSE, "--section", $SECTION)
+$argList = @("--course", $COURSE, "--section", $SECTION, "--host-os", "windows")
 if ($TEAM_SLUG) { $argList += @("--team", $TEAM_SLUG) }
 if ($DIAGNOSE)  { $argList += "--diagnose" }
 
