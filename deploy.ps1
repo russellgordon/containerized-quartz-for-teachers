@@ -41,6 +41,10 @@ $KEY_TARGET     = 'containerized-quartz-netlify'  # Windows Credential Manager t
 $TOKENS_FILE    = Join-Path -Path $ScriptDir -ChildPath 'courses\.internal\tokens.json'
 $KEY_FILE       = Join-Path -Path $ScriptDir -ChildPath 'courses\.internal\.key'
 
+# Image selection: default to hub image unless an existing container specifies otherwise.
+$DEFAULT_IMAGE  = if ($env:TEACHING_QUARTZ_IMAGE) { $env:TEACHING_QUARTZ_IMAGE } else { 'rwhgrwhg/teaching-quartz:latest' }
+$script:IMAGE_REF = $DEFAULT_IMAGE
+
 # ======================
 # Arg parsing
 # ======================
@@ -348,15 +352,25 @@ try { docker info *> $null } catch {
 
 $HOST_COURSES = Normalize-HostPath (Join-Path -Path (Get-Location) -ChildPath 'courses')
 
+function Ensure-Image([string]$ref) {
+  docker image inspect "$ref" *> $null
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "Pulling image '$ref'..."
+    docker pull "$ref" | Out-Host
+  }
+}
+
 function Run-ContainerWithMount {
   Write-Host "Binding host courses to container: $HOST_COURSES -> /teaching/courses"
+  Ensure-Image $script:IMAGE_REF
   docker run -dit `
     --name "$CONTAINER_NAME" `
     -v "${HOST_COURSES}:/teaching/courses" `
     -p 8081:8081 `
-    teaching-quartz `
+    "$script:IMAGE_REF" `
     tail -f /dev/null | Out-Null
 }
+
 function Test-ContainerWriteable {
   param([string]$Name)
   try {
@@ -370,9 +384,16 @@ function Test-ContainerWriteable {
 Write-Host "Ensuring container is running with the correct, writable mount..."
 $containerExists = ((docker ps -a --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
 if ($containerExists) {
-  $CURRENT_MOUNT_SRC = $null
+  # If we have an existing container, adopt its image for any recreation.
   try {
     $cinfo = docker inspect "$CONTAINER_NAME" | ConvertFrom-Json
+    if ($cinfo -and $cinfo.Count -gt 0 -and $cinfo[0].Config.Image) {
+      $script:IMAGE_REF = $cinfo[0].Config.Image
+    }
+  } catch {}
+
+  $CURRENT_MOUNT_SRC = $null
+  try {
     if ($cinfo -and $cinfo.Count -gt 0) {
       foreach ($m in $cinfo[0].Mounts) {
         if ($m.Destination -eq "/teaching/courses") { $CURRENT_MOUNT_SRC = $m.Source; break }
@@ -400,7 +421,7 @@ if ($containerExists) {
     $running = ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
     if ($running) {
       if (-not (Test-ContainerWriteable -Name $CONTAINER_NAME)) {
-        Write-Host "Mounted 'courses/' is not writable from the container — recreating it..."
+        Write-Host "Mounted 'courses/' is not writable from the container - recreating it..."
         docker rm -f "$CONTAINER_NAME" *> $null
         Run-ContainerWithMount
       } else {
@@ -410,7 +431,7 @@ if ($containerExists) {
       Write-Host "Starting existing container $CONTAINER_NAME..."
       docker start "$CONTAINER_NAME" *> $null
       if (-not (Test-ContainerWriteable -Name $CONTAINER_NAME)) {
-        Write-Host "Mounted 'courses/' is not writable from the container after start — recreating it..."
+        Write-Host "Mounted 'courses/' is not writable from the container after start - recreating it..."
         docker rm -f "$CONTAINER_NAME" *> $null
         Run-ContainerWithMount
       }
@@ -419,6 +440,8 @@ if ($containerExists) {
 }
 else {
   Write-Host "Creating new container named $CONTAINER_NAME with correct mount..."
+  # No pre-existing container -> use default/override image.
+  $script:IMAGE_REF = $DEFAULT_IMAGE
   Run-ContainerWithMount
 }
 
@@ -446,7 +469,7 @@ try {
   if ($proc -and -not $proc.HasExited) { $proc.Kill() | Out-Null }
 }
 
-# 2) Compose inner shell (placeholders) and stream it through the same CRLF/BOM filter.
+# 2) Compose inner shell and stream it through the same CRLF/BOM filter.
 $inner = @'
 tok=$(cat /tmp/netlify_pat)
 rm -f /tmp/netlify_pat
@@ -475,9 +498,9 @@ try {
   if ($proc2 -and -not $proc2.HasExited) { $proc2.Kill() | Out-Null }
 }
 
-# 3) Execute the inner script with the right env
+# 3) Execute the inner script with the right env (stable arg ordering)
 $envList = @("-e","HOST_TZ_OFFSET=$HOST_TZ_OFFSET")
 if ($DIAGNOSE)  { $envList += @("-e","DIAGNOSE=$DIAGNOSE") }
 if ($TEAM_SLUG) { $envList += @("-e","TEAM_SLUG=$TEAM_SLUG") }
-
-docker exec -it @envList "$CONTAINER_NAME" sh -lc "/bin/sh /tmp/deploy_inner.sh"
+$execArgs = @("exec","-it") + $envList + @("$CONTAINER_NAME","sh","-lc","/bin/sh /tmp/deploy_inner.sh")
+& docker @execArgs
