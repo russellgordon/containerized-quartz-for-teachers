@@ -17,9 +17,9 @@ import unicodedata
 from pathlib import Path
 from collections import Counter
 
-
 # ---- Host OS signaling & example command helper -----------------------------
 _HOST_OS = "unknown"
+
 def _is_windows(host_os: str) -> bool:
     return (host_os or "").lower() == "windows"
 
@@ -28,7 +28,6 @@ def _cmd_example(script_base: str, course, section, host_os: str) -> str:
 # ----------------------------------------------------------------------------
 
 # ---------- Netlify name sanitizer ----------
-
 def sanitize_netlify_name(name: str) -> str:
     """
     Produce a Netlify-safe subdomain from a repo or site name.
@@ -41,11 +40,10 @@ def sanitize_netlify_name(name: str) -> str:
     return name or "site"
 
 # ---------- Teacher profile (unchanged) ----------
-
 COURSES_ROOT = Path("/teaching/courses")
-# New, hidden, less enticing global secrets root
+# Hidden global store for non-secret preferences (e.g., teacher profile)
 GLOBAL_SECRETS_ROOT = COURSES_ROOT / ".internal"
-# Legacy path (for migration)
+# Legacy path (kept only to migrate profile.json, not tokens)
 OLD_GLOBAL_SECRETS_ROOT = COURSES_ROOT / "_secrets"
 
 def _profile_path() -> Path:
@@ -54,7 +52,7 @@ def _profile_path() -> Path:
 def _ensure_courses_gitignore():
     """
     Ensure /teaching/courses/.gitignore exists and ignores:
-      - /.internal/ (new hidden store)
+      - /.internal/ (hidden store for small prefs)
       - /_backups/  (backups should never be committed)
     Idempotent: only adds missing lines.
     """
@@ -73,7 +71,6 @@ def _ensure_courses_gitignore():
                 existing = gi_path.read_text(encoding="utf-8").splitlines()
             except Exception:
                 existing = []
-        # Build new content preserving existing lines
         new_lines = existing[:]
         def ensure(line: str):
             if line not in new_lines:
@@ -125,17 +122,16 @@ def get_or_prompt_teacher_last_name() -> str:
     if ln:
         return ln
     # First run under this /teaching/courses folder
-    raw = input("👋 First time setup... what is your last name? (letters only): ").strip()
+    raw = input(" First time setup... what is your last name? (letters only): ").strip()
     ln = sanitize_last_name(raw)
     while not ln:
         raw = input("Please enter letters only for your last name (e.g., 'Gordon'): ").strip()
         ln = sanitize_last_name(raw)
     save_teacher_last_name(ln)
-    print(f"📝 Saved teacher last name for future deploys: {ln}")
+    print(f" Saved teacher last name for future deploys: {ln}")
     return ln
 
 # ---------- Timezone helpers ----------
-
 def parse_host_tz() -> dt.tzinfo:
     """
     Parse HOST_TZ_OFFSET from env in ±HHMM form (e.g., -0400, +0530).
@@ -162,195 +158,7 @@ def prompt(text: str, default: str | None = None) -> str:
         return resp or default
     return input(f"{text}: ").strip()
 
-# =========================================================
-#   GLOBAL token storage (obfuscated, hidden dotfolder)
-#   Location: /teaching/courses/.internal/{.key,tokens.json}
-#   (migrates from legacy /teaching/courses/_secrets)
-# =========================================================
-
-def _global_secrets_paths() -> tuple[Path, Path]:
-    """
-    Returns (key_path, tokens_path) under the global secrets root.
-    """
-    key_path = GLOBAL_SECRETS_ROOT / ".key"
-    tokens_path = GLOBAL_SECRETS_ROOT / "tokens.json"
-    return key_path, tokens_path
-
-def _legacy_global_secrets_paths() -> tuple[Path, Path]:
-    """
-    Legacy: /teaching/courses/_secrets
-    """
-    key_path = OLD_GLOBAL_SECRETS_ROOT / ".key"
-    tokens_path = OLD_GLOBAL_SECRETS_ROOT / "tokens.json"
-    return key_path, tokens_path
-
-def _load_or_create_key_global() -> bytes:
-    key_path, _ = _global_secrets_paths()
-    if key_path.exists():
-        k = key_path.read_bytes()
-        if k:
-            return k
-    _ensure_global_secrets_dir()
-    k = os.urandom(32)
-    key_path.write_bytes(k)
-    try:
-        os.chmod(key_path, 0o600)
-    except Exception:
-        pass
-    return k
-
-def _xor(data: bytes, key: bytes) -> bytes:
-    return bytes([b ^ key[i % len(key)] for i, b in enumerate(data)])
-
-def _save_token_global(label: str, token: str):
-    _ensure_global_secrets_dir()
-    key = _load_or_create_key_global()
-    _, tokens_path = _global_secrets_paths()
-    obf = base64.b64encode(_xor(token.encode("utf-8"), key)).decode("ascii")
-    data = {}
-    if tokens_path.exists():
-        try:
-            data = json.loads(tokens_path.read_text(encoding="utf-8"))
-        except Exception:
-            data = {}
-    if "tokens" not in data:
-        data["tokens"] = {}
-    # NOTE: omit "note" field entirely
-    data["tokens"][label] = {
-        "obf": obf,
-        "ts": NOW.isoformat(timespec="seconds"),
-        "scope": "global"
-    }
-    tokens_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-    try:
-        os.chmod(tokens_path, 0o600)
-    except Exception:
-        pass
-
-def _load_token_global(label: str) -> str | None:
-    key_path, tokens_path = _global_secrets_paths()
-    if not tokens_path.exists() or not key_path.exists():
-        return None
-    try:
-        data = json.loads(tokens_path.read_text(encoding="utf-8"))
-        entry = (data.get("tokens") or {}).get(label)
-        if not entry:
-            return None
-        obf_b = base64.b64decode(entry["obf"])
-        key = key_path.read_bytes()
-        return _xor(obf_b, key).decode("utf-8")
-    except Exception:
-        return None
-
-def _maybe_migrate_global_from_legacy():
-    """
-    If legacy global secrets exist at /teaching/courses/_secrets and the new hidden
-    store doesn't yet have content, migrate tokens (re-obfuscating without 'note')
-    and copy the teacher profile. Then delete the legacy folder.
-    """
-    _ensure_courses_gitignore()
-    old_key_path, old_tokens_path = _legacy_global_secrets_paths()
-    new_key_path, new_tokens_path = _global_secrets_paths()
-
-    migrated_any = False
-
-    # Migrate teacher profile.json if present and missing in new store
-    try:
-        old_profile = OLD_GLOBAL_SECRETS_ROOT / "profile.json"
-        new_profile = GLOBAL_SECRETS_ROOT / "profile.json"
-        if old_profile.exists() and not new_profile.exists():
-            _ensure_global_secrets_dir()
-            new_profile.write_text(old_profile.read_text(encoding="utf-8"), encoding="utf-8")
-            try:
-                os.chmod(new_profile, 0o600)
-            except Exception:
-                pass
-            migrated_any = True
-    except Exception:
-        pass
-
-    # Migrate tokens by *decoding* with old key and *re-saving* with new key (no 'note')
-    try:
-        if old_key_path.exists() and old_tokens_path.exists():
-            with old_tokens_path.open("r", encoding="utf-8") as f:
-                old_data = json.load(f)
-            old_key = old_key_path.read_bytes()
-            old_tokens = (old_data.get("tokens") or {})
-            for label, entry in old_tokens.items():
-                try:
-                    obf_b = base64.b64decode(entry.get("obf", ""))
-                    token_plain = _xor(obf_b, old_key).decode("utf-8")
-                    # Save into new store if missing
-                    if _load_token_global(label) is None:
-                        _save_token_global(label, token_plain)
-                        migrated_any = True
-                except Exception:
-                    continue
-    except Exception:
-        pass
-
-    # Remove legacy folder if it exists
-    removed_legacy = False
-    try:
-        if OLD_GLOBAL_SECRETS_ROOT.exists():
-            shutil.rmtree(OLD_GLOBAL_SECRETS_ROOT)
-            removed_legacy = True
-    except Exception as e:
-        print(f"ℹ️ Couldn't remove legacy /_secrets: {e}")
-
-    if migrated_any or removed_legacy:
-        if removed_legacy:
-            print("🔁 Migrated global secrets to hidden store at /.internal and removed legacy /_secrets folder.")
-        else:
-            print("🔁 Migrated global secrets to hidden store at /.internal.")
-
-# --------- Back-compat: per-course token support (migrate) ---------
-
-def _course_secrets_paths(course_dir: Path) -> tuple[Path, Path, Path]:
-    secrets_dir = course_dir / ".secrets"
-    key_path = secrets_dir / ".key"
-    tokens_path = secrets_dir / "tokens.json"
-    return secrets_dir, key_path, tokens_path
-
-def _load_token_course(course_dir: Path, label: str) -> str | None:
-    secrets_dir, key_path, tokens_path = _course_secrets_paths(course_dir)
-    if not tokens_path.exists() or not key_path.exists():
-        return None
-    try:
-        data = json.loads(tokens_path.read_text(encoding="utf-8"))
-        entry = (data.get("tokens") or {}).get(label)
-        if not entry:
-            return None
-        obf_b = base64.b64decode(entry["obf"])
-        key = key_path.read_bytes()
-        return _xor(obf_b, key).decode("utf-8")
-    except Exception:
-        return None
-
-def _maybe_migrate_course_tokens_to_global(course_dir: Path):
-    """
-    If old per-course tokens exist and no global token yet, copy them into global store.
-    """
-    migrated = []
-    for label in ("github", "netlify"):
-        if _load_token_global(label) is None:
-            t = _load_token_course(course_dir, label)
-            if t:
-                _save_token_global(label, t)
-                migrated.append(label)
-    if migrated:
-        print(f"🔁 Migrated per-course tokens to global store: {', '.join(migrated)}")
-
-# ---------- Netlify helpers ----------
-
-def read_netlify_token_secure() -> str:
-    import getpass
-    print("\n🔐 A Netlify Personal Access Token is required.")
-    print("   Where to create it:")
-    print("   • Netlify → User settings → Applications → Personal access tokens → New access token")
-    print("   • Recommended: set **No expiration** so you won’t be prompted again across courses/years.")
-    return getpass.getpass("NETLIFY_PERSONAL_ACCESS_TOKEN (hidden as you type): ").strip()
-
+# ---------- Netlify API helpers ----------
 def netlify_api(method: str, path: str, token: str, payload: dict | None = None, headers: dict | None = None, data: bytes | None = None) -> dict:
     base = "https://api.netlify.com/api/v1"
     url = f"{base}{path}"
@@ -390,7 +198,6 @@ def _extract_json_from_error(err: Exception) -> dict | None:
 def _is_netlify_name_conflict(err: Exception) -> bool:
     s = str(err).lower()
     if "422" in s and ("unique" in s or "already" in s or "taken" in s or "exists"):
-
         return True
     data = _extract_json_from_error(err)
     if isinstance(data, dict):
@@ -405,32 +212,24 @@ def _is_netlify_name_conflict(err: Exception) -> bool:
     return False
 
 def suggest_site_base(course_code: str, section: str, teacher_last_name: str) -> str:
-    """
-    Example: ICD2O + 1 + gordon -> icd2o-s1-2025-gordon
-    """
+    """Example: ICD2O + 1 + gordon -> icd2o-s1-2025-gordon"""
     course = (course_code or "").lower()
     sec = f"s{section}"
     base = f"{course}-{sec}-{NOW.year}-{teacher_last_name}"
     return sanitize_netlify_name(base)
 
-def maybe_create_netlify_site_simple(token: str,
-                                     team_slug: str | None,
-                                     course_code: str | None,
-                                     section: str | None,
-                                     teacher_last_name: str | None) -> dict:
+def maybe_create_netlify_site_simple(token: str, team_slug: str | None, course_code: str | None, section: str | None, teacher_last_name: str | None) -> dict:
     """
     Create a Netlify site WITHOUT linking to a Git provider.
-    POST /api/v1/sites  (or /api/v1/accounts/{team_slug}/sites)
+    POST /api/v1/sites (or /api/v1/accounts/{team_slug}/sites)
     If the chosen name is taken, prompt for a different one.
     """
     if teacher_last_name and course_code and section:
         base = suggest_site_base(course_code, section, teacher_last_name)
     else:
         base = sanitize_netlify_name(f"{course_code or 'course'}-s{section or '1'}-{NOW.year}")
-
     site_name = prompt("Enter Netlify site name", default=base).strip() or base
     path = f"/accounts/{team_slug}/sites" if team_slug else "/sites"
-
     attempt = 0
     while True:
         payload = {
@@ -444,8 +243,8 @@ def maybe_create_netlify_site_simple(token: str,
             if _is_netlify_name_conflict(e):
                 attempt += 1
                 suggestion = f"{base}-{attempt:02d}"
-                print(f"⚠️  Netlify site name '{site_name}' is not available (already in use).")
-                print("    Tip: names must be globally unique across Netlify and use letters, numbers, and hyphens.")
+                print(f"⚠️ Netlify site name '{site_name}' is not available (already in use).")
+                print(" Tip: names must be globally unique across Netlify and use letters, numbers, and hyphens.")
                 new_name = prompt("Choose a different Netlify site name (or 'q' to cancel)", default=suggestion).strip()
                 if new_name.lower() in {"q", "quit", "exit"}:
                     raise RuntimeError("User cancelled Netlify site creation after name conflict.") from e
@@ -454,7 +253,6 @@ def maybe_create_netlify_site_simple(token: str,
             raise
 
 # ---------- Stable site marker (new) + migration from legacy ----------
-
 def _stable_marker_dir(course_dir: Path) -> Path:
     return course_dir / ".netlify_sites"
 
@@ -466,106 +264,93 @@ def _legacy_marker_path(section_dir: Path) -> Path:
 
 def load_netlify_marker(course_dir: Path, section_dir: Path, section: str | int) -> dict | None:
     """
-    Prefer stable marker at <COURSE>/.netlify_sites/section<N>.json.
-    If not found, migrate legacy marker from <SECTION_DIR>/.netlify_site.json.
+    Prefer stable marker at /.netlify_sites/section.json.
+    If not found, migrate legacy marker from /.netlify_site.json.
     """
-    # Try stable path
-    stable_path = _stable_marker_path(course_dir, section)
-    if stable_path.exists():
+    stable = _stable_marker_path(course_dir, section)
+    if stable.exists():
         try:
-            return json.loads(stable_path.read_text(encoding="utf-8"))
+            return json.loads(stable.read_text(encoding="utf-8"))
         except Exception:
             pass
-
-    # Migrate legacy marker if present
     legacy = _legacy_marker_path(section_dir)
     if legacy.exists():
         try:
             data = json.loads(legacy.read_text(encoding="utf-8"))
-        except Exception:
-            data = None
-        if isinstance(data, dict):
-            save_netlify_marker(course_dir, section, data)
+            # migrate
+            _stable_marker_dir(course_dir).mkdir(parents=True, exist_ok=True)
+            stable.write_text(json.dumps(data, indent=2), encoding="utf-8")
+            try:
+                os.chmod(stable, 0o600)
+            except Exception:
+                pass
             try:
                 legacy.unlink()
-                print("🔁 Migrated Netlify site marker to stable location and removed legacy file.")
             except Exception:
-                print("ℹ️ Migrated Netlify site marker; couldn't remove legacy file.")
+                pass
+            print(" Migrated Netlify site marker to stable location.")
             return data
-
+        except Exception:
+            return None
     return None
 
-def save_netlify_marker(course_dir: Path, section: str | int, site_obj: dict):
+def save_netlify_marker(course_dir: Path, section: str | int, site: dict):
     _stable_marker_dir(course_dir).mkdir(parents=True, exist_ok=True)
-    keep = {
-        "id": site_obj.get("id"),
-        "name": site_obj.get("name"),
-        "url": site_obj.get("ssl_url") or site_obj.get("url"),
-        "admin_url": site_obj.get("admin_url"),
-    }
-    _stable_marker_path(course_dir, section).write_text(json.dumps(keep, indent=2), encoding="utf-8")
+    p = _stable_marker_path(course_dir, section)
+    p.write_text(json.dumps(site, indent=2), encoding="utf-8")
+    try:
+        os.chmod(p, 0o600)
+    except Exception:
+        pass
 
-# ---------- Shared path filters ----------
+# ---------- Delta deploy helpers ----------
+def _sha1_bytes(data: bytes) -> str:
+    h = hashlib.sha1()
+    h.update(data)
+    return h.hexdigest()
 
-_IGNORED_BASENAMES = {".DS_Store", "Thumbs.db"}
-
-def _normalize_rel(rel: str) -> str:
-    # Normalize to NFC, ensure POSIX separators
-    rel = rel.replace("\\", "/")
-    rel = unicodedata.normalize("NFC", rel)
-    return rel
-
-def _should_skip_rel(rel: str) -> bool:
-    # Skip macOS AppleDouble files and .git artifacts and control chars in paths
-    parts = rel.split("/")
-    if any(part.startswith("._") for part in parts):
-        return True
-    if parts and parts[0].startswith(".git"):
-        return True
-    if parts and parts[-1] in _IGNORED_BASENAMES:
-        return True
-    if any(ord(c) < 32 for c in rel):  # control chars
-        return True
-    return False
-
-# ---------- Delta deploy (file digest API) ----------
-
-def _sha1_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
+def _sha1_file(path: Path, bufsize: int = 1024 * 1024) -> str:
     h = hashlib.sha1()
     with path.open("rb") as f:
         while True:
-            b = f.read(chunk_size)
+            b = f.read(bufsize)
             if not b:
                 break
             h.update(b)
     return h.hexdigest()
 
-def _build_files_manifest(root: Path):
+def _iter_public_files(root: Path):
+    for p in sorted(root.rglob("*")):
+        if p.is_file():
+            # skip obvious junk
+            name = p.name.lower()
+            if name in {".ds_store"}:
+                continue
+            yield p
+
+def _remote_path_for(root: Path, file_path: Path) -> str:
+    rel = file_path.relative_to(root).as_posix()
+    return "/" + rel  # Netlify expects leading slash
+
+def _build_files_manifest(root: Path) -> tuple[dict, dict]:
     """
-    Build:
-      - files_map:  { "/remote/path": "sha1hex", ... }
-      - sha_to_pairs: { "sha1hex": [ ("/remote/path", "local/rel"), ... ] }
-    Remote paths are NFC-normalized and start with "/".
+    Return:
+      - files_map: { "/path/on/site": "sha1digest" }
+      - sha_to_pairs: { "sha1": [(remote_path, relative_local_path), ...] }
     """
     files_map: dict[str, str] = {}
     sha_to_pairs: dict[str, list[tuple[str, str]]] = {}
-    for p in sorted(root.rglob("*")):
-        if not p.is_file():
-            continue
-        local_rel = str(p.relative_to(root))
-        local_rel = _normalize_rel(local_rel)
-        if _should_skip_rel(local_rel):
-            continue
-        remote_key = "/" + local_rel  # Netlify expects leading slash
-        sha = _sha1_file(p)
-        files_map[remote_key] = sha
-        sha_to_pairs.setdefault(sha, []).append((remote_key, local_rel))
+    for f in _iter_public_files(root):
+        remote = _remote_path_for(root, f)
+        digest = _sha1_file(f)
+        files_map[remote] = digest
+        sha_to_pairs.setdefault(digest, []).append((remote, f.relative_to(root).as_posix()))
     return files_map, sha_to_pairs
 
 def create_delta_deploy(site_id: str, token: str, root: Path, draft: bool = False, async_req: bool = False) -> dict:
     """
-    Step 1: POST /sites/{site_id}/deploys with manifest {"files":{...}, "draft":bool?, "async":bool?}
-    Returns deploy object: includes "id" and "required".
+    Step 1: POST /sites/{site_id}/deploys with {"files": { "/path": "sha1", ... }}
+    Returns a list of "required" digests to upload via PUTs.
     """
     files_map, sha_to_pairs = _build_files_manifest(root)
     payload = {"files": files_map}
@@ -579,25 +364,23 @@ def create_delta_deploy(site_id: str, token: str, root: Path, draft: bool = Fals
 
 def _upload_required_files(deploy_id: str, token: str, root: Path, required_shas: list[str], sha_to_pairs: dict[str, list[tuple[str, str]]]):
     """
-    Step 2: PUT each required file to /deploys/{deploy_id}/files/<remote/path>
+    Step 2: PUT each required file to /deploys/{deploy_id}/files/<path>
     Only one path per required digest is necessary.
     """
     if not required_shas:
-        print("📦 No file uploads needed (all content already present on Netlify).")
+        print(" No file uploads needed (all content already present on Netlify).")
         return
-
     uploaded = 0
     for sha in required_shas:
         pairs = sha_to_pairs.get(sha) or []
         if not pairs:
-            print(f"⚠️  Netlify requested unknown digest {sha[:8]}…; skipping.")
+            print(f"⚠️ Netlify requested unknown digest {sha[:8]}…; skipping.")
             continue
         remote_path, local_rel = pairs[0]
         local_file = root / local_rel
         if not local_file.exists():
-            print(f"⚠️  Missing local file for {remote_path}; skipping.")
+            print(f"⚠️ Missing local file for {remote_path}; skipping.")
             continue
-
         # Encode remote path for URL; escape reserved chars safely
         encoded_path = urllib.parse.quote(remote_path.lstrip("/"), safe="/")
         with local_file.open("rb") as f:
@@ -606,13 +389,11 @@ def _upload_required_files(deploy_id: str, token: str, root: Path, required_shas
         netlify_api("PUT", f"/deploys/{deploy_id}/files/{encoded_path}", token, headers=headers, data=data)
         uploaded += 1
         if uploaded % 25 == 0:
-            print(f"   …uploaded {uploaded}/{len(required_shas)} required files")
-
-    print(f"⬆️  Uploaded {uploaded} file(s) required by Netlify.")
+            print(f" …uploaded {uploaded}/{len(required_shas)} required files")
+    print(f"⬆️ Uploaded {uploaded} file(s) required by Netlify.")
 
 # ---------- Diagnostics (new) ----------
-
-_IMG_EXT = {"jpg","jpeg","png","gif","webp","svg","bmp","tiff","ico","avif"}
+_IMG_EXT  = {"jpg","jpeg","png","gif","webp","svg","bmp","tiff","ico","avif"}
 _FONT_EXT = {"woff","woff2","ttf","otf","eot"}
 _SCRIPT_EXT = {"js","mjs"}
 _STYLE_EXT = {"css"}
@@ -640,24 +421,23 @@ def print_required_diagnostics(required_shas: list[str], sha_to_pairs: dict[str,
     for sha in required_shas:
         pairs = sha_to_pairs.get(sha) or []
         if not pairs:  # shouldn't happen
-            items.append((sha, "<unknown>", "<unknown>"))
+            items.append((sha, "", ""))
         else:
             items.append((sha, pairs[0][0], pairs[0][1]))
 
     # Counts by category
     cat = Counter(_category_for(rel) for _, _, rel in items)
     total = len(items)
-
-    print("\n🔎 Diagnostics: Breakdown of 'required' files")
+    print("\n Diagnostics: Breakdown of 'required' files")
     for k in ("html","styles","scripts","data","images","fonts","media","other"):
         if cat.get(k):
-            print(f"  • {k:7s}: {cat[k]}")
-    print(f"  • total  : {total}")
+            print(f" • {k:7s}: {cat[k]}")
+    print(f" • total : {total}")
 
     # Show a small sample (up to 30)
-    print("\n🧾 Sample (first up to 30 paths Netlify requested):")
+    print("\n Sample (first up to 30 paths Netlify requested):")
     for sha, _, rel in items[:30]:
-        print(f"   - {rel}  [{sha[:8]}…]")
+        print(f" - {rel} [{sha[:8]}…]")
 
     # Persist full list
     out = public_dir / "_required_last_deploy.txt"
@@ -668,39 +448,43 @@ def print_required_diagnostics(required_shas: list[str], sha_to_pairs: dict[str,
             f.write("Count by category:\n")
             for k in ("html","styles","scripts","data","images","fonts","media","other"):
                 if cat.get(k):
-                    f.write(f"  - {k:7s}: {cat[k]}\n")
-            f.write(f"  - total  : {total}\n\n")
-            f.write("Full list (sha  remote_path  local_rel):\n")
+                    f.write(f" - {k:7s}: {cat[k]}\n")
+            f.write(f" - total : {total}\n\n")
+            f.write("Full list (sha remote_path local_rel):\n")
             for sha, remote, rel in items:
-                f.write(f"{sha}  {remote}  {rel}\n")
-        print(f"\n📝 Wrote full list to: {out}")
+                f.write(f"{sha} {remote} {rel}\n")
+        print(f"\n Wrote full list to: {out}")
     except Exception as e:
         print(f"⚠️ Could not write diagnostics file: {e}")
 
 # ---------- Main ----------
-
 def main():
-    p = argparse.ArgumentParser(description="Deploy a built section site directly to Netlify using delta (file-digest) uploads only.")
-    p.add_argument("--host-os", choices=["windows","mac","linux","unknown"], default="unknown", help="Host OS passed by deploy launchers")
+    p = argparse.ArgumentParser(
+        description="Deploy a built section site directly to Netlify using delta (file-digest) uploads only."
+    )
+    p.add_argument("--host-os", choices=["windows","mac","linux","unknown"], default="unknown",
+                   help="Host OS passed by deploy launchers")
     p.add_argument("--course", required=True, help="Course code, e.g., ICS3U")
     p.add_argument("--section", required=True, help="Section number, e.g., 1")
-    p.add_argument("--diagnose", action="store_true", help="Print a breakdown of required files and save list to _required_last_deploy.txt")
-    # NEW: optional team slug flag (advanced users only)
+    p.add_argument("--diagnose", action="store_true",
+                   help="Print a breakdown of required files and save list to _required_last_deploy.txt")
+    # optional team slug flag (advanced users only)
     p.add_argument("--team", "--team-slug", dest="team", default=None,
                    help="Netlify team slug (advanced). If omitted, your personal team is used.")
     args = p.parse_args()
+
     global _HOST_OS
     _HOST_OS = getattr(args, 'host_os', 'unknown')
 
-    # Ensure ignores and migrate legacy global secrets early
+    # Keep .gitignore hygiene and migrate *profile only* from legacy if present.
     _ensure_courses_gitignore()
-    _maybe_migrate_global_from_legacy()
+    # (Do NOT migrate or touch any token stores here; host launcher handles that.)
 
-    # Path: /teaching/courses/<COURSE>/.merged_output/section<NUM>
+    # Path: /teaching/courses/<COURSE>/.merged_output/section<SECTION>
     section_dir = Path(f"/teaching/courses/{args.course}/.merged_output/section{args.section}").resolve()
     if not section_dir.exists():
         print(f"❌ Section directory not found: {section_dir}")
-        print(f"👉 Please run the preview/build first:")
+        print(f" Please run the preview/build first:")
         print(f"{_cmd_example('preview', args.course, args.section, _HOST_OS)}")
         sys.exit(1)
 
@@ -708,13 +492,12 @@ def main():
     public_dir = section_dir / "public"
     if not public_dir.exists() or not any(public_dir.iterdir()):
         print(f"❌ Built site not found at: {public_dir}")
-        print(f"👉 Please build before deploying. For example:")
+        print(f" Please build before deploying.\n For example:")
         print(f"{_cmd_example('preview', args.course, args.section, _HOST_OS)}")
         sys.exit(1)
 
-    # Determine course dir (for back-compat token migration)
+    # Determine course dir (for stable marker)
     course_dir = section_dir.parent.parent  # .../<COURSE>/.merged_output/section#
-    _maybe_migrate_course_tokens_to_global(course_dir)
 
     # Capture teacher last name for naming
     try:
@@ -722,20 +505,20 @@ def main():
     except Exception:
         teacher_last_name = None
 
-    print(f"📁 Deploying from local build: {public_dir}")
-    print(f"🕒 Timestamp TZ offset: {NOW.strftime('%z')}")
+    print(f" Deploying from local build: {public_dir}")
+    print(f" Timestamp TZ offset: {NOW.strftime('%z')}")
 
-    # Load or prompt for Netlify token (GLOBAL). Also respect env var if present.
-    netlify_token = os.getenv("NETLIFY_AUTH_TOKEN") or _load_token_global("netlify")
-    if netlify_token:
-        print("🔐 Using Netlify token (env or saved global).")
-    else:
-        netlify_token = read_netlify_token_secure()
-        if not netlify_token:
-            print("❌ No token provided.")
-            sys.exit(1)
-        _save_token_global("netlify", netlify_token)
-        print("💾 Saved Netlify token for future deploys (GLOBAL for all courses).")
+    # --- Token handling (new, simplified) ---
+    # Only read from environment; host launcher (deploy.sh/.ps1) must inject it.
+    netlify_token = os.getenv("NETLIFY_AUTH_TOKEN")
+    if not netlify_token:
+        print("❌ Netlify token missing.")
+        print(" This script now expects the token to be passed via environment by the host launcher.")
+        print(" If you ran this directly, create a Personal Access Token here:")
+        print("   https://app.netlify.com/user/applications#personal-access-tokens")
+        print(" Then set it as NETLIFY_AUTH_TOKEN and re-run via your platform launcher:")
+        print(f"   {_cmd_example('deploy', args.course, args.section, _HOST_OS)}")
+        sys.exit(1)
 
     # Discover or create the Netlify site (no repo link)
     site_marker = load_netlify_marker(course_dir, section_dir, args.section)
@@ -744,13 +527,13 @@ def main():
     if site_marker:
         site_id = site_marker.get("id")
         site_url = site_marker.get("url") or site_marker.get("admin_url")
-        print("🌐 Using existing Netlify site for this section.")
+        print(" Using existing Netlify site for this section.")
         if site_url:
-            print(f"   Site: {site_url}")
+            print(f" Site: {site_url}")
     else:
         team_slug = args.team  # <-- use CLI flag; no interactive prompt
         if team_slug:
-            print(f"👥 Using Netlify team: {team_slug}")
+            print(f" Using Netlify team: {team_slug}")
         try:
             site = maybe_create_netlify_site_simple(
                 token=netlify_token,
@@ -763,14 +546,14 @@ def main():
             site_id = site.get("id")
             site_url = site.get("ssl_url") or site.get("url")
             admin_url = site.get("admin_url")
-            print("🎉 Netlify site created.")
+            print(" Netlify site created.")
             if site_url:
-                print(f"   Live URL: {site_url}")
+                print(f" Live URL: {site_url}")
             if admin_url:
-                print(f"   Admin:    {admin_url}")
+                print(f" Admin: {admin_url}")
         except Exception as e:
             print("❌ Failed to create Netlify site.")
-            print(f"   Details: {e}")
+            print(f" Details: {e}")
             sys.exit(1)
 
     if not site_id:
@@ -778,25 +561,25 @@ def main():
         sys.exit(1)
 
     # Always delta deploy to PRODUCTION (as requested)
-    print("🧮 Preparing delta deploy manifest…")
+    print(" Preparing delta deploy manifest…")
     try:
         manifest_resp = create_delta_deploy(site_id, netlify_token, public_dir, draft=False, async_req=False)
         deploy_id = manifest_resp.get("id")
         required = manifest_resp.get("required") or []
         sha_to_pairs = manifest_resp.get("_sha_to_pairs") or {}
-        print(f"📋 Netlify requires {len(required)} file(s) for this deploy.")
+        print(f" Netlify requires {len(required)} file(s) for this deploy.")
         if args.diagnose:
             print_required_diagnostics(required, sha_to_pairs, public_dir)
         _upload_required_files(deploy_id, netlify_token, public_dir, required, sha_to_pairs)
         print("✅ Delta deploy created (production).")
         if deploy_id:
-            print(f"   Deploy ID: {deploy_id}")
+            print(f" Deploy ID: {deploy_id}")
         if site_url:
-            print(f"   Site URL:  {site_url}")
+            print(f" Site URL: {site_url}")
     except Exception as e:
         print("❌ Delta deploy failed.")
-        print(f"   Details: {e}")
-        print("   Tip: Check for unusual filenames (control chars) and ensure your token has access to this team/site.")
+        print(f" Details: {e}")
+        print(" Tip: Check for unusual filenames (control chars) and ensure your token has access to this team/site.")
         sys.exit(1)
 
     print("\n✅ Deploy complete.")

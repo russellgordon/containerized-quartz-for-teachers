@@ -1,198 +1,483 @@
+#!/usr/bin/env pwsh
 #requires -Version 5.1
 $ErrorActionPreference = 'Stop'
-# ---- Determine host OS for help text ---------------------------------
-function Get-HostOS {
-    try { if ($IsWindows) { return 'windows' } } catch {}
-    try { if ([System.Environment]::OSVersion.Platform.ToString() -eq 'Win32NT') { return 'windows' } } catch {}
-    try {
-        if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Windows)) { return 'windows' }
-        if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::OSX))     { return 'mac' }
-        if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Linux))   { return 'linux' }
-    } catch {}
-    if ($env:OS -eq 'Windows_NT') { return 'windows' }
-    try {
-        $u = (uname -s 2>$null)
-        if ($u -match 'Darwin') { return 'mac' }
-        if ($u -match 'Linux')  { return 'linux' }
-    } catch {}
-    return 'unknown'
-}
-$__hostOS = Get-HostOS
-if ($__hostOS -eq 'windows') {
-    $SELF_CMD = '.\deploy.bat'
-} else {
-    $SELF_CMD = './deploy.sh'
-}
-# Cross-script command hints for help text
-if ($__hostOS -eq 'windows') {
-    $SETUP_CMD   = '.\setup.bat'
-    $PREVIEW_CMD = '.\preview.bat'
-    $DEPLOY_CMD  = '.\deploy.bat'
-} else {
-    $SETUP_CMD   = './setup.sh'
-    $PREVIEW_CMD = './preview.sh'
-    $DEPLOY_CMD  = './deploy.sh'
-}
-
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
 
-# ======================
-# deploy.ps1 — Windows equivalent of deploy.sh
-# ======================
+function Show-Help {
+@"
+Usage:
+  .\deploy.bat <COURSE_CODE> <SECTION_NUMBER> [--diagnose] [--team <TEAM_SLUG>] [--reset-token|--logout]
 
-# ---- Usage ----
-if ($args.Count -lt 2 -or $args[0] -in @('--help','-h')) {
-    Write-Host ""
-    Write-Host "USAGE:"
-    Write-Host " $SELF_CMD <COURSE_CODE> <SECTION_NUMBER> [options]"
-    Write-Host ""
-    Write-Host "Required:"
-    Write-Host "  <COURSE_CODE>     e.g., ICS3U"
-    Write-Host "  <SECTION_NUMBER>  e.g., 1"
-    Write-Host ""
-    Write-Host "Options:"
-    Write-Host "  --team <TEAM_SLUG>    Deploy under a specific Netlify team (advanced)"
-    Write-Host "  --diagnose            Print extra diagnostics during deploy"
-    Write-Host "  --help, -h            Show this help and exit"
-    Write-Host ""
-    Write-Host "Notes:"
-    Write-Host "  - Deploys from /teaching/courses/<COURSE>/.merged_output/section<SECTION> inside the container."
-    Write-Host "  - You must build first (static site goes to 'public/' in that section folder)."
-    Write-Host "  - On first deploy you'll be prompted for a Netlify Personal Access Token; it's saved for reuse."
-    exit 1
+Examples:
+  .\deploy.bat ICS3U 1
+  .\deploy.bat ICS3U 1 --diagnose
+  .\deploy.bat ICS3U 1 --team my-org-slug
+
+Notes:
+- Deploys from /teaching/courses/<COURSE>/.merged_output/section<SECTION> inside the container.
+- You must build first (the static site goes to 'public/' in that section folder).
+- The Netlify Personal Access Token (PAT) is stored as a Windows Generic Credential and injected securely at runtime.
+- Use --reset-token (or --logout) to remove the saved PAT and re-link on next run.
+- If your course code ends with '0' (zero), you'll be prompted to correct it to 'O' for Open-level courses.
+"@ | Out-Host
 }
 
-# ---- Positional ----
-$COURSE  = $args[0].ToUpper()
-$SECTION = $args[1]
-if (-not ($SECTION -as [int])) { Write-Host "SECTION_NUMBER must be an integer. Got: $SECTION"; exit 1 }
-
-# ---- Flags ----
-$TEAM_SLUG = $null
-$DIAGNOSE  = $false
-$Passthru  = @()
-
-if ($args.Count -gt 2) {
-    $i = 2
-    while ($i -lt $args.Count) {
-        switch ($args[$i]) {
-            '--team'        { if ($i+1 -ge $args.Count) { Write-Host "--team requires a value"; exit 1 }; $TEAM_SLUG = $args[$i+1]; $i+=2; continue }
-            '--team-slug'   { if ($i+1 -ge $args.Count) { Write-Host "--team-slug requires a value"; exit 1 }; $TEAM_SLUG = $args[$i+1]; $i+=2; continue }
-            '--diagnose'    { $DIAGNOSE = $true; $i++; continue }
-            default         { $Passthru += $args[$i]; $i++; continue }
-        }
-    }
-}
-
-# ---- Guardrail: '0' vs 'O' ----
-if ($COURSE -match '^[A-Z]{3}[0-9]0$') {
-    $suggested = $COURSE.Substring(0, $COURSE.Length - 1) + 'O'
-    Write-Host ""
-    Write-Host "It looks like you entered '$COURSE' (ends with zero)."
-    Write-Host "Ontario 'Open' level course codes end with the LETTER 'O' (oh)."
-    $ans = Read-Host ("Fix course code to '{0}'? [Y/n]" -f $suggested)
-    if (($ans -eq '') -or ($ans -match '^(?i:y)$')) {
-        $COURSE = $suggested
-        Write-Host "Using corrected course code: $COURSE"
-    } else {
-        Write-Host "Continuing with: $COURSE"
-    }
-    Write-Host ""
-}
-
-# ---- Resolve script dir & host folders ----
-# Prefer $PSScriptRoot; fallback to Split-Path
-$scriptDir = $PSScriptRoot
-if (-not $scriptDir) { $scriptDir = Split-Path -Path $MyInvocation.MyCommand.Path -Parent }
-if (-not $scriptDir) { $scriptDir = Get-Location }
-Set-Location -LiteralPath $scriptDir
-
-$CoursesRoot = Join-Path (Get-Location) 'courses'
-if (-not (Test-Path -LiteralPath $CoursesRoot)) {
-    New-Item -ItemType Directory -Path $CoursesRoot -Force | Out-Null
-}
 function Normalize-HostPath([string]$p) {
-    if (-not $p) { return $p }
-    try { (Resolve-Path -LiteralPath $p).Path.TrimEnd('\','/') } catch { $p.TrimEnd('\','/') }
+  if (-not $p) { return $p }
+  try { $r = (Resolve-Path -LiteralPath $p).Path } catch { $r = $p }
+  return $r.TrimEnd('\','/')
 }
-$HOST_COURSES = Normalize-HostPath $CoursesRoot
 
-# ---- Container handling (mount-aware) ----
+# Ensure we run from the script directory
+$ScriptDir = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+if (-not $ScriptDir) { $ScriptDir = Get-Location }
+Set-Location -LiteralPath $ScriptDir
+
+# ======================
+# Defaults / constants
+# ======================
 $CONTAINER_NAME = 'teaching-quartz'
-function Test-ImagePresent([string]$ref) { try { docker image inspect "$ref" *> $null; $true } catch { $false } }
+$KEY_TARGET     = 'containerized-quartz-netlify'  # Windows Credential Manager target
+$TOKENS_FILE    = Join-Path -Path $ScriptDir -ChildPath 'courses\.internal\tokens.json'
+$KEY_FILE       = Join-Path -Path $ScriptDir -ChildPath 'courses\.internal\.key'
 
-# Use local 'teaching-quartz' if present; else pull Hub image
-$IMAGE = 'teaching-quartz'
-if (-not (Test-ImagePresent $IMAGE)) {
-    $IMAGE = 'rwhgrwhg/teaching-quartz:latest'
-    if (-not (Test-ImagePresent $IMAGE)) {
-        Write-Host "Pulling $IMAGE ..."
-        docker pull "$IMAGE" | Out-Host
-    }
+# ======================
+# Arg parsing
+# ======================
+if ($args.Count -lt 2) { Show-Help; exit 1 }
+
+$COURSE_CODE = $args[0].ToUpperInvariant()
+$SECTION_NUM = $args[1]
+$DIAGNOSE    = ''
+$TEAM_SLUG   = ''
+$RESET_TOKEN = $false
+
+for ($i = 2; $i -lt $args.Count; $i++) {
+  switch -Regex ($args[$i]) {
+    '^--help$|^-h$'      { Show-Help; exit 0 }
+    '^--diagnose$'       { $DIAGNOSE = '--diagnose'; continue }
+    '^--team$'           { if ($i + 1 -ge $args.Count) { Write-Host "Missing value for --team"; Show-Help; exit 1 }; $TEAM_SLUG = $args[$i+1]; $i++; continue }
+    '^--team=(.+)$'      { $TEAM_SLUG = $Matches[1]; continue }
+    '^--team-slug$'      { if ($i + 1 -ge $args.Count) { Write-Host "Missing value for --team-slug"; Show-Help; exit 1 }; $TEAM_SLUG = $args[$i+1]; $i++; continue }
+    '^--team-slug=(.+)$' { $TEAM_SLUG = $Matches[1]; continue }
+    '^--reset-token$'    { $RESET_TOKEN = $true; continue }
+    '^--logout$'         { $RESET_TOKEN = $true; continue }
+    default              { Write-Host "Unknown option: $($args[$i])"; Show-Help; exit 1 }
+  }
 }
+
+# Friendly guard: 'Open' course code ended with zero
+if ($COURSE_CODE -match '^[A-Z]{3}[0-9]0$') {
+  $suggested = $COURSE_CODE.Substring(0, $COURSE_CODE.Length-1) + 'O'
+  Write-Host ""
+  Write-Host ("It looks like you entered '{0}' (ends with zero)." -f $COURSE_CODE)
+  Write-Host "Ontario 'Open' level course codes end with the LETTER 'O' (oh)."
+  $suggestedCfg = Join-Path -Path $ScriptDir -ChildPath ("courses\{0}\course_config.json" -f $suggested)
+  $originalCfg  = Join-Path -Path $ScriptDir -ChildPath ("courses\{0}\course_config.json" -f $COURSE_CODE)
+  if ((Test-Path $suggestedCfg) -and -not (Test-Path $originalCfg)) {
+    Write-Host ("I see setup data for '{0}' on disk." -f $suggested)
+  }
+  $ans = Read-Host ("Fix course code to '{0}'? [Y/n]" -f $suggested)
+  if (-not $ans) { $ans = 'Y' }
+  if ($ans -match '^[Yy]$') {
+    $COURSE_CODE = $suggested
+    Write-Host ("Using corrected course code: {0}" -f $COURSE_CODE)
+  } else {
+    Write-Host ("Continuing with: {0}" -f $COURSE_CODE)
+  }
+  Write-Host ""
+}
+
+# ======================
+# Preflight checks
+# ======================
+$COURSE_DIR_HOST  = Normalize-HostPath (Join-Path -Path (Get-Location) -ChildPath ("courses\{0}" -f $COURSE_CODE))
+$MERGED_DIR_HOST  = Normalize-HostPath (Join-Path -Path $COURSE_DIR_HOST -ChildPath ".merged_output")
+$SECTION_DIR_HOST = Normalize-HostPath (Join-Path -Path $MERGED_DIR_HOST -ChildPath ("section{0}" -f $SECTION_NUM))
+$PUBLIC_DIR_HOST  = Normalize-HostPath (Join-Path -Path $SECTION_DIR_HOST -ChildPath "public")
+
+$HOST_TZ_OFFSET = (Get-Date).ToString('zzz').Replace(':','')
+Write-Host ("Host timezone offset: {0}" -f $HOST_TZ_OFFSET)
+
+if (-not (Test-Path -LiteralPath $COURSE_DIR_HOST)) {
+  Write-Host "Course folder not found on host:"
+  Write-Host " $COURSE_DIR_HOST"
+  Write-Host ""
+  Write-Host "Make sure you've run the course setup and/or preview steps."
+  Write-Host ("Try: .\preview.bat {0} {1}" -f $COURSE_CODE, $SECTION_NUM)
+  $coursesRoot = Join-Path -Path (Get-Location) -ChildPath 'courses'
+  if (Test-Path $coursesRoot) {
+    Write-Host ""
+    Write-Host "Available course folders:"
+    Get-ChildItem -LiteralPath $coursesRoot -Directory | ForEach-Object { " - $($_.Name)" } | Out-Host
+  }
+  exit 1
+}
+
+if (-not (Test-Path -LiteralPath $SECTION_DIR_HOST)) {
+  Write-Host "Section directory not found on host:"
+  Write-Host " $SECTION_DIR_HOST"
+  Write-Host ""
+  Write-Host "You likely need to build the merged output first:"
+  Write-Host (" .\preview.bat {0} {1}" -f $COURSE_CODE, $SECTION_NUM)
+  if (Test-Path -LiteralPath $MERGED_DIR_HOST) {
+    $existing = Get-ChildItem -LiteralPath $MERGED_DIR_HOST -Directory -Filter 'section*' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name
+    if ($existing) {
+      Write-Host ""
+      Write-Host ("Existing merged sections for {0}:" -f $COURSE_CODE)
+      $existing | ForEach-Object { " - $_" } | Out-Host
+    }
+  }
+  exit 1
+}
+
+if (-not (Test-Path -LiteralPath $PUBLIC_DIR_HOST) -or -not (Get-ChildItem -LiteralPath $PUBLIC_DIR_HOST -Force | Select-Object -First 1)) {
+  Write-Host "Built site not found at:"
+  Write-Host " $PUBLIC_DIR_HOST"
+  Write-Host ""
+  Write-Host "Build first:"
+  Write-Host (" .\preview.bat {0} {1} --build-only" -f $COURSE_CODE, $SECTION_NUM)
+  exit 1
+}
+
+# ======================
+# Netlify token (Windows Credential Manager + legacy migration)
+# ======================
+$CredCs = @'
+using System;
+using System.Runtime.InteropServices;
+
+public static class CredApi {
+  [DllImport("advapi32", CharSet=CharSet.Unicode, SetLastError=true)]
+  public static extern bool CredRead(string target, int type, int reservedFlag, out IntPtr pCredential);
+
+  [DllImport("advapi32", CharSet=CharSet.Unicode, SetLastError=true)]
+  public static extern bool CredWrite(ref CREDENTIAL userCredential, uint flags);
+
+  [DllImport("advapi32", SetLastError=true)]
+  public static extern void CredFree(IntPtr buffer);
+
+  [DllImport("advapi32", CharSet=CharSet.Unicode, SetLastError=true)]
+  public static extern bool CredDelete(string target, int type, int flags);
+
+  public const int CRED_TYPE_GENERIC = 1;
+  public const uint CRED_PERSIST_LOCAL_MACHINE = 2;
+
+  [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
+  public struct CREDENTIAL {
+    public uint Flags;
+    public uint Type;
+    public string TargetName;
+    public string Comment;
+    public System.Runtime.InteropServices.ComTypes.FILETIME LastWritten;
+    public uint CredentialBlobSize;
+    public IntPtr CredentialBlob;
+    public uint Persist;
+    public uint AttributeCount;
+    public IntPtr Attributes;
+    public string TargetAlias;
+    public string UserName;
+  }
+
+  public static string ReadSecret(string target) {
+    IntPtr pcred;
+    if (!CredRead(target, CRED_TYPE_GENERIC, 0, out pcred)) return null;
+    try {
+      CREDENTIAL cred = (CREDENTIAL) Marshal.PtrToStructure(pcred, typeof(CREDENTIAL));
+      if (cred.CredentialBlob == IntPtr.Zero || cred.CredentialBlobSize == 0) return null;
+      byte[] bytes = new byte[cred.CredentialBlobSize];
+      Marshal.Copy(cred.CredentialBlob, bytes, 0, (int)cred.CredentialBlobSize);
+      return System.Text.Encoding.UTF8.GetString(bytes);
+    } finally {
+      CredFree(pcred);
+    }
+  }
+
+  public static bool WriteSecret(string target, string username, string secret) {
+    byte[] bytes = System.Text.Encoding.UTF8.GetBytes(secret ?? "");
+    IntPtr blob = Marshal.AllocHGlobal(bytes.Length);
+    try {
+      Marshal.Copy(bytes, 0, blob, bytes.Length);
+      CREDENTIAL cred = new CREDENTIAL();
+      cred.Flags = 0;
+      cred.Type = CRED_TYPE_GENERIC;
+      cred.TargetName = target;
+      cred.UserName = username ?? Environment.UserName;
+      cred.CredentialBlobSize = (uint)bytes.Length;
+      cred.CredentialBlob = blob;
+      cred.Persist = CRED_PERSIST_LOCAL_MACHINE;
+      return CredWrite(ref cred, 0);
+    } finally {
+      Marshal.FreeHGlobal(blob);
+    }
+  }
+
+  public static bool DeleteSecret(string target) {
+    return CredDelete(target, CRED_TYPE_GENERIC, 0);
+  }
+}
+'@
+Add-Type -TypeDefinition $CredCs -Language CSharp -IgnoreWarnings
+
+function Get-TokenFromCredMan { [CredApi]::ReadSecret($KEY_TARGET) }
+function Set-TokenInCredMan([string]$token) {
+  $ok = [CredApi]::WriteSecret($KEY_TARGET, $env:USERNAME, $token)
+  if (-not $ok) { throw "Failed to write token to Windows Credential Manager." }
+}
+function Remove-TokenInCredMan { [CredApi]::DeleteSecret($KEY_TARGET) | Out-Null }
+
+function Test-TokenValid([string]$token) {
+  if (-not $token) { return $false }
+  try {
+    $r = Invoke-WebRequest -Uri 'https://api.netlify.com/api/v1/user' -Headers @{ Authorization = "Bearer $token" } -Method GET -UseBasicParsing -TimeoutSec 20
+    return ($r.StatusCode -ge 200 -and $r.StatusCode -lt 300)
+  } catch { return $false }
+}
+
+function Read-LegacyTokenXor {
+  if (-not (Test-Path $TOKENS_FILE) -or -not (Test-Path $KEY_FILE)) { return $null }
+  try {
+    $json = Get-Content -LiteralPath $TOKENS_FILE -Raw -Encoding UTF8 | ConvertFrom-Json
+    $obf  = $json.tokens.netlify.obf
+    if (-not $obf) { return $null }
+    $raw  = [Convert]::FromBase64String($obf)
+    $key  = [IO.File]::ReadAllBytes($KEY_FILE)
+    $out  = New-Object byte[] ($raw.Length)
+    for ($i=0; $i -lt $raw.Length; $i++) { $out[$i] = $raw[$i] -bxor $key[$i % $key.Length] }
+    return [Text.Encoding]::UTF8.GetString($out)
+  } catch { return $null }
+}
+function Read-LegacyTokenPlain {
+  if (-not (Test-Path $TOKENS_FILE)) { return $null }
+  try {
+    $txt     = Get-Content -LiteralPath $TOKENS_FILE -Raw -Encoding UTF8
+    $pattern = '(?i)"(netlify|netlify_token|NETLIFY_AUTH_TOKEN|token)"\s*:\s*"([^"]+)"'
+    $m       = [regex]::Match($txt, $pattern)
+    if ($m.Success) { return $m.Groups[2].Value }
+  } catch {}
+  return $null
+}
+function Prune-LegacyNetlifyEntry {
+  if (-not (Test-Path $TOKENS_FILE)) { return }
+  try {
+    $json = Get-Content -LiteralPath $TOKENS_FILE -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($json.tokens -and $json.tokens.netlify) {
+      $json.tokens.PSObject.Properties.Remove('netlify')
+      if ($json.tokens.PSObject.Properties.Count -gt 0) {
+        $json | ConvertTo-Json -Depth 20 | Out-File -LiteralPath $TOKENS_FILE -Encoding UTF8
+      } else {
+        Remove-Item -LiteralPath $TOKENS_FILE -Force
+      }
+    }
+  } catch {}
+}
+
+if ($RESET_TOKEN) {
+  Write-Host "Clearing saved Netlify token from Windows Credential Manager..."
+  Remove-TokenInCredMan
+  if (Test-Path $TOKENS_FILE) {
+    Write-Host "Removing legacy Netlify entry from: $TOKENS_FILE"
+    Prune-LegacyNetlifyEntry
+  }
+  Write-Host "Done. Next run will prompt to create/paste a new token."
+  exit 0
+}
+
+$TOKEN = Get-TokenFromCredMan
+if (-not $TOKEN -and (Test-Path $TOKENS_FILE)) {
+  $migrated = $false
+  $decoded = Read-LegacyTokenXor
+  if ($decoded -and (Test-TokenValid $decoded)) {
+    Set-TokenInCredMan $decoded
+    $TOKEN = $decoded
+    Write-Host "Migrated Netlify token (obfuscated) into Windows Credential Manager."
+    Prune-LegacyNetlifyEntry
+    $migrated = $true
+  }
+  if (-not $migrated -and -not $TOKEN) {
+    $plain = Read-LegacyTokenPlain
+    if ($plain -and (Test-TokenValid $plain)) {
+      Set-TokenInCredMan $plain
+      $TOKEN = $plain
+      Write-Host "Migrated Netlify token into Windows Credential Manager."
+      Prune-LegacyNetlifyEntry
+    } elseif (-not $plain) {
+      Write-Host "Legacy tokens file found, but no Netlify token key detected."
+    } else {
+      Write-Host "Legacy token value found, but it is invalid."
+    }
+  }
+}
+
+if (-not $TOKEN) {
+@"
+You need a Netlify Personal Access Token (PAT) to deploy.
+1) Open this page: https://app.netlify.com/user/applications#personal-access-tokens
+2) Create a new token.
+   Tips:
+   a. Name it something like 'For class website deploys'
+   b. Set the expiration time to 'No expiration'
+3) Copy the generated token and paste it here.
+"@ | Out-Host
+  try { Start-Process "https://app.netlify.com/user/applications#personal-access-tokens" | Out-Null } catch {}
+  $pastedSec = Read-Host -AsSecureString "Paste Netlify token"
+  $plain = $null
+  $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($pastedSec)
+  try   { $plain = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) }
+  finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
+  if (-not (Test-TokenValid $plain)) {
+    Write-Host "Token invalid (Netlify rejected it). Please try again."
+    exit 1
+  }
+  Set-TokenInCredMan $plain
+  $TOKEN = $plain
+  Write-Host "Saved token to Windows Credential Manager (target: $KEY_TARGET)."
+}
+
+# ======================
+# Docker / container (mount-aware + writability probe)
+# ======================
+if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+  Write-Host "Docker is not installed or not on PATH. Please install Docker Desktop first."
+  exit 1
+}
+try { docker info *> $null } catch {
+  Write-Host "Docker daemon not reachable. Open Docker Desktop and try again."
+  exit 1
+}
+
+$HOST_COURSES = Normalize-HostPath (Join-Path -Path (Get-Location) -ChildPath 'courses')
 
 function Run-ContainerWithMount {
-    Write-Host ("Binding host courses to container: {0} -> /teaching/courses" -f $HOST_COURSES)
-    docker run -dit `
-        --name "$CONTAINER_NAME" `
-        -v "${HOST_COURSES}:/teaching/courses" `
-        -p 8081:8081 `
-        "$IMAGE" `
-        tail -f /dev/null | Out-Null
+  Write-Host "Binding host courses to container: $HOST_COURSES -> /teaching/courses"
+  docker run -dit `
+    --name "$CONTAINER_NAME" `
+    -v "${HOST_COURSES}:/teaching/courses" `
+    -p 8081:8081 `
+    teaching-quartz `
+    tail -f /dev/null | Out-Null
+}
+function Test-ContainerWriteable {
+  param([string]$Name)
+  try {
+    docker exec $Name sh -lc 'mkdir -p /teaching/courses &&
+      echo ok >/teaching/courses/.write_probe &&
+      rm -f /teaching/courses/.write_probe' *> $null
+    return $true
+  } catch { return $false }
 }
 
+Write-Host "Ensuring container is running with the correct, writable mount..."
 $containerExists = ((docker ps -a --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
 if ($containerExists) {
-    $CURRENT_MOUNT_SRC = $null
-    try {
-        $cinfo = docker inspect "$CONTAINER_NAME" | ConvertFrom-Json
-        if ($cinfo -and $cinfo.Count -gt 0) {
-            foreach ($m in $cinfo[0].Mounts) {
-                if ($m.Destination -eq "/teaching/courses") { $CURRENT_MOUNT_SRC = $m.Source; break }
-            }
-        }
-    } catch {}
-    $CURRENT_MOUNT_SRC = Normalize-HostPath $CURRENT_MOUNT_SRC
-
-    if (-not $CURRENT_MOUNT_SRC) {
-        Write-Host "Existing container has no /teaching/courses mount; recreating with correct mount ..."
-        if ((docker ps --format '{{.Names}}' | Where-Object { $_ -eq $CONTAINER_NAME })) { docker stop "$CONTAINER_NAME" *> $null }
-        docker rm "$CONTAINER_NAME" *> $null
-        Run-ContainerWithMount
-    } elseif ($CURRENT_MOUNT_SRC -ne $HOST_COURSES) {
-        Write-Host "Detected different working directory:"
-        Write-Host "  Existing mount: $CURRENT_MOUNT_SRC"
-        Write-Host "  Desired mount:  $HOST_COURSES"
-        Write-Host "Recreating container '$CONTAINER_NAME' to point at the new folder ..."
-        if ((docker ps --format '{{.Names}}' | Where-Object { $_ -eq $CONTAINER_NAME })) { docker stop "$CONTAINER_NAME" *> $null }
-        docker rm "$CONTAINER_NAME" *> $null
-        Run-ContainerWithMount
-    } else {
-        $running = ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
-        if (-not $running) {
-            Write-Host "Starting existing container $CONTAINER_NAME ..."
-            docker start "$CONTAINER_NAME" *> $null
-        } else {
-            Write-Host "Container $CONTAINER_NAME is already running with correct mount."
-        }
+  $CURRENT_MOUNT_SRC = $null
+  try {
+    $cinfo = docker inspect "$CONTAINER_NAME" | ConvertFrom-Json
+    if ($cinfo -and $cinfo.Count -gt 0) {
+      foreach ($m in $cinfo[0].Mounts) {
+        if ($m.Destination -eq "/teaching/courses") { $CURRENT_MOUNT_SRC = $m.Source; break }
+      }
     }
-} else {
-    Write-Host "Creating a new container named $CONTAINER_NAME (image: $IMAGE) ..."
+  } catch {}
+  $CURRENT_MOUNT_SRC = Normalize-HostPath $CURRENT_MOUNT_SRC
+
+  if (-not $CURRENT_MOUNT_SRC) {
+    Write-Host "Existing container has no /teaching/courses mount; recreating with correct mount..."
+    if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { docker stop "$CONTAINER_NAME" *> $null }
+    docker rm "$CONTAINER_NAME" *> $null
     Run-ContainerWithMount
+  }
+  elseif ($CURRENT_MOUNT_SRC -ne $HOST_COURSES) {
+    Write-Host "Detected different working directory:"
+    Write-Host "  Existing mount: $CURRENT_MOUNT_SRC"
+    Write-Host "  Desired mount:  $HOST_COURSES"
+    Write-Host "Recreating container '$CONTAINER_NAME' to point at the new folder..."
+    if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { docker stop "$CONTAINER_NAME" *> $null }
+    docker rm "$CONTAINER_NAME" *> $null
+    Run-ContainerWithMount
+  }
+  else {
+    $running = ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
+    if ($running) {
+      if (-not (Test-ContainerWriteable -Name $CONTAINER_NAME)) {
+        Write-Host "Mounted 'courses/' is not writable from the container — recreating it..."
+        docker rm -f "$CONTAINER_NAME" *> $null
+        Run-ContainerWithMount
+      } else {
+        Write-Host "Container is already running with correct, writable mount."
+      }
+    } else {
+      Write-Host "Starting existing container $CONTAINER_NAME..."
+      docker start "$CONTAINER_NAME" *> $null
+      if (-not (Test-ContainerWriteable -Name $CONTAINER_NAME)) {
+        Write-Host "Mounted 'courses/' is not writable from the container after start — recreating it..."
+        docker rm -f "$CONTAINER_NAME" *> $null
+        Run-ContainerWithMount
+      }
+    }
+  }
+}
+else {
+  Write-Host "Creating new container named $CONTAINER_NAME with correct mount..."
+  Run-ContainerWithMount
 }
 
-# ---- Announce and TZ ----
-$HOST_TZ_OFFSET = (Get-Date).ToString('zzz').Replace(':','')
-Write-Host "Host timezone offset: $HOST_TZ_OFFSET"
-$SECTION_PATH_IN_CONTAINER = "/teaching/courses/$COURSE/.merged_output/section$SECTION"
-Write-Host ("Deploying {0} S{1} from: {2}" -f $COURSE, $SECTION, $SECTION_PATH_IN_CONTAINER)
+# ======================
+# Deploy
+# ======================
+$SECTION_DIR_IN_CONTAINER = "/teaching/courses/$COURSE_CODE/.merged_output/section$SECTION_NUM"
+Write-Host ("Deploying {0} S{1} from: {2}" -f $COURSE_CODE, $SECTION_NUM, $SECTION_DIR_IN_CONTAINER)
 
-# ---- Build deploy.py args ----
-$argList = @("--course", $COURSE, "--section", $SECTION, "--host-os", "windows")
-if ($TEAM_SLUG) { $argList += @("--team", $TEAM_SLUG) }
-if ($DIAGNOSE)  { $argList += "--diagnose" }
+# 1) Securely inject token: filter CRLF and BOM inside the container before saving.
+$tokenBytes = [Text.Encoding]::UTF8.GetBytes($TOKEN + "`n")
 
-# ---- Run deploy inside container ----
-docker exec -e HOST_TZ_OFFSET=$HOST_TZ_OFFSET -it "$CONTAINER_NAME" python3 /opt/scripts/deploy.py $argList
+$psi = New-Object System.Diagnostics.ProcessStartInfo
+$psi.FileName = "docker"
+$psi.Arguments = "exec -i $CONTAINER_NAME sh -lc ""umask 077; tr -d '\r' | sed '1s/^\xEF\xBB\xBF//' > /tmp/netlify_pat"""
+$psi.RedirectStandardInput = $true
+$psi.UseShellExecute = $false
+$psi.CreateNoWindow = $true
+$proc = [System.Diagnostics.Process]::Start($psi)
+try {
+  $proc.StandardInput.BaseStream.Write($tokenBytes, 0, $tokenBytes.Length)
+  $proc.StandardInput.Close()
+  $proc.WaitForExit()
+} finally {
+  if ($proc -and -not $proc.HasExited) { $proc.Kill() | Out-Null }
+}
 
-docker exec -e HOST_TZ_OFFSET=$HOST_TZ_OFFSET -it "$CONTAINER_NAME" python3 /opt/scripts/deploy.py $argList
+# 2) Compose inner shell (placeholders) and stream it through the same CRLF/BOM filter.
+$inner = @'
+tok=$(cat /tmp/netlify_pat)
+rm -f /tmp/netlify_pat
+
+opts=""
+if [ -n "$DIAGNOSE" ]; then opts="$opts $DIAGNOSE"; fi
+if [ -n "$TEAM_SLUG" ]; then opts="$opts --team $TEAM_SLUG"; fi
+
+NETLIFY_AUTH_TOKEN="$tok" python3 /opt/scripts/deploy.py --host-os windows --course __COURSE__ --section __SECTION__ $opts
+'@
+$inner = $inner.Replace('__COURSE__', $COURSE_CODE).Replace('__SECTION__', $SECTION_NUM)
+$innerBytes = [Text.Encoding]::UTF8.GetBytes($inner + "`n")
+
+$psi2 = New-Object System.Diagnostics.ProcessStartInfo
+$psi2.FileName  = "docker"
+$psi2.Arguments = "exec -i $CONTAINER_NAME sh -lc ""tr -d '\r' | sed '1s/^\xEF\xBB\xBF//' > /tmp/deploy_inner.sh && chmod +x /tmp/deploy_inner.sh"""
+$psi2.RedirectStandardInput = $true
+$psi2.UseShellExecute = $false
+$psi2.CreateNoWindow = $true
+$proc2 = [System.Diagnostics.Process]::Start($psi2)
+try {
+  $proc2.StandardInput.BaseStream.Write($innerBytes, 0, $innerBytes.Length)
+  $proc2.StandardInput.Close()
+  $proc2.WaitForExit()
+} finally {
+  if ($proc2 -and -not $proc2.HasExited) { $proc2.Kill() | Out-Null }
+}
+
+# 3) Execute the inner script with the right env
+$envList = @("-e","HOST_TZ_OFFSET=$HOST_TZ_OFFSET")
+if ($DIAGNOSE)  { $envList += @("-e","DIAGNOSE=$DIAGNOSE") }
+if ($TEAM_SLUG) { $envList += @("-e","TEAM_SLUG=$TEAM_SLUG") }
+
+docker exec -it @envList "$CONTAINER_NAME" sh -lc "/bin/sh /tmp/deploy_inner.sh"

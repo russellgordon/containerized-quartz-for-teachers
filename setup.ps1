@@ -1,62 +1,48 @@
+#!/usr/bin/env pwsh
 #requires -Version 5.1
+# Windows setup script for Dockerized Quartz for Teachers
+# - Options identical to setup.sh
+# - Handles stale/unwritable bind mounts if 'courses\' was deleted while container was running
+
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
 
-# ======================
-# Defaults
-# ---- Determine host OS for help text ---------------------------------
-function Get-HostOS {
-    try { if ($IsWindows) { return 'windows' } } catch {}
-    try { if ([System.Environment]::OSVersion.Platform.ToString() -eq 'Win32NT') { return 'windows' } } catch {}
-    try {
-        if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Windows)) { return 'windows' }
-        if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::OSX))     { return 'mac' }
-        if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Linux))   { return 'linux' }
-    } catch {}
-    if ($env:OS -eq 'Windows_NT') { return 'windows' }
-    try {
-        $u = (uname -s 2>$null)
-        if ($u -match 'Darwin') { return 'mac' }
-        if ($u -match 'Linux')  { return 'linux' }
-    } catch {}
-    return 'unknown'
-}
-$__hostOS = Get-HostOS
-if ($__hostOS -eq 'windows') {
-    $SELF_CMD = '.\setup.bat'
-} else {
-    $SELF_CMD = './setup.sh'
-}
-# Cross-script command hints for help text
-if ($__hostOS -eq 'windows') {
-    $SETUP_CMD   = '.\setup.bat'
-    $PREVIEW_CMD = '.\preview.bat'
-    $DEPLOY_CMD  = '.\deploy.bat'
-} else {
-    $SETUP_CMD   = './setup.sh'
-    $PREVIEW_CMD = './preview.sh'
-    $DEPLOY_CMD  = './deploy.sh'
-}
+# -------------------- Defaults --------------------
+$HUB_USER       = 'rwhgrwhg'
+$DEFAULT_TAG    = 'latest'
+$IMAGE_NAME     = 'teaching-quartz'
+$CONTAINER_NAME = 'teaching-quartz'
+$HOST_PORT      = 8081
+$CONTAINER_PORT = 8081
+$DEV_IMAGE      = 'quartz-teacher:dev'  # local dev image
 
-# ======================
-$HUB_USER        = 'rwhgrwhg'
-$DEFAULT_TAG     = 'latest'
-$IMAGE_NAME      = 'teaching-quartz'
-$CONTAINER_NAME  = 'teaching-quartz'
-$HOST_PORT       = 8081
-$CONTAINER_PORT  = 8081
-$DEV_IMAGE       = 'quartz-teacher:dev'   # convenient local dev image
-
-# ======================
-# Config (from flags)
-# ======================
+# -------------------- Config (from flags) --------------------
 $TAG                     = $DEFAULT_TAG
 $FORCE_UPDATE_IMAGE      = $false
 $OVERRIDE_IMAGE          = $null
 $USE_LOCAL_DEV           = $false
-$DOCKER_CONTEXT_OVERRIDE = $null
 $SKIP_PULL               = $false
+$DOCKER_CONTEXT_OVERRIDE = $null
 $PassthruArgs            = @()
+$PULL_STATUS             = ''
+
+# -------------------- Help text --------------------
+function Get-HostOS {
+  try {
+    if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Windows)) { return 'windows' }
+    if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::OSX))     { return 'mac' }
+    if ([Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([Runtime.InteropServices.OSPlatform]::Linux))   { return 'linux' }
+  } catch {}
+  return 'windows'
+}
+$__hostOS = Get-HostOS
+if ($__hostOS -eq 'windows') {
+  $SELF_CMD    = '.\setup.bat'
+  $PREVIEW_CMD = '.\preview.bat'
+} else {
+  $SELF_CMD    = './setup.sh'
+  $PREVIEW_CMD = './preview.sh'
+}
 
 function Show-Help {
 @"
@@ -66,7 +52,7 @@ Options:
   --tag TAG            Use a specific tag instead of 'latest' (default: $DEFAULT_TAG)
   --update-image       Force pulling the image and recreating the container to use it.
   --image REF          Use a specific image reference (overrides Docker Hub default).
-                       Examples: ghcr.io/me/teaching-quartz:main  |  quartz-teacher:dev
+                       Examples: ghcr.io/me/teaching-quartz:main | $DEV_IMAGE
                        Note: If REF has no '/', it's treated as a local image and won't be pulled.
   --local-dev          Shortcut for --image "$DEV_IMAGE" and skipping docker pull
                        (use after building locally with: docker build -t $DEV_IMAGE .)
@@ -75,10 +61,10 @@ Options:
   --help               Show this help and exit.
 
 Notes:
-- By default this script pulls from the public Docker Hub image:  $HUB_USER/$IMAGE_NAME
+- By default this script pulls from the public Docker Hub image: $HUB_USER/$IMAGE_NAME
   Tag defaults to 'latest' unless overridden with --tag.
 - Use --local-dev to test your locally built image ($DEV_IMAGE) without pulling.
-- Any arguments after a literal "--" are forwarded directly to setup_course.py.
+- Any arguments after a literal “--” are forwarded directly to setup_course.py.
 
 Examples:
   $SELF_CMD
@@ -91,302 +77,252 @@ Examples:
 "@ | Out-Host
 }
 
-# ======================
-# Arg parsing
-# ======================
+# -------------------- Arg parsing --------------------
 $idx = 0
 while ($idx -lt $args.Count) {
-    $a = $args[$idx]
-    switch -Regex ($a) {
-        '^(--help|-h)$' {
-            Show-Help
-            exit 0
-        }
-        '^--tag$' {
-            if ($idx + 1 -ge $args.Count) { Write-Error '--tag requires a value'; exit 1 }
-            $TAG = $args[$idx + 1]; $idx += 2; continue
-        }
-        '^--update-image$' {
-            $FORCE_UPDATE_IMAGE = $true; $idx++; continue
-        }
-        '^--image$' {
-            if ($idx + 1 -ge $args.Count) { Write-Error '--image requires a value'; exit 1 }
-            $OVERRIDE_IMAGE = $args[$idx + 1]; $idx += 2; continue
-        }
-        '^--local-dev$' {
-            $USE_LOCAL_DEV = $true; $idx++; continue
-        }
-        '^--context$' {
-            if ($idx + 1 -ge $args.Count) { Write-Error '--context requires a value'; exit 1 }
-            $DOCKER_CONTEXT_OVERRIDE = $args[$idx + 1]; $idx += 2; continue
-        }
-        '^--$' {
-            if ($idx + 1 -lt $args.Count) {
-                $PassthruArgs = $args[($idx + 1)..($args.Count - 1)]
-            } else {
-                $PassthruArgs = @()
-            }
-            $idx = $args.Count
-            continue
-        }
-        default {
-            $PassthruArgs += $a
-            $idx++
-            continue
-        }
-    }
+  $a = $args[$idx]
+  switch -Regex ($a) {
+    '^(--help|-h)$' { Show-Help; exit 0 }
+    '^--tag$'       { if ($idx + 1 -ge $args.Count) { Write-Error '--tag requires a value'; exit 1 }; $TAG = $args[$idx+1]; $idx += 2; continue }
+    '^--update-image$' { $FORCE_UPDATE_IMAGE = $true; $idx++; continue }
+    '^--image$'     { if ($idx + 1 -ge $args.Count) { Write-Error '--image requires a value'; exit 1 }; $OVERRIDE_IMAGE = $args[$idx+1]; $idx += 2; continue }
+    '^--local-dev$' { $USE_LOCAL_DEV = $true; $idx++; continue }
+    '^--context$'   { if ($idx + 1 -ge $args.Count) { Write-Error '--context requires a value'; exit 1 }; $DOCKER_CONTEXT_OVERRIDE = $args[$idx+1]; $idx += 2; continue }
+    '^--$'          { if ($idx + 1 -lt $args.Count) { $PassthruArgs = $args[($idx+1)..($args.Count-1)] } else { $PassthruArgs = @() }; $idx = $args.Count; continue }
+    default         { $PassthruArgs += $a; $idx++; continue }
+  }
 }
 
-# ======================
-# Pre-flight: context
-# ======================
-if ($DOCKER_CONTEXT_OVERRIDE) {
-    $env:DOCKER_CONTEXT = $DOCKER_CONTEXT_OVERRIDE
-}
+# -------------------- Pre-flight: context --------------------
+if ($DOCKER_CONTEXT_OVERRIDE) { $env:DOCKER_CONTEXT = $DOCKER_CONTEXT_OVERRIDE }
 
-# ======================
-# Resolve image to use
-# ======================
-if ($USE_LOCAL_DEV) {
-    $OVERRIDE_IMAGE = $DEV_IMAGE
-    $SKIP_PULL = $true
-}
-if ($OVERRIDE_IMAGE -and ($OVERRIDE_IMAGE -notmatch '/')) {
-    $SKIP_PULL = $true
-}
+# -------------------- Resolve image to use --------------------
+if ($USE_LOCAL_DEV) { $OVERRIDE_IMAGE = $DEV_IMAGE; $SKIP_PULL = $true }
+if ($OVERRIDE_IMAGE -and ($OVERRIDE_IMAGE -notmatch '/')) { $SKIP_PULL = $true }
+if ($OVERRIDE_IMAGE) { $IMAGE = $OVERRIDE_IMAGE } else { $IMAGE = "${HUB_USER}/${IMAGE_NAME}:${TAG}" }
 
-if ($OVERRIDE_IMAGE) {
-    $IMAGE = $OVERRIDE_IMAGE
-} else {
-    $IMAGE = "${HUB_USER}/${IMAGE_NAME}:${TAG}"
-}
-
-# ======================
-# Pre-flight checks
-# ======================
-# Resolve this script's directory robustly (PS 3.0+ has $PSScriptRoot)
-if ($PSBoundParameters -and $PSBoundParameters['File']) {
-    # When invoked with -File, $PSScriptRoot is reliable
-    $scriptDir = $PSScriptRoot
-} else {
-    # Fallback for odd hosts: use -Path with -Parent to avoid LiteralPath ambiguity in PS 5.1
-    $scriptDir = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
-}
-if (-not $scriptDir) { $scriptDir = Get-Location }
-Set-Location -LiteralPath $scriptDir
+# -------------------- Pre-flight checks --------------------
+$ScriptDir = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+if (-not $ScriptDir) { $ScriptDir = Get-Location }
+Set-Location -LiteralPath $ScriptDir
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-    Write-Host 'Docker is not installed or not on PATH. Please install Docker Desktop first.'
-    exit 1
+  Write-Host "❌ Docker is not installed or not on PATH. Please install Docker Desktop first."
+  exit 1
 }
-try {
-    docker info *> $null
-} catch {
-    Write-Host 'Docker daemon not reachable. Please open Docker Desktop and try again.'
-    exit 1
+try { docker info *> $null } catch {
+  Write-Host "❌ Docker daemon not reachable.`nPlease open Docker Desktop and try again."
+  exit 1
 }
 
 $CURRENT_CONTEXT = (docker context show 2>$null) -as [string]; if (-not $CURRENT_CONTEXT) { $CURRENT_CONTEXT = 'unknown' }
-$HOST_ARCH       = (docker info --format '{{.Architecture}}' 2>$null) -as [string]; if (-not $HOST_ARCH) { $HOST_ARCH = 'unknown' }
-$HOST_OS         = (docker info --format '{{.OSType}}' 2>$null) -as [string]; if (-not $HOST_OS) { $HOST_OS = 'unknown' }
+$HOST_ARCH       = (docker info --format '{{.Architecture}}' 2>$null) -as [string];  if (-not $HOST_ARCH) { $HOST_ARCH = 'unknown' }
+$HOST_OS         = (docker info --format '{{.OSType}}' 2>$null) -as [string];         if (-not $HOST_OS)   { $HOST_OS   = 'unknown' }
 Write-Host "Docker context: $CURRENT_CONTEXT"
 Write-Host "Host detected by Docker: $HOST_OS/$HOST_ARCH"
 Write-Host "Using image: $IMAGE"
 
-# ======================
-# Folders & helpers
-# ======================
-$CoursesRoot = Join-Path -Path (Get-Location) -ChildPath 'courses'
-$BackupsRoot = Join-Path -Path $CoursesRoot -ChildPath '_backups'
+# -------------------- Folders & permissions --------------------
+$CoursesRoot       = Join-Path -Path (Get-Location) -ChildPath 'courses'
+$BackupsRoot       = Join-Path -Path $CoursesRoot -ChildPath '_backups'
+$CreatedCoursesDir = $false
 if (-not (Test-Path -LiteralPath $CoursesRoot)) {
-    Write-Host "Creating 'courses' directory on host..."
-    New-Item -ItemType Directory -Path $CoursesRoot -Force | Out-Null
+  Write-Host "Creating 'courses' directory on host..."
+  New-Item -ItemType Directory -Path $CoursesRoot -Force | Out-Null
+  $CreatedCoursesDir = $true
 }
 if (-not (Test-Path -LiteralPath $BackupsRoot)) {
-    Write-Host "Creating 'courses/_backups' directory on host..."
-    New-Item -ItemType Directory -Path $BackupsRoot -Force | Out-Null
+  Write-Host "Creating 'courses/_backups' directory on host..."
+  New-Item -ItemType Directory -Path $BackupsRoot -Force | Out-Null
 }
+# Relax host attributes/perms to avoid surprises when mapping into Linux container
+try { attrib -R "$CoursesRoot" /S /D 2>$null | Out-Null } catch {}
+try {
+  $me = "$env:USERDOMAIN\$env:USERNAME"
+  icacls "$CoursesRoot" /grant "${me}:(OI)(CI)M" /T /C 2>$null | Out-Null
+} catch {}
 
 function Normalize-HostPath([string]$p) {
-    if (-not $p) { return $p }
-    try {
-        $r = (Resolve-Path -LiteralPath $p).Path
-    } catch {
-        $r = $p
-    }
-    return $r.TrimEnd('\','/')
+  if (-not $p) { return $p }
+  try { $r = (Resolve-Path -LiteralPath $p).Path } catch { $r = $p }
+  return $r.TrimEnd('\','/')
 }
 $HOST_COURSES = Normalize-HostPath $CoursesRoot
 
-# ======================
-# Image presence / pull
-# ======================
+# -------------------- Pull or verify image presence --------------------
 function Test-ImagePresent([string]$ref) {
-    try {
-        docker image inspect "$ref" *> $null
-        return $true
-    } catch {
-        return $false
-    }
+  try { docker image inspect "$ref" *> $null; return $true } catch { return $false }
 }
-
 $IMAGE_PRESENT = Test-ImagePresent $IMAGE
-$PULL_STATUS = ''
-
 if (-not $SKIP_PULL) {
-    if ($FORCE_UPDATE_IMAGE) {
-        Write-Host "Pulling latest for $IMAGE ..."
-        docker pull "$IMAGE" | Out-Host
-        $PULL_STATUS = '(just pulled)'
-    } elseif (-not $IMAGE_PRESENT) {
-        Write-Host "Image not found locally. Pulling $IMAGE ..."
-        docker pull "$IMAGE" | Out-Host
-        $PULL_STATUS = '(just pulled)'
-    } else {
-        Write-Host "Image already present: $IMAGE"
-        $PULL_STATUS = '(already on this machine)'
-    }
+  if ($FORCE_UPDATE_IMAGE) {
+    Write-Host "Pulling latest for $IMAGE …"
+    docker pull "$IMAGE" | Out-Host
+    $PULL_STATUS = '(just pulled)'
+  } elseif (-not $IMAGE_PRESENT) {
+    Write-Host "Image not found locally. Pulling $IMAGE …"
+    docker pull "$IMAGE" | Out-Host
+    $PULL_STATUS = '(just pulled)'
+  } else {
+    Write-Host "Image already present: $IMAGE"
+    $PULL_STATUS = '(already on this machine)'
+  }
 } else {
-    $PULL_STATUS = '(skipped pull)'
+  if ($IMAGE_PRESENT) {
+    Write-Host "Using local image: $IMAGE"
+    $PULL_STATUS = '(local image)'
+  } else {
+    Write-Host "Local image '$IMAGE' not found in Docker context '$CURRENT_CONTEXT'."
+    Write-Host "Tips:"
+    Write-Host " • If you built with buildx, use --load to import into the local engine:"
+    Write-Host "   docker buildx build --load -t $IMAGE ."
+    Write-Host " • Or classic build:"
+    Write-Host "   docker build -t $IMAGE ."
+    Write-Host " • Verify your context:"
+    Write-Host "   docker context ls"
+    exit 1
+  }
 }
 
-# ======================
-# Container helpers
-# ======================
-function Run-ContainerWithMount {
-    Write-Host "Binding host courses to container: $HOST_COURSES -> /teaching/courses"
-    docker run -dit `
-        --name "$CONTAINER_NAME" `
-        -v "${HOST_COURSES}:/teaching/courses" `
-        -p ${HOST_PORT}:${CONTAINER_PORT} `
-        "$IMAGE" `
-        tail -f /dev/null | Out-Null
-}
-
+# -------------------- Show image version/build info --------------------
 function Show-ImageInfo([string]$_img) {
-    try {
-        $info = docker image inspect "$_img" | ConvertFrom-Json
-    } catch {
-        Write-Host "Could not inspect image $_img"
-        return
+  try { $info = docker image inspect "$_img" | ConvertFrom-Json } catch { Write-Host "Could not inspect image $_img"; return }
+  if (-not $info) { return }
+  $obj = $info[0]
+  try { $labels = $obj.Config.Labels } catch { $labels = @{} }
+  if (-not $labels) { $labels = @{} }
+  $ver     = $labels['org.opencontainers.image.version']; if (-not $ver) { $ver = '(no version label)' }
+  $created = $labels['org.opencontainers.image.created']; if (-not $created) { $created = $obj.Created }
+  $rev     = $labels['org.opencontainers.image.revision']; if (-not $rev) { $rev = '(no revision label)' }
+  $src     = $labels['org.opencontainers.image.source']
+  $title   = $labels['org.opencontainers.image.title'];   if (-not $title) { $title = $_img }
+  Write-Host "Image info ${PULL_STATUS}:"
+  Write-Host "  Title:    $title"
+  Write-Host "  Version:  $ver"
+  Write-Host "  Created:  $created"
+  Write-Host "  Revision: $rev"
+  if ($src) { Write-Host "  Source:   $src" }
+  try {
+    $digests = $obj.RepoDigests
+    if ($digests) {
+      Write-Host '  Digests:'
+      foreach ($d in $digests) { if ($d) { Write-Host "   - $d" } }
     }
-    if (-not $info) { return }
-    $obj = $info[0]
-
-    $labels = $null
-    try { $labels = $obj.Config.Labels } catch {}
-    if (-not $labels) { $labels = @{} }
-
-    $ver     = $labels['org.opencontainers.image.version']
-    $created = $labels['org.opencontainers.image.created']
-    $rev     = $labels['org.opencontainers.image.revision']
-    $src     = $labels['org.opencontainers.image.source']
-    $title   = $labels['org.opencontainers.image.title']
-
-    if (-not $ver)     { $ver = '(no version label)' }
-    if (-not $created) { $created = $obj.Created }
-    if (-not $rev)     { $rev = '(no revision label)' }
-    if (-not $title)   { $title = $_img }
-
-    Write-Host "Image info ${PULL_STATUS}:"
-    Write-Host "  Title:    $title"
-    Write-Host "  Version:  $ver"
-    Write-Host "  Created:  $created"
-    Write-Host "  Revision: $rev"
-    if ($src) { Write-Host "  Source:   $src" }
-
-    try {
-        $digests = $obj.RepoDigests
-        if ($digests) {
-            Write-Host '  Digests:'
-            foreach ($d in $digests) { if ($d) { Write-Host "    - $d" } }
-        }
-    } catch {}
+  } catch {}
 }
-
 Show-ImageInfo $IMAGE
 
-# ======================
-# Create/start container (mount-aware)
-# ======================
+# -------------------- Container helpers --------------------
+function Run-ContainerWithMount {
+  Write-Host "Binding host courses to container: $HOST_COURSES -> /teaching/courses"
+  $args = @(
+    'run','-dit',
+    '--name', $CONTAINER_NAME,
+    '-v', "${HOST_COURSES}:/teaching/courses",
+    '-p', "${HOST_PORT}:${CONTAINER_PORT}",
+    $IMAGE,
+    'tail','-f','/dev/null'
+  )
+  & docker @args | Out-Null
+}
+
+# -------------------- Create/start container (mount-aware + refresh + write probe) --------------------
+Write-Host "Ensuring container is running with the correct, writable mount..."
 $containerExists = ((docker ps -a --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
 
 if ($containerExists) {
-    $CURRENT_MOUNT_SRC = $null
-    try {
-        $cinfo = docker inspect "$CONTAINER_NAME" | ConvertFrom-Json
-        if ($cinfo -and $cinfo.Count -gt 0) {
-            foreach ($m in $cinfo[0].Mounts) {
-                if ($m.Destination -eq "/teaching/courses") {
-                    $CURRENT_MOUNT_SRC = $m.Source
-                    break
-                }
-            }
-        }
-    } catch {}
-
-    $CURRENT_MOUNT_SRC = Normalize-HostPath $CURRENT_MOUNT_SRC
-
-    if (-not $CURRENT_MOUNT_SRC) {
-        Write-Host 'Existing container has no /teaching/courses mount; recreating with correct mount ...'
-        if ((docker ps --format '{{.Names}}' | Where-Object { $_ -eq $CONTAINER_NAME })) {
-            docker stop "$CONTAINER_NAME" *> $null
-        }
-        docker rm "$CONTAINER_NAME" *> $null
-        Run-ContainerWithMount
-    } elseif ($CURRENT_MOUNT_SRC -ne $HOST_COURSES) {
-        Write-Host 'Detected different working directory:'
-        Write-Host "  Existing mount: $CURRENT_MOUNT_SRC"
-        Write-Host "  Desired mount:  $HOST_COURSES"
-        Write-Host "Recreating container '$CONTAINER_NAME' to point at the new folder ..."
-        if ((docker ps --format '{{.Names}}' | Where-Object { $_ -eq $CONTAINER_NAME })) {
-            docker stop "$CONTAINER_NAME" *> $null
-        }
-        docker rm "$CONTAINER_NAME" *> $null
-        Run-ContainerWithMount
-    } else {
-        $running = ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
-        if ($running) {
-            Write-Host "Container $CONTAINER_NAME is already running with correct mount."
-        } else {
-            Write-Host "Starting existing container $CONTAINER_NAME ..."
-            docker start "$CONTAINER_NAME" *> $null
-        }
+  $CURRENT_MOUNT_SRC = $null
+  try {
+    $cinfo = docker inspect "$CONTAINER_NAME" | ConvertFrom-Json
+    if ($cinfo -and $cinfo.Count -gt 0) {
+      foreach ($m in $cinfo[0].Mounts) {
+        if ($m.Destination -eq "/teaching/courses") { $CURRENT_MOUNT_SRC = $m.Source; break }
+      }
     }
-} else {
-    Write-Host "Creating a new container named $CONTAINER_NAME (image: $IMAGE) ..."
+  } catch {}
+  $CURRENT_MOUNT_SRC = Normalize-HostPath $CURRENT_MOUNT_SRC
+
+  if (-not $CURRENT_MOUNT_SRC) {
+    Write-Host "Existing container has no /teaching/courses mount; recreating with correct mount…"
+    if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { docker stop "$CONTAINER_NAME" *> $null }
+    docker rm "$CONTAINER_NAME" *> $null
     Run-ContainerWithMount
+  }
+  elseif ($CURRENT_MOUNT_SRC -ne $HOST_COURSES) {
+    Write-Host "Detected different working directory:"
+    Write-Host "  Existing mount: $CURRENT_MOUNT_SRC"
+    Write-Host "  Desired mount:  $HOST_COURSES"
+    Write-Host "Recreating container '$CONTAINER_NAME' to point at the new folder…"
+    if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { docker stop "$CONTAINER_NAME" *> $null }
+    docker rm "$CONTAINER_NAME" *> $null
+    Run-ContainerWithMount
+  }
+  else {
+    $running = ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
+    if ($running) {
+      if ($CreatedCoursesDir) {
+        Write-Host "The 'courses/' folder was created just now; refreshing container to ensure a clean, writable mount…"
+        docker rm -f "$CONTAINER_NAME" *> $null
+        Run-ContainerWithMount
+      }
+      elseif (-not (Test-ContainerWriteable -Name $CONTAINER_NAME)) {
+        Write-Host "Mounted 'courses/' is not writable from the container — recreating it…"
+        docker rm -f "$CONTAINER_NAME" *> $null
+        Run-ContainerWithMount
+      }
+      else {
+        Write-Host "✅ Container $CONTAINER_NAME is already running with correct, writable mount."
+      }
+    } else {
+      Write-Host "Starting existing container $CONTAINER_NAME..."
+      docker start "$CONTAINER_NAME" *> $null
+      if (-not (Test-ContainerWriteable -Name $CONTAINER_NAME)) {
+        Write-Host "Mounted 'courses/' is not writable from the container after start — recreating it…"
+        docker rm -f "$CONTAINER_NAME" *> $null
+        Run-ContainerWithMount
+      }
+    }
+  }
+}
+else {
+  Write-Host "Creating a new container named $CONTAINER_NAME (image: $IMAGE) …"
+  Run-ContainerWithMount
 }
 
-# ======================
-# Backup confirmation & run
-# ======================
+# -------------------- Backup confirmation (pass-through option) --------------------
 $HOST_TZ_OFFSET = (Get-Date).ToString('zzz').Replace(':','')
 Write-Host "Detected host timezone offset: $HOST_TZ_OFFSET"
 Write-Host "Backups will be written to: $BackupsRoot"
 
 if ($PassthruArgs.Count -gt 0 -and ($PassthruArgs -contains '--no-backup')) {
-    Write-Host 'You are running with --no-backup.'
-    Write-Host 'This will skip creating a safety ZIP before modifying course folders.'
-    $confirm = Read-Host 'Are you sure you want to proceed without a backup? (yes/no)'
-    if ($confirm -notin @('yes','y','Y')) {
-        Write-Host 'Cancelled.'
-        exit 1
-    } else {
-        Write-Host 'Proceeding without backup ...'
-    }
+  Write-Host 'You are running with --no-backup.'
+  Write-Host 'This will skip creating a safety ZIP before modifying course folders.'
+  $confirm = Read-Host 'Are you sure you want to proceed without a backup? (yes/no)'
+  if ($confirm -notin @('yes','y','Y')) {
+    Write-Host 'Cancelled.'
+    exit 1
+  } else {
+    Write-Host 'Proceeding without backup...'
+  }
 }
 
-    $PassthruArgs += @('--host-os','windows')
-$escaped = @()
-foreach ($p in $PassthruArgs) {
-    if ($p -match '\s') {
-        $escaped += ('"' + ($p -replace '"','\"') + '"')
-    } else {
-        $escaped += $p
-    }
+# -------------------- Run setup inside container --------------------
+# Strip any existing --host-os and force windows
+if ($PassthruArgs.Count -gt 0) {
+  $clean = New-Object System.Collections.Generic.List[string]
+  for ($i=0; $i -lt $PassthruArgs.Count; $i++) {
+    $p = $PassthruArgs[$i]
+    if ($p -eq '--host-os') { $i++; continue }
+    if ($p -like '--host-os=*') { continue }
+    $clean.Add($p) | Out-Null
+  }
+  $PassthruArgs = $clean.ToArray()
 }
+$PassthruArgs += @('--host-os','windows')
 
-Write-Host 'Running setup_course.py inside the Docker container ...'
-docker exec -e HOST_TZ_OFFSET=$HOST_TZ_OFFSET -it "$CONTAINER_NAME" `
-    python3 /opt/scripts/setup_course.py $escaped
+Write-Host "Running setup_course.py inside the Docker container..."
+$execArgs = @(
+  'exec','-e', "HOST_TZ_OFFSET=${HOST_TZ_OFFSET}", '-it', $CONTAINER_NAME,
+  'python3','/opt/scripts/setup_course.py'
+) + $PassthruArgs
+& docker @execArgs
