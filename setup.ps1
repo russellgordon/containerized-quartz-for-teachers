@@ -1,8 +1,6 @@
 #!/usr/bin/env pwsh
 #requires -Version 5.1
 # Windows setup script for Dockerized Quartz for Teachers
-# - Options identical to setup.sh
-# - Handles stale/unwritable bind mounts if 'courses\' was deleted while container was running
 
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
@@ -57,14 +55,14 @@ Options:
   --local-dev          Shortcut for --image "$DEV_IMAGE" and skipping docker pull
                        (use after building locally with: docker build -t $DEV_IMAGE .)
   --context NAME       Use a specific Docker context (sets DOCKER_CONTEXT=NAME for this run).
-  --no-backup          (Pass-through to setup_course.py) Skip creating a backup ZIP — you will be asked to confirm.
+  --no-backup          (Pass-through to setup_course.py) Skip creating a backup ZIP - you will be asked to confirm.
   --help               Show this help and exit.
 
 Notes:
 - By default this script pulls from the public Docker Hub image: $HUB_USER/$IMAGE_NAME
   Tag defaults to 'latest' unless overridden with --tag.
 - Use --local-dev to test your locally built image ($DEV_IMAGE) without pulling.
-- Any arguments after a literal “--” are forwarded directly to setup_course.py.
+- Any arguments after a literal "--" are forwarded directly to setup_course.py.
 
 Examples:
   $SELF_CMD
@@ -107,11 +105,11 @@ if (-not $ScriptDir) { $ScriptDir = Get-Location }
 Set-Location -LiteralPath $ScriptDir
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-  Write-Host "❌ Docker is not installed or not on PATH. Please install Docker Desktop first."
+  Write-Host "ERROR: Docker is not installed or not on PATH. Please install Docker Desktop first."
   exit 1
 }
-try { docker info *> $null } catch {
-  Write-Host "❌ Docker daemon not reachable.`nPlease open Docker Desktop and try again."
+try { $null = docker info } catch {
+  Write-Host "ERROR: Docker daemon not reachable.`nPlease open Docker Desktop and try again."
   exit 1
 }
 
@@ -151,17 +149,17 @@ $HOST_COURSES = Normalize-HostPath $CoursesRoot
 
 # -------------------- Pull or verify image presence --------------------
 function Test-ImagePresent([string]$ref) {
-  try { docker image inspect "$ref" *> $null; return $true } catch { return $false }
+  try { $null = docker image inspect "$ref"; return $true } catch { return $false }
 }
 $IMAGE_PRESENT = Test-ImagePresent $IMAGE
 if (-not $SKIP_PULL) {
   if ($FORCE_UPDATE_IMAGE) {
-    Write-Host "Pulling latest for $IMAGE …"
-    docker pull "$IMAGE" | Out-Host
+    Write-Host "Pulling latest for $IMAGE ..."
+    $null = docker pull "$IMAGE"
     $PULL_STATUS = '(just pulled)'
   } elseif (-not $IMAGE_PRESENT) {
-    Write-Host "Image not found locally. Pulling $IMAGE …"
-    docker pull "$IMAGE" | Out-Host
+    Write-Host "Image not found locally. Pulling $IMAGE ..."
+    $null = docker pull "$IMAGE"
     $PULL_STATUS = '(just pulled)'
   } else {
     Write-Host "Image already present: $IMAGE"
@@ -174,11 +172,11 @@ if (-not $SKIP_PULL) {
   } else {
     Write-Host "Local image '$IMAGE' not found in Docker context '$CURRENT_CONTEXT'."
     Write-Host "Tips:"
-    Write-Host " • If you built with buildx, use --load to import into the local engine:"
+    Write-Host " - If you built with buildx, use --load to import into the local engine:"
     Write-Host "   docker buildx build --load -t $IMAGE ."
-    Write-Host " • Or classic build:"
+    Write-Host " - Or classic build:"
     Write-Host "   docker build -t $IMAGE ."
-    Write-Host " • Verify your context:"
+    Write-Host " - Verify your context:"
     Write-Host "   docker context ls"
     exit 1
   }
@@ -223,7 +221,19 @@ function Run-ContainerWithMount {
     $IMAGE,
     'tail','-f','/dev/null'
   )
-  & docker @args | Out-Null
+  $null = & docker @args
+}
+
+# SINGLE-LINE writability probe to avoid ": not found" from CRLF/newlines
+function Test-ContainerWriteable {
+  param([string]$Name)
+  try {
+    $cmd = "mkdir -p /teaching/courses && echo ok > /teaching/courses/.write_probe && rm -f /teaching/courses/.write_probe"
+    $null = docker exec $Name sh -lc $cmd
+    return $true
+  } catch {
+    return $false
+  }
 }
 
 # -------------------- Create/start container (mount-aware + refresh + write probe) --------------------
@@ -243,49 +253,49 @@ if ($containerExists) {
   $CURRENT_MOUNT_SRC = Normalize-HostPath $CURRENT_MOUNT_SRC
 
   if (-not $CURRENT_MOUNT_SRC) {
-    Write-Host "Existing container has no /teaching/courses mount; recreating with correct mount…"
-    if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { docker stop "$CONTAINER_NAME" *> $null }
-    docker rm "$CONTAINER_NAME" *> $null
+    Write-Host "Existing container has no /teaching/courses mount; recreating with correct mount..."
+    if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { $null = docker stop "$CONTAINER_NAME" }
+    $null = docker rm "$CONTAINER_NAME"
     Run-ContainerWithMount
   }
   elseif ($CURRENT_MOUNT_SRC -ne $HOST_COURSES) {
     Write-Host "Detected different working directory:"
     Write-Host "  Existing mount: $CURRENT_MOUNT_SRC"
     Write-Host "  Desired mount:  $HOST_COURSES"
-    Write-Host "Recreating container '$CONTAINER_NAME' to point at the new folder…"
-    if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { docker stop "$CONTAINER_NAME" *> $null }
-    docker rm "$CONTAINER_NAME" *> $null
+    Write-Host "Recreating container '$CONTAINER_NAME' to point at the new folder..."
+    if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { $null = docker stop "$CONTAINER_NAME" }
+    $null = docker rm "$CONTAINER_NAME"
     Run-ContainerWithMount
   }
   else {
     $running = ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
     if ($running) {
       if ($CreatedCoursesDir) {
-        Write-Host "The 'courses/' folder was created just now; refreshing container to ensure a clean, writable mount…"
-        docker rm -f "$CONTAINER_NAME" *> $null
+        Write-Host "The 'courses/' folder was created just now; refreshing container to ensure a clean, writable mount..."
+        $null = docker rm -f "$CONTAINER_NAME"
         Run-ContainerWithMount
       }
       elseif (-not (Test-ContainerWriteable -Name $CONTAINER_NAME)) {
-        Write-Host "Mounted 'courses/' is not writable from the container — recreating it…"
-        docker rm -f "$CONTAINER_NAME" *> $null
+        Write-Host "Mounted 'courses/' is not writable from the container - recreating it..."
+        $null = docker rm -f "$CONTAINER_NAME"
         Run-ContainerWithMount
       }
       else {
-        Write-Host "✅ Container $CONTAINER_NAME is already running with correct, writable mount."
+        Write-Host "Container $CONTAINER_NAME is already running with correct, writable mount."
       }
     } else {
       Write-Host "Starting existing container $CONTAINER_NAME..."
-      docker start "$CONTAINER_NAME" *> $null
+      $null = docker start "$CONTAINER_NAME"
       if (-not (Test-ContainerWriteable -Name $CONTAINER_NAME)) {
-        Write-Host "Mounted 'courses/' is not writable from the container after start — recreating it…"
-        docker rm -f "$CONTAINER_NAME" *> $null
+        Write-Host "Mounted 'courses/' is not writable from the container after start - recreating it..."
+        $null = docker rm -f "$CONTAINER_NAME"
         Run-ContainerWithMount
       }
     }
   }
 }
 else {
-  Write-Host "Creating a new container named $CONTAINER_NAME (image: $IMAGE) …"
+  Write-Host "Creating a new container named $CONTAINER_NAME (image: $IMAGE) ..."
   Run-ContainerWithMount
 }
 
@@ -325,4 +335,5 @@ $execArgs = @(
   'exec','-e', "HOST_TZ_OFFSET=${HOST_TZ_OFFSET}", '-it', $CONTAINER_NAME,
   'python3','/opt/scripts/setup_course.py'
 ) + $PassthruArgs
+# DO NOT suppress output here: interactive prompts must be visible
 & docker @execArgs
