@@ -72,7 +72,7 @@ Before running the commands below, open a command-line interface:
 
 These scripts you will need to setup, preview, and deploy your website are already inside the Docker image.
 
-**macOS / Linux (bash/zsh):**
+**macOS (bash/zsh):**
 
 First, start Docker by running this command – be sure that you wait until you see a note that the Docker engine has started:
 ```bash
@@ -102,7 +102,7 @@ This will place the launcher scripts into your current folder, ready to run.
 
 ### 2. Set up your course
 
-On macOS/Linux:
+On macOS:
 ```bash
 ./setup.sh
 ```
@@ -145,7 +145,7 @@ courses/
 >
 > **`ICS3U`** is used as an example in the command given below – be sure to replace the course code with whatever course you set up in Step 2 above.
 
-On macOS/Linux:
+On macOS:
 ```bash
 ./preview.sh ICS3U 1
 ```
@@ -172,7 +172,7 @@ This will:
 
 Once you’re happy with your preview, you can publish the site so students and others can see it.
 
-On macOS/Linux:
+On macOS:
 ```bash
 ./deploy.sh ICS3U 1
 ```
