@@ -88,7 +88,7 @@ docker run --pull=always --rm -v "$PWD:/out" rwhgrwhg/teaching-quartz:latest exp
 
 First, start Docker by running this command – be sure that you wait until you see a note that the Docker engine has started:
 ```powershell
-start "" "%ProgramFiles%\Docker\Docker\Docker Desktop.exe"
+& "$Env:ProgramFiles\Docker\Docker\Docker Desktop.exe"
 ```
 
 Then, run this command to get the launcher scripts:
