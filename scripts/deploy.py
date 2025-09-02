@@ -14,6 +14,7 @@ import urllib.error
 import urllib.parse
 import hashlib
 import unicodedata
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from collections import Counter
 
@@ -27,7 +28,57 @@ def _cmd_example(script_base: str, course, section, host_os: str) -> str:
     return (f".\\{script_base}.bat {course} {section}") if _is_windows(host_os) else (f"./{script_base}.sh {course} {section}")
 # ----------------------------------------------------------------------------
 
-# ---------- Netlify name sanitizer ----------
+# ---------- Rate-limit helpers (NEW) ----------
+def _parse_http_date(s: str) -> dt.datetime | None:
+    """Parse an RFC1123 HTTP-date string to a timezone-aware UTC datetime."""
+    try:
+        # Example: 'Wed, 21 Oct 2015 07:28:00 GMT'
+        return dt.datetime.strptime(s, "%a, %d %b %Y %H:%M:%S GMT").replace(tzinfo=dt.timezone.utc)
+    except Exception:
+        return None
+
+def _format_rate_limit_guidance(headers) -> str:
+    """
+    Build minimal guidance from rate-limit headers for user-facing output.
+    Shows only:
+      - the current local time, and
+      - "Window resets at ..." (derived from X-RateLimit-Reset)
+    Omits Retry-After and limit/remaining to avoid confusing or vendor-specific values.
+    """
+    try:
+        greset = headers.get("X-RateLimit-Reset")
+
+        # Determine local timezone from script context; fallback to UTC.
+        try:
+            local_tz = TZ  # set by parse_host_tz()
+        except NameError:
+            try:
+                local_tz = parse_host_tz()
+            except Exception:
+                import datetime as _dt
+                local_tz = _dt.timezone.utc
+
+        import datetime as _dt
+        now_local = _dt.datetime.now(_dt.timezone.utc).astimezone(local_tz)
+        lines = [f"Now: {now_local.strftime('%Y-%m-%d %H:%M:%S %Z')}"]
+
+        # Parse X-RateLimit-Reset: epoch seconds or HTTP-date
+        reset_dt = None
+        if greset:
+            try:
+                reset_dt = _dt.datetime.fromtimestamp(int(greset), tz=_dt.timezone.utc)
+            except Exception:
+                reset_dt = _parse_http_date(greset)
+
+        if reset_dt is not None:
+            reset_dt_local = reset_dt.astimezone(local_tz)
+            secs = max(0, int((reset_dt - _dt.datetime.now(_dt.timezone.utc)).total_seconds()))
+            lines.append(f"Window resets at: {reset_dt_local.strftime('%Y-%m-%d %H:%M:%S %Z')} (in ~{secs}s).")
+
+        return "\n".join(lines)
+    except Exception:
+        return ""
+
 def sanitize_netlify_name(name: str) -> str:
     """
     Produce a Netlify-safe subdomain from a repo or site name.
@@ -182,7 +233,10 @@ def netlify_api(method: str, path: str, token: str, payload: dict | None = None,
             return json.loads(raw.decode("utf-8"))
     except urllib.error.HTTPError as e:
         msg = e.read().decode("utf-8", errors="ignore")
-        raise RuntimeError(f"Netlify API error {e.code}: {msg}") from e
+        # NEW: enrich 429 errors (and others) with rate-limit guidance
+        guidance = _format_rate_limit_guidance(getattr(e, "headers", {}))
+        suffix = f"\n{guidance}" if guidance else ""
+        raise RuntimeError(f"Netlify API error {e.code}: {msg}{suffix}") from e
 
 def _extract_json_from_error(err: Exception) -> dict | None:
     s = str(err).strip()
