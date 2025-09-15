@@ -27,6 +27,42 @@ SECTION="$2"
 # Shift COURSE and SECTION out of the way
 shift 2
 
+
+# -------------------- Image selection & options (parity with setup.sh) --------------------
+HUB_USER="${HUB_USER:-rwhgrwhg}"
+DEFAULT_TAG="${DEFAULT_TAG:-latest}"
+IMAGE_NAME="${IMAGE_NAME:-teaching-quartz}"
+DEV_IMAGE="${DEV_IMAGE:-quartz-teacher:dev}"
+
+TAG="${TAG:-$DEFAULT_TAG}"
+FORCE_UPDATE_IMAGE="${FORCE_UPDATE_IMAGE:-false}"
+OVERRIDE_IMAGE="${OVERRIDE_IMAGE:-}"
+USE_LOCAL_DEV="${USE_LOCAL_DEV:-false}"
+SKIP_PULL="${SKIP_PULL:-false}"
+PULL_STATUS=""
+
+# Parse image-related flags only; leave other flags for later parsing
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --image)        OVERRIDE_IMAGE="$2"; shift 2 ;;
+    --tag)          TAG="$2"; shift 2 ;;
+    --update-image) FORCE_UPDATE_IMAGE="true"; shift ;;
+    --local-dev)    USE_LOCAL_DEV="true"; SKIP_PULL="true"; shift ;;
+    --) shift; break ;;
+    -*|*) break ;;
+  esac
+done
+
+# Resolve IMAGE (same rules as setup.sh)
+if [[ "$USE_LOCAL_DEV" == "true" ]]; then
+  IMAGE="$DEV_IMAGE"
+elif [[ -n "$OVERRIDE_IMAGE" ]]; then
+  IMAGE="$OVERRIDE_IMAGE"
+else
+  IMAGE="${HUB_USER}/${IMAGE_NAME}:${TAG}"
+fi
+
+
 # Initialize flags
 INCLUDE_SOCIAL=""
 FORCE_NPM_INSTALL=""
@@ -145,19 +181,122 @@ fi
 
 # -------------------- Mount-aware container handling --------------------
 CONTAINER_NAME="teaching-quartz"
+HOST_PORT=8081
+CONTAINER_PORT=8081
 HOST_COURSES="$(pwd)/courses"  # desired host mount for this run
+# -------------------- Pull or verify image presence --------------------
+IMAGE_PRESENT="false"
+if docker image inspect "$IMAGE" >/dev/null 2>&1; then
+  IMAGE_PRESENT="true"
+fi
+# If not present by exact ref, try to discover close matches (helps with local naming quirks)
+if [[ "$IMAGE_PRESENT" == "false" ]]; then
+  REPO="${IMAGE%%:*}"
+  TAG_PART="${IMAGE#*:}"
+  CANDIDATES=$(docker image ls --format '{{.Repository}}:{{.Tag}}' "$REPO" 2>/dev/null | grep -i "${TAG_PART}" || true)
+  if [[ -n "$CANDIDATES" ]]; then
+    echo "ℹ️  Found local candidates for '$IMAGE' in context '${CURRENT_CONTEXT}':"
+    echo "$CANDIDATES" | sed 's/^/   • /'
+    MATCH=$(echo "$CANDIDATES" | awk -v want="$IMAGE" 'BEGIN{IGNORECASE=1} $0==want{print $0}')
+    if [[ -n "$MATCH" ]]; then
+      IMAGE_PRESENT="true"
+      IMAGE="$MATCH"
+      echo "✅ Using exact local match: $IMAGE"
+    fi
+  fi
+fi
+
+if [[ "$SKIP_PULL" == "true" ]]; then
+  if [[ "$IMAGE_PRESENT" == "true" ]]; then
+    echo "✅ Using local image: $IMAGE"
+    PULL_STATUS="(local image)"
+  else
+    echo "❌ Local image '$IMAGE' not found in Docker context '${CURRENT_CONTEXT}'."
+    echo "   Tips:"
+    echo "   • If you built with buildx, make sure you used --load to import into the local engine:"
+    echo "     docker buildx build --load -t $IMAGE ."
+    echo "     (or use classic build:)"
+    echo "     docker build -t $IMAGE ."
+    echo "   • Verify your context matches where you built:"
+    echo "     docker context ls"
+    echo "     docker context show"
+    echo "   • List matching local images:"
+    echo "     docker image ls $REPO"
+    exit 1
+  fi
+else
+  if [[ "$FORCE_UPDATE_IMAGE" == "true" ]]; then
+    echo "⬇️  --update-image passed: pulling latest for $IMAGE…"
+    docker pull "$IMAGE"
+    PULL_STATUS="(just pulled)"
+  elif [[ "$IMAGE_PRESENT" == "false" ]]; then
+    echo "⬇️  Image not found locally. Pulling $IMAGE …"
+    docker pull "$IMAGE"
+    PULL_STATUS="(just pulled)"
+  else
+    echo "✅ Image already present: $IMAGE"
+    PULL_STATUS="(already on this machine)"
+  fi
+fi
+
+# -------------------- Show image version/build info --------------------
+show_image_info() {
+  local img="$1"
+  local ver created rev src title
+  ver=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.version"}}' 2>/dev/null || true)
+  created=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.created"}}' 2>/dev/null || true)
+  rev=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' 2>/dev/null || true)
+  src=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.source"}}' 2>/dev/null || true)
+  title=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.title"}}' 2>/dev/null || true)
+  if [[ -z "${ver}" ]]; then ver="(no version label)"; fi
+  if [[ -z "${created}" ]]; then created=$(docker image inspect "$img" --format '{{.Created}}' 2>/dev/null || echo ""); fi
+  if [[ -z "${rev}" ]]; then rev="(no revision label)"; fi
+  if [[ -z "${title}" ]]; then title="$img"; fi
+  local digests
+  digests=$(docker image inspect "$img" --format '{{range .RepoDigests}}{{.}}{{"\n"}}{{end}}' 2>/dev/null || true)
+
+  echo "ℹ️  Image info ${PULL_STATUS}:"
+  echo "   • Title:      ${title}"
+  echo "   • Version:    ${ver}"
+  echo "   • Created:    ${created}"
+  echo "   • Revision:   ${rev}"
+  [[ -n "$src" ]] && echo "   • Source:     ${src}"
+  if [[ -n "$digests" ]]; then
+    echo "   • Digests:"
+    echo "$digests" | sed 's/^/     - /'
+  fi
+}
+show_image_info "$IMAGE"
+
 
 run_container_with_mount() {
   echo "🔗 Binding host courses to container: $HOST_COURSES ➜ /teaching/courses"
   docker run -dit \
     --name "$CONTAINER_NAME" \
     -v "$HOST_COURSES":/teaching/courses \
-    -p 8081:8081 \
-    teaching-quartz \
+    -p ${HOST_PORT}:${CONTAINER_PORT} \
+    "$IMAGE" \
     tail -f /dev/null
 }
 
 echo "🚀 Starting container if needed..."
+# -------------------- Pre-flight checks & context --------------------
+if ! command -v docker >/dev/null 2>&1; then
+  echo "❌ Docker is not installed or not on PATH. Please install Docker Desktop first."
+  exit 1
+fi
+if ! docker info >/dev/null 2>&1; then
+  echo "❌ Docker daemon not reachable."
+  echo "   - On macOS/Windows, open Docker Desktop and wait for it to start."
+  echo "   - On Linux, ensure the Docker service is running."
+  exit 1
+fi
+CURRENT_CONTEXT=$(docker context show 2>/dev/null || echo "unknown")
+HOST_ARCH=$(docker info --format '{{.Architecture}}' 2>/dev/null || echo "unknown")
+HOST_OS=$(docker info --format '{{.OSType}}' 2>/dev/null || echo "unknown")
+echo "🔌 Docker context: ${CURRENT_CONTEXT}"
+echo "🧭 Host detected by Docker: ${HOST_OS}/${HOST_ARCH}"
+echo "🖼️  Using image: ${IMAGE}"
 if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
   # Container exists — check its current /teaching/courses mount
   CURRENT_MOUNT_SRC=$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/teaching/courses"}}{{.Source}}{{end}}{{end}}' "$CONTAINER_NAME" 2>/dev/null || echo "")
