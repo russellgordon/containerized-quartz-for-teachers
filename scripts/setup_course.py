@@ -1437,7 +1437,13 @@ def setup_course(no_backup: bool = False):
         "4": "Grade 12"
     }
     grade_char = course_code[3] if len(course_code) >= 4 else ""
-    grade_label = grade_map.get(grade_char, "Grade ?")
+    # If the 4th character isn't numeric (e.g., club code like "CODING"),
+    # omit the grade prefix entirely; otherwise fall back to existing mapping
+    # (including "Grade ?" for unknown digits).
+    if grade_char.isdigit():
+        grade_label = grade_map.get(grade_char, "Grade ?")
+    else:
+        grade_label = ""
 
     for sec in section_numbers:
         section_name = f"section{sec}"
@@ -1448,7 +1454,8 @@ def setup_course(no_backup: bool = False):
         if not index_md_path.exists():
             with open(index_md_path, "w", encoding="utf-8") as f:
                 f.write("---\n")
-                f.write(f"title: {grade_label} {course_name}, Section {sec}\n")
+                title_prefix = f"{grade_label} " if grade_label else ""
+                f.write(f"title: {title_prefix}{course_name}, Section {sec}\n")
                 f.write(f"created: {now_str}\n")
                 f.write("draft: false\n")
                 f.write("---\n")
