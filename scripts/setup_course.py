@@ -1255,7 +1255,28 @@ def setup_course(no_backup: bool = False):
         looked_up_name = get_course_name_from_json(course_code) or "Course Website"
         course_name = prompt_with_default("Enter the course name you wish to use", looked_up_name)
 
-    # ---------- NEW: Prompt for Quartz locale (restricted list) --------------
+    
+    # ---------- NEW: Optional custom short label for clubs (no grade) -------
+    # If the 4th character of the course code is not a digit, treat as no grade
+    custom_short_name = saved_config.get("custom_short_name", "")
+    grade_char_for_prompt = course_code[3] if len(course_code) >= 4 else ""
+    if not grade_char_for_prompt.isdigit():
+        print("\n🔤 Optional: Set a short label (≤12 chars) to appear beside the emoji (replaces course code).")
+        suggested_short = (saved_config.get("custom_short_name") 
+                           or (course_name.split()[0][:12] if course_name else "") 
+                           or course_code[:12])
+        # Use existing helper to allow default suggestion
+        user_input = prompt_with_default("Short label (≤12 chars, or leave blank to keep course code)", suggested_short)
+        user_input = (user_input or "").strip()
+        # Enforce 12 characters max
+        while len(user_input) > 12:
+            print("⚠️  Please keep this label to 12 characters or fewer.")
+            user_input = input("Short label (≤12 chars, or Enter to skip): ").strip()
+        custom_short_name = user_input
+    else:
+        # Preserve previously saved value if present
+        custom_short_name = saved_config.get("custom_short_name", "")
+# ---------- NEW: Prompt for Quartz locale (restricted list) --------------
     locale_code = prompt_quartz_locale(saved_config)
 
     # Count first (kept for compatibility / UX), then timetable section numbers
@@ -1358,6 +1379,7 @@ def setup_course(no_backup: bool = False):
     config = {
         "course_code": course_code,
         "course_name": course_name,
+        "custom_short_name": custom_short_name,
         "locale": locale_code,  # NEW: Quartz locale saved for build_site.py
         "emojis": emojis_config,
         "num_sections": num_sections,

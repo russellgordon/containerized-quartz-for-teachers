@@ -493,6 +493,26 @@ def resolve_section_emoji(config: dict, section_number: int) -> str:
 # --- END ADD -----------------------------------------------------------------
 
 # --- ADD: Resolve per-section 'show section marker' flag ---------------------
+
+# --- ADD: Resolve header label (course code vs custom short name for clubs) ---
+def resolve_header_label(config: dict, course_code: str) -> str:
+    """Return the label that appears beside the emoji in the page title.
+
+    If the course code's 4th character is a digit (e.g., MPM2D, ICS3U),
+    we preserve the existing behavior of showing the COURSE CODE in UPPERCASE.
+
+    If there is *no* numeric 4th character (e.g., CODING, MATH), we try to use
+    a custom short name saved in course_config.json under "custom_short_name".
+    If it's not present, we fall back to a title-cased version of the course code.
+    """
+    grade_char = course_code[3] if len(course_code) >= 4 else ""
+    if grade_char.isdigit():
+        return course_code.upper()
+    # Club/Non-standard code
+    custom = (config.get("custom_short_name") or "").strip()
+    if custom:
+        return custom
+    return course_code.title()
 def resolve_show_section_marker(config: dict, section_number: int) -> bool:
     """
     Return whether 'S{section}' should appear in the page title.
@@ -618,7 +638,7 @@ def validate_requested_section(allowed: list[int], requested: int) -> bool:
     return False
 # ---------------------------------------------------------------------------
 
-def update_page_title(config_path: Path, course_code: str, section_number: int, emoji: str, show_section_marker: bool = True):
+def update_page_title(config_path: Path, header_label: str, section_number: int, emoji: str, show_section_marker: bool = True):
     if not config_path.exists():
         print(f"⚠️ quartz.config.ts not found at {config_path}")
         return
@@ -631,9 +651,9 @@ def update_page_title(config_path: Path, course_code: str, section_number: int, 
     # --- MODIFIED: use resolved emoji & optional section marker ---
     safe_emoji = (emoji or "📚").strip()
     if show_section_marker:
-        new_title = f'{safe_emoji} {course_code.upper()} S{section_number}'
+        new_title = f'{safe_emoji} {header_label} S{section_number}'
     else:
-        new_title = f'{safe_emoji} {course_code.upper()}'
+        new_title = f'{safe_emoji} {header_label}'
 
     for line in lines:
         if "pageTitle:" in line:
@@ -2249,7 +2269,8 @@ def build_section_site(
     # Update page title (now with per-section emoji and optional section marker)
     config_path = output_dir / "quartz.config.ts"
     page_emoji = resolve_section_emoji(config, section_number)
-    update_page_title(config_path, course_code, section_number, page_emoji, show_marker)
+    header_label = resolve_header_label(config, course_code)
+    update_page_title(config_path, header_label, section_number, page_emoji, show_marker)
     patch_default_date_type(config_path)
 
     # --- ADD: PATCH LOCALE in quartz.config.ts based on course_config.json ----
