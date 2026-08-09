@@ -1,0 +1,73 @@
+import AppKit
+import SwiftUI
+
+/// Shows a folder's location the way Finder's Path Bar does: each
+/// ancestor folder with its real Finder icon and localized name,
+/// separated by chevrons (Macintosh HD › Users › … › folder).
+struct FinderPathBarView: View {
+
+    // MARK: - Stored properties
+
+    let folderURL: URL
+
+    // MARK: - Computed properties
+
+    /// Every ancestor path from the volume root down to the folder.
+    var ancestorPaths: [String] {
+        return FinderPathBarView.ancestorPaths(for: folderURL)
+    }
+
+    // MARK: - Body
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            pathRow
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Folder location: \(folderURL.path)")
+        .accessibilityIdentifier("finderPathBar")
+    }
+
+    /// The icons-names-chevrons row itself (also rendered directly by
+    /// snapshot tests, where ScrollView cannot lay out offscreen).
+    var pathRow: some View {
+        HStack(spacing: 4) {
+            ForEach(Array(ancestorPaths.indices), id: \.self) { index in
+                if index > 0 {
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+                HStack(spacing: 3) {
+                    Image(nsImage: NSWorkspace.shared.icon(forFile: ancestorPaths[index]))
+                        .resizable()
+                        .frame(width: 16, height: 16)
+                    Text(FileManager.default.displayName(atPath: ancestorPaths[index]))
+                        .font(.callout)
+                }
+            }
+        }
+        .padding(.horizontal, 4)
+    }
+
+    // MARK: - Functions
+
+    /// "/Users/x/Desktop/Y" → ["/", "/Users", "/Users/x",
+    /// "/Users/x/Desktop", "/Users/x/Desktop/Y"].
+    static func ancestorPaths(for url: URL) -> [String] {
+        let components: [String] = url.standardizedFileURL.pathComponents
+        var result: [String] = []
+        var currentPath: String = ""
+        for component in components {
+            if component == "/" {
+                currentPath = "/"
+            } else if currentPath == "/" {
+                currentPath = "/" + component
+            } else {
+                currentPath = currentPath + "/" + component
+            }
+            result.append(currentPath)
+        }
+        return result
+    }
+}

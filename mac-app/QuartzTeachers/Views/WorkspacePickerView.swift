@@ -33,6 +33,11 @@ struct WorkspacePickerView: View {
             }
 
             if workspace.workspaceCanBeInitialized {
+                if let chosenURL = workspace.workspaceURL {
+                    FinderPathBarView(folderURL: chosenURL)
+                        .frame(maxWidth: 520)
+                }
+
                 Text("This folder is empty. Set it up as a new working folder? The toolchain's launcher scripts will be copied in, and you can create your first course right away.")
                     .frame(maxWidth: 460)
                     .multilineTextAlignment(.center)

@@ -129,6 +129,14 @@ final class InAppUserInterfaceTests: XCTestCase {
             to: screenshotDirectory + "/05-font-previews.png"
         )
 
+        // 5c. Render the Finder-style path bar for visual review.
+        try WindowCapture.captureView(
+            FinderPathBarView(folderURL: URL(fileURLWithPath: NSHomeDirectory() + "/Desktop")).pathRow                .padding(12)
+                .background(.white),
+            size: CGSize(width: 560, height: 44),
+            to: screenshotDirectory + "/08-path-bar.png"
+        )
+
         // 6. Open the New Course wizard sheet.
         workspace.isShowingNewCourseWizard = true
         await settle(seconds: 1.2)

@@ -40,6 +40,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 13 | 2026-08-09 | Choosing an empty folder should offer to initialize it as a new working folder (copying the launcher scripts in), instead of showing the missing-scripts error. | ✅ Implemented — the launcher scripts are bundled as app resources; an empty folder (ignoring .DS_Store) shows "Set Up This Folder", which copies the scripts (executable), creates `courses/`, and opens the New Course wizard. Non-empty folders without scripts still get the error, so existing content is never taken over. The error text now also suggests choosing an empty folder to start fresh. | Bundle the platform's launcher scripts (.bat/.ps1, CRLF); same empty-folder detection and take-over guard; initialization flows straight into course creation. |
 
+| 14 | 2026-08-09 | Above the "This folder is empty…" offer, show the chosen folder's path styled like Finder's Path Bar. | ✅ Implemented — `FinderPathBarView`: each ancestor from the volume root down, with its real system icon (`NSWorkspace.icon(forFile:)`) and localized display name, chevron-separated, horizontally scrollable; accessible as a single "Folder location" element. | Windows analogue: breadcrumb like File Explorer's address bar (drive → folders) with shell icons (`SHGetFileInfo`/framework equivalent). |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the
