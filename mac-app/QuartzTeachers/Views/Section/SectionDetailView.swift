@@ -53,20 +53,17 @@ struct SectionDetailView: View {
                         previewController.goBack()
                     }
                     .disabled(!previewController.canGoBack)
-                    .keyboardShortcut("[", modifiers: .command)
                     .accessibilityIdentifier("previewBackButton")
 
                     Button("Forward", systemImage: "chevron.right") {
                         previewController.goForward()
                     }
                     .disabled(!previewController.canGoForward)
-                    .keyboardShortcut("]", modifiers: .command)
                     .accessibilityIdentifier("previewForwardButton")
 
                     Button("Reload", systemImage: "arrow.clockwise") {
                         previewController.reload()
                     }
-                    .keyboardShortcut("r", modifiers: .command)
                     .accessibilityIdentifier("previewReloadButton")
                 }
             }
@@ -97,6 +94,7 @@ struct SectionDetailView: View {
                 }
             }
         }
+        .focusedSceneValue(\.previewController, previewURL != nil ? previewController : nil)
         .onDisappear {
             stopPreview()
         }
@@ -164,19 +162,60 @@ struct SectionDetailView: View {
             urlToOpen = previewURL
         }
         if let urlToOpen {
-            NSWorkspace.shared.open(urlToOpen)
+            NSWorkspace.shared.open(SectionDetailView.browserSafeURL(for: urlToOpen))
         }
     }
 
-    /// Polls localhost:8081 until the Quartz preview server responds, then
-    /// switches the view from console output to the embedded website.
+    /// Rewrites "localhost" to "127.0.0.1" for hand-off to a browser.
+    /// Safari tries IPv6 (::1) first for "localhost", and the container
+    /// only publishes the port on IPv4 — which reads as "server dropped
+    /// the connection". The numeric address sidesteps that entirely.
+    static func browserSafeURL(for url: URL) -> URL {
+        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return url
+        }
+        if components.host == "localhost" {
+            components.host = "127.0.0.1"
+        }
+        if let rewritten = components.url {
+            return rewritten
+        }
+        return url
+    }
+
+    /// Waits for THIS run's Quartz server, then switches the view from
+    /// console output to the embedded website.
+    ///
+    /// A previous preview (possibly of a different course) can still be
+    /// serving on port 8081 when this run starts — the toolchain only
+    /// kills it partway through the build. Polling immediately would
+    /// happily embed that stale site, so this waits for the script's own
+    /// "Launching Quartz preview" line first and only then trusts a
+    /// response from the port.
     func waitForPreviewServer() async {
-        let serverURL: URL = URL(string: "http://localhost:8081/")!
+        let serverURL: URL = URL(string: "http://127.0.0.1:8081/")!
+
+        // Phase 1: wait for the script to announce ITS server is starting
+        // (which happens right after it has freed the port).
         // Up to 10 minutes: a first-ever build may pull the Docker image
         // and install npm dependencies.
-        for _ in 0..<600 {
+        var waitedSeconds: Int = 0
+        while waitedSeconds < 600 {
             if !previewRunner.isRunning && previewRunner.lastExitCode != nil {
                 // The script exited before the server came up: show output.
+                isWaitingForServer = false
+                return
+            }
+            if previewRunner.transcript.displayText.contains("Launching Quartz preview") {
+                break
+            }
+            try? await Task.sleep(for: .seconds(1))
+            waitedSeconds += 1
+        }
+
+        // Phase 2: poll until the newly launched server responds.
+        while waitedSeconds < 600 {
+            if !previewRunner.isRunning && previewRunner.lastExitCode != nil {
                 isWaitingForServer = false
                 return
             }
@@ -195,6 +234,7 @@ struct SectionDetailView: View {
                 // Server not up yet — keep waiting.
             }
             try? await Task.sleep(for: .seconds(1))
+            waitedSeconds += 1
         }
         isWaitingForServer = false
     }

@@ -24,6 +24,7 @@ struct QuartzTeachersApp: App {
                 .frame(minWidth: 900, minHeight: 600)
         }
         .commands {
+            PreviewCommands()
             CommandGroup(after: .newItem) {
                 Button("Change Working Folder…") {
                     workspace.isChoosingWorkspace = true
