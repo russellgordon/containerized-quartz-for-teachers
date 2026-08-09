@@ -64,10 +64,36 @@ struct FontChoiceEditorView: View {
             }
         }
 
+        // Live previews rendered in the actual fonts (bundled with the
+        // app); an unavailable font simply falls back to the system font.
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Grade 11 Computer Science")
+                .font(FontChoiceEditorView.previewFont(family: choice.header, size: 19))
+            Text("Body text on your site will look like this sentence does.")
+                .font(FontChoiceEditorView.previewFont(family: choice.body, size: 13))
+        }
+        .accessibilityIdentifier("fontPairingPreview")
+
         Picker("Code font", selection: $choice.code) {
             ForEach(codeFontOptions, id: \.self) { fontName in
                 Text(fontName).tag(fontName)
             }
         }
+
+        Text("for number in range(10):  # code samples use this font")
+            .font(FontChoiceEditorView.previewFont(family: choice.code, size: 12))
+            .accessibilityIdentifier("codeFontPreview")
+    }
+
+    // MARK: - Functions
+
+    /// A preview font for a site font family. The "Helvetica, Arial"
+    /// system pairing previews as Helvetica; every other family is
+    /// bundled with the app and registered at launch.
+    static func previewFont(family: String, size: CGFloat) -> Font {
+        if family == "Helvetica, Arial" {
+            return Font.custom("Helvetica", size: size)
+        }
+        return Font.custom(family, size: size)
     }
 }

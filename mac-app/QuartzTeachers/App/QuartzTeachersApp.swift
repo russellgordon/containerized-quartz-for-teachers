@@ -7,6 +7,14 @@ struct QuartzTeachersApp: App {
 
     @State var workspace = WorkspaceModel.shared
 
+    // MARK: - Initializer
+
+    init() {
+        // Register bundled fonts so the settings form can preview the
+        // site font choices.
+        BundledFontList.registerFonts()
+    }
+
     // MARK: - Body
 
     var body: some Scene {

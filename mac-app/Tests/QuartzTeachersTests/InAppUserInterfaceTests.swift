@@ -1,3 +1,4 @@
+import SwiftUI
 import XCTest
 @testable import QuartzTeachers
 
@@ -110,6 +111,23 @@ final class InAppUserInterfaceTests: XCTestCase {
         workspace.selection = .section("EXC2O", 1)
         await settle()
         try WindowCapture.captureMainWindow(to: screenshotDirectory + "/03-section-view.png")
+
+        // 5b. Render font-preview samples in the actual bundled typefaces
+        // for visual review (a distinct look per line proves registration).
+        let sampleFamilies: [String] = ["Playfair Display", "Montserrat", "Lora", "JetBrains Mono", "Fira Code", "Ubuntu Mono"]
+        let fontSampleView = VStack(alignment: .leading, spacing: 6) {
+            ForEach(sampleFamilies, id: \.self) { familyName in
+                Text("\(familyName): Grade 11 Computer Science — for x in range(10)")
+                    .font(FontChoiceEditorView.previewFont(family: familyName, size: 16))
+            }
+        }
+        .padding(16)
+        .background(.white)
+        try WindowCapture.captureView(
+            fontSampleView,
+            size: CGSize(width: 640, height: 220),
+            to: screenshotDirectory + "/05-font-previews.png"
+        )
 
         // 6. Open the New Course wizard sheet.
         workspace.isShowingNewCourseWizard = true
