@@ -2,11 +2,11 @@ import SwiftUI
 
 /// The friendly face of a running task: an indeterminate progress bar
 /// with a plain-language phase description, and the detailed output
-/// tucked behind a "Show details" disclosure.
+/// tucked behind a "Show details" toggle.
 ///
-/// If the task appears stuck at a question (which the app normally
-/// answers itself), a notice invites the teacher to open the details
-/// and reply. Details open automatically when a task fails.
+/// Layout contract: the header is pinned and fixed; the output area is
+/// a FIXED-HEIGHT scroll view that is clipped, so no amount of output
+/// can ever push the header (or anything else) out of reach.
 struct TaskProgressView: View {
 
     // MARK: - Stored properties
@@ -64,20 +64,32 @@ struct TaskProgressView: View {
                 }
                 .padding(12)
             }
+            .fixedSize(horizontal: false, vertical: true)
 
             Divider()
 
-            DisclosureGroup(isExpanded: $isShowingDetails) {
-                TaskConsoleView(runner: runner, title: title)
-                    .frame(minHeight: 160, maxHeight: .infinity)
+            Button {
+                isShowingDetails.toggle()
             } label: {
-                Text("Show details")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 4) {
+                    Image(systemName: isShowingDetails ? "chevron.down" : "chevron.right")
+                        .font(.caption)
+                    Text(isShowingDetails ? "Hide details" : "Show details")
+                        .font(.callout)
+                }
+                .foregroundStyle(.secondary)
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .accessibilityIdentifier("taskDetailsDisclosure")
+
+            if isShowingDetails {
+                TaskConsoleView(runner: runner, title: title)
+                    .frame(height: 300)
+                    .clipped()
+            }
         }
         .onChange(of: runner.lastExitCode) {
             // A failure is worth reading about: open the details.
