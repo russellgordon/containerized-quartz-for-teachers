@@ -51,7 +51,7 @@ class ScriptRunner {
 
         let scriptURL: URL = workingDirectory.appendingPathComponent(scriptName)
         if !FileManager.default.fileExists(atPath: scriptURL.path) {
-            launchProblem = "\(scriptName) was not found in \(workingDirectory.path)."
+            launchProblem = "This working folder is missing a piece it needs (\(scriptName)). Try choosing your working folder again from the File menu."
             return
         }
 
@@ -59,7 +59,7 @@ class ScriptRunner {
         do {
             newTerminal = try PseudoTerminal()
         } catch {
-            launchProblem = "Could not create a terminal for the script: \(error.localizedDescription)"
+            launchProblem = "Could not get started: \(error.localizedDescription)"
             return
         }
 
@@ -105,7 +105,7 @@ class ScriptRunner {
         do {
             try newProcess.run()
         } catch {
-            launchProblem = "Could not start \(scriptName): \(error.localizedDescription)"
+            launchProblem = "Could not get started: \(error.localizedDescription)"
             return
         }
 

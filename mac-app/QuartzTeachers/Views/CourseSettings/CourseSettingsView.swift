@@ -73,7 +73,7 @@ struct CourseSettingsView: View {
                         hidesMarkdownExtension: true,
                         items: $configuration.perSectionFiles
                     )
-                    Text("Folders and files added here are created on disk the next time ./setup.sh runs; the site build also discovers new folders you create in Obsidian automatically.")
+                    Text("Tip: you can also simply create new folders in Obsidian — they’re added to your site automatically the next time you preview.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 } header: {

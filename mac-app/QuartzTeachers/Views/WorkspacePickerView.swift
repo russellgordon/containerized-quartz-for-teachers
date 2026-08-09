@@ -20,7 +20,7 @@ struct WorkspacePickerView: View {
                 .font(.title2)
                 .bold()
 
-            Text("Pick the folder you use with the command-line toolchain — the one containing setup.sh, preview.sh, deploy.sh, and your courses folder (for example, “Class Websites” on your Desktop).")
+            Text("Pick the folder where your class websites live — the one with your courses inside (for example, “Class Websites” on your Desktop). Starting from scratch? Choose an empty folder instead.")
                 .frame(maxWidth: 460)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
@@ -38,7 +38,7 @@ struct WorkspacePickerView: View {
                         .frame(maxWidth: 520)
                 }
 
-                Text("This folder is empty. Set it up as a new working folder? The toolchain's launcher scripts will be copied in, and you can create your first course right away.")
+                Text("This folder is empty. Set it up as your new working folder? Everything needed will be added for you, and you can create your first course right away.")
                     .frame(maxWidth: 460)
                     .multilineTextAlignment(.center)
 

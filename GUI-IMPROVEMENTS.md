@@ -42,6 +42,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 14 | 2026-08-09 | Above the "This folder is empty…" offer, show the chosen folder's path styled like Finder's Path Bar. | ✅ Implemented — `FinderPathBarView`: each ancestor from the volume root down, with its real system icon (`NSWorkspace.icon(forFile:)`) and localized display name, chevron-separated, horizontally scrollable; accessible as a single "Folder location" element. | Windows analogue: breadcrumb like File Explorer's address bar (drive → folders) with shell icons (`SHGetFileInfo`/framework equivalent). |
 
+| 15 | 2026-08-09 | Messaging rule: the GUI must not use "toolchain", "script", or otherwise hint at command-line machinery — it should feel complete on its own to non-technical users. | ✅ Implemented — reworded the workspace picker (intro, empty-folder offer), workspace validation errors, the content-structure tip, the console's input prompt, the wizard's progress title ("Creating your course…"), and launch-failure messages. File names appear only inside genuine error diagnostics (e.g. a missing app resource). "Netlify" stays: teachers knowingly create that account. | Same rule for all Windows GUI copy: no "script"/"toolchain"/"PowerShell"/"WSL" in normal flows; implementation nouns permitted only inside error diagnostics; keep "Netlify". |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

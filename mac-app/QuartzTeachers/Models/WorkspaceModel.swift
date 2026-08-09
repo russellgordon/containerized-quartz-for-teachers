@@ -121,7 +121,7 @@ class WorkspaceModel {
                 workspaceCanBeInitialized = true
                 return
             }
-            workspaceProblem = "This folder does not contain the toolchain's launcher scripts (preview.sh was not found). Choose the folder you normally run ./setup.sh and ./preview.sh from — or choose an empty folder to start fresh."
+            workspaceProblem = "This folder isn’t set up for class websites yet. Choose the folder where your courses live — or choose an empty folder to start fresh."
             return
         }
 
@@ -129,7 +129,7 @@ class WorkspaceModel {
             return
         }
         if !fileManager.fileExists(atPath: coursesDirectoryURL.path) {
-            workspaceProblem = "This folder has no courses/ directory yet. Create a course first (with the New Course button or ./setup.sh)."
+            workspaceProblem = "There are no courses in this folder yet. Click New Course to create your first one."
             return
         }
 
@@ -185,7 +185,7 @@ class WorkspaceModel {
         let scriptNames: [String] = ["setup.sh", "preview.sh", "deploy.sh"]
         for scriptName in scriptNames {
             guard let bundledURL = Bundle.main.url(forResource: scriptName, withExtension: nil) else {
-                workspaceProblem = "The app is missing its bundled copy of \(scriptName) — please reinstall the app."
+                workspaceProblem = "Part of the app’s built-in setup files is missing (\(scriptName)) — please reinstall the app."
                 return
             }
             let destinationURL: URL = workspaceURL.appendingPathComponent(scriptName)
@@ -196,7 +196,7 @@ class WorkspaceModel {
                 try fileManager.copyItem(at: bundledURL, to: destinationURL)
                 try fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: destinationURL.path)
             } catch {
-                workspaceProblem = "Could not copy \(scriptName) into the folder: \(error.localizedDescription)"
+                workspaceProblem = "Could not set up this folder: \(error.localizedDescription)"
                 return
             }
         }
