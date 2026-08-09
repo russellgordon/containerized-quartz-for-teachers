@@ -47,39 +47,43 @@ struct SectionDetailView: View {
         }
         .navigationTitle(titleText)
         .toolbar {
-            if previewURL != nil {
-                ToolbarItemGroup(placement: .navigation) {
-                    Button("Back", systemImage: "chevron.left") {
-                        previewController.goBack()
-                    }
-                    .disabled(!previewController.canGoBack)
-                    .accessibilityIdentifier("previewBackButton")
-
-                    Button("Forward", systemImage: "chevron.right") {
-                        previewController.goForward()
-                    }
-                    .disabled(!previewController.canGoForward)
-                    .accessibilityIdentifier("previewForwardButton")
-
-                    Button("Reload", systemImage: "arrow.clockwise") {
-                        previewController.reload()
-                    }
-                    .accessibilityIdentifier("previewReloadButton")
+            // Every item is ALWAYS present (disabled when inapplicable):
+            // conditionally inserting toolbar items makes macOS rebuild
+            // the toolbar, which briefly mis-lays-out the title area.
+            ToolbarItemGroup(placement: .navigation) {
+                Button("Back", systemImage: "chevron.left") {
+                    previewController.goBack()
                 }
+                .disabled(previewURL == nil || !previewController.canGoBack)
+                .accessibilityIdentifier("previewBackButton")
+
+                Button("Forward", systemImage: "chevron.right") {
+                    previewController.goForward()
+                }
+                .disabled(previewURL == nil || !previewController.canGoForward)
+                .accessibilityIdentifier("previewForwardButton")
+
+                Button("Reload", systemImage: "arrow.clockwise") {
+                    previewController.reload()
+                }
+                .disabled(previewURL == nil)
+                .accessibilityIdentifier("previewReloadButton")
             }
             ToolbarItemGroup {
-                if previewRunner.isRunning {
-                    Button("Stop Preview", systemImage: "stop.fill") {
+                // One stable item that changes face, not two swapped
+                // items — swapping rebuilds the toolbar (same glitch).
+                Button(
+                    previewRunner.isRunning ? "Stop Preview" : "Preview",
+                    systemImage: previewRunner.isRunning ? "stop.fill" : "play.fill"
+                ) {
+                    if previewRunner.isRunning {
                         stopPreview()
-                    }
-                    .accessibilityIdentifier("stopPreviewButton")
-                } else {
-                    Button("Preview", systemImage: "play.fill") {
+                    } else {
                         startPreview()
                     }
-                    .disabled(isBusy)
-                    .accessibilityIdentifier("previewButton")
                 }
+                .disabled(!previewRunner.isRunning && isBusy)
+                .accessibilityIdentifier(previewRunner.isRunning ? "stopPreviewButton" : "previewButton")
 
                 Button("Deploy", systemImage: "paperplane.fill") {
                     startDeploy()
@@ -87,11 +91,11 @@ struct SectionDetailView: View {
                 .disabled(isBusy)
                 .accessibilityIdentifier("deployButton")
 
-                if previewURL != nil {
-                    Button("Open in Browser", systemImage: "safari") {
-                        openInBrowser()
-                    }
+                Button("Open in Browser", systemImage: "safari") {
+                    openInBrowser()
                 }
+                .disabled(previewURL == nil)
+                .accessibilityIdentifier("openInBrowserButton")
             }
         }
         .focusedSceneValue(\.previewController, previewURL != nil ? previewController : nil)

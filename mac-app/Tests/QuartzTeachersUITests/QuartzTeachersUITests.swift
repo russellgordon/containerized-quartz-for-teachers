@@ -154,6 +154,70 @@ final class QuartzTeachersUITests: XCTestCase {
         application.typeKey(.escape, modifierFlags: [])
     }
 
+    /// Regression guard for toolbar-transition layout glitches: while a
+    /// preview starts (toolbar state changes underfoot), the progress
+    /// header must stay strictly below the toolbar at every sampled
+    /// frame. Uses a stub preview so the test needs no Docker and
+    /// exercises the exact transition window.
+    func testProgressHeaderStaysBelowToolbarWhilePreviewStarts() throws {
+        let fixtureURL: URL = try FixtureWorkspace.materialize()
+
+        // Replace the real launcher with a slow, harmless stub so the
+        // "starting" state lasts long enough to sample. (It never emits
+        // the launch announcement, so the app keeps showing progress.)
+        let stubScript: String = """
+        #!/bin/bash
+        echo "Stub preview starting"
+        for step in 1 2 3 4 5 6 7 8 9 10; do
+          echo "working step $step"
+          sleep 0.3
+        done
+        exit 0
+        """
+        let stubURL: URL = fixtureURL.appendingPathComponent("preview.sh")
+        try stubScript.write(to: stubURL, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: stubURL.path)
+
+        let application: XCUIApplication = XCUIApplication()
+        application.launchEnvironment["UITEST_WORKSPACE"] = fixtureURL.path
+        application.launch()
+
+        let courseRow: XCUIElement = application.outlines.staticTexts["EXC2O"]
+        XCTAssertTrue(courseRow.waitForExistence(timeout: 10))
+        courseRow.click()
+        let sectionRow: XCUIElement = application.outlines.staticTexts["Section 1"]
+        XCTAssertTrue(sectionRow.waitForExistence(timeout: 10))
+        sectionRow.click()
+
+        let previewButton: XCUIElement = application.buttons["previewButton"]
+        XCTAssertTrue(previewButton.waitForExistence(timeout: 10))
+        previewButton.click()
+
+        let toolbar: XCUIElement = application.toolbars.firstMatch
+        let phaseLabel: XCUIElement = application.staticTexts["taskPhaseLabel"]
+        XCTAssertTrue(phaseLabel.waitForExistence(timeout: 5), "The progress header should appear once the preview starts")
+
+        // Sample the layout repeatedly through the transition window.
+        var samplesTaken: Int = 0
+        for sampleNumber in 0..<12 {
+            if !phaseLabel.exists {
+                break
+            }
+            let labelFrame: CGRect = phaseLabel.frame
+            let toolbarFrame: CGRect = toolbar.frame
+            samplesTaken += 1
+            XCTAssertGreaterThanOrEqual(
+                labelFrame.minY,
+                toolbarFrame.maxY - 2,
+                "Sample \(sampleNumber): the progress header (y=\(labelFrame.minY)) must sit below the toolbar (bottom=\(toolbarFrame.maxY))"
+            )
+            Thread.sleep(forTimeInterval: 0.2)
+        }
+        XCTAssertGreaterThan(samplesTaken, 3, "The transition window should have been sampled several times")
+
+        saveScreenshot(named: "08-preview-progress-layout", of: application)
+    }
+
     func testCancelRevertsEdits() throws {
         let application: XCUIApplication = try launchApp()
 

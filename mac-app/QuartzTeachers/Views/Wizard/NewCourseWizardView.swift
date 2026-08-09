@@ -94,14 +94,19 @@ struct NewCourseWizardView: View {
             Divider()
 
             HStack {
-                Button(hasStarted && !creator.isCreating ? "Done" : "Cancel") {
-                    if creator.isCreating {
-                        creator.runner.terminate()
+                // Cancel lives bottom-left while there is something to
+                // cancel; the affirmative action (Create Course / Done)
+                // is always bottom-right, per macOS convention.
+                if !hasStarted || creator.isCreating {
+                    Button("Cancel") {
+                        if creator.isCreating {
+                            creator.runner.terminate()
+                        }
+                        workspace.reloadCourses()
+                        dismiss()
                     }
-                    workspace.reloadCourses()
-                    dismiss()
+                    .accessibilityIdentifier("wizardCloseButton")
                 }
-                .accessibilityIdentifier("wizardCloseButton")
 
                 Spacer()
 
@@ -122,6 +127,14 @@ struct NewCourseWizardView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("createCourseButton")
+                } else if !creator.isCreating {
+                    Button("Done") {
+                        workspace.reloadCourses()
+                        dismiss()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction)
+                    .accessibilityIdentifier("wizardDoneButton")
                 }
             }
             .padding(12)
