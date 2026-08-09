@@ -38,6 +38,12 @@ class WorkspaceModel {
     /// working folder by copying the launcher scripts in.
     var workspaceCanBeInitialized: Bool = false
 
+    /// True when the chosen folder is neither a working folder nor empty.
+    /// The picker stays up (its guidance already covers what to choose)
+    /// without displaying an error — this state is not the teacher's
+    /// fault, just an unfinished choice.
+    var workspaceIsUnrecognized: Bool = false
+
     /// Set by the test harness (UITEST_WORKSPACE) to bypass persistence.
     private let isUnderUITest: Bool
 
@@ -107,6 +113,7 @@ class WorkspaceModel {
         courses = []
         workspaceProblem = nil
         workspaceCanBeInitialized = false
+        workspaceIsUnrecognized = false
 
         guard let workspaceURL else {
             return
@@ -119,9 +126,11 @@ class WorkspaceModel {
                 // A brand-new folder: offer to set it up rather than
                 // presenting an error.
                 workspaceCanBeInitialized = true
-                return
+            } else {
+                // Not a working folder: keep the picker up, no error —
+                // its own guidance already says what to choose.
+                workspaceIsUnrecognized = true
             }
-            workspaceProblem = "This folder isn’t set up for class websites yet. Choose the folder where your courses live — or choose an empty folder to start fresh."
             return
         }
 

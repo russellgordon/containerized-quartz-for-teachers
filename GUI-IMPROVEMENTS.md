@@ -46,6 +46,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 16 | 2026-08-09 | Hide the raw output behind a disclosure triangle; show a progress bar with a friendly status while actions run; when the task appears to be waiting for input (which shouldn't happen), show a notice pointing at the disclosure. | ✅ Implemented — `TaskProgressView`: indeterminate bar + plain-language phase text derived from output markers ("Downloading components…", "Building your site…", "Publishing your site…"); console behind a collapsed "Show details" disclosure; a stalled-prompt heuristic (prompt-shaped current line + ≥4 s of silence) drives an orange "A question needs your attention" notice; details auto-expand on failure. Used by preview, deploy, and course creation. | Same layered design: progress + phase label by default, output collapsed, prompt-stall notice, auto-expand on failure. Phase markers may differ per platform launcher output. |
 
+| 17 | 2026-08-09 | The red "this folder isn't set up for class websites" message is redundant — the picker's guidance already covers both cases (existing folder or empty). Never show it; behaviour otherwise unchanged. | ✅ Implemented — choosing a non-empty, non-workspace folder now keeps the picker up silently (a `workspaceIsUnrecognized` state) with no red text; genuine failures (unreadable folder, copy errors) still show. Unit test asserts the no-error behaviour. | Same principle: an unfinished choice is not an error. Red text is reserved for genuine failures. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

@@ -14,7 +14,7 @@ struct MainWindowView: View {
         @Bindable var workspace = workspace
 
         Group {
-            if workspace.workspaceURL == nil || workspace.workspaceProblem != nil || workspace.workspaceCanBeInitialized {
+            if workspace.workspaceURL == nil || workspace.workspaceProblem != nil || workspace.workspaceCanBeInitialized || workspace.workspaceIsUnrecognized {
                 WorkspacePickerView()
             } else {
                 NavigationSplitView {

@@ -25,14 +25,15 @@ final class WorkspaceInitializationTests: XCTestCase {
     }
 
     @MainActor
-    func testNonEmptyFolderWithoutScriptsStillReadsAsProblem() throws {
+    func testNonEmptyFolderWithoutScriptsKeepsPickerUpWithoutAnError() throws {
         let folderURL: URL = try makeTemporaryFolder()
         try Data("hello".utf8).write(to: folderURL.appendingPathComponent("unrelated.txt"))
         let workspace: WorkspaceModel = WorkspaceModel()
         workspace.chooseWorkspace(at: folderURL)
 
         XCTAssertFalse(workspace.workspaceCanBeInitialized, "A folder with existing content should not be silently taken over")
-        XCTAssertNotNil(workspace.workspaceProblem)
+        XCTAssertTrue(workspace.workspaceIsUnrecognized, "The picker should stay up so a different folder can be chosen")
+        XCTAssertNil(workspace.workspaceProblem, "An unfinished choice is not an error and should show no red text")
     }
 
     @MainActor
