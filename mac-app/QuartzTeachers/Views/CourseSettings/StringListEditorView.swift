@@ -30,6 +30,14 @@ struct StringListEditorView: View {
         return "Type new folder name here"
     }
 
+    /// The label for the add control, keyed to the list's kind.
+    var addLabel: String {
+        if hidesMarkdownExtension {
+            return "Add new file…"
+        }
+        return "Add new folder…"
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -55,13 +63,13 @@ struct StringListEditorView: View {
             }
 
             HStack {
-                TextField("Add", text: $newItemName, prompt: Text(promptText))
+                TextField(addLabel, text: $newItemName, prompt: Text(promptText))
                     .textFieldStyle(.roundedBorder)
                     .onSubmit {
                         addNewItem()
                     }
                     .accessibilityIdentifier("addField-\(title)")
-                Button("Add", systemImage: "plus.circle") {
+                Button(addLabel, systemImage: "plus.circle") {
                     addNewItem()
                 }
                 .labelStyle(.iconOnly)
