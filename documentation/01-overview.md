@@ -1,0 +1,93 @@
+# 1. Overview & Design Rationale
+
+[◀ Back to index](README.md) · [Next: The Docker Image ▶](02-docker-image.md)
+
+## The problem being solved
+
+Learning-management systems (Edsby, Brightspace, Google Classroom) are slow to
+publish to, awkward to structure, and hard to migrate away from. Teachers who
+maintain multiple sections of the same course face an additional pain: most of
+the content is identical across sections, but each section moves at its own
+pace, so *what is visible* and *when it was covered* differs per section.
+
+This toolchain lets a teacher:
+
+1. **Write everything as plain Markdown** in an Obsidian vault — future-proof,
+   searchable, portable, version-controllable.
+2. **Share most content across sections** while keeping per-section lesson
+   sequences (`section1/`, `section2/`, …) and per-section publication state
+   (a page can be published to Section 1 but still be a draft for Section 2).
+3. **Publish a polished website per section** with one command, with search,
+   code highlighting, LaTeX math, callouts, backlinks, and light/dark mode —
+   all provided by Quartz.
+4. **Own the output**: the deployed site is a folder of static files on a
+   Netlify site under the teacher's own account.
+
+## Why these particular technologies
+
+- **Quartz** was chosen because it is purpose-built to turn an Obsidian vault
+  into a website: it understands wikilinks (`[[Page Name]]`), transclusions
+  (`![[Page Name]]`), callouts, and Obsidian-flavoured Markdown natively, and
+  produces a modern site with full-text search. Version **4.5.0** is pinned so
+  the ~30 patches applied on top of it (see
+  [Quartz Customizations](06-quartz-customizations.md)) always target known
+  code.
+- **Docker** removes the single largest support burden when sharing the
+  workflow with other teachers: environment setup. Node.js, Python,
+  `python-frontmatter`, and the patched Quartz checkout are all frozen inside
+  one image (`rwhgrwhg/teaching-quartz`). A teacher installs Docker Desktop
+  and never touches npm or pip. The container is also **the distribution
+  mechanism for the launcher scripts themselves** — the scripts are baked into
+  the image and exported to the host with a one-line `docker run … export-scripts`
+  command, so teachers never clone this repository.
+- **Netlify** provides free static hosting with instant cache invalidation.
+  Deploys use Netlify's *file-digest* API so that a typical daily update
+  uploads only the handful of files that changed
+  (see [Deployment](07-deployment.md)).
+- **Python inside the container** does the orchestration: an interactive
+  setup wizard, a build pipeline that merges content and patches Quartz, and
+  a deployer. Python was a natural choice because the heavy lifting is text
+  processing — frontmatter manipulation, regex patching of TypeScript
+  files — and because it ships in the base image (`python:3.11-slim`).
+
+## The three commands, and what they really do
+
+| Command (macOS / Windows) | Script pair | What actually happens |
+|---|---|---|
+| `./setup.sh` / `.\setup.bat` | [`setup_course.py`](04-course-setup.md) | Ensures the container is running with the right folder mounted, then runs an interactive wizard that scaffolds `courses/<CODE>/` and writes `course_config.json` |
+| `./preview.sh ICS3U 1` / `.\preview.bat ICS3U 1` | [`build_site.py`](05-build-pipeline.md) | Merges shared + section-1 content into `.merged_output/section1/`, patches the Quartz scaffold, and serves the site at `http://localhost:8081` |
+| `./deploy.sh ICS3U 1` / `.\deploy.bat ICS3U 1` | [`deploy.py`](07-deployment.md) | Runs a static build (`--build-only`), then delta-uploads `public/` to a Netlify site tied to that section |
+
+## Key design decisions worth understanding
+
+**Per-section output directories.** Each section gets a complete, independent
+Quartz installation at `courses/<CODE>/.merged_output/section<N>/` (a hidden
+folder, so it does not clutter the Obsidian vault). This costs disk space but
+buys total isolation: each section has its own colour scheme, fonts, emoji,
+page title, and `node_modules`, and a broken build for one section cannot
+affect another.
+
+**Patch-at-build-time, not fork.** Rather than maintaining a fork of Quartz,
+the toolchain keeps a pristine `v4.5.0` checkout and applies small, mostly
+regex-based patches every time a site is built. Three heavily modified
+components are replaced wholesale at image-build time; everything else is
+edited in place, idempotently. The trade-off: patches are resilient to teacher
+tinkering (they re-apply on every build) but pinned to the exact source text
+of v4.5.0 — which is why the Quartz version is pinned in the Dockerfile.
+
+**Configuration is data, not code.** Everything a teacher chooses in the setup
+wizard lands in one JSON file, `course_config.json`, at the course root. The
+build script treats it as the single source of truth and even *appends newly
+discovered folders to it automatically* on each build, so a teacher can create
+a new folder in Obsidian and have it appear on the site without re-running
+setup (see [the build pipeline](05-build-pipeline.md#preflight-discovery)).
+
+**Determinism for cheap deploys.** Several patches exist purely to make
+successive builds byte-identical when content has not changed (a stable
+component ID instead of a random one, a fixed `SOURCE_DATE_EPOCH`, dropping
+git-derived dates). Every byte that stays identical is a file Netlify does
+not ask to be re-uploaded.
+
+---
+
+[◀ Back to index](README.md) · [Next: The Docker Image ▶](02-docker-image.md)
