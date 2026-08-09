@@ -50,7 +50,10 @@ struct SectionSettingsView: View {
                 }
             }
 
-            Toggle("Show “S\(sectionNumber)” marker in the site title", isOn: markerBinding)
+            VStack(alignment: .leading, spacing: 4) {
+                Toggle("Show section marker in the site title", isOn: markerBinding)
+                ExampleCaption("e.g. “S\(sectionNumber)” appears beside the course code")
+            }
 
             ColourSchemePickerView(selectedSchemeID: schemeBinding)
 

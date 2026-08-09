@@ -24,18 +24,20 @@ struct ColourSchemePickerView: View {
             }
 
             if let scheme = ColourSchemeCatalog.scheme(withID: selectedSchemeID) {
-                HStack(spacing: 4) {
-                    Text("Preview:")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                    ForEach(scheme.swatchHexValues, id: \.self) { hexValue in
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(Color(hexString: hexValue))
-                            .frame(width: 22, height: 14)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 3)
-                                    .strokeBorder(.quaternary)
-                            )
+                SampleBox {
+                    HStack(spacing: 4) {
+                        Text("Preview:")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                        ForEach(scheme.swatchHexValues, id: \.self) { hexValue in
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(Color(hexString: hexValue))
+                                .frame(width: 22, height: 14)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 3)
+                                        .strokeBorder(.quaternary)
+                                )
+                        }
                     }
                 }
                 .accessibilityHidden(true)

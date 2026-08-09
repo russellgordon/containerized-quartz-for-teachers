@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Wraps font sample text in a rounded rectangle with a slightly darker
+/// Wraps example content (font samples, colour swatches, …) in a rounded rectangle with a slightly darker
 /// background, so previews read as illustrations rather than settings.
-struct FontSampleBox<Content: View>: View {
+struct SampleBox<Content: View>: View {
 
     // MARK: - Stored properties
 

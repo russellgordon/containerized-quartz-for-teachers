@@ -69,7 +69,7 @@ struct FontChoiceEditorView: View {
 
             // Live previews rendered in the actual fonts (bundled with
             // the app); an unavailable font falls back to the system font.
-            FontSampleBox {
+            SampleBox {
                 Text("Grade 11 Computer Science")
                     .font(FontChoiceEditorView.previewFont(family: choice.header, size: 19))
                 Text("Body text on your site will look like this sentence does.")
@@ -85,7 +85,7 @@ struct FontChoiceEditorView: View {
                 }
             }
 
-            FontSampleBox {
+            SampleBox {
                 Text("for number in range(10):  # code samples use this font")
                     .font(FontChoiceEditorView.previewFont(family: choice.code, size: 12))
             }

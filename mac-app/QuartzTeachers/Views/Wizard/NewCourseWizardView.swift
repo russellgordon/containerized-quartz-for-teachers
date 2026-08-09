@@ -123,13 +123,19 @@ struct NewCourseWizardView: View {
     var wizardForm: some View {
         Form {
             Section("Basics") {
-                TextField("Course code (e.g. ICS3U, or a club name like CODING)", text: $courseCode)
-                    .accessibilityIdentifier("wizardCourseCodeField")
-                    .onChange(of: courseCode) {
-                        autoFillCourseName()
-                    }
-                TextField("Course name (e.g. Introduction to Computer Science)", text: $courseName)
-                    .accessibilityIdentifier("wizardCourseNameField")
+                VStack(alignment: .leading, spacing: 4) {
+                    TextField("Course code", text: $courseCode)
+                        .accessibilityIdentifier("wizardCourseCodeField")
+                        .onChange(of: courseCode) {
+                            autoFillCourseName()
+                        }
+                    ExampleCaption("e.g. ICS3U — or a club name like CODING")
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    TextField("Course name", text: $courseName)
+                        .accessibilityIdentifier("wizardCourseNameField")
+                    ExampleCaption("e.g. Introduction to Computer Science")
+                }
 
                 // For known Ontario course codes, offer the same formal and
                 // short names the command-line wizard suggests.
@@ -156,8 +162,11 @@ struct NewCourseWizardView: View {
                 if isClubCode {
                     TextField("Short label beside emoji (≤ 12 characters)", text: $customShortName)
                 }
-                TextField("Timetable section numbers (comma-separated, e.g. 1,3)", text: $sectionNumbersText)
-                    .accessibilityIdentifier("wizardSectionNumbersField")
+                VStack(alignment: .leading, spacing: 4) {
+                    TextField("Timetable section numbers", text: $sectionNumbersText)
+                        .accessibilityIdentifier("wizardSectionNumbersField")
+                    ExampleCaption("e.g. 1,3 — comma-separated")
+                }
                 Picker("Language / region", selection: $locale) {
                     ForEach(LocaleCatalog.codes, id: \.self) { code in
                         Text(LocaleCatalog.displayName(forCode: code)).tag(code)
@@ -173,7 +182,10 @@ struct NewCourseWizardView: View {
                 }
                 ColourSchemePickerView(selectedSchemeID: $colourSchemeID)
                 FontChoiceEditorView(choice: $fontChoice)
-                Toggle("Show section marker (e.g. “S1”) in the site title", isOn: $showsSectionMarker)
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle("Show section marker in the site title", isOn: $showsSectionMarker)
+                    ExampleCaption("e.g. “S1” appears beside the course code")
+                }
             }
 
             Section("Behaviour") {
