@@ -15,12 +15,12 @@ final class TaskMilestoneTests: XCTestCase {
 
         XCTAssertEqual(runner.milestonesReached, 0)
         XCTAssertEqual(runner.progressFraction, 0, accuracy: 0.001)
-        XCTAssertEqual(runner.currentMilestoneLabel, "Starting up")
+        XCTAssertEqual(runner.currentMilestoneLabel, "Starting up…")
         XCTAssertEqual(runner.stepDescription, "Step 1 of 6")
 
         runner.transcript.append(rawText: "🚀 Starting container if needed...\n")
         XCTAssertEqual(runner.milestonesReached, 1)
-        XCTAssertEqual(runner.currentMilestoneLabel, "Gathering your content")
+        XCTAssertEqual(runner.currentMilestoneLabel, "Gathering your content…")
         XCTAssertEqual(runner.stepDescription, "Step 2 of 6")
 
         runner.transcript.append(rawText: "📥 Copying shared folders into content...\n")
@@ -32,7 +32,7 @@ final class TaskMilestoneTests: XCTestCase {
         runner.transcript.append(rawText: "🚀 Launching Quartz preview on http://localhost:8081\n")
         XCTAssertEqual(runner.milestonesReached, 6)
         XCTAssertEqual(runner.progressFraction, 1.0, accuracy: 0.001)
-        XCTAssertEqual(runner.currentMilestoneLabel, "Opening the preview")
+        XCTAssertEqual(runner.currentMilestoneLabel, "Opening the preview…")
     }
 
     @MainActor
@@ -76,6 +76,7 @@ final class TaskMilestoneTests: XCTestCase {
             XCTAssertGreaterThan(list.count, 2, "A useful milestone list needs several steps")
             for milestone in list {
                 XCTAssertFalse(milestone.label.isEmpty)
+                XCTAssertTrue(milestone.label.hasSuffix("…"), "Milestone labels end with an ellipsis: \(milestone.label)")
                 XCTAssertLessThanOrEqual(milestone.label.count, 32, "Milestone labels must stay brief: \(milestone.label)")
                 XCTAssertFalse(milestone.marker.isEmpty)
             }
