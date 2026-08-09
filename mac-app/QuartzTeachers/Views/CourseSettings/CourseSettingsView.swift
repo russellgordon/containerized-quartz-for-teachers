@@ -19,7 +19,7 @@ struct CourseSettingsView: View {
 
         VStack(spacing: 0) {
             Form {
-                Section("Settings — Overall") {
+                Section {
                     TextField("Course name", text: $configuration.courseName)
                         .accessibilityIdentifier("courseNameField")
 
@@ -42,13 +42,17 @@ struct CourseSettingsView: View {
                         Text("Chevron or folder name").tag(true)
                         Text("Chevron only (name opens the folder)").tag(false)
                     }
+                } header: {
+                    FormSectionHeader("Settings — Overall")
                 }
 
-                Section("Footer") {
+                Section {
                     FooterEditorView(footerHTML: $configuration.footerHTML)
+                } header: {
+                    FormSectionHeader("Footer")
                 }
 
-                Section("Content Structure") {
+                Section {
                     StringListEditorView(
                         title: "Shared folders (all sections)",
                         items: $configuration.sharedFolders
@@ -68,9 +72,11 @@ struct CourseSettingsView: View {
                     Text("Folders and files added here are created on disk the next time ./setup.sh runs; the site build also discovers new folders you create in Obsidian automatically.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
+                } header: {
+                    FormSectionHeader("Content Structure")
                 }
 
-                Section("Sidebar Visibility") {
+                Section {
                     MembershipToggleListView(
                         title: "Hide from the site's sidebar",
                         allItems: configuration.allSidebarItems,
@@ -81,6 +87,8 @@ struct CourseSettingsView: View {
                         allItems: configuration.allSidebarItems,
                         members: $configuration.expandableItems
                     )
+                } header: {
+                    FormSectionHeader("Sidebar Visibility")
                 }
 
                 ForEach(course.sectionNumbers, id: \.self) { sectionNumber in

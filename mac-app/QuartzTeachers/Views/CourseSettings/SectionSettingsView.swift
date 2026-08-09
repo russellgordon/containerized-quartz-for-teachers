@@ -43,7 +43,7 @@ struct SectionSettingsView: View {
     // MARK: - Body
 
     var body: some View {
-        Section("Section \(sectionNumber) Settings") {
+        Section {
             Picker("Header emoji", selection: emojiBinding) {
                 ForEach(emojiOptions, id: \.self) { emoji in
                     Text(emoji).tag(emoji)
@@ -58,6 +58,8 @@ struct SectionSettingsView: View {
             ColourSchemePickerView(selectedSchemeID: schemeBinding)
 
             FontChoiceEditorView(choice: fontBinding)
+        } header: {
+            FormSectionHeader("Section \(sectionNumber) Settings")
         }
     }
 

@@ -122,7 +122,7 @@ struct NewCourseWizardView: View {
 
     var wizardForm: some View {
         Form {
-            Section("Basics") {
+            Section {
                 VStack(alignment: .leading, spacing: 4) {
                     TextField("Course code", text: $courseCode)
                         .accessibilityIdentifier("wizardCourseCodeField")
@@ -172,9 +172,11 @@ struct NewCourseWizardView: View {
                         Text(LocaleCatalog.displayName(forCode: code)).tag(code)
                     }
                 }
+            } header: {
+                FormSectionHeader("Basics")
             }
 
-            Section("Appearance (applied to every section — fine-tune later in Settings)") {
+            Section {
                 Picker("Header emoji", selection: $emoji) {
                     ForEach(EmojiCatalog.presets, id: \.self) { presetEmoji in
                         Text(presetEmoji).tag(presetEmoji)
@@ -186,14 +188,18 @@ struct NewCourseWizardView: View {
                     Toggle("Show section marker in the site title", isOn: $showsSectionMarker)
                     ExampleCaption("e.g. “S1” appears beside the course code")
                 }
+            } header: {
+                FormSectionHeader("Appearance", caption: "Applied to every section — fine-tune later in Settings")
             }
 
-            Section("Behaviour") {
+            Section {
                 Picker("Sidebar folders expand when clicking", selection: $expandOnFolderClick) {
                     Text("Chevron or folder name").tag(true)
                     Text("Chevron only (name opens the folder)").tag(false)
                 }
                 Toggle("Show page read-time estimates to students", isOn: $showReadingTime)
+            } header: {
+                FormSectionHeader("Behaviour")
             }
 
             DisclosureGroup("Content structure (defaults are fine for most courses)") {
@@ -203,8 +209,10 @@ struct NewCourseWizardView: View {
                 StringListEditorView(title: "Per-section files", items: $perSectionFiles)
             }
 
-            Section("Footer") {
+            Section {
                 FooterEditorView(footerHTML: $footerHTML)
+            } header: {
+                FormSectionHeader("Footer")
             }
         }
         .formStyle(.grouped)
