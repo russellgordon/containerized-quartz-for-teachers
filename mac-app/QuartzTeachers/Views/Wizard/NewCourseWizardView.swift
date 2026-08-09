@@ -127,14 +127,17 @@ struct NewCourseWizardView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("createCourseButton")
-                } else if !creator.isCreating {
-                    Button("Done") {
+                } else {
+                    // Present throughout so the footer never reflows;
+                    // enabled (and the default action) once work ends.
+                    Button("Close") {
                         workspace.reloadCourses()
                         dismiss()
                     }
                     .buttonStyle(.borderedProminent)
+                    .disabled(creator.isCreating)
                     .keyboardShortcut(.defaultAction)
-                    .accessibilityIdentifier("wizardDoneButton")
+                    .accessibilityIdentifier("wizardCloseActionButton")
                 }
             }
             .padding(12)

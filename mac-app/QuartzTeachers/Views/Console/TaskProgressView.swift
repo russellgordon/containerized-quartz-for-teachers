@@ -27,12 +27,21 @@ struct TaskProgressView: View {
                             Text(title)
                                 .font(.headline)
                             Spacer()
-                            Text(runner.friendlyPhase)
+                            Text(runner.milestones.isEmpty ? runner.friendlyPhase : runner.stepDescription)
                                 .foregroundStyle(.secondary)
                                 .accessibilityIdentifier("taskPhaseLabel")
                         }
-                        ProgressView()
-                            .progressViewStyle(.linear)
+                        if runner.milestones.isEmpty {
+                            ProgressView()
+                                .progressViewStyle(.linear)
+                        } else {
+                            ProgressView(value: runner.progressFraction)
+                                .progressViewStyle(.linear)
+                                .animation(.easeInOut(duration: 0.4), value: runner.progressFraction)
+                            Text(runner.currentMilestoneLabel)
+                                .foregroundStyle(.secondary)
+                                .accessibilityIdentifier("taskMilestoneLabel")
+                        }
                     } else if let exitCode = runner.lastExitCode {
                         HStack(spacing: 8) {
                             Text(title)

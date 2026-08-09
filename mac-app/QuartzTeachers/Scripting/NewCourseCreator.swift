@@ -63,6 +63,7 @@ class NewCourseCreator {
         respondedLength = 0
         responsesSent = 0
         isCreating = true
+        runner.milestones = TaskMilestones.courseCreation
         runner.run(scriptNamed: "setup.sh", arguments: [], workingDirectory: workspaceURL)
 
         Task {

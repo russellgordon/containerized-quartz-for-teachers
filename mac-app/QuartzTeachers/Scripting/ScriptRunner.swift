@@ -150,8 +150,55 @@ class ScriptRunner {
         }
     }
 
+    /// The milestones for whatever this runner was started to do, set by
+    /// the view that launches it. Drives the deterministic progress bar.
+    var milestones: [TaskMilestone] = []
+
+    /// How many milestones have been reached (0…milestones.count).
+    var milestonesReached: Int {
+        if milestones.isEmpty {
+            return 0
+        }
+        var reached: Int = TaskMilestones.reachedCount(in: transcript.displayText, milestones: milestones)
+        // A finished, successful task has completed everything.
+        if !isRunning && lastExitCode == 0 {
+            reached = milestones.count
+        }
+        return reached
+    }
+
+    /// Progress from 0 to 1 for the bar.
+    var progressFraction: Double {
+        if milestones.isEmpty {
+            return 0
+        }
+        return Double(milestonesReached) / Double(milestones.count)
+    }
+
+    /// The step currently under way, e.g. "Building your site" — the
+    /// milestone AFTER the last one reached, or the final one when done.
+    var currentMilestoneLabel: String {
+        if milestones.isEmpty {
+            return friendlyPhase
+        }
+        let reached: Int = milestonesReached
+        if reached >= milestones.count {
+            return milestones[milestones.count - 1].label
+        }
+        return milestones[reached].label
+    }
+
+    /// "Step 2 of 6" for the label beside the bar.
+    var stepDescription: String {
+        if milestones.isEmpty {
+            return ""
+        }
+        let currentStep: Int = min(milestonesReached + 1, milestones.count)
+        return "Step \(currentStep) of \(milestones.count)"
+    }
+
     /// A friendly description of what is happening right now, derived
-    /// from markers in the output — shown instead of the raw text.
+    /// from markers in the output — used when no milestones are set.
     var friendlyPhase: String {
         let recentText: String = String(transcript.displayText.suffix(4000))
         let phases: [(marker: String, label: String)] = [

@@ -123,6 +123,7 @@ struct SectionDetailView: View {
         }
         previewURL = nil
         isWaitingForServer = true
+        previewRunner.milestones = TaskMilestones.preview
         previewRunner.run(
             scriptNamed: "preview.sh",
             arguments: [course.code, String(sectionNumber)],
@@ -143,6 +144,7 @@ struct SectionDetailView: View {
         guard let workspaceURL = workspace.workspaceURL else {
             return
         }
+        deployRunner.milestones = TaskMilestones.deploy
         deployRunner.run(
             scriptNamed: "deploy.sh",
             arguments: [course.code, String(sectionNumber)],
