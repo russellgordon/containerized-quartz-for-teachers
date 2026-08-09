@@ -29,7 +29,12 @@ struct MembershipToggleListView: View {
             }
 
             ForEach(allItems, id: \.self) { item in
-                Toggle(item, isOn: membershipBinding(for: item))
+                // File entries hide their ".md" storage extension, matching
+                // the list editors.
+                Toggle(
+                    StringListEditorView.displayName(for: item, hidingMarkdownExtension: true),
+                    isOn: membershipBinding(for: item)
+                )
             }
         }
         .padding(.vertical, 4)

@@ -206,9 +206,9 @@ struct NewCourseWizardView: View {
                 // The lists are long, so they stay collapsed until needed.
                 DisclosureGroup("Folders and files") {
                     StringListEditorView(title: "Shared folders", items: $sharedFolders)
-                    StringListEditorView(title: "Shared files", items: $sharedFiles)
+                    StringListEditorView(title: "Shared files", hidesMarkdownExtension: true, items: $sharedFiles)
                     StringListEditorView(title: "Per-section folders", items: $perSectionFolders)
-                    StringListEditorView(title: "Per-section files", items: $perSectionFiles)
+                    StringListEditorView(title: "Per-section files", hidesMarkdownExtension: true, items: $perSectionFiles)
                 }
             } header: {
                 FormSectionHeader("Structure", caption: "Defaults are fine for most courses")

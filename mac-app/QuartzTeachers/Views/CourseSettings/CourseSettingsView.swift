@@ -59,6 +59,7 @@ struct CourseSettingsView: View {
                     )
                     StringListEditorView(
                         title: "Shared files (all sections)",
+                        hidesMarkdownExtension: true,
                         items: $configuration.sharedFiles
                     )
                     StringListEditorView(
@@ -67,6 +68,7 @@ struct CourseSettingsView: View {
                     )
                     StringListEditorView(
                         title: "Per-section files",
+                        hidesMarkdownExtension: true,
                         items: $configuration.perSectionFiles
                     )
                     Text("Folders and files added here are created on disk the next time ./setup.sh runs; the site build also discovers new folders you create in Obsidian automatically.")

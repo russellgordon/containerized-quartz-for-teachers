@@ -99,6 +99,43 @@ final class QuartzTeachersUITests: XCTestCase {
         closeButton.click()
     }
 
+    func testAddingFoldersAndFilesInWizardStructureSection() throws {
+        let application: XCUIApplication = try launchApp()
+
+        let newCourseButton: XCUIElement = application.buttons["newCourseButton"]
+        XCTAssertTrue(newCourseButton.waitForExistence(timeout: 10))
+        newCourseButton.click()
+
+        // Expand the Structure section's disclosure.
+        let disclosure: XCUIElement = application.staticTexts["Folders and files"]
+        XCTAssertTrue(disclosure.waitForExistence(timeout: 10), "The Structure disclosure should exist")
+        disclosure.click()
+
+        // Add a folder by typing and clicking the + button.
+        let folderField: XCUIElement = application.textFields["addField-Shared folders"]
+        XCTAssertTrue(folderField.waitForExistence(timeout: 5), "The shared-folders add field should appear")
+        folderField.click()
+        folderField.typeText("Projects")
+        let folderAddButton: XCUIElement = application.buttons["addTo-Shared folders"]
+        XCTAssertTrue(folderAddButton.isEnabled, "The add button should be clickable")
+        folderAddButton.click()
+        XCTAssertTrue(application.staticTexts["Projects"].waitForExistence(timeout: 5), "The added folder should appear in the list")
+
+        // Add a file WITHOUT typing .md; it should display without the
+        // extension too.
+        let fileField: XCUIElement = application.textFields["addField-Shared files"]
+        XCTAssertTrue(fileField.waitForExistence(timeout: 5))
+        fileField.click()
+        fileField.typeText("Field Trips")
+        application.buttons["addTo-Shared files"].click()
+        XCTAssertTrue(application.staticTexts["Field Trips"].waitForExistence(timeout: 5), "The added file should appear, shown without .md")
+
+        saveScreenshot(named: "06-structure-add", of: application)
+
+        let closeButton: XCUIElement = application.buttons["wizardCloseButton"]
+        closeButton.click()
+    }
+
     func testCancelRevertsEdits() throws {
         let application: XCUIApplication = try launchApp()
 

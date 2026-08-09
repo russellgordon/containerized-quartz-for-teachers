@@ -26,6 +26,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 6 | 2026-08-09 | Put the wizard's content-structure lists under a "Structure" `FormSectionHeader`, with "(defaults are fine for most courses)" moved below the heading as a hint. | ✅ Implemented — a Structure section with caption "Defaults are fine for most courses"; the four folder/file list editors stay collapsed inside a "Folders and files" disclosure to keep the wizard compact. | Same: Structure section with the caption under the heading; keep the long lists collapsed by default. |
 
+| 7 | 2026-08-09 | The Add (+) button in the four folder/file lists was disabled, blocking additions. Also drop ".md" from the UI (files vs. folders is clear enough) while keeping the extension in the stored config. | ✅ Implemented — the + button is now always enabled (empty input is simply ignored, rather than presenting a dead-looking control); file lists hide ".md" in display and append it automatically on add (typed ".md" is not doubled); the Sidebar Visibility toggles hide it too. `normalizedItemName`/`displayName` helpers are unit-tested; a UI test covers the real type-and-add flow. | Same rules: add buttons always enabled with empty input ignored; ".md" never shown, always stored; appended on add, never doubled; reserved name "Media" rejected. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

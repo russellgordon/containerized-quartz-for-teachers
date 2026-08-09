@@ -2,11 +2,19 @@ import SwiftUI
 
 /// Edits a list of names (folders or files): shows the current entries with
 /// remove buttons, and a field for adding a new entry.
+///
+/// For FILE lists, the ".md" extension is a storage detail the scripts
+/// need but teachers should not have to think about: it is hidden in the
+/// display and appended automatically when a new name is added.
 struct StringListEditorView: View {
 
     // MARK: - Stored properties
 
     let title: String
+
+    /// True for Markdown file lists: hide ".md" in the UI, append it in
+    /// the stored value.
+    var hidesMarkdownExtension: Bool = false
 
     @Binding var items: [String]
 
@@ -26,7 +34,7 @@ struct StringListEditorView: View {
 
             ForEach(items, id: \.self) { item in
                 HStack {
-                    Text(item)
+                    Text(StringListEditorView.displayName(for: item, hidingMarkdownExtension: hidesMarkdownExtension))
                     Spacer()
                     Button("Remove \(item)", systemImage: "minus.circle") {
                         removeItem(named: item)
@@ -41,12 +49,13 @@ struct StringListEditorView: View {
                     .onSubmit {
                         addNewItem()
                     }
+                    .accessibilityIdentifier("addField-\(title)")
                 Button("Add", systemImage: "plus.circle") {
                     addNewItem()
                 }
                 .labelStyle(.iconOnly)
                 .buttonStyle(.borderless)
-                .disabled(newItemName.trimmingCharacters(in: .whitespaces).isEmpty)
+                .accessibilityIdentifier("addTo-\(title)")
             }
         }
         .padding(.vertical, 4)
@@ -54,19 +63,40 @@ struct StringListEditorView: View {
 
     // MARK: - Functions
 
-    func addNewItem() {
-        let trimmed: String = newItemName.trimmingCharacters(in: .whitespaces)
+    /// How one stored item appears in the list.
+    static func displayName(for item: String, hidingMarkdownExtension: Bool) -> String {
+        if hidingMarkdownExtension && item.hasSuffix(".md") {
+            return String(item.dropLast(3))
+        }
+        return item
+    }
+
+    /// Turns what the teacher typed into the stored form: trimmed, with
+    /// ".md" appended for file lists when it was not typed. Returns nil
+    /// for names that must not be added.
+    static func normalizedItemName(_ rawName: String, appendingMarkdownExtension: Bool) -> String? {
+        var trimmed: String = rawName.trimmingCharacters(in: .whitespaces)
         if trimmed.isEmpty {
-            return
+            return nil
         }
         if trimmed == "Media" {
             // The toolchain manages the Media folder automatically; the
             // wizard refuses this name too.
+            return nil
+        }
+        if appendingMarkdownExtension && !trimmed.hasSuffix(".md") {
+            trimmed = trimmed + ".md"
+        }
+        return trimmed
+    }
+
+    func addNewItem() {
+        guard let normalized = StringListEditorView.normalizedItemName(newItemName, appendingMarkdownExtension: hidesMarkdownExtension) else {
             newItemName = ""
             return
         }
-        if !items.contains(trimmed) {
-            items.append(trimmed)
+        if !items.contains(normalized) {
+            items.append(normalized)
         }
         newItemName = ""
     }
