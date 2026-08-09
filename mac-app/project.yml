@@ -1,0 +1,82 @@
+name: QuartzTeachers
+options:
+  bundleIdPrefix: ca.russellgordon
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    GENERATE_INFOPLIST_FILE: YES
+    SWIFT_VERSION: "6.0"
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_HARDENED_RUNTIME: NO
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+
+targets:
+  QuartzTeachers:
+    type: application
+    platform: macOS
+    sources:
+      - path: QuartzTeachers
+      # The colour schemes are the toolchain's own support file, bundled
+      # into the app so pickers can show the same choices as the wizard.
+      - path: ../support/colour_schemes.json
+        buildPhase: resources
+    info:
+      path: QuartzTeachers/Info.plist
+      properties:
+        CFBundleDisplayName: Containerized Quartz for Teachers
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        LSApplicationCategoryType: public.app-category.education
+        NSAppTransportSecurity:
+          # The embedded preview loads http://localhost:8081 (plain HTTP).
+          NSAllowsLocalNetworking: true
+        NSHumanReadableCopyright: "MIT License"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ca.russellgordon.QuartzTeachers
+        ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+
+  QuartzTeachersTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests/QuartzTeachersTests
+    dependencies:
+      - target: QuartzTeachers
+    settings:
+      base:
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/QuartzTeachers.app/Contents/MacOS/QuartzTeachers"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+  QuartzTeachersUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: Tests/QuartzTeachersUITests
+    dependencies:
+      - target: QuartzTeachers
+    settings:
+      base:
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+
+schemes:
+  QuartzTeachers:
+    build:
+      targets:
+        QuartzTeachers: all
+        QuartzTeachersTests: [test]
+        QuartzTeachersUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - QuartzTeachersTests
+        - QuartzTeachersUITests
