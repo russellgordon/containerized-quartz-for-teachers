@@ -30,6 +30,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 8 | 2026-08-09 | Text inputs were invisible in macOS's flat form style — use bordered text fields for every text input. | ✅ Implemented — `.roundedBorder` on all TextFields (wizard's code/name/short-label/sections fields, settings' name/short-label, list editors' Add fields, console input) and a rounded stroke around the footer TextEditor. | Every free-text input must look visibly editable at rest (bordered/recessed), including multi-line editors — never rely on the platform's borderless form style. |
 
+| 9 | 2026-08-09 | Add a light grey prompt inside the Structure lists' empty Add fields: "Type new folder name here" / "Type new file name here". | ✅ Implemented — `TextField(prompt:)` chooses the wording from the list's kind (folder vs. file). | Same placeholder wording, keyed to whether the list holds folders or files. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

@@ -20,6 +20,16 @@ struct StringListEditorView: View {
 
     @State var newItemName: String = ""
 
+    // MARK: - Computed properties
+
+    /// The light grey prompt inside the empty Add field.
+    var promptText: String {
+        if hidesMarkdownExtension {
+            return "Type new file name here"
+        }
+        return "Type new folder name here"
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -45,7 +55,7 @@ struct StringListEditorView: View {
             }
 
             HStack {
-                TextField("Add…", text: $newItemName)
+                TextField("Add", text: $newItemName, prompt: Text(promptText))
                     .textFieldStyle(.roundedBorder)
                     .onSubmit {
                         addNewItem()
