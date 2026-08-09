@@ -52,6 +52,11 @@ xcodebuild -project QuartzTeachers.xcodeproj -scheme QuartzTeachers test \
   -only-testing:QuartzTeachersTests/NewCourseCreatorIntegrationTests
 ```
 
+> **Tip:** stop any copy of the app running under Xcode's debugger (⏹)
+> before running the UI tests — a debugged instance cannot be terminated
+> by the test runner, which fails the first UI test with
+> "Failed to terminate ca.russellgordon.QuartzTeachers".
+
 There is also a conventional **XCUITest** suite (`QuartzTeachersUITests`)
 that drives the app with synthesized clicks. Running it requires a one-time
 macOS approval: the first run fails with "Timed out while enabling automation

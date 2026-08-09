@@ -45,12 +45,7 @@ struct CourseSettingsView: View {
                 }
 
                 Section("Footer") {
-                    TextEditor(text: $configuration.footerHTML)
-                        .font(.body.monospaced())
-                        .frame(minHeight: 60)
-                    Text("Raw HTML shown at the bottom of every page — for example, a Creative Commons licence notice. Leave empty for no custom footer.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
+                    FooterEditorView(footerHTML: $configuration.footerHTML)
                 }
 
                 Section("Content Structure") {

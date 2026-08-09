@@ -58,31 +58,39 @@ struct FontChoiceEditorView: View {
     // MARK: - Body
 
     var body: some View {
-        Picker("Header & body fonts", selection: pairingTagBinding) {
-            ForEach(pairingOptions, id: \.tag) { option in
-                Text(option.label).tag(option.tag)
+        // The picker and its sample share ONE form row, so no divider
+        // separates a setting from its preview.
+        VStack(alignment: .leading, spacing: 8) {
+            Picker("Header & body fonts", selection: pairingTagBinding) {
+                ForEach(pairingOptions, id: \.tag) { option in
+                    Text(option.label).tag(option.tag)
+                }
             }
-        }
 
-        // Live previews rendered in the actual fonts (bundled with the
-        // app); an unavailable font simply falls back to the system font.
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Grade 11 Computer Science")
-                .font(FontChoiceEditorView.previewFont(family: choice.header, size: 19))
-            Text("Body text on your site will look like this sentence does.")
-                .font(FontChoiceEditorView.previewFont(family: choice.body, size: 13))
-        }
-        .accessibilityIdentifier("fontPairingPreview")
-
-        Picker("Code font", selection: $choice.code) {
-            ForEach(codeFontOptions, id: \.self) { fontName in
-                Text(fontName).tag(fontName)
+            // Live previews rendered in the actual fonts (bundled with
+            // the app); an unavailable font falls back to the system font.
+            FontSampleBox {
+                Text("Grade 11 Computer Science")
+                    .font(FontChoiceEditorView.previewFont(family: choice.header, size: 19))
+                Text("Body text on your site will look like this sentence does.")
+                    .font(FontChoiceEditorView.previewFont(family: choice.body, size: 13))
             }
+            .accessibilityIdentifier("fontPairingPreview")
         }
 
-        Text("for number in range(10):  # code samples use this font")
-            .font(FontChoiceEditorView.previewFont(family: choice.code, size: 12))
+        VStack(alignment: .leading, spacing: 8) {
+            Picker("Code font", selection: $choice.code) {
+                ForEach(codeFontOptions, id: \.self) { fontName in
+                    Text(fontName).tag(fontName)
+                }
+            }
+
+            FontSampleBox {
+                Text("for number in range(10):  # code samples use this font")
+                    .font(FontChoiceEditorView.previewFont(family: choice.code, size: 12))
+            }
             .accessibilityIdentifier("codeFontPreview")
+        }
     }
 
     // MARK: - Functions

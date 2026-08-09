@@ -192,9 +192,7 @@ struct NewCourseWizardView: View {
             }
 
             Section("Footer") {
-                TextEditor(text: $footerHTML)
-                    .font(.body.monospaced())
-                    .frame(minHeight: 48)
+                FooterEditorView(footerHTML: $footerHTML)
             }
         }
         .formStyle(.grouped)
