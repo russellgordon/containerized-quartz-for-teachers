@@ -34,6 +34,10 @@ class WorkspaceModel {
     /// A human-readable problem with the current folder, if any.
     var workspaceProblem: String?
 
+    /// True when the chosen folder is empty and can be set up as a fresh
+    /// working folder by copying the launcher scripts in.
+    var workspaceCanBeInitialized: Bool = false
+
     /// Set by the test harness (UITEST_WORKSPACE) to bypass persistence.
     private let isUnderUITest: Bool
 
@@ -102,6 +106,7 @@ class WorkspaceModel {
     func reloadCourses() {
         courses = []
         workspaceProblem = nil
+        workspaceCanBeInitialized = false
 
         guard let workspaceURL else {
             return
@@ -110,7 +115,13 @@ class WorkspaceModel {
         let fileManager: FileManager = FileManager.default
         let previewScriptURL: URL = workspaceURL.appendingPathComponent("preview.sh")
         if !fileManager.fileExists(atPath: previewScriptURL.path) {
-            workspaceProblem = "This folder does not contain the toolchain's launcher scripts (preview.sh was not found). Choose the folder you normally run ./setup.sh and ./preview.sh from."
+            if folderIsEffectivelyEmpty(workspaceURL) {
+                // A brand-new folder: offer to set it up rather than
+                // presenting an error.
+                workspaceCanBeInitialized = true
+                return
+            }
+            workspaceProblem = "This folder does not contain the toolchain's launcher scripts (preview.sh was not found). Choose the folder you normally run ./setup.sh and ./preview.sh from — or choose an empty folder to start fresh."
             return
         }
 
@@ -159,5 +170,71 @@ class WorkspaceModel {
             return firstCourse.code < secondCourse.code
         }
         courses = loadedCourses
+    }
+
+    /// Sets up an empty folder as a fresh working folder: copies the
+    /// bundled launcher scripts in (the same files the Docker image's
+    /// export-scripts command delivers), marks them executable, creates
+    /// `courses/`, and opens the New Course wizard.
+    func initializeWorkspace() {
+        guard let workspaceURL else {
+            return
+        }
+        let fileManager: FileManager = FileManager.default
+
+        let scriptNames: [String] = ["setup.sh", "preview.sh", "deploy.sh"]
+        for scriptName in scriptNames {
+            guard let bundledURL = Bundle.main.url(forResource: scriptName, withExtension: nil) else {
+                workspaceProblem = "The app is missing its bundled copy of \(scriptName) — please reinstall the app."
+                return
+            }
+            let destinationURL: URL = workspaceURL.appendingPathComponent(scriptName)
+            do {
+                if fileManager.fileExists(atPath: destinationURL.path) {
+                    try fileManager.removeItem(at: destinationURL)
+                }
+                try fileManager.copyItem(at: bundledURL, to: destinationURL)
+                try fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: destinationURL.path)
+            } catch {
+                workspaceProblem = "Could not copy \(scriptName) into the folder: \(error.localizedDescription)"
+                return
+            }
+        }
+
+        do {
+            try fileManager.createDirectory(
+                at: workspaceURL.appendingPathComponent("courses"),
+                withIntermediateDirectories: true
+            )
+        } catch {
+            workspaceProblem = "Could not create the courses folder: \(error.localizedDescription)"
+            return
+        }
+
+        reloadCourses()
+
+        // The natural next step in a fresh folder is creating a course.
+        if workspaceProblem == nil {
+            isShowingNewCourseWizard = true
+        }
+    }
+
+    /// True when the folder contains nothing but ignorable clutter
+    /// (e.g. the .DS_Store file Finder sprinkles around).
+    private func folderIsEffectivelyEmpty(_ folderURL: URL) -> Bool {
+        let fileManager: FileManager = FileManager.default
+        var entryNames: [String] = []
+        do {
+            entryNames = try fileManager.contentsOfDirectory(atPath: folderURL.path)
+        } catch {
+            return false
+        }
+        for entryName in entryNames {
+            if entryName == ".DS_Store" {
+                continue
+            }
+            return false
+        }
+        return true
     }
 }

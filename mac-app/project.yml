@@ -29,6 +29,14 @@ targets:
         buildPhase: resources
       - path: ../support/ontario_secondary_courses.json
         buildPhase: resources
+      # The launcher scripts, so the app can initialize a brand-new
+      # working folder (same files export-scripts would deliver).
+      - path: ../setup.sh
+        buildPhase: resources
+      - path: ../preview.sh
+        buildPhase: resources
+      - path: ../deploy.sh
+        buildPhase: resources
     info:
       path: QuartzTeachers/Info.plist
       properties:

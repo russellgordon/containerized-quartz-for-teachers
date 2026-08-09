@@ -32,11 +32,29 @@ struct WorkspacePickerView: View {
                     .foregroundStyle(.red)
             }
 
-            Button("Choose Folder…") {
-                workspace.isChoosingWorkspace = true
+            if workspace.workspaceCanBeInitialized {
+                Text("This folder is empty. Set it up as a new working folder? The toolchain's launcher scripts will be copied in, and you can create your first course right away.")
+                    .frame(maxWidth: 460)
+                    .multilineTextAlignment(.center)
+
+                Button("Set Up This Folder") {
+                    workspace.initializeWorkspace()
+                }
+                .buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction)
+                .accessibilityIdentifier("initializeFolderButton")
+
+                Button("Choose a Different Folder…") {
+                    workspace.isChoosingWorkspace = true
+                }
+                .accessibilityIdentifier("chooseFolderButton")
+            } else {
+                Button("Choose Folder…") {
+                    workspace.isChoosingWorkspace = true
+                }
+                .keyboardShortcut(.defaultAction)
+                .accessibilityIdentifier("chooseFolderButton")
             }
-            .keyboardShortcut(.defaultAction)
-            .accessibilityIdentifier("chooseFolderButton")
         }
         .padding(40)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

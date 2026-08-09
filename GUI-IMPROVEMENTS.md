@@ -38,6 +38,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 12 | 2026-08-09 | Context menu (right-click / control-click) on each course and section in the sidebar: "Show in Finder" (opens a Finder window at the folder) and "New Terminal at Folder" (opens Terminal with that working directory). | ✅ Implemented — `.contextMenu` on both row types sharing one menu builder; `FolderActions` opens the folder via NSWorkspace and launches Terminal.app with the folder (the drop-on-Dock-icon behaviour). Course rows use the course folder, section rows the `section<N>` folder. | Same two context-menu items per row: "Show in File Explorer" and "Open in Terminal" (Windows Terminal / `wt -d`), using course and section folders respectively. |
 
+| 13 | 2026-08-09 | Choosing an empty folder should offer to initialize it as a new working folder (copying the launcher scripts in), instead of showing the missing-scripts error. | ✅ Implemented — the launcher scripts are bundled as app resources; an empty folder (ignoring .DS_Store) shows "Set Up This Folder", which copies the scripts (executable), creates `courses/`, and opens the New Course wizard. Non-empty folders without scripts still get the error, so existing content is never taken over. The error text now also suggests choosing an empty folder to start fresh. | Bundle the platform's launcher scripts (.bat/.ps1, CRLF); same empty-folder detection and take-over guard; initialization flows straight into course creation. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the
