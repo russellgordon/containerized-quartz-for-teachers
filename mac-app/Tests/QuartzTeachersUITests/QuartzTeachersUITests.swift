@@ -67,6 +67,38 @@ final class QuartzTeachersUITests: XCTestCase {
         saveScreenshot(named: "03-after-save", of: application)
     }
 
+    func testWizardSuggestsCourseNameFromCode() throws {
+        let application: XCUIApplication = try launchApp()
+
+        let newCourseButton: XCUIElement = application.buttons["newCourseButton"]
+        XCTAssertTrue(newCourseButton.waitForExistence(timeout: 10))
+        newCourseButton.click()
+
+        let codeField: XCUIElement = application.textFields["wizardCourseCodeField"]
+        XCTAssertTrue(codeField.waitForExistence(timeout: 10), "The wizard sheet should appear")
+        codeField.click()
+        codeField.typeText("ICS3U")
+
+        // Typing a known Ontario code should auto-fill the formal name.
+        let nameField: XCUIElement = application.textFields["wizardCourseNameField"]
+        let expectedName: String = "Introduction to Computer Science, Grade 11, U"
+        let autoFilled: NSPredicate = NSPredicate(format: "value == %@", expectedName)
+        let expectation: XCTNSPredicateExpectation = XCTNSPredicateExpectation(predicate: autoFilled, object: nameField)
+        let waitResult: XCTWaiter.Result = XCTWaiter().wait(for: [expectation], timeout: 5)
+        XCTAssertEqual(waitResult, .completed, "The course name should auto-fill from the code; value was: \(String(describing: nameField.value))")
+
+        // The short-name suggestion button should switch the name.
+        let shortNameButton: XCUIElement = application.buttons["suggestedShortNameButton"]
+        XCTAssertTrue(shortNameButton.waitForExistence(timeout: 5))
+        shortNameButton.click()
+        XCTAssertEqual("\(nameField.value ?? "")", "Intro to Comp Sci")
+
+        saveScreenshot(named: "05-wizard-name-suggestions", of: application)
+
+        let closeButton: XCUIElement = application.buttons["wizardCloseButton"]
+        closeButton.click()
+    }
+
     func testCancelRevertsEdits() throws {
         let application: XCUIApplication = try launchApp()
 

@@ -14,6 +14,10 @@ struct NewCourseWizardView: View {
 
     @State var courseCode: String = ""
     @State var courseName: String = ""
+
+    /// The last name this view filled in automatically. Auto-fill only
+    /// ever replaces its own suggestion, never a name the teacher typed.
+    @State var lastAutoFilledName: String = ""
     @State var customShortName: String = ""
     @State var locale: String = "en-US"
     @State var sectionNumbersText: String = "1"
@@ -121,8 +125,34 @@ struct NewCourseWizardView: View {
             Section("Basics") {
                 TextField("Course code (e.g. ICS3U, or a club name like CODING)", text: $courseCode)
                     .accessibilityIdentifier("wizardCourseCodeField")
+                    .onChange(of: courseCode) {
+                        autoFillCourseName()
+                    }
                 TextField("Course name (e.g. Introduction to Computer Science)", text: $courseName)
                     .accessibilityIdentifier("wizardCourseNameField")
+
+                // For known Ontario course codes, offer the same formal and
+                // short names the command-line wizard suggests.
+                if let knownNames = CourseNameCatalog.names(forCode: courseCode) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Suggested names for \(courseCode.trimmingCharacters(in: .whitespaces).uppercased()):")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                        HStack {
+                            Button(knownNames.formal) {
+                                courseName = knownNames.formal
+                                lastAutoFilledName = knownNames.formal
+                            }
+                            .accessibilityIdentifier("suggestedFormalNameButton")
+                            Button(knownNames.short) {
+                                courseName = knownNames.short
+                                lastAutoFilledName = knownNames.short
+                            }
+                            .accessibilityIdentifier("suggestedShortNameButton")
+                        }
+                        .font(.callout)
+                    }
+                }
                 if isClubCode {
                     TextField("Short label beside emoji (≤ 12 characters)", text: $customShortName)
                 }
@@ -171,6 +201,20 @@ struct NewCourseWizardView: View {
     }
 
     // MARK: - Functions
+
+    /// When a known course code is entered, pre-fill the name with the
+    /// formal name — but only if the name field is empty or still holds a
+    /// previous auto-fill, so a teacher's own typing is never replaced.
+    func autoFillCourseName() {
+        guard let knownNames = CourseNameCatalog.names(forCode: courseCode) else {
+            return
+        }
+        let mayReplace: Bool = courseName.isEmpty || courseName == lastAutoFilledName
+        if mayReplace {
+            courseName = knownNames.formal
+            lastAutoFilledName = knownNames.formal
+        }
+    }
 
     func startCreation() {
         validationProblem = nil

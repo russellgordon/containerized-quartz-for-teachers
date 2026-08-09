@@ -22,9 +22,12 @@ targets:
     platform: macOS
     sources:
       - path: QuartzTeachers
-      # The colour schemes are the toolchain's own support file, bundled
-      # into the app so pickers can show the same choices as the wizard.
+      # The colour schemes and Ontario course lookup are the toolchain's
+      # own support files, bundled so the app offers the same choices and
+      # suggestions as the command-line wizard.
       - path: ../support/colour_schemes.json
+        buildPhase: resources
+      - path: ../support/ontario_secondary_courses.json
         buildPhase: resources
     info:
       path: QuartzTeachers/Info.plist
