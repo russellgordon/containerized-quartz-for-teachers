@@ -136,6 +136,24 @@ final class QuartzTeachersUITests: XCTestCase {
         closeButton.click()
     }
 
+    func testSidebarContextMenuOffersFolderActions() throws {
+        let application: XCUIApplication = try launchApp()
+
+        let courseRow: XCUIElement = application.outlines.staticTexts["EXC2O"]
+        XCTAssertTrue(courseRow.waitForExistence(timeout: 10))
+        courseRow.rightClick()
+
+        let showInFinder: XCUIElement = application.menuItems["Show in Finder"]
+        XCTAssertTrue(showInFinder.waitForExistence(timeout: 5), "The context menu should offer Show in Finder")
+        let newTerminal: XCUIElement = application.menuItems["New Terminal at Folder"]
+        XCTAssertTrue(newTerminal.exists, "The context menu should offer New Terminal at Folder")
+
+        saveScreenshot(named: "07-context-menu", of: application)
+
+        // Close the menu without opening Finder or Terminal windows.
+        application.typeKey(.escape, modifierFlags: [])
+    }
+
     func testCancelRevertsEdits() throws {
         let application: XCUIApplication = try launchApp()
 

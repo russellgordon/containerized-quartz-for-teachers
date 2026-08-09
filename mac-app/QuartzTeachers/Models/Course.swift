@@ -32,6 +32,14 @@ class Course: Identifiable {
         return directoryURL.appendingPathComponent("course_config.json")
     }
 
+    // MARK: - Functions
+
+    /// The folder holding one section's content, e.g.
+    /// `<workspace>/courses/ICS3U/section3`.
+    func sectionDirectoryURL(forSection sectionNumber: Int) -> URL {
+        return directoryURL.appendingPathComponent("section\(sectionNumber)")
+    }
+
     // MARK: - Initializer
 
     init(code: String, directoryURL: URL, configuration: CourseConfiguration) {
