@@ -117,7 +117,7 @@ struct NewCourseWizardView: View {
             }
             .padding(12)
         }
-        .frame(minWidth: 620, minHeight: 560)
+        .frame(width: 680, height: 620)
         .interactiveDismissDisabled(creator.isCreating)
     }
 

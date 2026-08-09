@@ -48,6 +48,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 17 | 2026-08-09 | The red "this folder isn't set up for class websites" message is redundant — the picker's guidance already covers both cases (existing folder or empty). Never show it; behaviour otherwise unchanged. | ✅ Implemented — choosing a non-empty, non-workspace folder now keeps the picker up silently (a `workspaceIsUnrecognized` state) with no red text; genuine failures (unreadable folder, copy errors) still show. Unit test asserts the no-error behaviour. | Same principle: an unfinished choice is not an error. Red text is reserved for genuine failures. |
 
+| 18 | 2026-08-09 | Expanding "Show details" grew the wizard sheet beyond the screen, pushing the header (and the disclosure itself) out of reach. The top of the sheet must stay fixed; details scroll within the remaining space. | ✅ Fixed — the sheet now has a fixed size (was minimum-only, so it grew to the console's full content height); the console fills the space below the pinned progress header and scrolls internally (`maxHeight: .infinity` within the fixed sheet). | Dialogs hosting collapsible output must be fixed-size (or max-capped); the output pane scrolls internally and can never grow the window. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

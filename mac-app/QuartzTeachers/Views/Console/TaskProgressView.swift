@@ -69,7 +69,7 @@ struct TaskProgressView: View {
 
             DisclosureGroup(isExpanded: $isShowingDetails) {
                 TaskConsoleView(runner: runner, title: title)
-                    .frame(minHeight: 220)
+                    .frame(minHeight: 160, maxHeight: .infinity)
             } label: {
                 Text("Show details")
                     .font(.callout)
