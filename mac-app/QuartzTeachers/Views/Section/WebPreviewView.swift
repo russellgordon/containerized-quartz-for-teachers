@@ -1,26 +1,23 @@
 import SwiftUI
 import WebKit
 
-/// Wraps a WebKit web view to show the Quartz preview served by
-/// `preview.sh` on localhost.
+/// Wraps the preview controller's WebKit web view to show the Quartz
+/// preview served by `preview.sh` on localhost.
 struct WebPreviewView: NSViewRepresentable {
 
     // MARK: - Stored properties
 
+    let controller: WebPreviewController
     let url: URL
 
     // MARK: - Functions
 
     func makeNSView(context: Context) -> WKWebView {
-        let webView: WKWebView = WKWebView()
-        webView.setAccessibilityIdentifier("previewWebViewNative")
-        webView.load(URLRequest(url: url))
-        return webView
+        controller.loadIfNeeded(url)
+        return controller.webView
     }
 
     func updateNSView(_ webView: WKWebView, context: Context) {
-        if webView.url != url {
-            webView.load(URLRequest(url: url))
-        }
+        controller.loadIfNeeded(url)
     }
 }

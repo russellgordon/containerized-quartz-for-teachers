@@ -32,6 +32,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 9 | 2026-08-09 | Add a light grey prompt inside the Structure lists' empty Add fields ("Type new folder name here" / "Type new file name here"), and label the add controls "Add new folder" / "Add new file" instead of a generic "Add". | ✅ Implemented — `TextField(prompt:)` and the add button's label both choose their wording from the list's kind (folder vs. file). | Same placeholder and label wording, keyed to whether the list holds folders or files. |
 
+| 10 | 2026-08-09 | The web preview needs Back/Forward buttons with the usual keyboard shortcuts (Chromium acceptable as a fallback, but not needed), and a toolbar button that opens the preview in the default browser. | ✅ Implemented with WebKit — `WebPreviewController` wraps the web view, mirrors canGoBack/canGoForward for button enablement, and adds Back (⌘[), Forward (⌘]), and Reload (⌘R) toolbar buttons plus trackpad swipe navigation. The existing Open-in-Browser button now opens the page currently shown, not just the site root. | Use the platform web view's own history (WebView2 on Windows has GoBack/GoForward/CanGoBack events); shortcuts Alt+Left/Right per Windows convention; Open-in-Browser opens the current page. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

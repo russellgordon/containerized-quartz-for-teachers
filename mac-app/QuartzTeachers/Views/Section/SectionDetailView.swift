@@ -12,6 +12,7 @@ struct SectionDetailView: View {
 
     @State var previewRunner = ScriptRunner()
     @State var deployRunner = ScriptRunner()
+    @State var previewController = WebPreviewController()
     @State var previewURL: URL?
     @State var isWaitingForServer: Bool = false
 
@@ -32,7 +33,7 @@ struct SectionDetailView: View {
     var body: some View {
         VStack(spacing: 0) {
             if let previewURL {
-                WebPreviewView(url: previewURL)
+                WebPreviewView(controller: previewController, url: previewURL)
                     .accessibilityIdentifier("previewWebView")
             } else if isWaitingForServer || isBusy || !previewRunner.transcript.lines.isEmpty || !deployRunner.transcript.lines.isEmpty {
                 consoleArea
@@ -46,6 +47,29 @@ struct SectionDetailView: View {
         }
         .navigationTitle(titleText)
         .toolbar {
+            if previewURL != nil {
+                ToolbarItemGroup(placement: .navigation) {
+                    Button("Back", systemImage: "chevron.left") {
+                        previewController.goBack()
+                    }
+                    .disabled(!previewController.canGoBack)
+                    .keyboardShortcut("[", modifiers: .command)
+                    .accessibilityIdentifier("previewBackButton")
+
+                    Button("Forward", systemImage: "chevron.right") {
+                        previewController.goForward()
+                    }
+                    .disabled(!previewController.canGoForward)
+                    .keyboardShortcut("]", modifiers: .command)
+                    .accessibilityIdentifier("previewForwardButton")
+
+                    Button("Reload", systemImage: "arrow.clockwise") {
+                        previewController.reload()
+                    }
+                    .keyboardShortcut("r", modifiers: .command)
+                    .accessibilityIdentifier("previewReloadButton")
+                }
+            }
             ToolbarItemGroup {
                 if previewRunner.isRunning {
                     Button("Stop Preview", systemImage: "stop.fill") {
@@ -132,9 +156,15 @@ struct SectionDetailView: View {
         )
     }
 
+    /// Opens the page currently shown in the preview (not just the site
+    /// root) in the teacher's default browser.
     func openInBrowser() {
-        if let previewURL {
-            NSWorkspace.shared.open(previewURL)
+        var urlToOpen: URL? = previewController.webView.url
+        if urlToOpen == nil {
+            urlToOpen = previewURL
+        }
+        if let urlToOpen {
+            NSWorkspace.shared.open(urlToOpen)
         }
     }
 
