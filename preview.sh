@@ -387,7 +387,7 @@ echo "📂 Output will be written to: $OUTPUT_PATH"
 MODE_FLAG="$BUILD_ONLY"
 
 docker exec -it "$CONTAINER_NAME" python3 /opt/scripts/build_site.py \
-  --host-os mac \
+  --host-os "$_PREVIEW_HOST_OS" \
   --course="$COURSE" \
   --section="$SECTION" \
   $INCLUDE_SOCIAL \

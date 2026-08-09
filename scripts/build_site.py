@@ -2327,7 +2327,7 @@ def build_section_site(
     if build_only:
         # Static build ONLY (single build)
         print("\n🏗️  Building static site with Quartz → public/")
-        subprocess.run(["npx", "quartz", "build"], cwd=output_dir, env=env, check=True)
+        subprocess.run(["npx", "quartz", "build", "--concurrency", "1"], cwd=output_dir, env=env, check=True)
 
         public_dir = output_dir / "public"
         if not public_dir.exists():
@@ -2338,8 +2338,7 @@ def build_section_site(
         # Preview mode (default): do NOT pre-build. Build+serve once.
         kill_existing_quartz()
         print("\n🚀 Launching Quartz preview on http://localhost:8081\n")
-        subprocess.run(["npx", "quartz", "build", "--serve", "--port", "8081"], cwd=output_dir, env=env, check=True)
-
+        subprocess.run(["npx", "quartz", "build", "--concurrency", "1", "--serve", "--port", "8081"], cwd=output_dir, env=env, check=True)
 
 def main():
     parser = argparse.ArgumentParser(description="Build Quartz site for a course section (preview by default; use --build-only for a static build without preview).")
