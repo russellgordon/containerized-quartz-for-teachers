@@ -7,12 +7,17 @@ final class QuartzTeachersUITests: XCTestCase {
 
     // MARK: - Functions
 
-    /// Launches the app pointed at the fixture workspace.
-    func launchApp() -> XCUIApplication {
+    /// Launches the app pointed at a fixture workspace: the one supplied
+    /// via UITEST_WORKSPACE, or a fresh disposable one built from the test
+    /// bundle's resources — so plain Cmd-U needs no setup.
+    func launchApp() throws -> XCUIApplication {
         let application: XCUIApplication = XCUIApplication()
         let environment: [String: String] = ProcessInfo.processInfo.environment
         if let fixturePath = environment["UITEST_WORKSPACE"] {
             application.launchEnvironment["UITEST_WORKSPACE"] = fixturePath
+        } else {
+            let fixtureURL: URL = try FixtureWorkspace.materialize()
+            application.launchEnvironment["UITEST_WORKSPACE"] = fixtureURL.path
         }
         application.launch()
         return application
@@ -27,7 +32,7 @@ final class QuartzTeachersUITests: XCTestCase {
     }
 
     func testSidebarShowsExampleCourse() throws {
-        let application: XCUIApplication = launchApp()
+        let application: XCUIApplication = try launchApp()
 
         let courseRow: XCUIElement = application.outlines.staticTexts["EXC2O"]
         XCTAssertTrue(courseRow.waitForExistence(timeout: 10), "The EXC2O course should appear in the sidebar")
@@ -36,7 +41,7 @@ final class QuartzTeachersUITests: XCTestCase {
     }
 
     func testEditingAndSavingCourseSettings() throws {
-        let application: XCUIApplication = launchApp()
+        let application: XCUIApplication = try launchApp()
 
         let courseRow: XCUIElement = application.outlines.staticTexts["EXC2O"]
         XCTAssertTrue(courseRow.waitForExistence(timeout: 10))
@@ -48,7 +53,7 @@ final class QuartzTeachersUITests: XCTestCase {
         saveScreenshot(named: "02-settings-form", of: application)
 
         // Toggle the reading-time setting and save.
-        let readingTimeToggle: XCUIElement = application.checkBoxes["readingTimeToggle"]
+        let readingTimeToggle: XCUIElement = application.descendants(matching: .any).matching(identifier: "readingTimeToggle").firstMatch
         XCTAssertTrue(readingTimeToggle.waitForExistence(timeout: 5))
         readingTimeToggle.click()
 
@@ -63,13 +68,13 @@ final class QuartzTeachersUITests: XCTestCase {
     }
 
     func testCancelRevertsEdits() throws {
-        let application: XCUIApplication = launchApp()
+        let application: XCUIApplication = try launchApp()
 
         let courseRow: XCUIElement = application.outlines.staticTexts["EXC2O"]
         XCTAssertTrue(courseRow.waitForExistence(timeout: 10))
         courseRow.click()
 
-        let readingTimeToggle: XCUIElement = application.checkBoxes["readingTimeToggle"]
+        let readingTimeToggle: XCUIElement = application.descendants(matching: .any).matching(identifier: "readingTimeToggle").firstMatch
         XCTAssertTrue(readingTimeToggle.waitForExistence(timeout: 10))
         let initialValue: String = "\(readingTimeToggle.value ?? "")"
 

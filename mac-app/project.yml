@@ -47,6 +47,17 @@ targets:
     platform: macOS
     sources:
       - path: Tests/QuartzTeachersTests
+      - path: Tests/Shared
+      # Fixture ingredients: the real launcher scripts and the Example
+      # Course's config, so tests can build a disposable workspace.
+      - path: ../setup.sh
+        buildPhase: resources
+      - path: ../preview.sh
+        buildPhase: resources
+      - path: ../deploy.sh
+        buildPhase: resources
+      - path: ../support/example_course/EXC2O/course_config.json
+        buildPhase: resources
     dependencies:
       - target: QuartzTeachers
     settings:
@@ -60,6 +71,15 @@ targets:
     platform: macOS
     sources:
       - path: Tests/QuartzTeachersUITests
+      - path: Tests/Shared
+      - path: ../setup.sh
+        buildPhase: resources
+      - path: ../preview.sh
+        buildPhase: resources
+      - path: ../deploy.sh
+        buildPhase: resources
+      - path: ../support/example_course/EXC2O/course_config.json
+        buildPhase: resources
     dependencies:
       - target: QuartzTeachers
     settings:

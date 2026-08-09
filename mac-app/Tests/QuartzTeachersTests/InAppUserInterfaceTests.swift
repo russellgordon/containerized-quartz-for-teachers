@@ -34,10 +34,14 @@ final class InAppUserInterfaceTests: XCTestCase {
 
     @MainActor
     func testWalkThroughRealInterface() async throws {
-        guard let fixturePath = fixtureWorkspacePath else {
-            throw XCTSkip("Set UITEST_WORKSPACE to run the in-app UI walk-through.")
+        // Use the supplied workspace when given; otherwise build a fresh
+        // disposable one, so plain Cmd-U needs no setup.
+        var fixtureURL: URL
+        if let fixturePath = fixtureWorkspacePath {
+            fixtureURL = URL(fileURLWithPath: fixturePath)
+        } else {
+            fixtureURL = try FixtureWorkspace.materialize()
         }
-        let fixtureURL: URL = URL(fileURLWithPath: fixturePath)
         let workspace: WorkspaceModel = WorkspaceModel.shared
 
         // Make the window a predictable size for screenshots.
