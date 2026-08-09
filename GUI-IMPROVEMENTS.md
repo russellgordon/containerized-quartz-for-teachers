@@ -24,6 +24,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 5 | 2026-08-09 | Bump form sub-headings up a bit (Basics, Appearance); move the "(applied to every section — fine-tune later in Settings)" note out of the Appearance heading to sit beneath it, in the same style as the "e.g." hints. | ✅ Implemented — new `FormSectionHeader` view (title3 semibold title + optional callout/secondary caption) applied to every form section in the wizard, course settings, and per-section settings; the Appearance caption uses the header's caption slot. | Section headers one step larger than body, semibold; explanatory notes about a whole section belong in a caption line under the heading (hint style), never inside the heading text. |
 
+| 6 | 2026-08-09 | Put the wizard's content-structure lists under a "Structure" `FormSectionHeader`, with "(defaults are fine for most courses)" moved below the heading as a hint. | ✅ Implemented — a Structure section with caption "Defaults are fine for most courses"; the four folder/file list editors stay collapsed inside a "Folders and files" disclosure to keep the wizard compact. | Same: Structure section with the caption under the heading; keep the long lists collapsed by default. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

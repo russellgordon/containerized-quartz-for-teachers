@@ -202,11 +202,16 @@ struct NewCourseWizardView: View {
                 FormSectionHeader("Behaviour")
             }
 
-            DisclosureGroup("Content structure (defaults are fine for most courses)") {
-                StringListEditorView(title: "Shared folders", items: $sharedFolders)
-                StringListEditorView(title: "Shared files", items: $sharedFiles)
-                StringListEditorView(title: "Per-section folders", items: $perSectionFolders)
-                StringListEditorView(title: "Per-section files", items: $perSectionFiles)
+            Section {
+                // The lists are long, so they stay collapsed until needed.
+                DisclosureGroup("Folders and files") {
+                    StringListEditorView(title: "Shared folders", items: $sharedFolders)
+                    StringListEditorView(title: "Shared files", items: $sharedFiles)
+                    StringListEditorView(title: "Per-section folders", items: $perSectionFolders)
+                    StringListEditorView(title: "Per-section files", items: $perSectionFiles)
+                }
+            } header: {
+                FormSectionHeader("Structure", caption: "Defaults are fine for most courses")
             }
 
             Section {
