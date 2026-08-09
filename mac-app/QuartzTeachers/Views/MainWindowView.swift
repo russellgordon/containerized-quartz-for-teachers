@@ -25,15 +25,8 @@ struct MainWindowView: View {
                 }
             }
         }
-        .toolbar {
-            ToolbarItem {
-                Button("New Course", systemImage: "plus") {
-                    workspace.isShowingNewCourseWizard = true
-                }
-                .disabled(workspace.workspaceURL == nil)
-                .accessibilityIdentifier("newCourseButton")
-            }
-        }
+        // Adding a course lives on the sidebar's own +/- bar, where
+        // macOS list interfaces conventionally put it.
         .sheet(isPresented: $workspace.isShowingNewCourseWizard) {
             NewCourseWizardView()
         }

@@ -163,6 +163,13 @@ class CourseConfiguration {
 
     // MARK: - Functions
 
+    /// Replaces the course's timetable section numbers (used when a
+    /// section is archived and removed).
+    func setSectionNumbers(_ sectionNumbers: [Int]) {
+        values["section_numbers"] = sectionNumbers
+        values["num_sections"] = sectionNumbers.count
+    }
+
     /// The emoji shown beside the site title for a given section.
     func emoji(forSection sectionNumber: Int) -> String {
         let sectionsMap: [String: Any] = nestedDictionary(forKey: "emojis", childKey: "sections")

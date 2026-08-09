@@ -26,6 +26,8 @@ enum AccessibilityInspector {
             kAXTitleAttribute as String,
             kAXValueAttribute as String,
             kAXDescriptionAttribute as String,
+            // A text field's placeholder (e.g. "Filter") lives here.
+            kAXPlaceholderValueAttribute as String,
         ]
         for attributeName in textAttributes {
             var attributeValue: CFTypeRef?

@@ -31,6 +31,9 @@ class WorkspaceModel {
     /// True while the folder-picker sheet should be shown.
     var isChoosingWorkspace: Bool = false
 
+    /// Text typed into the sidebar's filter field.
+    var filterText: String = ""
+
     /// A human-readable problem with the current folder, if any.
     var workspaceProblem: String?
 
@@ -54,6 +57,24 @@ class WorkspaceModel {
             return workspaceURL.appendingPathComponent("courses")
         }
         return nil
+    }
+
+    /// The courses the sidebar should show, honouring the filter field.
+    /// Matching is case-insensitive across the code and the course name.
+    var filteredCourses: [Course] {
+        let query: String = filterText.trimmingCharacters(in: .whitespaces)
+        if query.isEmpty {
+            return courses
+        }
+        var result: [Course] = []
+        for course in courses {
+            let codeMatches: Bool = course.code.localizedCaseInsensitiveContains(query)
+            let nameMatches: Bool = course.configuration.courseName.localizedCaseInsensitiveContains(query)
+            if codeMatches || nameMatches {
+                result.append(course)
+            }
+        }
+        return result
     }
 
     /// The course object matching the sidebar selection, if any.

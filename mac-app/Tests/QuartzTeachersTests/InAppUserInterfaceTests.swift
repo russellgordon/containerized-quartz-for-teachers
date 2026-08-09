@@ -74,6 +74,11 @@ final class InAppUserInterfaceTests: XCTestCase {
         // The bundled colour schemes must have loaded for the pickers.
         XCTAssertFalse(ColourSchemeCatalog.schemes.isEmpty, "colour_schemes.json should be bundled and loaded")
 
+        // 1b. The sidebar's own add/remove/filter controls must exist.
+        XCTAssertTrue(visibleLabels.contains("Add Course or Club"), "The sidebar should offer an add button")
+        XCTAssertTrue(visibleLabels.contains("Remove Selected"), "The sidebar should offer a remove button")
+        XCTAssertTrue(visibleLabels.contains("Filter"), "The sidebar should offer a filter field")
+
         // 2. Select the course — the settings form should appear.
         workspace.selection = .course("EXC2O")
         await settle()
