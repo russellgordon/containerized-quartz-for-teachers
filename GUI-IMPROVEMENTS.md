@@ -28,6 +28,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 7 | 2026-08-09 | The Add (+) button in the four folder/file lists was disabled, blocking additions. Also drop ".md" from the UI (files vs. folders is clear enough) while keeping the extension in the stored config. | ✅ Implemented — the + button is now always enabled (empty input is simply ignored, rather than presenting a dead-looking control); file lists hide ".md" in display and append it automatically on add (typed ".md" is not doubled); the Sidebar Visibility toggles hide it too. `normalizedItemName`/`displayName` helpers are unit-tested; a UI test covers the real type-and-add flow. | Same rules: add buttons always enabled with empty input ignored; ".md" never shown, always stored; appended on add, never doubled; reserved name "Media" rejected. |
 
+| 8 | 2026-08-09 | Text inputs were invisible in macOS's flat form style — use bordered text fields for every text input. | ✅ Implemented — `.roundedBorder` on all TextFields (wizard's code/name/short-label/sections fields, settings' name/short-label, list editors' Add fields, console input) and a rounded stroke around the footer TextEditor. | Every free-text input must look visibly editable at rest (bordered/recessed), including multi-line editors — never rely on the platform's borderless form style. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

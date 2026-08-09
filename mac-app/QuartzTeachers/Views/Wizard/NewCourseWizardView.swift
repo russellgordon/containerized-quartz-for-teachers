@@ -125,6 +125,7 @@ struct NewCourseWizardView: View {
             Section {
                 VStack(alignment: .leading, spacing: 4) {
                     TextField("Course code", text: $courseCode)
+                        .textFieldStyle(.roundedBorder)
                         .accessibilityIdentifier("wizardCourseCodeField")
                         .onChange(of: courseCode) {
                             autoFillCourseName()
@@ -133,6 +134,7 @@ struct NewCourseWizardView: View {
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     TextField("Course name", text: $courseName)
+                        .textFieldStyle(.roundedBorder)
                         .accessibilityIdentifier("wizardCourseNameField")
                     ExampleCaption("e.g. Introduction to Computer Science")
                 }
@@ -161,9 +163,11 @@ struct NewCourseWizardView: View {
                 }
                 if isClubCode {
                     TextField("Short label beside emoji (≤ 12 characters)", text: $customShortName)
+                        .textFieldStyle(.roundedBorder)
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     TextField("Timetable section numbers", text: $sectionNumbersText)
+                        .textFieldStyle(.roundedBorder)
                         .accessibilityIdentifier("wizardSectionNumbersField")
                     ExampleCaption("e.g. 1,3 — comma-separated")
                 }

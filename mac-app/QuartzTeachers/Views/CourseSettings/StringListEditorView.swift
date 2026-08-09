@@ -46,6 +46,7 @@ struct StringListEditorView: View {
 
             HStack {
                 TextField("Add…", text: $newItemName)
+                    .textFieldStyle(.roundedBorder)
                     .onSubmit {
                         addNewItem()
                     }

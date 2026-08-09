@@ -20,6 +20,10 @@ struct FooterEditorView: View {
                 TextEditor(text: $footerHTML)
                     .font(.body.monospaced())
                     .frame(minHeight: 60)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .strokeBorder(.tertiary)
+                    )
                     .accessibilityIdentifier("footerEditor")
 
                 if footerHTML.isEmpty {

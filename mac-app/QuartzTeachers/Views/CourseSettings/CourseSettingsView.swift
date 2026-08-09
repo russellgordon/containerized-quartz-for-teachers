@@ -21,10 +21,12 @@ struct CourseSettingsView: View {
             Form {
                 Section {
                     TextField("Course name", text: $configuration.courseName)
+                        .textFieldStyle(.roundedBorder)
                         .accessibilityIdentifier("courseNameField")
 
                     if configuration.isClub {
                         TextField("Short label beside emoji (clubs, ≤ 12 characters)", text: $configuration.customShortName)
+                            .textFieldStyle(.roundedBorder)
                             .accessibilityIdentifier("customShortNameField")
                     }
 
