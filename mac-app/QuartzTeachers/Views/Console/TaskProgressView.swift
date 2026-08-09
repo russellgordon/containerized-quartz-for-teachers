@@ -86,8 +86,11 @@ struct TaskProgressView: View {
             .accessibilityIdentifier("taskDetailsDisclosure")
 
             if isShowingDetails {
+                // Fill whatever space remains below the pinned header —
+                // the container (sheet or window) is fixed-size, so this
+                // can never grow past it; clipped() guarantees it.
                 TaskConsoleView(runner: runner, title: title)
-                    .frame(height: 300)
+                    .frame(minHeight: 200, maxHeight: .infinity)
                     .clipped()
             }
         }
