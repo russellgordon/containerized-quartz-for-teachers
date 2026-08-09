@@ -37,6 +37,15 @@ struct NewCourseWizardView: View {
     @State var validationProblem: String?
     @State var hasStarted: Bool = false
 
+    // MARK: - Initializer
+
+    init(creator: NewCourseCreator = NewCourseCreator(), startedForTesting: Bool = false) {
+        _creator = State(initialValue: creator)
+        if startedForTesting {
+            _hasStarted = State(initialValue: true)
+        }
+    }
+
     // MARK: - Computed properties
 
     /// The parsed timetable section numbers, e.g. "1,3" → [1, 3].
