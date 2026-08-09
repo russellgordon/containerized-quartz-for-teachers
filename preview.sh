@@ -184,6 +184,98 @@ CONTAINER_NAME="teaching-quartz"
 HOST_PORT=8081
 CONTAINER_PORT=8081
 HOST_COURSES="$(pwd)/courses"  # desired host mount for this run
+
+# ==================== Container runtime (Colima) ====================
+# Docker Desktop is no longer required. This script uses Colima
+# (https://github.com/abiosoft/colima), a free, open-source container
+# runtime for macOS, and installs/starts it automatically as needed.
+# Any already-working Docker engine (including Docker Desktop) is used as-is.
+
+_wait_for_docker() {
+  local tries="${1:-30}"
+  local i
+  for ((i=0; i<tries; i++)); do
+    docker info >/dev/null 2>&1 && return 0
+    sleep 2
+  done
+  return 1
+}
+
+_install_brew_formula() {
+  local formula="$1" cmd="$2" label="$3"
+  local log; log="$(mktemp -t cq4t-brew)"
+  echo "📦 Installing ${label}…"
+  echo "   (quiet — this can take a minute, longer if Homebrew updates itself)"
+  if ! HOMEBREW_NO_ASK=1 HOMEBREW_NO_ENV_HINTS=1 brew install --quiet "$formula" >"$log" 2>&1; then
+    echo "❌ Could not install ${label}. Homebrew said:"
+    sed 's/^/   /' "$log"
+    rm -f "$log"
+    echo "   Check your internet connection and re-run this script — it is safe to re-run."
+    exit 1
+  fi
+  rm -f "$log"
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "❌ ${label} was installed, but the '${cmd}' command is not available in this Terminal."
+    echo "   Close this Terminal window, open a new one, and re-run this script."
+    exit 1
+  fi
+  echo "✅ ${label} installed."
+}
+
+ensure_container_runtime() {
+  # Fast path: any working Docker daemon means there is nothing to do.
+  if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+    return 0
+  fi
+
+  echo "🐳 No running container runtime detected — using Colima…"
+
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "❌ Homebrew is required to install Colima but is not installed."
+    echo "   Install it by pasting this into Terminal, then re-run this script:"
+    echo '   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+    exit 1
+  fi
+
+  command -v colima >/dev/null 2>&1 || _install_brew_formula colima colima "Colima (container runtime)"
+  command -v docker >/dev/null 2>&1 || _install_brew_formula docker docker "Docker CLI"
+
+  if [[ ! -d "$HOME/.colima/default" ]]; then
+    echo "🚀 First start: building the Colima virtual machine (2 CPUs · 4 GB RAM)."
+    echo "   The VM image (~600 MB) is downloaded once; this can take several minutes."
+    colima start --cpu 2 --memory 4
+  else
+    echo "▶️  Starting Colima…"
+    colima start
+  fi
+
+  echo "⏳ Waiting for the container runtime to be ready…"
+  _wait_for_docker 30 && return 0
+
+  # Colima can report the VM as running while its Docker daemon is dead
+  # (common after sleep or an unclean shutdown); a plain start no-ops in
+  # that state. Force a clean restart and wait again.
+  echo "🔁 Docker isn't responding yet — restarting Colima…"
+  echo "   (Colima is shared by any other Colima-based toolchains on this Mac;"
+  echo "    their containers restart automatically afterwards if configured to.)"
+  colima stop --force >/dev/null 2>&1 || true
+  colima start >/dev/null 2>&1 || true
+  _wait_for_docker 60 && return 0
+
+  echo "❌ Colima did not become ready."
+  echo "   Try running 'colima stop --force && colima start' by hand, then re-run this script."
+  exit 1
+}
+
+ensure_container_runtime
+CURRENT_CONTEXT=$(docker context show 2>/dev/null || echo "unknown")
+HOST_ARCH=$(docker info --format '{{.Architecture}}' 2>/dev/null || echo "unknown")
+HOST_OS=$(docker info --format '{{.OSType}}' 2>/dev/null || echo "unknown")
+echo "🔌 Docker context: ${CURRENT_CONTEXT}"
+echo "🧭 Host detected by Docker: ${HOST_OS}/${HOST_ARCH}"
+echo "🖼️  Using image: ${IMAGE}"
+# ====================================================================
+
 # -------------------- Pull or verify image presence --------------------
 IMAGE_PRESENT="false"
 if docker image inspect "$IMAGE" >/dev/null 2>&1; then
@@ -226,7 +318,7 @@ if [[ "$SKIP_PULL" == "true" ]]; then
   fi
 else
   if [[ "$FORCE_UPDATE_IMAGE" == "true" ]]; then
-    echo "⬇️  --update-image passed: pulling latest for $IMAGE…"
+    echo "⬇️  --update-image passed: pulling latest for ${IMAGE}…"
     docker pull "$IMAGE"
     PULL_STATUS="(just pulled)"
   elif [[ "$IMAGE_PRESENT" == "false" ]]; then
@@ -280,23 +372,6 @@ run_container_with_mount() {
 }
 
 echo "🚀 Starting container if needed..."
-# -------------------- Pre-flight checks & context --------------------
-if ! command -v docker >/dev/null 2>&1; then
-  echo "❌ Docker is not installed or not on PATH. Please install Docker Desktop first."
-  exit 1
-fi
-if ! docker info >/dev/null 2>&1; then
-  echo "❌ Docker daemon not reachable."
-  echo "   - On macOS/Windows, open Docker Desktop and wait for it to start."
-  echo "   - On Linux, ensure the Docker service is running."
-  exit 1
-fi
-CURRENT_CONTEXT=$(docker context show 2>/dev/null || echo "unknown")
-HOST_ARCH=$(docker info --format '{{.Architecture}}' 2>/dev/null || echo "unknown")
-HOST_OS=$(docker info --format '{{.OSType}}' 2>/dev/null || echo "unknown")
-echo "🔌 Docker context: ${CURRENT_CONTEXT}"
-echo "🧭 Host detected by Docker: ${HOST_OS}/${HOST_ARCH}"
-echo "🖼️  Using image: ${IMAGE}"
 if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
   # Container exists — check its current /teaching/courses mount
   CURRENT_MOUNT_SRC=$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/teaching/courses"}}{{.Source}}{{end}}{{end}}' "$CONTAINER_NAME" 2>/dev/null || echo "")

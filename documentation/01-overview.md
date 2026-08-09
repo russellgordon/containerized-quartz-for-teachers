@@ -35,11 +35,17 @@ This toolchain lets a teacher:
 - **Docker** removes the single largest support burden when sharing the
   workflow with other teachers: environment setup. Node.js, Python,
   `python-frontmatter`, and the patched Quartz checkout are all frozen inside
-  one image (`rwhgrwhg/teaching-quartz`). A teacher installs Docker Desktop
-  and never touches npm or pip. The container is also **the distribution
-  mechanism for the launcher scripts themselves** — the scripts are baked into
-  the image and exported to the host with a one-line `docker run … export-scripts`
-  command, so teachers never clone this repository.
+  one image (`rwhgrwhg/teaching-quartz`), so a teacher never touches npm or
+  pip. Docker Desktop is deliberately **not** used: the launchers provision a
+  free, open-source runtime themselves — [Colima](https://github.com/abiosoft/colima)
+  on macOS, the Docker Engine inside WSL2 on Windows — and start it
+  automatically on every run, removing the "open Docker Desktop and wait"
+  manual step entirely
+  (see [Launcher Scripts](03-launcher-scripts.md#container-runtime-bootstrap)).
+  The container is also **the distribution mechanism for the launcher scripts
+  themselves** — the scripts are baked into the image and exported to the host
+  with a one-line `docker run … export-scripts` command, so teachers never
+  clone this repository.
 - **Netlify** provides free static hosting with instant cache invalidation.
   Deploys use Netlify's *file-digest* API so that a typical daily update
   uploads only the handful of files that changed

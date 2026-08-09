@@ -29,14 +29,16 @@ In the session, optionally complete a series of “quests” to learn how to use
 
 ### ✅ Prerequisites
 
-1. Install and open [Docker Desktop](https://www.docker.com/products/docker-desktop) (required)
 > 💡 **Tip**
 >
-> A Docker account is not required. You can skip this step during installation.
-   
-2. Install [Obsidian](https://obsidian.md/) (optional, but strongly recommended for editing Markdown)
-3. **macOS users**, install [iTerm2](https://iterm2.com) for full 24-bit ANSI colour support in the colour scheme picker
-4. **Windows users**, you need [PowerShell 5.1 or later](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (comes with Windows 10+; download if on an older version of Windows)
+> Docker Desktop is **not** required (and no Docker account is needed). This workflow uses free, open-source container runtimes — [Colima](https://github.com/abiosoft/colima) on macOS, and the Docker Engine inside [WSL2](https://learn.microsoft.com/windows/wsl/) on Windows — which the scripts install and start automatically.
+
+1. **macOS users**, install [Homebrew](https://brew.sh) (used to install the container runtime in the next section)
+2. **Windows users**, you need:
+   - [PowerShell 5.1 or later](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (comes with Windows 10+; download if on an older version of Windows)
+   - [WSL2](https://learn.microsoft.com/windows/wsl/install) (Windows Subsystem for Linux — installed in the next section)
+3. Install [Obsidian](https://obsidian.md/) (optional, but strongly recommended for editing Markdown)
+4. **macOS users**, install [iTerm2](https://iterm2.com) for full 24-bit ANSI colour support in the colour scheme picker
 5. [Create a **Netlify account**](https://app.netlify.com/signup) (if you don’t have one already)
 
 > 💡 **Tip**
@@ -68,39 +70,57 @@ Before running the commands below, open a command-line interface:
 
 ## 🐳 Step-by-Step: From Zero to Website
 
-### 1. Get the launcher scripts from the Docker image
+### 1. Set up the container runtime (one-time)
+
+**macOS (bash/zsh):**
+
+Install and start [Colima](https://github.com/abiosoft/colima), a free, open-source container runtime:
+```bash
+brew install colima docker && colima start
+```
+
+> 💡 **Tip**
+>
+> This is the only time you need to start Colima by hand. From now on, the launcher scripts start it automatically whenever it is not running.
+>
+> Already using Colima for other development work? No problem — the scripts share the running VM as-is and never shut it down. If another toolchain created the VM with its own CPU/RAM settings, those are respected.
+
+**Windows (PowerShell):**
+
+First, install WSL2 (Windows Subsystem for Linux) by running this in an **Administrator** PowerShell, then **reboot**:
+```powershell
+wsl --install
+```
+
+After rebooting (and finishing the short Linux username/password setup that appears), install the Docker engine inside WSL:
+```powershell
+wsl -u root -e sh -c "apt-get update && apt-get install -y docker.io"
+wsl -u root -e sh -c "usermod -aG docker $(wsl whoami); service docker start"
+```
+
+> 💡 **Tip**
+>
+> This is one-time setup. From now on, the launcher scripts start the Docker engine inside WSL automatically whenever it is not running.
+
+### 2. Get the launcher scripts from the Docker image
 
 These scripts you will need to setup, preview, and deploy your website are already inside the Docker image.
 
 **macOS (bash/zsh):**
-
-First, start Docker by running this command – be sure that you wait until you see a note that the Docker engine has started:
-```bash
-open -ga Docker
-```
-
-Then, run this command to get the launcher scripts:
 ```bash
 docker run --pull=always --rm -v "$PWD:/out" rwhgrwhg/teaching-quartz:latest export-scripts
 ```
 
 **Windows (PowerShell):**
-
-First, start Docker by running this command – be sure that you wait until you see a note that the Docker engine has started:
 ```powershell
-& "$Env:ProgramFiles\Docker\Docker\Docker Desktop.exe"
-```
-
-Then, run this command to get the launcher scripts:
-```powershell
-docker run --pull=always --rm -v "${PWD}:/out" rwhgrwhg/teaching-quartz:latest export-scripts
+wsl docker run --pull=always --rm -v "$(wsl wslpath -a $PWD):/out" rwhgrwhg/teaching-quartz:latest export-scripts
 ```
 
 This will place the launcher scripts into your current folder, ready to run.
 
 ---
 
-### 2. Set up your course
+### 3. Set up your course
 
 On macOS:
 ```bash
@@ -122,7 +142,7 @@ This will:
 
 ---
 
-### 3. Edit content in Obsidian
+### 4. Edit content in Obsidian
 
 Open the `courses/` folder in Obsidian or your favorite Markdown editor.
 
@@ -139,7 +159,7 @@ courses/
 
 ---
 
-### 4. Preview your site
+### 5. Preview your site
 
 > ℹ️ **Note**
 >
@@ -164,7 +184,7 @@ This will:
 
 ---
 
-### 5. Publish your site (Deploy)
+### 6. Publish your site (Deploy)
 
 > ℹ️ **Note**
 >
@@ -212,6 +232,8 @@ containerized-quartz-for-teachers/
 | Problem | Solution |
 |--------|----------|
 | **Colour picker not showing correct colours** | If on macOS, make sure you are using [iTerm2](https://iterm2.com) instead of the default Terminal app for full colour support. |
+| **macOS: "Colima did not become ready"** | Run `colima stop --force && colima start`, then re-run the script. This state can occur after the Mac sleeps or shuts down uncleanly. |
+| **Windows: "The Docker engine inside WSL did not become ready"** | Run `wsl -u root -e sh -c "service docker start"`, then re-run the script. If WSL itself misbehaves, `wsl --shutdown` followed by re-running the script often helps. |
 
 ---
 

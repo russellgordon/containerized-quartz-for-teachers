@@ -104,14 +104,112 @@ $ScriptDir = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
 if (-not $ScriptDir) { $ScriptDir = Get-Location }
 Set-Location -LiteralPath $ScriptDir
 
-if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-  Write-Host "ERROR: Docker is not installed or not on PATH. Please install Docker Desktop first."
+# ==================== Container runtime (Docker Engine in WSL2) ====================
+# Docker Desktop is no longer required. On Windows this script uses the Docker
+# Engine running inside WSL2 (Windows Subsystem for Linux) and installs/starts
+# it automatically as needed. If a native 'docker' command already works (for
+# example, Docker Desktop or Rancher Desktop), it is used as-is.
+
+$env:WSL_UTF8 = '1'   # make wsl.exe emit UTF-8 so PowerShell can parse its output
+$global:DockerViaWsl = $false
+$global:WslUserArgs  = @()
+
+function Test-NativeDockerReady {
+  if (-not (Get-Command docker -CommandType Application -ErrorAction SilentlyContinue)) { return $false }
+  try { docker info *> $null } catch { return $false }
+  return ($LASTEXITCODE -eq 0)
+}
+
+function Test-WslDockerReady {
+  try { wsl $global:WslUserArgs -e docker info *> $null } catch { return $false }
+  return ($LASTEXITCODE -eq 0)
+}
+
+function Use-WslDocker {
+  $global:DockerViaWsl = $true
+  # Shadow 'docker' so every call in this script is routed through WSL.
+  # PowerShell functions take precedence over external commands.
+  function global:docker { & wsl $global:WslUserArgs -e docker @args }
+  Write-Host "Using the Docker engine inside WSL2."
+}
+
+function Ensure-ContainerRuntime {
+  if (Test-NativeDockerReady) { return }
+
+  if (-not (Get-Command wsl -ErrorAction SilentlyContinue)) {
+    Write-Host "ERROR: No container runtime found."
+    Write-Host "Install WSL2 (Windows Subsystem for Linux) by running this in an"
+    Write-Host "Administrator PowerShell, then reboot and re-run this script:"
+    Write-Host "  wsl --install"
+    exit 1
+  }
+
+  $distros = @()
+  try { $distros = (wsl -l -q) | Where-Object { $_ -and $_.Trim() } } catch {}
+  if (-not $distros) {
+    Write-Host "ERROR: WSL is present but no Linux distribution is installed."
+    Write-Host "Run this in PowerShell, then reboot and re-run this script:"
+    Write-Host "  wsl --install"
+    exit 1
+  }
+
+  # Already-running engine inside WSL? (Try as the default user, then as root.)
+  if (Test-WslDockerReady) { Use-WslDocker; return }
+  $global:WslUserArgs = @('-u','root')
+  if (Test-WslDockerReady) { Use-WslDocker; return }
+  $global:WslUserArgs = @()
+
+  # Is the engine installed inside WSL at all?
+  $dockerInWsl = $false
+  try { wsl -e sh -c "command -v docker" *> $null; $dockerInWsl = ($LASTEXITCODE -eq 0) } catch {}
+
+  if (-not $dockerInWsl) {
+    Write-Host "The Docker engine is not installed inside WSL yet."
+    $ans = Read-Host "Install it now inside your WSL distribution? (Y/n)"
+    if ($ans -and $ans -notmatch '^(?i:y)') { Write-Host "Cancelled. A container runtime is required to continue."; exit 1 }
+    Write-Host "Installing the Docker engine inside WSL (this can take a few minutes)..."
+    wsl -u root -e sh -c "apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq docker.io"
+    if ($LASTEXITCODE -ne 0) {
+      Write-Host "ERROR: Could not install the Docker engine inside WSL."
+      Write-Host "Check your internet connection and re-run this script - it is safe to re-run."
+      exit 1
+    }
+    $wslUser = ''
+    try { $wslUser = (wsl -e sh -c "whoami" 2>$null | Select-Object -First 1).Trim() } catch {}
+    if ($wslUser -and $wslUser -ne 'root') { wsl -u root -e sh -c "usermod -aG docker $wslUser" *> $null }
+  }
+
+  Write-Host "Starting the Docker engine inside WSL..."
+  try { wsl -u root -e sh -c "service docker start" *> $null } catch {}
+
+  for ($i = 0; $i -lt 30; $i++) {
+    if (Test-WslDockerReady) { Use-WslDocker; return }
+    $global:WslUserArgs = @('-u','root')
+    if (Test-WslDockerReady) { Use-WslDocker; return }
+    $global:WslUserArgs = @()
+    Start-Sleep -Seconds 2
+  }
+
+  Write-Host "ERROR: The Docker engine inside WSL did not become ready."
+  Write-Host "Try these commands, then re-run this script:"
+  Write-Host "  wsl -u root -e sh -c 'service docker start'"
+  Write-Host "  wsl -e docker info"
   exit 1
 }
-try { $null = docker info } catch {
-  Write-Host "ERROR: Docker daemon not reachable.`nPlease open Docker Desktop and try again."
-  exit 1
+
+# Docker running inside WSL sees Windows folders under /mnt/<drive>/...;
+# translate host paths for bind mounts when routing through WSL.
+function Get-MountPath([string]$winPath) {
+  if (-not $global:DockerViaWsl) { return $winPath }
+  try {
+    $p = (wsl -e wslpath -a "$winPath" | Select-Object -First 1)
+    if ($p) { return $p.Trim() }
+  } catch {}
+  return $winPath
 }
+
+Ensure-ContainerRuntime
+# ====================================================================
 
 $CURRENT_CONTEXT = (docker context show 2>$null) -as [string]; if (-not $CURRENT_CONTEXT) { $CURRENT_CONTEXT = 'unknown' }
 $HOST_ARCH       = (docker info --format '{{.Architecture}}' 2>$null) -as [string];  if (-not $HOST_ARCH) { $HOST_ARCH = 'unknown' }
@@ -146,6 +244,9 @@ function Normalize-HostPath([string]$p) {
   return $r.TrimEnd('\','/')
 }
 $HOST_COURSES = Normalize-HostPath $CoursesRoot
+# The path the Docker daemon should mount (differs from $HOST_COURSES when the
+# engine runs inside WSL2 and sees Windows drives under /mnt).
+$MOUNT_COURSES = Get-MountPath $HOST_COURSES
 
 # -------------------- Pull or verify image presence --------------------
 function Test-ImagePresent([string]$ref) {
@@ -212,11 +313,11 @@ Show-ImageInfo $IMAGE
 
 # -------------------- Container helpers --------------------
 function Run-ContainerWithMount {
-  Write-Host "Binding host courses to container: $HOST_COURSES -> /teaching/courses"
+  Write-Host "Binding host courses to container: $MOUNT_COURSES -> /teaching/courses"
   $args = @(
     'run','-dit',
     '--name', $CONTAINER_NAME,
-    '-v', "${HOST_COURSES}:/teaching/courses",
+    '-v', "${MOUNT_COURSES}:/teaching/courses",
     '-p', "${HOST_PORT}:${CONTAINER_PORT}",
     $IMAGE,
     'tail','-f','/dev/null'
@@ -258,10 +359,10 @@ if ($containerExists) {
     $null = docker rm "$CONTAINER_NAME"
     Run-ContainerWithMount
   }
-  elseif ($CURRENT_MOUNT_SRC -ne $HOST_COURSES) {
+  elseif ($CURRENT_MOUNT_SRC -ne (Normalize-HostPath $MOUNT_COURSES)) {
     Write-Host "Detected different working directory:"
     Write-Host "  Existing mount: $CURRENT_MOUNT_SRC"
-    Write-Host "  Desired mount:  $HOST_COURSES"
+    Write-Host "  Desired mount:  $MOUNT_COURSES"
     Write-Host "Recreating container '$CONTAINER_NAME' to point at the new folder..."
     if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { $null = docker stop "$CONTAINER_NAME" }
     $null = docker rm "$CONTAINER_NAME"

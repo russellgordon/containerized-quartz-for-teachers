@@ -43,11 +43,80 @@ two, so a dev image can be exercised through the whole pipeline):
 - `--update-image` — force a fresh pull.
 - `--context NAME` (setup only) — select a Docker context.
 
-The scripts then verify Docker is installed and the daemon is reachable,
+The scripts then ensure a container runtime is available (next section),
 pull the image if needed, and print the image's OCI version/created/revision
 labels so the teacher knows exactly which build is active.
 
-## 3. Mount-aware container lifecycle
+<a name="container-runtime-bootstrap"></a>
+
+## 3. Container runtime bootstrap (no Docker Desktop)
+
+Docker Desktop is deliberately not required. Every launcher carries an
+`ensure_container_runtime` (bash) / `Ensure-ContainerRuntime` (PowerShell)
+step that runs before the first `docker` command and removes what used to be
+a manual step ("open Docker Desktop and wait for the engine to start"):
+
+**Fast path (both platforms).** If `docker info` already succeeds — any
+working engine, including Docker Desktop or Rancher Desktop if a teacher
+happens to have one — the launcher uses it as-is and does nothing else.
+
+**macOS: [Colima](https://github.com/abiosoft/colima).** Colima runs a
+lightweight Linux VM with a Docker engine inside, driven entirely from the
+command line. The bash launchers:
+
+1. Verify Homebrew exists (with a friendly pointer to its installer if not).
+2. `brew install colima docker` for whichever is missing (quietly, with
+   Homebrew's output captured and shown only on failure, and
+   `HOMEBREW_NO_ASK=1` so dependency prompts cannot stall a teacher).
+3. Start Colima — the first-ever start passes `--cpu 2 --memory 4` so the VM
+   has enough memory for Quartz builds; later starts reuse the saved profile.
+4. Poll `docker info` for up to a minute. If the VM claims to be running but
+   the daemon never answers (a known Colima state after the Mac sleeps or
+   shuts down uncleanly, where a plain `colima start` no-ops), force a clean
+   `colima stop --force && colima start` cycle and wait again before giving
+   up with manual-recovery instructions.
+
+One consequence worth knowing: Colima's VM mounts the teacher's home
+directory by default, so the working folder containing `courses/` must live
+somewhere under `$HOME` (Desktop and Documents both qualify) for the bind
+mount to work.
+
+**Colima is treated as shared infrastructure.** Other Colima-based
+toolchains (for example, a local Supabase development stack) may be using
+the same VM on the same machine, so the launchers are deliberately polite
+about it: a running engine is always used as-is, the scripts *start* Colima
+when needed but never shut it down, and the only disruptive action — the
+force-restart in step 4 — happens exclusively when the Docker daemon is
+already dead, i.e. when no Colima-based tool is functional anyway
+(containers with restart policies come back automatically afterwards).
+Whichever toolchain creates the VM first determines its CPU/RAM size; this
+toolchain's `--cpu 2 --memory 4` first-start default is modest, so if a
+heavier toolchain shares the VM, resize it once with
+`colima stop && colima start --cpu 4 --memory 8` (the new size is saved).
+
+**Windows: Docker Engine inside WSL2.** Colima does not support Windows, but
+it is not needed there — WSL2 is itself a lightweight, Microsoft-supplied
+Linux VM, i.e. exactly the role Colima plays on macOS. The PowerShell
+launchers:
+
+1. Check for a native working `docker` first (fast path above).
+2. Verify `wsl` exists and a distribution is installed; if not, point the
+   teacher at the one-time `wsl --install` + reboot.
+3. Probe for a running engine inside WSL (as the default user, then as root).
+4. If the engine is absent, offer to install it right there
+   (`apt-get install docker.io` as root inside the distro, then add the
+   default user to the `docker` group); if merely stopped, start it with
+   `service docker start` and poll until it answers.
+5. Once the WSL engine is up, define a PowerShell function named `docker`
+   that forwards every call through `wsl -e docker …`. Because functions
+   take precedence over external commands, the rest of the script (and its
+   dozens of existing `docker` call sites) work unchanged. Bind-mount paths
+   are translated with `wslpath` (`C:\Users\me\courses` →
+   `/mnt/c/Users/me/courses`), since the WSL engine sees Windows drives
+   under `/mnt`. Published ports still appear on `localhost` thanks to
+   WSL2's automatic localhost forwarding, so the preview URL is unchanged.
+
+## 4. Mount-aware container lifecycle
 
 This is the most subtle part of the launchers. There is a single long-lived
 container named `teaching-quartz`, started as:
@@ -73,7 +142,7 @@ launcher inspects the existing container before using it:
 
 Recreating the container is cheap because all state lives in the bind mount.
 
-## 4. Per-task specifics
+## 5. Per-task specifics
 
 ### `setup.sh`
 
