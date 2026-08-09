@@ -24,6 +24,9 @@ class ScriptRunner {
     /// A launch failure message, if the script could not start at all.
     var launchProblem: String?
 
+    /// When output last arrived — used to sense a stalled prompt.
+    var lastOutputAt: Date = Date()
+
     private var process: Process?
     private var terminal: PseudoTerminal?
 
@@ -92,6 +95,7 @@ class ScriptRunner {
             let text: String = String(decoding: data, as: UTF8.self)
             Task { @MainActor in
                 self.transcript.append(rawText: text)
+                self.lastOutputAt = Date()
             }
         }
 
@@ -144,6 +148,68 @@ class ScriptRunner {
         if process.isRunning {
             process.terminate()
         }
+    }
+
+    /// A friendly description of what is happening right now, derived
+    /// from markers in the output — shown instead of the raw text.
+    var friendlyPhase: String {
+        let recentText: String = String(transcript.displayText.suffix(4000))
+        let phases: [(marker: String, label: String)] = [
+            ("Launching Quartz preview", "Starting the preview…"),
+            ("Building static site", "Building your site…"),
+            ("Emitting files", "Building your site…"),
+            ("Parsing input files", "Building your site…"),
+            ("Installing dependencies", "Preparing your site (first time can take a few minutes)…"),
+            ("Pulling", "Downloading components (first time can take a few minutes)…"),
+            ("Starting Colima", "Starting up (first time can take a few minutes)…"),
+            ("Waiting for the container runtime", "Starting up…"),
+            ("delta deploy", "Publishing your site…"),
+            ("Uploaded", "Publishing your site…"),
+            ("Deploying", "Publishing your site…"),
+        ]
+        // The LAST marker to appear in the output is the current phase.
+        var bestLabel: String = "Working…"
+        var bestPosition: String.Index? = nil
+        for phase in phases {
+            var searchRange: Range<String.Index>? = nil
+            // Find the last occurrence of this marker.
+            var lastFound: Range<String.Index>? = nil
+            while let found = recentText.range(of: phase.marker, options: [], range: searchRange) {
+                lastFound = found
+                searchRange = found.upperBound..<recentText.endIndex
+            }
+            if let lastFound {
+                if bestPosition == nil || lastFound.lowerBound > bestPosition! {
+                    bestPosition = lastFound.lowerBound
+                    bestLabel = phase.label
+                }
+            }
+        }
+        return bestLabel
+    }
+
+    /// True when the task appears stuck at a question: the current line
+    /// is prompt-shaped and no output has arrived for a few seconds.
+    /// (Normally the app answers questions itself; this is the safety
+    /// net that tells the teacher to look at the details.)
+    func mayBeWaitingForInput(asOf now: Date) -> Bool {
+        if !isRunning {
+            return false
+        }
+        if now.timeIntervalSince(lastOutputAt) < 4 {
+            return false
+        }
+        let line: String = transcript.currentLine.trimmingCharacters(in: .whitespaces)
+        if line.isEmpty {
+            return false
+        }
+        if line.hasSuffix(":") || line.hasSuffix("?") || line.hasSuffix(">") {
+            return true
+        }
+        if line.contains("(y/n)") || line.contains("[Y/n]") || line.contains("[Default:") {
+            return true
+        }
+        return false
     }
 
     private func finishRun(exitCode: Int32) {

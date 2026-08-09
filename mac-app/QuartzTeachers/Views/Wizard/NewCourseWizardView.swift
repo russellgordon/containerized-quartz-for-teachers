@@ -76,7 +76,8 @@ struct NewCourseWizardView: View {
             .padding()
 
             if hasStarted {
-                TaskConsoleView(runner: creator.runner, title: "Creating your course…")
+                TaskProgressView(runner: creator.runner, title: "Creating your course")
+                Spacer(minLength: 0)
             } else {
                 wizardForm
             }

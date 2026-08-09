@@ -102,20 +102,12 @@ struct SectionDetailView: View {
 
     var consoleArea: some View {
         VStack(spacing: 0) {
-            if isWaitingForServer {
-                HStack(spacing: 8) {
-                    ProgressView()
-                        .controlSize(.small)
-                    Text("Building the site — the preview appears here when it is ready…")
-                        .foregroundStyle(.secondary)
-                }
-                .padding(8)
-            }
             if deployRunner.isRunning || !deployRunner.transcript.lines.isEmpty {
-                TaskConsoleView(runner: deployRunner, title: "Deploy output")
+                TaskProgressView(runner: deployRunner, title: "Publishing \(titleText)")
             } else {
-                TaskConsoleView(runner: previewRunner, title: "Preview output")
+                TaskProgressView(runner: previewRunner, title: "Preparing the preview of \(titleText)")
             }
+            Spacer(minLength: 0)
         }
     }
 

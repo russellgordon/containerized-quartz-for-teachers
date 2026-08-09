@@ -106,10 +106,23 @@ final class ScriptRunnerIntegrationTests: XCTestCase {
         )
         XCTAssertNil(runner.launchProblem)
 
-        // Poll the server the same way SectionDetailView does.
-        let serverURL: URL = URL(string: "http://localhost:8081/")!
+        // Mirror SectionDetailView's two-phase wait: a stale server from
+        // an earlier preview can still answer on 8081, so only trust the
+        // port after THIS run announces its own server.
+        let serverURL: URL = URL(string: "http://127.0.0.1:8081/")!
         var pageText: String = ""
         var waited: Double = 0
+        while waited < 240 {
+            if !runner.isRunning {
+                XCTFail("preview.sh exited early; output:\n\(runner.transcript.displayText.suffix(2000))")
+                return
+            }
+            if runner.transcript.displayText.contains("Launching Quartz preview") {
+                break
+            }
+            try? await Task.sleep(for: .seconds(2))
+            waited += 2
+        }
         while waited < 240 {
             if !runner.isRunning {
                 XCTFail("preview.sh exited early; output:\n\(runner.transcript.displayText.suffix(2000))")
