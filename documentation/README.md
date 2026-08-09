@@ -22,6 +22,7 @@ static-site generator.
 | 6 | [Quartz Customizations](06-quartz-customizations.md) | **The complete list** of every change made to stock Quartz v4.5.0, with purpose and mechanism |
 | 7 | [Deployment to Netlify](07-deployment.md) | How `deploy.py` performs delta deploys against the Netlify API |
 | 8 | [`course_config.json` Reference](08-course-config-reference.md) | Every key in the per-course configuration file |
+| 9 | [The macOS App](09-mac-app.md) | The native GUI wrapper (`mac-app/`) and how it drives the same scripts |
 
 ## The one-paragraph summary
 

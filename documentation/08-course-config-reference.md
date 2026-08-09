@@ -1,6 +1,6 @@
 # 8. `course_config.json` Reference
 
-[◀ Previous: Deployment](07-deployment.md) · [Back to index](README.md)
+[◀ Previous: Deployment](07-deployment.md) · [Back to index](README.md) · [Next: The macOS App ▶](09-mac-app.md)
 
 `courses/<CODE>/course_config.json` is the single source of truth for a
 course. It is **written** by the setup wizard
@@ -91,4 +91,4 @@ belong in the same mental model:
 
 ---
 
-[◀ Previous: Deployment](07-deployment.md) · [Back to index](README.md)
+[◀ Previous: Deployment](07-deployment.md) · [Back to index](README.md) · [Next: The macOS App ▶](09-mac-app.md)
