@@ -79,13 +79,9 @@ struct MainWindowView: View {
             .padding(.bottom, scaledBottomInset)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.bar)
-            // Right-clicking anywhere on the strip — not only on a folder
-            // — offers the working folder itself.
-            .contextMenu {
-                Button("Show in Finder", systemImage: "finder") {
-                    FinderPathBarView.revealInFinder(workspaceURL.path)
-                }
-            }
+            // No menu on the strip itself: only the folders in the path
+            // carry context menus, so a right-click on a chevron or the
+            // blank space offers nothing rather than something surprising.
                 .help(workspaceURL.path)
                 .accessibilityIdentifier("windowPathBar")
         }

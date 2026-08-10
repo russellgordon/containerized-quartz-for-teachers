@@ -161,7 +161,7 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 75 | 2026-08-10 | The File-menu command "Change Working Folder…" should read "Open Working Folder…" and answer to ⌘O. | ✅ Implemented — renamed and given the standard Open shortcut, matching the macOS convention that ⌘O opens the document a window works on (here, the working folder). The path bar's context-menu "Open Working Folder" (which reveals the folder in Finder) is a different action in a different place and keeps its name. | Ctrl+O on the Windows peer's File menu. |
 
-| 76 | 2026-08-10 | The path bar's context menu should not offer "Open Working Folder" — take it out. | ✅ Implemented — the strip's context menu now offers only "Show in Finder"; opening a folder remains a double-click on any path-bar component, and ⌘O (Open Working Folder…) is the File-menu way to switch folders. | Remove the matching item from the Windows path bar's context menu. |
+| 76 | 2026-08-10 | The path bar's context menu should not offer "Open Working Folder" — and then, sharper: ONLY the folders in the path bar should have context menus at all. Right-clicking a chevron and being offered the working folder is just confusing. | ✅ Implemented — the strip-wide context menu is gone entirely. Each folder in the path carries its own "Show in Finder" and "Open Folder" (as it already did), a chevron or the blank strip offers nothing, and ⌘O (Open Working Folder…) is the File-menu way to switch folders. | Same rule on the Windows path bar: menus on the folder crumbs only. |
 
 ## Planned
 
