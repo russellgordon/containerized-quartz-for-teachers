@@ -25,6 +25,8 @@ You get **bold**, *italic*, ~~struck through~~, and ==highlighted== text.
 Highlighting is the one worth knowing: it draws the eye better than bold when
 you want a single ==key term== to stand out in a paragraph.
 
+**How that was made:**
+
 ```markdown
 **bold**, *italic*, ~~struck through~~, ==highlighted==
 ```
@@ -66,6 +68,8 @@ glance.
 > [!abstract] At a glance
 > Used at the top of assignment pages for due dates and format.
 
+**How that was made:** a blockquote with the kind named in brackets.
+
 ```markdown
 > [!warning] Where people usually go wrong
 > The text of the callout goes here.
@@ -78,6 +82,8 @@ you do not want a student to see immediately.
 
 > [!success]- Answer to the practice question (click to expand)
 > $I = \frac{V}{R} = \frac{12\ \mathrm{V}}{4.0\ \Omega} = 3.0\ \mathrm{A}$
+
+**How that was made:** the `-` after the kind is the whole difference.
 
 ```markdown
 > [!success]- Answer (click to expand)
@@ -108,6 +114,9 @@ $$
 \rho = \frac{m}{V} \qquad E = mc^2 \qquad \Delta T = T_f - T_i
 $$
 
+**How that was made:** single dollar signs keep it in the sentence, double
+ones give it a line of its own.
+
 ```markdown
 Inline: $R = 12\ \Omega$
 
@@ -136,11 +145,24 @@ graph LR
     E -->|no| B
 ```
 
-    ```mermaid
-    graph LR
-        A["Question"] --> B["Hypothesis"]
-        B --> C["Experiment"]
-    ```
+**How that was made:** not a picture — these lines of text, between two fence
+lines that say `mermaid`.
+
+````markdown
+```mermaid
+graph LR
+    A["Question"] --> B["Hypothesis"]
+    B --> C["Experiment"]
+    C --> D["Data"]
+    D --> E{"Does it support the hypothesis?"}
+    E -->|yes| F["Report it"]
+    E -->|no| B
+```
+````
+
+`-->` draws an arrow, `["…"]` makes a box, `{"…"}` makes a decision diamond,
+and `-->|yes|` labels the arrow. Change a word and the diagram redraws — no
+graphics program, and the change shows up in a diff.
 
 ### Cycles
 
@@ -190,6 +212,9 @@ timeline
 
 ## Tables
 
+**How that was made:** rows of text separated by `|`, with a line of dashes
+under the headings.
+
 | Quantity | Symbol | Unit | Instrument |
 | --- | --- | --- | --- |
 | Current | $I$ | ampere (A) | Ammeter |
@@ -202,6 +227,9 @@ Maths works inside table cells, which matters more than it sounds.
 
 ## Checklists
 
+**How that was made:** a list where each line starts with `- [ ]`, or `- [x]`
+for one already done.
+
 - [ ] Goggles on
 - [ ] Circuit checked by the teacher
 - [x] Data table drawn before starting
@@ -213,6 +241,16 @@ useful for keeping their place during a lab.
 ---
 
 ## Code
+
+**How that was made:** three backticks and the name of the language, the code,
+then three backticks to close it.
+
+````markdown
+```python
+def resistance(voltage, current):
+    return voltage / current
+```
+````
 
 ```python
 def resistance(voltage, current):
@@ -239,6 +277,8 @@ This is what makes the site more than a pile of documents.
 - A link with different words: [[Ohm's Law|the relationship between V, I, and R]]
 - A link to a section: [[Ohm's Law#Worked example]]
 
+**How that was made:** double square brackets.
+
 ```markdown
 [[Ohm's Law]]
 [[Ohm's Law|different words for the link]]
@@ -247,8 +287,9 @@ This is what makes the site more than a pile of documents.
 
 ### Transclusion — one page inside another
 
-`![[Page name]]` pulls a whole page in. Here is a curriculum expectation,
-embedded live rather than copied:
+**How that was made:** `![[Page name]]` — a link with an exclamation mark in
+front of it. Here is a curriculum expectation, embedded live rather than
+copied:
 
 ![[D2.4]]
 
@@ -272,6 +313,9 @@ window. Students checking one definition mid-paragraph do not lose their place.
 
 ## Footnotes
 
+**How that was made:** `[^1]` where the marker goes, and a matching `[^1]:`
+line anywhere in the page.
+
 Ontario's grid is unusually low-carbon compared with most of North America.[^1]
 
 [^1]: Roughly 90% of Ontario's electricity comes from sources that emit little
@@ -281,7 +325,8 @@ Ontario's grid is unusually low-carbon compared with most of North America.[^1]
 
 ## Tags
 
-Adding tags in the frontmatter files a page under each one:
+**How that was made:** a `tags` list in the frontmatter at the very top of the
+page.
 
 ```yaml
 ---
