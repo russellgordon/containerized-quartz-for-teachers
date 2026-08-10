@@ -655,6 +655,8 @@ class ScriptRunner {
             stepDetail = "\(progress.done) of \(progress.total)"
         } else if let total = ScriptRunner.uploadTotal(in: newText) {
             stepDetail = "0 of \(total)"
+        } else if let step = ScriptRunner.buildStepProgress(in: newText) {
+            stepDetail = "step \(step.done) of \(step.total)"
         }
 
         // Keep only enough tail for a marker split across two chunks.
@@ -677,6 +679,27 @@ class ScriptRunner {
                 continue
             }
             let parts: [Substring] = counts.split(separator: "/")
+            if parts.count == 2, let done = Int(parts[0]), let total = Int(parts[1]) {
+                found = (done, total)
+            }
+        }
+        return found
+    }
+
+    /// Reads "[ 7/15]" from the image build's own output ("#12 [ 7/15]
+    /// RUN …"), so the minutes-long first build shows movement.
+    static func buildStepProgress(in text: String) -> (done: Int, total: Int)? {
+        var found: (done: Int, total: Int)?
+        for rawLine in text.split(separator: "\n", omittingEmptySubsequences: false) {
+            let line: String = String(rawLine)
+            if !line.hasPrefix("#") {
+                continue
+            }
+            guard let open = line.firstIndex(of: "["), let close = line.firstIndex(of: "]") else {
+                continue
+            }
+            let inside: String = String(line[line.index(after: open)..<close]).replacingOccurrences(of: " ", with: "")
+            let parts: [Substring] = inside.split(separator: "/")
             if parts.count == 2, let done = Int(parts[0]), let total = Int(parts[1]) {
                 found = (done, total)
             }

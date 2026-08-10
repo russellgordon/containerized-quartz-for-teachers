@@ -37,6 +37,31 @@ targets:
         buildPhase: resources
       - path: ../deploy.sh
         buildPhase: resources
+      # The toolchain's full build recipe, so the app can keep a working
+      # folder's .toolchain current — the image is built locally from it.
+      - path: ../Dockerfile
+        buildPhase: resources
+      - path: ../patches
+        type: folder
+        buildPhase: resources
+      - path: ../scripts
+        type: folder
+        buildPhase: resources
+      - path: ../support
+        type: folder
+        buildPhase: resources
+      - path: ../setup.bat
+        buildPhase: resources
+      - path: ../preview.bat
+        buildPhase: resources
+      - path: ../deploy.bat
+        buildPhase: resources
+      - path: ../setup.ps1
+        buildPhase: resources
+      - path: ../preview.ps1
+        buildPhase: resources
+      - path: ../deploy.ps1
+        buildPhase: resources
     info:
       path: QuartzTeachers/Info.plist
       properties:

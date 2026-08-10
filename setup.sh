@@ -2,27 +2,14 @@
 set -euo pipefail
 
 # -------------------- Defaults --------------------
-HUB_USER="rwhgrwhg"
-DEFAULT_TAG="latest"
-IMAGE_NAME="teaching-quartz"
 # The container publishes a small range so several previews can run at
 # once — one per window in the app, each on its own port.
 PREVIEW_PORT_RANGE="8081-8084"
 # Each preview also uses a live-reload websocket on port + 1000.
 PREVIEW_WS_RANGE="9081-9084"
-DEV_IMAGE="quartz-teacher:dev"   # convenient local dev image
-
 # -------------------- Config (from flags) --------------------
-TAG="$DEFAULT_TAG"
-FORCE_UPDATE_IMAGE="false"
-# Set when the caller is in the middle of something else and an unexplained
-# question about updating would be worse than useless.
-SKIP_UPDATE_CHECK="${SKIP_UPDATE_CHECK:-false}"
 declare -a PASSTHRU_ARGS=()      # ensure array is declared even on older bash
-PULL_STATUS=""
-OVERRIDE_IMAGE=""                # full image override
-USE_LOCAL_DEV="false"            # toggle for local dev image
-SKIP_PULL="false"                # skip pulling when using local images
+OVERRIDE_IMAGE=""                # full image override (mostly for verify.sh)
 DOCKER_CONTEXT_OVERRIDE=""       # optional docker context override
 
 # -------------------- Help text --------------------
@@ -48,31 +35,23 @@ print_help() {
 Usage: ${SELF_CMD} [options] [-- <args passed to setup_course.py>]
 
 Options:
-  --tag TAG            Use a specific tag instead of 'latest' (default: ${DEFAULT_TAG})
-  --update-image       Force pulling the image and recreating the container to use it.
-  --no-update-check    Do not check whether a newer image has been published.
-  --image REF          Use a specific image reference (overrides Docker Hub default).
-                       Examples: ghcr.io/me/teaching-quartz:main | ${DEV_IMAGE}
-                       Note: If REF has no '/', it's treated as a local image and won't be pulled.
-  --local-dev          Shortcut for --image "${DEV_IMAGE}" and skipping docker pull
-                       (use after building locally with: docker build -t ${DEV_IMAGE} .)
+  --image REF          Use a specific already-built image instead of building
+                       from this folder's recipe (used by verify.sh).
   --context NAME       Use a specific Docker context (sets DOCKER_CONTEXT=NAME for this run).
   --no-backup          (Pass-through to setup_course.py) Skip creating a backup ZIP — you will be asked to confirm.
   --help               Show this help and exit.
 
 Notes:
-- By default this script pulls from the public Docker Hub image: ${HUB_USER}/${IMAGE_NAME}
-  Tag defaults to 'latest' unless overridden with --tag.
-- Use --local-dev to test your locally built image (${DEV_IMAGE}) without pulling.
+- The website builder image is built LOCALLY from this folder's recipe
+  (.toolchain/, or the Dockerfile in a repository copy). The image tag is a
+  hash of the recipe, so an updated recipe rebuilds automatically. The first
+  build needs an internet connection and takes a few minutes; after that it
+  is cached.
 - Any arguments after a literal “--” are forwarded directly to setup_course.py.
 
 Examples:
   ${SELF_CMD}
-  ${SELF_CMD} --tag v2025.08.13
-  ${SELF_CMD} --update-image
-  ${SELF_CMD} --image ghcr.io/acme/teaching-quartz:edge
-  ${SELF_CMD} --local-dev
-  ${SELF_CMD} --context desktop-linux --local-dev
+  ${SELF_CMD} --image quartz-teacher:dev-test
   ${SELF_CMD} -- --no-backup
 EOF
 }
@@ -81,15 +60,9 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --help|-h) print_help; exit 0 ;;
-    --tag)
-      if [[ $# -lt 2 ]]; then echo "❌ --tag requires a value" >&2; exit 1; fi
-      TAG="$2"; shift 2 ;;
-    --update-image) FORCE_UPDATE_IMAGE="true"; shift ;;
-    --no-update-check) SKIP_UPDATE_CHECK="true"; shift ;;
     --image)
       if [[ $# -lt 2 ]]; then echo "❌ --image requires a value" >&2; exit 1; fi
       OVERRIDE_IMAGE="$2"; shift 2 ;;
-    --local-dev) USE_LOCAL_DEV="true"; shift ;;
     --context)
       if [[ $# -lt 2 ]]; then echo "❌ --context requires a value (e.g., desktop-linux, default, colima)" >&2; exit 1; fi
       DOCKER_CONTEXT_OVERRIDE="$2"; shift 2 ;;
@@ -103,21 +76,6 @@ if [[ -n "$DOCKER_CONTEXT_OVERRIDE" ]]; then
   export DOCKER_CONTEXT="$DOCKER_CONTEXT_OVERRIDE"
 fi
 
-# -------------------- Resolve image to use --------------------
-if [[ "$USE_LOCAL_DEV" == "true" ]]; then
-  OVERRIDE_IMAGE="$DEV_IMAGE"
-  SKIP_PULL="true"
-fi
-# If user overrides the image and it looks like a local ref (no registry/user prefix), skip pull by default.
-if [[ -n "$OVERRIDE_IMAGE" && "$OVERRIDE_IMAGE" != */* ]]; then
-  SKIP_PULL="true"
-fi
-if [[ -n "$OVERRIDE_IMAGE" ]]; then
-  IMAGE="$OVERRIDE_IMAGE"
-else
-  IMAGE="${HUB_USER}/${IMAGE_NAME}:${TAG}"
-fi
-
 # -------------------- Pre-flight checks --------------------
 cd "$(dirname "$0")"
 
@@ -129,6 +87,41 @@ cd "$(dirname "$0")"
 # input, so keep `pwd -P | shasum` exactly as written.
 WORKDIR_ID="$(pwd -P | shasum -a 256 | cut -c1-8)"
 CONTAINER_NAME="teaching-quartz-${WORKDIR_ID}"
+
+# ---- The image is built HERE, from this folder's own recipe ----------
+# The tag is a hash of the recipe's contents: a changed recipe means a new
+# tag, a fresh local build, and a recreated container. No registry, no
+# account — the recipe travels with the app (or the repository).
+resolve_build_context() {
+  if [[ -f "./Dockerfile" ]]; then
+    echo "."
+  elif [[ -f "./.toolchain/Dockerfile" ]]; then
+    echo "./.toolchain"
+  else
+    return 1
+  fi
+}
+
+toolchain_hash() {
+  local context="$1"
+  (cd "$context" && find . -type f -not -path './.git/*' -not -name '.DS_Store' \
+    | LC_ALL=C sort \
+    | while IFS= read -r file; do shasum -a 256 "$file"; done \
+    | shasum -a 256 | cut -c1-8)
+}
+
+BUILD_CONTEXT=""
+if [[ -n "$OVERRIDE_IMAGE" ]]; then
+  IMAGE="$OVERRIDE_IMAGE"
+else
+  BUILD_CONTEXT=$(resolve_build_context) || {
+    echo "❌ This folder is missing the toolchain's build recipe."
+    echo "   Open the folder in the app once to refresh it, or run from a"
+    echo "   copy of the repository."
+    exit 1
+  }
+  IMAGE="teaching-quartz:src-$(toolchain_hash "$BUILD_CONTEXT")"
+fi
 
 # ==================== Container runtime (Colima) ====================
 # Docker Desktop is no longer required. This script uses Colima
@@ -240,217 +233,33 @@ chmod -R -N courses 2>/dev/null || true
 # Compute the desired host mount path for this run
 HOST_COURSES="$(pwd)/courses"
 
-# -------------------- Pull or verify image presence --------------------
-IMAGE_PRESENT="false"
-if docker image inspect "$IMAGE" >/dev/null 2>&1; then
-  IMAGE_PRESENT="true"
-fi
-# If not present by exact ref, try to discover close matches (helps with local naming quirks)
-if [[ "$IMAGE_PRESENT" == "false" ]]; then
-  # Gather candidates like quartz-teacher:* if IMAGE is quartz-teacher:dev
-  REPO="${IMAGE%%:*}"
-  TAG_PART="${IMAGE#*:}"
-  CANDIDATES=$(docker image ls --format '{{.Repository}}:{{.Tag}}' "$REPO" 2>/dev/null | grep -i "${TAG_PART}" || true)
-  if [[ -n "$CANDIDATES" ]]; then
-    echo "ℹ️  Found local candidates for '$IMAGE' in context '${CURRENT_CONTEXT}':"
-    echo "$CANDIDATES" | sed 's/^/   • /'
-    # If there is an exact case-insensitive match among candidates, use it
-    MATCH=$(echo "$CANDIDATES" | awk -v want="$IMAGE" 'BEGIN{IGNORECASE=1} $0==want{print $0}')
-    if [[ -n "$MATCH" ]]; then
-      IMAGE_PRESENT="true"
-      IMAGE="$MATCH"
-      echo "✅ Using exact local match: $IMAGE"
-    fi
+# -------------------- Build the image when it is missing --------------------
+build_image_if_missing() {
+  if docker image inspect "$IMAGE" >/dev/null 2>&1; then
+    echo "✅ Website builder is ready."
+    return 0
   fi
-fi
-
-if [[ "$SKIP_PULL" == "true" ]]; then
-  if [[ "$IMAGE_PRESENT" == "true" ]]; then
-    echo "✅ Using local image: $IMAGE"
-    PULL_STATUS="(local image)"
-  else
-    echo "❌ Local image '$IMAGE' not found in Docker context '${CURRENT_CONTEXT}'."
-    echo "   Tips:"
-    echo "   • If you built with buildx, make sure you used --load to import into the local engine:"
-    echo "     docker buildx build --load -t $IMAGE ."
-    echo "     (or use classic build:)"
-    echo "     docker build -t $IMAGE ."
-    echo "   • Verify your context matches where you built:"
-    echo "     docker context ls"
-    echo "     docker context show"
-    echo "   • List matching local images:"
-    echo "     docker image ls $REPO"
+  if [[ -z "$BUILD_CONTEXT" ]]; then
+    echo "❌ Image '$IMAGE' is not on this machine."
+    echo "   Build it first, e.g.: docker buildx build --load -t $IMAGE ."
     exit 1
   fi
-else
-  if [[ "$FORCE_UPDATE_IMAGE" == "true" ]]; then
-    echo "⬇️  --update-image passed: pulling latest for ${IMAGE}…"
-    docker pull "$IMAGE"
-    PULL_STATUS="(just pulled)"
-  elif [[ "$IMAGE_PRESENT" == "false" ]]; then
-    echo "⬇️  Image not found locally. Pulling $IMAGE …"
-    docker pull "$IMAGE"
-    PULL_STATUS="(just pulled)"
+  echo "🧱 Building your website builder — the first time takes a few minutes…"
+  local build_cmd=(docker buildx build --load)
+  if ! docker buildx version >/dev/null 2>&1; then
+    # BuildKit either way: the legacy builder silently mangles the
+    # export-scripts layer.
+    build_cmd=(env DOCKER_BUILDKIT=1 docker build)
+  fi
+  if "${build_cmd[@]}" --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"; then
+    echo "✅ Website builder built."
   else
-    echo "✅ Image already present: $IMAGE"
-    PULL_STATUS="(already on this machine)"
-  fi
-fi
-
-# -------------------- Helper: (re)run container with desired mount --------------------
-
-# Finds a free block of host ports for this container: four site ports and
-# their four live-reload websocket ports. Different working folders get
-# different blocks, which is what lets their previews run at the same time.
-find_free_port_block() {
-  local base offset
-  for base in 8081 8091 8101 8111 8121 8131; do
-    local all_free=true
-    for offset in 0 1 2 3; do
-      if lsof -nP -iTCP:$((base + offset)) -sTCP:LISTEN >/dev/null 2>&1; then all_free=false; break; fi
-      if lsof -nP -iTCP:$((base + 1000 + offset)) -sTCP:LISTEN >/dev/null 2>&1; then all_free=false; break; fi
-    done
-    if [[ "$all_free" == "true" ]]; then
-      echo "$base"
-      return 0
-    fi
-  done
-  return 1
-}
-
-# The one shared container from before working folders each had their own.
-# Superseded: it holds no content (everything lives on the host), and left
-# running it would shadow the per-folder containers' ports.
-retire_legacy_container() {
-  if docker ps -a --format '{{.Names}}' | grep -Eq '^teaching-quartz$'; then
-    echo "♻️  Retiring the old shared workspace container…"
-    docker rm -f teaching-quartz >/dev/null 2>&1 || true
-  fi
-}
-
-run_container_with_mount() {
-  retire_legacy_container
-  local HOST_BASE
-  HOST_BASE=$(find_free_port_block) || {
-    echo "❌ Could not find free ports for this folder's previews."
-    echo "   Stop another preview (or another app using ports 8081+), then try again."
+    echo "❌ Could not build the website builder."
+    echo "   The first build needs an internet connection — try again once online."
     exit 1
-  }
-  echo "🔗 Binding host courses to container: $HOST_COURSES ➜ /teaching/courses"
-  docker run -dit \
-    --name "$CONTAINER_NAME" \
-    -v "$HOST_COURSES":/teaching/courses \
-    -p ${HOST_BASE}-$((HOST_BASE + 3)):8081-8084 \
-    -p $((HOST_BASE + 1000))-$((HOST_BASE + 1003)):9081-9084 \
-    "$IMAGE" \
-    tail -f /dev/null
-}
-
-# -------------------- Offer a newer version, if one exists --------------------
-# An image already on the machine was never checked again, so a teacher kept
-# whatever they first downloaded and fixes never reached them.
-registry_digest_of() {
-  docker buildx imagetools inspect "$1" --format '{{.Manifest.Digest}}' 2>/dev/null || true
-}
-
-installed_digest_of() {
-  # Only a digest belonging to THIS repository says anything about whether the
-  # local image came from it. A locally built image often carries a digest for
-  # some other repository, and comparing that guarantees a false "newer
-  # version available" — which, answered yes, replaces a newer local build
-  # with an older published one.
-  local ref="$1"
-  local repo="${ref%%:*}"
-  local entries
-  entries=$(docker image inspect "$ref" --format '{{range .RepoDigests}}{{println .}}{{end}}' 2>/dev/null || true)
-  while IFS= read -r entry; do
-    if [[ -z "$entry" ]]; then
-      continue
-    fi
-    if [[ "${entry%@*}" == "$repo" ]]; then
-      echo "${entry#*@}"
-      return 0
-    fi
-  done <<< "$entries"
-  echo ""
-}
-
-offer_newer_image() {
-  local ref="$1"
-  # A locally built image has no registry to ask about it.
-  case "$ref" in */*) ;; *) return 0 ;; esac
-
-  local available installed answer
-  available="$(registry_digest_of "$ref")"
-  installed="$(installed_digest_of "$ref")"
-  # Offline, or nothing to compare: carry on with what is here.
-  if [[ -z "$available" || -z "$installed" || "$available" == "$installed" ]]; then
-    return 0
-  fi
-
-  # A different digest does not mean an older one. If the registry has never
-  # heard of the installed digest, this is a locally built image, and
-  # "updating" it would replace it with something older.
-  if ! docker buildx imagetools inspect "${ref%%:*}@${installed}" >/dev/null 2>&1; then
-    return 0
-  fi
-
-  echo "🆕 A newer version of the website builder is available."
-  if [[ ! -t 0 ]]; then
-    echo "   Run '${SELF_CMD} --update-image' when you would like to install it."
-    return 0
-  fi
-  # A failed read means end-of-input — nobody is there to answer. Pressing
-  # Return, by contrast, succeeds with an empty answer and takes the default.
-  # Without this distinction an automated run silently accepts the update.
-  if ! read -r -p "   Update the website builder now? (y/n) [Default: y]: " answer; then
-    echo
-    echo "   No answer given, so the version you have is being kept."
-    return 0
-  fi
-  case "${answer:-y}" in
-    [Nn]*)
-      echo "   Keeping the version you have."
-      return 0
-      ;;
-  esac
-  echo "⬇️  Installing the newer version…"
-  docker pull "$ref"
-  PULL_STATUS="(just updated)"
-}
-
-if [[ "$SKIP_PULL" != "true" && "$FORCE_UPDATE_IMAGE" != "true" && "$SKIP_UPDATE_CHECK" != "true" && "$IMAGE_PRESENT" == "true" ]]; then
-  offer_newer_image "$IMAGE"
-fi
-
-# -------------------- Show image version/build info --------------------
-show_image_info() {
-  local img="$1"
-  local ver created rev src title
-  ver=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.version"}}' 2>/dev/null || true)
-  created=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.created"}}' 2>/dev/null || true)
-  rev=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' 2>/dev/null || true)
-  src=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.source"}}' 2>/dev/null || true)
-  title=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.title"}}' 2>/dev/null || true)
-  if [[ -z "${ver}" ]]; then ver="(no version label)"; fi
-  if [[ -z "${created}" ]]; then created=$(docker image inspect "$img" --format '{{.Created}}' 2>/dev/null || echo ""); fi
-  if [[ -z "${rev}" ]]; then rev="(no revision label)"; fi
-  if [[ -z "${title}" ]]; then title="$img"; fi
-  local digests
-  digests=$(docker image inspect "$img" --format '{{range .RepoDigests}}{{.}}{{"\n"}}{{end}}' 2>/dev/null || true)
-
-  echo "ℹ️  Image info ${PULL_STATUS}:"
-  echo "   • Title:      ${title}"
-  echo "   • Version:    ${ver}"
-  echo "   • Created:    ${created}"
-  echo "   • Revision:   ${rev}"
-  [[ -n "$src" ]] && echo "   • Source:     ${src}"
-  if [[ -n "$digests" ]]; then
-    echo "   • Digests:"
-    echo "$digests" | sed 's/^/     - /'
   fi
 }
-show_image_info "$IMAGE"
+build_image_if_missing
 
 # -------------------- Writability probe helper --------------------
 probe_container_write() {

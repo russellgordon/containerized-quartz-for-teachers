@@ -13,17 +13,28 @@ cd "$(dirname "$0")"
 WORKDIR_ID="$(pwd -P | shasum -a 256 | cut -c1-8)"
 CONTAINER_NAME="teaching-quartz-${WORKDIR_ID}"
 
-# Image resolution (same rules as setup.sh and preview.sh). Without this,
-# creating a container here used the bare name "teaching-quartz", which
-# Docker reads as an official library image that does not exist — so a
-# machine with no container yet could not publish at all.
-HUB_USER="${HUB_USER:-rwhgrwhg}"
-DEFAULT_TAG="${DEFAULT_TAG:-latest}"
-IMAGE_NAME="${IMAGE_NAME:-teaching-quartz}"
-DEV_IMAGE="${DEV_IMAGE:-quartz-teacher:dev}"
-TAG="${TAG:-$DEFAULT_TAG}"
-USE_LOCAL_DEV="false"
+# ---- The image is built HERE, from this folder's own recipe ----------
+# Same rules as setup.sh and preview.sh: the tag is a hash of the recipe's
+# contents, built locally when missing. No registry involved.
 OVERRIDE_IMAGE="${OVERRIDE_IMAGE:-}"
+
+resolve_build_context() {
+  if [[ -f "./Dockerfile" ]]; then
+    echo "."
+  elif [[ -f "./.toolchain/Dockerfile" ]]; then
+    echo "./.toolchain"
+  else
+    return 1
+  fi
+}
+
+toolchain_hash() {
+  local context="$1"
+  (cd "$context" && find . -type f -not -path './.git/*' -not -name '.DS_Store' \
+    | LC_ALL=C sort \
+    | while IFS= read -r file; do shasum -a 256 "$file"; done \
+    | shasum -a 256 | cut -c1-8)
+}
 
 # Defaults so help can expand under `set -u` before OS detection
 SELF_CMD="./deploy.sh"
@@ -32,7 +43,7 @@ PREVIEW_CMD="./preview.sh"
 usage() {
   cat <<USAGE
 🧰 Usage:
-  ${SELF_CMD} <COURSE_CODE> <SECTION_NUMBER> [--diagnose] [--team <TEAM_SLUG>] [--reset-token|--logout] [--image REF] [--dev]
+  ${SELF_CMD} <COURSE_CODE> <SECTION_NUMBER> [--diagnose] [--team <TEAM_SLUG>] [--reset-token|--logout] [--image REF]
 
 Examples:
   ${SELF_CMD} ICS3U 1
@@ -44,8 +55,8 @@ Notes:
 - You must build first (the static site goes to 'public/' in that section folder).
 - The Netlify Personal Access Token (PAT) is stored in the macOS Keychain and injected securely at runtime.
 - Use --reset-token (or --logout) to remove the saved PAT and re-link on next run.
-- --image REF publishes using a particular build; --dev uses the local ${DEV_IMAGE}.
-  Both matter only when no container exists yet, since an existing one is reused.
+- --image REF publishes using a particular already-built image; normally the
+  image is built locally from this folder's recipe when missing.
 - If your course code ends with '0' (zero), you'll be prompted to correct it to 'O' for Open-level courses.
 USAGE
 }
@@ -117,8 +128,6 @@ while [[ $# -gt 0 ]]; do
       OVERRIDE_IMAGE="$2"; shift ;;
     --image=*)
       OVERRIDE_IMAGE="${1#*=}" ;;
-    --dev|--local-dev)
-      USE_LOCAL_DEV="true" ;;
     --help|-h)
       usage; exit 0 ;;
     *)
@@ -128,12 +137,17 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Resolve IMAGE (same rules as setup.sh and preview.sh)
-if [[ "$USE_LOCAL_DEV" == "true" ]]; then
-  IMAGE="$DEV_IMAGE"
-elif [[ -n "$OVERRIDE_IMAGE" ]]; then
+BUILD_CONTEXT=""
+if [[ -n "$OVERRIDE_IMAGE" ]]; then
   IMAGE="$OVERRIDE_IMAGE"
 else
-  IMAGE="${HUB_USER}/${IMAGE_NAME}:${TAG}"
+  BUILD_CONTEXT=$(resolve_build_context) || {
+    echo "❌ This folder is missing the toolchain's build recipe."
+    echo "   Open the folder in the app once to refresh it, or run from a"
+    echo "   copy of the repository."
+    exit 1
+  }
+  IMAGE="teaching-quartz:src-$(toolchain_hash "$BUILD_CONTEXT")"
 fi
 
 # Host-side paths (bind-mounted into the container at /teaching/courses)
@@ -429,18 +443,23 @@ ensure_image_present() {
   if docker image inspect "$IMAGE" >/dev/null 2>&1; then
     return 0
   fi
-  # A reference without a "/" is a local build, so there is nowhere to get it.
-  case "$IMAGE" in
-    */*)
-      echo "⬇️  Getting what your websites are built with ($IMAGE)…"
-      docker pull "$IMAGE"
-      ;;
-    *)
-      echo "❌ No local image named '$IMAGE'."
-      echo "   Run ./setup.sh first, or build it with: docker build -t $IMAGE ."
-      exit 1
-      ;;
-  esac
+  if [[ -z "$BUILD_CONTEXT" ]]; then
+    echo "❌ No local image named '$IMAGE'."
+    echo "   Build it first, e.g.: docker buildx build --load -t $IMAGE ."
+    exit 1
+  fi
+  echo "🧱 Building your website builder — the first time takes a few minutes…"
+  local build_cmd=(docker buildx build --load)
+  if ! docker buildx version >/dev/null 2>&1; then
+    build_cmd=(env DOCKER_BUILDKIT=1 docker build)
+  fi
+  if "${build_cmd[@]}" --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"; then
+    echo "✅ Website builder built."
+  else
+    echo "❌ Could not build the website builder."
+    echo "   The first build needs an internet connection — try again once online."
+    exit 1
+  fi
 }
 
 

@@ -251,74 +251,49 @@ $MOUNT_COURSES = Get-MountPath $HOST_COURSES
 $WORKDIR_ID = ([BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes("$((Get-Location).Path)`n"))) -replace '-','').Substring(0,8).ToLower()
 $CONTAINER_NAME = "teaching-quartz-$WORKDIR_ID"
 
-function Test-ImagePresent([string]$ref) {
-    try { docker image inspect "$ref" *> $null; return $true } catch { return $false }
+# ---- The image is built HERE, from this folder's own recipe ----------
+function Get-BuildContext {
+  if (Test-Path "./Dockerfile") { return "." }
+  if (Test-Path "./.toolchain/Dockerfile") { return "./.toolchain" }
+  return $null
 }
 
-# preview.sh uses local image name `teaching-quartz`. If missing, fall back to pulling Docker Hub image.
-$IMAGE = 'teaching-quartz'
-if (-not (Test-ImagePresent $IMAGE)) {
-    $IMAGE = 'rwhgrwhg/teaching-quartz:latest'
-    if (-not (Test-ImagePresent $IMAGE)) {
-        Write-Host "Pulling $IMAGE ..."
-        docker pull "$IMAGE" | Out-Host
-    }
-}
-
-# -------------------- Offer a newer version, if one exists --------------------
-# An image already on the machine was never checked again, so a teacher kept
-# whatever they first downloaded and fixes never reached them.
-function Get-RegistryDigest([string]$ref) {
-  try { return (docker buildx imagetools inspect "$ref" --format '{{.Manifest.Digest}}' 2>$null | Select-Object -First 1) } catch { return $null }
-}
-
-function Get-InstalledDigest([string]$ref) {
-  # Only a digest belonging to THIS repository says anything about whether the
-  # local image came from it; a locally built image often carries a digest for
-  # another repository, which would look like an available update forever.
-  try {
-    $repo = $ref.Split(':')[0]
-    $entries = docker image inspect "$ref" --format '{{range .RepoDigests}}{{println .}}{{end}}' 2>$null
-    foreach ($entry in $entries) {
-      if (-not $entry) { continue }
-      $parts = $entry.Split('@')
-      if ($parts.Length -eq 2 -and $parts[0] -eq $repo) { return $parts[1] }
-    }
-    return $null
-  } catch { return $null }
-}
-
-function Offer-NewerImage([string]$ref) {
-  # A locally built image has no registry to ask about it.
-  if ($ref -notmatch '/') { return }
-
-  $available = Get-RegistryDigest $ref
-  $installed = Get-InstalledDigest $ref
-  # Offline, or nothing to compare: carry on with what is here.
-  if ((-not $available) -or (-not $installed) -or ($available -eq $installed)) { return }
-
-  # A different digest does not mean an older one. If the registry has never
-  # heard of the installed digest, this is a locally built image and
-  # "updating" it would replace it with something older.
-  $repo = $ref.Split(':')[0]
-  docker buildx imagetools inspect "$repo@$installed" *> $null
-  if ($LASTEXITCODE -ne 0) { return }
-
-  Write-Host "A newer version of the website builder is available."
-  if (-not [Environment]::UserInteractive) {
-    Write-Host "  Run this again with --update-image when you would like to install it."
-    return
+function Get-ToolchainHash([string]$context) {
+  $sha = [System.Security.Cryptography.SHA256]::Create()
+  $combined = ""
+  Get-ChildItem -Path $context -Recurse -File | Sort-Object FullName | ForEach-Object {
+    $combined += (Get-FileHash -Algorithm SHA256 -Path $_.FullName).Hash
   }
-  $answer = Read-Host "  Update the website builder now? (y/n) [Default: y]"
-  if ($answer -match '^[Nn]') {
-    Write-Host "  Keeping the version you have."
-    return
-  }
-  Write-Host "Installing the newer version ..."
-  docker pull "$ref" | Out-Host
+  $bytes = [Text.Encoding]::UTF8.GetBytes($combined)
+  return ([BitConverter]::ToString($sha.ComputeHash($bytes)) -replace '-','').Substring(0,8).ToLower()
 }
 
-Offer-NewerImage $IMAGE
+function Build-ImageIfMissing {
+  docker image inspect "$IMAGE" *> $null
+  if ($LASTEXITCODE -eq 0) { Write-Host "Website builder is ready."; return }
+  if (-not $BUILD_CONTEXT) {
+    Write-Host "Image '$IMAGE' is not on this machine. Build it first."
+    exit 1
+  }
+  Write-Host "Building your website builder - the first time takes a few minutes ..."
+  docker buildx build --load --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "Could not build the website builder."
+    Write-Host "The first build needs an internet connection - try again once online."
+    exit 1
+  }
+  Write-Host "Website builder built."
+}
+
+$BUILD_CONTEXT = Get-BuildContext
+if ($BUILD_CONTEXT) {
+  $IMAGE = "teaching-quartz:src-$(Get-ToolchainHash $BUILD_CONTEXT)"
+} else {
+  Write-Host "This folder is missing the toolchain's build recipe."
+  Write-Host "Open the folder in the app once to refresh it, or run from a repository copy."
+  exit 1
+}
+Build-ImageIfMissing
 
 
 # A free block of host ports for this folder's previews (four site ports

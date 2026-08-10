@@ -6,9 +6,6 @@ $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
 
 # -------------------- Defaults --------------------
-$HUB_USER       = 'rwhgrwhg'
-$DEFAULT_TAG    = 'latest'
-$IMAGE_NAME     = 'teaching-quartz'
 # One container per working folder, so two folders never repoint each
 # other's mounts. The name is a short hash of this folder's path.
 $WORKDIR_ID = ([BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes("$((Get-Location).Path)`n"))) -replace '-','').Substring(0,8).ToLower()
@@ -16,10 +13,8 @@ $CONTAINER_NAME = "teaching-quartz-$WORKDIR_ID"
 # A range, so several previews can run at once — one per window.
 $PREVIEW_PORT_RANGE = "8081-8084"
 $PREVIEW_WS_RANGE = "9081-9084"
-$DEV_IMAGE      = 'quartz-teacher:dev'  # local dev image
 
 # -------------------- Config (from flags) --------------------
-$TAG                     = $DEFAULT_TAG
 $FORCE_UPDATE_IMAGE      = $false
 $OVERRIDE_IMAGE          = $null
 $USE_LOCAL_DEV           = $false
@@ -51,20 +46,16 @@ function Show-Help {
 Usage: $SELF_CMD [options] [-- <args passed to setup_course.py>]
 
 Options:
-  --tag TAG            Use a specific tag instead of 'latest' (default: $DEFAULT_TAG)
-  --update-image       Force pulling the image and recreating the container to use it.
-  --image REF          Use a specific image reference (overrides Docker Hub default).
-                       Examples: ghcr.io/me/teaching-quartz:main | $DEV_IMAGE
-                       Note: If REF has no '/', it's treated as a local image and won't be pulled.
-  --local-dev          Shortcut for --image "$DEV_IMAGE" and skipping docker pull
-                       (use after building locally with: docker build -t $DEV_IMAGE .)
+  --image REF          Use a specific already-built image instead of building
+                       from this folder's recipe.
   --context NAME       Use a specific Docker context (sets DOCKER_CONTEXT=NAME for this run).
   --no-backup          (Pass-through to setup_course.py) Skip creating a backup ZIP - you will be asked to confirm.
   --help               Show this help and exit.
 
 Notes:
-- By default this script pulls from the public Docker Hub image: $HUB_USER/$IMAGE_NAME
-  Tag defaults to 'latest' unless overridden with --tag.
+- The website builder image is built LOCALLY from this folder's recipe
+  (.toolchain\, kept current by the app). The first build needs an internet
+  connection and takes a few minutes; after that it is cached.
 - Use --local-dev to test your locally built image ($DEV_IMAGE) without pulling.
 - Any arguments after a literal "--" are forwarded directly to setup_course.py.
 
@@ -85,10 +76,7 @@ while ($idx -lt $args.Count) {
   $a = $args[$idx]
   switch -Regex ($a) {
     '^(--help|-h)$' { Show-Help; exit 0 }
-    '^--tag$'       { if ($idx + 1 -ge $args.Count) { Write-Error '--tag requires a value'; exit 1 }; $TAG = $args[$idx+1]; $idx += 2; continue }
-    '^--update-image$' { $FORCE_UPDATE_IMAGE = $true; $idx++; continue }
     '^--image$'     { if ($idx + 1 -ge $args.Count) { Write-Error '--image requires a value'; exit 1 }; $OVERRIDE_IMAGE = $args[$idx+1]; $idx += 2; continue }
-    '^--local-dev$' { $USE_LOCAL_DEV = $true; $idx++; continue }
     '^--context$'   { if ($idx + 1 -ge $args.Count) { Write-Error '--context requires a value'; exit 1 }; $DOCKER_CONTEXT_OVERRIDE = $args[$idx+1]; $idx += 2; continue }
     '^--$'          { if ($idx + 1 -lt $args.Count) { $PassthruArgs = $args[($idx+1)..($args.Count-1)] } else { $PassthruArgs = @() }; $idx = $args.Count; continue }
     default         { $PassthruArgs += $a; $idx++; continue }
@@ -99,9 +87,7 @@ while ($idx -lt $args.Count) {
 if ($DOCKER_CONTEXT_OVERRIDE) { $env:DOCKER_CONTEXT = $DOCKER_CONTEXT_OVERRIDE }
 
 # -------------------- Resolve image to use --------------------
-if ($USE_LOCAL_DEV) { $OVERRIDE_IMAGE = $DEV_IMAGE; $SKIP_PULL = $true }
 if ($OVERRIDE_IMAGE -and ($OVERRIDE_IMAGE -notmatch '/')) { $SKIP_PULL = $true }
-if ($OVERRIDE_IMAGE) { $IMAGE = $OVERRIDE_IMAGE } else { $IMAGE = "${HUB_USER}/${IMAGE_NAME}:${TAG}" }
 
 # -------------------- Pre-flight checks --------------------
 $ScriptDir = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
@@ -253,96 +239,55 @@ $HOST_COURSES = Normalize-HostPath $CoursesRoot
 $MOUNT_COURSES = Get-MountPath $HOST_COURSES
 
 # -------------------- Pull or verify image presence --------------------
+# ---- The image is built HERE, from this folder's own recipe ----------
+function Get-BuildContext {
+  if (Test-Path "./Dockerfile") { return "." }
+  if (Test-Path "./.toolchain/Dockerfile") { return "./.toolchain" }
+  return $null
+}
+
+function Get-ToolchainHash([string]$context) {
+  $sha = [System.Security.Cryptography.SHA256]::Create()
+  $combined = ""
+  Get-ChildItem -Path $context -Recurse -File | Sort-Object FullName | ForEach-Object {
+    $combined += (Get-FileHash -Algorithm SHA256 -Path $_.FullName).Hash
+  }
+  $bytes = [Text.Encoding]::UTF8.GetBytes($combined)
+  return ([BitConverter]::ToString($sha.ComputeHash($bytes)) -replace '-','').Substring(0,8).ToLower()
+}
+
+function Build-ImageIfMissing {
+  docker image inspect "$IMAGE" *> $null
+  if ($LASTEXITCODE -eq 0) { Write-Host "Website builder is ready."; return }
+  if (-not $BUILD_CONTEXT) {
+    Write-Host "Image '$IMAGE' is not on this machine. Build it first."
+    exit 1
+  }
+  Write-Host "Building your website builder - the first time takes a few minutes ..."
+  docker buildx build --load --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"
+  if ($LASTEXITCODE -ne 0) {
+    Write-Host "Could not build the website builder."
+    Write-Host "The first build needs an internet connection - try again once online."
+    exit 1
+  }
+  Write-Host "Website builder built."
+}
+
 function Test-ImagePresent([string]$ref) {
   try { $null = docker image inspect "$ref"; return $true } catch { return $false }
 }
-$IMAGE_PRESENT = Test-ImagePresent $IMAGE
-if (-not $SKIP_PULL) {
-  if ($FORCE_UPDATE_IMAGE) {
-    Write-Host "Pulling latest for $IMAGE ..."
-    $null = docker pull "$IMAGE"
-    $PULL_STATUS = '(just pulled)'
-  } elseif (-not $IMAGE_PRESENT) {
-    Write-Host "Image not found locally. Pulling $IMAGE ..."
-    $null = docker pull "$IMAGE"
-    $PULL_STATUS = '(just pulled)'
-  } else {
-    Write-Host "Image already present: $IMAGE"
-    $PULL_STATUS = '(already on this machine)'
-  }
+$BUILD_CONTEXT = Get-BuildContext
+if ($OVERRIDE_IMAGE) {
+  $IMAGE = $OVERRIDE_IMAGE
+} elseif ($BUILD_CONTEXT) {
+  $IMAGE = "teaching-quartz:src-$(Get-ToolchainHash $BUILD_CONTEXT)"
 } else {
-  if ($IMAGE_PRESENT) {
-    Write-Host "Using local image: $IMAGE"
-    $PULL_STATUS = '(local image)'
-  } else {
-    Write-Host "Local image '$IMAGE' not found in Docker context '$CURRENT_CONTEXT'."
-    Write-Host "Tips:"
-    Write-Host " - If you built with buildx, use --load to import into the local engine:"
-    Write-Host "   docker buildx build --load -t $IMAGE ."
-    Write-Host " - Or classic build:"
-    Write-Host "   docker build -t $IMAGE ."
-    Write-Host " - Verify your context:"
-    Write-Host "   docker context ls"
-    exit 1
-  }
+  Write-Host "This folder is missing the toolchain's build recipe."
+  Write-Host "Open the folder in the app once to refresh it, or run from a repository copy."
+  exit 1
 }
 
-# -------------------- Offer a newer version, if one exists --------------------
-# An image already on the machine was never checked again, so a teacher kept
-# whatever they first downloaded and fixes never reached them.
-function Get-RegistryDigest([string]$ref) {
-  try { return (docker buildx imagetools inspect "$ref" --format '{{.Manifest.Digest}}' 2>$null | Select-Object -First 1) } catch { return $null }
-}
-
-function Get-InstalledDigest([string]$ref) {
-  # Only a digest belonging to THIS repository says anything about whether the
-  # local image came from it; a locally built image often carries a digest for
-  # another repository, which would look like an available update forever.
-  try {
-    $repo = $ref.Split(':')[0]
-    $entries = docker image inspect "$ref" --format '{{range .RepoDigests}}{{println .}}{{end}}' 2>$null
-    foreach ($entry in $entries) {
-      if (-not $entry) { continue }
-      $parts = $entry.Split('@')
-      if ($parts.Length -eq 2 -and $parts[0] -eq $repo) { return $parts[1] }
-    }
-    return $null
-  } catch { return $null }
-}
-
-function Offer-NewerImage([string]$ref) {
-  # A locally built image has no registry to ask about it.
-  if ($ref -notmatch '/') { return }
-
-  $available = Get-RegistryDigest $ref
-  $installed = Get-InstalledDigest $ref
-  # Offline, or nothing to compare: carry on with what is here.
-  if ((-not $available) -or (-not $installed) -or ($available -eq $installed)) { return }
-
-  # A different digest does not mean an older one. If the registry has never
-  # heard of the installed digest, this is a locally built image and
-  # "updating" it would replace it with something older.
-  $repo = $ref.Split(':')[0]
-  docker buildx imagetools inspect "$repo@$installed" *> $null
-  if ($LASTEXITCODE -ne 0) { return }
-
-  Write-Host "A newer version of the website builder is available."
-  if (-not [Environment]::UserInteractive) {
-    Write-Host "  Run this again with --update-image when you would like to install it."
-    return
-  }
-  $answer = Read-Host "  Update the website builder now? (y/n) [Default: y]"
-  if ($answer -match '^[Nn]') {
-    Write-Host "  Keeping the version you have."
-    return
-  }
-  Write-Host "Installing the newer version ..."
-  docker pull "$ref" | Out-Host
-}
-
-if ((-not $SKIP_PULL) -and (-not $FORCE_UPDATE_IMAGE) -and $IMAGE_PRESENT) {
-  Offer-NewerImage $IMAGE
-}
+Build-ImageIfMissing
 
 # -------------------- Show image version/build info --------------------
 function Show-ImageInfo([string]$_img) {

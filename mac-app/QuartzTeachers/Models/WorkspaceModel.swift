@@ -302,6 +302,100 @@ class WorkspaceModel {
         if !refreshed.isEmpty {
             AppLog.interface.info("refreshed launchers in \(workspaceURL.path, privacy: .public): \(refreshed.joined(separator: ", "), privacy: .public)")
         }
+        refreshToolchain(in: workspaceURL)
+    }
+
+    /// Keeps the folder's `.toolchain/` — the recipe the image is built
+    /// from — mirroring the app's bundled copy. The launchers hash this
+    /// folder to name the image, so a changed recipe rebuilds the image
+    /// and, through the image-mismatch check, recreates the container.
+    /// One updater (the app) now drives every layer.
+    func refreshToolchain(in workspaceURL: URL) {
+        let fileManager: FileManager = FileManager.default
+        // Only a folder that is already a workspace gets a toolchain.
+        if !fileManager.fileExists(atPath: workspaceURL.appendingPathComponent("preview.sh").path) {
+            return
+        }
+        let toolchainURL: URL = workspaceURL.appendingPathComponent(".toolchain")
+
+        var changed: Int = 0
+        var rootFiles: [String] = ["Dockerfile"]
+        rootFiles += ["setup.sh", "preview.sh", "deploy.sh"]
+        rootFiles += ["setup.bat", "preview.bat", "deploy.bat"]
+        rootFiles += ["setup.ps1", "preview.ps1", "deploy.ps1"]
+        for name in rootFiles {
+            if let sourceURL = Bundle.main.url(forResource: name, withExtension: nil) {
+                changed += WorkspaceModel.syncFile(from: sourceURL, to: toolchainURL.appendingPathComponent(name))
+            }
+        }
+        // Whole folders, mirrored (extraneous files removed — they would
+        // change the hash and force rebuilds for nothing).
+        for folderName in ["patches", "scripts", "support"] {
+            if let sourceURL = Bundle.main.url(forResource: folderName, withExtension: nil) {
+                changed += WorkspaceModel.syncDirectory(from: sourceURL, to: toolchainURL.appendingPathComponent(folderName))
+            }
+        }
+        if changed > 0 {
+            AppLog.interface.info("refreshed .toolchain in \(workspaceURL.path, privacy: .public): \(changed) file(s)")
+        }
+    }
+
+    /// Copies one file when the destination differs or is missing.
+    static func syncFile(from sourceURL: URL, to destinationURL: URL) -> Int {
+        let fileManager: FileManager = FileManager.default
+        guard let sourceData = try? Data(contentsOf: sourceURL) else {
+            return 0
+        }
+        if let existing = try? Data(contentsOf: destinationURL), existing == sourceData {
+            return 0
+        }
+        do {
+            try fileManager.createDirectory(at: destinationURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try sourceData.write(to: destinationURL, options: [.atomic])
+            if destinationURL.pathExtension == "sh" {
+                try? fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: destinationURL.path)
+            }
+            return 1
+        } catch {
+            return 0
+        }
+    }
+
+    /// Mirrors a directory: copies what differs, removes what should not
+    /// be there. Returns how many files changed either way.
+    static func syncDirectory(from sourceURL: URL, to destinationURL: URL) -> Int {
+        let fileManager: FileManager = FileManager.default
+        var changed: Int = 0
+
+        var sourceFiles: [String] = []
+        if let enumerator = fileManager.enumerator(at: sourceURL, includingPropertiesForKeys: [.isRegularFileKey]) {
+            for case let fileURL as URL in enumerator {
+                let isFile: Bool = (try? fileURL.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) ?? false
+                if isFile {
+                    let relative: String = String(fileURL.path.dropFirst(sourceURL.path.count + 1))
+                    sourceFiles.append(relative)
+                    changed += WorkspaceModel.syncFile(from: fileURL, to: destinationURL.appendingPathComponent(relative))
+                }
+            }
+        }
+
+        if let enumerator = fileManager.enumerator(at: destinationURL, includingPropertiesForKeys: [.isRegularFileKey]) {
+            var toRemove: [URL] = []
+            for case let fileURL as URL in enumerator {
+                let isFile: Bool = (try? fileURL.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) ?? false
+                if isFile {
+                    let relative: String = String(fileURL.path.dropFirst(destinationURL.path.count + 1))
+                    if !sourceFiles.contains(relative) {
+                        toRemove.append(fileURL)
+                    }
+                }
+            }
+            for fileURL in toRemove {
+                try? fileManager.removeItem(at: fileURL)
+                changed += 1
+            }
+        }
+        return changed
     }
 
     /// Replaces any launcher whose content differs from the current copy.

@@ -32,19 +32,45 @@ copy-pasteable follow-up commands in the right dialect (`./preview.sh …` vs
 
 ## 2. Resolve which image to use
 
-`setup.sh` and `preview.sh` accept image-selection flags (parity between the
-two, so a dev image can be exercised through the whole pipeline):
+Every launcher derives the image from the folder's build recipe: the tag is
+`teaching-quartz:src-<hash of the recipe>`, built locally when missing.
 
-- `--tag TAG` — use `rwhgrwhg/teaching-quartz:TAG` instead of `latest`.
-- `--image REF` — any image reference; a ref without `/` is treated as local
-  and is not pulled.
-- `--local-dev` — shorthand for the local dev image `quartz-teacher:dev`
-  with pulling skipped (used after `docker build -t quartz-teacher:dev .`).
-- `--update-image` — force a fresh pull.
+- `--image REF` — substitute a specific already-built image (this is how
+  `verify.sh` drives the launchers against its own `dev-test` build).
 - `--port N` (preview only) — serve on container port N (8081–8084), so up
   to four previews per working folder can run at once — the macOS app uses
   this to preview sections side by side in separate windows. Each preview
   only ever stops a server on its own port.
+
+### One container per working folder
+
+Each working folder gets its own container, named
+`teaching-quartz-<hash>` where the hash is the first eight characters of
+`pwd -P | shasum -a 256` — so two folders (this year's courses and last
+year's, say) never repoint each other's mounts, and can preview at the same
+time. At creation the launcher probes for a free block of HOST ports
+(8081–8084, then 8091–8094, and so on, each with its +1000 websocket
+block) and maps it to the container's fixed ports; `preview.sh` prints the
+resolved address ("Preview will be available at: …"), which is what the app
+and a terminal teacher should open. The old shared `teaching-quartz`
+container is retired automatically the first time a per-folder container is
+created. The macOS app stops a folder's container (a fast `docker stop`,
+not a removal) when the last window using that folder closes, and on quit —
+the container holds no content, and restarts in about a second on the next
+preview.
+- `--context NAME` (setup only) — select a Docker context.
+
+The scripts then ensure a container runtime is available (next section),
+pull the image if needed, and print the image's OCI version/created/revision
+labels so the teacher knows exactly which build is active.
+
+### Staying up to date
+
+The image tag is a hash of the folder's build recipe, so staleness is
+structural rather than checked-for: an updated recipe (delivered by an app
+update refreshing `.toolchain/`) means a new tag, a local rebuild on the
+next run, and a recreated container. The old pull-and-compare update
+machinery (`--update-image`, digest checks, the update prompt) is gone.
 
 ### One container per working folder
 

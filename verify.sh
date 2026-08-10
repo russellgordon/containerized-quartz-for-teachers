@@ -7,7 +7,8 @@ set -euo pipefail
 # Builds a fresh local image (quartz-teacher:dev-test) from this repository,
 # checks that everything baked into it matches the working tree, then drives
 # the real launcher scripts against it so you can confirm that host-side and
-# image-side changes work together before publishing with ./publish.sh.
+# image-side changes work together — the same recipe every working
+# folder builds from locally.
 #
 # What it does, in order:
 #   1. Ensures the container runtime is up (shares an already-running Colima;
@@ -113,7 +114,7 @@ else
   echo "🧱 Building $DEV_TEST_IMAGE from ./Dockerfile ${NO_CACHE:+(no cache)}…"
   # The Dockerfile uses a BuildKit heredoc (RUN cat <<'EOF'), which the legacy
   # builder silently mishandles (it produced an EMPTY export-scripts file).
-  # publish.sh builds with buildx, so verify must too, to stay representative.
+  # The launchers build with buildx, so verify must too, to stay representative.
   if docker buildx version >/dev/null 2>&1; then
     BUILD_CMD=(docker buildx build --load)
   else
@@ -224,6 +225,6 @@ echo ""
 echo "ℹ️  Notes:"
 echo "   • The '$CONTAINER_NAME' container was left running from $DEV_TEST_IMAGE"
 echo "     so you can poke at it (e.g., ./preview.sh EXC2O 1 --image $DEV_TEST_IMAGE)."
-echo "   • To return to the published image, run:  docker rm -f $CONTAINER_NAME"
+echo "   • To return to the normal image, run:  docker rm -f $CONTAINER_NAME"
 echo "     (the next ./setup.sh or ./preview.sh run recreates it automatically)."
 echo "   • Colima was left exactly as it was found — never stopped by this script."

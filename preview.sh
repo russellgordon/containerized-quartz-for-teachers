@@ -29,40 +29,55 @@ shift 2
 
 
 # -------------------- Image selection & options (parity with setup.sh) --------------------
-HUB_USER="${HUB_USER:-rwhgrwhg}"
-DEFAULT_TAG="${DEFAULT_TAG:-latest}"
-IMAGE_NAME="${IMAGE_NAME:-teaching-quartz}"
-DEV_IMAGE="${DEV_IMAGE:-quartz-teacher:dev}"
-
-TAG="${TAG:-$DEFAULT_TAG}"
-FORCE_UPDATE_IMAGE="${FORCE_UPDATE_IMAGE:-false}"
-# Set when an unexplained question about updating would interrupt something.
-SKIP_UPDATE_CHECK="${SKIP_UPDATE_CHECK:-false}"
+# ---- The image is built HERE, from this folder's own recipe ----------
+# The working folder carries the toolchain's build recipe (.toolchain/,
+# kept current by the app) — or IS the repository, with a Dockerfile
+# beside this script. The image tag is a hash of the recipe's contents:
+# a changed recipe means a new tag, a fresh local build, and — via the
+# image-mismatch check further down — a recreated container. No registry
+# and no account are involved; the recipe travels with the app.
 OVERRIDE_IMAGE="${OVERRIDE_IMAGE:-}"
-USE_LOCAL_DEV="${USE_LOCAL_DEV:-false}"
-SKIP_PULL="${SKIP_PULL:-false}"
-PULL_STATUS=""
 
 # Parse image-related flags only; leave other flags for later parsing
+_SAVED_ARGS=("$@")
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --image)        OVERRIDE_IMAGE="$2"; shift 2 ;;
-    --tag)          TAG="$2"; shift 2 ;;
-    --update-image) FORCE_UPDATE_IMAGE="true"; shift ;;
-    --no-update-check) SKIP_UPDATE_CHECK="true"; shift ;;
-    --local-dev)    USE_LOCAL_DEV="true"; SKIP_PULL="true"; shift ;;
     --) shift; break ;;
     -*|*) break ;;
   esac
 done
+set -- "${_SAVED_ARGS[@]}"
 
-# Resolve IMAGE (same rules as setup.sh)
-if [[ "$USE_LOCAL_DEV" == "true" ]]; then
-  IMAGE="$DEV_IMAGE"
-elif [[ -n "$OVERRIDE_IMAGE" ]]; then
+resolve_build_context() {
+  if [[ -f "./Dockerfile" ]]; then
+    echo "."
+  elif [[ -f "./.toolchain/Dockerfile" ]]; then
+    echo "./.toolchain"
+  else
+    return 1
+  fi
+}
+
+toolchain_hash() {
+  local context="$1"
+  (cd "$context" && find . -type f -not -path './.git/*' -not -name '.DS_Store' \
+    | LC_ALL=C sort \
+    | while IFS= read -r file; do shasum -a 256 "$file"; done \
+    | shasum -a 256 | cut -c1-8)
+}
+
+BUILD_CONTEXT=""
+if [[ -n "$OVERRIDE_IMAGE" ]]; then
   IMAGE="$OVERRIDE_IMAGE"
 else
-  IMAGE="${HUB_USER}/${IMAGE_NAME}:${TAG}"
+  BUILD_CONTEXT=$(resolve_build_context) || {
+    echo "❌ This folder is missing the toolchain's build recipe."
+    echo "   Open the folder in the app once to refresh it, or run from a"
+    echo "   copy of the repository."
+    exit 1
+  }
+  IMAGE="teaching-quartz:src-$(toolchain_hash "$BUILD_CONTEXT")"
 fi
 
 
@@ -305,166 +320,33 @@ echo "🧭 Host detected by Docker: ${HOST_OS}/${HOST_ARCH}"
 echo "🖼️  Using image: ${IMAGE}"
 # ====================================================================
 
-# -------------------- Pull or verify image presence --------------------
-IMAGE_PRESENT="false"
-if docker image inspect "$IMAGE" >/dev/null 2>&1; then
-  IMAGE_PRESENT="true"
-fi
-# If not present by exact ref, try to discover close matches (helps with local naming quirks)
-if [[ "$IMAGE_PRESENT" == "false" ]]; then
-  REPO="${IMAGE%%:*}"
-  TAG_PART="${IMAGE#*:}"
-  CANDIDATES=$(docker image ls --format '{{.Repository}}:{{.Tag}}' "$REPO" 2>/dev/null | grep -i "${TAG_PART}" || true)
-  if [[ -n "$CANDIDATES" ]]; then
-    echo "ℹ️  Found local candidates for '$IMAGE' in context '${CURRENT_CONTEXT}':"
-    echo "$CANDIDATES" | sed 's/^/   • /'
-    MATCH=$(echo "$CANDIDATES" | awk -v want="$IMAGE" 'BEGIN{IGNORECASE=1} $0==want{print $0}')
-    if [[ -n "$MATCH" ]]; then
-      IMAGE_PRESENT="true"
-      IMAGE="$MATCH"
-      echo "✅ Using exact local match: $IMAGE"
-    fi
+# -------------------- Build the image when it is missing --------------------
+build_image_if_missing() {
+  if docker image inspect "$IMAGE" >/dev/null 2>&1; then
+    echo "✅ Website builder is ready."
+    return 0
   fi
-fi
-
-if [[ "$SKIP_PULL" == "true" ]]; then
-  if [[ "$IMAGE_PRESENT" == "true" ]]; then
-    echo "✅ Using local image: $IMAGE"
-    PULL_STATUS="(local image)"
-  else
-    echo "❌ Local image '$IMAGE' not found in Docker context '${CURRENT_CONTEXT}'."
-    echo "   Tips:"
-    echo "   • If you built with buildx, make sure you used --load to import into the local engine:"
-    echo "     docker buildx build --load -t $IMAGE ."
-    echo "     (or use classic build:)"
-    echo "     docker build -t $IMAGE ."
-    echo "   • Verify your context matches where you built:"
-    echo "     docker context ls"
-    echo "     docker context show"
-    echo "   • List matching local images:"
-    echo "     docker image ls $REPO"
+  if [[ -z "$BUILD_CONTEXT" ]]; then
+    echo "❌ Image '$IMAGE' is not on this machine."
+    echo "   Build it first, e.g.: docker buildx build --load -t $IMAGE ."
     exit 1
   fi
-else
-  if [[ "$FORCE_UPDATE_IMAGE" == "true" ]]; then
-    echo "⬇️  --update-image passed: pulling latest for ${IMAGE}…"
-    docker pull "$IMAGE"
-    PULL_STATUS="(just pulled)"
-  elif [[ "$IMAGE_PRESENT" == "false" ]]; then
-    echo "⬇️  Image not found locally. Pulling $IMAGE …"
-    docker pull "$IMAGE"
-    PULL_STATUS="(just pulled)"
+  echo "🧱 Building your website builder — the first time takes a few minutes…"
+  local build_cmd=(docker buildx build --load)
+  if ! docker buildx version >/dev/null 2>&1; then
+    # BuildKit either way: the legacy builder silently mangles the
+    # export-scripts layer.
+    build_cmd=(env DOCKER_BUILDKIT=1 docker build)
+  fi
+  if "${build_cmd[@]}" --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"; then
+    echo "✅ Website builder built."
   else
-    echo "✅ Image already present: $IMAGE"
-    PULL_STATUS="(already on this machine)"
-  fi
-fi
-
-# -------------------- Offer a newer version, if one exists --------------------
-# An image already on the machine was never checked again, so a teacher kept
-# whatever they first downloaded and fixes never reached them.
-registry_digest_of() {
-  docker buildx imagetools inspect "$1" --format '{{.Manifest.Digest}}' 2>/dev/null || true
-}
-
-installed_digest_of() {
-  # Only a digest belonging to THIS repository says anything about whether the
-  # local image came from it. A locally built image often carries a digest for
-  # some other repository, and comparing that guarantees a false "newer
-  # version available" — which, answered yes, replaces a newer local build
-  # with an older published one.
-  local ref="$1"
-  local repo="${ref%%:*}"
-  local entries
-  entries=$(docker image inspect "$ref" --format '{{range .RepoDigests}}{{println .}}{{end}}' 2>/dev/null || true)
-  while IFS= read -r entry; do
-    if [[ -z "$entry" ]]; then
-      continue
-    fi
-    if [[ "${entry%@*}" == "$repo" ]]; then
-      echo "${entry#*@}"
-      return 0
-    fi
-  done <<< "$entries"
-  echo ""
-}
-
-offer_newer_image() {
-  local ref="$1"
-  # A locally built image has no registry to ask about it.
-  case "$ref" in */*) ;; *) return 0 ;; esac
-
-  local available installed answer
-  available="$(registry_digest_of "$ref")"
-  installed="$(installed_digest_of "$ref")"
-  # Offline, or nothing to compare: carry on with what is here.
-  if [[ -z "$available" || -z "$installed" || "$available" == "$installed" ]]; then
-    return 0
-  fi
-
-  # A different digest does not mean an older one. If the registry has never
-  # heard of the installed digest, this is a locally built image, and
-  # "updating" it would replace it with something older.
-  if ! docker buildx imagetools inspect "${ref%%:*}@${installed}" >/dev/null 2>&1; then
-    return 0
-  fi
-
-  echo "🆕 A newer version of the website builder is available."
-  if [[ ! -t 0 ]]; then
-    echo "   Run '${SELF_CMD} --update-image' when you would like to install it."
-    return 0
-  fi
-  # A failed read means end-of-input — nobody is there to answer. Pressing
-  # Return, by contrast, succeeds with an empty answer and takes the default.
-  # Without this distinction an automated run silently accepts the update.
-  if ! read -r -p "   Update the website builder now? (y/n) [Default: y]: " answer; then
-    echo
-    echo "   No answer given, so the version you have is being kept."
-    return 0
-  fi
-  case "${answer:-y}" in
-    [Nn]*)
-      echo "   Keeping the version you have."
-      return 0
-      ;;
-  esac
-  echo "⬇️  Installing the newer version…"
-  docker pull "$ref"
-  PULL_STATUS="(just updated)"
-}
-
-if [[ "$SKIP_PULL" != "true" && "$FORCE_UPDATE_IMAGE" != "true" && "$SKIP_UPDATE_CHECK" != "true" && "$IMAGE_PRESENT" == "true" ]]; then
-  offer_newer_image "$IMAGE"
-fi
-
-# -------------------- Show image version/build info --------------------
-show_image_info() {
-  local img="$1"
-  local ver created rev src title
-  ver=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.version"}}' 2>/dev/null || true)
-  created=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.created"}}' 2>/dev/null || true)
-  rev=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' 2>/dev/null || true)
-  src=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.source"}}' 2>/dev/null || true)
-  title=$(docker image inspect "$img" --format '{{index .Config.Labels "org.opencontainers.image.title"}}' 2>/dev/null || true)
-  if [[ -z "${ver}" ]]; then ver="(no version label)"; fi
-  if [[ -z "${created}" ]]; then created=$(docker image inspect "$img" --format '{{.Created}}' 2>/dev/null || echo ""); fi
-  if [[ -z "${rev}" ]]; then rev="(no revision label)"; fi
-  if [[ -z "${title}" ]]; then title="$img"; fi
-  local digests
-  digests=$(docker image inspect "$img" --format '{{range .RepoDigests}}{{.}}{{"\n"}}{{end}}' 2>/dev/null || true)
-
-  echo "ℹ️  Image info ${PULL_STATUS}:"
-  echo "   • Title:      ${title}"
-  echo "   • Version:    ${ver}"
-  echo "   • Created:    ${created}"
-  echo "   • Revision:   ${rev}"
-  [[ -n "$src" ]] && echo "   • Source:     ${src}"
-  if [[ -n "$digests" ]]; then
-    echo "   • Digests:"
-    echo "$digests" | sed 's/^/     - /'
+    echo "❌ Could not build the website builder."
+    echo "   The first build needs an internet connection — try again once online."
+    exit 1
   fi
 }
-show_image_info "$IMAGE"
+build_image_if_missing
 
 
 

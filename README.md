@@ -102,21 +102,16 @@ wsl -u root -e sh -c "usermod -aG docker $(wsl whoami); service docker start"
 >
 > This is one-time setup. From now on, the launcher scripts start the Docker engine inside WSL automatically whenever it is not running.
 
-### 2. Get the launcher scripts from the Docker image
+### 2. Get the toolchain
 
-These scripts you will need to setup, preview, and deploy your website are already inside the Docker image.
+The easiest way is the **macOS app**, which sets up a working folder for you
+and keeps it up to date. Working from the command line instead, copy this
+repository (or the launcher scripts plus the `.toolchain/` folder from an
+existing working folder) into the folder where your courses will live.
 
-**macOS (bash/zsh):**
-```bash
-docker run --pull=always --rm -v "$PWD:/out" rwhgrwhg/teaching-quartz:latest export-scripts
-```
-
-**Windows (PowerShell):**
-```powershell
-wsl docker run --pull=always --rm -v "$(wsl wslpath -a $PWD):/out" rwhgrwhg/teaching-quartz:latest export-scripts
-```
-
-This will place the launcher scripts into your current folder, ready to run.
+Either way, the website-builder image is **built locally on your machine**
+from the recipe in the folder — the first run takes a few minutes and needs
+an internet connection; after that it is cached until the toolchain updates.
 
 ---
 

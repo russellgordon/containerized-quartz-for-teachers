@@ -2,10 +2,19 @@
 
 [◀ Previous: Overview](01-overview.md) · [Back to index](README.md) · [Next: Launcher Scripts ▶](03-launcher-scripts.md)
 
-The image `rwhgrwhg/teaching-quartz` is the entire runtime environment. It is
-built from the [`Dockerfile`](../Dockerfile) at the repository root and
-published to Docker Hub by [`publish.sh`](../publish.sh). Teachers only ever
-*pull* it; this repository is needed only to *build* it.
+The image is the entire runtime environment, and it is **built locally on
+each machine** from the [`Dockerfile`](../Dockerfile) — no registry of ours
+is involved. A working folder carries the build recipe in `.toolchain/`
+(kept current by the macOS app); a repository copy IS the recipe. The image
+tag is `teaching-quartz:src-<hash>` where the hash covers the recipe's
+contents, so an updated recipe produces a new tag, the launcher builds it,
+and the container is recreated to match — the whole chain keyed off one
+thing: the version of the app.
+
+What a build still fetches from the network, the first time: the
+`python:3.11-slim` base image, apt and NodeSource packages, the pinned
+Quartz v4.5.0 clone from GitHub, and npm dependencies. After that the build
+is cached and everything runs offline.
 
 ## Anatomy of the Dockerfile
 
@@ -85,25 +94,19 @@ The image is layered as follows (in order):
 - **Secrets.** The Netlify token lives in the host's keychain and is injected
   per invocation (see [Deployment](07-deployment.md#token-handling)).
 
-## Building and publishing the image (`publish.sh`)
+## Building the image
 
-`publish.sh` is the maintainer-facing script (teachers never run it):
+The launchers build the image when the expected tag is missing, with
+BuildKit (`docker buildx build --load`) — the legacy builder silently
+mangles the `export-scripts` layer. `verify.sh` exercises exactly this
+build against a `dev-test` tag and remains the gate for toolchain changes.
+The `--image REF` flag on each launcher substitutes a specific already-built
+image, which is how `verify.sh` drives the launchers against its own build.
 
-- Builds a **multi-architecture** image (`linux/amd64,linux/arm64`) with
-  `docker buildx`, so Apple Silicon and Intel/Windows machines both run
-  natively.
-- **Date-based versioning**: tags default to `vYYYY.MM.DD`; if that tag
-  already exists on Docker Hub, it auto-increments to `-b2`, `-b3`, … The
-  `latest` tag is always pushed alongside.
-- Defaults to `--no-cache` for reproducibility (override with
-  `--allow-cache`).
-- Verifies the pushed manifests with `docker buildx imagetools inspect`.
-
-The launchers display the image's OCI labels (version, created date,
-revision) at startup so a teacher can tell at a glance which build they are
-running, and support `--tag`, `--image`, `--update-image`, and `--local-dev`
-flags for pulling specific versions or testing a locally built image
-(`docker build -t quartz-teacher:dev .`).
+Historical note: the image was previously published to Docker Hub by a
+`publish.sh` script and pulled by teachers, with digest-comparison update
+checks. That whole apparatus — and its staleness problems — is gone; the
+recipe travels with the app instead.
 
 ---
 

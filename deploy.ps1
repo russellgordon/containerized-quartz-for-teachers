@@ -44,9 +44,9 @@ $KEY_TARGET     = 'containerized-quartz-netlify'  # Windows Credential Manager t
 $TOKENS_FILE    = Join-Path -Path $ScriptDir -ChildPath 'courses\.internal\tokens.json'
 $KEY_FILE       = Join-Path -Path $ScriptDir -ChildPath 'courses\.internal\.key'
 
-# Image selection: default to hub image unless an existing container specifies otherwise.
-$DEFAULT_IMAGE  = if ($env:TEACHING_QUARTZ_IMAGE) { $env:TEACHING_QUARTZ_IMAGE } else { 'rwhgrwhg/teaching-quartz:latest' }
-$script:IMAGE_REF = $DEFAULT_IMAGE
+# The image is built locally from this folder's recipe. Resolved later,
+# once the helper functions are defined (PowerShell reads top to bottom).
+$script:IMAGE_REF = $null
 
 # ======================
 # Arg parsing
@@ -463,12 +463,34 @@ if ($global:DockerViaWsl) {
 $HOST_COURSES = Normalize-HostPath (Join-Path -Path (Get-Location) -ChildPath 'courses')
 $MOUNT_COURSES = Get-MountPath $HOST_COURSES
 
+# ---- The image is built HERE, from this folder's own recipe ----------
+function Get-BuildContext {
+  if (Test-Path "./Dockerfile") { return "." }
+  if (Test-Path "./.toolchain/Dockerfile") { return "./.toolchain" }
+  return $null
+}
+
+function Get-ToolchainHash([string]$context) {
+  $sha = [System.Security.Cryptography.SHA256]::Create()
+  $combined = ""
+  Get-ChildItem -Path $context -Recurse -File | Sort-Object FullName | ForEach-Object {
+    $combined += (Get-FileHash -Algorithm SHA256 -Path $_.FullName).Hash
+  }
+  $bytes = [Text.Encoding]::UTF8.GetBytes($combined)
+  return ([BitConverter]::ToString($sha.ComputeHash($bytes)) -replace '-','').Substring(0,8).ToLower()
+}
+
 function Ensure-Image([string]$ref) {
   docker image inspect "$ref" *> $null
-  if ($LASTEXITCODE -ne 0) {
-    Write-Host "Pulling image '$ref'..."
-    docker pull "$ref" | Out-Host
+  if ($LASTEXITCODE -eq 0) { return }
+  $context = Get-BuildContext
+  if (-not $context) {
+    Write-Host "Image '$ref' is not on this machine and this folder has no build recipe."
+    exit 1
   }
+  Write-Host "Building your website builder - the first time takes a few minutes ..."
+  docker buildx build --load --progress=plain -t "$ref" "$context"
+  if ($LASTEXITCODE -ne 0) { Write-Host "Could not build the website builder."; exit 1 }
 }
 
 
@@ -500,6 +522,10 @@ function Run-ContainerWithMount {
     $HostBase = Find-FreePortBlock
     if (-not $HostBase) { Write-Host "Could not find free ports."; exit 1 }
   Write-Host "Binding host courses to container: $MOUNT_COURSES -> /teaching/courses"
+  if (-not $script:IMAGE_REF) {
+    $context = Get-BuildContext
+    if ($context) { $script:IMAGE_REF = "teaching-quartz:src-$(Get-ToolchainHash $context)" }
+  }
   Ensure-Image $script:IMAGE_REF
   docker run -dit `
     --name "$CONTAINER_NAME" `
@@ -580,7 +606,7 @@ if ($containerExists) {
 else {
   Write-Host "Creating new container named $CONTAINER_NAME with correct mount..."
   # No pre-existing container -> use default/override image.
-  $script:IMAGE_REF = $DEFAULT_IMAGE
+  $script:IMAGE_REF = if (Get-BuildContext) { "teaching-quartz:src-$(Get-ToolchainHash (Get-BuildContext))" } else { $null }
   Run-ContainerWithMount
 }
 
