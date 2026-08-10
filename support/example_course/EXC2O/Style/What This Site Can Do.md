@@ -69,7 +69,7 @@ enableToc: false
 ---
 ```
 
-Every class page in **All Classes** uses this — an agenda of six items does not
+Every class page in [[All Classes/index|All Classes]] uses this — an agenda of six items does not
 need a navigation panel. So does
 [[D2. Investigating and Understanding Concepts]]: open it and you will see no
 "Navigate this page" on the right, because the page is a list of expectations
