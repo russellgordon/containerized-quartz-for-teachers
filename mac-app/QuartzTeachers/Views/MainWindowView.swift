@@ -8,8 +8,13 @@ struct MainWindowView: View {
 
     @Environment(WorkspaceModel.self) var workspace
 
-    /// Matches the sidebar's footer, so both dividers sit on one line.
-    @ScaledMetric(relativeTo: .body) var scaledFooterHeight: CGFloat = WindowChrome.pathBarHeight
+    /// The band the contents sit in — the same height as the sidebar's
+    /// footer, so "Working folder" lines up with the Filter field.
+    @ScaledMetric(relativeTo: .body) var scaledContentHeight: CGFloat = WindowChrome.footerHeight
+
+    /// The extra height below that band, which is what brings this rule
+    /// level with the sidebar's.
+    @ScaledMetric(relativeTo: .body) var scaledBottomInset: CGFloat = WindowChrome.sidebarBottomInset
 
     // MARK: - Body
 
@@ -66,7 +71,13 @@ struct MainWindowView: View {
                 FinderPathBarView(folderURL: workspaceURL)
             }
             .padding(.horizontal, 8)
-            .frame(maxWidth: .infinity, minHeight: scaledFooterHeight, maxHeight: scaledFooterHeight, alignment: .leading)
+            // Centred in the same band the sidebar's footer occupies, with
+            // the extra height below it. The strip has to be taller for the
+            // two rules to meet, but centring the contents in the whole
+            // strip would sit them lower than the Filter field opposite.
+            .frame(maxWidth: .infinity, minHeight: scaledContentHeight, maxHeight: scaledContentHeight, alignment: .leading)
+            .padding(.bottom, scaledBottomInset)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(.bar)
                 .help(workspaceURL.path)
                 .accessibilityIdentifier("windowPathBar")
