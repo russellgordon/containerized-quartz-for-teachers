@@ -7,6 +7,14 @@ import Foundation
 /// should see tidy text, so this type strips ANSI escape sequences and
 /// treats a carriage return as "start this line over", which collapses
 /// spinner animation into its final state.
+/// Holds the joined transcript text so reading it mutates nothing.
+final class TranscriptTextCache {
+
+    // MARK: - Stored properties
+
+    var text: String?
+}
+
 struct TranscriptBuilder {
 
     // MARK: - Stored properties
@@ -27,24 +35,30 @@ struct TranscriptBuilder {
 
     /// Cached joined text: `displayText` is read several times per
     /// refresh, and rebuilding it each time is what stalls the UI.
-    private var cachedDisplayText: String?
+    ///
+    /// The cache lives in a REFERENCE box so that reading `displayText`
+    /// mutates nothing. This transcript is stored on an observed object
+    /// and read from view bodies: a mutating getter would write to
+    /// observed state during view evaluation, invalidating the view,
+    /// which re-reads, which writes again — an endless loop that freezes
+    /// the interface. `append` swaps in a fresh box, so copies of this
+    /// struct never share a stale cache.
+    private var cache: TranscriptTextCache = TranscriptTextCache()
 
     // MARK: - Computed properties
 
     /// The full transcript as one display string (cached).
     var displayText: String {
-        mutating get {
-            if let cachedDisplayText {
-                return cachedDisplayText
-            }
-            var allLines: [String] = lines
-            if !currentLine.isEmpty {
-                allLines.append(currentLine)
-            }
-            let text: String = allLines.joined(separator: "\n")
-            cachedDisplayText = text
+        if let text = cache.text {
             return text
         }
+        var allLines: [String] = lines
+        if !currentLine.isEmpty {
+            allLines.append(currentLine)
+        }
+        let text: String = allLines.joined(separator: "\n")
+        cache.text = text
+        return text
     }
 
     // MARK: - Functions
@@ -74,7 +88,9 @@ struct TranscriptBuilder {
     /// ending. Only a LONE carriage return is a spinner redrawing its
     /// line, which is when the current line restarts.
     mutating func append(rawText: String) {
-        cachedDisplayText = nil
+        // A fresh box per mutation: copies of this struct must never
+        // share a cache that one of them later fills in.
+        cache = TranscriptTextCache()
         let cleaned: String = TranscriptBuilder.strippingControlSequences(from: rawText)
         // Work scalar-by-scalar: Swift groups "\r\n" into a SINGLE
         // Character (grapheme cluster), which would hide line endings.

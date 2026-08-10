@@ -26,6 +26,9 @@ struct TaskProgressView: View {
         _isShowingDetails = State(initialValue: showingDetailsForTesting)
     }
 
+    /// The answer being typed into the question alert.
+    @State var answer: String = ""
+
     /// When the header last refreshed, so a stalled main thread shows up
     /// in the log as a gap rather than only as a blank window.
     ///
@@ -33,6 +36,20 @@ struct TaskProgressView: View {
     /// a body is being evaluated invalidates the view and re-evaluates
     /// the body, which spins the main thread forever.
     @State var refreshTracker: RefreshTracker = RefreshTracker()
+
+    // MARK: - Computed properties
+
+    /// Drives the question alert without writing state during a body.
+    var awaitingInputBinding: Binding<Bool> {
+        return Binding(
+            get: { runner.isAwaitingInput },
+            set: { isPresented in
+                if !isPresented {
+                    runner.isAwaitingInput = false
+                }
+            }
+        )
+    }
 
     // MARK: - Functions
 
@@ -140,13 +157,10 @@ struct TaskProgressView: View {
                         }
                     }
 
-                    if runner.mayBeWaitingForInput(asOf: context.date) {
-                        Label(
-                            "A question needs your attention — click “Show details” below to see it and type an answer.",
-                            systemImage: "questionmark.bubble"
-                        )
-                        .foregroundStyle(.orange)
-                        .accessibilityIdentifier("awaitingInputNotice")
+                    if runner.isAwaitingInput {
+                        Label("Waiting for your answer…", systemImage: "questionmark.bubble")
+                            .foregroundStyle(.orange)
+                            .accessibilityIdentifier("awaitingInputNotice")
                     }
 
                     if let problem = runner.launchProblem {
@@ -188,6 +202,20 @@ struct TaskProgressView: View {
                     .frame(minHeight: 200, idealHeight: 260, maxHeight: .infinity)
                     .clipped()
             }
+        }
+        // Ask the question outright rather than making a teacher open
+        // the details and type into a console.
+        .alert("One thing is needed to continue", isPresented: awaitingInputBinding) {
+            TextField("Your answer", text: $answer)
+            Button("Send") {
+                runner.send(line: answer)
+                answer = ""
+            }
+            Button("Cancel", role: .cancel) {
+                runner.isAwaitingInput = false
+            }
+        } message: {
+            Text(runner.pendingQuestion)
         }
         .onChange(of: runner.lastExitCode) {
             // A failure is worth reading about: open the details.

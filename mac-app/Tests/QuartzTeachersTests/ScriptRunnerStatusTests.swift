@@ -29,6 +29,33 @@ final class ScriptRunnerStatusTests: XCTestCase {
     }
 
     @MainActor
+    func testQuestionShapesAreRecognised() {
+        XCTAssertTrue(ScriptRunner.looksLikeQuestion("Enter Netlify site name [ics3u-s1-2026-gordon]:"))
+        XCTAssertTrue(ScriptRunner.looksLikeQuestion("Install the Example Course now? (y/n) [Default: n]"))
+        XCTAssertTrue(ScriptRunner.looksLikeQuestion(">"))
+        XCTAssertFalse(ScriptRunner.looksLikeQuestion("Emitting files"))
+        XCTAssertFalse(ScriptRunner.looksLikeQuestion("Uploaded 42 files"))
+    }
+
+    @MainActor
+    func testSendingAnAnswerClearsTheQuestion() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.isAwaitingInput = true
+        runner.pendingQuestion = "Enter Netlify site name:"
+        runner.send(line: "my-site")
+        XCTAssertFalse(runner.isAwaitingInput, "Answering should dismiss the question")
+    }
+
+    @MainActor
+    func testNewOutputMeansTheScriptIsNoLongerWaiting() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.isRunning = true
+        runner.isAwaitingInput = true
+        runner.receiveOutput("Uploading your pages\n")
+        XCTAssertFalse(runner.isAwaitingInput, "Fresh output means it is working again")
+    }
+
+    @MainActor
     func testStalledPromptIsDetectedOnlyWhenQuietAndPromptShaped() {
         let runner: ScriptRunner = ScriptRunner()
         runner.isRunning = true

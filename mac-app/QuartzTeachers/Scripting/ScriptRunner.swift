@@ -28,6 +28,14 @@ class ScriptRunner {
     /// When output last arrived — used to sense a stalled prompt.
     var lastOutputAt: Date = Date()
 
+    /// True when the script appears to be waiting for an answer, with the
+    /// question it is waiting on. Maintained HERE rather than in a view,
+    /// so nothing decides it while a view body is being evaluated.
+    var isAwaitingInput: Bool = false
+    var pendingQuestion: String = ""
+
+    private var promptCheck: DispatchWorkItem?
+
     private var process: Process?
     private var terminal: PseudoTerminal?
 
@@ -144,6 +152,7 @@ class ScriptRunner {
 
     /// Sends one line of input to the script, as if typed in Terminal.
     func send(line: String) {
+        isAwaitingInput = false
         guard let terminal else {
             return
         }
@@ -245,6 +254,44 @@ class ScriptRunner {
         transcript.append(rawText: text)
         advanceMilestones(with: text)
         lastOutputAt = Date()
+
+        // Fresh output means the script is working, not waiting.
+        isAwaitingInput = false
+        schedulePromptCheck()
+    }
+
+    /// After a quiet spell, decide whether the script is sitting at a
+    /// question and, if so, publish it for the interface to ask.
+    private func schedulePromptCheck() {
+        promptCheck?.cancel()
+        let check: DispatchWorkItem = DispatchWorkItem {
+            MainActor.assumeIsolated {
+                if !self.isRunning {
+                    return
+                }
+                let line: String = self.transcript.currentLine.trimmingCharacters(in: .whitespaces)
+                if line.isEmpty {
+                    return
+                }
+                if ScriptRunner.looksLikeQuestion(line) {
+                    self.pendingQuestion = line
+                    self.isAwaitingInput = true
+                }
+            }
+        }
+        promptCheck = check
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: check)
+    }
+
+    /// Prompt shapes the toolchain's scripts actually use.
+    static func looksLikeQuestion(_ line: String) -> Bool {
+        if line.hasSuffix(":") || line.hasSuffix("?") || line.hasSuffix(">") {
+            return true
+        }
+        if line.contains("(y/n)") || line.contains("[Y/n]") || line.contains("[Default:") {
+            return true
+        }
+        return false
     }
 
     /// Folds newly arrived output into the milestone count.
@@ -372,6 +419,8 @@ class ScriptRunner {
     }
 
     private func finishRun(exitCode: Int32) {
+        promptCheck?.cancel()
+        isAwaitingInput = false
         // Show anything still buffered when the script ended.
         flushBufferedOutput()
         AppLog.output.info("Finished with exit code \(exitCode), transcript \(self.transcript.lines.count) lines")
