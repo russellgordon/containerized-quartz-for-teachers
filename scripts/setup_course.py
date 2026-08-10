@@ -1047,6 +1047,65 @@ def _generate_alt_example_code(dest_root: Path) -> str:
         i += 1
     return f"EX{i:02d}2O"
 
+def _copy_example_course(src: Path, dest: Path, dest_code: str) -> bool:
+    """
+    Copy the example course, then make its configuration agree with the folder
+    it now lives in. Without the rewrite, a course installed under an alternate
+    code still calls itself EXC2O everywhere the config is read.
+    """
+    try:
+        shutil.copytree(src, dest, dirs_exist_ok=False)
+    except FileExistsError:
+        print(f"⚠️ Destination {dest} already exists; skipping copy.")
+        return False
+    except Exception as e:
+        print(f"❌ Failed to install Example Course: {e}")
+        return False
+
+    config_path = dest / "course_config.json"
+    if config_path.exists() and dest_code != EXAMPLE_COURSE_CODE:
+        try:
+            with open(config_path, "r", encoding="utf-8") as handle:
+                config = json.load(handle)
+            config["course_code"] = dest_code
+            with open(config_path, "w", encoding="utf-8") as handle:
+                json.dump(config, handle, indent=2)
+                handle.write("\n")
+            print(f"✅ Course code in course_config.json set to {dest_code}")
+        except Exception as e:
+            print(f"⚠️ Could not update course_config.json with the new code: {e}")
+
+    print(f"✅ Example Course installed to: {dest}")
+    return True
+
+
+def install_example_course_noninteractive(courses_root: Path) -> bool:
+    """
+    Install the example course without asking anything. Used when the app
+    offers the example course to a teacher who has never made one.
+    """
+    source = _find_example_source_dir()
+    if not source:
+        print("❌ Could not find the example course content.")
+        return False
+
+    dest_code = EXAMPLE_COURSE_CODE
+    dest = courses_root / dest_code
+    if dest.exists():
+        dest_code = _generate_alt_example_code(courses_root)
+        dest = courses_root / dest_code
+        print(f"ℹ️ A course named {EXAMPLE_COURSE_CODE} already exists. Using {dest_code} instead.")
+
+    if not _copy_example_course(source, dest, dest_code):
+        return False
+
+    ensure_quartz_explorer_anchor()
+    ensure_quartz_overflowlist_static_id()
+    # The app reads this line to learn which course was created.
+    print(f"EXAMPLE_COURSE_CODE={dest_code}")
+    return True
+
+
 def maybe_install_example_course(courses_root: Path) -> bool:
     """
     Offer to install the Example Course (EXC2O) for new users.
@@ -1075,13 +1134,7 @@ def maybe_install_example_course(courses_root: Path) -> bool:
         dest_code = alt
         dest = courses_root / dest_code
 
-    try:
-        shutil.copytree(src, dest, dirs_exist_ok=False)
-        print(f"✅ Example Course installed to: {dest}")
-    except FileExistsError:
-        print(f"⚠️ Destination {dest} already exists; skipping copy.")
-    except Exception as e:
-        print(f"❌ Failed to install Example Course: {e}")
+    if not _copy_example_course(src, dest, dest_code):
         return False
 
     # Ensure Quartz patches so hidden items + stable IDs work in preview
@@ -1528,10 +1581,14 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Course setup with automatic backups")
     parser.add_argument("--no-backup", action="store_true", help="Skip creating a backup of the existing course folder.")
     parser.add_argument("--host-os", choices=["windows","mac","linux","unknown"], default="unknown", help="Host operating system (passed by setup.sh/setup.ps1).")
+    parser.add_argument("--install-example", action="store_true", help="Install the example course without prompting, then exit.")
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_args()
     # Set module-level host OS for OS-aware examples
     _HOST_OS = getattr(args, "host_os", "unknown")
+    if args.install_example:
+        installed = install_example_course_noninteractive(Path("/teaching/courses"))
+        sys.exit(0 if installed else 1)
     setup_course(no_backup=args.no_backup)

@@ -20,7 +20,24 @@ from `/opt/support/example_course/`. If accepted, it copies the whole course
 sections) into `/teaching/courses/`, applies the two on-image Quartz patches
 (below), prints the preview command, and exits. If a course named `EXC2O`
 already exists, it generates a random alternative code still ending in `2O`
-(e.g. `KQX2O`) so a teacher can install multiple sandboxes.
+(e.g. `KQX2O`) so a teacher can install multiple sandboxes — and rewrites
+`course_config.json` so the copy calls itself by the code it was given.
+
+**What is in it.** The example is a full Grade 9 science course (SNC1W,
+de-streamed) of roughly 225 pages: five strands of paraphrased curriculum
+expectations, 35 concept pages, 14 investigations, exercises with answers,
+marked tasks with rubrics, tutorials, discussions, portfolio prompts, and two
+sections of class-by-class pages paced a few days apart. It is written to
+demonstrate what the toolchain renders — Mermaid diagrams, KaTeX equations,
+callouts, transclusion, tags, checklists, footnotes, and per-section drafts —
+with `Style/What This Site Can Do` serving as a working reference for every
+feature, source included.
+
+**Installing it without prompts.** `setup_course.py --install-example` copies
+the example and exits, printing `EXAMPLE_COURSE_CODE=<CODE>` as its last line
+so a caller knows which code it received. `setup.sh -- --install-example`
+reaches it from the host; the macOS app uses exactly that to offer the example
+course from the top of its New Course sheet.
 
 ### 1. Course identity
 

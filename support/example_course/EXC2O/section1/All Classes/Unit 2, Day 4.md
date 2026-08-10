@@ -1,0 +1,18 @@
+---
+draft: false
+created: 2026-02-15T07:00:00.000-0500
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. Concept: [[Photosynthesis]]
+2. Concept: [[Cellular Respiration]] — the two as one system
+3. Investigation set up: [[Investigating Photosynthesis]]
+
+## Things to do before our next class
+
+- [ ] Read [[Photosynthesis]] and write down one thing you do not yet understand.

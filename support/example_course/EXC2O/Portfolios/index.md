@@ -1,6 +1,12 @@
 ---
 title: Portfolios
 draft: false
-created: 2024-09-06T08:04:29.000-0400
+created: 2026-02-02T08:00:00.000-0500
+enableToc: false
 ---
-Find summaries and notes related to sharing your progress through your portfolio here.
+Your own record of what changed over the semester.
+
+A portfolio is **chosen**, not accumulated. A few pieces with honest reflection
+beat everything you ever handed in.
+
+Start with [[Why We Keep a Portfolio]], then [[First Entry]].

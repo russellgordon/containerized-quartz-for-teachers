@@ -1,6 +1,15 @@
 ---
 title: Exercises
 draft: false
-created: 2024-09-06T08:04:29.000-0400
+created: 2026-02-02T08:00:00.000-0500
+enableToc: false
 ---
-An exercise is an opportunity to *learn by doing*... this folder will contain all exercises we have engaged in together during this school year.
+Practice, with answers included so you can check yourself immediately.
+
+These are not marked. They are how you find out whether you actually understood
+something before a test tells you that you did not.
+
+> [!tip] How to use a page with the answers on it
+> Cover them. Do the question. *Then* look. Reading a worked answer feels like
+> learning and mostly is not — the feeling of recognition is not the same as
+> being able to produce it.

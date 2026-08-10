@@ -1,9 +1,12 @@
 ---
 title: Key Links
-created: 2025-08-10T09:25:31.000-0400
+draft: false
+created: 2026-02-02T07:00:00.000-0500
+transcludeTitleSize: h2
+excludeBacklinks: true
 ---
-- [Notion](https://notion.so)
-- [Student Course Outline](https://drive.google.com/file/d/1uWps8Mk0a7KohiR-1P2B0QDOiw0gyL9o/view?usp=drive_link)
-- [Ministry of Education Course of Study](https://drive.google.com/file/d/1A8hpVKnrBUWJe4nPvYDrVkt9l7CoDc3R/view?usp=drive_link)
-- [[Learning Goals]]
-- [[Curriculum/index|Curriculum]]
+- [[Curriculum/index|Curriculum expectations]]
+- [[What This Site Can Do]]
+- [[How Marks Work]]
+- [[Getting Help]]
+- [[Portfolio Checklist]]

@@ -1,8 +1,12 @@
 ---
 title: Scratch Page
-created: 2025-08-10T09:25:31.000-0400
-draft: false
+draft: true
+created: 2026-02-04T07:00:00.000-0500
 ---
-This page is a place to place text or other bits of information in, temporarily.
+Somewhere to draft the next class before it is ready. Also unpublished.
 
-It will not be published to the web, so long as the `draft` flag remains set to `true`.
+## Next class, rough
+
+- Open with the demo
+- Concept page, then the exercise
+- Leave 10 minutes for the portfolio entry

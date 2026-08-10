@@ -1,6 +1,11 @@
 ---
 title: Private Notes
-created: 2025-08-10T09:25:31.000-0400
 draft: true
+created: 2026-02-04T07:00:00.000-0500
 ---
-This is a space to make private notes and observations regarding students. This page will not be published to the web, so long as the `draft` flag remains set to `true`.
+This page is marked `draft: true`, so it is **never published**. It is
+here to show that a teacher can keep planning notes in the same folder
+as the course without any risk of them reaching students.
+
+Seating plan, running notes on who needs a check-in, ideas for next
+year — none of it leaves this file.

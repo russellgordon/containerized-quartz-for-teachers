@@ -3,8 +3,8 @@
   "course_name": "Example Course",
   "emojis": {
     "sections": {
-      "section1": "📚",
-      "section2": "📝"
+      "section1": "\ud83d\udd2c",
+      "section2": "\ud83e\uddea"
     }
   },
   "num_sections": 2,
@@ -13,11 +13,11 @@
     2
   ],
   "shared_folders": [
-    "Activities",
     "Concepts",
     "Curriculum",
     "Discussions",
     "Exercises",
+    "Investigations",
     "Portfolios",
     "Setup",
     "Style",
@@ -26,13 +26,12 @@
   ],
   "shared_files": [
     "Learning Goals.md",
-    "SIC Drop-In Sessions.md"
+    "Help Sessions.md"
   ],
   "per_section_folders": [
     "All Classes"
   ],
   "per_section_files": [
-    "Grove Time.md",
     "Key Links.md",
     "Private Notes.md",
     "Scratch Page.md"
@@ -40,18 +39,17 @@
   "hidden": [
     "Curriculum",
     "Learning Goals.md",
-    "SIC Drop-In Sessions.md",
-    "Grove Time.md",
+    "Help Sessions.md",
     "Key Links.md",
     "Private Notes.md",
     "Scratch Page.md",
     "Media"
   ],
   "expandable": [
-    "Activities",
     "Concepts",
     "Discussions",
     "Exercises",
+    "Investigations",
     "Portfolios",
     "Setup",
     "Style",
@@ -59,7 +57,7 @@
     "Tutorials"
   ],
   "expandOnFolderClick": false,
-  "footer_html": "The resources on this site by Russell Gordon and David Jones are licensed under <a href=\\\"http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1\\\" target=\\\"_blank\\\" rel=\\\"license noopener noreferrer\\\" style=\\\"display:inline-block;\\\">CC BY 4.0</a> unless otherwise noted.",
+  "footer_html": "This example course was written to show what the software can do. The Ontario curriculum expectations are paraphrased; see <a href=\"/Curriculum/About-These-Expectations\">About These Expectations</a>.",
   "show_reading_time": true,
   "fonts": {
     "default": {
@@ -81,7 +79,7 @@
     }
   },
   "color_schemes": {
-    "section1": "mlb-houston-astros",
-    "section2": "forest-moss"
+    "section1": "forest-moss",
+    "section2": "mlb-houston-astros"
   }
 }

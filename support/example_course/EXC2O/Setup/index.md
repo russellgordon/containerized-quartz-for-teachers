@@ -1,6 +1,10 @@
 ---
 title: Setup
 draft: false
-created: 2024-09-06T08:04:29.000-0400
+created: 2026-02-02T08:00:00.000-0500
+enableToc: false
 ---
-This folder contains notes about how to set up your computer with software that is required for this course.
+Everything about how this course runs: what to bring, how marks work, how to get
+help, and the safety agreement you need signed before your first lab.
+
+Read [[Safety Contract]] first. It is the only page here with a deadline.

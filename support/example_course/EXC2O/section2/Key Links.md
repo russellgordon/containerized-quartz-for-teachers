@@ -1,9 +1,12 @@
 ---
 title: Key Links
-created: 2025-08-10T09:25:31.000-0400
+draft: false
+created: 2026-02-04T07:00:00.000-0500
+transcludeTitleSize: h2
+excludeBacklinks: true
 ---
-- [Notion](https://notion.so)
-- [Student Course Outline](https://bit.ly/lcscs23-g10-sco)
-- [Ministry of Education Course of Study](https://bit.ly/lcscs23-g10-mco)
-- [[Learning Goals]]
-- [[Curriculum]]
+- [[Curriculum/index|Curriculum expectations]]
+- [[What This Site Can Do]]
+- [[How Marks Work]]
+- [[Getting Help]]
+- [[Portfolio Checklist]]

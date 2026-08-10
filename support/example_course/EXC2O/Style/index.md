@@ -1,6 +1,11 @@
 ---
 title: Style
 draft: false
-created: 2024-09-06T08:04:29.000-0400
+created: 2026-02-02T08:00:00.000-0500
+enableToc: false
 ---
-A collection of notes about how to author code that is readable by humans, and not just computers.
+How this site works, how it is put together, and how to write about science.
+
+- [[What This Site Can Do]] — every feature these pages can use, with examples
+- [[How This Site Is Organised]] — class pages versus reference pages
+- [[Writing About Science]] — saying exactly what you mean

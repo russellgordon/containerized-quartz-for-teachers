@@ -1,6 +1,14 @@
 ---
 title: Tasks
 draft: false
-created: 2024-09-06T08:04:29.000-0400
+created: 2026-02-02T08:00:00.000-0500
+enableToc: false
 ---
-A task is an opportunity to demonstrate your understanding through an assessment of learning. You will find all tasks we complete this year in this folder.
+Assignments that are marked, with the criteria stated up front.
+
+Every task page starts with an **At a glance** box giving the due date, the
+format, and the curriculum expectations it addresses.
+
+> [!important] Read the assessment table first
+> It tells you exactly what separates a level 3 from a level 4. Doing that
+> before you start is worth more than an hour of extra work at the end.

@@ -1,6 +1,14 @@
 ---
 title: Discussions
 draft: false
-created: 2024-09-06T08:04:29.000-0400
+created: 2026-02-02T08:00:00.000-0500
+enableToc: false
 ---
-Occasionally we will have a conversation about upcoming plans for the course, or, topics not directly related to a lesson. You can find summaries of these conversations here.
+Questions with no answer key.
+
+These are marked on **how you argue**, not on which side you take: evidence
+used, weaknesses acknowledged, and whether you engaged the strongest version of
+the other view.
+
+> [!note] You may change your mind
+> Out loud, mid-discussion. That is the best possible outcome and I will say so.
