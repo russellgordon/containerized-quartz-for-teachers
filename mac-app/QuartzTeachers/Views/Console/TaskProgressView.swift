@@ -138,7 +138,9 @@ struct TaskProgressView: View {
                             ProgressView(value: runner.progressFraction)
                                 .progressViewStyle(.linear)
                                 .animation(.easeInOut(duration: 0.4), value: runner.progressFraction)
-                            Text(runner.currentMilestoneLabel)
+                            Text(runner.stepDetail.isEmpty
+                                 ? runner.currentMilestoneLabel
+                                 : "\(runner.currentMilestoneLabel) \(runner.stepDetail)")
                                 .foregroundStyle(.secondary)
                                 .accessibilityIdentifier("taskMilestoneLabel")
                         }

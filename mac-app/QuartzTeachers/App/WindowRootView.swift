@@ -23,6 +23,7 @@ struct WindowRootView: View {
             .environment(workspace)
             .focusedSceneValue(\.workspace, workspace)
             .onAppear {
+                WorkspaceModel.registerWindowModel(workspace)
                 // A restored window returns to its own folder; a brand new
                 // one starts from the last folder chosen anywhere.
                 if restoredWorkspacePath.isEmpty {

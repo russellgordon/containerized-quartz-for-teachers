@@ -20,6 +20,25 @@ class WorkspaceModel {
     /// The key holding the most recently chosen folder.
     static let storedPathKey: String = "workspacePath"
 
+    /// True when the hosted test suite is running. Tests drive the real
+    /// window, and must not leave the teacher pointed at a fixture folder
+    /// that is deleted when the run ends.
+    static let isRunningTests: Bool = NSClassFromString("XCTestCase") != nil
+
+    /// The models belonging to open windows, in the order they appeared.
+    /// Windows register themselves so the in-app tests can drive the real
+    /// interface rather than a model nothing is showing.
+    static private(set) var windowModels: [WorkspaceModel] = []
+
+    static func registerWindowModel(_ model: WorkspaceModel) {
+        for existing in windowModels {
+            if existing === model {
+                return
+            }
+        }
+        windowModels.append(model)
+    }
+
     /// The active working folder, or nil before one has been chosen.
     var workspaceURL: URL?
 
@@ -129,6 +148,21 @@ class WorkspaceModel {
         reloadCourses()
     }
 
+    /// Whether this model may record the folder for next time.
+    ///
+    /// A test may exercise remembering with a store of its own, but nothing
+    /// under test may write the REAL preference — that is how a test run
+    /// used to leave the app pointing at a deleted fixture folder.
+    private var canRememberChoice: Bool {
+        if isUnderUITest {
+            return false
+        }
+        if WorkspaceModel.isRunningTests && defaults === UserDefaults.standard {
+            return false
+        }
+        return true
+    }
+
     /// True when a folder is actually there to be worked in.
     static func folderExists(atPath path: String) -> Bool {
         var isDirectory: ObjCBool = false
@@ -141,7 +175,7 @@ class WorkspaceModel {
     /// Adopts a new working folder, validates it, and remembers it.
     func chooseWorkspace(at url: URL) {
         workspaceURL = url
-        if !isUnderUITest {
+        if canRememberChoice {
             // Remembered app-wide so a NEW window opens where the last one
             // left off; each window then keeps its own choice in its scene.
             defaults.set(url.path, forKey: WorkspaceModel.storedPathKey)

@@ -83,3 +83,45 @@ final class TaskMilestoneTests: XCTestCase {
         }
     }
 }
+
+/// Showing how far through a long step a task has got.
+final class StepDetailTests: XCTestCase {
+
+    // MARK: - Functions
+
+    @MainActor
+    func testUploadCountIsRead() {
+        let progress = ScriptRunner.uploadProgress(in: " …uploaded 125/234 required files\n")
+        XCTAssertEqual(progress?.done, 125)
+        XCTAssertEqual(progress?.total, 234)
+    }
+
+    @MainActor
+    func testTheLatestCountInAChunkWins() {
+        let chunk: String = " …uploaded 25/234 required files\n …uploaded 50/234 required files\n"
+        XCTAssertEqual(ScriptRunner.uploadProgress(in: chunk)?.done, 50)
+    }
+
+    @MainActor
+    func testTheTotalIsKnownBeforeTheFirstBatch() {
+        XCTAssertEqual(ScriptRunner.uploadTotal(in: " Netlify requires 234 file(s) for this deploy.\n"), 234)
+    }
+
+    @MainActor
+    func testOrdinaryOutputCarriesNoCount() {
+        XCTAssertNil(ScriptRunner.uploadProgress(in: "Preparing delta deploy manifest…\n"))
+        XCTAssertNil(ScriptRunner.uploadTotal(in: "Preparing delta deploy manifest…\n"))
+    }
+
+    @MainActor
+    func testTheCountShowsBesideTheStepAndClearsWhenTheStepChanges() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.milestones = TaskMilestones.deploy
+        runner.receiveOutput(" Netlify requires 234 file(s) for this deploy.\n")
+        XCTAssertEqual(runner.stepDetail, "0 of 234")
+        runner.receiveOutput(" …uploaded 125/234 required files\n")
+        XCTAssertEqual(runner.stepDetail, "125 of 234")
+        runner.receiveOutput("✅ Delta deploy created (production).\n")
+        XCTAssertEqual(runner.stepDetail, "", "A finished step must not keep showing its count")
+    }
+}

@@ -47,6 +47,11 @@ class ScriptRunner {
     /// told to stop the way it stops itself.
     var wasCancelled: Bool = false
 
+    /// How far through the current step the task has reported getting —
+    /// "125 of 234" while pages are uploading. A slow connection can sit on
+    /// one step for minutes, and a bar that does not move reads as a hang.
+    var stepDetail: String = ""
+
     /// True when the teacher stopped the task themselves. Ending a task
     /// on purpose makes it exit non-zero, which is not a failure and
     /// must not be reported as one.
@@ -102,6 +107,7 @@ class ScriptRunner {
         launchProblem = nil
         wasCancelled = false
         wasStoppedByUser = false
+        stepDetail = ""
 
         let scriptURL: URL = workingDirectory.appendingPathComponent(scriptName)
         if !FileManager.default.fileExists(atPath: scriptURL.path) {
@@ -613,12 +619,61 @@ class ScriptRunner {
             }
             reachedMilestoneCount = matchedIndex + 1
             unscannedOutput = String(unscannedOutput[matchedEnd...])
+            // A count belongs to the step that reported it.
+            stepDetail = ""
+        }
+
+        if let progress = ScriptRunner.uploadProgress(in: newText) {
+            stepDetail = "\(progress.done) of \(progress.total)"
+        } else if let total = ScriptRunner.uploadTotal(in: newText) {
+            stepDetail = "0 of \(total)"
         }
 
         // Keep only enough tail for a marker split across two chunks.
         if unscannedOutput.count > 8000 {
             unscannedOutput = String(unscannedOutput.suffix(4000))
         }
+    }
+
+    /// Reads "uploaded 125/234 required files" from newly arrived output,
+    /// taking the LAST such line: several may arrive in one chunk.
+    static func uploadProgress(in text: String) -> (done: Int, total: Int)? {
+        var found: (done: Int, total: Int)?
+        for rawLine in text.split(separator: "\n", omittingEmptySubsequences: false) {
+            let line: String = String(rawLine)
+            guard let marker = line.range(of: "uploaded ") else {
+                continue
+            }
+            let rest: Substring = line[marker.upperBound...]
+            guard let counts = rest.split(separator: " ").first else {
+                continue
+            }
+            let parts: [Substring] = counts.split(separator: "/")
+            if parts.count == 2, let done = Int(parts[0]), let total = Int(parts[1]) {
+                found = (done, total)
+            }
+        }
+        return found
+    }
+
+    /// Reads the total from "Netlify requires 234 file(s) for this deploy."
+    /// so the count appears before the first batch finishes.
+    static func uploadTotal(in text: String) -> Int? {
+        var found: Int?
+        for rawLine in text.split(separator: "\n", omittingEmptySubsequences: false) {
+            let line: String = String(rawLine)
+            guard let marker = line.range(of: "requires ") else {
+                continue
+            }
+            let rest: Substring = line[marker.upperBound...]
+            guard let word = rest.split(separator: " ").first else {
+                continue
+            }
+            if let total = Int(word) {
+                found = total
+            }
+        }
+        return found
     }
 
     /// Progress from 0 to 1 for the bar.

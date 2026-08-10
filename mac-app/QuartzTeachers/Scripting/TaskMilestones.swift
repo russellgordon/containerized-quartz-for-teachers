@@ -53,7 +53,7 @@ enum TaskMilestones {
         TaskMilestone(label: "Checking your site…", marker: "Deploying from local build"),
         TaskMilestone(label: "Connecting to Netlify…", marker: "Netlify site"),
         TaskMilestone(label: "Comparing what changed…", marker: "delta deploy manifest"),
-        TaskMilestone(label: "Uploading your pages…", marker: "Uploaded"),
+        TaskMilestone(label: "Uploading your pages…", marker: "Delta deploy created"),
         TaskMilestone(label: "Finishing up…", marker: "Deploy complete"),
     ]
 
@@ -64,7 +64,7 @@ enum TaskMilestones {
         TaskMilestone(label: "Gathering your content…", marker: "Copying shared folders"),
         TaskMilestone(label: "Building your site…", marker: "Quartz v4"),
         TaskMilestone(label: "Connecting to Netlify…", marker: "Netlify site"),
-        TaskMilestone(label: "Uploading your pages…", marker: "Uploaded"),
+        TaskMilestone(label: "Uploading your pages…", marker: "Delta deploy created"),
         TaskMilestone(label: "Finishing up…", marker: "Deploy complete"),
     ]
 

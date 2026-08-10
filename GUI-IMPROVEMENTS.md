@@ -111,6 +111,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 50 | 2026-08-10 | On the exercise pages the answers sat in one block at the bottom, staring students in the face the moment they landed. | ✅ Rewritten — all ten pages now pose a question and fold its answer underneath it (`> [!success]- Answer`), so a page of questions stays a page of questions until the student has had a go. 69 foldable answers in all; open-ended questions get a "check yours" fold describing what a good answer contains rather than a number. Many answers now explain the reasoning rather than just stating the result. | Same content; nothing platform-specific. |
 
+| 51 | 2026-08-10 | On a slow connection "Uploading your pages…" sits still for minutes with no sign of progress, though the task itself reports counts. | ✅ Implemented — the step label now reads "Uploading your pages… 125 of 234", taken from the counts the publisher already prints, and the total appears as "0 of 234" as soon as it is known. The count belongs to its step: it clears when the step changes. Two faults surfaced while doing it — the "Uploading your pages" step was matched against a marker that never occurred, so the bar jumped straight from step 4 to step 6; and the in-app interface test had been asserting against the teacher's real workspace since windows got their own model, passing only by luck. Windows now register their model so the test drives the interface that is actually on screen, and nothing under test can write the real preference. | Same: read the counts the launcher prints rather than inventing a spinner. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

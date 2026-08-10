@@ -43,7 +43,13 @@ final class InAppUserInterfaceTests: XCTestCase {
         } else {
             fixtureURL = try FixtureWorkspace.materialize()
         }
-        let workspace: WorkspaceModel = WorkspaceModel(defaults: TestDefaults.make())
+        // Drive the model the WINDOW is showing. Creating a separate one
+        // would leave the interface displaying whatever folder the teacher
+        // last used, and the assertions below would be about that instead.
+        guard let workspace = WorkspaceModel.windowModels.first else {
+            XCTFail("No window model registered; the interface is not on screen")
+            return
+        }
 
         // Make the window a predictable size for screenshots.
         if let window = NSApp.windows.first {
