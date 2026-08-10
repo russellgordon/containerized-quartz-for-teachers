@@ -44,11 +44,7 @@ struct SectionSettingsView: View {
 
     var body: some View {
         Section {
-            Picker("Header emoji", selection: emojiBinding) {
-                ForEach(emojiOptions, id: \.self) { emoji in
-                    Text(emoji).tag(emoji)
-                }
-            }
+            EmojiChoiceField(label: "Header emoji", emoji: emojiBinding)
 
             VStack(alignment: .leading, spacing: 4) {
                 Toggle("Show section marker in the site title", isOn: markerBinding)
@@ -63,13 +59,4 @@ struct SectionSettingsView: View {
         }
     }
 
-    /// The preset emojis, plus the currently stored one when it is custom.
-    var emojiOptions: [String] {
-        var result: [String] = EmojiCatalog.presets
-        let current: String = configuration.emoji(forSection: sectionNumber)
-        if !result.contains(current) {
-            result.append(current)
-        }
-        return result
-    }
 }

@@ -275,11 +275,7 @@ struct NewCourseWizardView: View {
             }
 
             Section {
-                Picker("Header emoji", selection: $emoji) {
-                    ForEach(EmojiCatalog.presets, id: \.self) { presetEmoji in
-                        Text(presetEmoji).tag(presetEmoji)
-                    }
-                }
+                EmojiChoiceField(label: "Header emoji", emoji: $emoji)
                 ColourSchemePickerView(selectedSchemeID: $colourSchemeID)
                 FontChoiceEditorView(choice: $fontChoice)
                 VStack(alignment: .leading, spacing: 4) {
