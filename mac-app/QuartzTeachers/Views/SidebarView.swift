@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// The "Courses & Clubs" sidebar: each course expands to show its
@@ -14,6 +15,10 @@ struct SidebarView: View {
 
     /// A failure while archiving, shown as an alert.
     @State var removalProblem: String?
+
+    /// Whether the Archived group is open. Closed by default: it is a place
+    /// to go looking, not something to step over on the way to today's work.
+    @State var isShowingArchived: Bool = false
 
     // MARK: - Body
 
@@ -40,6 +45,30 @@ struct SidebarView: View {
                                 .contextMenu {
                                     folderMenuItems(for: course.directoryURL)
                                 }
+                        }
+                    }
+                }
+
+                if !workspace.archivedItems.isEmpty {
+                    Section {
+                        DisclosureGroup(isExpanded: $isShowingArchived) {
+                            ForEach(workspace.archivedItems) { item in
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(item.title)
+                                    Text(item.subtitle)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .accessibilityIdentifier("archived-\(item.id)")
+                                .contextMenu {
+                                    Button("Show in Finder") {
+                                        NSWorkspace.shared.activateFileViewerSelecting([item.fileURL])
+                                    }
+                                }
+                            }
+                        } label: {
+                            Label("Archived", systemImage: "archivebox")
+                                .accessibilityIdentifier("archivedGroup")
                         }
                     }
                 }
@@ -177,7 +206,7 @@ struct SidebarView: View {
                 courseCode: course.code,
                 sectionNumber: nil,
                 title: "Remove \(course.code)?",
-                message: "\(course.code) and all of its sections will be moved out of your working folder. Nothing is deleted — a copy is archived in the _backups folder, so you can get it back."
+                message: "Nothing is deleted. \(course.code) and all of its sections move to Archived, at the bottom of the sidebar, where you can get them back."
             )
         case .section(_, let sectionNumber):
             if course.sectionNumbers.count <= 1 {
@@ -187,14 +216,14 @@ struct SidebarView: View {
                     courseCode: course.code,
                     sectionNumber: nil,
                     title: "Remove \(course.code)?",
-                    message: "Section \(sectionNumber) is the only section of \(course.code), so the whole course will be moved out of your working folder. Nothing is deleted — a copy is archived in the _backups folder."
+                    message: "Section \(sectionNumber) is the only section of \(course.code), so the whole course moves to Archived. Nothing is deleted — you can get it back from the bottom of the sidebar."
                 )
             } else {
                 removalRequest = RemovalRequest(
                     courseCode: course.code,
                     sectionNumber: sectionNumber,
                     title: "Remove Section \(sectionNumber) of \(course.code)?",
-                    message: "This section will be moved out of your working folder. Nothing is deleted — a copy is archived in the _backups folder, so you can get it back."
+                    message: "Nothing is deleted. This section moves to Archived, at the bottom of the sidebar, where you can get it back."
                 )
             }
         }

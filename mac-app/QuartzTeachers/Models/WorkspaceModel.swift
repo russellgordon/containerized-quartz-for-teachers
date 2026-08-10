@@ -48,6 +48,9 @@ class WorkspaceModel {
     /// The courses discovered inside `<workspace>/courses/`.
     var courses: [Course] = []
 
+    /// Courses and sections the teacher has removed, newest first.
+    var archivedItems: [ArchivedItem] = []
+
     /// The current sidebar selection.
     var selection: SidebarSelection?
 
@@ -205,6 +208,7 @@ class WorkspaceModel {
     /// `course_config.json` and loads each one.
     func reloadCourses() {
         courses = []
+        archivedItems = []
         workspaceProblem = nil
         workspaceCanBeInitialized = false
         workspaceIsUnrecognized = false
@@ -273,6 +277,46 @@ class WorkspaceModel {
             return firstCourse.code < secondCourse.code
         }
         courses = loadedCourses
+        archivedItems = WorkspaceModel.findArchivedItems(in: coursesDirectoryURL)
+    }
+
+    /// Finds what the teacher has archived, newest first.
+    ///
+    /// Archives live beside each course's automatic backups; only the ones
+    /// named after what was removed belong here — see `ArchivedItem`.
+    static func findArchivedItems(in coursesDirectoryURL: URL) -> [ArchivedItem] {
+        let fileManager: FileManager = FileManager.default
+        let archivesRoot: URL = coursesDirectoryURL.appendingPathComponent("_backups")
+        var found: [ArchivedItem] = []
+
+        guard let courseFolders = try? fileManager.contentsOfDirectory(
+            at: archivesRoot,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return found
+        }
+
+        for courseFolder in courseFolders {
+            let courseCode: String = courseFolder.lastPathComponent
+            guard let archives = try? fileManager.contentsOfDirectory(
+                at: courseFolder,
+                includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles]
+            ) else {
+                continue
+            }
+            for archiveURL in archives {
+                if let item = ArchivedItem.from(fileURL: archiveURL, courseCode: courseCode) {
+                    found.append(item)
+                }
+            }
+        }
+
+        found.sort { first, second in
+            return first.archivedAt > second.archivedAt
+        }
+        return found
     }
 
     /// Sets up an empty folder as a fresh working folder: copies the
