@@ -29,6 +29,19 @@ enum WindowFolderMemory {
     private static var hasLoaded: Bool = false
     private static var hasRunSpawnCheck: Bool = false
 
+    // MARK: - Computed properties
+
+    /// Whether the teacher's system-wide setting asks for windows back.
+    ///
+    /// System Settings ▸ Desktop & Dock ▸ "Close windows when quitting an
+    /// application" reaches apps as `NSQuitAlwaysKeepsWindows` — true means
+    /// quitting KEEPS windows, so the toggle being on reads as false. An
+    /// absent key is false, matching the system default of the toggle
+    /// being on.
+    static var systemRestoresWindows: Bool {
+        return UserDefaults.standard.bool(forKey: "NSQuitAlwaysKeepsWindows")
+    }
+
     // MARK: - Functions
 
     /// The next remembered window, skipping folders that no longer exist.
@@ -85,6 +98,13 @@ enum WindowFolderMemory {
             return
         }
         hasLoaded = true
+        // The teacher asked for windows NOT to come back: the list is
+        // still recorded (so toggling the setting later restores the most
+        // recent session), but nothing is replayed from it.
+        if !WindowFolderMemory.systemRestoresWindows {
+            unclaimed = []
+            return
+        }
         var loaded: [Entry] = []
         if let stored = defaults.array(forKey: storageKey) {
             for element in stored {

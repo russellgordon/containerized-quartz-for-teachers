@@ -133,6 +133,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 61 | 2026-08-10 | Cooperating with system restoration kept failing differently each run: values restored empty, folders swapped, then three windows from two. | ✅ The app now restores its own windows and system restoration is disabled (`.restorationBehavior(.disabled)`). At quit it records each window's folder and frame, in order, while the windows still exist; at launch the single window takes the first entry and opens a window for each remaining one, each carrying its folder and frame in its presented value. Deterministic: same count, same folders, same positions, same order, regardless of the close-windows-on-quit setting or how the app last exited. Stored frames are sanity-checked so a corrupt value cannot produce an unusable window. | This IS the Windows design already — no system restoration exists there, so the same list drives both platforms. |
 
+| 62 | 2026-08-10 | The app's own restoration should respect the OS-level choice: System Settings ▸ Desktop & Dock ▸ "Close windows when quitting an application". | ✅ Implemented — restoration replays the remembered windows only when the system setting asks for them back (`NSQuitAlwaysKeepsWindows`; the toggle being ON reads as false, and an absent key matches the toggle's default of ON). The list is still recorded either way, so flipping the setting later restores the most recent session. | Windows has no equivalent OS setting; make it an app preference there, defaulting to restore. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the
