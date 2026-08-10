@@ -109,6 +109,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 49 | 2026-08-10 | The example course should quote the Ontario curriculum expectations as published, not paraphrase them. | ✅ Done — all 50 specific and 10 overall expectations are now reproduced word for word from the Ministry's SNC1W document, parsed from the published PDF rather than retyped. Every mention of paraphrasing is gone from the pages, the site footer, and the docs; `About These Expectations` now records the source and the copyright line instead. Codes and tags are unchanged, so every existing link still resolves. | No effect on the Windows port; the content is shared. |
 
+| 50 | 2026-08-10 | On the exercise pages the answers sat in one block at the bottom, staring students in the face the moment they landed. | ✅ Rewritten — all ten pages now pose a question and fold its answer underneath it (`> [!success]- Answer`), so a page of questions stays a page of questions until the student has had a go. 69 foldable answers in all; open-ended questions get a "check yours" fold describing what a good answer contains rather than a number. Many answers now explain the reasoning rather than just stating the result. | Same content; nothing platform-specific. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the
