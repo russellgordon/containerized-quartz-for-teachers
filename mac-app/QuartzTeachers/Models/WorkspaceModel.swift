@@ -39,8 +39,16 @@ class WorkspaceModel {
         windowModels.append(model)
     }
 
+    /// True once the app has begun quitting. Windows closing as part of
+    /// the quit must not rewrite the remembered list — that is the list
+    /// the next launch restores from.
+    static var isTerminating: Bool = false
+
     /// A window has closed, so it should no longer be remembered as open.
     static func unregisterWindowModel(_ model: WorkspaceModel) {
+        if isTerminating {
+            return
+        }
         var remaining: [WorkspaceModel] = []
         for existing in windowModels {
             if existing !== model {

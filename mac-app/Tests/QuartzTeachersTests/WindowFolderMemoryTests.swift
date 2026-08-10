@@ -45,6 +45,30 @@ final class WindowFolderMemoryTests: XCTestCase {
     }
 
     @MainActor
+    func testSpawningTakesWhatWasNotClaimedAndEndsClaiming() throws {
+        let folders: [String] = try makeFolders(3)
+        defer {
+            for path in folders {
+                try? FileManager.default.removeItem(atPath: path)
+            }
+        }
+        WindowFolderMemory.reset(with: folders)
+
+        _ = WindowFolderMemory.claimNextFolder()
+        XCTAssertEqual(WindowFolderMemory.takeUnclaimed(), [folders[1], folders[2]],
+                       "The spawner opens windows for whatever no window claimed")
+        XCTAssertNil(WindowFolderMemory.claimNextFolder(),
+                     "A window the teacher opens later must start fresh, not inherit a leftover")
+    }
+
+    @MainActor
+    func testTheSpawnCheckRunsExactlyOnce() {
+        WindowFolderMemory.reset(with: [])
+        XCTAssertTrue(WindowFolderMemory.beginSpawnCheckOnce())
+        XCTAssertFalse(WindowFolderMemory.beginSpawnCheckOnce(), "A second window must not spawn duplicates")
+    }
+
+    @MainActor
     func testNothingRememberedMeansNothingClaimed() {
         WindowFolderMemory.reset(with: [])
         XCTAssertNil(WindowFolderMemory.claimNextFolder())
