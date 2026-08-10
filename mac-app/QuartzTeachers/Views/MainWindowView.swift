@@ -9,7 +9,7 @@ struct MainWindowView: View {
     @Environment(WorkspaceModel.self) var workspace
 
     /// Matches the sidebar's footer, so both dividers sit on one line.
-    @ScaledMetric(relativeTo: .body) var scaledFooterHeight: CGFloat = WindowChrome.footerHeight
+    @ScaledMetric(relativeTo: .body) var scaledFooterHeight: CGFloat = WindowChrome.pathBarHeight
 
     // MARK: - Body
 
