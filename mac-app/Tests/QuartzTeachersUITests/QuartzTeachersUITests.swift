@@ -183,6 +183,56 @@ final class QuartzTeachersUITests: XCTestCase {
         }
     }
 
+    /// Publishing must leave the interface intact. A stub publisher
+    /// reproduces the shape of a real deploy — a burst of output, then a
+    /// prompt it never answers — and the sidebar must still be there.
+    func testInterfaceSurvivesPublishing() throws {
+        let fixtureURL: URL = try FixtureWorkspace.materialize()
+
+        // A built site so publishing does not trigger a rebuild first.
+        let publicURL: URL = fixtureURL
+            .appendingPathComponent("courses/EXC2O/.merged_output/section1/public")
+        try FileManager.default.createDirectory(at: publicURL, withIntermediateDirectories: true)
+        try "<html></html>".write(to: publicURL.appendingPathComponent("index.html"), atomically: true, encoding: .utf8)
+
+        let stubDeploy: String = """
+        #!/bin/bash
+        echo "Ensuring container is running"
+        echo "Deploying from local build"
+        for step in $(seq 1 300); do
+          echo "  …uploaded $step/300 required files to the site"
+        done
+        echo "Netlify site created"
+        echo "Enter Netlify site name [exc2o-s1-2026-gordon]: "
+        sleep 30
+        """
+        let stubURL: URL = fixtureURL.appendingPathComponent("deploy.sh")
+        try stubDeploy.write(to: stubURL, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: stubURL.path)
+
+        let application: XCUIApplication = XCUIApplication()
+        application.launchEnvironment["UITEST_WORKSPACE"] = fixtureURL.path
+        application.launch()
+
+        let courseRow: XCUIElement = application.outlines.staticTexts["EXC2O"]
+        XCTAssertTrue(courseRow.waitForExistence(timeout: 10))
+        courseRow.click()
+        application.typeKey(.rightArrow, modifierFlags: [])
+        let sectionRow: XCUIElement = application.outlines.staticTexts["Section 1"]
+        XCTAssertTrue(sectionRow.waitForExistence(timeout: 10))
+        sectionRow.click()
+
+        application.buttons["deployButton"].click()
+
+        // Give the burst of output time to land, then check the app is
+        // still showing its interface.
+        Thread.sleep(forTimeInterval: 8)
+        saveScreenshot(named: "09-during-publish", of: application)
+
+        XCTAssertTrue(application.outlines.staticTexts["EXC2O"].exists, "The sidebar should still list the course while publishing")
+        XCTAssertTrue(application.staticTexts["taskMilestoneLabel"].exists, "Progress should still be shown while publishing")
+    }
+
     func testCancelRevertsEdits() throws {
         let application: XCUIApplication = try launchApp()
 

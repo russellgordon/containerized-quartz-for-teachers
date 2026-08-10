@@ -11,4 +11,7 @@ final class RefreshTracker {
     // MARK: - Stored properties
 
     var lastRefreshAt: Date = Date()
+
+    /// How many refreshes have happened, for occasional diagnostics.
+    var refreshCount: Int = 0
 }

@@ -1,3 +1,4 @@
+import AppKit
 import OSLog
 import SwiftUI
 
@@ -28,12 +29,38 @@ struct TaskProgressView: View {
     // MARK: - Functions
 
     /// Records each refresh; a long gap means the interface was stalled.
+    /// Also reports window geometry, because a blank window with a
+    /// RESPONSIVE app means the content is being laid out somewhere
+    /// other than inside the window.
     func noteRefresh(at date: Date) {
         let gap: TimeInterval = date.timeIntervalSince(refreshTracker.lastRefreshAt)
         if gap > 3 {
             AppLog.interface.error("Interface stalled for \(gap, format: .fixed(precision: 1))s (task: \(title, privacy: .public))")
         }
         refreshTracker.lastRefreshAt = date
+
+        // Once every 5 refreshes, describe where things actually are.
+        refreshTracker.refreshCount += 1
+        if refreshTracker.refreshCount % 5 != 0 {
+            return
+        }
+        guard let window = NSApp.windows.first(where: { candidate in candidate.isVisible && !candidate.isSheet }) else {
+            AppLog.interface.error("No visible window while a task is running")
+            return
+        }
+        let windowFrame: NSRect = window.frame
+        let contentFrame: NSRect = window.contentView?.frame ?? .zero
+        let contentSubviewCount: Int = window.contentView?.subviews.count ?? 0
+        var deepestFrame: NSRect = .zero
+        if let firstSubview = window.contentView?.subviews.first {
+            deepestFrame = firstSubview.frame
+        }
+        AppLog.interface.info("""
+            window \(NSStringFromRect(windowFrame), privacy: .public) \
+            content \(NSStringFromRect(contentFrame), privacy: .public) \
+            subviews \(contentSubviewCount) \
+            first \(NSStringFromRect(deepestFrame), privacy: .public)
+            """)
     }
 
     // MARK: - Body
