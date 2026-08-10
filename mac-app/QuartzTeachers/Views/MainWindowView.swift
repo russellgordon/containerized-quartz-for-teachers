@@ -85,9 +85,6 @@ struct MainWindowView: View {
                 Button("Show in Finder", systemImage: "finder") {
                     FinderPathBarView.revealInFinder(workspaceURL.path)
                 }
-                Button("Open Working Folder", systemImage: "arrow.up.forward.app") {
-                    FinderPathBarView.openInFinder(workspaceURL.path)
-                }
             }
                 .help(workspaceURL.path)
                 .accessibilityIdentifier("windowPathBar")
