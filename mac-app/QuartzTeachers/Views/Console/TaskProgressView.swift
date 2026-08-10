@@ -156,7 +156,6 @@ struct TaskProgressView: View {
                 }
                 .padding(12)
             }
-            .fixedSize(horizontal: false, vertical: true)
 
             Divider()
 

@@ -21,7 +21,18 @@ struct QuartzTeachersApp: App {
         WindowGroup("Containerized Quartz for Teachers") {
             MainWindowView()
                 .environment(workspace)
-                .frame(minWidth: 900, minHeight: 600)
+                // A bounded IDEAL size matters as much as the minimum:
+                // without it the window's content is sized by whatever
+                // its descendants claim, and one overgrown view drags
+                // the whole interface (sidebar included) out of view.
+                .frame(
+                    minWidth: 900,
+                    idealWidth: 1100,
+                    maxWidth: .infinity,
+                    minHeight: 600,
+                    idealHeight: 720,
+                    maxHeight: .infinity
+                )
         }
         .commands {
             PreviewCommands()
