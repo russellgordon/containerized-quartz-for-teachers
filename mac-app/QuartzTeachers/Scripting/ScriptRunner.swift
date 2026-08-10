@@ -179,11 +179,14 @@ class ScriptRunner {
     /// would, so its clean-up runs. Without such an option there is
     /// nothing safe to send, so the question is simply dismissed.
     func cancelPendingQuestion() {
+        wasCancelled = true
+        isAwaitingInput = false
         if pendingCancelToken.isEmpty {
-            isAwaitingInput = false
+            // No option to decline, so the only way to honour Cancel is
+            // to stop the task itself.
+            terminate()
             return
         }
-        wasCancelled = true
         send(line: pendingCancelToken)
     }
 

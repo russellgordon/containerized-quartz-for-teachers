@@ -161,7 +161,7 @@ struct TaskProgressView: View {
                         }
 
                         if runner.wasCancelled {
-                            Text("\(title) was cancelled. Nothing else was changed.")
+                            Text("\(title) was cancelled.")
                                 .foregroundStyle(.secondary)
                         }
 

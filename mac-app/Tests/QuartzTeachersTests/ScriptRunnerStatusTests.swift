@@ -79,13 +79,13 @@ final class ScriptRunnerStatusTests: XCTestCase {
     }
 
     @MainActor
-    func testCancellingWithoutAWayOutJustDismissesTheQuestion() {
+    func testCancellingWithoutAWayOutStopsTheTask() {
         let runner: ScriptRunner = ScriptRunner()
         runner.isAwaitingInput = true
         runner.pendingCancelToken = ""
         runner.cancelPendingQuestion()
         XCTAssertFalse(runner.isAwaitingInput)
-        XCTAssertFalse(runner.wasCancelled, "Nothing was sent, so nothing was cancelled")
+        XCTAssertTrue(runner.wasCancelled, "Cancel must always mean the task stops")
     }
 
     @MainActor
