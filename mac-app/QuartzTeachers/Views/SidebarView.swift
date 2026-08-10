@@ -64,10 +64,10 @@ struct SidebarView: View {
                                 .tag(SidebarSelection.archived(item.id))
                                 .accessibilityIdentifier("archived-\(item.id)")
                                 .contextMenu {
-                                    Button("Restore…") {
+                                    Button("Restore…", systemImage: "arrow.uturn.backward") {
                                         workspace.restoreRequest = item
                                     }
-                                    Button("Show in Finder") {
+                                    Button("Show in Finder", systemImage: "folder") {
                                         NSWorkspace.shared.activateFileViewerSelecting([item.fileURL])
                                     }
                                 }
