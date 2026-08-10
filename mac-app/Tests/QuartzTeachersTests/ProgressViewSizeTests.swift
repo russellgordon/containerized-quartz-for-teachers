@@ -44,6 +44,45 @@ final class ProgressViewSizeTests: XCTestCase {
         XCTAssertLessThanOrEqual(measured, 721, "Collapsed, the progress view claimed \(measured) points in a 720-point window")
     }
 
+    /// Deploy is the only step that PAUSES for input, which shows the
+    /// "a question needs your attention" notice. That notice must not
+    /// make the header balloon.
+    @MainActor
+    func testWaitingForInputNoticeDoesNotBalloonTheHeader() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.milestones = TaskMilestones.deploy
+        runner.isRunning = true
+        runner.receiveOutput("Enter Netlify site name [ics3u-s4-2026-gordon]: ")
+        runner.lastOutputAt = Date(timeIntervalSinceNow: -10)
+        XCTAssertTrue(runner.mayBeWaitingForInput(asOf: Date()), "The notice should be showing for this test to mean anything")
+
+        let measured: CGFloat = measuredHeight(
+            of: TaskProgressView(runner: runner, title: "Publishing ICS3U-S4"),
+            width: 800,
+            height: 720
+        )
+        XCTAssertLessThanOrEqual(measured, 721, "While waiting for input, the header claimed \(measured) points in a 720-point window")
+    }
+
+    /// The header must not balloon even if it is briefly offered a
+    /// narrow width — long text wrapping in a vertically fixed-size
+    /// container is what made the content taller than the window.
+    @MainActor
+    func testHeaderDoesNotBalloonAtNarrowWidths() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.milestones = TaskMilestones.deploy
+        runner.isRunning = true
+        runner.receiveOutput("Enter Netlify site name [ics3u-s4-2026-gordon]: ")
+        runner.lastOutputAt = Date(timeIntervalSinceNow: -10)
+
+        let measured: CGFloat = measuredHeight(
+            of: TaskProgressView(runner: runner, title: "Publishing ICS3U-S4"),
+            width: 120,
+            height: 720
+        )
+        XCTAssertLessThanOrEqual(measured, 721, "At a narrow width the header claimed \(measured) points")
+    }
+
     @MainActor
     func testExpandedDetailsFitTheirWindow() {
         let runner: ScriptRunner = makeRunnerWithOutput(lineCount: 3000)

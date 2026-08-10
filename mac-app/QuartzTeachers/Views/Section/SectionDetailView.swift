@@ -52,6 +52,7 @@ struct SectionDetailView: View {
             // Cover layer: the site itself, deliberately full-bleed.
             if let previewURL {
                 WebPreviewView(controller: previewController, url: previewURL)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .accessibilityIdentifier("previewWebView")
             }
         }

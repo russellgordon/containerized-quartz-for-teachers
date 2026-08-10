@@ -69,6 +69,33 @@ struct TaskProgressView: View {
             subviews \(contentSubviewCount) \
             first \(NSStringFromRect(deepestFrame), privacy: .public)
             """)
+
+        // When the hierarchy is taller than the window, name every view
+        // responsible — this is what identifies the culprit.
+        if deepestFrame.height > windowFrame.height + 1 {
+            if let contentView = window.contentView {
+                TaskProgressView.reportOversizedViews(in: contentView, limit: windowFrame.height, depth: 0)
+            }
+        }
+    }
+
+    /// Logs each view taller than the window, with its class and frame.
+    static func reportOversizedViews(in view: NSView, limit: CGFloat, depth: Int) {
+        if depth > 12 {
+            return
+        }
+        for subview in view.subviews {
+            if subview.frame.height > limit + 1 {
+                let indent: String = String(repeating: "  ", count: depth)
+                AppLog.interface.error("""
+                    OVERSIZED \(indent, privacy: .public)\
+                    \(String(describing: type(of: subview)), privacy: .public) \
+                    \(NSStringFromRect(subview.frame), privacy: .public) \
+                    subviews \(subview.subviews.count)
+                    """)
+            }
+            reportOversizedViews(in: subview, limit: limit, depth: depth + 1)
+        }
     }
 
     // MARK: - Body
