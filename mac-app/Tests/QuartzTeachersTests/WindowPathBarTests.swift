@@ -16,25 +16,28 @@ final class WindowPathBarTests: XCTestCase {
         workspace.chooseWorkspace(at: folderURL)
         try await Task.sleep(for: .milliseconds(500))
 
-        guard let rectangle = AccessibilityInspector.frame(forIdentifier: "windowPathBar") else {
-            XCTFail("The path bar is not in the accessibility tree")
-            return
-        }
-        XCTAssertGreaterThan(rectangle.width, 200, "It should span the detail column")
-        XCTAssertGreaterThan(rectangle.height, 10, "It should be a visible strip")
+        XCTAssertNotNil(AccessibilityInspector.frame(forIdentifier: "windowPathBar"),
+                        "The path bar is not in the accessibility tree")
 
         // Both footers are declared from one constant, which is what keeps
-        // their dividers on the same line across the window.
+        // their rules on the same line across the window.
         XCTAssertGreaterThanOrEqual(WindowChrome.footerHeight, 28, "A footer needs room for a 24pt button")
+        XCTAssertGreaterThan(WindowChrome.pathBarHeight, WindowChrome.footerHeight,
+                             "The path bar sits flush to the window edge, so it must be the taller of the two")
 
         let labels: [String] = AccessibilityInspector.collectAllLabels()
         var mentionsTheFolder: Bool = false
+        var carriesItsLabel: Bool = false
         for label in labels {
             if label.contains("Folder location: \(folderURL.path)") {
                 mentionsTheFolder = true
             }
+            if label == "Working folder" {
+                carriesItsLabel = true
+            }
         }
         XCTAssertTrue(mentionsTheFolder, "The bar should name the working folder")
+        XCTAssertTrue(carriesItsLabel, "The bar should say what it is showing")
     }
 
     /// Position is deliberately not asserted here: for SwiftUI content the

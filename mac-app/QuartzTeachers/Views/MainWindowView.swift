@@ -60,10 +60,14 @@ struct MainWindowView: View {
     var workingFolderPathBar: some View {
         if let workspaceURL = workspace.workspaceURL {
             Divider()
-            FinderPathBarView(folderURL: workspaceURL)
-                .padding(.horizontal, 8)
-                .frame(maxWidth: .infinity, minHeight: scaledFooterHeight, maxHeight: scaledFooterHeight, alignment: .leading)
-                .background(.bar)
+            HStack(spacing: 8) {
+                Text("Working folder")
+                    .font(.body.bold())
+                FinderPathBarView(folderURL: workspaceURL)
+            }
+            .padding(.horizontal, 8)
+            .frame(maxWidth: .infinity, minHeight: scaledFooterHeight, maxHeight: scaledFooterHeight, alignment: .leading)
+            .background(.bar)
                 .help(workspaceURL.path)
                 .accessibilityIdentifier("windowPathBar")
         }
