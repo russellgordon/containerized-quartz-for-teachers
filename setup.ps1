@@ -283,6 +283,48 @@ if (-not $SKIP_PULL) {
   }
 }
 
+# -------------------- Offer a newer version, if one exists --------------------
+# An image already on the machine was never checked again, so a teacher kept
+# whatever they first downloaded and fixes never reached them.
+function Get-RegistryDigest([string]$ref) {
+  try { return (docker buildx imagetools inspect "$ref" --format '{{.Manifest.Digest}}' 2>$null | Select-Object -First 1) } catch { return $null }
+}
+
+function Get-InstalledDigest([string]$ref) {
+  try {
+    $repoDigest = docker image inspect "$ref" --format '{{if .RepoDigests}}{{index .RepoDigests 0}}{{end}}' 2>$null | Select-Object -First 1
+    if (-not $repoDigest) { return $null }
+    return $repoDigest.Substring($repoDigest.IndexOf('@') + 1)
+  } catch { return $null }
+}
+
+function Offer-NewerImage([string]$ref) {
+  # A locally built image has no registry to ask about it.
+  if ($ref -notmatch '/') { return }
+
+  $available = Get-RegistryDigest $ref
+  $installed = Get-InstalledDigest $ref
+  # Offline, or nothing to compare: carry on with what is here.
+  if ((-not $available) -or (-not $installed) -or ($available -eq $installed)) { return }
+
+  Write-Host "A newer version of the website builder is available."
+  if (-not [Environment]::UserInteractive) {
+    Write-Host "  Run this again with --update-image when you would like to install it."
+    return
+  }
+  $answer = Read-Host "  Install it now? (y/n) [Default: y]"
+  if ($answer -match '^[Nn]') {
+    Write-Host "  Keeping the version you have."
+    return
+  }
+  Write-Host "Installing the newer version ..."
+  docker pull "$ref" | Out-Host
+}
+
+if ((-not $SKIP_PULL) -and (-not $FORCE_UPDATE_IMAGE) -and $IMAGE_PRESENT) {
+  Offer-NewerImage $IMAGE
+}
+
 # -------------------- Show image version/build info --------------------
 function Show-ImageInfo([string]$_img) {
   try { $info = docker image inspect "$_img" | ConvertFrom-Json } catch { Write-Host "Could not inspect image $_img"; return }
@@ -339,6 +381,11 @@ function Test-ContainerWriteable {
 
 # -------------------- Create/start container (mount-aware + refresh + write probe) --------------------
 Write-Host "Ensuring container is running with the correct, writable mount..."
+# A container keeps running the version it was created from, so an update
+# only takes effect once the container itself is recreated.
+$DESIRED_IMAGE_ID = (docker image inspect --format '{{.Id}}' "$IMAGE" 2>$null | Select-Object -First 1)
+$RUNNING_IMAGE_ID = (docker inspect -f '{{.Image}}' "$CONTAINER_NAME" 2>$null | Select-Object -First 1)
+
 $containerExists = ((docker ps -a --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
 
 if ($containerExists) {
@@ -364,6 +411,12 @@ if ($containerExists) {
     Write-Host "  Existing mount: $CURRENT_MOUNT_SRC"
     Write-Host "  Desired mount:  $MOUNT_COURSES"
     Write-Host "Recreating container '$CONTAINER_NAME' to point at the new folder..."
+    if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { $null = docker stop "$CONTAINER_NAME" }
+    $null = docker rm "$CONTAINER_NAME"
+    Run-ContainerWithMount
+  }
+  elseif ($DESIRED_IMAGE_ID -and $RUNNING_IMAGE_ID -and ($RUNNING_IMAGE_ID -ne $DESIRED_IMAGE_ID)) {
+    Write-Host "Your workspace was built from an older version; rebuilding it so the update takes effect..."
     if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { $null = docker stop "$CONTAINER_NAME" }
     $null = docker rm "$CONTAINER_NAME"
     Run-ContainerWithMount

@@ -47,6 +47,34 @@ The scripts then ensure a container runtime is available (next section),
 pull the image if needed, and print the image's OCI version/created/revision
 labels so the teacher knows exactly which build is active.
 
+### Staying up to date
+
+An image that is already on the machine used to be accepted without
+question, so a teacher kept whichever build they first downloaded and
+later fixes never reached them. `setup.sh` and `preview.sh` (and their
+`.ps1` peers) now compare two things:
+
+1. **The published version against the installed one.** The digest from
+   the registry is compared with the digest of the local image. If they
+   differ, the teacher is told a newer version exists and asked whether to
+   install it — never installed behind their back, and never asked at all
+   when the run is not interactive (it prints how to update instead) or
+   when the image is a local build with no registry to consult. If the
+   machine is offline the check simply passes, so being away from a
+   network never blocks a build.
+
+2. **The container against the image it should be running.** A container
+   keeps running the version it was created from, so pulling a new image
+   changes nothing by itself. When the container's image ID differs from
+   the image the launcher resolved, the container is recreated. This is
+   not asked about: the container holds no state of its own — everything
+   lives in the mounted `courses/` folder — and running a version other
+   than the chosen one is simply wrong.
+
+`deploy.sh` does neither, deliberately: it resolves no image of its own,
+and interrupting a publish to install an update would be a poor moment to
+ask.
+
 <a name="container-runtime-bootstrap"></a>
 
 ## 3. Container runtime bootstrap (no Docker Desktop)

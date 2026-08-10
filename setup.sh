@@ -292,6 +292,53 @@ run_container_with_mount() {
     tail -f /dev/null
 }
 
+# -------------------- Offer a newer version, if one exists --------------------
+# An image already on the machine was never checked again, so a teacher kept
+# whatever they first downloaded and fixes never reached them.
+registry_digest_of() {
+  docker buildx imagetools inspect "$1" --format '{{.Manifest.Digest}}' 2>/dev/null || true
+}
+
+installed_digest_of() {
+  local repo_digest
+  repo_digest=$(docker image inspect "$1" --format '{{if .RepoDigests}}{{index .RepoDigests 0}}{{end}}' 2>/dev/null || true)
+  echo "${repo_digest#*@}"
+}
+
+offer_newer_image() {
+  local ref="$1"
+  # A locally built image has no registry to ask about it.
+  case "$ref" in */*) ;; *) return 0 ;; esac
+
+  local available installed answer
+  available="$(registry_digest_of "$ref")"
+  installed="$(installed_digest_of "$ref")"
+  # Offline, or nothing to compare: carry on with what is here.
+  if [[ -z "$available" || -z "$installed" || "$available" == "$installed" ]]; then
+    return 0
+  fi
+
+  echo "🆕 A newer version of the website builder is available."
+  if [[ ! -t 0 ]]; then
+    echo "   Run '${SELF_CMD} --update-image' when you would like to install it."
+    return 0
+  fi
+  read -r -p "   Install it now? (y/n) [Default: y]: " answer || answer=""
+  case "${answer:-y}" in
+    [Nn]*)
+      echo "   Keeping the version you have."
+      return 0
+      ;;
+  esac
+  echo "⬇️  Installing the newer version…"
+  docker pull "$ref"
+  PULL_STATUS="(just updated)"
+}
+
+if [[ "$SKIP_PULL" != "true" && "$FORCE_UPDATE_IMAGE" != "true" && "$IMAGE_PRESENT" == "true" ]]; then
+  offer_newer_image "$IMAGE"
+fi
+
 # -------------------- Show image version/build info --------------------
 show_image_info() {
   local img="$1"
@@ -330,6 +377,11 @@ probe_container_write() {
      rm -f /teaching/courses/.write_probe'
 }
 
+# A container keeps running the version it was created from, so an update
+# only takes effect once the container itself is recreated.
+DESIRED_IMAGE_ID=$(docker image inspect --format '{{.Id}}' "$IMAGE" 2>/dev/null || echo "")
+RUNNING_IMAGE_ID=$(docker inspect -f '{{.Image}}' "$CONTAINER_NAME" 2>/dev/null || echo "")
+
 # -------------------- Create/start container (mount-aware, with refresh-on-new-courses) --------------------
 if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
   # Container exists. Check its current /teaching/courses mount.
@@ -344,6 +396,11 @@ if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
     echo "   • Existing mount: $CURRENT_MOUNT_SRC"
     echo "   • Desired mount:  $HOST_COURSES"
     echo "♻️  Recreating container '$CONTAINER_NAME' to point at the new folder…"
+    if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then docker stop "$CONTAINER_NAME" >/dev/null; fi
+    docker rm "$CONTAINER_NAME" >/dev/null || true
+    run_container_with_mount
+  elif [[ -n "$DESIRED_IMAGE_ID" && -n "$RUNNING_IMAGE_ID" && "$RUNNING_IMAGE_ID" != "$DESIRED_IMAGE_ID" ]]; then
+    echo "♻️  Your workspace was built from an older version; rebuilding it so the update takes effect…"
     if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then docker stop "$CONTAINER_NAME" >/dev/null; fi
     docker rm "$CONTAINER_NAME" >/dev/null || true
     run_container_with_mount
