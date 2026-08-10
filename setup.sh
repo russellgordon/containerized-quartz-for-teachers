@@ -160,9 +160,31 @@ _install_brew_formula() {
   echo "✅ ${label} installed."
 }
 
+
+# BuildKit is what builds the image, and Homebrew's docker formula does
+# NOT include it — without the plugin the build silently degrades to the
+# legacy builder, which corrupts the export-scripts layer. The formula
+# also does not link the plugin where the docker CLI looks for it.
+ensure_buildx() {
+  if docker buildx version >/dev/null 2>&1; then
+    return 0
+  fi
+  if command -v brew >/dev/null 2>&1; then
+    command -v docker-buildx >/dev/null 2>&1 || _install_brew_formula docker-buildx docker-buildx "Docker BuildKit plugin"
+    mkdir -p "$HOME/.docker/cli-plugins"
+    local plugin
+    plugin="$(command -v docker-buildx || true)"
+    if [[ -n "$plugin" ]]; then
+      ln -sfn "$plugin" "$HOME/.docker/cli-plugins/docker-buildx"
+    fi
+  fi
+}
+
 ensure_container_runtime() {
-  # Fast path: any working Docker daemon means there is nothing to do.
+  # Fast path: any working Docker daemon means there is nothing to do —
+  # beyond making sure BuildKit is present to build with.
   if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+    ensure_buildx
     return 0
   fi
 
@@ -177,6 +199,7 @@ ensure_container_runtime() {
 
   command -v colima >/dev/null 2>&1 || _install_brew_formula colima colima "Colima (container runtime)"
   command -v docker >/dev/null 2>&1 || _install_brew_formula docker docker "Docker CLI"
+  ensure_buildx
 
   if [[ ! -d "$HOME/.colima/default" ]]; then
     echo "🚀 First start: building the Colima virtual machine (2 CPUs · 4 GB RAM)."
