@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Observation
 
@@ -59,19 +60,25 @@ class WorkspaceModel {
         rememberOpenFolders()
     }
 
-    /// Writes down which folder each open window is in, in window order.
+    /// Writes down which folder each open window is in, paired with the
+    /// window's frame so a restored window can find its own.
     static func rememberOpenFolders() {
-        var folders: [String] = []
+        var entries: [WindowFolderMemory.Entry] = []
         for model in windowModels {
             if let path = model.workspaceURL?.path {
-                folders.append(path)
+                let frame: String = model.window.map { NSStringFromRect($0.frame) } ?? ""
+                entries.append(WindowFolderMemory.Entry(path: path, frame: frame))
             }
         }
-        WindowFolderMemory.record(folders)
+        WindowFolderMemory.record(entries)
     }
 
     /// The active working folder, or nil before one has been chosen.
     var workspaceURL: URL?
+
+    /// The window this model belongs to, once it is on screen. Used only
+    /// to read the frame; never retained.
+    @ObservationIgnored weak var window: NSWindow?
 
     /// True while the New Course wizard sheet should be shown.
     var isShowingNewCourseWizard: Bool = false

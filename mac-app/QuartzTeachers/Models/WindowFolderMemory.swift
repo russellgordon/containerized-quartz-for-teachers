@@ -1,46 +1,63 @@
 import Foundation
 
-/// The fallback that reopens windows when macOS restores nothing.
+/// Remembers which folder each open window was in — paired with the
+/// window's frame, which is how a restored window finds ITS folder.
 ///
-/// The real mechanism is `WindowGroup(for: WindowFolder.self)`: each window
-/// carries its folder in its restoration state and comes back with it. But
-/// restoration is easily lost — the app rebuilt, killed from Xcode, or the
-/// "Close windows when quitting" setting switched on — and the windows
-/// should come back anyway. This list, written down while the windows were
-/// still open, is what makes that possible.
+/// The system restores window frames dependably, but the presented value
+/// has come back empty in practice, and handing folders out in appearance
+/// order swapped them: restoration order is not creation order. The frame
+/// is the one property both sides agree on, so it is the key.
 @MainActor
 enum WindowFolderMemory {
+
+    // MARK: - Types
+
+    struct Entry {
+        let path: String
+        let frame: String
+    }
 
     // MARK: - Stored properties
 
     /// Where the list is kept between launches.
     static let storageKey: String = "openWindowFolders"
 
-    /// Folders not yet taken by a window this launch.
-    private static var unclaimedFolders: [String] = []
+    /// Entries not yet taken by a window this launch.
+    private static var unclaimed: [Entry] = []
 
     private static var hasLoaded: Bool = false
     private static var hasRunSpawnCheck: Bool = false
 
     // MARK: - Functions
 
-    /// The folder a fresh, blank window should open in — the next
-    /// remembered one, skipping any that no longer exist. Windows the
-    /// system restored carry their own folder and never ask.
+    /// The folder remembered for a window with this frame, when there is
+    /// one. This is what keeps each window's folder with THAT window.
+    static func claimFolder(matchingFrame frame: String, defaults: UserDefaults = UserDefaults.standard) -> String? {
+        loadIfNeeded(defaults: defaults)
+        for (index, entry) in unclaimed.enumerated() {
+            if entry.frame == frame && WorkspaceModel.folderExists(atPath: entry.path) {
+                unclaimed.remove(at: index)
+                return entry.path
+            }
+        }
+        return nil
+    }
+
+    /// The next remembered folder in order — the fallback when nothing
+    /// matches by frame (the frames were not restored either).
     static func claimNextFolder(defaults: UserDefaults = UserDefaults.standard) -> String? {
         loadIfNeeded(defaults: defaults)
-        while !unclaimedFolders.isEmpty {
-            let candidate: String = unclaimedFolders.removeFirst()
-            if WorkspaceModel.folderExists(atPath: candidate) {
-                return candidate
+        while !unclaimed.isEmpty {
+            let entry: Entry = unclaimed.removeFirst()
+            if WorkspaceModel.folderExists(atPath: entry.path) {
+                return entry.path
             }
         }
         return nil
     }
 
     /// True exactly once per launch: the caller becomes the window that
-    /// checks whether any remembered folders still have no window, and
-    /// opens them.
+    /// checks for remembered folders still without a window.
     static func beginSpawnCheckOnce() -> Bool {
         if hasRunSpawnCheck {
             return false
@@ -49,27 +66,31 @@ enum WindowFolderMemory {
         return true
     }
 
-    /// The remembered folders no window has claimed, handed over for
-    /// spawning. Claiming ends here: a window opened by the teacher later
-    /// in the session must start fresh, not inherit a stale leftover.
+    /// The entries no window has claimed, handed over for spawning.
+    /// Claiming ends here: a window the teacher opens later must start
+    /// fresh, not inherit a stale leftover.
     static func takeUnclaimed(defaults: UserDefaults = UserDefaults.standard) -> [String] {
         loadIfNeeded(defaults: defaults)
         var remaining: [String] = []
-        for candidate in unclaimedFolders {
-            if WorkspaceModel.folderExists(atPath: candidate) {
-                remaining.append(candidate)
+        for entry in unclaimed {
+            if WorkspaceModel.folderExists(atPath: entry.path) {
+                remaining.append(entry.path)
             }
         }
-        unclaimedFolders = []
+        unclaimed = []
         return remaining
     }
 
-    /// Records the folders currently open, in window order.
-    static func record(_ folders: [String], defaults: UserDefaults = UserDefaults.standard) {
+    /// Records the open windows as folder-and-frame pairs.
+    static func record(_ entries: [Entry], defaults: UserDefaults = UserDefaults.standard) {
         if WorkspaceModel.isRunningTests && defaults == UserDefaults.standard {
             return
         }
-        defaults.set(folders, forKey: storageKey)
+        var stored: [[String: String]] = []
+        for entry in entries {
+            stored.append(["path": entry.path, "frame": entry.frame])
+        }
+        defaults.set(stored, forKey: storageKey)
     }
 
     private static func loadIfNeeded(defaults: UserDefaults) {
@@ -77,12 +98,24 @@ enum WindowFolderMemory {
             return
         }
         hasLoaded = true
-        unclaimedFolders = defaults.stringArray(forKey: storageKey) ?? []
+        var loaded: [Entry] = []
+        if let stored = defaults.array(forKey: storageKey) {
+            for element in stored {
+                if let pair = element as? [String: String], let path = pair["path"] {
+                    loaded.append(Entry(path: path, frame: pair["frame"] ?? ""))
+                }
+                // An entry from the earlier format: a bare path string.
+                if let path = element as? String {
+                    loaded.append(Entry(path: path, frame: ""))
+                }
+            }
+        }
+        unclaimed = loaded
     }
 
     /// Starts again from a given list — for tests.
-    static func reset(with folders: [String]) {
-        unclaimedFolders = folders
+    static func reset(with entries: [Entry]) {
+        unclaimed = entries
         hasLoaded = true
         hasRunSpawnCheck = false
     }

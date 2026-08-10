@@ -6,7 +6,7 @@ final class WindowFolderMemoryTests: XCTestCase {
 
     // MARK: - Functions
 
-    /// Two folders that really exist, so the memory does not skip them.
+    /// Folders that really exist, so the memory does not skip them.
     @MainActor
     func makeFolders(_ count: Int) throws -> [String] {
         var paths: [String] = []
@@ -18,28 +18,58 @@ final class WindowFolderMemoryTests: XCTestCase {
         return paths
     }
 
+    func removeAll(_ folders: [String]) {
+        for path in folders {
+            try? FileManager.default.removeItem(atPath: path)
+        }
+    }
+
+    @MainActor
+    func testAWindowFindsItsFolderByItsFrame() throws {
+        let folders: [String] = try makeFolders(2)
+        defer { removeAll(folders) }
+        WindowFolderMemory.reset(with: [
+            WindowFolderMemory.Entry(path: folders[0], frame: "{{100, 100}, {900, 700}}"),
+            WindowFolderMemory.Entry(path: folders[1], frame: "{{300, 200}, {1100, 720}}"),
+        ])
+
+        // The SECOND window appears first — restoration order is not
+        // creation order, which is precisely what swapped the folders.
+        XCTAssertEqual(WindowFolderMemory.claimFolder(matchingFrame: "{{300, 200}, {1100, 720}}"), folders[1])
+        XCTAssertEqual(WindowFolderMemory.claimFolder(matchingFrame: "{{100, 100}, {900, 700}}"), folders[0])
+    }
+
+    @MainActor
+    func testAnUnknownFrameMatchesNothing() throws {
+        let folders: [String] = try makeFolders(1)
+        defer { removeAll(folders) }
+        WindowFolderMemory.reset(with: [WindowFolderMemory.Entry(path: folders[0], frame: "{{1, 1}, {2, 2}}")])
+        XCTAssertNil(WindowFolderMemory.claimFolder(matchingFrame: "{{9, 9}, {9, 9}}"))
+        XCTAssertEqual(WindowFolderMemory.claimNextFolder(), folders[0], "The order fallback still hands it out")
+    }
+
     @MainActor
     func testWindowsTakeTheFoldersInOrder() throws {
         let folders: [String] = try makeFolders(2)
-        defer {
-            for path in folders {
-                try? FileManager.default.removeItem(atPath: path)
-            }
-        }
-        WindowFolderMemory.reset(with: folders)
-
-        XCTAssertEqual(WindowFolderMemory.claimNextFolder(), folders[0], "The first window takes the first folder")
-        XCTAssertEqual(WindowFolderMemory.claimNextFolder(), folders[1], "The second takes the second")
-        XCTAssertNil(WindowFolderMemory.claimNextFolder(), "A third window has nothing remembered for it")
+        defer { removeAll(folders) }
+        WindowFolderMemory.reset(with: [
+            WindowFolderMemory.Entry(path: folders[0], frame: ""),
+            WindowFolderMemory.Entry(path: folders[1], frame: ""),
+        ])
+        XCTAssertEqual(WindowFolderMemory.claimNextFolder(), folders[0])
+        XCTAssertEqual(WindowFolderMemory.claimNextFolder(), folders[1])
+        XCTAssertNil(WindowFolderMemory.claimNextFolder())
     }
 
     @MainActor
     func testAFolderThatHasGoneIsSkipped() throws {
         let folders: [String] = try makeFolders(2)
-        defer { try? FileManager.default.removeItem(atPath: folders[1]) }
+        defer { removeAll([folders[1]]) }
         try FileManager.default.removeItem(atPath: folders[0])
-
-        WindowFolderMemory.reset(with: folders)
+        WindowFolderMemory.reset(with: [
+            WindowFolderMemory.Entry(path: folders[0], frame: ""),
+            WindowFolderMemory.Entry(path: folders[1], frame: ""),
+        ])
         XCTAssertEqual(WindowFolderMemory.claimNextFolder(), folders[1],
                        "A window should not be opened in a folder that no longer exists")
     }
@@ -47,13 +77,12 @@ final class WindowFolderMemoryTests: XCTestCase {
     @MainActor
     func testSpawningTakesWhatWasNotClaimedAndEndsClaiming() throws {
         let folders: [String] = try makeFolders(3)
-        defer {
-            for path in folders {
-                try? FileManager.default.removeItem(atPath: path)
-            }
-        }
-        WindowFolderMemory.reset(with: folders)
-
+        defer { removeAll(folders) }
+        WindowFolderMemory.reset(with: [
+            WindowFolderMemory.Entry(path: folders[0], frame: ""),
+            WindowFolderMemory.Entry(path: folders[1], frame: ""),
+            WindowFolderMemory.Entry(path: folders[2], frame: ""),
+        ])
         _ = WindowFolderMemory.claimNextFolder()
         XCTAssertEqual(WindowFolderMemory.takeUnclaimed(), [folders[1], folders[2]],
                        "The spawner opens windows for whatever no window claimed")
@@ -77,21 +106,19 @@ final class WindowFolderMemoryTests: XCTestCase {
     @MainActor
     func testTheListSurvivesARelaunch() throws {
         let defaults: UserDefaults = TestDefaults.make()
-        let folders: [String] = try makeFolders(2)
-        defer {
-            for path in folders {
-                try? FileManager.default.removeItem(atPath: path)
-            }
-        }
-        WindowFolderMemory.record(folders, defaults: defaults)
-        XCTAssertEqual(defaults.stringArray(forKey: WindowFolderMemory.storageKey), folders)
+        let folders: [String] = try makeFolders(1)
+        defer { removeAll(folders) }
+        WindowFolderMemory.record([WindowFolderMemory.Entry(path: folders[0], frame: "{{1, 2}, {3, 4}}")], defaults: defaults)
+        let stored = defaults.array(forKey: WindowFolderMemory.storageKey) as? [[String: String]]
+        XCTAssertEqual(stored?.first?["path"], folders[0])
+        XCTAssertEqual(stored?.first?["frame"], "{{1, 2}, {3, 4}}")
     }
 
     @MainActor
     func testATestNeverWritesIntoTheRealPreferences() throws {
-        let before: [String]? = UserDefaults.standard.stringArray(forKey: WindowFolderMemory.storageKey)
-        WindowFolderMemory.record(["/somewhere/made/up"])
-        let after: [String]? = UserDefaults.standard.stringArray(forKey: WindowFolderMemory.storageKey)
+        let before = UserDefaults.standard.array(forKey: WindowFolderMemory.storageKey) as? [[String: String]]
+        WindowFolderMemory.record([WindowFolderMemory.Entry(path: "/somewhere/made/up", frame: "")])
+        let after = UserDefaults.standard.array(forKey: WindowFolderMemory.storageKey) as? [[String: String]]
         XCTAssertEqual(before, after, "A test must not disturb the teacher's own open windows")
     }
 }

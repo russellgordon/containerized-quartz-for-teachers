@@ -36,19 +36,28 @@ struct WindowRootView: View {
                 if !folder.path.isEmpty {
                     // Restored by the system, folder and all.
                     workspace.adoptRestoredPath(folder.path)
-                } else if let remembered = WindowFolderMemory.claimNextFolder() {
-                    // A blank window at launch takes the next remembered
-                    // folder, so the windows come back even when the
-                    // system restored nothing.
-                    workspace.adoptRestoredPath(remembered)
-                    folder.path = remembered
+                }
+            }
+            .background(WindowAccessor { window in
+                workspace.window = window
+                // A blank window at launch finds its folder by its FRAME —
+                // the one property the system restores dependably. Matching
+                // by order swapped folders between windows, because
+                // restoration order is not creation order.
+                if folder.path.isEmpty {
+                    let frame: String = NSStringFromRect(window.frame)
+                    if let remembered = WindowFolderMemory.claimFolder(matchingFrame: frame) ?? WindowFolderMemory.claimNextFolder() {
+                        workspace.adoptRestoredPath(remembered)
+                        folder.path = remembered
+                    }
                 }
                 AppLog.interface.info("""
                     window \(windowIdentity, privacy: .public) opened in \
-                    "\(workspace.workspaceURL?.path ?? "", privacy: .public)"
+                    "\(workspace.workspaceURL?.path ?? "", privacy: .public)" \
+                    at \(NSStringFromRect(window.frame), privacy: .public)
                     """)
                 WorkspaceModel.rememberOpenFolders()
-            }
+            })
             .onChange(of: workspace.workspaceURL) {
                 folder.path = workspace.workspaceURL?.path ?? ""
                 AppLog.interface.info("""
@@ -72,7 +81,8 @@ struct WindowRootView: View {
                 guard WindowFolderMemory.beginSpawnCheckOnce() else {
                     return
                 }
-                try? await Task.sleep(for: .milliseconds(600))
+                // After the frame-matched claims above have had time to run.
+                try? await Task.sleep(for: .milliseconds(1200))
                 for path in WindowFolderMemory.takeUnclaimed() {
                     openWindow(value: WindowFolder(id: UUID(), path: path))
                 }
