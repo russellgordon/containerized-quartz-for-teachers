@@ -38,6 +38,15 @@ struct ArchivedItem: Identifiable, Hashable {
         return "\(courseCode) — Section \(sectionNumber)"
     }
 
+    /// The same symbol the live sidebar uses, so an archived section looks
+    /// like a section and an archived course looks like a course.
+    var symbolName: String {
+        if sectionNumber == nil {
+            return "books.vertical"
+        }
+        return "doc.richtext"
+    }
+
     /// "Archived 10 August 2026".
     var subtitle: String {
         let formatter: DateFormatter = DateFormatter()

@@ -50,26 +50,23 @@ struct SidebarView: View {
                 }
 
                 if !workspace.archivedItems.isEmpty {
-                    Section {
-                        DisclosureGroup(isExpanded: $isShowingArchived) {
-                            ForEach(workspace.archivedItems) { item in
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(item.title)
-                                    Text(item.subtitle)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
+                    // A collapsible section header, the way Finder's
+                    // "Locations" behaves: the chevron appears on hover, and
+                    // the rows beneath read like any other sidebar row.
+                    Section(isExpanded: $isShowingArchived) {
+                        ForEach(workspace.archivedItems) { item in
+                            Label(item.title, systemImage: item.symbolName)
+                                .help(item.subtitle)
                                 .accessibilityIdentifier("archived-\(item.id)")
                                 .contextMenu {
                                     Button("Show in Finder") {
                                         NSWorkspace.shared.activateFileViewerSelecting([item.fileURL])
                                     }
                                 }
-                            }
-                        } label: {
-                            Label("Archived", systemImage: "archivebox")
-                                .accessibilityIdentifier("archivedGroup")
                         }
+                    } header: {
+                        Text("Archived")
+                            .accessibilityIdentifier("archivedGroup")
                     }
                 }
             }
