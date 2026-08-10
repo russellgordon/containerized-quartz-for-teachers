@@ -51,6 +51,12 @@ class WorkspaceModel {
     /// Courses and sections the teacher has removed, newest first.
     var archivedItems: [ArchivedItem] = []
 
+    /// The archived item a confirmation is being shown for, if any.
+    var restoreRequest: ArchivedItem?
+
+    /// Why a restore could not go ahead, shown as an alert.
+    var restoreProblem: String?
+
     /// The current sidebar selection.
     var selection: SidebarSelection?
 
@@ -111,6 +117,9 @@ class WorkspaceModel {
             selectedCode = code
         case .section(let code, _):
             selectedCode = code
+        case .archived:
+            // An archived item belongs to no live course.
+            selectedCode = nil
         case nil:
             selectedCode = nil
         }
@@ -278,6 +287,41 @@ class WorkspaceModel {
         }
         courses = loadedCourses
         archivedItems = WorkspaceModel.findArchivedItems(in: coursesDirectoryURL)
+    }
+
+    /// The archived item matching a sidebar selection, if that is what is
+    /// selected.
+    var selectedArchivedItem: ArchivedItem? {
+        guard case .archived(let identifier) = selection else {
+            return nil
+        }
+        for item in archivedItems {
+            if item.id == identifier {
+                return item
+            }
+        }
+        return nil
+    }
+
+    /// Brings an archived course or section back, then reloads so the
+    /// sidebar shows it in its proper place.
+    func restore(_ item: ArchivedItem) {
+        guard let coursesDirectoryURL else {
+            return
+        }
+        do {
+            try CourseRestorer.restore(item, coursesDirectoryURL: coursesDirectoryURL, courses: courses)
+        } catch {
+            restoreProblem = error.localizedDescription
+            return
+        }
+        selection = nil
+        reloadCourses()
+        if let sectionNumber = item.sectionNumber {
+            selection = SidebarSelection.section(item.courseCode, sectionNumber)
+        } else {
+            selection = SidebarSelection.course(item.courseCode)
+        }
     }
 
     /// Finds what the teacher has archived, newest first.

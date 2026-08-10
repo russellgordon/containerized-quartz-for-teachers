@@ -16,6 +16,11 @@ struct WorkspaceCommands: View {
         }
         .disabled(workspace == nil)
 
+        Button("Restore from Archive…") {
+            workspace?.restoreRequest = workspace?.selectedArchivedItem
+        }
+        .disabled(workspace?.selectedArchivedItem == nil)
+
         Button("Reload Courses") {
             workspace?.reloadCourses()
         }

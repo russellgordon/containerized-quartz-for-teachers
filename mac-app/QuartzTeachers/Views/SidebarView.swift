@@ -57,8 +57,12 @@ struct SidebarView: View {
                         ForEach(workspace.archivedItems) { item in
                             Label(item.title, systemImage: item.symbolName)
                                 .help(item.subtitle)
+                                .tag(SidebarSelection.archived(item.id))
                                 .accessibilityIdentifier("archived-\(item.id)")
                                 .contextMenu {
+                                    Button("Restore…") {
+                                        workspace.restoreRequest = item
+                                    }
                                     Button("Show in Finder") {
                                         NSWorkspace.shared.activateFileViewerSelecting([item.fileURL])
                                     }
@@ -86,6 +90,23 @@ struct SidebarView: View {
                 },
                 secondaryButton: .cancel()
             )
+        }
+        .alert(item: restoreRequestBinding) { item in
+            Alert(
+                title: Text("Restore \(item.title)?"),
+                message: Text(restoreMessage(for: item)),
+                primaryButton: .default(Text("Restore")) {
+                    workspace.restore(item)
+                },
+                secondaryButton: .cancel()
+            )
+        }
+        .alert("Could not restore", isPresented: restoreProblemBinding) {
+            Button("OK") {
+                workspace.restoreProblem = nil
+            }
+        } message: {
+            Text(workspace.restoreProblem ?? "")
         }
         .alert("Could not remove", isPresented: removalProblemBinding) {
             Button("OK") {
@@ -148,7 +169,9 @@ struct SidebarView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
-            .disabled(workspace.selection == nil)
+            // An archived item is already put away, so there is nothing
+            // for this button to do while one is selected.
+            .disabled(workspace.selectedCourse == nil)
             .help("Remove the selected course or section")
             .accessibilityIdentifier("removeSelectedButton")
             .padding(.trailing, 5)
@@ -163,6 +186,32 @@ struct SidebarView: View {
     }
 
     // MARK: - Computed properties
+
+    /// What restoring this item will do, said plainly.
+    func restoreMessage(for item: ArchivedItem) -> String {
+        if let sectionNumber = item.sectionNumber {
+            return "Section \(sectionNumber) will be put back into \(item.courseCode), and will no longer be listed as archived."
+        }
+        return "\(item.courseCode) will be put back into Courses & Clubs, and will no longer be listed as archived."
+    }
+
+    var restoreRequestBinding: Binding<ArchivedItem?> {
+        return Binding(
+            get: { workspace.restoreRequest },
+            set: { item in workspace.restoreRequest = item }
+        )
+    }
+
+    var restoreProblemBinding: Binding<Bool> {
+        return Binding(
+            get: { workspace.restoreProblem != nil },
+            set: { isPresented in
+                if !isPresented {
+                    workspace.restoreProblem = nil
+                }
+            }
+        )
+    }
 
     var removalProblemBinding: Binding<Bool> {
         return Binding(
@@ -205,6 +254,10 @@ struct SidebarView: View {
                 title: "Remove \(course.code)?",
                 message: "Nothing is deleted. \(course.code) and all of its sections move to Archived, at the bottom of the sidebar, where you can get them back."
             )
+        case .archived:
+            // The minus button removes live courses; an archived item is
+            // already put away.
+            return
         case .section(_, let sectionNumber):
             if course.sectionNumbers.count <= 1 {
                 // Removing the only section leaves nothing behind, so be

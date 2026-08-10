@@ -62,6 +62,22 @@ struct MainWindowView: View {
             } else {
                 missingSelectionView
             }
+        case .archived(let identifier):
+            if let item = archivedItem(withIdentifier: identifier) {
+                ContentUnavailableView {
+                    Label(item.title, systemImage: item.symbolName)
+                } description: {
+                    Text("\(item.subtitle). It is not part of your courses until you restore it.")
+                } actions: {
+                    Button("Restore…") {
+                        workspace.restoreRequest = item
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier("restoreArchivedButton")
+                }
+            } else {
+                missingSelectionView
+            }
         case nil:
             // Telling someone to choose from an empty list is a dead end.
             if workspace.courses.isEmpty {
@@ -95,6 +111,15 @@ struct MainWindowView: View {
     }
 
     // MARK: - Functions
+
+    func archivedItem(withIdentifier identifier: String) -> ArchivedItem? {
+        for item in workspace.archivedItems {
+            if item.id == identifier {
+                return item
+            }
+        }
+        return nil
+    }
 
     func course(withCode code: String) -> Course? {
         for course in workspace.courses {
