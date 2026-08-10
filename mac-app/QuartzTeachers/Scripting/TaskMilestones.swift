@@ -30,6 +30,13 @@ enum TaskMilestones {
         TaskMilestone(label: "Finishing up…", marker: "set up successfully"),
     ]
 
+    /// Installing the example course.
+    static let exampleCourse: [TaskMilestone] = [
+        TaskMilestone(label: "Getting things ready…", marker: "Starting container if needed"),
+        TaskMilestone(label: "Copying the example course…", marker: "Example Course installed to"),
+        TaskMilestone(label: "Finishing up…", marker: "EXAMPLE_COURSE_CODE="),
+    ]
+
     /// Previewing a section.
     static let preview: [TaskMilestone] = [
         TaskMilestone(label: "Starting up…", marker: "Starting container if needed"),

@@ -37,6 +37,10 @@ struct NewCourseWizardView: View {
     @State var validationProblem: String?
     @State var hasStarted: Bool = false
 
+    /// What the progress header is called — the wizard creates a course,
+    /// but the same sheet also adds the example course.
+    @State var progressTitle: String = "Creating your course"
+
     // MARK: - Initializer
 
     init(creator: NewCourseCreator = NewCourseCreator(), startedForTesting: Bool = false) {
@@ -85,9 +89,10 @@ struct NewCourseWizardView: View {
             .padding()
 
             if hasStarted {
-                TaskProgressView(runner: creator.runner, title: "Creating your course")
+                TaskProgressView(runner: creator.runner, title: progressTitle)
                 Spacer(minLength: 0)
             } else {
+                exampleCourseInvitation
                 wizardForm
             }
 
@@ -132,6 +137,11 @@ struct NewCourseWizardView: View {
                     // enabled (and the default action) once work ends.
                     Button("Close") {
                         workspace.reloadCourses()
+                        // Land the teacher inside what was just made,
+                        // rather than back at an empty window.
+                        if let exampleCode = creator.installedExampleCode {
+                            workspace.selection = SidebarSelection.section(exampleCode, 1)
+                        }
                         dismiss()
                     }
                     .buttonStyle(.borderedProminent)
@@ -268,6 +278,47 @@ struct NewCourseWizardView: View {
             courseName = knownNames.formal
             lastAutoFilledName = knownNames.formal
         }
+    }
+
+    /// Offered above the form: someone who has never built a course learns
+    /// far more from opening a finished one than from an empty form.
+    var exampleCourseInvitation: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("New to this?")
+                    .font(.headline)
+                Text("Add a complete example course — a real Grade 9 science course you can explore, change, and remove whenever you like.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 12)
+            Button("Add Example Course") {
+                startExampleInstall()
+            }
+            .accessibilityIdentifier("addExampleCourseButton")
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color(nsColor: .controlBackgroundColor))
+        )
+        .padding(.horizontal)
+        .padding(.bottom, 10)
+    }
+
+    // MARK: - Functions
+
+    /// Adds the example course. Nothing else on this form is needed for it.
+    func startExampleInstall() {
+        validationProblem = nil
+        guard let workspaceURL = workspace.workspaceURL else {
+            validationProblem = "Choose a working folder first."
+            return
+        }
+        progressTitle = "Adding the example course"
+        hasStarted = true
+        creator.installExampleCourse(workspaceURL: workspaceURL)
     }
 
     func startCreation() {

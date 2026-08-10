@@ -23,6 +23,11 @@ class NewCourseCreator {
     /// A problem preparing the run (before the script started), if any.
     var preparationProblem: String?
 
+    /// The code of the example course that was installed, once it has been.
+    /// The example is normally EXC2O, but installs under another code when
+    /// that one is taken — so the app has to be told which it got.
+    var installedExampleCode: String?
+
     /// The course code being created, uppercased.
     private var courseCode: String = ""
 
@@ -69,6 +74,45 @@ class NewCourseCreator {
         Task {
             await pumpAnswers()
         }
+    }
+
+    /// Installs the example course. Nothing is asked of the teacher: the
+    /// setup script is run with the flag that installs it outright.
+    func installExampleCourse(workspaceURL: URL) {
+        preparationProblem = nil
+        installedExampleCode = nil
+        respondedLength = 0
+        responsesSent = 0
+        isCreating = true
+        runner.milestones = TaskMilestones.exampleCourse
+        runner.run(
+            scriptNamed: "setup.sh",
+            arguments: ["--", "--install-example"],
+            workingDirectory: workspaceURL
+        )
+
+        Task {
+            await runner.waitUntilFinished()
+            installedExampleCode = NewCourseCreator.exampleCourseCode(in: runner.transcript.displayText)
+            isCreating = false
+        }
+    }
+
+    /// Reads the installed example's code out of the output.
+    static func exampleCourseCode(in output: String) -> String? {
+        let marker: String = "EXAMPLE_COURSE_CODE="
+        var found: String?
+        for rawLine in output.split(separator: "\n", omittingEmptySubsequences: false) {
+            let line: String = String(rawLine).trimmingCharacters(in: .whitespaces)
+            guard let markerRange = line.range(of: marker) else {
+                continue
+            }
+            let code: String = String(line[markerRange.upperBound...]).trimmingCharacters(in: .whitespaces)
+            if !code.isEmpty {
+                found = code
+            }
+        }
+        return found
     }
 
     /// Watches the wizard's output; whenever a prompt is waiting, answers
