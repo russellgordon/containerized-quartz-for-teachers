@@ -34,6 +34,11 @@ class ScriptRunner {
     var isAwaitingInput: Bool = false
     var pendingQuestion: String = ""
 
+    /// The answer the script would use if the teacher simply agreed —
+    /// what it showed in square brackets. Offered in the answer field
+    /// rather than left in the wording of the question.
+    var suggestedAnswer: String = ""
+
     private var promptCheck: DispatchWorkItem?
 
     private var process: Process?
@@ -274,7 +279,9 @@ class ScriptRunner {
                     return
                 }
                 if ScriptRunner.looksLikeQuestion(line) {
-                    self.pendingQuestion = line
+                    let asked = ScriptRunner.separateDefaultAnswer(from: line)
+                    self.pendingQuestion = asked.question
+                    self.suggestedAnswer = asked.suggestedAnswer
                     self.isAwaitingInput = true
                 }
             }
@@ -320,6 +327,42 @@ class ScriptRunner {
             return true
         }
         return false
+    }
+
+    /// Splits a question into the wording to show and the default answer
+    /// to offer, when the script named one in square brackets.
+    ///
+    /// "Enter Netlify site name [ics3u-s3-2026-gordon]:" becomes
+    /// "Enter Netlify site name:" with "ics3u-s3-2026-gordon" waiting in
+    /// the answer field, ready to accept or type over. That reads as a
+    /// filled-in form rather than as instructions to follow.
+    static func separateDefaultAnswer(from question: String) -> (question: String, suggestedAnswer: String) {
+        guard let openIndex = question.lastIndex(of: "["), let closeIndex = question.lastIndex(of: "]") else {
+            return (question, "")
+        }
+        if openIndex >= closeIndex {
+            return (question, "")
+        }
+        var offered: String = String(question[question.index(after: openIndex)..<closeIndex]).trimmingCharacters(in: .whitespaces)
+
+        // Some prompts name what they are offering: "[Default: foo]".
+        let defaultLabel: String = "Default:"
+        if offered.hasPrefix(defaultLabel) {
+            offered = String(offered.dropFirst(defaultLabel.count)).trimmingCharacters(in: .whitespaces)
+        }
+        if offered.isEmpty {
+            return (question, "")
+        }
+        // "[Y/n]" lists choices rather than naming a value, so the
+        // wording keeps it and nothing is filled in.
+        if offered.contains("/") {
+            return (question, "")
+        }
+
+        var wording: String = String(question[question.startIndex..<openIndex]).trimmingCharacters(in: .whitespaces)
+        let afterBracket: String = String(question[question.index(after: closeIndex)...]).trimmingCharacters(in: .whitespaces)
+        wording += afterBracket
+        return (wording, offered)
     }
 
     /// Folds newly arrived output into the milestone count.

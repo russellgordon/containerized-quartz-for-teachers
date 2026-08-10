@@ -46,6 +46,41 @@ final class ScriptRunnerStatusTests: XCTestCase {
     }
 
     @MainActor
+    func testDefaultAnswerMovesOutOfTheQuestion() {
+        let asked = ScriptRunner.separateDefaultAnswer(from: "Enter Netlify site name [ics3u-s3-2026-gordon]:")
+        XCTAssertEqual(asked.question, "Enter Netlify site name:")
+        XCTAssertEqual(asked.suggestedAnswer, "ics3u-s3-2026-gordon")
+    }
+
+    @MainActor
+    func testLabelledDefaultAnswerMovesOutOfTheQuestion() {
+        let asked = ScriptRunner.separateDefaultAnswer(from: "Your name [Default: Russell Gordon]:")
+        XCTAssertEqual(asked.question, "Your name:")
+        XCTAssertEqual(asked.suggestedAnswer, "Russell Gordon")
+    }
+
+    @MainActor
+    func testRetryPromptKeepsItsWordingAndOffersTheNewName() {
+        let asked = ScriptRunner.separateDefaultAnswer(from: "Choose a different Netlify site name (or 'q' to cancel) [ics3u-s3-2026-gordon-01]:")
+        XCTAssertEqual(asked.question, "Choose a different Netlify site name (or 'q' to cancel):")
+        XCTAssertEqual(asked.suggestedAnswer, "ics3u-s3-2026-gordon-01")
+    }
+
+    @MainActor
+    func testChoicesStayInTheQuestion() {
+        let asked = ScriptRunner.separateDefaultAnswer(from: "Continue? [Y/n]")
+        XCTAssertEqual(asked.question, "Continue? [Y/n]")
+        XCTAssertEqual(asked.suggestedAnswer, "")
+    }
+
+    @MainActor
+    func testQuestionWithoutADefaultIsUnchanged() {
+        let asked = ScriptRunner.separateDefaultAnswer(from: "Enter your Netlify access token:")
+        XCTAssertEqual(asked.question, "Enter your Netlify access token:")
+        XCTAssertEqual(asked.suggestedAnswer, "")
+    }
+
+    @MainActor
     func testQuestionShapesAreRecognised() {
         XCTAssertTrue(ScriptRunner.looksLikeQuestion("Enter Netlify site name [ics3u-s1-2026-gordon]:"))
         XCTAssertTrue(ScriptRunner.looksLikeQuestion("Install the Example Course now? (y/n) [Default: n]"))

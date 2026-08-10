@@ -75,6 +75,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 32 | 2026-08-09 | When a publish finishes, give the teacher a clickable link to the live site (or a finishing message of that kind). | ✅ Implemented — the completed task now reads "Your website is live." above a clickable link to the site's address, picked out of the publisher's output ("Live URL:" on first publish, "Site URL:" afterwards). Netlify's own admin pages are ignored so the link is always the teacher's site. Covered by tests for both the found and not-found cases. | Same: parse the published address from the launcher's output and end the task with a link, not just a checkmark. |
 
+| 33 | 2026-08-09 | A prompt's square-bracket default ("Enter Netlify site name [ics3u-s3-2026-gordon]:", and the same when a name is taken: "Choose a different Netlify site name (or 'q' to cancel) [ics3u-s3-2026-gordon-01]:") is command-line shorthand. Take it out of the question and put it in the answer field instead. Title the alerts "Input required". | ✅ Implemented — a bracketed default is lifted out of the wording and pre-filled into the text field, so agreeing is one keystroke and changing it is still easy; "[Default: x]" is understood too, while "[Y/n]"-style choice lists stay in the wording (they name options, not a value). Five tests cover the shapes. | Same: a GUI shows a default as a filled-in field, never as text the user must retype. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

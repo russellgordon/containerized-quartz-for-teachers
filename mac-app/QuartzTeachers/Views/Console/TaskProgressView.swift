@@ -216,7 +216,7 @@ struct TaskProgressView: View {
         // the details and type into a console.
         // Neutral wording: a task may ask several questions in a row, so
         // the title must not promise how many are coming.
-        .alert("A question needs your answer", isPresented: awaitingInputBinding) {
+        .alert("Input required", isPresented: awaitingInputBinding) {
             TextField("Your answer", text: $answer)
             Button("Send") {
                 runner.send(line: answer)
@@ -227,6 +227,13 @@ struct TaskProgressView: View {
             }
         } message: {
             Text(runner.pendingQuestion)
+        }
+        .onChange(of: runner.isAwaitingInput) {
+            // Start from the answer the task would have used anyway, so
+            // agreeing is one keystroke and changing it is still easy.
+            if runner.isAwaitingInput {
+                answer = runner.suggestedAnswer
+            }
         }
         .onChange(of: runner.lastExitCode) {
             // A failure is worth reading about: open the details.
