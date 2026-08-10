@@ -39,6 +39,31 @@ final class ScriptRunnerStatusTests: XCTestCase {
     }
 
     @MainActor
+    func testRepeatPublishOfAnExistingSiteStillOffersTheLink() {
+        // A site that already exists is quoted from its saved record,
+        // which holds a plain-http address rather than the ssl one.
+        let runner: ScriptRunner = ScriptRunner()
+        runner.receiveOutput(" Using existing Netlify site for this section.\n")
+        runner.receiveOutput(" Site: http://ics3u-s1-2025-gordon.netlify.app\n")
+        runner.receiveOutput(" Netlify requires 3 file(s) for this deploy.\n")
+        runner.receiveOutput("✅ Delta deploy created (production).\n")
+        runner.receiveOutput(" Site URL: http://ics3u-s1-2025-gordon.netlify.app\n")
+        XCTAssertEqual(runner.publishedSiteURL?.absoluteString, "https://ics3u-s1-2025-gordon.netlify.app")
+    }
+
+    @MainActor
+    func testACustomAddressIsOfferedWhenAnnounced() {
+        let found = ScriptRunner.publishedSiteURL(in: " Site URL: https://cs.example.com\n✅ Deploy complete.")
+        XCTAssertEqual(found?.absoluteString, "https://cs.example.com", "A site on its own domain is still the site")
+    }
+
+    @MainActor
+    func testTheDashboardIsNeverOfferedAsTheSite() {
+        let found = ScriptRunner.publishedSiteURL(in: " Admin: https://app.netlify.com/projects/ics3u-s1-2025-gordon\n")
+        XCTAssertNil(found)
+    }
+
+    @MainActor
     func testNoSiteLinkWhenNothingWasPublished() {
         let runner: ScriptRunner = ScriptRunner()
         runner.receiveOutput("Building your site\n")

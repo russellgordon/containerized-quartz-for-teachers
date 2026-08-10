@@ -328,31 +328,70 @@ class ScriptRunner {
     }
 
     /// The published site's address, if the output announced one.
-    /// Netlify's deployer prints "Live URL:" when it creates a site and
-    /// "Site URL:" on every deploy after that.
     var publishedSiteURL: URL? {
-        let text: String = transcript.recentText(maximumCharacters: 8000)
-        var bestCandidate: String?
-        for rawToken in text.split(whereSeparator: { character in character.isWhitespace }) {
-            var token: String = String(rawToken)
-            while let last = token.last, last == "." || last == "," || last == ")" {
-                token.removeLast()
-            }
-            if !token.hasPrefix("https://") {
+        return ScriptRunner.publishedSiteURL(in: transcript.recentText(maximumCharacters: 8000))
+    }
+
+    /// Reads the site's address out of a publish's output.
+    ///
+    /// The deployer announces it under a label — "Live URL:" when it
+    /// creates a site, "Site:" and "Site URL:" for one that already
+    /// exists — so the label is what to look for. Judging by the address
+    /// alone missed repeat publishes, which quote the site record's
+    /// plain-http `url` rather than the `ssl_url` a new site reports.
+    static func publishedSiteURL(in text: String) -> URL? {
+        var announced: String?
+        var anyNetlifyAddress: String?
+        for rawLine in text.split(separator: "\n", omittingEmptySubsequences: false) {
+            let line: String = String(rawLine).trimmingCharacters(in: .whitespaces)
+            // Netlify's own dashboard is not the teacher's website.
+            if line.hasPrefix("Admin:") {
                 continue
             }
-            // The teacher's site, not Netlify's own pages.
-            if token.contains("app.netlify.com") || token.contains("docs.netlify.com") {
-                continue
-            }
-            if token.contains(".netlify.app") {
-                bestCandidate = token
+            let namesTheSite: Bool = line.hasPrefix("Site URL:") || line.hasPrefix("Live URL:") || line.hasPrefix("Site:")
+            for rawToken in line.split(whereSeparator: { character in character.isWhitespace }) {
+                let token: String = ScriptRunner.tidiedAddress(String(rawToken))
+                if !ScriptRunner.isWebAddress(token) {
+                    continue
+                }
+                if token.contains("app.netlify.com") || token.contains("docs.netlify.com") {
+                    continue
+                }
+                if namesTheSite {
+                    announced = token
+                } else if token.contains(".netlify.app") {
+                    anyNetlifyAddress = token
+                }
             }
         }
-        guard let bestCandidate else {
+        guard let chosen = announced ?? anyNetlifyAddress else {
             return nil
         }
-        return URL(string: bestCandidate)
+        return URL(string: ScriptRunner.preferringSecure(chosen))
+    }
+
+    /// Strips the punctuation that ends a sentence, not an address.
+    static func tidiedAddress(_ token: String) -> String {
+        var address: String = token
+        while let last = address.last, last == "." || last == "," || last == ")" {
+            address.removeLast()
+        }
+        return address
+    }
+
+    /// True when this looks like something a browser can open.
+    static func isWebAddress(_ token: String) -> Bool {
+        return token.hasPrefix("https://") || token.hasPrefix("http://")
+    }
+
+    /// Netlify serves every site over https and redirects plain http, so
+    /// offer the secure address even when the record quotes the other.
+    static func preferringSecure(_ address: String) -> String {
+        let insecurePrefix: String = "http://"
+        if address.hasPrefix(insecurePrefix) && address.contains(".netlify.app") {
+            return "https://" + String(address.dropFirst(insecurePrefix.count))
+        }
+        return address
     }
 
     /// Prompt shapes the toolchain's scripts actually use.
