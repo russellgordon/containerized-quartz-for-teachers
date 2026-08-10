@@ -72,18 +72,21 @@ struct SectionDetailView: View {
                     previewController.goBack()
                 }
                 .disabled(previewURL == nil || !previewController.canGoBack)
+                .help("Go back a page")
                 .accessibilityIdentifier("previewBackButton")
 
                 Button("Forward", systemImage: "chevron.right") {
                     previewController.goForward()
                 }
                 .disabled(previewURL == nil || !previewController.canGoForward)
+                .help("Go forward a page")
                 .accessibilityIdentifier("previewForwardButton")
 
                 Button("Reload", systemImage: "arrow.clockwise") {
                     previewController.reload()
                 }
                 .disabled(previewURL == nil)
+                .help("Reload this page")
                 .accessibilityIdentifier("previewReloadButton")
             }
             ToolbarItemGroup {
@@ -100,18 +103,21 @@ struct SectionDetailView: View {
                     }
                 }
                 .disabled(!previewRunner.isRunning && isBusy)
+                .help(previewRunner.isRunning ? "Stop previewing this section" : "Preview this section's website")
                 .accessibilityIdentifier(previewRunner.isRunning ? "stopPreviewButton" : "previewButton")
 
                 Button("Deploy", systemImage: "paperplane.fill") {
                     startDeploy()
                 }
                 .disabled(isBusy)
+                .help("Publish this section's website")
                 .accessibilityIdentifier("deployButton")
 
                 Button("Open in Browser", systemImage: "safari") {
                     openInBrowser()
                 }
                 .disabled(previewURL == nil)
+                .help("Open this preview in your web browser")
                 .accessibilityIdentifier("openInBrowserButton")
             }
         }
