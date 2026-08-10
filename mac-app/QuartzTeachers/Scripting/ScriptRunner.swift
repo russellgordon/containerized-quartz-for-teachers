@@ -283,6 +283,34 @@ class ScriptRunner {
         DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: check)
     }
 
+    /// The published site's address, if the output announced one.
+    /// Netlify's deployer prints "Live URL:" when it creates a site and
+    /// "Site URL:" on every deploy after that.
+    var publishedSiteURL: URL? {
+        let text: String = transcript.recentText(maximumCharacters: 8000)
+        var bestCandidate: String?
+        for rawToken in text.split(whereSeparator: { character in character.isWhitespace }) {
+            var token: String = String(rawToken)
+            while let last = token.last, last == "." || last == "," || last == ")" {
+                token.removeLast()
+            }
+            if !token.hasPrefix("https://") {
+                continue
+            }
+            // The teacher's site, not Netlify's own pages.
+            if token.contains("app.netlify.com") || token.contains("docs.netlify.com") {
+                continue
+            }
+            if token.contains(".netlify.app") {
+                bestCandidate = token
+            }
+        }
+        guard let bestCandidate else {
+            return nil
+        }
+        return URL(string: bestCandidate)
+    }
+
     /// Prompt shapes the toolchain's scripts actually use.
     static func looksLikeQuestion(_ line: String) -> Bool {
         if line.hasSuffix(":") || line.hasSuffix("?") || line.hasSuffix(">") {

@@ -155,6 +155,15 @@ struct TaskProgressView: View {
                                     .foregroundStyle(.red)
                             }
                         }
+
+                        // Finish with something to click: the live site.
+                        if exitCode == 0, let siteURL = runner.publishedSiteURL {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Your website is live.")
+                                Link(siteURL.absoluteString, destination: siteURL)
+                                    .accessibilityIdentifier("publishedSiteLink")
+                            }
+                        }
                     }
 
                     if runner.isAwaitingInput {
@@ -205,7 +214,9 @@ struct TaskProgressView: View {
         }
         // Ask the question outright rather than making a teacher open
         // the details and type into a console.
-        .alert("One thing is needed to continue", isPresented: awaitingInputBinding) {
+        // Neutral wording: a task may ask several questions in a row, so
+        // the title must not promise how many are coming.
+        .alert("A question needs your answer", isPresented: awaitingInputBinding) {
             TextField("Your answer", text: $answer)
             Button("Send") {
                 runner.send(line: answer)

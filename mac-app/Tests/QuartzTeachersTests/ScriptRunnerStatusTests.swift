@@ -29,6 +29,23 @@ final class ScriptRunnerStatusTests: XCTestCase {
     }
 
     @MainActor
+    func testPublishedSiteLinkIsFoundInDeployOutput() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.receiveOutput(" Netlify site created.\n")
+        runner.receiveOutput(" Admin: https://app.netlify.com/sites/ics3u-s1-2026-gordon\n")
+        runner.receiveOutput(" Live URL: https://ics3u-s1-2026-gordon.netlify.app\n")
+        runner.receiveOutput("✅ Deploy complete.\n")
+        XCTAssertEqual(runner.publishedSiteURL?.absoluteString, "https://ics3u-s1-2026-gordon.netlify.app", "The teacher's site should be offered, not Netlify's admin page")
+    }
+
+    @MainActor
+    func testNoSiteLinkWhenNothingWasPublished() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.receiveOutput("Building your site\n")
+        XCTAssertNil(runner.publishedSiteURL)
+    }
+
+    @MainActor
     func testQuestionShapesAreRecognised() {
         XCTAssertTrue(ScriptRunner.looksLikeQuestion("Enter Netlify site name [ics3u-s1-2026-gordon]:"))
         XCTAssertTrue(ScriptRunner.looksLikeQuestion("Install the Example Course now? (y/n) [Default: n]"))
