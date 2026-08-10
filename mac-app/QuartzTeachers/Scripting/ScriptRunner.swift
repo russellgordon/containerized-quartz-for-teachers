@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import OSLog
 
 /// Runs one of the toolchain's shell scripts and streams its output.
 ///
@@ -29,6 +30,13 @@ class ScriptRunner {
 
     private var process: Process?
     private var terminal: PseudoTerminal?
+
+    /// Output that has arrived but not yet been shown. Chunks land on a
+    /// background queue and reach the interface at a fixed, modest rate.
+    nonisolated private let outputBuffer: OutputBuffer = OutputBuffer()
+
+    /// How often buffered output reaches the interface.
+    nonisolated private static let flushInterval: TimeInterval = 0.15
 
     // MARK: - Computed properties
 
@@ -103,9 +111,7 @@ class ScriptRunner {
                 return
             }
             let text: String = String(decoding: data, as: UTF8.self)
-            Task { @MainActor in
-                self.receiveOutput(text)
-            }
+            self.bufferOutput(text)
         }
 
         newProcess.terminationHandler = { finishedProcess in
@@ -125,6 +131,7 @@ class ScriptRunner {
         process = newProcess
         terminal = newTerminal
         isRunning = true
+        AppLog.output.info("Started \(scriptName, privacy: .public) \(arguments, privacy: .public)")
     }
 
     /// Waits for the current run to finish; true when it succeeded.
@@ -194,6 +201,41 @@ class ScriptRunner {
             return milestones.count
         }
         return reachedMilestoneCount
+    }
+
+    /// Takes a chunk from the reading queue and schedules a flush.
+    /// Runs OFF the main actor, so it must not touch observed state.
+    nonisolated private func bufferOutput(_ text: String) {
+        let needsScheduling: Bool = outputBuffer.add(text)
+        if !needsScheduling {
+            return
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + ScriptRunner.flushInterval) {
+            MainActor.assumeIsolated {
+                self.flushBufferedOutput()
+            }
+        }
+    }
+
+    /// Hands everything buffered to the interface in one update.
+    private func flushBufferedOutput() {
+        let buffered: (text: String, chunkCount: Int) = outputBuffer.take()
+        let text: String = buffered.text
+        let chunkCount: Int = buffered.chunkCount
+
+        if text.isEmpty {
+            return
+        }
+        let started: Date = Date()
+        receiveOutput(text)
+        let elapsed: TimeInterval = Date().timeIntervalSince(started)
+        if elapsed > 0.05 || chunkCount > 200 {
+            AppLog.output.warning("""
+                Slow flush: \(chunkCount) chunks, \(text.count) characters, \
+                \(elapsed, format: .fixed(precision: 3))s, transcript now \
+                \(self.transcript.lines.count) lines
+                """)
+        }
     }
 
     /// The single entry point for output arriving from a running script:
@@ -330,6 +372,9 @@ class ScriptRunner {
     }
 
     private func finishRun(exitCode: Int32) {
+        // Show anything still buffered when the script ended.
+        flushBufferedOutput()
+        AppLog.output.info("Finished with exit code \(exitCode), transcript \(self.transcript.lines.count) lines")
         lastExitCode = exitCode
         isRunning = false
         terminal?.masterHandle.readabilityHandler = nil

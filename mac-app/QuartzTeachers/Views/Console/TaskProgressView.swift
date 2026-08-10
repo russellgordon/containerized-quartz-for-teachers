@@ -1,3 +1,4 @@
+import OSLog
 import SwiftUI
 
 /// The friendly face of a running task: an indeterminate progress bar
@@ -16,11 +17,29 @@ struct TaskProgressView: View {
 
     @State var isShowingDetails: Bool = false
 
+    /// When the header last refreshed, so a stalled main thread shows up
+    /// in the log as a gap rather than only as a blank window.
+    @State var lastRefreshAt: Date = Date()
+
+    // MARK: - Functions
+
+    /// Records each refresh; a long gap means the interface was stalled.
+    func noteRefresh(at date: Date) {
+        let gap: TimeInterval = date.timeIntervalSince(lastRefreshAt)
+        if gap > 3 {
+            AppLog.interface.error("Interface stalled for \(gap, format: .fixed(precision: 1))s (task: \(title, privacy: .public))")
+        }
+        Task { @MainActor in
+            lastRefreshAt = date
+        }
+    }
+
     // MARK: - Body
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             TimelineView(.periodic(from: .now, by: 1)) { context in
+                let _ = noteRefresh(at: context.date)
                 VStack(alignment: .leading, spacing: 10) {
                     if runner.isRunning {
                         HStack(spacing: 8) {
