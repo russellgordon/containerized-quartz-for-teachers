@@ -111,3 +111,53 @@ final class CourseRestorerTests: XCTestCase {
         }
     }
 }
+
+/// What an archive leaves out.
+final class ArchiveExclusionTests: XCTestCase {
+
+    // MARK: - Functions
+
+    /// Lists an archive's entries using the system's own tool.
+    func entries(in archiveURL: URL) throws -> String {
+        let lister: Process = Process()
+        lister.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
+        lister.arguments = ["-l", archiveURL.path]
+        let output: Pipe = Pipe()
+        lister.standardOutput = output
+        try lister.run()
+        let data: Data = output.fileHandleForReading.readDataToEndOfFile()
+        lister.waitUntilExit()
+        return String(data: data, encoding: .utf8) ?? ""
+    }
+
+    @MainActor
+    func testBuiltOutputIsLeftOutOfAnArchive() throws {
+        let root: URL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("exclude-\(UUID().uuidString)")
+        let coursesURL: URL = root.appendingPathComponent("courses")
+        let courseURL: URL = coursesURL.appendingPathComponent("IZN2O")
+        let fileManager: FileManager = FileManager.default
+        defer { try? fileManager.removeItem(at: root) }
+
+        // The course a teacher wrote…
+        try fileManager.createDirectory(at: courseURL.appendingPathComponent("section1"), withIntermediateDirectories: true)
+        try "# real work".write(to: courseURL.appendingPathComponent("section1/index.md"), atomically: true, encoding: .utf8)
+        let configuration: [String: Any] = ["course_code": "IZN2O", "section_numbers": [1]]
+        try JSONSerialization.data(withJSONObject: configuration).write(to: courseURL.appendingPathComponent("course_config.json"))
+
+        // …and the parts that are rebuilt, which should not be archived.
+        try fileManager.createDirectory(at: courseURL.appendingPathComponent(".merged_output/section1/public"), withIntermediateDirectories: true)
+        try "built".write(to: courseURL.appendingPathComponent(".merged_output/section1/public/index.html"), atomically: true, encoding: .utf8)
+        try fileManager.createDirectory(at: courseURL.appendingPathComponent(".merged_output/section1/node_modules/left-pad"), withIntermediateDirectories: true)
+        try "dep".write(to: courseURL.appendingPathComponent(".merged_output/section1/node_modules/left-pad/index.js"), atomically: true, encoding: .utf8)
+
+        let loaded: CourseConfiguration = try CourseConfiguration(contentsOf: courseURL.appendingPathComponent("course_config.json"))
+        let course: Course = Course(code: "IZN2O", directoryURL: courseURL, configuration: loaded)
+        let archiveURL: URL = try CourseArchiver.archiveAndRemoveCourse(course, coursesDirectoryURL: coursesURL)
+
+        let listing: String = try entries(in: archiveURL)
+        XCTAssertTrue(listing.contains("section1/index.md"), "The teacher's own work must be archived")
+        XCTAssertTrue(listing.contains("course_config.json"), "So must the course's settings")
+        XCTAssertFalse(listing.contains("index.html"), "Built output must not be archived — it is rebuilt from the content")
+        XCTAssertFalse(listing.contains("node_modules"), "Nor its dependencies")
+    }
+}

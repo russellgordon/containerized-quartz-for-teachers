@@ -20,11 +20,15 @@ final class HitAreaTests: XCTestCase {
 
     @MainActor
     func testTheFooterButtonsAreBigEnoughToHit() async throws {
-        guard WorkspaceModel.windowModels.first != nil else {
+        guard let workspace = WorkspaceModel.windowModels.first else {
             throw XCTSkip("The interface is not on screen in this run")
         }
-        // Let the window settle so the footer has been laid out.
-        try await Task.sleep(for: .milliseconds(400))
+        // Put the window on a fixture folder with courses in it. Without
+        // this the test measures whatever folder the teacher happened to
+        // leave the app in — and an empty one shows the folder picker,
+        // which has no sidebar and therefore no buttons to measure.
+        workspace.chooseWorkspace(at: try FixtureWorkspace.materialize())
+        try await Task.sleep(for: .milliseconds(500))
 
         for identifier in ["addCourseButton", "removeSelectedButton"] {
             guard let rectangle = AccessibilityInspector.frame(forIdentifier: identifier) else {

@@ -53,6 +53,25 @@ enum CourseArchiver {
         return archiveURL
     }
 
+    /// Things that are rebuilt rather than written, and so are left out of
+    /// an archive. `.merged_output` is the important one: it holds a whole
+    /// Quartz checkout with its dependencies, which dwarfs the course a
+    /// teacher actually wrote and can always be produced again.
+    ///
+    /// The same list the setup wizard uses for its own backups.
+    static let excludedFromArchives: [String] = [
+        ".merged_output",
+        "node_modules",
+        ".git",
+        ".quartz-cache",
+        ".cache",
+        "dist",
+        "build",
+        "out",
+        "__pycache__",
+        ".DS_Store",
+    ]
+
     /// Zips a folder into `courses/_backups/<CODE>/<name>.zip`.
     private static func archive(
         folderURL: URL,
@@ -66,23 +85,32 @@ enum CourseArchiver {
         try FileManager.default.createDirectory(at: backupsURL, withIntermediateDirectories: true)
         let archiveURL: URL = backupsURL.appendingPathComponent(archiveName)
 
-        // NSFileCoordinator's "for uploading" reading intent hands back a
-        // zip of the folder — the system's own archiver, no dependencies.
-        var coordinatorError: NSError?
-        var copyError: Error?
-        let coordinator: NSFileCoordinator = NSFileCoordinator()
-        coordinator.coordinate(readingItemAt: folderURL, options: [.forUploading], error: &coordinatorError) { temporaryZipURL in
-            do {
-                try FileManager.default.copyItem(at: temporaryZipURL, to: archiveURL)
-            } catch {
-                copyError = error
-            }
+        // Zipped with the system's own tool rather than NSFileCoordinator,
+        // because this one can leave things out — and a course's built
+        // output is many times the size of the course itself.
+        var arguments: [String] = ["-r", "-q", "-X", archiveURL.path, folderURL.lastPathComponent]
+        arguments.append("-x")
+        for name in excludedFromArchives {
+            arguments.append("*/\(name)/*")
+            arguments.append("*/\(name)")
         }
-        if let coordinatorError {
-            throw coordinatorError
-        }
-        if let copyError {
-            throw copyError
+
+        let zipper: Process = Process()
+        zipper.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
+        zipper.arguments = arguments
+        zipper.currentDirectoryURL = folderURL.deletingLastPathComponent()
+        let errors: Pipe = Pipe()
+        zipper.standardError = errors
+        try zipper.run()
+        zipper.waitUntilExit()
+        if zipper.terminationStatus != 0 {
+            let data: Data = errors.fileHandleForReading.readDataToEndOfFile()
+            let reason: String = String(data: data, encoding: .utf8) ?? "unknown error"
+            throw NSError(
+                domain: "CourseArchiver",
+                code: Int(zipper.terminationStatus),
+                userInfo: [NSLocalizedDescriptionKey: "Could not write the archive: \(reason.trimmingCharacters(in: .whitespacesAndNewlines))"]
+            )
         }
         return archiveURL
     }
