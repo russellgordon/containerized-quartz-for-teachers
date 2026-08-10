@@ -16,6 +16,10 @@ struct WindowRootView: View {
     /// This window's own model. Each window has one.
     @State var workspace: WorkspaceModel = WorkspaceModel()
 
+    /// Identifies this window in the log, so two windows restoring the same
+    /// folder can be told from one window logging twice.
+    @State var windowIdentity: String = String(UUID().uuidString.prefix(4))
+
     // MARK: - Body
 
     var body: some View {
@@ -24,6 +28,9 @@ struct WindowRootView: View {
             .focusedSceneValue(\.workspace, workspace)
             .onAppear {
                 WorkspaceModel.registerWindowModel(workspace)
+                AppLog.interface.info("""
+                    window \(windowIdentity, privacy: .public) appeared —                     scene storage: "\(restoredWorkspacePath, privacy: .public)",                     last-used: "\(workspace.workspaceURL?.path ?? "", privacy: .public)"
+                    """)
                 // A restored window returns to its own folder; a brand new
                 // one starts from the last folder chosen anywhere.
                 if restoredWorkspacePath.isEmpty {
@@ -33,6 +40,9 @@ struct WindowRootView: View {
                 }
             }
             .onChange(of: workspace.workspaceURL) {
+                AppLog.interface.info("""
+                    window \(windowIdentity, privacy: .public) chose                     "\(workspace.workspaceURL?.path ?? "", privacy: .public)" — writing it to scene storage
+                    """)
                 restoredWorkspacePath = workspace.workspaceURL?.path ?? ""
             }
     }
