@@ -147,7 +147,11 @@ struct TaskProgressView: View {
                             Text(title)
                                 .font(.headline)
                             Spacer()
-                            if exitCode == 0 {
+                            if runner.wasCancelled {
+                                Label("Cancelled", systemImage: "xmark.circle.fill")
+                                    .foregroundStyle(.orange)
+                                    .accessibilityIdentifier("cancelledNotice")
+                            } else if exitCode == 0 {
                                 Label("Done", systemImage: "checkmark.circle.fill")
                                     .foregroundStyle(.green)
                             } else {
@@ -156,8 +160,13 @@ struct TaskProgressView: View {
                             }
                         }
 
+                        if runner.wasCancelled {
+                            Text("\(title) was cancelled. Nothing else was changed.")
+                                .foregroundStyle(.secondary)
+                        }
+
                         // Finish with something to click: the live site.
-                        if exitCode == 0, let siteURL = runner.publishedSiteURL {
+                        if !runner.wasCancelled, exitCode == 0, let siteURL = runner.publishedSiteURL {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Your website is live.")
                                 Link(siteURL.absoluteString, destination: siteURL)
@@ -170,6 +179,13 @@ struct TaskProgressView: View {
                         Label("Waiting for your answer…", systemImage: "questionmark.bubble")
                             .foregroundStyle(.orange)
                             .accessibilityIdentifier("awaitingInputNotice")
+                    }
+
+                    // The task is stopping itself; say so while it does.
+                    if runner.wasCancelled && runner.isRunning {
+                        Label("Cancelling…", systemImage: "xmark.circle")
+                            .foregroundStyle(.orange)
+                            .accessibilityIdentifier("cancellingNotice")
                     }
 
                     if let problem = runner.launchProblem {
@@ -223,7 +239,9 @@ struct TaskProgressView: View {
                 answer = ""
             }
             Button("Cancel", role: .cancel) {
-                runner.isAwaitingInput = false
+                // Let the task stop the way it stops itself, so its own
+                // clean-up runs.
+                runner.cancelPendingQuestion()
             }
         } message: {
             Text(runner.pendingQuestion)
@@ -238,7 +256,7 @@ struct TaskProgressView: View {
         .onChange(of: runner.lastExitCode) {
             // A failure is worth reading about: open the details.
             if let exitCode = runner.lastExitCode {
-                if exitCode != 0 {
+                if exitCode != 0 && !runner.wasCancelled {
                     isShowingDetails = true
                 }
             }

@@ -67,6 +67,38 @@ final class ScriptRunnerStatusTests: XCTestCase {
     }
 
     @MainActor
+    func testTheScriptsOwnCancelKeyIsRemembered() {
+        let asked = ScriptRunner.separateDefaultAnswer(from: "Choose a different Netlify site name (or 'q' to cancel) [ics3u-s3-2026-gordon-01]:")
+        XCTAssertEqual(asked.cancelToken, "q", "The key the script accepts must survive being hidden from the wording")
+    }
+
+    @MainActor
+    func testNoCancelKeyWhenTheScriptOffersNone() {
+        let asked = ScriptRunner.separateDefaultAnswer(from: "Enter your Netlify access token:")
+        XCTAssertEqual(asked.cancelToken, "")
+    }
+
+    @MainActor
+    func testCancellingWithoutAWayOutJustDismissesTheQuestion() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.isAwaitingInput = true
+        runner.pendingCancelToken = ""
+        runner.cancelPendingQuestion()
+        XCTAssertFalse(runner.isAwaitingInput)
+        XCTAssertFalse(runner.wasCancelled, "Nothing was sent, so nothing was cancelled")
+    }
+
+    @MainActor
+    func testCancellingMarksTheTaskAsCancelled() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.isAwaitingInput = true
+        runner.pendingCancelToken = "q"
+        runner.cancelPendingQuestion()
+        XCTAssertTrue(runner.wasCancelled)
+        XCTAssertFalse(runner.isAwaitingInput)
+    }
+
+    @MainActor
     func testInformativeParentheticalsSurvive() {
         let asked = ScriptRunner.separateDefaultAnswer(from: "Overwrite the existing folder (y/n)?")
         XCTAssertEqual(asked.question, "Overwrite the existing folder (y/n)?")

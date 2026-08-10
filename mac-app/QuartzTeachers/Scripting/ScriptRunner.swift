@@ -34,6 +34,15 @@ class ScriptRunner {
     var isAwaitingInput: Bool = false
     var pendingQuestion: String = ""
 
+    /// What the script itself accepts as "cancel" at this question, when
+    /// it offered one. Sending it lets the script wind itself down and
+    /// tidy up, rather than being killed mid-step.
+    var pendingCancelToken: String = ""
+
+    /// True when the teacher backed out of a question and the script was
+    /// told to stop the way it stops itself.
+    var wasCancelled: Bool = false
+
     /// The answer the script would use if the teacher simply agreed —
     /// what it showed in square brackets. Offered in the answer field
     /// rather than left in the wording of the question.
@@ -82,6 +91,7 @@ class ScriptRunner {
         }
         lastExitCode = nil
         launchProblem = nil
+        wasCancelled = false
 
         let scriptURL: URL = workingDirectory.appendingPathComponent(scriptName)
         if !FileManager.default.fileExists(atPath: scriptURL.path) {
@@ -163,6 +173,18 @@ class ScriptRunner {
         }
         let data: Data = Data((line + "\n").utf8)
         try? terminal.masterHandle.write(contentsOf: data)
+    }
+
+    /// Backs out of the question the way the script's own cancel option
+    /// would, so its clean-up runs. Without such an option there is
+    /// nothing safe to send, so the question is simply dismissed.
+    func cancelPendingQuestion() {
+        if pendingCancelToken.isEmpty {
+            isAwaitingInput = false
+            return
+        }
+        wasCancelled = true
+        send(line: pendingCancelToken)
     }
 
     /// Sends raw text (no newline added) to the script.
@@ -282,6 +304,7 @@ class ScriptRunner {
                     let asked = ScriptRunner.separateDefaultAnswer(from: line)
                     self.pendingQuestion = asked.question
                     self.suggestedAnswer = asked.suggestedAnswer
+                    self.pendingCancelToken = asked.cancelToken
                     self.isAwaitingInput = true
                 }
             }
@@ -336,12 +359,12 @@ class ScriptRunner {
     /// "Enter Netlify site name:" with "ics3u-s3-2026-gordon" waiting in
     /// the answer field, ready to accept or type over. That reads as a
     /// filled-in form rather than as instructions to follow.
-    static func separateDefaultAnswer(from question: String) -> (question: String, suggestedAnswer: String) {
+    static func separateDefaultAnswer(from question: String) -> AskedQuestion {
         guard let openIndex = question.lastIndex(of: "["), let closeIndex = question.lastIndex(of: "]") else {
-            return (ScriptRunner.asked(question), "")
+            return AskedQuestion(question: ScriptRunner.asked(question), suggestedAnswer: "", cancelToken: ScriptRunner.cancelToken(in: question))
         }
         if openIndex >= closeIndex {
-            return (ScriptRunner.asked(question), "")
+            return AskedQuestion(question: ScriptRunner.asked(question), suggestedAnswer: "", cancelToken: ScriptRunner.cancelToken(in: question))
         }
         var offered: String = String(question[question.index(after: openIndex)..<closeIndex]).trimmingCharacters(in: .whitespaces)
 
@@ -351,18 +374,79 @@ class ScriptRunner {
             offered = String(offered.dropFirst(defaultLabel.count)).trimmingCharacters(in: .whitespaces)
         }
         if offered.isEmpty {
-            return (ScriptRunner.asked(question), "")
+            return AskedQuestion(question: ScriptRunner.asked(question), suggestedAnswer: "", cancelToken: ScriptRunner.cancelToken(in: question))
         }
         // "[Y/n]" lists choices rather than naming a value, so the
         // wording keeps it and nothing is filled in.
         if offered.contains("/") {
-            return (ScriptRunner.asked(question), "")
+            return AskedQuestion(question: ScriptRunner.asked(question), suggestedAnswer: "", cancelToken: ScriptRunner.cancelToken(in: question))
         }
 
         var wording: String = String(question[question.startIndex..<openIndex]).trimmingCharacters(in: .whitespaces)
         let afterBracket: String = String(question[question.index(after: closeIndex)...]).trimmingCharacters(in: .whitespaces)
         wording += afterBracket
-        return (ScriptRunner.asked(wording), offered)
+        return AskedQuestion(question: ScriptRunner.asked(wording), suggestedAnswer: offered, cancelToken: ScriptRunner.cancelToken(in: question))
+    }
+
+    /// The key the script offered as a way out, such as the "q" in
+    /// "(or 'q' to cancel)". Empty when it offered none.
+    static func cancelToken(in question: String) -> String {
+        var token: String = ""
+        var aside: String = ""
+        var depth: Int = 0
+        for character in question {
+            if character == "(" {
+                depth += 1
+                if depth == 1 {
+                    aside = ""
+                    continue
+                }
+            }
+            if character == ")" && depth > 0 {
+                depth -= 1
+                if depth == 0 {
+                    if ScriptRunner.offersAWayOut(aside) {
+                        let quoted: String = ScriptRunner.quotedText(in: aside)
+                        if !quoted.isEmpty {
+                            token = quoted
+                        }
+                    }
+                    continue
+                }
+            }
+            if depth > 0 {
+                aside.append(character)
+            }
+        }
+        return token
+    }
+
+    /// True when a parenthetical offers a way to abandon the task.
+    static func offersAWayOut(_ aside: String) -> Bool {
+        let wording: String = aside.lowercased()
+        if wording.contains("cancel") || wording.contains("quit") {
+            return true
+        }
+        return false
+    }
+
+    /// The text between the first pair of quotation marks.
+    static func quotedText(in text: String) -> String {
+        var collected: String = ""
+        var isInsideQuotes: Bool = false
+        for character in text {
+            if character == "\'" || character == "\"" {
+                if isInsideQuotes {
+                    return collected
+                }
+                isInsideQuotes = true
+                continue
+            }
+            if isInsideQuotes {
+                collected.append(character)
+            }
+        }
+        return ""
     }
 
     /// The wording as a dialog should ask it.
