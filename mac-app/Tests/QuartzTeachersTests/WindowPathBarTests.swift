@@ -32,7 +32,7 @@ final class WindowPathBarTests: XCTestCase {
             if label.contains("Folder location: \(folderURL.path)") {
                 mentionsTheFolder = true
             }
-            if label == "Working folder" {
+            if label == "Working folder:" {
                 carriesItsLabel = true
             }
         }

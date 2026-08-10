@@ -66,7 +66,7 @@ struct MainWindowView: View {
         if let workspaceURL = workspace.workspaceURL {
             Divider()
             HStack(spacing: 8) {
-                Text("Working folder")
+                Text("Working folder:")
                     .font(.body.bold())
                 FinderPathBarView(folderURL: workspaceURL)
             }
