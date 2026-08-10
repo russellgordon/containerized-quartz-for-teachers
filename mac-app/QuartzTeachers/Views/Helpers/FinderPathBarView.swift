@@ -53,14 +53,14 @@ struct FinderPathBarView: View {
                     FinderPathBarView.openInFinder(ancestorPaths[index])
                 }
                 .contextMenu {
-                    // The same symbol the sidebar's folder menu uses, so one
-                    // action reads the same wherever it appears.
-                    Button("Show in Finder", systemImage: "folder") {
+                    // Finder's own glyph, as Xcode uses for this action, and
+                    // the same symbol wherever this appears in the app.
+                    Button("Show in Finder", systemImage: "finder") {
                         FinderPathBarView.revealInFinder(ancestorPaths[index])
                     }
-                    // A window opening at that folder, which is what this
-                    // does — as against revealing the folder in its parent.
-                    Button("Open Folder", systemImage: "macwindow") {
+                    // The "opens elsewhere" arrow, as against revealing the
+                    // folder inside its parent.
+                    Button("Open Folder", systemImage: "arrow.up.forward.app") {
                         FinderPathBarView.openInFinder(ancestorPaths[index])
                     }
                 }

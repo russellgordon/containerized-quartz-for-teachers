@@ -1,0 +1,30 @@
+import XCTest
+import AppKit
+@testable import QuartzTeachers
+
+/// Menu symbols have to exist, or the item silently renders without one.
+final class MenuSymbolTests: XCTestCase {
+
+    // MARK: - Functions
+
+    @MainActor
+    func testEverySymbolUsedInAMenuExists() {
+        let symbols: [String] = [
+            "finder",                 // Show in Finder
+            "arrow.up.forward.app",   // Open Folder
+            "terminal",               // New Terminal at Folder
+            "arrow.uturn.backward",   // Restore
+            "plus",                   // Add course
+            "minus",                  // Remove selected
+            "archivebox",             // Archived
+            "books.vertical",         // A course
+            "doc.richtext",           // A section
+        ]
+        for name in symbols {
+            XCTAssertNotNil(
+                NSImage(systemSymbolName: name, accessibilityDescription: nil),
+                "\(name) is not a symbol this system knows — the menu item would show no icon at all"
+            )
+        }
+    }
+}

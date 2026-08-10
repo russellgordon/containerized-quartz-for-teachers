@@ -67,7 +67,7 @@ struct SidebarView: View {
                                     Button("Restore…", systemImage: "arrow.uturn.backward") {
                                         workspace.restoreRequest = item
                                     }
-                                    Button("Show in Finder", systemImage: "folder") {
+                                    Button("Show in Finder", systemImage: "finder") {
                                         NSWorkspace.shared.activateFileViewerSelecting([item.fileURL])
                                     }
                                 }
@@ -233,7 +233,7 @@ struct SidebarView: View {
     /// The shared context-menu items for a course or section folder.
     @ViewBuilder
     func folderMenuItems(for folderURL: URL) -> some View {
-        Button("Show in Finder", systemImage: "folder") {
+        Button("Show in Finder", systemImage: "finder") {
             FolderActions.showInFinder(folderURL)
         }
         Button("New Terminal at Folder", systemImage: "terminal") {

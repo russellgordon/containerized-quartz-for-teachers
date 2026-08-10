@@ -82,10 +82,10 @@ struct MainWindowView: View {
             // Right-clicking anywhere on the strip — not only on a folder
             // — offers the working folder itself.
             .contextMenu {
-                Button("Show in Finder", systemImage: "folder") {
+                Button("Show in Finder", systemImage: "finder") {
                     FinderPathBarView.revealInFinder(workspaceURL.path)
                 }
-                Button("Open Working Folder", systemImage: "macwindow") {
+                Button("Open Working Folder", systemImage: "arrow.up.forward.app") {
                     FinderPathBarView.openInFinder(workspaceURL.path)
                 }
             }
