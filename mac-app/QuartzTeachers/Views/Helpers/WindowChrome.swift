@@ -14,9 +14,12 @@ enum WindowChrome {
     /// The sidebar's footer stops short of the window's bottom edge, because
     /// the split view insets the sidebar; the path bar opposite it sits
     /// flush. The path bar therefore has to be this much taller for the two
-    /// dividers to meet on one line. Measured from a screenshot at the
-    /// standard text size — 10 pixels at 1.41x.
-    static let sidebarBottomInset: CGFloat = 7
+    /// rules to meet on one line.
+    ///
+    /// Measured from screenshots at the standard text size, by finding the
+    /// darkest row under each side: the last half point is one device pixel
+    /// on a 2x display, which is as close as the two can be brought.
+    static let sidebarBottomInset: CGFloat = 7.5
 
     /// The height of the path bar strip, divider to window edge.
     static let pathBarHeight: CGFloat = footerHeight + sidebarBottomInset
