@@ -362,7 +362,14 @@ offer_newer_image() {
     echo "   Run '${SELF_CMD} --update-image' when you would like to install it."
     return 0
   fi
-  read -r -p "   Install it now? (y/n) [Default: y]: " answer || answer=""
+  # A failed read means end-of-input — nobody is there to answer. Pressing
+  # Return, by contrast, succeeds with an empty answer and takes the default.
+  # Without this distinction an automated run silently accepts the update.
+  if ! read -r -p "   Install it now? (y/n) [Default: y]: " answer; then
+    echo
+    echo "   No answer given, so the version you have is being kept."
+    return 0
+  fi
   case "${answer:-y}" in
     [Nn]*)
       echo "   Keeping the version you have."
