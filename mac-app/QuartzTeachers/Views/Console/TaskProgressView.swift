@@ -19,19 +19,21 @@ struct TaskProgressView: View {
 
     /// When the header last refreshed, so a stalled main thread shows up
     /// in the log as a gap rather than only as a blank window.
-    @State var lastRefreshAt: Date = Date()
+    ///
+    /// Held in a plain class, NOT in @State: writing observed state while
+    /// a body is being evaluated invalidates the view and re-evaluates
+    /// the body, which spins the main thread forever.
+    @State var refreshTracker: RefreshTracker = RefreshTracker()
 
     // MARK: - Functions
 
     /// Records each refresh; a long gap means the interface was stalled.
     func noteRefresh(at date: Date) {
-        let gap: TimeInterval = date.timeIntervalSince(lastRefreshAt)
+        let gap: TimeInterval = date.timeIntervalSince(refreshTracker.lastRefreshAt)
         if gap > 3 {
             AppLog.interface.error("Interface stalled for \(gap, format: .fixed(precision: 1))s (task: \(title, privacy: .public))")
         }
-        Task { @MainActor in
-            lastRefreshAt = date
-        }
+        refreshTracker.lastRefreshAt = date
     }
 
     // MARK: - Body
