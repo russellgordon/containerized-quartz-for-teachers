@@ -8,6 +8,9 @@ struct MainWindowView: View {
 
     @Environment(WorkspaceModel.self) var workspace
 
+    /// Matches the sidebar's footer, so both dividers sit on one line.
+    @ScaledMetric(relativeTo: .body) var scaledFooterHeight: CGFloat = WindowChrome.footerHeight
+
     // MARK: - Body
 
     var body: some View {
@@ -59,8 +62,7 @@ struct MainWindowView: View {
             Divider()
             FinderPathBarView(folderURL: workspaceURL)
                 .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, minHeight: scaledFooterHeight, maxHeight: scaledFooterHeight, alignment: .leading)
                 .background(.bar)
                 .help(workspaceURL.path)
                 .accessibilityIdentifier("windowPathBar")

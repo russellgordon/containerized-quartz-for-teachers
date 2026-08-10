@@ -16,6 +16,10 @@ struct SidebarView: View {
     /// A failure while archiving, shown as an alert.
     @State var removalProblem: String?
 
+    /// The footer's height, growing with the system text size so the bar
+    /// and the path bar opposite it stay the same height.
+    @ScaledMetric(relativeTo: .body) var scaledFooterHeight: CGFloat = WindowChrome.footerHeight
+
     /// Whether the Archived group is open. Closed by default: it is a place
     /// to go looking, not something to step over on the way to today's work.
     @State var isShowingArchived: Bool = false
@@ -182,7 +186,7 @@ struct SidebarView: View {
                 .accessibilityIdentifier("courseFilterField")
         }
         .padding(.horizontal, 8)
-        .padding(.vertical, 6)
+        .frame(height: scaledFooterHeight)
     }
 
     // MARK: - Computed properties

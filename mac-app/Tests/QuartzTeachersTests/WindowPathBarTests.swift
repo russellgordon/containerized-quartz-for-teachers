@@ -23,6 +23,10 @@ final class WindowPathBarTests: XCTestCase {
         XCTAssertGreaterThan(rectangle.width, 200, "It should span the detail column")
         XCTAssertGreaterThan(rectangle.height, 10, "It should be a visible strip")
 
+        // Both footers are declared from one constant, which is what keeps
+        // their dividers on the same line across the window.
+        XCTAssertGreaterThanOrEqual(WindowChrome.footerHeight, 28, "A footer needs room for a 24pt button")
+
         let labels: [String] = AccessibilityInspector.collectAllLabels()
         var mentionsTheFolder: Bool = false
         for label in labels {
