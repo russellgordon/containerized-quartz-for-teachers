@@ -1,4 +1,4 @@
-name: QuartzTeachers
+name: Plantoir
 options:
   bundleIdPrefix: ca.russellgordon
   deploymentTarget:
@@ -65,7 +65,7 @@ targets:
     info:
       path: QuartzTeachers/Info.plist
       properties:
-        CFBundleDisplayName: Containerized Quartz for Teachers
+        CFBundleDisplayName: Plantoir
         CFBundleShortVersionString: "1.0"
         CFBundleVersion: "1"
         LSApplicationCategoryType: public.app-category.education
@@ -75,7 +75,10 @@ targets:
         NSHumanReadableCopyright: "MIT License"
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: ca.russellgordon.QuartzTeachers
+        PRODUCT_BUNDLE_IDENTIFIER: ca.russellgordon.Plantoir
+        # The user-facing name; the module stays QuartzTeachers internally.
+        PRODUCT_NAME: Plantoir
+        PRODUCT_MODULE_NAME: QuartzTeachers
         ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
 
   QuartzTeachersTests:
@@ -99,7 +102,7 @@ targets:
     settings:
       base:
         SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/QuartzTeachers.app/Contents/MacOS/QuartzTeachers"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Plantoir.app/Contents/MacOS/Plantoir"
         BUNDLE_LOADER: "$(TEST_HOST)"
 
   QuartzTeachersUITests:
@@ -123,7 +126,7 @@ targets:
         SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
 
 schemes:
-  QuartzTeachers:
+  Plantoir:
     build:
       targets:
         QuartzTeachers: all

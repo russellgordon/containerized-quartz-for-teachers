@@ -205,6 +205,7 @@ class WorkspaceModel {
             self.workspaceURL = URL(fileURLWithPath: fixturePath)
         } else {
             self.isUnderUITest = false
+            WorkspaceModel.migratePreferencesFromOldName(into: defaults)
             if let storedPath = defaults.string(forKey: WorkspaceModel.storedPathKey) {
                 // A folder that has since been deleted or renamed is worse
                 // than none: the app would claim a working folder it cannot
@@ -232,6 +233,27 @@ class WorkspaceModel {
             return false
         }
         return true
+    }
+
+    /// Brings settings across from the app's earlier bundle identifier
+    /// (ca.russellgordon.QuartzTeachers), once, so renaming the app does
+    /// not cost anyone their working folder or remembered windows.
+    static func migratePreferencesFromOldName(into defaults: UserDefaults) {
+        if isRunningTests || defaults != UserDefaults.standard {
+            return
+        }
+        if defaults.string(forKey: storedPathKey) != nil {
+            return
+        }
+        guard let old = UserDefaults(suiteName: "ca.russellgordon.QuartzTeachers") else {
+            return
+        }
+        if let path = old.string(forKey: storedPathKey) {
+            defaults.set(path, forKey: storedPathKey)
+        }
+        if let folders = old.array(forKey: WindowFolderMemory.storageKey) {
+            defaults.set(folders, forKey: WindowFolderMemory.storageKey)
+        }
     }
 
     /// True when a folder is actually there to be worked in.

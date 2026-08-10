@@ -3,12 +3,12 @@ import OSLog
 
 /// Runtime logging, viewable in Console.app by filtering on the
 /// subsystem below (or from a terminal with:
-/// `log stream --predicate 'subsystem == "ca.russellgordon.QuartzTeachers"'`).
+/// `log stream --predicate 'subsystem == "ca.russellgordon.Plantoir"'`).
 enum AppLog {
 
     // MARK: - Stored properties
 
-    static let subsystem: String = "ca.russellgordon.QuartzTeachers"
+    static let subsystem: String = "ca.russellgordon.Plantoir"
 
     /// Script output arriving, coalescing, and milestone progress.
     static let output: Logger = Logger(subsystem: subsystem, category: "output")

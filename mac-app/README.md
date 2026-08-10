@@ -1,4 +1,4 @@
-# Containerized Quartz for Teachers — macOS App
+# Plantoir — the macOS App for Containerized Quartz for Teachers
 
 A native macOS app (Swift / SwiftUI) that wraps the command-line toolchain in
 a friendlier interface. **The app contains no toolchain logic of its own**: it
@@ -24,7 +24,7 @@ Requires Xcode 26+ and [XcodeGen](https://github.com/yonaskolb/XcodeGen)
 ```bash
 cd mac-app
 xcodegen generate
-open QuartzTeachers.xcodeproj    # or: xcodebuild -scheme QuartzTeachers build
+open Plantoir.xcodeproj    # or: xcodebuild -scheme Plantoir build
 ```
 
 ## Testing
@@ -33,7 +33,7 @@ Three layers, matching how much environment each needs:
 
 ```bash
 # 1. Unit tests (fast, no Docker): config round-trip, transcript handling
-xcodebuild -project QuartzTeachers.xcodeproj -scheme QuartzTeachers test \
+xcodebuild -project Plantoir.xcodeproj -scheme Plantoir test \
   -only-testing:QuartzTeachersTests/CourseConfigurationTests \
   -only-testing:QuartzTeachersTests/TranscriptBuilderTests
 
@@ -41,13 +41,13 @@ xcodebuild -project QuartzTeachers.xcodeproj -scheme QuartzTeachers test \
 #    verifies the sidebar via the accessibility tree; needs a fixture folder)
 TEST_RUNNER_UITEST_WORKSPACE=/path/to/fixture \
 TEST_RUNNER_UITEST_SCREENSHOT_DIR=/tmp/shots \
-xcodebuild -project QuartzTeachers.xcodeproj -scheme QuartzTeachers test \
+xcodebuild -project Plantoir.xcodeproj -scheme Plantoir test \
   -only-testing:QuartzTeachersTests/InAppUserInterfaceTests
 
 # 3. CLI-equivalence integration tests (need Docker/Colima and the repo
 #    workspace; build results are compared against command-line runs)
 TEST_RUNNER_INTEGRATION_WORKSPACE=/path/to/repo \
-xcodebuild -project QuartzTeachers.xcodeproj -scheme QuartzTeachers test \
+xcodebuild -project Plantoir.xcodeproj -scheme Plantoir test \
   -only-testing:QuartzTeachersTests/ScriptRunnerIntegrationTests \
   -only-testing:QuartzTeachersTests/NewCourseCreatorIntegrationTests
 ```
@@ -55,7 +55,7 @@ xcodebuild -project QuartzTeachers.xcodeproj -scheme QuartzTeachers test \
 > **Tip:** stop any copy of the app running under Xcode's debugger (⏹)
 > before running the UI tests — a debugged instance cannot be terminated
 > by the test runner, which fails the first UI test with
-> "Failed to terminate ca.russellgordon.QuartzTeachers".
+> "Failed to terminate ca.russellgordon.Plantoir".
 
 There is also a conventional **XCUITest** suite (`QuartzTeachersUITests`)
 that drives the app with synthesized clicks. Running it requires a one-time
