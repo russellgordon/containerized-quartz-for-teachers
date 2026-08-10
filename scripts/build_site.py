@@ -4,6 +4,7 @@ import shutil
 import argparse
 import frontmatter
 import subprocess
+import signal
 import json
 import re
 from pathlib import Path
@@ -702,15 +703,22 @@ def toggle_custom_og_images(config_path: str, enable: bool):
 
 
 def kill_existing_quartz():
+    # Signal the process directly rather than shelling out to `kill`:
+    # `kill` is a shell builtin, and the /bin/kill binary (procps) is not
+    # installed in this image, so subprocess could not find it.
     try:
         output = subprocess.check_output(["lsof", "-ti", ":8081"])
-        pids = output.decode().strip().split("\n")
-        for pid in pids:
-            if pid:
-                subprocess.run(["kill", "-9", pid])
-                print(f"🛑 Killed existing process on port 8081 (PID: {pid})")
-    except subprocess.CalledProcessError:
-        pass
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return
+    pids = output.decode().strip().split("\n")
+    for pid in pids:
+        if not pid:
+            continue
+        try:
+            os.kill(int(pid), signal.SIGKILL)
+            print(f"🛑 Killed existing process on port 8081 (PID: {pid})")
+        except (ValueError, ProcessLookupError, PermissionError) as e:
+            print(f"⚠️ Could not stop process {pid} on port 8081: {e}")
 
 
 # --- HARDENING TWEAK #1: Future-proof omit replacement (update all matches) --
