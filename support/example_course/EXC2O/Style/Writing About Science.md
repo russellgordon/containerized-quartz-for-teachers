@@ -7,8 +7,6 @@ enableToc: true
 tags:
   - skills
 ---
-# Writing About Science
-
 Scientific writing is not fancy writing. It is writing that cannot be
 misunderstood.
 

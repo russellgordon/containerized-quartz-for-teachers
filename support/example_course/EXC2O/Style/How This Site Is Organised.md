@@ -7,8 +7,6 @@ enableToc: true
 tags:
   - reference
 ---
-# How This Site Is Organised
-
 There are two kinds of page here, and knowing which is which makes the site
 much easier to use.
 

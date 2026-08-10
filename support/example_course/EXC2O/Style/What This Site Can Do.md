@@ -7,8 +7,6 @@ enableToc: true
 tags:
   - reference
 ---
-# What This Site Can Do
-
 This page exists for two audiences. Students: it shows why the notes look the
 way they do. Teachers: it is a working reference for everything you can put in a
 page, with the source visible in every example.
