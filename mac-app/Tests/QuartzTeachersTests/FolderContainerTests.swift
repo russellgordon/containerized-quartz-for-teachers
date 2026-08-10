@@ -66,3 +66,27 @@ final class FolderContainerTests: XCTestCase {
         XCTAssertFalse(WorkspaceModel.folderIsInUse(folder), "Now nobody does — the container can rest")
     }
 }
+
+/// What happens to the shared VM at quit.
+final class QuitScriptTests: XCTestCase {
+
+    // MARK: - Functions
+
+    @MainActor
+    func testTheVMStopsOnlyWhenNothingElseRuns() {
+        let script: String = FolderContainers.quitScript(containerNames: ["teaching-quartz-abc12345"])
+        XCTAssertTrue(script.contains("docker stop -t 2 teaching-quartz-abc12345"))
+        XCTAssertTrue(script.contains("docker ps -q"), "The emptiness check is the safety: Colima is shared")
+        XCTAssertTrue(script.contains("colima stop"))
+        let stopIndex = script.range(of: "docker stop")!.lowerBound
+        let checkIndex = script.range(of: "docker ps -q")!.lowerBound
+        XCTAssertLessThan(stopIndex, checkIndex, "Our containers stop BEFORE the emptiness check, or the check always fails")
+    }
+
+    @MainActor
+    func testAMachineWithoutColimaIsLeftAlone() {
+        let script: String = FolderContainers.quitScript(containerNames: [])
+        XCTAssertTrue(script.contains("command -v colima"), "Docker Desktop users have no colima to stop")
+        XCTAssertFalse(script.contains("docker stop"), "No containers of ours, nothing of ours to stop")
+    }
+}

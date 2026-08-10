@@ -147,6 +147,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 68 | 2026-08-10 | First run after the port work failed with "Unknown option: --port" — the working folder's own copy of `preview.sh` was months stale. Folders take a snapshot of the launchers at setup and never see an update again. | ✅ Implemented — whenever the app works in a folder, any launcher that differs from the app's bundled (current) copy is replaced, executable bit preserved. Only files that already exist are touched — a folder with no launchers has never been initialized, which is the picker's business — and test fixtures with stub launchers are left alone. This closes the last of the staleness family: image (offered), container (recreated), launchers (refreshed). | Same refresh on the Windows app, from its bundled .ps1 copies. |
 
+| 69 | 2026-08-10 | With the app closed and nothing else in Colima, the VM's reserved memory kept being spent for nobody. | ✅ Implemented — quitting runs one detached script: stop this app's containers, then, only if `docker ps -q` comes back EMPTY, `colima stop`. The emptiness check is the safety — Colima is shared, and another project's stack must never lose its VM — and the sequencing matters: our containers stop before the check, or the check could never pass. Machines without colima (Docker Desktop) are untouched, and the launchers already restart Colima on the next preview, so recovery is automatic (~20–30 s on that first preview). Tests pin the safety check, the ordering, and the no-colima case. | Windows peer: stop the WSL2 distro (`wsl --terminate`) under the same nothing-else-running check. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

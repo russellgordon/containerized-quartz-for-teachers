@@ -126,6 +126,12 @@ if [[ "$1" == "--help" || "$1" == "-h" ]]; then
   exit 0
 fi
 
+# Each preview serves on its own container port (8081-8084), so several
+# can run at once. Declared before the parser and the validation that
+# follow — a later default would stomp the flag, and a later declaration
+# leaves the validation reading an empty value. Both happened.
+PREVIEW_PORT=8081
+
 # Parse optional flags
 while [[ "$#" -gt 0 ]]; do
   case $1 in
@@ -203,10 +209,6 @@ fi
 # input, so keep `pwd -P | shasum` exactly as written.
 WORKDIR_ID="$(pwd -P | shasum -a 256 | cut -c1-8)"
 CONTAINER_NAME="teaching-quartz-${WORKDIR_ID}"
-# Each preview serves on its own port, so several can run at once — one
-# per window in the app. The container publishes the whole range.
-# The flag parser above may already have chosen a port; keep it.
-PREVIEW_PORT="${PREVIEW_PORT:-8081}"
 PREVIEW_PORT_RANGE="8081-8084"
 # Each preview also uses a live-reload websocket on port + 1000.
 PREVIEW_WS_RANGE="9081-9084"

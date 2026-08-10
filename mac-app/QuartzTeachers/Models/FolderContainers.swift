@@ -34,6 +34,47 @@ enum FolderContainers {
         return "teaching-quartz-" + String(hex.prefix(8))
     }
 
+    /// Everything to run at quit, as one detached script: stop this app's
+    /// containers, and if that leaves NOTHING running in the VM, stop the
+    /// VM itself — its reserved memory is the real cost.
+    ///
+    /// The emptiness check is what makes this safe: Colima is shared (a
+    /// database stack from another project may well be running), and the
+    /// VM must never be stopped out from under someone else's containers.
+    /// The next preview recovers on its own either way — the launchers
+    /// start Colima when it is down.
+    static func quitScript(containerNames: [String]) -> String {
+        var lines: [String] = []
+        if !containerNames.isEmpty {
+            lines.append("docker stop -t 2 " + containerNames.joined(separator: " ") + " >/dev/null 2>&1")
+        }
+        lines.append("if command -v colima >/dev/null 2>&1; then")
+        lines.append("  if [ -z \"$(docker ps -q 2>/dev/null)\" ]; then")
+        lines.append("    colima stop >/dev/null 2>&1")
+        lines.append("  fi")
+        lines.append("fi")
+        return lines.joined(separator: "\n")
+    }
+
+    /// Runs the quit script detached, so quitting does not wait on it.
+    static func releaseEverythingAtQuit(folderPaths: [String]) {
+        if WorkspaceModel.isRunningTests {
+            return
+        }
+        var names: [String] = []
+        for path in folderPaths {
+            let name: String = containerName(forFolder: path)
+            if !names.contains(name) {
+                names.append(name)
+            }
+        }
+        let script: String = quitScript(containerNames: names)
+        let shell: Process = Process()
+        shell.executableURL = URL(fileURLWithPath: "/bin/zsh")
+        shell.arguments = ["-l", "-c", "( " + script + " ) >/dev/null 2>&1 &!"]
+        try? shell.run()
+    }
+
     /// Stops the folder's container, quietly, without waiting on it.
     ///
     /// `docker stop`, not `rm`: the container restarts far faster than it
