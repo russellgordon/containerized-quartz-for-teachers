@@ -60,6 +60,18 @@ FAILED="false"
 pass() { RESULTS+=("✅ PASS  $1"); echo "✅ PASS  $1"; }
 fail() { RESULTS+=("❌ FAIL  $1"); echo "❌ FAIL  $1"; FAILED="true"; }
 
+# -------------------- 0. A real terminal is required --------------------
+# The launchers run the toolchain with `docker exec -it`, which refuses to
+# start without a terminal on stdin. Say so now rather than failing several
+# minutes in with a Docker error about attaching stdin.
+if [[ ! -t 0 ]]; then
+  echo "❌ verify.sh must be run from a terminal."
+  echo "   The launchers use 'docker exec -it', which needs a TTY on stdin."
+  echo "   To run it from a script or CI, give it one:"
+  echo "     script -q /dev/null ./verify.sh"
+  exit 1
+fi
+
 # -------------------- 1. Container runtime (shared Colima) --------------------
 # Maintainer variant: assumes Colima and the Docker CLI are installed (the
 # teacher-facing launchers handle installation). Never stops a running VM.
