@@ -330,7 +330,7 @@ class ScriptRunner {
                     self.pendingQuestion = asked.question
                     self.suggestedAnswer = asked.suggestedAnswer
                     self.pendingCancelToken = asked.cancelToken
-                    self.pendingQuestionContext = ScriptRunner.context(before: self.transcript.lines)
+                    self.pendingQuestionContext = ScriptRunner.context(before: self.transcript.lines, question: asked.question)
                     self.isAwaitingInput = true
                 }
             }
@@ -459,29 +459,57 @@ class ScriptRunner {
         return AskedQuestion(question: ScriptRunner.asked(wording), suggestedAnswer: offered, cancelToken: ScriptRunner.cancelToken(in: question))
     }
 
-    /// The last few meaningful lines before a question, to be shown with it.
+    /// The line before a question that explains it — but only when the
+    /// question cannot be understood on its own.
     ///
-    /// Stops at an earlier question, so the context belongs to this one and
-    /// not to something already answered.
-    static func context(before lines: [String], limit: Int = 3) -> String {
-        var collected: [String] = []
+    /// Most questions name their own subject ("what is your last name?") and
+    /// adding the preceding output buries them in progress chatter. Only a
+    /// bare "Install it now? (y/n)" needs help.
+    static func context(before lines: [String], question: String) -> String {
+        if !ScriptRunner.needsContext(question) {
+            return ""
+        }
         var index: Int = lines.count - 1
-        while index >= 0 && collected.count < limit {
+        while index >= 0 {
             let line: String = lines[index].trimmingCharacters(in: .whitespaces)
             index -= 1
             if line.isEmpty {
                 continue
             }
+            // Stop at an earlier question: that context is already answered.
             if ScriptRunner.looksLikeQuestion(line) {
-                break
+                return ""
             }
-            collected.append(line)
+            if ScriptRunner.reportsProgress(line) {
+                continue
+            }
+            return line
         }
-        var ordered: [String] = []
-        for line in collected.reversed() {
-            ordered.append(line)
+        return ""
+    }
+
+    /// True when a question says too little to answer on its own.
+    static func needsContext(_ question: String) -> Bool {
+        let wording: String = question.lowercased()
+        if wording.contains("(y/n)") || wording.contains("[y/n]") || wording.contains("(yes/no)") {
+            return true
         }
-        return ordered.joined(separator: "\n")
+        return question.count < 25
+    }
+
+    /// True when a line reports what is happening rather than explaining
+    /// anything a teacher needs in order to answer.
+    static func reportsProgress(_ line: String) -> Bool {
+        if line.hasSuffix("…") || line.hasSuffix("...") {
+            return true
+        }
+        let progressMarks: [String] = ["✅", "🚀", "📦", "ℹ️", "🔗", "🕒", "🛟", "🔌", "🧭", "🖼️", "♻️", "🔀", "📚", "🧹", "📂", "📁", "📄", "🔍", "📋", "📌", "🔧", "🎨", "✔️", "⚙️"]
+        for mark in progressMarks {
+            if line.hasPrefix(mark) {
+                return true
+            }
+        }
+        return false
     }
 
     /// The key the script offered as a way out, such as the "q" in

@@ -92,25 +92,44 @@ final class ScriptRunnerStatusTests: XCTestCase {
     }
 
     @MainActor
-    func testAQuestionCarriesTheLinesThatExplainIt() {
-        let runner: ScriptRunner = ScriptRunner()
-        runner.isRunning = true
-        runner.receiveOutput("✅ Image already present: rwhgrwhg/teaching-quartz:latest\n")
-        runner.receiveOutput("🆕 A newer version of the website builder is available.\n")
-        let context: String = ScriptRunner.context(before: runner.transcript.lines)
-        XCTAssertTrue(context.contains("A newer version of the website builder is available"))
+    func testABareYesNoQuestionCarriesTheLineThatExplainsIt() {
+        let lines: [String] = [
+            "✅ Image already present: rwhgrwhg/teaching-quartz:latest",
+            "🆕 A newer version of the website builder is available.",
+        ]
+        let context: String = ScriptRunner.context(before: lines, question: "Install it now? (y/n):")
+        XCTAssertEqual(context, "🆕 A newer version of the website builder is available.")
+    }
+
+    @MainActor
+    func testAQuestionThatExplainsItselfGetsNoContext() {
+        let lines: [String] = [
+            "Ensuring container is running with the correct, writable mount...",
+            "✅ Container teaching-quartz is already running with correct, writable mount.",
+            "🚀 Deploying EXC2O S1 from: /teaching/courses/EXC2O/.merged_output/section1",
+        ]
+        let context: String = ScriptRunner.context(before: lines, question: "First time setup... what is your last name? (letters only):")
+        XCTAssertEqual(context, "", "A question naming its own subject must not be buried in progress output")
+    }
+
+    @MainActor
+    func testProgressChatterIsNeverUsedAsContext() {
+        let lines: [String] = [
+            "🚀 Deploying EXC2O S1 from: /teaching/courses/EXC2O/.merged_output/section1",
+            "✅ Container teaching-quartz is already running.",
+        ]
+        let context: String = ScriptRunner.context(before: lines, question: "Continue? (y/n):")
+        XCTAssertEqual(context, "", "Status lines explain nothing about the question")
     }
 
     @MainActor
     func testContextStopsAtAnEarlierQuestion() {
         let lines: [String] = [
-            "Enter your name:",
-            "Thanks.",
             "A newer version is available.",
+            "Enter your name:",
         ]
-        let context: String = ScriptRunner.context(before: lines)
-        XCTAssertFalse(context.contains("Enter your name"), "Context must not reach back past a question already answered")
-        XCTAssertTrue(context.contains("A newer version is available"))
+        let context: String = ScriptRunner.context(before: lines, question: "Install it now? (y/n):")
+        XCTAssertEqual(context, "", "Context must not reach back past a question already answered")
     }
 
     @MainActor
