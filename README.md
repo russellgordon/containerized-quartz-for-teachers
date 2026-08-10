@@ -197,6 +197,15 @@ containerized-quartz-for-teachers/
 
 ---
 
+## 🧑‍💻 Contributing
+
+Working on the toolchain or the macOS app itself? Start with
+[DEVELOPERS.md](DEVELOPERS.md) — setup on a new machine (the Xcode project
+is generated, not committed), testing, and the conventions this repository
+follows.
+
+---
+
 ## 🙏 Credits
 
 - [Quartz](https://github.com/jackyzha0/quartz) by [Jacky Zhao](https://jzhao.xyz/)
