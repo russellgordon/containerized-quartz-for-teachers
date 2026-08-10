@@ -39,6 +39,29 @@ class WorkspaceModel {
         windowModels.append(model)
     }
 
+    /// A window has closed, so it should no longer be remembered as open.
+    static func unregisterWindowModel(_ model: WorkspaceModel) {
+        var remaining: [WorkspaceModel] = []
+        for existing in windowModels {
+            if existing !== model {
+                remaining.append(existing)
+            }
+        }
+        windowModels = remaining
+        rememberOpenFolders()
+    }
+
+    /// Writes down which folder each open window is in, in window order.
+    static func rememberOpenFolders() {
+        var folders: [String] = []
+        for model in windowModels {
+            if let path = model.workspaceURL?.path {
+                folders.append(path)
+            }
+        }
+        WindowFolderMemory.record(folders)
+    }
+
     /// The active working folder, or nil before one has been chosen.
     var workspaceURL: URL?
 
