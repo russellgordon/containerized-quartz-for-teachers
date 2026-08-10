@@ -39,6 +39,10 @@ struct QuartzTeachersApp: App {
         } defaultValue: {
             WindowFolder(id: UUID(), path: "")
         }
+        // The app restores its own windows — count, folder, and position —
+        // from the list it keeps. System restoration overlapping with that
+        // produced spare windows and shuffled folders, so it is off.
+        .restorationBehavior(.disabled)
         .commands {
             PreviewCommands()
             CommandGroup(after: .newItem) {

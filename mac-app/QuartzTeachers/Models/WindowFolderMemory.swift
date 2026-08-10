@@ -1,12 +1,13 @@
 import Foundation
 
-/// Remembers which folder each open window was in — paired with the
-/// window's frame, which is how a restored window finds ITS folder.
+/// Remembers each open window's folder and frame, and hands them back at
+/// the next launch.
 ///
-/// The system restores window frames dependably, but the presented value
-/// has come back empty in practice, and handing folders out in appearance
-/// order swapped them: restoration order is not creation order. The frame
-/// is the one property both sides agree on, so it is the key.
+/// The app restores its own windows from this list: the first window takes
+/// the first entry, and one spawn pass opens a window for each remaining
+/// entry. With system restoration disabled there is exactly one launch
+/// window, so the order is deterministic — the windows come back in the
+/// order they were open.
 @MainActor
 enum WindowFolderMemory {
 
@@ -30,34 +31,20 @@ enum WindowFolderMemory {
 
     // MARK: - Functions
 
-    /// The folder remembered for a window with this frame, when there is
-    /// one. This is what keeps each window's folder with THAT window.
-    static func claimFolder(matchingFrame frame: String, defaults: UserDefaults = UserDefaults.standard) -> String? {
-        loadIfNeeded(defaults: defaults)
-        for (index, entry) in unclaimed.enumerated() {
-            if entry.frame == frame && WorkspaceModel.folderExists(atPath: entry.path) {
-                unclaimed.remove(at: index)
-                return entry.path
-            }
-        }
-        return nil
-    }
-
-    /// The next remembered folder in order — the fallback when nothing
-    /// matches by frame (the frames were not restored either).
-    static func claimNextFolder(defaults: UserDefaults = UserDefaults.standard) -> String? {
+    /// The next remembered window, skipping folders that no longer exist.
+    static func claimNextEntry(defaults: UserDefaults = UserDefaults.standard) -> Entry? {
         loadIfNeeded(defaults: defaults)
         while !unclaimed.isEmpty {
             let entry: Entry = unclaimed.removeFirst()
             if WorkspaceModel.folderExists(atPath: entry.path) {
-                return entry.path
+                return entry
             }
         }
         return nil
     }
 
     /// True exactly once per launch: the caller becomes the window that
-    /// checks for remembered folders still without a window.
+    /// opens the remaining remembered windows.
     static func beginSpawnCheckOnce() -> Bool {
         if hasRunSpawnCheck {
             return false
@@ -69,19 +56,19 @@ enum WindowFolderMemory {
     /// The entries no window has claimed, handed over for spawning.
     /// Claiming ends here: a window the teacher opens later must start
     /// fresh, not inherit a stale leftover.
-    static func takeUnclaimed(defaults: UserDefaults = UserDefaults.standard) -> [String] {
+    static func takeUnclaimed(defaults: UserDefaults = UserDefaults.standard) -> [Entry] {
         loadIfNeeded(defaults: defaults)
-        var remaining: [String] = []
+        var remaining: [Entry] = []
         for entry in unclaimed {
             if WorkspaceModel.folderExists(atPath: entry.path) {
-                remaining.append(entry.path)
+                remaining.append(entry)
             }
         }
         unclaimed = []
         return remaining
     }
 
-    /// Records the open windows as folder-and-frame pairs.
+    /// Records the open windows as folder-and-frame pairs, in order.
     static func record(_ entries: [Entry], defaults: UserDefaults = UserDefaults.standard) {
         if WorkspaceModel.isRunningTests && defaults == UserDefaults.standard {
             return
