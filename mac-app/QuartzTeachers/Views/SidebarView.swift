@@ -24,6 +24,9 @@ struct SidebarView: View {
     /// to go looking, not something to step over on the way to today's work.
     @State var isShowingArchived: Bool = false
 
+    /// The course "Add Section…" was chosen on, while its sheet is up.
+    @State var addSectionCourse: Course?
+
     // MARK: - Body
 
     var body: some View {
@@ -47,6 +50,10 @@ struct SidebarView: View {
                                 .tag(SidebarSelection.course(course.code))
                                 .accessibilityIdentifier("sidebar-\(course.code)")
                                 .contextMenu {
+                                    Button("Add Section…", systemImage: "doc.badge.plus") {
+                                        addSectionCourse = course
+                                    }
+                                    Divider()
                                     folderMenuItems(for: course.directoryURL)
                                 }
                         }
@@ -128,6 +135,12 @@ struct SidebarView: View {
             }
         } message: {
             Text(removalProblem ?? "")
+        }
+        .sheet(item: $addSectionCourse) { course in
+            AddSectionSheet(course: course) { sectionNumber in
+                workspace.reloadCourses()
+                workspace.selection = SidebarSelection.section(course.code, sectionNumber)
+            }
         }
     }
 

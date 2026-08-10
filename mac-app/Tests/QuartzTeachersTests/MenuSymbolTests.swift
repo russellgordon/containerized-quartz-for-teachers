@@ -14,6 +14,7 @@ final class MenuSymbolTests: XCTestCase {
             "arrow.up.forward.app",   // Open Folder
             "terminal",               // New Terminal at Folder
             "arrow.uturn.backward",   // Restore
+            "doc.badge.plus",         // Add Section
             "plus",                   // Add course
             "minus",                  // Remove selected
             "archivebox",             // Archived
