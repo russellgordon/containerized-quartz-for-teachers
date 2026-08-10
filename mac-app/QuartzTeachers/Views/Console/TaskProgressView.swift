@@ -18,6 +18,14 @@ struct TaskProgressView: View {
 
     @State var isShowingDetails: Bool = false
 
+    // MARK: - Initializer
+
+    init(runner: ScriptRunner, title: String, showingDetailsForTesting: Bool = false) {
+        self.runner = runner
+        self.title = title
+        _isShowingDetails = State(initialValue: showingDetailsForTesting)
+    }
+
     /// When the header last refreshed, so a stalled main thread shows up
     /// in the log as a gap rather than only as a blank window.
     ///
@@ -143,11 +151,15 @@ struct TaskProgressView: View {
             .accessibilityIdentifier("taskDetailsDisclosure")
 
             if isShowingDetails {
-                // Fill whatever space remains below the pinned header —
-                // the container (sheet or window) is fixed-size, so this
-                // can never grow past it; clipped() guarantees it.
+                // Fill the space below the pinned header — but declare a
+                // small IDEAL height. Without it, an unbounded height
+                // proposal resolves to the ideal size, and a scroll
+                // view's ideal size is its entire content: a long
+                // transcript then demanded tens of thousands of points,
+                // growing the window's content past the window itself
+                // and sliding the interface out of sight.
                 TaskConsoleView(runner: runner, title: title)
-                    .frame(minHeight: 200, maxHeight: .infinity)
+                    .frame(minHeight: 200, idealHeight: 260, maxHeight: .infinity)
                     .clipped()
             }
         }
