@@ -21,7 +21,13 @@ struct MainWindowView: View {
                     SidebarView()
                         .navigationSplitViewColumnWidth(min: 180, ideal: 220)
                 } detail: {
-                    detailView
+                    // The path bar sits under the content, spanning the
+                    // detail column, exactly where Finder puts its own.
+                    VStack(spacing: 0) {
+                        detailView
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        workingFolderPathBar
+                    }
                 }
             }
         }
@@ -44,6 +50,22 @@ struct MainWindowView: View {
     }
 
     // MARK: - Computed properties
+
+    /// A footer showing which folder this window is working in, in the
+    /// same form Finder's Path Bar uses.
+    @ViewBuilder
+    var workingFolderPathBar: some View {
+        if let workspaceURL = workspace.workspaceURL {
+            Divider()
+            FinderPathBarView(folderURL: workspaceURL)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.bar)
+                .help(workspaceURL.path)
+                .accessibilityIdentifier("windowPathBar")
+        }
+    }
 
     @ViewBuilder
     var detailView: some View {
