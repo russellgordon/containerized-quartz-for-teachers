@@ -1,7 +1,7 @@
 ---
-createdSection1: 2026-05-23T08:00:00.000-0500
+createdSection1: 2026-09-08T08:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-05-25T08:00:00.000-0500
+createdSection2: 2026-09-08T08:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -16,7 +16,7 @@ Look back across the whole course and write about what changed in how you think.
 
 ## Answer all four
 
-1. **A belief you changed.** Something you were sure of in February that you now
+1. **A belief you changed.** Something you were sure of in September that you now
    know differently. What evidence changed your mind?
 2. **Your best work.** Link to it in your portfolio and say what makes it your
    best — not what mark it received.

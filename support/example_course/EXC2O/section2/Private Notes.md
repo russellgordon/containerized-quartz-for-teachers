@@ -1,7 +1,7 @@
 ---
 title: Private Notes
 draft: true
-created: 2026-02-04T07:00:00.000-0500
+created: 2026-09-08T07:00:00.000-0400
 ---
 This page is marked `draft: true`, so it is **never published**. It is
 here to show that a teacher can keep planning notes in the same folder

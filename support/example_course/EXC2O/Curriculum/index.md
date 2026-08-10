@@ -1,7 +1,7 @@
 ---
 title: Curriculum
 draft: false
-created: 2026-01-20T09:00:00.000-0500
+created: 2026-09-08T08:00:00.000-0400
 enableToc: false
 ---
 Everything we do in this course points at one or more of the Ontario curriculum

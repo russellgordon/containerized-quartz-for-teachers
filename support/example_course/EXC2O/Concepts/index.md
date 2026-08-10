@@ -1,7 +1,7 @@
 ---
 title: Concepts
 draft: false
-created: 2026-02-02T08:00:00.000-0500
+created: 2026-09-08T08:00:00.000-0400
 enableToc: false
 ---
 When we meet an idea for the first time, the explanation lands here — and stays

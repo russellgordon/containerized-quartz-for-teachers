@@ -1,7 +1,7 @@
 ---
 title: Style
 draft: false
-created: 2026-02-02T08:00:00.000-0500
+created: 2026-09-08T08:00:00.000-0400
 enableToc: false
 ---
 How this site works, how it is put together, and how to write about science.

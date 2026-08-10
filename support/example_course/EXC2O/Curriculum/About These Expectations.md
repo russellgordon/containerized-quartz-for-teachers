@@ -1,7 +1,7 @@
 ---
 title: About These Expectations
 draft: false
-created: 2026-01-20T09:00:00.000-0500
+created: 2026-09-08T08:00:00.000-0400
 ---
 Every expectation page in this folder is written **in our own words**. The
 official wording belongs to the Ontario Ministry of Education, and this is a

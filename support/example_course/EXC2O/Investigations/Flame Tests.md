@@ -1,7 +1,7 @@
 ---
-createdSection1: 2026-03-16T08:00:00.000-0500
+createdSection1: 2026-10-20T08:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-03-18T08:00:00.000-0500
+createdSection2: 2026-10-21T08:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
