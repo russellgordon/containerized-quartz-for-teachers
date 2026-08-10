@@ -23,5 +23,6 @@ what changed over five months — and only you can build that.
 - Marks. This is about the work, not the grade on it.
 
 > [!tip] Write entries when the work is fresh
-> The details you will want in June — what confused you, what you tried first —
+> The details you will want at the end of the course — what confused you, what
+> you tried first —
 > are gone by next week. Ten minutes on the day beats an hour later.

@@ -16,7 +16,7 @@ Look back across the whole course and write about what changed in how you think.
 
 ## Answer all four
 
-1. **A belief you changed.** Something you were sure of in September that you now
+1. **A belief you changed.** Something you were sure of at the start of this course that you now
    know differently. What evidence changed your mind?
 2. **Your best work.** Link to it in your portfolio and say what makes it your
    best — not what mark it received.

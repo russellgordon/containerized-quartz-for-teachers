@@ -21,5 +21,5 @@ gathered in one place.
 
 A code is a shared address. When a student asks "why are we doing this?", the
 answer is a link. When a department writes a course outline, or a teacher takes
-over a class in January, the codes are what make one person's planning legible
+over a class partway through, the codes are what make one person's planning legible
 to another.
