@@ -11,9 +11,10 @@ struct WorkspaceCommands: View {
     // MARK: - Body
 
     var body: some View {
-        Button("Change Working Folder…") {
+        Button("Open Working Folder…") {
             workspace?.isChoosingWorkspace = true
         }
+        .keyboardShortcut("o", modifiers: [.command])
         .disabled(workspace == nil)
 
         Button("Restore from Archive…") {
