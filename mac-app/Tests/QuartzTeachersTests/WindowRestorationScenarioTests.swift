@@ -63,26 +63,6 @@ final class WindowRestorationScenarioTests: XCTestCase {
                        "The settled frame finds the folder")
     }
 
-    /// THE FOUR WINDOWS: macOS restored both windows WITH their values,
-    /// and a spawner opened the remembered list again beside them. Windows
-    /// that kept their value never touch the list — and nothing spawns.
-    @MainActor
-    func testWindowsThatKeptTheirValueLeaveTheListAlone() throws {
-        let folders: [String] = try makeFolders(2)
-        defer { removeAll(folders) }
-        WindowFolderMemory.reset(with: [
-            WindowFolderMemory.Entry(path: folders[0], frame: "{{1, 1}, {900, 700}}"),
-            WindowFolderMemory.Entry(path: folders[1], frame: "{{2, 2}, {900, 700}}"),
-        ])
-
-        // Both windows arrive carrying their folder: the view adopts the
-        // value and never engages a claimant. The list must survive
-        // untouched — and with no spawner in the app, untouched entries
-        // open nothing.
-        XCTAssertTrue(WindowFolderMemory.hasEntriesToClaim(),
-                      "Value-carrying windows must not consume entries meant for windows that lost theirs")
-    }
-
     /// THE CLOBBERED LIST: windows unregistering as they close during quit
     /// rewrote the list window by window, shrinking it to nothing.
     @MainActor

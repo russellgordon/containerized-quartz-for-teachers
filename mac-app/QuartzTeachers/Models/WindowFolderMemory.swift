@@ -110,6 +110,13 @@ enum WindowFolderMemory {
             return
         }
         hasLoaded = true
+        // The hosted test suite must never replay the teacher's own
+        // windows: the app's real window would adopt a remembered folder
+        // mid-test and stomp whatever fixture the test had chosen.
+        if WorkspaceModel.isRunningTests && defaults == UserDefaults.standard {
+            unclaimed = []
+            return
+        }
         // The teacher asked for windows NOT to come back: the list is
         // still recorded (so toggling the setting later restores the most
         // recent session), but nothing is replayed from it.

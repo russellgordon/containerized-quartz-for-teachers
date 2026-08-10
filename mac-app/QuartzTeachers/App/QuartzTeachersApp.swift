@@ -18,13 +18,13 @@ struct QuartzTeachersApp: App {
     // MARK: - Body
 
     var body: some Scene {
-        // Value-presented windows: each window is FOR its folder. The value
-        // stays OPTIONAL — nil meaning a fresh window — because supplying a
-        // defaultValue makes SwiftUI force-unwrap the presented value, and
-        // the launch window arrives with nil: an immediate crash
-        // (BindingOperations.ForceUnwrapping in PresentedWindowContent).
-        WindowGroup("Containerized Quartz for Teachers", for: WindowFolder.self) { $folder in
-            WindowRootView(folder: $folder)
+        // A plain window group. Per-window SwiftUI persistence is not used
+        // for the folder at all: @SceneStorage shared one value across the
+        // group's windows, and presented values restored the same way —
+        // last writer wins, both windows on one folder. The folder comes
+        // from the app's own frame-keyed list instead.
+        WindowGroup("Containerized Quartz for Teachers") {
+            WindowRootView()
                 // A bounded IDEAL size matters as much as the minimum:
                 // without it the window's content is sized by whatever
                 // its descendants claim, and one overgrown view drags

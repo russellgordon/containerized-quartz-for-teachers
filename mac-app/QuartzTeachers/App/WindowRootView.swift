@@ -4,20 +4,14 @@ import SwiftUI
 /// One window's worth of app: its own working folder, remembered separately
 /// from every other window's.
 ///
-/// macOS owns window restoration. When the system setting keeps windows, it
-/// reopens each one with its frame and — usually — its presented value,
-/// which carries the folder. A window that comes back without its value
-/// finds its folder in `WindowFolderMemory`, matched by frame while the
-/// frame settles; order decides only when frames never match. The app
-/// spawns nothing: duplicating what macOS already restored is how two
-/// windows once became four.
+/// macOS restores the windows and their frames; the folders come from the
+/// app's own list, keyed by frame. SwiftUI's per-window persistence is
+/// deliberately not involved: both `@SceneStorage` and presented values
+/// proved to share one value across the group's windows on restore — last
+/// writer wins — which put every window on the same folder.
 struct WindowRootView: View {
 
     // MARK: - Stored properties
-
-    /// The value this window is presented for — nil for a fresh window
-    /// that has not been given a folder yet.
-    @Binding var folder: WindowFolder?
 
     /// This window's own model. Each window has one.
     @State var workspace: WorkspaceModel = WorkspaceModel()
@@ -36,17 +30,10 @@ struct WindowRootView: View {
             .focusedSceneValue(\.workspace, workspace)
             .onAppear {
                 WorkspaceModel.registerWindowModel(workspace)
-                if let presented = folder, !presented.path.isEmpty {
-                    // macOS kept the value: the folder came back with the
-                    // window, and the remembered list is not consulted.
-                    workspace.adoptRestoredPath(presented.path)
-                }
             }
             .background(WindowAccessor { window in
                 workspace.window = window
-                if (folder?.path ?? "").isEmpty {
-                    attemptClaim(for: window, attemptsLeft: 7)
-                }
+                attemptClaim(for: window, attemptsLeft: 7)
                 AppLog.interface.info("""
                     window \(windowIdentity, privacy: .public) opened in \
                     "\(workspace.workspaceURL?.path ?? "", privacy: .public)" \
@@ -55,11 +42,9 @@ struct WindowRootView: View {
                 WorkspaceModel.rememberOpenFolders()
             })
             .onChange(of: workspace.workspaceURL) {
-                let path: String = workspace.workspaceURL?.path ?? ""
-                folder = WindowFolder(id: folder?.id ?? UUID(), path: path, frame: folder?.frame ?? "")
                 AppLog.interface.info("""
                     window \(windowIdentity, privacy: .public) moved to \
-                    "\(path, privacy: .public)"
+                    "\(workspace.workspaceURL?.path ?? "", privacy: .public)"
                     """)
                 WorkspaceModel.rememberOpenFolders()
             }
@@ -72,10 +57,9 @@ struct WindowRootView: View {
 
     /// Finds this window's folder by its frame, retrying briefly because a
     /// reopened window's frame settles a moment after the window exists.
+    /// The claimant claims at most once, and claims close shortly after
+    /// launch — a window opened mid-session inherits nothing.
     func attemptClaim(for window: NSWindow, attemptsLeft: Int) {
-        if !(folder?.path ?? "").isEmpty {
-            return
-        }
         if let entry = claimant.frameDidSettle(NSStringFromRect(window.frame)) {
             adopt(entry, how: "matched by frame")
             return
@@ -94,7 +78,6 @@ struct WindowRootView: View {
     /// Takes a remembered window as this window's own.
     func adopt(_ entry: WindowFolderMemory.Entry, how detail: String) {
         workspace.adoptRestoredPath(entry.path)
-        folder = WindowFolder(id: UUID(), path: entry.path, frame: entry.frame)
         AppLog.interface.info("""
             window \(windowIdentity, privacy: .public) claimed \
             "\(entry.path, privacy: .public)" — \(detail, privacy: .public)
