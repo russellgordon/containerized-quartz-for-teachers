@@ -104,8 +104,7 @@ class ScriptRunner {
             }
             let text: String = String(decoding: data, as: UTF8.self)
             Task { @MainActor in
-                self.transcript.append(rawText: text)
-                self.lastOutputAt = Date()
+                self.receiveOutput(text)
             }
         }
 
@@ -170,19 +169,72 @@ class ScriptRunner {
 
     /// The milestones for whatever this runner was started to do, set by
     /// the view that launches it. Drives the deterministic progress bar.
-    var milestones: [TaskMilestone] = []
+    var milestones: [TaskMilestone] = [] {
+        didSet {
+            reachedMilestoneCount = 0
+            unscannedOutput = ""
+        }
+    }
+
+    /// Milestones detected so far. Tracked as output ARRIVES rather than
+    /// by re-reading the whole transcript on every refresh, which stalls
+    /// the main thread once a long publish fills it.
+    private var reachedMilestoneCount: Int = 0
+
+    /// Output not yet scanned for markers (kept small).
+    private var unscannedOutput: String = ""
 
     /// How many milestones have been reached (0…milestones.count).
     var milestonesReached: Int {
         if milestones.isEmpty {
             return 0
         }
-        var reached: Int = TaskMilestones.reachedCount(in: transcript.displayText, milestones: milestones)
         // A finished, successful task has completed everything.
         if !isRunning && lastExitCode == 0 {
-            reached = milestones.count
+            return milestones.count
         }
-        return reached
+        return reachedMilestoneCount
+    }
+
+    /// The single entry point for output arriving from a running script:
+    /// records it and folds it into the milestone count. (Tests feed
+    /// simulated output through here too, so both paths behave alike.)
+    func receiveOutput(_ text: String) {
+        transcript.append(rawText: text)
+        advanceMilestones(with: text)
+        lastOutputAt = Date()
+    }
+
+    /// Folds newly arrived output into the milestone count.
+    private func advanceMilestones(with newText: String) {
+        if milestones.isEmpty {
+            return
+        }
+        unscannedOutput += newText
+
+        // Take the HIGHEST milestone the new output reveals: a later
+        // marker implies the earlier steps, so varying output never
+        // stalls or reverses the bar.
+        while reachedMilestoneCount < milestones.count {
+            var matchedIndex: Int?
+            var matchedEnd: String.Index?
+            for index in reachedMilestoneCount..<milestones.count {
+                if let range = unscannedOutput.range(of: milestones[index].marker) {
+                    matchedIndex = index
+                    matchedEnd = range.upperBound
+                }
+            }
+            guard let matchedIndex, let matchedEnd else {
+                break
+            }
+            reachedMilestoneCount = matchedIndex + 1
+            unscannedOutput = String(unscannedOutput[matchedEnd...])
+        }
+
+        // Keep only enough tail for a marker split across two chunks.
+        if unscannedOutput.count > 8000 {
+            unscannedOutput = String(unscannedOutput.suffix(4000))
+        }
     }
 
     /// Progress from 0 to 1 for the bar.
@@ -218,7 +270,7 @@ class ScriptRunner {
     /// A friendly description of what is happening right now, derived
     /// from markers in the output — used when no milestones are set.
     var friendlyPhase: String {
-        let recentText: String = String(transcript.displayText.suffix(4000))
+        let recentText: String = String(transcript.recentText(maximumCharacters: 4000))
         let phases: [(marker: String, label: String)] = [
             ("Launching Quartz preview", "Starting the preview…"),
             ("Building static site", "Building your site…"),

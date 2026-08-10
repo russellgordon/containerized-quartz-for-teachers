@@ -11,20 +11,20 @@ final class ScriptRunnerStatusTests: XCTestCase {
     @MainActor
     func testPhaseLabelFollowsTheLatestMarker() {
         let runner: ScriptRunner = ScriptRunner()
-        runner.transcript.append(rawText: "⬇️  Image not found locally. Pulling rwhgrwhg/teaching-quartz …\n")
+        runner.receiveOutput( "⬇️  Image not found locally. Pulling rwhgrwhg/teaching-quartz …\n")
         XCTAssertEqual(runner.friendlyPhase, "Downloading components (first time can take a few minutes)…")
 
-        runner.transcript.append(rawText: "📦 Installing dependencies...\n")
+        runner.receiveOutput( "📦 Installing dependencies...\n")
         XCTAssertEqual(runner.friendlyPhase, "Preparing your site (first time can take a few minutes)…")
 
-        runner.transcript.append(rawText: "🚀 Launching Quartz preview on http://localhost:8081\n")
+        runner.receiveOutput( "🚀 Launching Quartz preview on http://localhost:8081\n")
         XCTAssertEqual(runner.friendlyPhase, "Starting the preview…")
     }
 
     @MainActor
     func testDefaultPhaseIsWorking() {
         let runner: ScriptRunner = ScriptRunner()
-        runner.transcript.append(rawText: "some unremarkable output\n")
+        runner.receiveOutput( "some unremarkable output\n")
         XCTAssertEqual(runner.friendlyPhase, "Working…")
     }
 
@@ -32,7 +32,7 @@ final class ScriptRunnerStatusTests: XCTestCase {
     func testStalledPromptIsDetectedOnlyWhenQuietAndPromptShaped() {
         let runner: ScriptRunner = ScriptRunner()
         runner.isRunning = true
-        runner.transcript.append(rawText: "Paste Netlify token: ")
+        runner.receiveOutput( "Paste Netlify token: ")
 
         // Fresh output: not yet a stall.
         runner.lastOutputAt = Date()
@@ -43,7 +43,7 @@ final class ScriptRunnerStatusTests: XCTestCase {
         XCTAssertTrue(runner.mayBeWaitingForInput(asOf: Date()))
 
         // Quiet but mid-build (no prompt shape): not a stall.
-        runner.transcript.append(rawText: "\nEmitting files")
+        runner.receiveOutput( "\nEmitting files")
         runner.lastOutputAt = Date(timeIntervalSinceNow: -5)
         XCTAssertFalse(runner.mayBeWaitingForInput(asOf: Date()))
 
@@ -56,7 +56,7 @@ final class ScriptRunnerStatusTests: XCTestCase {
     func testDefaultAnswerPromptCountsAsPromptShape() {
         let runner: ScriptRunner = ScriptRunner()
         runner.isRunning = true
-        runner.transcript.append(rawText: "Install the Example Course now? (y/n) [Default: n]")
+        runner.receiveOutput( "Install the Example Course now? (y/n) [Default: n]")
         runner.lastOutputAt = Date(timeIntervalSinceNow: -5)
         XCTAssertTrue(runner.mayBeWaitingForInput(asOf: Date()))
     }

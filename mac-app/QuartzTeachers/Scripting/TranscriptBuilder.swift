@@ -21,18 +21,51 @@ struct TranscriptBuilder {
     /// meaning (line ending vs. spinner redraw) depends on what follows.
     var hasPendingCarriageReturn: Bool = false
 
+    /// The most recent lines are all a teacher ever reads, and keeping
+    /// every line of a long publish would grow without bound.
+    static let maximumRetainedLines: Int = 4000
+
+    /// Cached joined text: `displayText` is read several times per
+    /// refresh, and rebuilding it each time is what stalls the UI.
+    private var cachedDisplayText: String?
+
     // MARK: - Computed properties
 
-    /// The full transcript as one display string.
+    /// The full transcript as one display string (cached).
     var displayText: String {
-        var allLines: [String] = lines
-        if !currentLine.isEmpty {
-            allLines.append(currentLine)
+        mutating get {
+            if let cachedDisplayText {
+                return cachedDisplayText
+            }
+            var allLines: [String] = lines
+            if !currentLine.isEmpty {
+                allLines.append(currentLine)
+            }
+            let text: String = allLines.joined(separator: "\n")
+            cachedDisplayText = text
+            return text
         }
-        return allLines.joined(separator: "\n")
     }
 
     // MARK: - Functions
+
+    /// The tail of the transcript, without joining every line.
+    func recentText(maximumCharacters: Int) -> String {
+        var collected: [String] = []
+        var characterCount: Int = 0
+        if !currentLine.isEmpty {
+            collected.append(currentLine)
+            characterCount += currentLine.count
+        }
+        var index: Int = lines.count - 1
+        while index >= 0 && characterCount < maximumCharacters {
+            let line: String = lines[index]
+            collected.append(line)
+            characterCount += line.count + 1
+            index -= 1
+        }
+        return collected.reversed().joined(separator: "\n")
+    }
 
     /// Feed a chunk of raw output from the PTY into the transcript.
     ///
@@ -41,6 +74,7 @@ struct TranscriptBuilder {
     /// ending. Only a LONE carriage return is a spinner redrawing its
     /// line, which is when the current line restarts.
     mutating func append(rawText: String) {
+        cachedDisplayText = nil
         let cleaned: String = TranscriptBuilder.strippingControlSequences(from: rawText)
         // Work scalar-by-scalar: Swift groups "\r\n" into a SINGLE
         // Character (grapheme cluster), which would hide line endings.
@@ -62,6 +96,9 @@ struct TranscriptBuilder {
             if scalar == newlineScalar {
                 lines.append(currentLine)
                 currentLine = ""
+                if lines.count > TranscriptBuilder.maximumRetainedLines {
+                    lines.removeFirst(lines.count - TranscriptBuilder.maximumRetainedLines)
+                }
             } else if scalar == carriageReturnScalar {
                 hasPendingCarriageReturn = true
             } else {

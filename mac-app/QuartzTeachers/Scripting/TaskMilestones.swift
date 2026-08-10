@@ -61,18 +61,4 @@ enum TaskMilestones {
         TaskMilestone(label: "Finishing up…", marker: "Deploy complete"),
     ]
 
-    // MARK: - Functions
-
-    /// How many milestones the output shows as reached (0…count).
-    static func reachedCount(in outputText: String, milestones: [TaskMilestone]) -> Int {
-        var reached: Int = 0
-        for index in 0..<milestones.count {
-            if outputText.contains(milestones[index].marker) {
-                // A later marker implies the earlier steps are done, even
-                // if a marker was missed (output varies between runs).
-                reached = index + 1
-            }
-        }
-        return reached
-    }
 }

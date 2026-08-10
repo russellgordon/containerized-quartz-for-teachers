@@ -18,18 +18,18 @@ final class TaskMilestoneTests: XCTestCase {
         XCTAssertEqual(runner.currentMilestoneLabel, "Starting up…")
         XCTAssertEqual(runner.stepDescription, "Step 1 of 6")
 
-        runner.transcript.append(rawText: "🚀 Starting container if needed...\n")
+        runner.receiveOutput( "🚀 Starting container if needed...\n")
         XCTAssertEqual(runner.milestonesReached, 1)
         XCTAssertEqual(runner.currentMilestoneLabel, "Gathering your content…")
         XCTAssertEqual(runner.stepDescription, "Step 2 of 6")
 
-        runner.transcript.append(rawText: "📥 Copying shared folders into content...\n")
-        runner.transcript.append(rawText: "✅ Updated pageTitle to '📚 EXC2O S1'\n")
+        runner.receiveOutput( "📥 Copying shared folders into content...\n")
+        runner.receiveOutput( "✅ Updated pageTitle to '📚 EXC2O S1'\n")
         XCTAssertEqual(runner.milestonesReached, 3)
         XCTAssertEqual(runner.progressFraction, 0.5, accuracy: 0.001)
 
-        runner.transcript.append(rawText: "Quartz v4.5.0\n")
-        runner.transcript.append(rawText: "🚀 Launching Quartz preview on http://localhost:8081\n")
+        runner.receiveOutput( "Quartz v4.5.0\n")
+        runner.receiveOutput( "🚀 Launching Quartz preview on http://localhost:8081\n")
         XCTAssertEqual(runner.milestonesReached, 6)
         XCTAssertEqual(runner.progressFraction, 1.0, accuracy: 0.001)
         XCTAssertEqual(runner.currentMilestoneLabel, "Opening the preview…")
@@ -42,7 +42,7 @@ final class TaskMilestoneTests: XCTestCase {
         let runner: ScriptRunner = ScriptRunner()
         runner.milestones = TaskMilestones.preview
         runner.isRunning = true
-        runner.transcript.append(rawText: "Quartz v4.5.0\n")
+        runner.receiveOutput( "Quartz v4.5.0\n")
         XCTAssertEqual(runner.milestonesReached, 5, "A late marker implies the earlier steps")
     }
 
@@ -59,7 +59,7 @@ final class TaskMilestoneTests: XCTestCase {
     func testWithoutMilestonesTheViewFallsBackToPhaseText() {
         let runner: ScriptRunner = ScriptRunner()
         runner.isRunning = true
-        runner.transcript.append(rawText: "📦 Installing dependencies...\n")
+        runner.receiveOutput( "📦 Installing dependencies...\n")
         XCTAssertTrue(runner.milestones.isEmpty)
         XCTAssertEqual(runner.progressFraction, 0, accuracy: 0.001)
         XCTAssertEqual(runner.currentMilestoneLabel, runner.friendlyPhase)
