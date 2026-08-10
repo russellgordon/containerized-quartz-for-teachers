@@ -4,11 +4,13 @@ import SwiftUI
 /// One window's worth of app: its own working folder, remembered separately
 /// from every other window's.
 ///
-/// The app restores its windows itself. At launch there is exactly one
-/// window (system restoration is disabled); it takes the first remembered
-/// entry — folder and position — and opens a window for each remaining
-/// entry, which carry their own folder and position in their presented
-/// value. Deterministic, in the order the windows were open.
+/// Windows can arrive two ways at launch: reopened by macOS (when the
+/// system setting keeps windows), which restores their frames but not
+/// their values and in an order of its own choosing — or spawned by the
+/// app for any remembered window macOS did not bring back. A reopened
+/// window finds its folder by matching its own frame against the
+/// remembered list; matching by order is what swapped folders between
+/// windows.
 struct WindowRootView: View {
 
     // MARK: - Stored properties
@@ -40,16 +42,14 @@ struct WindowRootView: View {
                     // A spawned window: its value says where and what.
                     workspace.adoptRestoredPath(presented.path)
                     pendingFrame = presented.frame
-                } else if let entry = WindowFolderMemory.claimNextEntry() {
-                    // The launch window takes the first remembered entry.
-                    workspace.adoptRestoredPath(entry.path)
-                    folder = WindowFolder(id: UUID(), path: entry.path, frame: entry.frame)
-                    pendingFrame = entry.frame
                 }
             }
             .background(WindowAccessor { window in
                 workspace.window = window
                 applyPendingFrame(to: window)
+                if (folder?.path ?? "").isEmpty {
+                    claimFolder(for: window, attemptsLeft: 7)
+                }
                 AppLog.interface.info("""
                     window \(windowIdentity, privacy: .public) opened in \
                     "\(workspace.workspaceURL?.path ?? "", privacy: .public)" \
@@ -70,15 +70,16 @@ struct WindowRootView: View {
                 WorkspaceModel.unregisterWindowModel(workspace)
             }
             .task {
-                // The launch window reopens the rest of the remembered
-                // windows, each carrying its folder and position.
+                // One pass, after the reopened windows have claimed their
+                // folders: any remembered window still unclaimed did not
+                // come back, so open it — folder and frame in its value.
                 if WorkspaceModel.isRunningTests {
                     return
                 }
                 guard WindowFolderMemory.beginSpawnCheckOnce() else {
                     return
                 }
-                try? await Task.sleep(for: .milliseconds(300))
+                try? await Task.sleep(for: .milliseconds(2000))
                 for entry in WindowFolderMemory.takeUnclaimed() {
                     openWindow(value: WindowFolder(id: UUID(), path: entry.path, frame: entry.frame))
                 }
@@ -86,6 +87,45 @@ struct WindowRootView: View {
     }
 
     // MARK: - Functions
+
+    /// Finds this window's folder by its frame, retrying briefly because a
+    /// reopened window's frame settles a moment after the window exists.
+    /// Only when the frame never matches does order decide — the case
+    /// where there were no frames to restore at all.
+    func claimFolder(for window: NSWindow, attemptsLeft: Int) {
+        if !WindowFolderMemory.hasEntriesToClaim() {
+            return
+        }
+        if !(folder?.path ?? "").isEmpty {
+            return
+        }
+        let frame: String = NSStringFromRect(window.frame)
+        if let entry = WindowFolderMemory.claimEntry(matchingFrame: frame) {
+            adopt(entry, log: "matched by frame")
+            return
+        }
+        if attemptsLeft <= 0 {
+            if let entry = WindowFolderMemory.claimNextEntry() {
+                adopt(entry, log: "fell back to order")
+                pendingFrame = entry.frame
+                applyPendingFrame(to: window)
+            }
+            return
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            claimFolder(for: window, attemptsLeft: attemptsLeft - 1)
+        }
+    }
+
+    /// Takes a remembered window as this window's own.
+    func adopt(_ entry: WindowFolderMemory.Entry, log detail: String) {
+        workspace.adoptRestoredPath(entry.path)
+        folder = WindowFolder(id: UUID(), path: entry.path, frame: entry.frame)
+        AppLog.interface.info("""
+            window \(windowIdentity, privacy: .public) claimed \
+            "\(entry.path, privacy: .public)" — \(detail, privacy: .public)
+            """)
+    }
 
     /// Moves the window to its remembered place, once, sanity-checking the
     /// stored rectangle so a corrupt value cannot produce an unusable

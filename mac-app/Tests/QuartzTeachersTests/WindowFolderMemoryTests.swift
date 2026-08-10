@@ -38,6 +38,31 @@ final class WindowFolderMemoryTests: XCTestCase {
     }
 
     @MainActor
+    func testAReopenedWindowFindsItsFolderByItsFrame() throws {
+        let folders: [String] = try makeFolders(2)
+        defer { removeAll(folders) }
+        WindowFolderMemory.reset(with: [
+            WindowFolderMemory.Entry(path: folders[0], frame: "{{100, 100}, {900, 700}}"),
+            WindowFolderMemory.Entry(path: folders[1], frame: "{{300, 200}, {1100, 720}}"),
+        ])
+        // The SECOND window is reopened first — macOS chooses its own
+        // order, which is exactly what swapped the folders.
+        XCTAssertEqual(WindowFolderMemory.claimEntry(matchingFrame: "{{300, 200}, {1100, 720}}")?.path, folders[1])
+        XCTAssertEqual(WindowFolderMemory.claimEntry(matchingFrame: "{{100, 100}, {900, 700}}")?.path, folders[0])
+        XCTAssertFalse(WindowFolderMemory.hasEntriesToClaim())
+    }
+
+    @MainActor
+    func testAnEmptyFrameNeverMatches() throws {
+        let folders: [String] = try makeFolders(1)
+        defer { removeAll(folders) }
+        WindowFolderMemory.reset(with: [WindowFolderMemory.Entry(path: folders[0], frame: "")])
+        XCTAssertNil(WindowFolderMemory.claimEntry(matchingFrame: ""),
+                     "Two windows with no recorded frame must not both match the first entry")
+        XCTAssertEqual(WindowFolderMemory.claimNextEntry()?.path, folders[0], "Order still hands it out")
+    }
+
+    @MainActor
     func testSpawningTakesTheRemainingEntriesInOrder() throws {
         let folders: [String] = try makeFolders(3)
         defer { removeAll(folders) }

@@ -44,6 +44,27 @@ enum WindowFolderMemory {
 
     // MARK: - Functions
 
+    /// The remembered window whose frame matches this one, when there is
+    /// one. macOS reopens windows in an order of its own choosing, so the
+    /// frame — which it restores faithfully — is what pairs each window
+    /// with ITS folder.
+    static func claimEntry(matchingFrame frame: String, defaults: UserDefaults = UserDefaults.standard) -> Entry? {
+        loadIfNeeded(defaults: defaults)
+        for (index, entry) in unclaimed.enumerated() {
+            if entry.frame == frame && !entry.frame.isEmpty && WorkspaceModel.folderExists(atPath: entry.path) {
+                unclaimed.remove(at: index)
+                return entry
+            }
+        }
+        return nil
+    }
+
+    /// Whether any remembered windows are still waiting to be claimed.
+    static func hasEntriesToClaim(defaults: UserDefaults = UserDefaults.standard) -> Bool {
+        loadIfNeeded(defaults: defaults)
+        return !unclaimed.isEmpty
+    }
+
     /// The next remembered window, skipping folders that no longer exist.
     static func claimNextEntry(defaults: UserDefaults = UserDefaults.standard) -> Entry? {
         loadIfNeeded(defaults: defaults)

@@ -135,6 +135,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 62 | 2026-08-10 | The app's own restoration should respect the OS-level choice: System Settings ▸ Desktop & Dock ▸ "Close windows when quitting an application". | ✅ Implemented — restoration replays the remembered windows only when the system setting asks for them back (`NSQuitAlwaysKeepsWindows`; the toggle being ON reads as false, and an absent key matches the toggle's default of ON). The list is still recorded either way, so flipping the setting later restores the most recent session. | Windows has no equivalent OS setting; make it an app preference there, defaulting to restore. |
 
+| 63 | 2026-08-10 | With restoration on, windows and folders both came back but paired wrong — macOS reopens the windows itself (`.restorationBehavior(.disabled)` notwithstanding), restoring frames but not values, in an order of its own choosing. | ✅ Fixed — a reopened window finds its folder by matching its own frame against the remembered pairs, retrying briefly while the frame settles (claiming at first sight of the window was what sank frame-matching before). Order decides only when frames never match — the no-restoration path, where there is nothing to mismatch. The spawn pass runs after claiming has had time to finish and opens only what macOS did not bring back. The claim log line records whether frame or order decided, so any future report answers itself. | Moot on Windows — nothing reopens windows but the app, so value-carried spawning covers everything. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the
