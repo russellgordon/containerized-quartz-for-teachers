@@ -71,7 +71,10 @@ struct NewCourseWizardView: View {
             }
             if let number = Int(part) {
                 if number < 1 {
-                    return "Section numbers start at 1."
+                    // Careful wording: a teacher may well teach only
+                    // sections 2, 4, and 5 of a course — nothing requires
+                    // the list to include 1, only that each number is one.
+                    return "“\(part)” isn’t a section number — sections are 1 or higher."
                 }
                 if seen.contains(number) {
                     return "Section \(number) is listed more than once."

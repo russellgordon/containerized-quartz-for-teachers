@@ -41,7 +41,16 @@ final class SectionNumbersValidationTests: XCTestCase {
 
     @MainActor
     func testZeroAndDuplicates() {
-        XCTAssertEqual(NewCourseWizardView.sectionNumbersProblem("0,1"), "Section numbers start at 1.")
+        XCTAssertEqual(NewCourseWizardView.sectionNumbersProblem("0,1"), "“0” isn’t a section number — sections are 1 or higher.")
         XCTAssertEqual(NewCourseWizardView.sectionNumbersProblem("1,3,1"), "Section 1 is listed more than once.")
+    }
+
+    @MainActor
+    func testATeacherNeedNotTeachSectionOne() {
+        // A school may run five sections while this teacher has only three
+        // of them — the list does not have to include 1, or be contiguous.
+        XCTAssertNil(NewCourseWizardView.sectionNumbersProblem("2,4,5"))
+        XCTAssertNil(NewCourseWizardView.sectionNumbersProblem("3"))
+        XCTAssertNil(NewCourseWizardView.sectionNumbersProblem("7,2"))
     }
 }
