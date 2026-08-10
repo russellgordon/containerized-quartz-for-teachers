@@ -44,6 +44,6 @@ willing to carry, and who ends up carrying them** — which is what
 
 ## Curriculum
 
-- ![[D1.1]] — [[D1.1]]
-- ![[D1.2]] — [[D1.2]]
-- ![[D1.4]] — [[D1.4]]
+- [[D1.1]] — ![[D1.1#^text]]
+- [[D1.2]] — ![[D1.2#^text]]
+- [[D1.4]] — ![[D1.4#^text]]

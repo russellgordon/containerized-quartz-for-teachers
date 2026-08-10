@@ -44,5 +44,5 @@ Molecular names use prefixes; ionic names do not.
 
 ## Curriculum
 
-- ![[C2.7]] — [[C2.7]]
-- ![[C1.1]] — [[C1.1]]
+- [[C2.7]] — ![[C2.7#^text]]
+- [[C1.1]] — ![[C1.1#^text]]

@@ -38,5 +38,5 @@ You will measure some of these yourself in [[Measuring Abiotic Factors]].
 
 ## Curriculum
 
-- ![[B2.1]] — [[B2.1]]
-- ![[B2.4]] — [[B2.4]]
+- [[B2.1]] — ![[B2.1#^text]]
+- [[B2.4]] — ![[B2.4#^text]]

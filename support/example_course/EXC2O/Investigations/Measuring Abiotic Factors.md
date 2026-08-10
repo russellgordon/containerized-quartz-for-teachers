@@ -66,6 +66,6 @@ the data to explain the differences in what grows there.
 
 ## Curriculum
 
-- ![[A1.2]] — [[A1.2]]
-- ![[B2.1]] — [[B2.1]]
-- ![[B2.4]] — [[B2.4]]
+- [[A1.2]] — ![[A1.2#^text]]
+- [[B2.1]] — ![[B2.1#^text]]
+- [[B2.4]] — ![[B2.4#^text]]

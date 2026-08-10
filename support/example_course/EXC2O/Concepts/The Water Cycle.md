@@ -34,5 +34,5 @@ and oil with it. That is the mechanism behind most urban flooding.
 
 ## Curriculum
 
-- ![[B2.1]] — [[B2.1]]
-- ![[B2.2]] — [[B2.2]]
+- [[B2.1]] — ![[B2.1#^text]]
+- [[B2.2]] — ![[B2.2#^text]]

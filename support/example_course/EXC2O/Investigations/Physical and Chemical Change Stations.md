@@ -54,6 +54,6 @@ justify each decision with evidence.
 
 ## Curriculum
 
-- ![[A1.2]] — [[A1.2]]
-- ![[C2.1]] — [[C2.1]]
-- ![[A1.5]] — [[A1.5]]
+- [[A1.2]] — ![[A1.2#^text]]
+- [[C2.1]] — ![[C2.1#^text]]
+- [[A1.5]] — ![[A1.5#^text]]

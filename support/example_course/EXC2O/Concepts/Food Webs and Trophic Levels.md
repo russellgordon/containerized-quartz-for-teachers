@@ -49,5 +49,5 @@ Practise this in [[Reading a Food Web]].
 
 ## Curriculum
 
-- ![[B2.2]] — [[B2.2]]
-- ![[B2.5]] — [[B2.5]]
+- [[B2.2]] — ![[B2.2#^text]]
+- [[B2.5]] — ![[B2.5#^text]]

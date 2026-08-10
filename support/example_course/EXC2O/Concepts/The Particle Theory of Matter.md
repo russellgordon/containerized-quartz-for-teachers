@@ -44,4 +44,4 @@ graph LR
 
 ## Curriculum
 
-- ![[C2.1]] — [[C2.1]]
+- [[C2.1]] — ![[C2.1#^text]]

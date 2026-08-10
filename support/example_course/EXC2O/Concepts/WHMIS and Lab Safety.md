@@ -44,4 +44,4 @@ detail, including first aid and disposal.
 
 ## Curriculum
 
-- ![[A1.5]] — [[A1.5]]
+- [[A1.5]] — ![[A1.5#^text]]

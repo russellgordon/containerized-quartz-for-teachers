@@ -45,5 +45,5 @@ fast one. That is climate change in a sentence.
 
 ## Curriculum
 
-- ![[B2.2]] — [[B2.2]]
-- ![[B2.6]] — [[B2.6]]
+- [[B2.2]] — ![[B2.2#^text]]
+- [[B2.6]] — ![[B2.6#^text]]

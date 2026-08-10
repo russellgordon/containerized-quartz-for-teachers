@@ -53,5 +53,5 @@ the movement of electrons.
 
 ## Curriculum
 
-- ![[D2.1]] — [[D2.1]]
-- ![[A1.2]] — [[A1.2]]
+- [[D2.1]] — ![[D2.1#^text]]
+- [[A1.2]] — ![[A1.2#^text]]

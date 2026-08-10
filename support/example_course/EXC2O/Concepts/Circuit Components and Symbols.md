@@ -46,4 +46,4 @@ Practise at [[Circuit Diagram Practice]].
 
 ## Curriculum
 
-- ![[D2.3]] — [[D2.3]]
+- [[D2.3]] — ![[D2.3#^text]]

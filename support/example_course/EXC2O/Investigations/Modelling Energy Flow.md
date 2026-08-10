@@ -56,5 +56,5 @@ explain why food chains are short.
 
 ## Curriculum
 
-- ![[B2.2]] — [[B2.2]]
-- ![[A1.3]] — [[A1.3]]
+- [[B2.2]] — ![[B2.2#^text]]
+- [[A1.3]] — ![[A1.3#^text]]

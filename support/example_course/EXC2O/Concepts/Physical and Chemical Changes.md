@@ -44,5 +44,5 @@ Test this yourself in [[Physical and Chemical Change Stations]].
 
 ## Curriculum
 
-- ![[C2.1]] — [[C2.1]]
-- ![[C2.6]] — [[C2.6]]
+- [[C2.1]] — ![[C2.1#^text]]
+- [[C2.6]] — ![[C2.6#^text]]

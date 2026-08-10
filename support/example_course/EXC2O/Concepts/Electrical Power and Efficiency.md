@@ -52,5 +52,5 @@ Measure this for yourself in [[Efficiency of a Light Bulb]].
 
 ## Curriculum
 
-- ![[D2.8]] — [[D2.8]]
-- ![[D2.7]] — [[D2.7]]
+- [[D2.8]] — ![[D2.8#^text]]
+- [[D2.7]] — ![[D2.7#^text]]

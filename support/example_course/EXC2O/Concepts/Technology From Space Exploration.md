@@ -37,6 +37,6 @@ network could produce. Nearly every indicator in
 
 ## Curriculum
 
-- ![[E1.1]] — [[E1.1]]
-- ![[E1.2]] — [[E1.2]]
-- ![[E1.3]] — [[E1.3]]
+- [[E1.1]] — ![[E1.1#^text]]
+- [[E1.2]] — ![[E1.2#^text]]
+- [[E1.3]] — ![[E1.3#^text]]

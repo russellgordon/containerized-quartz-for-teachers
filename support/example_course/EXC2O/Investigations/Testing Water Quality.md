@@ -60,6 +60,6 @@ supports the healthiest ecosystem.
 
 ## Curriculum
 
-- ![[A1.2]] — [[A1.2]]
-- ![[B2.4]] — [[B2.4]]
-- ![[B2.5]] — [[B2.5]]
+- [[A1.2]] — ![[A1.2#^text]]
+- [[B2.4]] — ![[B2.4#^text]]
+- [[B2.5]] — ![[B2.5#^text]]

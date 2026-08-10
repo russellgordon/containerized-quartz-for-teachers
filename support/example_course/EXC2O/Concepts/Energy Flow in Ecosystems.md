@@ -40,5 +40,5 @@ lower on the food chain feeds more people from the same land.
 
 ## Curriculum
 
-- ![[B2.2]] — [[B2.2]]
-- ![[B2.3]] — [[B2.3]]
+- [[B2.2]] — ![[B2.2#^text]]
+- [[B2.3]] — ![[B2.3#^text]]

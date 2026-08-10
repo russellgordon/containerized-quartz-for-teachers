@@ -43,4 +43,4 @@ observations is part of [[E2.3]].
 
 ## Curriculum
 
-- ![[E2.3]] — [[E2.3]]
+- [[E2.3]] — ![[E2.3#^text]]

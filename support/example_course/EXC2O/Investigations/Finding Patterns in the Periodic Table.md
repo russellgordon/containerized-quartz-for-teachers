@@ -58,6 +58,6 @@ yourself, rather than being told it.
 
 ## Curriculum
 
-- ![[C2.5]] — [[C2.5]]
-- ![[C2.4]] — [[C2.4]]
-- ![[A1.1]] — [[A1.1]]
+- [[C2.5]] — ![[C2.5#^text]]
+- [[C2.4]] — ![[C2.4#^text]]
+- [[A1.1]] — ![[A1.1#^text]]

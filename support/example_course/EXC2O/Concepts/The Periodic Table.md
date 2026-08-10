@@ -42,5 +42,5 @@ Investigate these yourself in [[Finding Patterns in the Periodic Table]].
 
 ## Curriculum
 
-- ![[C2.4]] — [[C2.4]]
-- ![[C2.5]] — [[C2.5]]
+- [[C2.4]] — ![[C2.4#^text]]
+- [[C2.5]] — ![[C2.5#^text]]

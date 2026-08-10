@@ -42,5 +42,5 @@ choosing what to cut first.
 
 ## Curriculum
 
-- ![[B2.6]] — [[B2.6]]
-- ![[B1.1]] — [[B1.1]]
+- [[B2.6]] — ![[B2.6#^text]]
+- [[B1.1]] — ![[B1.1#^text]]

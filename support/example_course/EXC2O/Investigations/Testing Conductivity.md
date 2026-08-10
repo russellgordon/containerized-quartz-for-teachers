@@ -60,5 +60,5 @@ relate the result to atomic structure.
 
 ## Curriculum
 
-- ![[D2.2]] — [[D2.2]]
-- ![[A1.2]] — [[A1.2]]
+- [[D2.2]] — ![[D2.2#^text]]
+- [[A1.2]] — ![[A1.2#^text]]

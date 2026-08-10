@@ -48,5 +48,5 @@ only direction they can go.
 
 ## Curriculum
 
-- ![[E2.5]] — [[E2.5]]
-- ![[E2.4]] — [[E2.4]]
+- [[E2.5]] — ![[E2.5#^text]]
+- [[E2.4]] — ![[E2.4#^text]]

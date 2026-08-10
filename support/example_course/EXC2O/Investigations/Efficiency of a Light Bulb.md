@@ -68,5 +68,5 @@ where $c = 4.18\ \mathrm{J/(g \cdot ^\circ C)}$ for water.
 
 ## Curriculum
 
-- ![[D2.8]] — [[D2.8]]
-- ![[A1.2]] — [[A1.2]]
+- [[D2.8]] — ![[D2.8#^text]]
+- [[A1.2]] — ![[A1.2#^text]]

@@ -51,6 +51,6 @@ ecosystem and leaves as heat. Matter **cycles** and gets used again.
 
 ## Curriculum
 
-- ![[B2.1]] — [[B2.1]]
-- ![[B2.2]] — [[B2.2]]
-- ![[B2.4]] — [[B2.4]]
+- [[B2.1]] — ![[B2.1#^text]]
+- [[B2.2]] — ![[B2.2#^text]]
+- [[B2.4]] — ![[B2.4#^text]]

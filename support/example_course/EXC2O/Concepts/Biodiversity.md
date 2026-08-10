@@ -44,5 +44,5 @@ Collect data like this yourself in [[Measuring Abiotic Factors]].
 
 ## Curriculum
 
-- ![[B2.4]] — [[B2.4]]
-- ![[B1.1]] — [[B1.1]]
+- [[B2.4]] — ![[B2.4#^text]]
+- [[B1.1]] — ![[B1.1#^text]]

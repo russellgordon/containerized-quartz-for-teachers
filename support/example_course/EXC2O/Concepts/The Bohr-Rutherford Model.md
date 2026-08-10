@@ -49,5 +49,5 @@ Practise at [[Bohr-Rutherford Diagrams]].
 
 ## Curriculum
 
-- ![[C2.3]] — [[C2.3]]
-- ![[C2.4]] — [[C2.4]]
+- [[C2.3]] — ![[C2.3#^text]]
+- [[C2.4]] — ![[C2.4#^text]]

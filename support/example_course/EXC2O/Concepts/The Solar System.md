@@ -40,5 +40,5 @@ that table stop being abstract.
 
 ## Curriculum
 
-- ![[E2.4]] — [[E2.4]]
-- ![[E2.5]] — [[E2.5]]
+- [[E2.4]] — ![[E2.4#^text]]
+- [[E2.5]] — ![[E2.5#^text]]

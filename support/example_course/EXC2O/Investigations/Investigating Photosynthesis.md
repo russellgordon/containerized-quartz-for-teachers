@@ -65,5 +65,5 @@ float** is a measure of photosynthetic rate.
 
 ## Curriculum
 
-- ![[A1.2]] — [[A1.2]]
-- ![[B2.3]] — [[B2.3]]
+- [[A1.2]] — ![[A1.2#^text]]
+- [[B2.3]] — ![[B2.3#^text]]

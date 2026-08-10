@@ -44,5 +44,5 @@ identifies a substance regardless of how much you have.
 
 ## Curriculum
 
-- ![[C2.6]] — [[C2.6]]
-- ![[C2.1]] — [[C2.1]]
+- [[C2.6]] — ![[C2.6#^text]]
+- [[C2.1]] — ![[C2.1#^text]]

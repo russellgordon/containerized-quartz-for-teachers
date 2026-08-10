@@ -42,5 +42,5 @@ caps how much can grow. Three ways to add it:
 
 ## Curriculum
 
-- ![[B2.2]] — [[B2.2]]
-- ![[B2.7]] — [[B2.7]]
+- [[B2.2]] — ![[B2.2#^text]]
+- [[B2.7]] — ![[B2.7#^text]]

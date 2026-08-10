@@ -61,6 +61,6 @@ heats — the mechanism behind seasons.
 
 ## Curriculum
 
-- ![[E2.2]] — [[E2.2]]
-- ![[E2.6]] — [[E2.6]]
-- ![[A1.2]] — [[A1.2]]
+- [[E2.2]] — ![[E2.2#^text]]
+- [[E2.6]] — ![[E2.6#^text]]
+- [[A1.2]] — ![[A1.2#^text]]

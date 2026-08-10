@@ -43,5 +43,5 @@ electrons existed, and the convention stuck.
 
 ## Curriculum
 
-- ![[D2.3]] — [[D2.3]]
-- ![[D2.7]] — [[D2.7]]
+- [[D2.3]] — ![[D2.3#^text]]
+- [[D2.7]] — ![[D2.7#^text]]

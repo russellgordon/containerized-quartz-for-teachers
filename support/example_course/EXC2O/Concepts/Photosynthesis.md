@@ -41,5 +41,5 @@ carbon back — see [[The Carbon Cycle]] and [[Indicators of Climate Change]].
 
 ## Curriculum
 
-- ![[B2.3]] — [[B2.3]]
-- ![[B2.2]] — [[B2.2]]
+- [[B2.3]] — ![[B2.3#^text]]
+- [[B2.2]] — ![[B2.2#^text]]

@@ -70,5 +70,5 @@ state the rules for each from your own measurements.
 
 ## Curriculum
 
-- ![[D2.6]] — [[D2.6]]
-- ![[A1.2]] — [[A1.2]]
+- [[D2.6]] — ![[D2.6#^text]]
+- [[A1.2]] — ![[A1.2#^text]]

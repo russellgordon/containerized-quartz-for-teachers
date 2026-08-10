@@ -49,5 +49,5 @@ whole string went dark.
 
 ## Curriculum
 
-- ![[D2.6]] — [[D2.6]]
-- ![[D2.4]] — [[D2.4]]
+- [[D2.6]] — ![[D2.6#^text]]
+- [[D2.4]] — ![[D2.4#^text]]

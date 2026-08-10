@@ -39,4 +39,4 @@ settle. Treat it as a useful simplification rather than a law.
 
 ## Curriculum
 
-- ![[B2.4]] — [[B2.4]]
+- [[B2.4]] — ![[B2.4#^text]]

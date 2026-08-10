@@ -46,4 +46,4 @@ the observation.
 
 ## Curriculum
 
-- ![[C2.2]] — [[C2.2]]
+- [[C2.2]] — ![[C2.2#^text]]
