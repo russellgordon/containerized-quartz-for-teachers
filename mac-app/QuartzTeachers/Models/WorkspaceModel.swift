@@ -276,12 +276,73 @@ class WorkspaceModel {
         reloadCourses()
     }
 
+    /// Keeps this folder's launcher scripts current.
+    ///
+    /// A working folder carries its own copy of the launchers, taken when
+    /// the folder was set up — and a copy taken once is a copy that goes
+    /// stale, exactly as the image and the container used to. Whenever the
+    /// app works in a folder, any launcher that differs from the app's
+    /// bundled (current) copy is replaced. These are toolchain files, not
+    /// the teacher's own work, so replacing them is correct.
+    func refreshLaunchersIfNeeded() {
+        guard let workspaceURL else {
+            return
+        }
+        // Test fixtures use stub launchers on purpose; leave them alone.
+        if isUnderUITest || WorkspaceModel.isRunningTests {
+            return
+        }
+        var sources: [String: URL] = [:]
+        for scriptName in ["setup.sh", "preview.sh", "deploy.sh"] {
+            if let bundledURL = Bundle.main.url(forResource: scriptName, withExtension: nil) {
+                sources[scriptName] = bundledURL
+            }
+        }
+        let refreshed: [String] = WorkspaceModel.refreshLaunchers(in: workspaceURL, from: sources)
+        if !refreshed.isEmpty {
+            AppLog.interface.info("refreshed launchers in \(workspaceURL.path, privacy: .public): \(refreshed.joined(separator: ", "), privacy: .public)")
+        }
+    }
+
+    /// Replaces any launcher whose content differs from the current copy.
+    /// Only files that already exist are touched: a folder without
+    /// launchers is a folder that has not been initialized, which is the
+    /// picker's business, not this method's.
+    static func refreshLaunchers(in workspaceURL: URL, from sources: [String: URL]) -> [String] {
+        let fileManager: FileManager = FileManager.default
+        var refreshed: [String] = []
+        for (scriptName, sourceURL) in sources {
+            let destinationURL: URL = workspaceURL.appendingPathComponent(scriptName)
+            if !fileManager.fileExists(atPath: destinationURL.path) {
+                continue
+            }
+            guard let current = try? Data(contentsOf: sourceURL),
+                  let existing = try? Data(contentsOf: destinationURL) else {
+                continue
+            }
+            if current == existing {
+                continue
+            }
+            do {
+                try current.write(to: destinationURL, options: [.atomic])
+                try fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: destinationURL.path)
+                refreshed.append(scriptName)
+            } catch {
+                // A read-only folder is unusual but not fatal: the stale
+                // script will fail loudly on its own if it matters.
+                continue
+            }
+        }
+        return refreshed.sorted()
+    }
+
     /// Scans `<workspace>/courses/` for course folders containing a
     /// `course_config.json` and loads each one.
     func reloadCourses() {
         courses = []
         archivedItems = []
         workspaceProblem = nil
+        refreshLaunchersIfNeeded()
         workspaceCanBeInitialized = false
         workspaceIsUnrecognized = false
 

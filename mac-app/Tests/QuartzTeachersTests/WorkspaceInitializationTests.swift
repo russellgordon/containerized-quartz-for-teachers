@@ -134,3 +134,71 @@ final class WorkspacePersistenceTests: XCTestCase {
         XCTAssertEqual(before, after, "A test must leave the teacher's own working folder alone")
     }
 }
+
+/// A working folder's launchers stay current with the app.
+final class LauncherRefreshTests: XCTestCase {
+
+    // MARK: - Functions
+
+    @MainActor
+    func testAStaleLauncherIsReplaced() throws {
+        let fileManager: FileManager = FileManager.default
+        let workspace: URL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("lr-\(UUID().uuidString)")
+        let source: URL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("lrsrc-\(UUID().uuidString)")
+        try fileManager.createDirectory(at: workspace, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: source, withIntermediateDirectories: true)
+        defer {
+            try? fileManager.removeItem(at: workspace)
+            try? fileManager.removeItem(at: source)
+        }
+
+        try "#!/bin/bash\necho new".write(to: source.appendingPathComponent("preview.sh"), atomically: true, encoding: .utf8)
+        try "#!/bin/bash\necho old".write(to: workspace.appendingPathComponent("preview.sh"), atomically: true, encoding: .utf8)
+
+        let refreshed = WorkspaceModel.refreshLaunchers(
+            in: workspace,
+            from: ["preview.sh": source.appendingPathComponent("preview.sh")]
+        )
+        XCTAssertEqual(refreshed, ["preview.sh"])
+        let contents: String = try String(contentsOf: workspace.appendingPathComponent("preview.sh"), encoding: .utf8)
+        XCTAssertTrue(contents.contains("echo new"))
+
+        let attributes = try fileManager.attributesOfItem(atPath: workspace.appendingPathComponent("preview.sh").path)
+        let permissions: Int = (attributes[.posixPermissions] as? NSNumber)?.intValue ?? 0
+        XCTAssertEqual(permissions & 0o111, 0o111, "The refreshed script must stay executable")
+    }
+
+    @MainActor
+    func testACurrentLauncherIsLeftAlone() throws {
+        let fileManager: FileManager = FileManager.default
+        let workspace: URL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("lr-\(UUID().uuidString)")
+        let source: URL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("lrsrc-\(UUID().uuidString)")
+        try fileManager.createDirectory(at: workspace, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: source, withIntermediateDirectories: true)
+        defer {
+            try? fileManager.removeItem(at: workspace)
+            try? fileManager.removeItem(at: source)
+        }
+        try "same".write(to: source.appendingPathComponent("preview.sh"), atomically: true, encoding: .utf8)
+        try "same".write(to: workspace.appendingPathComponent("preview.sh"), atomically: true, encoding: .utf8)
+        XCTAssertEqual(WorkspaceModel.refreshLaunchers(in: workspace, from: ["preview.sh": source.appendingPathComponent("preview.sh")]), [])
+    }
+
+    @MainActor
+    func testAMissingLauncherIsNotCreated() throws {
+        // A folder without launchers has never been initialized; creating
+        // one script in it would leave a half-initialized folder.
+        let fileManager: FileManager = FileManager.default
+        let workspace: URL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("lr-\(UUID().uuidString)")
+        let source: URL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("lrsrc-\(UUID().uuidString)")
+        try fileManager.createDirectory(at: workspace, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: source, withIntermediateDirectories: true)
+        defer {
+            try? fileManager.removeItem(at: workspace)
+            try? fileManager.removeItem(at: source)
+        }
+        try "new".write(to: source.appendingPathComponent("preview.sh"), atomically: true, encoding: .utf8)
+        XCTAssertEqual(WorkspaceModel.refreshLaunchers(in: workspace, from: ["preview.sh": source.appendingPathComponent("preview.sh")]), [])
+        XCTAssertFalse(fileManager.fileExists(atPath: workspace.appendingPathComponent("preview.sh").path))
+    }
+}
