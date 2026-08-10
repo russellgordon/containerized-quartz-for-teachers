@@ -70,24 +70,45 @@ struct SidebarView: View {
         }
     }
 
+    /// How big the footer's +/- targets are. Named so a test can check the
+    /// buttons really are this size on screen.
+    static let footerButtonSize: CGSize = CGSize(width: 24, height: 22)
+
     /// Add, remove, and filter — the standard macOS list footer.
     var bottomBar: some View {
         @Bindable var workspace = workspace
 
         return HStack(spacing: 6) {
-            Button("Add Course or Club", systemImage: "plus") {
+            // A bare glyph is a tiny target — the minus is barely a few
+            // pixels tall. The frame gives each button a real area and
+            // contentShape makes the whole of it clickable.
+            //
+            // Both must be INSIDE the button's label: applied to the button
+            // itself, contentShape only reshapes bounds that are already
+            // just the glyph, which is why it appeared to do nothing.
+            Button {
                 workspace.isShowingNewCourseWizard = true
+            } label: {
+                Label("Add Course or Club", systemImage: "plus")
+                    .labelStyle(.iconOnly)
+                    .frame(width: SidebarView.footerButtonSize.width, height: SidebarView.footerButtonSize.height)
+                    .contentShape(Rectangle())
             }
-            .labelStyle(.iconOnly)
             .buttonStyle(.borderless)
+            .help("Add a course or club")
             .accessibilityIdentifier("addCourseButton")
 
-            Button("Remove Selected", systemImage: "minus") {
+            Button {
                 prepareRemoval()
+            } label: {
+                Label("Remove Selected", systemImage: "minus")
+                    .labelStyle(.iconOnly)
+                    .frame(width: SidebarView.footerButtonSize.width, height: SidebarView.footerButtonSize.height)
+                    .contentShape(Rectangle())
             }
-            .labelStyle(.iconOnly)
             .buttonStyle(.borderless)
             .disabled(workspace.selection == nil)
+            .help("Remove the selected course or section")
             .accessibilityIdentifier("removeSelectedButton")
 
             TextField("Filter", text: $workspace.filterText)

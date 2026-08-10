@@ -17,6 +17,54 @@ enum AccessibilityInspector {
         return labels
     }
 
+    /// The on-screen rectangle of the element with this identifier — what a
+    /// teacher can actually click, rather than what was drawn.
+    @MainActor
+    static func frame(forIdentifier identifier: String) -> CGRect? {
+        let applicationElement: AXUIElement = AXUIElementCreateApplication(ProcessInfo.processInfo.processIdentifier)
+        return findFrame(from: applicationElement, identifier: identifier, depth: 0)
+    }
+
+    private static func findFrame(from element: AXUIElement, identifier: String, depth: Int) -> CGRect? {
+        if depth > 60 {
+            return nil
+        }
+
+        var identifierValue: CFTypeRef?
+        let identifierResult: AXError = AXUIElementCopyAttributeValue(element, kAXIdentifierAttribute as CFString, &identifierValue)
+        if identifierResult == .success, let found = identifierValue as? String, found == identifier {
+            if let rectangle = frameOf(element) {
+                return rectangle
+            }
+        }
+
+        var childrenValue: CFTypeRef?
+        let childrenResult: AXError = AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenValue)
+        if childrenResult == .success, let children = childrenValue as? [AXUIElement] {
+            for child in children {
+                if let rectangle = findFrame(from: child, identifier: identifier, depth: depth + 1) {
+                    return rectangle
+                }
+            }
+        }
+        return nil
+    }
+
+    private static func frameOf(_ element: AXUIElement) -> CGRect? {
+        var positionValue: CFTypeRef?
+        var sizeValue: CFTypeRef?
+        let positionResult: AXError = AXUIElementCopyAttributeValue(element, kAXPositionAttribute as CFString, &positionValue)
+        let sizeResult: AXError = AXUIElementCopyAttributeValue(element, kAXSizeAttribute as CFString, &sizeValue)
+        if positionResult != .success || sizeResult != .success {
+            return nil
+        }
+        var origin: CGPoint = .zero
+        var size: CGSize = .zero
+        AXValueGetValue(positionValue as! AXValue, .cgPoint, &origin)
+        AXValueGetValue(sizeValue as! AXValue, .cgSize, &size)
+        return CGRect(origin: origin, size: size)
+    }
+
     private static func collectLabels(from element: AXUIElement, into labels: inout [String], depth: Int) {
         if depth > 60 {
             return
