@@ -17,7 +17,7 @@ set -euo pipefail
 #      (and that Windows launchers were converted to CRLF).
 #   4. Verifies the Python scripts and Quartz patches baked into the image
 #      match the working tree.
-#   5. Removes the existing 'teaching-quartz' container, then runs
+#   5. Removes this folder's existing container, then runs
 #      ./preview.sh EXC2O 1 --image quartz-teacher:dev-test --full-rebuild --build-only
 #      so the container is recreated FROM THE DEV-TEST IMAGE and a full static
 #      build of the Example Course runs through the real launcher.
@@ -39,7 +39,8 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 DEV_TEST_IMAGE="quartz-teacher:dev-test"
-CONTAINER_NAME="teaching-quartz"
+# The launchers name their container after the working folder.
+CONTAINER_NAME="teaching-quartz-$(pwd -P | shasum -a 256 | cut -c1-8)"
 NO_CACHE=""
 SKIP_BUILD="false"
 

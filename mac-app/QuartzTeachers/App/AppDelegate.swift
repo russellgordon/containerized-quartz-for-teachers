@@ -18,6 +18,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         MainActor.assumeIsolated {
             WorkspaceModel.isTerminating = true
             WorkspaceModel.rememberOpenFolders()
+            // Let every folder's container rest: they hold no content and
+            // restart in about a second when next needed.
+            var stopped: [String] = []
+            for model in WorkspaceModel.windowModels {
+                if let path = model.workspaceURL?.path {
+                    if !stopped.contains(path) {
+                        stopped.append(path)
+                        FolderContainers.stopContainer(forFolder: path)
+                    }
+                }
+            }
         }
         return .terminateNow
     }

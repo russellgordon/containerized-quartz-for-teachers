@@ -34,6 +34,21 @@ final class PreviewLeaseTests: XCTestCase {
     }
 
     @MainActor
+    func testFoldersDoNotContendForPorts() throws {
+        // Each folder has its own container, so the same container port in
+        // two folders is two different servers.
+        PreviewLeases.reset()
+        let here = try PreviewLeases.lease(folderPath: "/this-year", courseCode: "SNC1W", sectionNumber: 1)
+        let there = try PreviewLeases.lease(folderPath: "/last-year", courseCode: "ICS3U", sectionNumber: 1)
+        XCTAssertEqual(here.port, there.port, "Different containers reuse the same container port")
+        // And a folder still caps at four of its own.
+        for section in 2...4 {
+            _ = try PreviewLeases.lease(folderPath: "/this-year", courseCode: "SNC1W", sectionNumber: section)
+        }
+        XCTAssertThrowsError(try PreviewLeases.lease(folderPath: "/this-year", courseCode: "SNC1W", sectionNumber: 5))
+    }
+
+    @MainActor
     func testTheFifthPreviewIsRefusedPolitely() throws {
         PreviewLeases.reset()
         for section in 1...4 {

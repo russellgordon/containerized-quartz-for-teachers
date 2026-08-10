@@ -4,7 +4,14 @@ set -euo pipefail
 # Ensure we're in the same directory as this script
 cd "$(dirname "$0")"
 
-CONTAINER_NAME="teaching-quartz"
+# ---- One container per working folder --------------------------------
+# The container's name is derived from THIS folder, so two working folders
+# (this year's courses and last year's, say) each get their own container
+# and never repoint each other's mounts. The same derivation is used by
+# the macOS app; the trailing newline from pwd is part of the hashed
+# input, so keep `pwd -P | shasum` exactly as written.
+WORKDIR_ID="$(pwd -P | shasum -a 256 | cut -c1-8)"
+CONTAINER_NAME="teaching-quartz-${WORKDIR_ID}"
 
 # Image resolution (same rules as setup.sh and preview.sh). Without this,
 # creating a container here used the bare name "teaching-quartz", which
@@ -436,14 +443,51 @@ ensure_image_present() {
   esac
 }
 
+
+# Finds a free block of host ports for this container: four site ports and
+# their four live-reload websocket ports. Different working folders get
+# different blocks, which is what lets their previews run at the same time.
+find_free_port_block() {
+  local base offset
+  for base in 8081 8091 8101 8111 8121 8131; do
+    local all_free=true
+    for offset in 0 1 2 3; do
+      if lsof -nP -iTCP:$((base + offset)) -sTCP:LISTEN >/dev/null 2>&1; then all_free=false; break; fi
+      if lsof -nP -iTCP:$((base + 1000 + offset)) -sTCP:LISTEN >/dev/null 2>&1; then all_free=false; break; fi
+    done
+    if [[ "$all_free" == "true" ]]; then
+      echo "$base"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# The one shared container from before working folders each had their own.
+# Superseded: it holds no content (everything lives on the host), and left
+# running it would shadow the per-folder containers' ports.
+retire_legacy_container() {
+  if docker ps -a --format '{{.Names}}' | grep -Eq '^teaching-quartz$'; then
+    echo "♻️  Retiring the old shared workspace container…"
+    docker rm -f teaching-quartz >/dev/null 2>&1 || true
+  fi
+}
+
 run_container_with_mount() {
   ensure_image_present
-  echo " Binding host courses to container: $HOST_COURSES ➜ /teaching/courses"
+  retire_legacy_container
+  local HOST_BASE
+  HOST_BASE=$(find_free_port_block) || {
+    echo "❌ Could not find free ports for this folder's previews."
+    echo "   Stop another preview (or another app using ports 8081+), then try again."
+    exit 1
+  }
+  echo "🔗 Binding host courses to container: $HOST_COURSES ➜ /teaching/courses"
   docker run -dit \
     --name "$CONTAINER_NAME" \
     -v "$HOST_COURSES":/teaching/courses \
-    -p 8081-8084:8081-8084 \
-    -p 9081-9084:9081-9084 \
+    -p ${HOST_BASE}-$((HOST_BASE + 3)):8081-8084 \
+    -p $((HOST_BASE + 1000))-$((HOST_BASE + 1003)):9081-9084 \
     "$IMAGE" \
     tail -f /dev/null
 }

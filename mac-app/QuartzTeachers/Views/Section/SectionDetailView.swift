@@ -317,7 +317,9 @@ struct SectionDetailView: View {
     /// "Launching Quartz preview" line first and only then trusts a
     /// response from the port.
     func waitForPreviewServer(port: Int) async {
-        let serverURL: URL = URL(string: "http://127.0.0.1:\(port)/")!
+        // The launcher announces the real host address — the container's
+        // ports map to a per-folder block, so the port cannot be assumed.
+        var serverURL: URL = URL(string: "http://127.0.0.1:\(port)/")!
 
         // Phase 1: wait for the script to announce ITS server is starting
         // (which happens right after it has freed the port).
@@ -330,6 +332,9 @@ struct SectionDetailView: View {
                 isWaitingForServer = false
                 releasePreviewLease()
                 return
+            }
+            if let announced = previewRunner.previewAddress {
+                serverURL = announced
             }
             if previewRunner.transcript.displayText.contains("Launching Quartz preview") {
                 break

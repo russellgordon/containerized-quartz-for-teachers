@@ -58,6 +58,27 @@ class WorkspaceModel {
         }
         windowModels = remaining
         rememberOpenFolders()
+        if let path = model.workspaceURL?.path {
+            releaseFolderIfUnused(path)
+        }
+    }
+
+    /// True while some open window is working in this folder.
+    static func folderIsInUse(_ path: String) -> Bool {
+        for model in windowModels {
+            if model.workspaceURL?.path == path {
+                return true
+            }
+        }
+        return false
+    }
+
+    /// Lets a folder's container rest once no window is using the folder.
+    static func releaseFolderIfUnused(_ path: String) {
+        if folderIsInUse(path) {
+            return
+        }
+        FolderContainers.stopContainer(forFolder: path)
     }
 
     /// Writes down which folder each open window is in, paired with the
@@ -224,6 +245,7 @@ class WorkspaceModel {
 
     /// Adopts a new working folder, validates it, and remembers it.
     func chooseWorkspace(at url: URL) {
+        let previousPath: String? = workspaceURL?.path
         workspaceURL = url
         if canRememberChoice {
             // Remembered app-wide so a NEW window opens where the last one
@@ -231,6 +253,9 @@ class WorkspaceModel {
             defaults.set(url.path, forKey: WorkspaceModel.storedPathKey)
         }
         reloadCourses()
+        if let previousPath, previousPath != url.path {
+            WorkspaceModel.releaseFolderIfUnused(previousPath)
+        }
     }
 
     /// Adopts the folder a window remembered from its last session.

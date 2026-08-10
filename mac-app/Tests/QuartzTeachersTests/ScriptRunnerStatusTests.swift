@@ -212,3 +212,29 @@ final class ScriptRunnerStatusTests: XCTestCase {
         XCTAssertTrue(runner.mayBeWaitingForInput(asOf: Date()))
     }
 }
+
+/// Reading the preview's announced address.
+final class PreviewAddressTests: XCTestCase {
+
+    // MARK: - Functions
+
+    @MainActor
+    func testTheAnnouncedAddressIsRead() {
+        let output: String = "🌐 Preview will be available at: http://localhost:8091/\n"
+        XCTAssertEqual(ScriptRunner.previewAddress(in: output)?.absoluteString, "http://127.0.0.1:8091/")
+    }
+
+    @MainActor
+    func testTheLastAnnouncementWins() {
+        let output: String = """
+        🌐 Preview will be available at: http://localhost:8081/
+        🌐 Preview will be available at: http://localhost:8092/
+        """
+        XCTAssertEqual(ScriptRunner.previewAddress(in: output)?.port, 8092)
+    }
+
+    @MainActor
+    func testOrdinaryOutputAnnouncesNothing() {
+        XCTAssertNil(ScriptRunner.previewAddress(in: "🚀 Starting container if needed...\n"))
+    }
+}

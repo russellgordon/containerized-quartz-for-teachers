@@ -246,7 +246,10 @@ $MOUNT_COURSES = Get-MountPath $HOST_COURSES
 # ====================================================================
 
 # ---- Container handling (mount-aware) ----
-$CONTAINER_NAME = 'teaching-quartz'
+# One container per working folder, so two folders never repoint each
+# other's mounts. The name is a short hash of this folder's path.
+$WORKDIR_ID = ([BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes("$((Get-Location).Path)`n"))) -replace '-','').Substring(0,8).ToLower()
+$CONTAINER_NAME = "teaching-quartz-$WORKDIR_ID"
 
 function Test-ImagePresent([string]$ref) {
     try { docker image inspect "$ref" *> $null; return $true } catch { return $false }
@@ -317,13 +320,40 @@ function Offer-NewerImage([string]$ref) {
 
 Offer-NewerImage $IMAGE
 
+
+# A free block of host ports for this folder's previews (four site ports
+# and their live-reload websocket ports).
+function Find-FreePortBlock {
+  foreach ($base in 8081, 8091, 8101, 8111, 8121, 8131) {
+    $allFree = $true
+    foreach ($offset in 0..3) {
+      if (Get-NetTCPConnection -State Listen -LocalPort ($base + $offset) -ErrorAction SilentlyContinue) { $allFree = $false; break }
+      if (Get-NetTCPConnection -State Listen -LocalPort ($base + 1000 + $offset) -ErrorAction SilentlyContinue) { $allFree = $false; break }
+    }
+    if ($allFree) { return $base }
+  }
+  return $null
+}
+
+# The one shared container from before folders each had their own.
+function Retire-LegacyContainer {
+  $names = docker ps -a --format '{{.Names}}'
+  if ($names -contains 'teaching-quartz') {
+    Write-Host "Retiring the old shared workspace container ..."
+    docker rm -f teaching-quartz *> $null
+  }
+}
+
 function Run-ContainerWithMount {
+    Retire-LegacyContainer
+    $HostBase = Find-FreePortBlock
+    if (-not $HostBase) { Write-Host "Could not find free ports for this folder's previews."; exit 1 }
     Write-Host ("Binding host courses to container: {0} -> /teaching/courses" -f $MOUNT_COURSES)
     docker run -dit `
         --name "$CONTAINER_NAME" `
         -v "${MOUNT_COURSES}:/teaching/courses" `
-        -p 8081-8084:8081-8084 `
-        -p 9081-9084:9081-9084 `
+        -p "$HostBase-$($HostBase + 3):8081-8084" `
+        -p "$($HostBase + 1000)-$($HostBase + 1003):9081-9084" `
         "$IMAGE" `
         tail -f /dev/null | Out-Null
 }

@@ -345,6 +345,34 @@ class ScriptRunner {
         return FailureExplainer.explanation(in: transcript.recentText(maximumCharacters: 8000))
     }
 
+    /// The local address the preview will serve at, once the launcher has
+    /// announced it. The host port belongs to this folder's container and
+    /// is not knowable in advance, so the announcement is the truth.
+    var previewAddress: URL? {
+        return ScriptRunner.previewAddress(in: transcript.recentText(maximumCharacters: 8000))
+    }
+
+    /// Reads "Preview will be available at: http://localhost:8091/" from
+    /// the output, taking the LAST announcement.
+    static func previewAddress(in text: String) -> URL? {
+        let marker: String = "Preview will be available at: "
+        var found: URL?
+        for rawLine in text.split(separator: "\n", omittingEmptySubsequences: false) {
+            let line: String = String(rawLine)
+            guard let markerRange = line.range(of: marker) else {
+                continue
+            }
+            let address: String = String(line[markerRange.upperBound...]).trimmingCharacters(in: .whitespaces)
+            // Poll by numeric address: Safari-style localhost/IPv6 quirks
+            // do not apply to URLSession, but consistency costs nothing.
+            let numeric: String = address.replacingOccurrences(of: "localhost", with: "127.0.0.1")
+            if let url = URL(string: numeric), url.port != nil {
+                found = url
+            }
+        }
+        return found
+    }
+
     /// The published site's address, if the output announced one.
     var publishedSiteURL: URL? {
         return ScriptRunner.publishedSiteURL(in: transcript.recentText(maximumCharacters: 8000))

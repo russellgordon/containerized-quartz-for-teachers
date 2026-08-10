@@ -29,7 +29,7 @@ enum PreviewLeases {
             case .sectionAlreadyPreviewed(let code, let section):
                 return "Section \(section) of \(code) is already being previewed in another window. Stop that preview first, or work with it there."
             case .allPortsBusy:
-                return "Four previews are already running, which is the most that can run at once. Stop one, then try again."
+                return "Four previews of this folder are already running, which is the most that can run at once. Stop one, then try again."
             }
         }
     }
@@ -56,9 +56,13 @@ enum PreviewLeases {
             }
         }
 
+        // Ports are per-container, and each folder has its own container —
+        // so only previews in the SAME folder contend for them.
         var takenPorts: [Int] = []
         for existing in active {
-            takenPorts.append(existing.port)
+            if existing.folderPath == folderPath {
+                takenPorts.append(existing.port)
+            }
         }
         for port in availablePorts {
             if !takenPorts.contains(port) {
