@@ -80,6 +80,16 @@ struct SidebarView: View {
             }
             .listStyle(.sidebar)
             .accessibilityIdentifier("coursesSidebar")
+            .overlay {
+                if showsNoFilterMatches {
+                    ContentUnavailableView {
+                        Label("No Matches", systemImage: "magnifyingglass")
+                    } description: {
+                        Text("No course or club matches “\(workspace.filterText)”.")
+                    }
+                    .accessibilityIdentifier("noFilterMatchesMessage")
+                }
+            }
 
             Divider()
 
@@ -190,6 +200,27 @@ struct SidebarView: View {
     }
 
     // MARK: - Computed properties
+
+    /// True when the filter has hidden everything — as against there being
+    /// nothing to show in the first place, which the window's own empty
+    /// state already explains.
+    var showsNoFilterMatches: Bool {
+        return SidebarView.showsNoFilterMatches(
+            courseCount: workspace.courses.count,
+            matchCount: workspace.filteredCourses.count,
+            filterText: workspace.filterText
+        )
+    }
+
+    static func showsNoFilterMatches(courseCount: Int, matchCount: Int, filterText: String) -> Bool {
+        if filterText.trimmingCharacters(in: .whitespaces).isEmpty {
+            return false
+        }
+        if courseCount == 0 {
+            return false
+        }
+        return matchCount == 0
+    }
 
     /// What restoring this item will do, said plainly.
     func restoreMessage(for item: ArchivedItem) -> String {

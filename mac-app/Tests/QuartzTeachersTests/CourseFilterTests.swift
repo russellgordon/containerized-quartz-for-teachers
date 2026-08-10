@@ -68,3 +68,33 @@ final class CourseFilterTests: XCTestCase {
         XCTAssertTrue(workspace.filteredCourses.isEmpty)
     }
 }
+
+/// Saying so when the filter hides everything.
+final class FilterEmptyStateTests: XCTestCase {
+
+    // MARK: - Functions
+
+    @MainActor
+    func testAFilterThatMatchesNothingSaysSo() {
+        XCTAssertTrue(SidebarView.showsNoFilterMatches(courseCount: 3, matchCount: 0, filterText: "MPM2D"))
+    }
+
+    @MainActor
+    func testNothingIsSaidWhileTheFilterIsEmpty() {
+        XCTAssertFalse(SidebarView.showsNoFilterMatches(courseCount: 3, matchCount: 3, filterText: ""))
+        XCTAssertFalse(SidebarView.showsNoFilterMatches(courseCount: 3, matchCount: 0, filterText: "   "),
+                       "Spaces are not a search")
+    }
+
+    @MainActor
+    func testNothingIsSaidWhenThereAreNoCoursesAtAll() {
+        // The window's own empty state explains that case, and two messages
+        // saying different things about the same emptiness would be worse.
+        XCTAssertFalse(SidebarView.showsNoFilterMatches(courseCount: 0, matchCount: 0, filterText: "MPM2D"))
+    }
+
+    @MainActor
+    func testNothingIsSaidWhileMatchesExist() {
+        XCTAssertFalse(SidebarView.showsNoFilterMatches(courseCount: 3, matchCount: 1, filterText: "ICS"))
+    }
+}

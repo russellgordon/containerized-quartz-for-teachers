@@ -125,6 +125,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 57 | 2026-08-10 | The path bar showed the working folder but did nothing when clicked. | ✅ Implemented — double-clicking any folder in the bar opens it in Finder, and right-clicking one offers **Show in Finder** and **Open Folder** for that folder. Right-clicking the strip anywhere else offers the same pair for the working folder itself, so the menu is never a dead click. Each component's hit area covers the gap between its icon and its name, and its full path shows as a tooltip. | Same two gestures; a path bar that only displays is a missed affordance. |
 
+| 58 | 2026-08-10 | Typing a filter that matches nothing emptied the sidebar with no explanation — it read as though the courses had gone. | ✅ Implemented — the sidebar shows "No Matches / No course or club matches “MPM2D”." while the filter hides everything. It appears only when there are courses to hide: with an empty workspace the window's own empty state already explains that, and two messages about the same emptiness would contradict each other. Whitespace alone is not treated as a search. Four tests cover the combinations. | Same message and the same restraint about when not to show it. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the
