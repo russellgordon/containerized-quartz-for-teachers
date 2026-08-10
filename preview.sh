@@ -391,7 +391,7 @@ offer_newer_image() {
   # A failed read means end-of-input — nobody is there to answer. Pressing
   # Return, by contrast, succeeds with an empty answer and takes the default.
   # Without this distinction an automated run silently accepts the update.
-  if ! read -r -p "   Install it now? (y/n) [Default: y]: " answer; then
+  if ! read -r -p "   Update the website builder now? (y/n) [Default: y]: " answer; then
     echo
     echo "   No answer given, so the version you have is being kept."
     return 0

@@ -8,7 +8,7 @@ final class CourseFilterTests: XCTestCase {
 
     @MainActor
     func makeWorkspaceWithCourses() throws -> WorkspaceModel {
-        let workspace: WorkspaceModel = WorkspaceModel()
+        let workspace: WorkspaceModel = WorkspaceModel(defaults: TestDefaults.make())
         var courses: [Course] = []
         let entries: [(code: String, name: String)] = [
             (code: "ICS3U", name: "Intro to Comp Sci"),

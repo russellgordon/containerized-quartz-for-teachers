@@ -327,7 +327,7 @@ function Offer-NewerImage([string]$ref) {
     Write-Host "  Run this again with --update-image when you would like to install it."
     return
   }
-  $answer = Read-Host "  Install it now? (y/n) [Default: y]"
+  $answer = Read-Host "  Update the website builder now? (y/n) [Default: y]"
   if ($answer -match '^[Nn]') {
     Write-Host "  Keeping the version you have."
     return

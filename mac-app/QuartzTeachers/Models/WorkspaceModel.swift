@@ -12,9 +12,13 @@ class WorkspaceModel {
 
     // MARK: - Stored properties
 
-    /// The single instance the app runs on. Kept reachable so the hosted
-    /// test suite can drive the real user interface.
-    static let shared: WorkspaceModel = WorkspaceModel()
+    /// Where the last-used folder is remembered. Injected so a test can
+    /// never write into the real preferences — which is how a test run used
+    /// to leave the app pointing at a deleted temporary folder.
+    private let defaults: UserDefaults
+
+    /// The key holding the most recently chosen folder.
+    static let storedPathKey: String = "workspacePath"
 
     /// The active working folder, or nil before one has been chosen.
     var workspaceURL: URL?
@@ -101,20 +105,35 @@ class WorkspaceModel {
 
     // MARK: - Initializer
 
-    init() {
+    init(defaults: UserDefaults = UserDefaults.standard) {
+        self.defaults = defaults
         // A UI test can point the app at a fixture folder via the
-        // environment, which also keeps test runs out of UserDefaults.
+        // environment, which also keeps test runs out of the preferences.
         let environment: [String: String] = ProcessInfo.processInfo.environment
         if let fixturePath = environment["UITEST_WORKSPACE"] {
             self.isUnderUITest = true
             self.workspaceURL = URL(fileURLWithPath: fixturePath)
         } else {
             self.isUnderUITest = false
-            if let storedPath = UserDefaults.standard.string(forKey: "workspacePath") {
-                self.workspaceURL = URL(fileURLWithPath: storedPath)
+            if let storedPath = defaults.string(forKey: WorkspaceModel.storedPathKey) {
+                // A folder that has since been deleted or renamed is worse
+                // than none: the app would claim a working folder it cannot
+                // read anything from.
+                if WorkspaceModel.folderExists(atPath: storedPath) {
+                    self.workspaceURL = URL(fileURLWithPath: storedPath)
+                } else {
+                    defaults.removeObject(forKey: WorkspaceModel.storedPathKey)
+                }
             }
         }
         reloadCourses()
+    }
+
+    /// True when a folder is actually there to be worked in.
+    static func folderExists(atPath path: String) -> Bool {
+        var isDirectory: ObjCBool = false
+        let exists: Bool = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
+        return exists && isDirectory.boolValue
     }
 
     // MARK: - Functions
@@ -123,8 +142,28 @@ class WorkspaceModel {
     func chooseWorkspace(at url: URL) {
         workspaceURL = url
         if !isUnderUITest {
-            UserDefaults.standard.set(url.path, forKey: "workspacePath")
+            // Remembered app-wide so a NEW window opens where the last one
+            // left off; each window then keeps its own choice in its scene.
+            defaults.set(url.path, forKey: WorkspaceModel.storedPathKey)
         }
+        reloadCourses()
+    }
+
+    /// Adopts the folder a window remembered from its last session.
+    ///
+    /// Windows are restored one by one, each with its own saved folder, so
+    /// this runs per window rather than once for the app.
+    func adoptRestoredPath(_ path: String) {
+        if path.isEmpty || isUnderUITest {
+            return
+        }
+        if !WorkspaceModel.folderExists(atPath: path) {
+            return
+        }
+        if workspaceURL?.path == path {
+            return
+        }
+        workspaceURL = URL(fileURLWithPath: path)
         reloadCourses()
     }
 

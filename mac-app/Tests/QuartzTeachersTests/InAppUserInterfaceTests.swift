@@ -43,7 +43,7 @@ final class InAppUserInterfaceTests: XCTestCase {
         } else {
             fixtureURL = try FixtureWorkspace.materialize()
         }
-        let workspace: WorkspaceModel = WorkspaceModel.shared
+        let workspace: WorkspaceModel = WorkspaceModel(defaults: TestDefaults.make())
 
         // Make the window a predictable size for screenshots.
         if let window = NSApp.windows.first {

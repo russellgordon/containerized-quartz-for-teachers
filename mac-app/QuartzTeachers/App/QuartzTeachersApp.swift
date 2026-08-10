@@ -3,10 +3,6 @@ import SwiftUI
 @main
 struct QuartzTeachersApp: App {
 
-    // MARK: - Stored properties
-
-    @State var workspace = WorkspaceModel.shared
-
     // MARK: - Initializer
 
     init() {
@@ -19,8 +15,7 @@ struct QuartzTeachersApp: App {
 
     var body: some Scene {
         WindowGroup("Containerized Quartz for Teachers") {
-            MainWindowView()
-                .environment(workspace)
+            WindowRootView()
                 // A bounded IDEAL size matters as much as the minimum:
                 // without it the window's content is sized by whatever
                 // its descendants claim, and one overgrown view drags
@@ -37,13 +32,7 @@ struct QuartzTeachersApp: App {
         .commands {
             PreviewCommands()
             CommandGroup(after: .newItem) {
-                Button("Change Working Folder…") {
-                    workspace.isChoosingWorkspace = true
-                }
-                Button("Reload Courses") {
-                    workspace.reloadCourses()
-                }
-                .keyboardShortcut("r", modifiers: [.command, .shift])
+                WorkspaceCommands()
             }
         }
     }

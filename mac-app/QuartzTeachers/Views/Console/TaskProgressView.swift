@@ -256,12 +256,7 @@ struct TaskProgressView: View {
                 runner.cancelPendingQuestion()
             }
         } message: {
-            // The question alone is often meaningless out of context.
-            if runner.pendingQuestionContext.isEmpty {
-                Text(runner.pendingQuestion)
-            } else {
-                Text(runner.pendingQuestionContext + "\n\n" + runner.pendingQuestion)
-            }
+            Text(runner.pendingQuestion)
         }
         .onChange(of: runner.isAwaitingInput) {
             // Start from the answer the task would have used anyway, so

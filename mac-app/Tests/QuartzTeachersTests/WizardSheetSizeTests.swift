@@ -19,7 +19,7 @@ final class WizardSheetSizeTests: XCTestCase {
         creator.runner.isRunning = true
 
         let wizard = NewCourseWizardView(creator: creator, startedForTesting: true)
-            .environment(WorkspaceModel.shared)
+            .environment(WorkspaceModel(defaults: TestDefaults.make()))
         let hostingController: NSHostingController = NSHostingController(rootView: wizard)
         let fittingSize: NSSize = hostingController.view.fittingSize
 
