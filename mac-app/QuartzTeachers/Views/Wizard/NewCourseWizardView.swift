@@ -240,6 +240,7 @@ struct NewCourseWizardView: View {
                     StringListEditorView(title: "Per-section folders", items: $perSectionFolders)
                     StringListEditorView(title: "Per-section files", hidesMarkdownExtension: true, items: $perSectionFiles)
                 }
+                .accessibilityIdentifier("structureDisclosure")
             } header: {
                 FormSectionHeader("Structure", caption: "Defaults are fine for most courses")
             }

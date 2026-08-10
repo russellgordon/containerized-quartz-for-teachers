@@ -31,18 +31,28 @@ struct SectionDetailView: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack {
+            // Base layer: always laid out in the normal, safe-area
+            // respecting flow. Keeping it mounted means its geometry is
+            // never inherited from the full-bleed web view above it —
+            // which is what dragged the progress header under the
+            // window's toolbar when a preview was restarted.
+            VStack(spacing: 0) {
+                if isWaitingForServer || isBusy || !previewRunner.transcript.lines.isEmpty || !deployRunner.transcript.lines.isEmpty {
+                    consoleArea
+                } else {
+                    ContentUnavailableView(
+                        "No Preview Running",
+                        systemImage: "globe",
+                        description: Text("Click Preview to build this section's website and see it here, or Deploy to publish it to Netlify.")
+                    )
+                }
+            }
+
+            // Cover layer: the site itself, deliberately full-bleed.
             if let previewURL {
                 WebPreviewView(controller: previewController, url: previewURL)
                     .accessibilityIdentifier("previewWebView")
-            } else if isWaitingForServer || isBusy || !previewRunner.transcript.lines.isEmpty || !deployRunner.transcript.lines.isEmpty {
-                consoleArea
-            } else {
-                ContentUnavailableView(
-                    "No Preview Running",
-                    systemImage: "globe",
-                    description: Text("Click Preview to build this section's website and see it here, or Deploy to publish it to Netlify.")
-                )
             }
         }
         .navigationTitle(titleText)
