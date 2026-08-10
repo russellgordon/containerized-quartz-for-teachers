@@ -69,11 +69,10 @@ enableToc: false
 ---
 ```
 
-Every class page in [[All Classes/index|All Classes]] uses this — an agenda of six items does not
-need a navigation panel. So does
-[[D2. Investigating and Understanding Concepts]]: open it and you will see no
-"Navigate this page" on the right, because the page is a list of expectations
-that is already its own index.
+Every class page in [[All Classes/index|All Classes]] uses this. Open
+[[Unit 1, Day 1]] and you will see no "Navigate this page" panel on the right,
+even though the page has headings that would otherwise appear there — an agenda
+of six items does not need navigating.
 
 ---
 
