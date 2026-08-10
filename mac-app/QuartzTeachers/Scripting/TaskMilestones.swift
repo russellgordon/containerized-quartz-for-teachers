@@ -50,6 +50,17 @@ enum TaskMilestones {
         TaskMilestone(label: "Finishing up…", marker: "Deploy complete"),
     ]
 
+    /// Publishing when the site has to be rebuilt first — one task from
+    /// the teacher's point of view, so one progress bar.
+    static let buildAndDeploy: [TaskMilestone] = [
+        TaskMilestone(label: "Starting up…", marker: "Starting container if needed"),
+        TaskMilestone(label: "Gathering your content…", marker: "Copying shared folders"),
+        TaskMilestone(label: "Building your site…", marker: "Quartz v4"),
+        TaskMilestone(label: "Connecting to Netlify…", marker: "Netlify site"),
+        TaskMilestone(label: "Uploading your pages…", marker: "Uploaded"),
+        TaskMilestone(label: "Finishing up…", marker: "Deploy complete"),
+    ]
+
     // MARK: - Functions
 
     /// How many milestones the output shows as reached (0…count).

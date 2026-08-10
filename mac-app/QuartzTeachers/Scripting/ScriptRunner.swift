@@ -43,12 +43,22 @@ class ScriptRunner {
     // MARK: - Functions
 
     /// Starts a script (e.g. "preview.sh") from the working folder.
-    func run(scriptNamed scriptName: String, arguments: [String], workingDirectory: URL) {
+    ///
+    /// `keepingTranscript` continues an earlier run's output, so a task
+    /// made of two scripts (build, then publish) reads as one job.
+    func run(
+        scriptNamed scriptName: String,
+        arguments: [String],
+        workingDirectory: URL,
+        keepingTranscript: Bool = false
+    ) {
         if isRunning {
             return
         }
 
-        transcript = TranscriptBuilder()
+        if !keepingTranscript {
+            transcript = TranscriptBuilder()
+        }
         lastExitCode = nil
         launchProblem = nil
 
@@ -116,6 +126,14 @@ class ScriptRunner {
         process = newProcess
         terminal = newTerminal
         isRunning = true
+    }
+
+    /// Waits for the current run to finish; true when it succeeded.
+    func waitUntilFinished() async -> Bool {
+        while isRunning {
+            try? await Task.sleep(for: .milliseconds(300))
+        }
+        return lastExitCode == 0
     }
 
     /// Sends one line of input to the script, as if typed in Terminal.

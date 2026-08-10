@@ -150,16 +150,38 @@ struct SectionDetailView: View {
         isWaitingForServer = false
     }
 
+    /// Publishes the section. If the built site is missing or older than
+    /// the teacher's content, it is rebuilt first — quietly, without
+    /// showing a preview — so what gets published is always current.
     func startDeploy() {
         guard let workspaceURL = workspace.workspaceURL else {
             return
         }
-        deployRunner.milestones = TaskMilestones.deploy
-        deployRunner.run(
-            scriptNamed: "deploy.sh",
-            arguments: [course.code, String(sectionNumber)],
-            workingDirectory: workspaceURL
-        )
+
+        let needsBuild: Bool = BuildFreshness.needsRebuild(course: course, sectionNumber: sectionNumber)
+        deployRunner.milestones = needsBuild ? TaskMilestones.buildAndDeploy : TaskMilestones.deploy
+
+        Task {
+            if needsBuild {
+                deployRunner.run(
+                    scriptNamed: "preview.sh",
+                    arguments: [course.code, String(sectionNumber), "--build-only"],
+                    workingDirectory: workspaceURL
+                )
+                let built: Bool = await deployRunner.waitUntilFinished()
+                if !built {
+                    // The failure and its output are already on screen.
+                    return
+                }
+            }
+
+            deployRunner.run(
+                scriptNamed: "deploy.sh",
+                arguments: [course.code, String(sectionNumber)],
+                workingDirectory: workspaceURL,
+                keepingTranscript: needsBuild
+            )
+        }
     }
 
     /// Opens the page currently shown in the preview (not just the site
