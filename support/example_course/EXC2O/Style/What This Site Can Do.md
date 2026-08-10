@@ -38,6 +38,47 @@ Keyboard keys look like keys: press <kbd>⌘</kbd> + <kbd>K</kbd> to search.
 
 ---
 
+## Headings, and the table of contents
+
+Every `##` heading on a page becomes a link in **Navigate this page**, over on
+the right. Nothing builds that list by hand — it is made from the headings as
+the page is built, so it can never fall out of step with the page.
+
+Deeper headings nest underneath: a `###` sits inside the `##` above it, which
+is why "Foldable callouts" appears indented under "Callouts".
+
+**How that was made:** `##` at the start of a line, and `###` for a
+sub-heading.
+
+```markdown
+## Callouts
+
+### Foldable callouts
+```
+
+> [!tip] Write headings for the person skimming
+> The table of contents is the first thing many students read. "Worked
+> example" tells them what is there; "More on this" does not.
+
+### Turning it off
+
+A short page, or one that is mostly a list, reads better without a contents
+panel. Add one line to the frontmatter:
+
+```yaml
+---
+enableToc: false
+---
+```
+
+Every class page in **All Classes** uses this — an agenda of six items does not
+need a navigation panel. So does
+[[D2. Investigating and Understanding Concepts]]: open it and you will see no
+"Navigate this page" on the right, because the page is a list of expectations
+that is already its own index.
+
+---
+
 ## Callouts
 
 Callouts pull something out of the flow of the page. There are a dozen kinds and
