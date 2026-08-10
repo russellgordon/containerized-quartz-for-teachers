@@ -702,12 +702,15 @@ def toggle_custom_og_images(config_path: str, enable: bool):
         print("No changes needed to quartz.config.ts")
 
 
-def kill_existing_quartz():
+def kill_existing_quartz(port: int = 8081):
+    # Only OUR port: several previews can run at once, one per port, and
+    # starting one must never take down another window's preview.
+    #
     # Signal the process directly rather than shelling out to `kill`:
     # `kill` is a shell builtin, and the /bin/kill binary (procps) is not
     # installed in this image, so subprocess could not find it.
     try:
-        output = subprocess.check_output(["lsof", "-ti", ":8081"])
+        output = subprocess.check_output(["lsof", "-ti", f":{port}"])
     except (subprocess.CalledProcessError, FileNotFoundError):
         return
     pids = output.decode().strip().split("\n")
@@ -716,9 +719,9 @@ def kill_existing_quartz():
             continue
         try:
             os.kill(int(pid), signal.SIGKILL)
-            print(f"🛑 Killed existing process on port 8081 (PID: {pid})")
+            print(f"🛑 Killed existing process on port {port} (PID: {pid})")
         except (ValueError, ProcessLookupError, PermissionError) as e:
-            print(f"⚠️ Could not stop process {pid} on port 8081: {e}")
+            print(f"⚠️ Could not stop process {pid} on port {port}: {e}")
 
 
 # --- HARDENING TWEAK #1: Future-proof omit replacement (update all matches) --
@@ -2008,6 +2011,8 @@ def build_section_site(
     force_npm_install: bool,
     full_rebuild: bool,
     build_only: bool,       # NEW: if True, do a single static build; if False (default), preview (serve) without extra build
+
+    port: int = 8081,
 ):
     base_dir = Path("/teaching/courses")
     course_dir = base_dir / course_code
@@ -2344,9 +2349,14 @@ def build_section_site(
         print("✅ Static build complete.")
     else:
         # Preview mode (default): do NOT pre-build. Build+serve once.
-        kill_existing_quartz()
-        print("\n🚀 Launching Quartz preview on http://localhost:8081\n")
-        subprocess.run(["npx", "quartz", "build", "--concurrency", "1", "--serve", "--port", "8081"], cwd=output_dir, env=env, check=True)
+        # Quartz's dev server opens TWO ports: the site, and a live-reload
+        # websocket (default 3001). Both must be per-preview or two serves
+        # collide on the websocket even with distinct site ports.
+        ws_port = port + 1000
+        kill_existing_quartz(port)
+        kill_existing_quartz(ws_port)
+        print(f"\n🚀 Launching Quartz preview on http://localhost:{port}\n")
+        subprocess.run(["npx", "quartz", "build", "--concurrency", "1", "--serve", "--port", str(port), "--wsPort", str(ws_port)], cwd=output_dir, env=env, check=True)
 
 def main():
     parser = argparse.ArgumentParser(description="Build Quartz site for a course section (preview by default; use --build-only for a static build without preview).")
@@ -2357,6 +2367,7 @@ def main():
     parser.add_argument("--full-rebuild", action="store_true", help="Clear the full output folder and re-copy Quartz scaffold")
     # NEW: default is preview; this flag switches to a plain static build
     parser.add_argument("--build-only", action="store_true", help="Build the static site only (no preview server)")
+    parser.add_argument("--port", type=int, default=8081, help="Port for the preview server (default 8081)")
     parser.add_argument("--host-os", choices=["windows","mac","linux","unknown"], default="unknown", help="Host OS passed by preview.sh/preview.ps1")
     args = parser.parse_args()
     _HOST_OS = getattr(args, 'host_os', 'unknown')
@@ -2368,6 +2379,7 @@ def main():
         force_npm_install=args.force_npm_install,
         full_rebuild=args.full_rebuild,
         build_only=args.build_only,
+        port=args.port,
     )
 
 if __name__ == "__main__":

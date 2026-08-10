@@ -16,6 +16,12 @@ struct SectionDetailView: View {
     @State var previewURL: URL?
     @State var isWaitingForServer: Bool = false
 
+    /// The port this window's preview holds, while it holds one.
+    @State var previewLease: PreviewLeases.Lease?
+
+    /// Why a preview could not start, shown as an alert.
+    @State var previewRefusal: String?
+
     @Environment(WorkspaceModel.self) var workspace
 
     // MARK: - Computed properties
@@ -113,6 +119,24 @@ struct SectionDetailView: View {
         .onDisappear {
             stopPreview()
         }
+        .alert("Cannot Preview Yet", isPresented: previewRefusalBinding) {
+            Button("OK") {
+                previewRefusal = nil
+            }
+        } message: {
+            Text(previewRefusal ?? "")
+        }
+    }
+
+    var previewRefusalBinding: Binding<Bool> {
+        return Binding(
+            get: { previewRefusal != nil },
+            set: { isPresented in
+                if !isPresented {
+                    previewRefusal = nil
+                }
+            }
+        )
     }
 
     var consoleArea: some View {
@@ -178,16 +202,30 @@ struct SectionDetailView: View {
         guard let workspaceURL = workspace.workspaceURL else {
             return
         }
+        // Each preview runs on its own port, so several windows can show
+        // sections side by side without taking each other down.
+        let lease: PreviewLeases.Lease
+        do {
+            lease = try PreviewLeases.lease(
+                folderPath: workspaceURL.path,
+                courseCode: course.code,
+                sectionNumber: sectionNumber
+            )
+        } catch {
+            previewRefusal = error.localizedDescription
+            return
+        }
+        previewLease = lease
         previewURL = nil
         isWaitingForServer = true
         previewRunner.milestones = TaskMilestones.preview
         previewRunner.run(
             scriptNamed: "preview.sh",
-            arguments: [course.code, String(sectionNumber)],
+            arguments: [course.code, String(sectionNumber), "--port", String(lease.port)],
             workingDirectory: workspaceURL
         )
         Task {
-            await waitForPreviewServer()
+            await waitForPreviewServer(port: lease.port)
         }
     }
 
@@ -195,6 +233,15 @@ struct SectionDetailView: View {
         previewRunner.stopByUser()
         previewURL = nil
         isWaitingForServer = false
+        releasePreviewLease()
+    }
+
+    /// Hands the port back, whatever ended the preview.
+    func releasePreviewLease() {
+        if let lease = previewLease {
+            PreviewLeases.release(lease)
+            previewLease = nil
+        }
     }
 
     /// Publishes the section. If the built site is missing or older than
@@ -269,8 +316,8 @@ struct SectionDetailView: View {
     /// happily embed that stale site, so this waits for the script's own
     /// "Launching Quartz preview" line first and only then trusts a
     /// response from the port.
-    func waitForPreviewServer() async {
-        let serverURL: URL = URL(string: "http://127.0.0.1:8081/")!
+    func waitForPreviewServer(port: Int) async {
+        let serverURL: URL = URL(string: "http://127.0.0.1:\(port)/")!
 
         // Phase 1: wait for the script to announce ITS server is starting
         // (which happens right after it has freed the port).
@@ -281,6 +328,7 @@ struct SectionDetailView: View {
             if !previewRunner.isRunning && previewRunner.lastExitCode != nil {
                 // The script exited before the server came up: show output.
                 isWaitingForServer = false
+                releasePreviewLease()
                 return
             }
             if previewRunner.transcript.displayText.contains("Launching Quartz preview") {
@@ -294,6 +342,7 @@ struct SectionDetailView: View {
         while waitedSeconds < 600 {
             if !previewRunner.isRunning && previewRunner.lastExitCode != nil {
                 isWaitingForServer = false
+                releasePreviewLease()
                 return
             }
             var request: URLRequest = URLRequest(url: serverURL)

@@ -442,7 +442,8 @@ run_container_with_mount() {
   docker run -dit \
     --name "$CONTAINER_NAME" \
     -v "$HOST_COURSES":/teaching/courses \
-    -p 8081:8081 \
+    -p 8081-8084:8081-8084 \
+    -p 9081-9084:9081-9084 \
     "$IMAGE" \
     tail -f /dev/null
 }

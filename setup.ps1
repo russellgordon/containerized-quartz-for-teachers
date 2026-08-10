@@ -10,8 +10,9 @@ $HUB_USER       = 'rwhgrwhg'
 $DEFAULT_TAG    = 'latest'
 $IMAGE_NAME     = 'teaching-quartz'
 $CONTAINER_NAME = 'teaching-quartz'
-$HOST_PORT      = 8081
-$CONTAINER_PORT = 8081
+# A range, so several previews can run at once — one per window.
+$PREVIEW_PORT_RANGE = "8081-8084"
+$PREVIEW_WS_RANGE = "9081-9084"
 $DEV_IMAGE      = 'quartz-teacher:dev'  # local dev image
 
 # -------------------- Config (from flags) --------------------
@@ -375,7 +376,8 @@ function Run-ContainerWithMount {
     'run','-dit',
     '--name', $CONTAINER_NAME,
     '-v', "${MOUNT_COURSES}:/teaching/courses",
-    '-p', "${HOST_PORT}:${CONTAINER_PORT}",
+    '-p', "${PREVIEW_PORT_RANGE}:${PREVIEW_PORT_RANGE}",
+    '-p', "${PREVIEW_WS_RANGE}:${PREVIEW_WS_RANGE}",
     $IMAGE,
     'tail','-f','/dev/null'
   )

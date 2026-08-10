@@ -474,7 +474,8 @@ function Run-ContainerWithMount {
   docker run -dit `
     --name "$CONTAINER_NAME" `
     -v "${MOUNT_COURSES}:/teaching/courses" `
-    -p 8081:8081 `
+    -p 8081-8084:8081-8084 `
+        -p 9081-9084:9081-9084 `
     "$script:IMAGE_REF" `
     tail -f /dev/null | Out-Null
 }

@@ -112,6 +112,7 @@ if [[ "$1" == "--help" || "$1" == "-h" ]]; then
   echo "  --force-npm-install                Force npm install even if dependencies are present"
   echo "  --full-rebuild                     Clear entire output folder and re-copy Quartz scaffold"
   echo "  --build-only                       Build the static site only (no local preview server)"
+  echo "  --port N                           Serve the preview on port N (default 8081; 8081-8084 available)"
   echo "  --help, -h                         Show this help message"
   echo ""
   echo "📂 Output location (hidden in Obsidian Files pane):"
@@ -140,6 +141,11 @@ while [[ "$#" -gt 0 ]]; do
     --build-only)
       BUILD_ONLY="--build-only"
       ;;
+    --port)
+      if [[ $# -lt 2 ]]; then echo "❌ --port requires a value"; exit 1; fi
+      PREVIEW_PORT="$2"
+      shift
+      ;;
     *)
       echo "❌ Unknown option: $1"
       echo "Use './preview.sh --help' to see usage instructions."
@@ -159,6 +165,12 @@ fi
 # Ensure SECTION looks like a positive integer
 if ! [[ "$SECTION" =~ ^[0-9]+$ ]]; then
   echo "❌ SECTION must be a positive integer (the timetable section number)."
+  exit 1
+fi
+
+# The chosen port must be one the container publishes.
+if ! [[ "$PREVIEW_PORT" =~ ^808[1-4]$ ]]; then
+  echo "❌ --port must be between 8081 and 8084."
   exit 1
 fi
 
@@ -184,8 +196,13 @@ fi
 
 # -------------------- Mount-aware container handling --------------------
 CONTAINER_NAME="teaching-quartz"
-HOST_PORT=8081
-CONTAINER_PORT=8081
+# Each preview serves on its own port, so several can run at once — one
+# per window in the app. The container publishes the whole range.
+# The flag parser above may already have chosen a port; keep it.
+PREVIEW_PORT="${PREVIEW_PORT:-8081}"
+PREVIEW_PORT_RANGE="8081-8084"
+# Each preview also uses a live-reload websocket on port + 1000.
+PREVIEW_WS_RANGE="9081-9084"
 HOST_COURSES="$(pwd)/courses"  # desired host mount for this run
 
 # ==================== Container runtime (Colima) ====================
@@ -446,7 +463,8 @@ run_container_with_mount() {
   docker run -dit \
     --name "$CONTAINER_NAME" \
     -v "$HOST_COURSES":/teaching/courses \
-    -p ${HOST_PORT}:${CONTAINER_PORT} \
+    -p ${PREVIEW_PORT_RANGE}:${PREVIEW_PORT_RANGE} \
+    -p ${PREVIEW_WS_RANGE}:${PREVIEW_WS_RANGE} \
     "$IMAGE" \
     tail -f /dev/null
 }
@@ -479,6 +497,13 @@ if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
     run_container_with_mount
   elif [[ -n "$DESIRED_IMAGE_ID" && -n "$RUNNING_IMAGE_ID" && "$RUNNING_IMAGE_ID" != "$DESIRED_IMAGE_ID" ]]; then
     echo "♻️  Your workspace was built from an older version; rebuilding it so the update takes effect…"
+    if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then docker stop "$CONTAINER_NAME" >/dev/null; fi
+    docker rm "$CONTAINER_NAME" >/dev/null || true
+    run_container_with_mount
+  elif ! docker inspect -f '{{json .HostConfig.PortBindings}}' "$CONTAINER_NAME" 2>/dev/null | grep -q '9084/tcp'; then
+    # An older container publishes only 8081, and published ports cannot
+    # be changed after creation — recreating is the only way to add them.
+    echo "♻️  Rebuilding your workspace so several previews can run at once…"
     if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then docker stop "$CONTAINER_NAME" >/dev/null; fi
     docker rm "$CONTAINER_NAME" >/dev/null || true
     run_container_with_mount
@@ -558,4 +583,5 @@ docker exec -it "$CONTAINER_NAME" python3 /opt/scripts/build_site.py \
   $INCLUDE_SOCIAL \
   $FORCE_NPM_INSTALL \
   $FULL_REBUILD \
+  --port "$PREVIEW_PORT" \
   $MODE_FLAG

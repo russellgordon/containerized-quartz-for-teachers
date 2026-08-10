@@ -41,6 +41,11 @@ two, so a dev image can be exercised through the whole pipeline):
 - `--local-dev` — shorthand for the local dev image `quartz-teacher:dev`
   with pulling skipped (used after `docker build -t quartz-teacher:dev .`).
 - `--update-image` — force a fresh pull.
+- `--port N` (preview only) — serve on port N. The container publishes
+  8081–8084 (plus 9081–9084 for each preview's live-reload websocket), so up
+  to four previews can run at once — the macOS app uses this to preview
+  sections side by side in separate windows. Each preview only ever stops a
+  server on its own port.
 - `--context NAME` (setup only) — select a Docker context.
 
 The scripts then ensure a container runtime is available (next section),

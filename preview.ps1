@@ -55,6 +55,7 @@ if ($args.Count -lt 2 -or ($args[0] -eq '--help') -or ($args[0] -eq '-h')) {
     Write-Host "  --force-npm-install               Force npm install even if deps present"
     Write-Host "  --full-rebuild                    Clear entire output folder and re-copy scaffold"
     Write-Host "  --build-only                      Build static site only (no local preview server)"
+    Write-Host "  --port N                          Serve the preview on port N (default 8081; 8081-8084 available)"
     Write-Host "  --help, -h                        Show this help and exit"
     Write-Host ""
     Write-Host "Output location:"
@@ -75,6 +76,7 @@ $INCLUDE_SOCIAL    = $false
 $FORCE_NPM_INSTALL = $false
 $FULL_REBUILD      = $false
 $BUILD_ONLY        = $false
+$PREVIEW_PORT      = 8081
 
 if ($Flags) {
     $i = 0
@@ -84,6 +86,12 @@ if ($Flags) {
             '--force-npm-install'             { $FORCE_NPM_INSTALL = $true; $i++; continue }
             '--full-rebuild'                  { $FULL_REBUILD = $true; $i++; continue }
             '--build-only'                    { $BUILD_ONLY = $true; $i++; continue }
+            '--port'                          {
+                if ($i + 1 -ge $Flags.Count) { Write-Host "--port requires a value"; exit 1 }
+                $PREVIEW_PORT = [int]$Flags[$i + 1]
+                if ($PREVIEW_PORT -lt 8081 -or $PREVIEW_PORT -gt 8084) { Write-Host "--port must be between 8081 and 8084."; exit 1 }
+                $i += 2; continue
+            }
             default {
                 Write-Host "Unknown option: $($Flags[$i])"
                 exit 1
@@ -314,7 +322,8 @@ function Run-ContainerWithMount {
     docker run -dit `
         --name "$CONTAINER_NAME" `
         -v "${MOUNT_COURSES}:/teaching/courses" `
-        -p 8081:8081 `
+        -p 8081-8084:8081-8084 `
+        -p 9081-9084:9081-9084 `
         "$IMAGE" `
         tail -f /dev/null | Out-Null
 }
@@ -418,6 +427,7 @@ if ($INCLUDE_SOCIAL)    { $argList += "--include-social-media-previews" }
 if ($FORCE_NPM_INSTALL) { $argList += "--force-npm-install" }
 if ($FULL_REBUILD)      { $argList += "--full-rebuild" }
 if ($BUILD_ONLY)        { $argList += "--build-only" }
+$argList += "--port=$PREVIEW_PORT"
 
 # ---- Run build inside the container ----
 Write-Host "Running build_site.py inside the Docker container ..."

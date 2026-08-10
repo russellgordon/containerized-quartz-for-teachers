@@ -6,8 +6,11 @@ HUB_USER="rwhgrwhg"
 DEFAULT_TAG="latest"
 IMAGE_NAME="teaching-quartz"
 CONTAINER_NAME="teaching-quartz"
-HOST_PORT=8081
-CONTAINER_PORT=8081
+# The container publishes a small range so several previews can run at
+# once — one per window in the app, each on its own port.
+PREVIEW_PORT_RANGE="8081-8084"
+# Each preview also uses a live-reload websocket on port + 1000.
+PREVIEW_WS_RANGE="9081-9084"
 DEV_IMAGE="quartz-teacher:dev"   # convenient local dev image
 
 # -------------------- Config (from flags) --------------------
@@ -292,7 +295,8 @@ run_container_with_mount() {
   docker run -dit \
     --name "$CONTAINER_NAME" \
     -v "$HOST_COURSES":/teaching/courses \
-    -p ${HOST_PORT}:${CONTAINER_PORT} \
+    -p ${PREVIEW_PORT_RANGE}:${PREVIEW_PORT_RANGE} \
+    -p ${PREVIEW_WS_RANGE}:${PREVIEW_WS_RANGE} \
     "$IMAGE" \
     tail -f /dev/null
 }
@@ -436,6 +440,13 @@ if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
     run_container_with_mount
   elif [[ -n "$DESIRED_IMAGE_ID" && -n "$RUNNING_IMAGE_ID" && "$RUNNING_IMAGE_ID" != "$DESIRED_IMAGE_ID" ]]; then
     echo "♻️  Your workspace was built from an older version; rebuilding it so the update takes effect…"
+    if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then docker stop "$CONTAINER_NAME" >/dev/null; fi
+    docker rm "$CONTAINER_NAME" >/dev/null || true
+    run_container_with_mount
+  elif ! docker inspect -f '{{json .HostConfig.PortBindings}}' "$CONTAINER_NAME" 2>/dev/null | grep -q '9084/tcp'; then
+    # An older container publishes only 8081; published ports cannot be
+    # changed after creation, so recreating is how the range arrives.
+    echo "♻️  Rebuilding your workspace so several previews can run at once…"
     if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then docker stop "$CONTAINER_NAME" >/dev/null; fi
     docker rm "$CONTAINER_NAME" >/dev/null || true
     run_container_with_mount
