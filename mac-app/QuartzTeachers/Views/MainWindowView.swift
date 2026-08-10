@@ -63,11 +63,26 @@ struct MainWindowView: View {
                 missingSelectionView
             }
         case nil:
-            ContentUnavailableView(
-                "Select a Course or Section",
-                systemImage: "sidebar.left",
-                description: Text("Choose a course to edit its settings, or a section to preview and publish its website.")
-            )
+            // Telling someone to choose from an empty list is a dead end.
+            if workspace.courses.isEmpty {
+                ContentUnavailableView {
+                    Label("No Courses Yet", systemImage: "books.vertical")
+                } description: {
+                    Text("Add your first course, or start from the example course to see how everything fits together.")
+                } actions: {
+                    Button("Add a Course…") {
+                        workspace.isShowingNewCourseWizard = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier("emptyStateAddCourseButton")
+                }
+            } else {
+                ContentUnavailableView(
+                    "Select a Course or Section",
+                    systemImage: "sidebar.left",
+                    description: Text("Choose a course to edit its settings, or a section to preview and publish its website.")
+                )
+            }
         }
     }
 

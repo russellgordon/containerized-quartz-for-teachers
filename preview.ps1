@@ -262,10 +262,18 @@ function Get-RegistryDigest([string]$ref) {
 }
 
 function Get-InstalledDigest([string]$ref) {
+  # Only a digest belonging to THIS repository says anything about whether the
+  # local image came from it; a locally built image often carries a digest for
+  # another repository, which would look like an available update forever.
   try {
-    $repoDigest = docker image inspect "$ref" --format '{{if .RepoDigests}}{{index .RepoDigests 0}}{{end}}' 2>$null | Select-Object -First 1
-    if (-not $repoDigest) { return $null }
-    return $repoDigest.Substring($repoDigest.IndexOf('@') + 1)
+    $repo = $ref.Split(':')[0]
+    $entries = docker image inspect "$ref" --format '{{range .RepoDigests}}{{println .}}{{end}}' 2>$null
+    foreach ($entry in $entries) {
+      if (-not $entry) { continue }
+      $parts = $entry.Split('@')
+      if ($parts.Length -eq 2 -and $parts[0] -eq $repo) { return $parts[1] }
+    }
+    return $null
   } catch { return $null }
 }
 
@@ -277,6 +285,13 @@ function Offer-NewerImage([string]$ref) {
   $installed = Get-InstalledDigest $ref
   # Offline, or nothing to compare: carry on with what is here.
   if ((-not $available) -or (-not $installed) -or ($available -eq $installed)) { return }
+
+  # A different digest does not mean an older one. If the registry has never
+  # heard of the installed digest, this is a locally built image and
+  # "updating" it would replace it with something older.
+  $repo = $ref.Split(':')[0]
+  docker buildx imagetools inspect "$repo@$installed" *> $null
+  if ($LASTEXITCODE -ne 0) { return }
 
   Write-Host "A newer version of the website builder is available."
   if (-not [Environment]::UserInteractive) {

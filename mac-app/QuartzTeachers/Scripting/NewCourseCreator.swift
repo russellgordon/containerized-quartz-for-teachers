@@ -85,9 +85,11 @@ class NewCourseCreator {
         responsesSent = 0
         isCreating = true
         runner.milestones = TaskMilestones.exampleCourse
+        // Someone who just asked for the example course should not be met
+        // with an unexplained question about updating anything.
         runner.run(
             scriptNamed: "setup.sh",
-            arguments: ["--", "--install-example"],
+            arguments: ["--no-update-check", "--", "--install-example"],
             workingDirectory: workspaceURL
         )
 

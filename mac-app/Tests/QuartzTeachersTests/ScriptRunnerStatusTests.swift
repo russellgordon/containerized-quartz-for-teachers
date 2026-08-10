@@ -92,6 +92,28 @@ final class ScriptRunnerStatusTests: XCTestCase {
     }
 
     @MainActor
+    func testAQuestionCarriesTheLinesThatExplainIt() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.isRunning = true
+        runner.receiveOutput("✅ Image already present: rwhgrwhg/teaching-quartz:latest\n")
+        runner.receiveOutput("🆕 A newer version of the website builder is available.\n")
+        let context: String = ScriptRunner.context(before: runner.transcript.lines)
+        XCTAssertTrue(context.contains("A newer version of the website builder is available"))
+    }
+
+    @MainActor
+    func testContextStopsAtAnEarlierQuestion() {
+        let lines: [String] = [
+            "Enter your name:",
+            "Thanks.",
+            "A newer version is available.",
+        ]
+        let context: String = ScriptRunner.context(before: lines)
+        XCTAssertFalse(context.contains("Enter your name"), "Context must not reach back past a question already answered")
+        XCTAssertTrue(context.contains("A newer version is available"))
+    }
+
+    @MainActor
     func testTheScriptsOwnCancelKeyIsRemembered() {
         let asked = ScriptRunner.separateDefaultAnswer(from: "Choose a different Netlify site name (or 'q' to cancel) [ics3u-s3-2026-gordon-01]:")
         XCTAssertEqual(asked.cancelToken, "q", "The key the script accepts must survive being hidden from the wording")

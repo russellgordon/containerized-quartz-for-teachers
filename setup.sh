@@ -13,6 +13,9 @@ DEV_IMAGE="quartz-teacher:dev"   # convenient local dev image
 # -------------------- Config (from flags) --------------------
 TAG="$DEFAULT_TAG"
 FORCE_UPDATE_IMAGE="false"
+# Set when the caller is in the middle of something else and an unexplained
+# question about updating would be worse than useless.
+SKIP_UPDATE_CHECK="${SKIP_UPDATE_CHECK:-false}"
 declare -a PASSTHRU_ARGS=()      # ensure array is declared even on older bash
 PULL_STATUS=""
 OVERRIDE_IMAGE=""                # full image override
@@ -45,6 +48,7 @@ Usage: ${SELF_CMD} [options] [-- <args passed to setup_course.py>]
 Options:
   --tag TAG            Use a specific tag instead of 'latest' (default: ${DEFAULT_TAG})
   --update-image       Force pulling the image and recreating the container to use it.
+  --no-update-check    Do not check whether a newer image has been published.
   --image REF          Use a specific image reference (overrides Docker Hub default).
                        Examples: ghcr.io/me/teaching-quartz:main | ${DEV_IMAGE}
                        Note: If REF has no '/', it's treated as a local image and won't be pulled.
@@ -79,6 +83,7 @@ while [[ $# -gt 0 ]]; do
       if [[ $# -lt 2 ]]; then echo "❌ --tag requires a value" >&2; exit 1; fi
       TAG="$2"; shift 2 ;;
     --update-image) FORCE_UPDATE_IMAGE="true"; shift ;;
+    --no-update-check) SKIP_UPDATE_CHECK="true"; shift ;;
     --image)
       if [[ $# -lt 2 ]]; then echo "❌ --image requires a value" >&2; exit 1; fi
       OVERRIDE_IMAGE="$2"; shift 2 ;;
@@ -300,9 +305,25 @@ registry_digest_of() {
 }
 
 installed_digest_of() {
-  local repo_digest
-  repo_digest=$(docker image inspect "$1" --format '{{if .RepoDigests}}{{index .RepoDigests 0}}{{end}}' 2>/dev/null || true)
-  echo "${repo_digest#*@}"
+  # Only a digest belonging to THIS repository says anything about whether the
+  # local image came from it. A locally built image often carries a digest for
+  # some other repository, and comparing that guarantees a false "newer
+  # version available" — which, answered yes, replaces a newer local build
+  # with an older published one.
+  local ref="$1"
+  local repo="${ref%%:*}"
+  local entries
+  entries=$(docker image inspect "$ref" --format '{{range .RepoDigests}}{{println .}}{{end}}' 2>/dev/null || true)
+  while IFS= read -r entry; do
+    if [[ -z "$entry" ]]; then
+      continue
+    fi
+    if [[ "${entry%@*}" == "$repo" ]]; then
+      echo "${entry#*@}"
+      return 0
+    fi
+  done <<< "$entries"
+  echo ""
 }
 
 offer_newer_image() {
@@ -315,6 +336,13 @@ offer_newer_image() {
   installed="$(installed_digest_of "$ref")"
   # Offline, or nothing to compare: carry on with what is here.
   if [[ -z "$available" || -z "$installed" || "$available" == "$installed" ]]; then
+    return 0
+  fi
+
+  # A different digest does not mean an older one. If the registry has never
+  # heard of the installed digest, this is a locally built image, and
+  # "updating" it would replace it with something older.
+  if ! docker buildx imagetools inspect "${ref%%:*}@${installed}" >/dev/null 2>&1; then
     return 0
   fi
 
@@ -342,7 +370,7 @@ offer_newer_image() {
   PULL_STATUS="(just updated)"
 }
 
-if [[ "$SKIP_PULL" != "true" && "$FORCE_UPDATE_IMAGE" != "true" && "$IMAGE_PRESENT" == "true" ]]; then
+if [[ "$SKIP_PULL" != "true" && "$FORCE_UPDATE_IMAGE" != "true" && "$SKIP_UPDATE_CHECK" != "true" && "$IMAGE_PRESENT" == "true" ]]; then
   offer_newer_image "$IMAGE"
 fi
 

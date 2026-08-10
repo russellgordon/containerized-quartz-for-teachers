@@ -38,6 +38,11 @@ class ScriptRunner {
     /// of several tasks is the current one once they have all finished.
     var startedAt: Date?
 
+    /// The lines immediately before the question, which are usually what
+    /// explains it. A question shown on its own — "Install it now? (y/n)" —
+    /// is unanswerable by someone who cannot see what prompted it.
+    var pendingQuestionContext: String = ""
+
     /// What the script itself accepts as "cancel" at this question, when
     /// it offered one. Sending it lets the script wind itself down and
     /// tidy up, rather than being killed mid-step.
@@ -325,6 +330,7 @@ class ScriptRunner {
                     self.pendingQuestion = asked.question
                     self.suggestedAnswer = asked.suggestedAnswer
                     self.pendingCancelToken = asked.cancelToken
+                    self.pendingQuestionContext = ScriptRunner.context(before: self.transcript.lines)
                     self.isAwaitingInput = true
                 }
             }
@@ -451,6 +457,31 @@ class ScriptRunner {
         let afterBracket: String = String(question[question.index(after: closeIndex)...]).trimmingCharacters(in: .whitespaces)
         wording += afterBracket
         return AskedQuestion(question: ScriptRunner.asked(wording), suggestedAnswer: offered, cancelToken: ScriptRunner.cancelToken(in: question))
+    }
+
+    /// The last few meaningful lines before a question, to be shown with it.
+    ///
+    /// Stops at an earlier question, so the context belongs to this one and
+    /// not to something already answered.
+    static func context(before lines: [String], limit: Int = 3) -> String {
+        var collected: [String] = []
+        var index: Int = lines.count - 1
+        while index >= 0 && collected.count < limit {
+            let line: String = lines[index].trimmingCharacters(in: .whitespaces)
+            index -= 1
+            if line.isEmpty {
+                continue
+            }
+            if ScriptRunner.looksLikeQuestion(line) {
+                break
+            }
+            collected.append(line)
+        }
+        var ordered: [String] = []
+        for line in collected.reversed() {
+            ordered.append(line)
+        }
+        return ordered.joined(separator: "\n")
     }
 
     /// The key the script offered as a way out, such as the "q" in
