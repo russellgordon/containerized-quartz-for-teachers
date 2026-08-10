@@ -120,10 +120,18 @@ struct SectionDetailView: View {
             if showsDeployProgress {
                 TaskProgressView(runner: deployRunner, title: "Publishing \(titleText)")
             } else {
-                TaskProgressView(runner: previewRunner, title: "Preparing the preview of \(titleText)")
+                TaskProgressView(runner: previewRunner, title: previewTaskTitle)
             }
             Spacer(minLength: 0)
         }
+    }
+
+    /// What the preview panel is called. While the preview is being made
+    /// the title says so; once it has finished or been stopped, the panel
+    /// is simply about the preview, so it must stop claiming to be
+    /// preparing one.
+    var previewTaskTitle: String {
+        return SectionDetailView.previewTaskTitle(isPreparing: previewRunner.isRunning, sectionName: titleText)
     }
 
     /// True when the console should be about publishing rather than
@@ -138,6 +146,14 @@ struct SectionDetailView: View {
     }
 
     // MARK: - Functions
+
+    /// Names the preview panel for what it is at the moment.
+    static func previewTaskTitle(isPreparing: Bool, sectionName: String) -> String {
+        if isPreparing {
+            return "Preparing the preview of \(sectionName)"
+        }
+        return "Preview of \(sectionName)"
+    }
 
     /// Whichever task is running now, or — once both have finished — the
     /// one that started most recently.

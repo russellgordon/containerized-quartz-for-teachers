@@ -45,6 +45,18 @@ final class ConsoleFocusTests: XCTestCase {
     }
 
     @MainActor
+    func testThePreviewPanelStopsClaimingToBePreparingOne() {
+        XCTAssertEqual(
+            SectionDetailView.previewTaskTitle(isPreparing: true, sectionName: "ICS3U-S5"),
+            "Preparing the preview of ICS3U-S5"
+        )
+        XCTAssertEqual(
+            SectionDetailView.previewTaskTitle(isPreparing: false, sectionName: "ICS3U-S5"),
+            "Preview of ICS3U-S5"
+        )
+    }
+
+    @MainActor
     func testNothingRunYetShowsThePreviewSide() {
         let showsDeploy: Bool = SectionDetailView.showsDeployProgress(
             previewIsRunning: false,

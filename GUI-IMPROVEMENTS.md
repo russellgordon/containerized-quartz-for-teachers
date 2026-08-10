@@ -89,6 +89,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 39 | 2026-08-09 | Stopping a preview reported that something had gone wrong, though the output showed a clean run. | ✅ Fixed — ending a task on purpose kills the process, which exits non-zero, and any non-zero exit was read as failure. A task stopped by the teacher now says "Stopped" with "You stopped this.", shows no failure explanation, and no longer springs the log open. Same principle as cancellation: an ending you asked for is not a fault. | Same: distinguish "ended on purpose" from "failed" before judging by exit code. |
 
+| 40 | 2026-08-09 | After a preview was stopped the panel still read "Preparing the preview of…", which was no longer true; the "You stopped this." line is redundant beside the "Stopped" status. | ✅ Implemented — the panel is named for what it is at the moment: "Preparing the preview of ICS3U-S5" while it is being made, "Preview of ICS3U-S5" once it has finished or been stopped. The extra sentence is gone; the "Stopped" status says it already. | Same: titles that describe an action in progress must be re-read when it ends. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

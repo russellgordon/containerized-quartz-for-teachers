@@ -169,11 +169,6 @@ struct TaskProgressView: View {
                                 .foregroundStyle(.secondary)
                         }
 
-                        if runner.wasStoppedByUser {
-                            Text("You stopped this.")
-                                .foregroundStyle(.secondary)
-                        }
-
                         // Say what went wrong in words, so the output
                         // underneath is there to consult, not to decode.
                         if !runner.wasCancelled, !runner.wasStoppedByUser, exitCode != 0, let explanation = runner.failureExplanation {
