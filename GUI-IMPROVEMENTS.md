@@ -77,6 +77,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 33 | 2026-08-09 | A prompt's square-bracket default ("Enter Netlify site name [ics3u-s3-2026-gordon]:", and the same when a name is taken: "Choose a different Netlify site name (or 'q' to cancel) [ics3u-s3-2026-gordon-01]:") is command-line shorthand. Take it out of the question and put it in the answer field instead. Title the alerts "Input required". | ✅ Implemented — a bracketed default is lifted out of the wording and pre-filled into the text field, so agreeing is one keystroke and changing it is still easy; "[Default: x]" is understood too, while "[Y/n]"-style choice lists stay in the wording (they name options, not a value). Five tests cover the shapes. | Same: a GUI shows a default as a filled-in field, never as text the user must retype. |
 
+| 34 | 2026-08-09 | "(or 'q' to cancel)" shouldn't appear in a GUI alert. | ✅ Implemented — a parenthetical that names a key to type (cancel/quit/skip) is dropped from the question and the spacing closed up, so the retry prompt reads "Choose a different Netlify site name:". Informative parentheticals such as "(y/n)" are kept, since they carry meaning rather than typing instructions. | Same: a dialog's buttons are the escape hatch; never repeat a keystroke instruction in the wording. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

@@ -60,10 +60,16 @@ final class ScriptRunnerStatusTests: XCTestCase {
     }
 
     @MainActor
-    func testRetryPromptKeepsItsWordingAndOffersTheNewName() {
+    func testRetryPromptDropsTheTypistsEscapeHatch() {
         let asked = ScriptRunner.separateDefaultAnswer(from: "Choose a different Netlify site name (or 'q' to cancel) [ics3u-s3-2026-gordon-01]:")
-        XCTAssertEqual(asked.question, "Choose a different Netlify site name (or 'q' to cancel):")
+        XCTAssertEqual(asked.question, "Choose a different Netlify site name:")
         XCTAssertEqual(asked.suggestedAnswer, "ics3u-s3-2026-gordon-01")
+    }
+
+    @MainActor
+    func testInformativeParentheticalsSurvive() {
+        let asked = ScriptRunner.separateDefaultAnswer(from: "Overwrite the existing folder (y/n)?")
+        XCTAssertEqual(asked.question, "Overwrite the existing folder (y/n)?")
     }
 
     @MainActor

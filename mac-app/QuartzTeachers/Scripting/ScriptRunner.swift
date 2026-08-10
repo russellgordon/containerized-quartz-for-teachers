@@ -338,10 +338,10 @@ class ScriptRunner {
     /// filled-in form rather than as instructions to follow.
     static func separateDefaultAnswer(from question: String) -> (question: String, suggestedAnswer: String) {
         guard let openIndex = question.lastIndex(of: "["), let closeIndex = question.lastIndex(of: "]") else {
-            return (question, "")
+            return (ScriptRunner.asked(question), "")
         }
         if openIndex >= closeIndex {
-            return (question, "")
+            return (ScriptRunner.asked(question), "")
         }
         var offered: String = String(question[question.index(after: openIndex)..<closeIndex]).trimmingCharacters(in: .whitespaces)
 
@@ -351,18 +351,93 @@ class ScriptRunner {
             offered = String(offered.dropFirst(defaultLabel.count)).trimmingCharacters(in: .whitespaces)
         }
         if offered.isEmpty {
-            return (question, "")
+            return (ScriptRunner.asked(question), "")
         }
         // "[Y/n]" lists choices rather than naming a value, so the
         // wording keeps it and nothing is filled in.
         if offered.contains("/") {
-            return (question, "")
+            return (ScriptRunner.asked(question), "")
         }
 
         var wording: String = String(question[question.startIndex..<openIndex]).trimmingCharacters(in: .whitespaces)
         let afterBracket: String = String(question[question.index(after: closeIndex)...]).trimmingCharacters(in: .whitespaces)
         wording += afterBracket
-        return (wording, offered)
+        return (ScriptRunner.asked(wording), offered)
+    }
+
+    /// The wording as a dialog should ask it.
+    static func asked(_ question: String) -> String {
+        return ScriptRunner.tidyingSpacing(in: ScriptRunner.removingKeystrokeAside(from: question))
+    }
+
+    /// Removes a parenthetical that names a key to type, such as
+    /// "(or 'q' to cancel)". The dialog has a Cancel button, so telling
+    /// a teacher to type a letter is both wrong and puzzling here.
+    static func removingKeystrokeAside(from question: String) -> String {
+        var result: String = ""
+        var aside: String = ""
+        var depth: Int = 0
+        for character in question {
+            if character == "(" {
+                depth += 1
+                if depth == 1 {
+                    aside = ""
+                    continue
+                }
+            }
+            if character == ")" && depth > 0 {
+                depth -= 1
+                if depth == 0 {
+                    if !ScriptRunner.namesAKeyToType(aside) {
+                        result += "(" + aside + ")"
+                    }
+                    continue
+                }
+            }
+            if depth > 0 {
+                aside.append(character)
+            } else {
+                result.append(character)
+            }
+        }
+        // An unclosed bracket is not an aside; keep what was written.
+        if depth > 0 {
+            result += "(" + aside
+        }
+        return result
+    }
+
+    /// True when a parenthetical is an escape hatch for a typist, rather
+    /// than information the question needs (such as "(y/n)").
+    static func namesAKeyToType(_ aside: String) -> Bool {
+        let wording: String = aside.lowercased()
+        if wording.contains("cancel") || wording.contains("quit") || wording.contains("skip") {
+            return true
+        }
+        return false
+    }
+
+    /// Closes up the gaps left behind by a removed aside.
+    static func tidyingSpacing(in text: String) -> String {
+        var result: String = ""
+        var previousWasSpace: Bool = false
+        for character in text {
+            if character == " " {
+                if previousWasSpace {
+                    continue
+                }
+                previousWasSpace = true
+                result.append(character)
+                continue
+            }
+            let closesTheSentence: Bool = character == ":" || character == "?"
+            if closesTheSentence && previousWasSpace {
+                result.removeLast()
+            }
+            previousWasSpace = false
+            result.append(character)
+        }
+        return result.trimmingCharacters(in: .whitespaces)
     }
 
     /// Folds newly arrived output into the milestone count.
