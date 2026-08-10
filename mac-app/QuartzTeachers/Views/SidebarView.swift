@@ -77,7 +77,7 @@ struct SidebarView: View {
     /// How large the +/- glyphs are drawn. SwiftUI's default renders these a
     /// little smaller than the same buttons elsewhere on the system — Xcode's
     /// list footers, for one — so the size is stated rather than inherited.
-    static let footerGlyphSize: CGFloat = 14
+    static let footerGlyphSize: CGFloat = 16
 
     /// Add, remove, and filter — the standard macOS list footer.
     var bottomBar: some View {
