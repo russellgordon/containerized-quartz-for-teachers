@@ -42,5 +42,6 @@ graph TD
 
 ---
 
-> [!warning] These are paraphrases
-> Read [[About These Expectations]] before quoting anything here.
+> [!info] Where these come from
+> The wording on these pages is the Ontario curriculum's own. See
+> [[About These Expectations]].

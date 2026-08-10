@@ -57,7 +57,7 @@
     "Tutorials"
   ],
   "expandOnFolderClick": false,
-  "footer_html": "This example course was written to show what the software can do. The Ontario curriculum expectations are paraphrased; see <a href=\"/Curriculum/About-These-Expectations\">About These Expectations</a>.",
+  "footer_html": "This example course was written to show what the software can do. Ontario curriculum expectations are reproduced from the Ministry of Education; see <a href=\"/Curriculum/About-These-Expectations\">About These Expectations</a>.",
   "show_reading_time": true,
   "fonts": {
     "default": {

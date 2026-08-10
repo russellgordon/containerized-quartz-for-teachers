@@ -24,8 +24,8 @@ already exists, it generates a random alternative code still ending in `2O`
 `course_config.json` so the copy calls itself by the code it was given.
 
 **What is in it.** The example is a full Grade 9 science course (SNC1W,
-de-streamed) of roughly 225 pages: five strands of paraphrased curriculum
-expectations, 35 concept pages, 14 investigations, exercises with answers,
+de-streamed) of roughly 225 pages: five strands of curriculum expectations
+reproduced from the Ministry's published document, 35 concept pages, 14 investigations, exercises with answers,
 marked tasks with rubrics, tutorials, discussions, portfolio prompts, and two
 sections of class-by-class pages paced a day apart.
 
