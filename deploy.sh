@@ -6,6 +6,18 @@ cd "$(dirname "$0")"
 
 CONTAINER_NAME="teaching-quartz"
 
+# Image resolution (same rules as setup.sh and preview.sh). Without this,
+# creating a container here used the bare name "teaching-quartz", which
+# Docker reads as an official library image that does not exist — so a
+# machine with no container yet could not publish at all.
+HUB_USER="${HUB_USER:-rwhgrwhg}"
+DEFAULT_TAG="${DEFAULT_TAG:-latest}"
+IMAGE_NAME="${IMAGE_NAME:-teaching-quartz}"
+DEV_IMAGE="${DEV_IMAGE:-quartz-teacher:dev}"
+TAG="${TAG:-$DEFAULT_TAG}"
+USE_LOCAL_DEV="false"
+OVERRIDE_IMAGE="${OVERRIDE_IMAGE:-}"
+
 # Defaults so help can expand under `set -u` before OS detection
 SELF_CMD="./deploy.sh"
 PREVIEW_CMD="./preview.sh"
@@ -13,7 +25,7 @@ PREVIEW_CMD="./preview.sh"
 usage() {
   cat <<USAGE
 🧰 Usage:
-  ${SELF_CMD} <COURSE_CODE> <SECTION_NUMBER> [--diagnose] [--team <TEAM_SLUG>] [--reset-token|--logout]
+  ${SELF_CMD} <COURSE_CODE> <SECTION_NUMBER> [--diagnose] [--team <TEAM_SLUG>] [--reset-token|--logout] [--image REF] [--dev]
 
 Examples:
   ${SELF_CMD} ICS3U 1
@@ -25,6 +37,8 @@ Notes:
 - You must build first (the static site goes to 'public/' in that section folder).
 - The Netlify Personal Access Token (PAT) is stored in the macOS Keychain and injected securely at runtime.
 - Use --reset-token (or --logout) to remove the saved PAT and re-link on next run.
+- --image REF publishes using a particular build; --dev uses the local ${DEV_IMAGE}.
+  Both matter only when no container exists yet, since an existing one is reused.
 - If your course code ends with '0' (zero), you'll be prompted to correct it to 'O' for Open-level courses.
 USAGE
 }
@@ -91,6 +105,13 @@ while [[ $# -gt 0 ]]; do
       TEAM_SLUG="${1#*=}" ;;
     --reset-token|--logout)
       RESET_TOKEN="true" ;;
+    --image)
+      if [[ $# -lt 2 ]]; then echo "❌ Missing value for $1"; echo; usage; exit 1; fi
+      OVERRIDE_IMAGE="$2"; shift ;;
+    --image=*)
+      OVERRIDE_IMAGE="${1#*=}" ;;
+    --dev|--local-dev)
+      USE_LOCAL_DEV="true" ;;
     --help|-h)
       usage; exit 0 ;;
     *)
@@ -98,6 +119,15 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+
+# Resolve IMAGE (same rules as setup.sh and preview.sh)
+if [[ "$USE_LOCAL_DEV" == "true" ]]; then
+  IMAGE="$DEV_IMAGE"
+elif [[ -n "$OVERRIDE_IMAGE" ]]; then
+  IMAGE="$OVERRIDE_IMAGE"
+else
+  IMAGE="${HUB_USER}/${IMAGE_NAME}:${TAG}"
+fi
 
 # Host-side paths (bind-mounted into the container at /teaching/courses)
 COURSE_DIR_HOST="$(pwd)/courses/${COURSE_CODE}"
@@ -388,13 +418,32 @@ ensure_container_runtime
 # -------------------- Mount-aware container handling --------------------
 HOST_COURSES="$(pwd)/courses"
 
+ensure_image_present() {
+  if docker image inspect "$IMAGE" >/dev/null 2>&1; then
+    return 0
+  fi
+  # A reference without a "/" is a local build, so there is nowhere to get it.
+  case "$IMAGE" in
+    */*)
+      echo "⬇️  Getting what your websites are built with ($IMAGE)…"
+      docker pull "$IMAGE"
+      ;;
+    *)
+      echo "❌ No local image named '$IMAGE'."
+      echo "   Run ./setup.sh first, or build it with: docker build -t $IMAGE ."
+      exit 1
+      ;;
+  esac
+}
+
 run_container_with_mount() {
+  ensure_image_present
   echo " Binding host courses to container: $HOST_COURSES ➜ /teaching/courses"
   docker run -dit \
     --name "$CONTAINER_NAME" \
     -v "$HOST_COURSES":/teaching/courses \
     -p 8081:8081 \
-    teaching-quartz \
+    "$IMAGE" \
     tail -f /dev/null
 }
 
