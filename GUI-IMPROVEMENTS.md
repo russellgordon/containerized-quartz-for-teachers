@@ -115,6 +115,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 52 | 2026-08-10 | The sidebar's + and − needed pixel-perfect aim — the minus is a few pixels of thin line. `.contentShape(Rectangle())` had been added but changed nothing. | ✅ Fixed — `contentShape` was applied to the *button*, after `.buttonStyle`, so it reshaped bounds that were already just the glyph. It has to wrap the **label**, and the label needs a `.frame` to have any area to claim: each button is now a 24 × 22 target with the whole rectangle clickable, plus a tooltip. Guarded by a test that reads the buttons' real frames from the accessibility tree — and verified to fail (9 × 4) when the frame is removed, so it is not a test that only ever passes. | Same trap exists in WinUI with icon-only buttons: set a minimum target size rather than relying on the glyph's bounds. |
 
+| 53 | 2026-08-10 | The +/- glyphs were drawn smaller than the same buttons elsewhere on the system, and a fixed point size would ignore the accessibility text-size setting. | ✅ Implemented — the glyphs are 15pt at standard text size, and both the glyph and its target are declared with `@ScaledMetric(relativeTo: .body)`, so enlarging text in System Settings ▸ Accessibility ▸ Display enlarges the button along with it. Fixed sizes would have left someone who enlarges text aiming at the same small target as before. | WinUI scales with the system text-scale factor; use scalable units for both the icon and its minimum target rather than fixed pixels. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

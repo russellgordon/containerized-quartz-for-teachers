@@ -74,10 +74,18 @@ struct SidebarView: View {
     /// buttons really are this size on screen.
     static let footerButtonSize: CGSize = CGSize(width: 26, height: 24)
 
+    /// The glyph and its target at the SYSTEM text size, scaled from the
+    /// base sizes above. A fixed point size ignores Accessibility ▸ Display
+    /// ▸ Text size entirely, which would leave someone who enlarges text
+    /// with the same small target they had before.
+    @ScaledMetric(relativeTo: .body) var scaledGlyphSize: CGFloat = SidebarView.footerGlyphSize
+    @ScaledMetric(relativeTo: .body) var scaledButtonWidth: CGFloat = SidebarView.footerButtonSize.width
+    @ScaledMetric(relativeTo: .body) var scaledButtonHeight: CGFloat = SidebarView.footerButtonSize.height
+
     /// How large the +/- glyphs are drawn. SwiftUI's default renders these a
     /// little smaller than the same buttons elsewhere on the system — Xcode's
     /// list footers, for one — so the size is stated rather than inherited.
-    static let footerGlyphSize: CGFloat = 16
+    static let footerGlyphSize: CGFloat = 15
 
     /// Add, remove, and filter — the standard macOS list footer.
     var bottomBar: some View {
@@ -96,8 +104,8 @@ struct SidebarView: View {
             } label: {
                 Label("Add Course or Club", systemImage: "plus")
                     .labelStyle(.iconOnly)
-                    .font(.system(size: SidebarView.footerGlyphSize))
-                    .frame(width: SidebarView.footerButtonSize.width, height: SidebarView.footerButtonSize.height)
+                    .font(.system(size: scaledGlyphSize))
+                    .frame(width: scaledButtonWidth, height: scaledButtonHeight)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
@@ -109,8 +117,8 @@ struct SidebarView: View {
             } label: {
                 Label("Remove Selected", systemImage: "minus")
                     .labelStyle(.iconOnly)
-                    .font(.system(size: SidebarView.footerGlyphSize))
-                    .frame(width: SidebarView.footerButtonSize.width, height: SidebarView.footerButtonSize.height)
+                    .font(.system(size: scaledGlyphSize))
+                    .frame(width: scaledButtonWidth, height: scaledButtonHeight)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.borderless)
