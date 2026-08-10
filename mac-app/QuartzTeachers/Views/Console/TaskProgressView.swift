@@ -165,6 +165,14 @@ struct TaskProgressView: View {
                                 .foregroundStyle(.secondary)
                         }
 
+                        // Say what went wrong in words, so the output
+                        // underneath is there to consult, not to decode.
+                        if !runner.wasCancelled, exitCode != 0, let explanation = runner.failureExplanation {
+                            Text(explanation)
+                                .foregroundStyle(.secondary)
+                                .accessibilityIdentifier("failureExplanation")
+                        }
+
                         // Finish with something to click: the live site.
                         if !runner.wasCancelled, exitCode == 0, let siteURL = runner.publishedSiteURL {
                             VStack(alignment: .leading, spacing: 4) {
@@ -256,7 +264,9 @@ struct TaskProgressView: View {
         .onChange(of: runner.lastExitCode) {
             // A failure is worth reading about: open the details.
             if let exitCode = runner.lastExitCode {
-                if exitCode != 0 && !runner.wasCancelled {
+                // Only fall back to the raw output when the app has
+                // nothing better to say.
+                if exitCode != 0 && !runner.wasCancelled && runner.failureExplanation == nil {
                     isShowingDetails = true
                 }
             }

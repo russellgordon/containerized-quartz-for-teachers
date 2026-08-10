@@ -316,6 +316,12 @@ class ScriptRunner {
         DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: check)
     }
 
+    /// A plain-language reason the task failed, when its output shows a
+    /// trouble the app recognises. Nil means show the output instead.
+    var failureExplanation: String? {
+        return FailureExplainer.explanation(in: transcript.recentText(maximumCharacters: 8000))
+    }
+
     /// The published site's address, if the output announced one.
     /// Netlify's deployer prints "Live URL:" when it creates a site and
     /// "Site URL:" on every deploy after that.
