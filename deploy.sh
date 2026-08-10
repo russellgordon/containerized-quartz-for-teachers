@@ -367,45 +367,76 @@ _wait_for_docker() {
   return 1
 }
 
-_install_brew_formula() {
-  local formula="$1" cmd="$2" label="$3"
-  local log; log="$(mktemp -t cq4t-brew)"
-  echo "📦 Installing ${label}…"
-  echo "   (quiet — this can take a minute, longer if Homebrew updates itself)"
-  if ! HOMEBREW_NO_ASK=1 HOMEBREW_NO_ENV_HINTS=1 brew install --quiet "$formula" >"$log" 2>&1; then
-    echo "❌ Could not install ${label}. Homebrew said:"
-    sed 's/^/   /' "$log"
-    rm -f "$log"
-    echo "   Check your internet connection and re-run this script — it is safe to re-run."
+# ---- Tools install themselves; nothing is asked of the teacher --------
+# Everything the toolchain needs on the host — Colima, Lima, the Docker
+# CLI, and BuildKit — downloads as static binaries into the app's own
+# space under Application Support. No Homebrew, no administrator rights.
+# Tools already on the machine (Homebrew installs included) are used
+# as-is; downloads happen only for what is missing.
+TOOLS_DIR="$HOME/Library/Application Support/Plantoir/tools"
+export PATH="$TOOLS_DIR/bin:$PATH"
+
+# Pinned versions, bumped deliberately with toolchain updates.
+COLIMA_VERSION="v0.10.3"
+LIMA_VERSION="2.2.0"
+DOCKER_CLI_VERSION="29.7.2"
+BUILDX_VERSION="v0.36.1"
+
+_download() {
+  local url="$1" destination="$2" label="$3"
+  echo "📦 Getting ${label}…"
+  if ! curl -fsSL --retry 3 -o "$destination" "$url"; then
+    echo "❌ Could not download ${label}."
+    echo "   An internet connection is needed for this one-time setup."
     exit 1
   fi
-  rm -f "$log"
-  if ! command -v "$cmd" >/dev/null 2>&1; then
-    echo "❌ ${label} was installed, but the '${cmd}' command is not available in this Terminal."
-    echo "   Close this Terminal window, open a new one, and re-run this script."
-    exit 1
-  fi
-  echo "✅ ${label} installed."
 }
 
+ensure_local_tools() {
+  mkdir -p "$TOOLS_DIR/bin"
+  local arch lima_arch docker_arch buildx_arch
+  arch="$(uname -m)"
+  if [[ "$arch" == "arm64" ]]; then
+    lima_arch="arm64"; docker_arch="aarch64"; buildx_arch="arm64"
+  else
+    arch="x86_64"; lima_arch="x86_64"; docker_arch="x86_64"; buildx_arch="amd64"
+  fi
 
-# BuildKit is what builds the image, and Homebrew's docker formula does
-# NOT include it — without the plugin the build silently degrades to the
-# legacy builder, which corrupts the export-scripts layer. The formula
-# also does not link the plugin where the docker CLI looks for it.
+  if ! command -v limactl >/dev/null 2>&1; then
+    local lima_tgz="$TOOLS_DIR/lima.tar.gz"
+    _download "https://github.com/lima-vm/lima/releases/download/v${LIMA_VERSION}/lima-${LIMA_VERSION}-Darwin-${lima_arch}.tar.gz" "$lima_tgz" "the virtual machine manager"
+    tar xzf "$lima_tgz" -C "$TOOLS_DIR"
+    rm -f "$lima_tgz"
+  fi
+
+  if ! command -v colima >/dev/null 2>&1; then
+    _download "https://github.com/abiosoft/colima/releases/download/${COLIMA_VERSION}/colima-Darwin-${arch}" "$TOOLS_DIR/bin/colima" "the container runtime"
+    chmod +x "$TOOLS_DIR/bin/colima"
+  fi
+
+  if ! command -v docker >/dev/null 2>&1; then
+    local docker_tgz="$TOOLS_DIR/docker.tar.gz"
+    _download "https://download.docker.com/mac/static/stable/${docker_arch}/docker-${DOCKER_CLI_VERSION}.tgz" "$docker_tgz" "the container tools"
+    tar xzf "$docker_tgz" -C "$TOOLS_DIR"
+    mv -f "$TOOLS_DIR/docker/docker" "$TOOLS_DIR/bin/docker"
+    rm -rf "$TOOLS_DIR/docker" "$docker_tgz"
+  fi
+
+  ensure_buildx
+}
+
+# BuildKit is what builds the image. Without the plugin the build silently
+# degrades to the legacy builder, which corrupts the export-scripts layer.
 ensure_buildx() {
   if docker buildx version >/dev/null 2>&1; then
     return 0
   fi
-  if command -v brew >/dev/null 2>&1; then
-    command -v docker-buildx >/dev/null 2>&1 || _install_brew_formula docker-buildx docker-buildx "Docker BuildKit plugin"
-    mkdir -p "$HOME/.docker/cli-plugins"
-    local plugin
-    plugin="$(command -v docker-buildx || true)"
-    if [[ -n "$plugin" ]]; then
-      ln -sfn "$plugin" "$HOME/.docker/cli-plugins/docker-buildx"
-    fi
-  fi
+  local arch buildx_arch
+  arch="$(uname -m)"
+  if [[ "$arch" == "arm64" ]]; then buildx_arch="arm64"; else buildx_arch="amd64"; fi
+  mkdir -p "$HOME/.docker/cli-plugins"
+  _download "https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.darwin-${buildx_arch}" "$HOME/.docker/cli-plugins/docker-buildx" "the image builder"
+  chmod +x "$HOME/.docker/cli-plugins/docker-buildx"
 }
 
 ensure_container_runtime() {
@@ -416,23 +447,15 @@ ensure_container_runtime() {
     return 0
   fi
 
-  echo "🐳 No running container runtime detected — using Colima…"
-
-  if ! command -v brew >/dev/null 2>&1; then
-    echo "❌ Homebrew is required to install Colima but is not installed."
-    echo "   Install it by pasting this into Terminal, then re-run this script:"
-    echo '   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-    exit 1
-  fi
-
-  command -v colima >/dev/null 2>&1 || _install_brew_formula colima colima "Colima (container runtime)"
-  command -v docker >/dev/null 2>&1 || _install_brew_formula docker docker "Docker CLI"
-  ensure_buildx
+  echo "🐳 Setting up this Mac — a one-time step that runs on its own…"
+  ensure_local_tools
 
   if [[ ! -d "$HOME/.colima/default" ]]; then
-    echo "🚀 First start: building the Colima virtual machine (2 CPUs · 4 GB RAM)."
-    echo "   The VM image (~600 MB) is downloaded once; this can take several minutes."
-    colima start --cpu 2 --memory 4
+    echo "🚀 First start: building the virtual machine (2 CPUs · 4 GB RAM)."
+    echo "   Its disk image (~600 MB) is downloaded once; this can take several minutes."
+    # vz is macOS's own virtualization — no extra software needed, unlike
+    # the qemu default.
+    colima start --cpu 2 --memory 4 --vm-type vz
   else
     echo "▶️  Starting Colima…"
     colima start

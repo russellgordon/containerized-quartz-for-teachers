@@ -29,46 +29,11 @@ In the session, optionally complete a series of “quests” to learn how to use
 
 ### ✅ Prerequisites
 
-> 💡 **Tip**
->
-> Docker Desktop is **not** required (and no Docker account is needed). This workflow uses free, open-source container runtimes — [Colima](https://github.com/abiosoft/colima) on macOS, and the Docker Engine inside [WSL2](https://learn.microsoft.com/windows/wsl/) on Windows — which the scripts install and start automatically.
-
-1. **macOS users**, install [Homebrew](https://brew.sh) (used to install the container runtime in the next section)
-2. **Windows users**, you need:
-   - [PowerShell 5.1 or later](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (comes with Windows 10+; download if on an older version of Windows)
-   - [WSL2](https://learn.microsoft.com/windows/wsl/install) (Windows Subsystem for Linux — installed in the next section)
-3. Install [Obsidian](https://obsidian.md/) (optional, but strongly recommended for editing Markdown)
-4. **macOS users**, install [iTerm2](https://iterm2.com) for full 24-bit ANSI colour support in the colour scheme picker
-5. [Create a **Netlify account**](https://app.netlify.com/signup) (if you don’t have one already)
-
-> 💡 **Tip**
->
-> Your computer's user account must have Administrator privileges to use this workflow. 
-
----
-
-## 🖥 Opening a Command Prompt or Terminal
-
-Before running the commands below, open a command-line interface:
-
-**On macOS:**
-1. Open **iTerm2** (recommended) or the built‑in **Terminal** app (find it in `Applications > Utilities`).
-2. Use the `cd` command to change into the folder where you want to work. Example:
-   ```bash
-   cd "$HOME/Desktop" && mkdir "class-websites" && cd "class-websites" && pwd
-   ```
-
-**On Windows:**
-1. Press `Windows + S` and type **PowerShell**.
-2. Click **Windows PowerShell** to open it.
-3. Use the `cd` command to change into the folder where you want to work. Example:
-   ```powershell
-   cd "$HOME\Desktop"; mkdir "class-websites"; cd "class-websites"; pwd
-   ```
-
----
-
-## 🐳 Step-by-Step: From Zero to Website
+None. Everything the toolchain needs on the host — the container runtime,
+the Docker command-line tools, and the image builder — installs itself into
+`~/Library/Application Support/Plantoir/tools` the first time you preview a
+site (no Homebrew, no administrator password). The first run needs an
+internet connection and a few minutes; after that everything is cached.
 
 ### 1. Set up the container runtime (one-time)
 

@@ -22,6 +22,7 @@ enum TaskMilestones {
 
     /// Creating a course: the wizard's own progression.
     static let courseCreation: [TaskMilestone] = [
+        TaskMilestone(label: "Getting this Mac ready…", marker: "Setting up this Mac"),
         TaskMilestone(label: "Building your website builder…", marker: "Building your website builder"),
         TaskMilestone(label: "Getting ready…", marker: "Welcome to the Course Setup Script"),
         TaskMilestone(label: "Preparing your course folder…", marker: "'Media' folder"),
@@ -33,6 +34,7 @@ enum TaskMilestones {
 
     /// Installing the example course.
     static let exampleCourse: [TaskMilestone] = [
+        TaskMilestone(label: "Getting this Mac ready…", marker: "Setting up this Mac"),
         TaskMilestone(label: "Building your website builder…", marker: "Building your website builder"),
         TaskMilestone(label: "Getting things ready…", marker: "Starting container if needed"),
         TaskMilestone(label: "Copying the example course…", marker: "Example Course installed to"),
@@ -41,6 +43,7 @@ enum TaskMilestones {
 
     /// Previewing a section.
     static let preview: [TaskMilestone] = [
+        TaskMilestone(label: "Getting this Mac ready…", marker: "Setting up this Mac"),
         TaskMilestone(label: "Building your website builder…", marker: "Building your website builder"),
         TaskMilestone(label: "Starting up…", marker: "Starting container if needed"),
         TaskMilestone(label: "Gathering your content…", marker: "Copying shared folders"),
@@ -52,6 +55,7 @@ enum TaskMilestones {
 
     /// Publishing a section to Netlify.
     static let deploy: [TaskMilestone] = [
+        TaskMilestone(label: "Getting this Mac ready…", marker: "Setting up this Mac"),
         TaskMilestone(label: "Building your website builder…", marker: "Building your website builder"),
         TaskMilestone(label: "Starting up…", marker: "Ensuring container is running"),
         TaskMilestone(label: "Checking your site…", marker: "Deploying from local build"),
@@ -64,6 +68,7 @@ enum TaskMilestones {
     /// Publishing when the site has to be rebuilt first — one task from
     /// the teacher's point of view, so one progress bar.
     static let buildAndDeploy: [TaskMilestone] = [
+        TaskMilestone(label: "Getting this Mac ready…", marker: "Setting up this Mac"),
         TaskMilestone(label: "Building your website builder…", marker: "Building your website builder"),
         TaskMilestone(label: "Starting up…", marker: "Starting container if needed"),
         TaskMilestone(label: "Gathering your content…", marker: "Copying shared folders"),
