@@ -87,6 +87,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 38 | 2026-08-09 | The live-site link appeared only after a section's FIRST publish; publishing again to an existing site showed no link. | ✅ Fixed — a new site reports its `ssl_url` ("Live URL: https://…"), while a repeat publish quotes the saved site record, whose `url` is plain **http** ("Site:" / "Site URL:"). The link was found by looking for `https://`, so repeat publishes never matched. It now reads the address from the labelled line whatever its scheme, ignores the "Admin:" dashboard line, and offers the https form of a netlify.app address since Netlify redirects there anyway. A site on its own domain is now recognised too. Four tests cover first publish, repeat publish, custom domain, and dashboard-only output. | Same: find the address by the label the publisher prints, never by guessing at the scheme or hostname. |
 
+| 39 | 2026-08-09 | Stopping a preview reported that something had gone wrong, though the output showed a clean run. | ✅ Fixed — ending a task on purpose kills the process, which exits non-zero, and any non-zero exit was read as failure. A task stopped by the teacher now says "Stopped" with "You stopped this.", shows no failure explanation, and no longer springs the log open. Same principle as cancellation: an ending you asked for is not a fault. | Same: distinguish "ended on purpose" from "failed" before judging by exit code. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

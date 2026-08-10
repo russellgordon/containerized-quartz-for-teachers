@@ -176,7 +176,7 @@ struct SectionDetailView: View {
     }
 
     func stopPreview() {
-        previewRunner.terminate()
+        previewRunner.stopByUser()
         previewURL = nil
         isWaitingForServer = false
     }

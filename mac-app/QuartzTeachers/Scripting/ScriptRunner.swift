@@ -47,6 +47,11 @@ class ScriptRunner {
     /// told to stop the way it stops itself.
     var wasCancelled: Bool = false
 
+    /// True when the teacher stopped the task themselves. Ending a task
+    /// on purpose makes it exit non-zero, which is not a failure and
+    /// must not be reported as one.
+    var wasStoppedByUser: Bool = false
+
     /// The answer the script would use if the teacher simply agreed —
     /// what it showed in square brackets. Offered in the answer field
     /// rather than left in the wording of the question.
@@ -96,6 +101,7 @@ class ScriptRunner {
         lastExitCode = nil
         launchProblem = nil
         wasCancelled = false
+        wasStoppedByUser = false
 
         let scriptURL: URL = workingDirectory.appendingPathComponent(scriptName)
         if !FileManager.default.fileExists(atPath: scriptURL.path) {
@@ -202,6 +208,12 @@ class ScriptRunner {
         }
         let data: Data = Data(rawText.utf8)
         try? terminal.masterHandle.write(contentsOf: data)
+    }
+
+    /// Stops the task because the teacher asked it to stop.
+    func stopByUser() {
+        wasStoppedByUser = true
+        terminate()
     }
 
     /// Stops the running script.

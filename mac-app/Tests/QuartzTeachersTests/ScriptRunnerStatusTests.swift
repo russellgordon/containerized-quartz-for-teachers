@@ -114,6 +114,15 @@ final class ScriptRunnerStatusTests: XCTestCase {
     }
 
     @MainActor
+    func testStoppingOnPurposeIsNotAFailure() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.isRunning = true
+        runner.stopByUser()
+        XCTAssertTrue(runner.wasStoppedByUser, "A preview the teacher stopped exits non-zero by design")
+        XCTAssertFalse(runner.wasCancelled, "Stopping is not the same as backing out of a question")
+    }
+
+    @MainActor
     func testCancellingMarksTheTaskAsCancelled() {
         let runner: ScriptRunner = ScriptRunner()
         runner.isAwaitingInput = true
