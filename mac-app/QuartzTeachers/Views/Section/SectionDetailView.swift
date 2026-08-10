@@ -117,7 +117,7 @@ struct SectionDetailView: View {
 
     var consoleArea: some View {
         VStack(spacing: 0) {
-            if deployRunner.isRunning || !deployRunner.transcript.lines.isEmpty {
+            if showsDeployProgress {
                 TaskProgressView(runner: deployRunner, title: "Publishing \(titleText)")
             } else {
                 TaskProgressView(runner: previewRunner, title: "Preparing the preview of \(titleText)")
@@ -126,7 +126,37 @@ struct SectionDetailView: View {
         }
     }
 
+    /// True when the console should be about publishing rather than
+    /// previewing.
+    var showsDeployProgress: Bool {
+        return SectionDetailView.showsDeployProgress(
+            previewIsRunning: previewRunner.isRunning,
+            deployIsRunning: deployRunner.isRunning,
+            previewStartedAt: previewRunner.startedAt,
+            deployStartedAt: deployRunner.startedAt
+        )
+    }
+
     // MARK: - Functions
+
+    /// Whichever task is running now, or — once both have finished — the
+    /// one that started most recently.
+    ///
+    /// Judging by "has this task any output?" instead kept a finished
+    /// publish on screen forever, so starting a preview afterwards left
+    /// the publish's own summary sitting there as though nothing had
+    /// happened.
+    static func showsDeployProgress(previewIsRunning: Bool, deployIsRunning: Bool, previewStartedAt: Date?, deployStartedAt: Date?) -> Bool {
+        if previewIsRunning {
+            return false
+        }
+        if deployIsRunning {
+            return true
+        }
+        let previewStart: Date = previewStartedAt ?? Date.distantPast
+        let deployStart: Date = deployStartedAt ?? Date.distantPast
+        return deployStart > previewStart
+    }
 
     func startPreview() {
         guard let workspaceURL = workspace.workspaceURL else {

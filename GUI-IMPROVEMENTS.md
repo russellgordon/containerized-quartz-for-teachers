@@ -83,6 +83,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 36 | 2026-08-09 | Hide the guts when a task fails: a real publish hit `Netlify API error 429: API Deploy rate limit surpassed`, and the app answered by springing the raw output open. | ✅ Implemented — `FailureExplainer` reads the output and says what happened in a sentence: the rate limit ("Netlify is limiting how often websites can be published right now. Try publishing again in about a minute." — the wait read from the script's own reset line), a missing or refused Netlify token, no internet, and publishing before anything was built. The log stays one click away but no longer opens by itself. When nothing is recognised the app says nothing and shows the output, since an honest fallback beats a confident guess; a test locks that behaviour in. | Same explanations from the same markers; keep the recognise-or-stay-quiet rule. |
 
+| 37 | 2026-08-09 | After a publish finished, starting a preview of the same section left the publish's panel on screen — the preview appeared but the interface never said it was being prepared. | ✅ Fixed — the console area chose its task by asking "has the publish any output?", and a transcript is never emptied, so a finished publish held the space forever. It now shows whichever task is running, or — once both have finished — the one that started most recently, so the publish's summary and live link stay until something else begins. Four tests cover the combinations. | Same rule: pick the panel by which task is current, never by whether a task has left output behind. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

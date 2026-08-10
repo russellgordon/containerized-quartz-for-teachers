@@ -34,6 +34,10 @@ class ScriptRunner {
     var isAwaitingInput: Bool = false
     var pendingQuestion: String = ""
 
+    /// When this runner last began a task. Lets the interface tell which
+    /// of several tasks is the current one once they have all finished.
+    var startedAt: Date?
+
     /// What the script itself accepts as "cancel" at this question, when
     /// it offered one. Sending it lets the script wind itself down and
     /// tidy up, rather than being killed mid-step.
@@ -154,6 +158,7 @@ class ScriptRunner {
         process = newProcess
         terminal = newTerminal
         isRunning = true
+        startedAt = Date()
         AppLog.output.info("Started \(scriptName, privacy: .public) \(arguments, privacy: .public)")
     }
 
