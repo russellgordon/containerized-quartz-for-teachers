@@ -45,12 +45,39 @@ struct FinderPathBarView: View {
                     Text(FileManager.default.displayName(atPath: ancestorPaths[index]))
                         .font(.callout)
                 }
+                // Finder's own path bar opens a folder on a double-click and
+                // reveals it from the context menu; this one does the same.
+                // contentShape makes the gap between icon and name count too.
+                .contentShape(Rectangle())
+                .onTapGesture(count: 2) {
+                    FinderPathBarView.openInFinder(ancestorPaths[index])
+                }
+                .contextMenu {
+                    Button("Show in Finder") {
+                        FinderPathBarView.revealInFinder(ancestorPaths[index])
+                    }
+                    Button("Open Folder") {
+                        FinderPathBarView.openInFinder(ancestorPaths[index])
+                    }
+                }
+                .help(ancestorPaths[index])
             }
         }
         .padding(.horizontal, 4)
     }
 
     // MARK: - Functions
+
+    /// Opens a folder in Finder, as double-clicking it there would.
+    static func openInFinder(_ path: String) {
+        NSWorkspace.shared.open(URL(fileURLWithPath: path))
+    }
+
+    /// Shows a folder inside its parent, selected — what "Show in Finder"
+    /// means everywhere else in the app.
+    static func revealInFinder(_ path: String) {
+        NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: path)])
+    }
 
     /// "/Users/x/Desktop/Y" → ["/", "/Users", "/Users/x",
     /// "/Users/x/Desktop", "/Users/x/Desktop/Y"].

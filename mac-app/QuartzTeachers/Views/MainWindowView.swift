@@ -79,6 +79,16 @@ struct MainWindowView: View {
             .padding(.bottom, scaledBottomInset)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.bar)
+            // Right-clicking anywhere on the strip — not only on a folder
+            // — offers the working folder itself.
+            .contextMenu {
+                Button("Show in Finder") {
+                    FinderPathBarView.revealInFinder(workspaceURL.path)
+                }
+                Button("Open Working Folder") {
+                    FinderPathBarView.openInFinder(workspaceURL.path)
+                }
+            }
                 .help(workspaceURL.path)
                 .accessibilityIdentifier("windowPathBar")
         }

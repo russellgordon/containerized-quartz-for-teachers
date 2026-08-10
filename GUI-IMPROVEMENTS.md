@@ -123,6 +123,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 56 | 2026-08-10 | Nothing in the window said which folder it was working in — awkward now that each window can be on a different one. | ✅ Implemented — a Finder-style **path bar** runs along the bottom of the detail column, showing the working folder as Macintosh HD › Users › … › folder with each ancestor's real icon and localised name, on a `.bar` background under a divider, exactly where Finder puts its own. It reuses the same view the empty-folder message already used. Verified from a window capture; a test asserts it is on screen and names the folder, but deliberately not where it is — the accessibility tree reports a container's frame for SwiftUI content, so positional assertions measure the wrong rectangle. | Same footer beneath the content pane; build the path from the folder's ancestors rather than printing a raw path string. |
 
+| 57 | 2026-08-10 | The path bar showed the working folder but did nothing when clicked. | ✅ Implemented — double-clicking any folder in the bar opens it in Finder, and right-clicking one offers **Show in Finder** and **Open Folder** for that folder. Right-clicking the strip anywhere else offers the same pair for the working folder itself, so the menu is never a dead click. Each component's hit area covers the gap between its icon and its name, and its full path shows as a tooltip. | Same two gestures; a path bar that only displays is a missed affordance. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the
