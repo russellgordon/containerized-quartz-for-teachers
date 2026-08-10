@@ -72,13 +72,18 @@ struct SidebarView: View {
 
     /// How big the footer's +/- targets are. Named so a test can check the
     /// buttons really are this size on screen.
-    static let footerButtonSize: CGSize = CGSize(width: 24, height: 22)
+    static let footerButtonSize: CGSize = CGSize(width: 26, height: 24)
+
+    /// How large the +/- glyphs are drawn. SwiftUI's default renders these a
+    /// little smaller than the same buttons elsewhere on the system — Xcode's
+    /// list footers, for one — so the size is stated rather than inherited.
+    static let footerGlyphSize: CGFloat = 14
 
     /// Add, remove, and filter — the standard macOS list footer.
     var bottomBar: some View {
         @Bindable var workspace = workspace
 
-        return HStack(spacing: 6) {
+        return HStack(spacing: 0) {
             // A bare glyph is a tiny target — the minus is barely a few
             // pixels tall. The frame gives each button a real area and
             // contentShape makes the whole of it clickable.
@@ -91,6 +96,7 @@ struct SidebarView: View {
             } label: {
                 Label("Add Course or Club", systemImage: "plus")
                     .labelStyle(.iconOnly)
+                    .font(.system(size: SidebarView.footerGlyphSize))
                     .frame(width: SidebarView.footerButtonSize.width, height: SidebarView.footerButtonSize.height)
                     .contentShape(Rectangle())
             }
@@ -103,6 +109,7 @@ struct SidebarView: View {
             } label: {
                 Label("Remove Selected", systemImage: "minus")
                     .labelStyle(.iconOnly)
+                    .font(.system(size: SidebarView.footerGlyphSize))
                     .frame(width: SidebarView.footerButtonSize.width, height: SidebarView.footerButtonSize.height)
                     .contentShape(Rectangle())
             }
@@ -110,6 +117,7 @@ struct SidebarView: View {
             .disabled(workspace.selection == nil)
             .help("Remove the selected course or section")
             .accessibilityIdentifier("removeSelectedButton")
+            .padding(.trailing, 5)
 
             TextField("Filter", text: $workspace.filterText)
                 .textFieldStyle(.roundedBorder)
