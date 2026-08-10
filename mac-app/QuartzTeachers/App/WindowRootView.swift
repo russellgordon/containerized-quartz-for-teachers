@@ -13,8 +13,9 @@ struct WindowRootView: View {
 
     // MARK: - Stored properties
 
-    /// The value this window is presented for.
-    @Binding var folder: WindowFolder
+    /// The value this window is presented for — nil for a fresh window
+    /// that has not been given a folder yet.
+    @Binding var folder: WindowFolder?
 
     @Environment(\.openWindow) var openWindow
 
@@ -35,15 +36,14 @@ struct WindowRootView: View {
             .focusedSceneValue(\.workspace, workspace)
             .onAppear {
                 WorkspaceModel.registerWindowModel(workspace)
-                if !folder.path.isEmpty {
+                if let presented = folder, !presented.path.isEmpty {
                     // A spawned window: its value says where and what.
-                    workspace.adoptRestoredPath(folder.path)
-                    pendingFrame = folder.frame
+                    workspace.adoptRestoredPath(presented.path)
+                    pendingFrame = presented.frame
                 } else if let entry = WindowFolderMemory.claimNextEntry() {
                     // The launch window takes the first remembered entry.
                     workspace.adoptRestoredPath(entry.path)
-                    folder.path = entry.path
-                    folder.frame = entry.frame
+                    folder = WindowFolder(id: UUID(), path: entry.path, frame: entry.frame)
                     pendingFrame = entry.frame
                 }
             }
@@ -58,10 +58,11 @@ struct WindowRootView: View {
                 WorkspaceModel.rememberOpenFolders()
             })
             .onChange(of: workspace.workspaceURL) {
-                folder.path = workspace.workspaceURL?.path ?? ""
+                let path: String = workspace.workspaceURL?.path ?? ""
+                folder = WindowFolder(id: folder?.id ?? UUID(), path: path, frame: folder?.frame ?? "")
                 AppLog.interface.info("""
                     window \(windowIdentity, privacy: .public) moved to \
-                    "\(folder.path, privacy: .public)"
+                    "\(path, privacy: .public)"
                     """)
                 WorkspaceModel.rememberOpenFolders()
             }

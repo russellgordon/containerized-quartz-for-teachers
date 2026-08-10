@@ -18,10 +18,11 @@ struct QuartzTeachersApp: App {
     // MARK: - Body
 
     var body: some Scene {
-        // Value-presented windows: each window is FOR its folder, which is
-        // how macOS restores every window with its own folder rather than
-        // one shared value. The default value's fresh id keeps two new
-        // windows from being treated as the same window.
+        // Value-presented windows: each window is FOR its folder. The value
+        // stays OPTIONAL — nil meaning a fresh window — because supplying a
+        // defaultValue makes SwiftUI force-unwrap the presented value, and
+        // the launch window arrives with nil: an immediate crash
+        // (BindingOperations.ForceUnwrapping in PresentedWindowContent).
         WindowGroup("Containerized Quartz for Teachers", for: WindowFolder.self) { $folder in
             WindowRootView(folder: $folder)
                 // A bounded IDEAL size matters as much as the minimum:
@@ -36,8 +37,6 @@ struct QuartzTeachersApp: App {
                     idealHeight: 720,
                     maxHeight: .infinity
                 )
-        } defaultValue: {
-            WindowFolder(id: UUID(), path: "")
         }
         // The app restores its own windows — count, folder, and position —
         // from the list it keeps. System restoration overlapping with that
