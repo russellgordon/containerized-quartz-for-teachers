@@ -53,6 +53,53 @@ struct NewCourseWizardView: View {
     // MARK: - Computed properties
 
     /// The parsed timetable section numbers, e.g. "1,3" → [1, 3].
+    /// What is wrong with the timetable sections as typed, or nil when
+    /// nothing is. Written for the mistakes people actually make, and it
+    /// matters beyond politeness: the parser silently DROPS pieces it
+    /// cannot read, so "1,3 5" would quietly become just section 1.
+    static func sectionNumbersProblem(_ text: String) -> String? {
+        let trimmed: String = text.trimmingCharacters(in: .whitespaces)
+        if trimmed.isEmpty {
+            return "Enter at least one section number — e.g. 1, or 1,3."
+        }
+
+        var seen: [Int] = []
+        for rawPart in trimmed.components(separatedBy: ",") {
+            let part: String = rawPart.trimmingCharacters(in: .whitespaces)
+            if part.isEmpty {
+                return "There’s an empty spot between commas."
+            }
+            if let number = Int(part) {
+                if number < 1 {
+                    return "Section numbers start at 1."
+                }
+                if seen.contains(number) {
+                    return "Section \(number) is listed more than once."
+                }
+                seen.append(number)
+                continue
+            }
+            // "1 3 5": every space-separated piece is a number, so the
+            // separators are what went wrong.
+            var allPiecesAreNumbers: Bool = true
+            for piece in part.split(separator: " ") {
+                if Int(piece) == nil {
+                    allPiecesAreNumbers = false
+                }
+            }
+            if allPiecesAreNumbers && part.contains(" ") {
+                return "Use commas between section numbers — e.g. \(part.split(separator: " ").joined(separator: ","))."
+            }
+            return "“\(part)” isn’t a section number — sections are whole numbers, like 1 or 3."
+        }
+        return nil
+    }
+
+    /// The problem with the sections as typed, live.
+    var sectionNumbersProblem: String? {
+        return NewCourseWizardView.sectionNumbersProblem(sectionNumbersText)
+    }
+
     var parsedSectionNumbers: [Int] {
         var result: [Int] = []
         let parts: [String] = sectionNumbersText.components(separatedBy: ",")
@@ -205,7 +252,15 @@ struct NewCourseWizardView: View {
                     TextField("Timetable section numbers", text: $sectionNumbersText)
                         .textFieldStyle(.roundedBorder)
                         .accessibilityIdentifier("wizardSectionNumbersField")
-                    ExampleCaption("e.g. 1,3 — comma-separated")
+                    if let problem = sectionNumbersProblem {
+                        // The same orange every other warning wears.
+                        Text(problem)
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                            .accessibilityIdentifier("sectionNumbersWarning")
+                    } else {
+                        ExampleCaption("e.g. 1,3 — comma-separated")
+                    }
                 }
                 Picker("Language / region", selection: $locale) {
                     ForEach(LocaleCatalog.codes, id: \.self) { code in
@@ -329,8 +384,8 @@ struct NewCourseWizardView: View {
             validationProblem = "Enter a course code without spaces."
             return
         }
-        if parsedSectionNumbers.isEmpty {
-            validationProblem = "Enter at least one section number (e.g. 1)."
+        if let problem = NewCourseWizardView.sectionNumbersProblem(sectionNumbersText) {
+            validationProblem = problem
             return
         }
         for existingCourse in workspace.courses {
