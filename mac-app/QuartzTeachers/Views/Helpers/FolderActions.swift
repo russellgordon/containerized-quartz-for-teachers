@@ -6,9 +6,10 @@ enum FolderActions {
 
     // MARK: - Functions
 
-    /// Opens a Finder window showing the contents of the folder.
+    /// Shows the folder inside its parent, selected — what "Show in
+    /// Finder" means everywhere in the app, path bar included.
     static func showInFinder(_ folderURL: URL) {
-        NSWorkspace.shared.open(folderURL)
+        NSWorkspace.shared.activateFileViewerSelecting([folderURL])
     }
 
     /// Opens a new Terminal window whose working directory is the folder

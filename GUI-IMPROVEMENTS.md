@@ -163,6 +163,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 76 | 2026-08-10 | The path bar's context menu should not offer "Open Working Folder" — and then, sharper: ONLY the folders in the path bar should have context menus at all. Right-clicking a chevron and being offered the working folder is just confusing. | ✅ Implemented — the strip-wide context menu is gone entirely. Each folder in the path carries its own "Show in Finder" and "Open Folder" (as it already did), a chevron or the blank strip offers nothing, and ⌘O (Open Working Folder…) is the File-menu way to switch folders. | Same rule on the Windows path bar: menus on the folder crumbs only. |
 
+| 77 | 2026-08-10 | "Show in Finder" on a course or section in the sidebar OPENED the folder, while the same words in the path bar reveal the folder highlighted in its parent. One phrase, one behaviour. | ✅ Implemented — the sidebar's action now reveals the folder selected in its parent window, exactly as the path bar (and Finder itself) does. Opening a folder's contents remains available where it is labelled as such. | One "reveal in Explorer" helper on Windows (`explorer /select,path`), used by every Show-in-Explorer item. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the
