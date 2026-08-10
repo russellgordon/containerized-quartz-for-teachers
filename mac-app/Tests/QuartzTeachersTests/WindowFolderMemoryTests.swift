@@ -63,25 +63,6 @@ final class WindowFolderMemoryTests: XCTestCase {
     }
 
     @MainActor
-    func testSpawningTakesTheRemainingEntriesInOrder() throws {
-        let folders: [String] = try makeFolders(3)
-        defer { removeAll(folders) }
-        WindowFolderMemory.reset(with: [
-            WindowFolderMemory.Entry(path: folders[0], frame: ""),
-            WindowFolderMemory.Entry(path: folders[1], frame: "{{5, 5}, {800, 600}}"),
-            WindowFolderMemory.Entry(path: folders[2], frame: ""),
-        ])
-        _ = WindowFolderMemory.claimNextEntry()
-        let remaining = WindowFolderMemory.takeUnclaimed()
-        XCTAssertEqual(remaining.count, 2)
-        XCTAssertEqual(remaining[0].path, folders[1])
-        XCTAssertEqual(remaining[0].frame, "{{5, 5}, {800, 600}}")
-        XCTAssertEqual(remaining[1].path, folders[2])
-        XCTAssertNil(WindowFolderMemory.claimNextEntry(),
-                     "A window the teacher opens later must start fresh, not inherit a leftover")
-    }
-
-    @MainActor
     func testAFolderThatHasGoneIsSkipped() throws {
         let folders: [String] = try makeFolders(2)
         defer { removeAll([folders[1]]) }
@@ -92,13 +73,6 @@ final class WindowFolderMemoryTests: XCTestCase {
         ])
         XCTAssertEqual(WindowFolderMemory.claimNextEntry()?.path, folders[1],
                        "A window should not be opened in a folder that no longer exists")
-    }
-
-    @MainActor
-    func testTheSpawnCheckRunsExactlyOnce() {
-        WindowFolderMemory.reset(with: [])
-        XCTAssertTrue(WindowFolderMemory.beginSpawnCheckOnce())
-        XCTAssertFalse(WindowFolderMemory.beginSpawnCheckOnce(), "A second window must not spawn duplicates")
     }
 
     @MainActor

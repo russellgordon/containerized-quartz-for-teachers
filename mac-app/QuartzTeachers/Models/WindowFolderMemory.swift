@@ -1,13 +1,12 @@
 import Foundation
 
-/// Remembers each open window's folder and frame, and hands them back at
-/// the next launch.
+/// Remembers each open window's folder and frame, for windows macOS
+/// reopens without their value.
 ///
-/// The app restores its own windows from this list: the first window takes
-/// the first entry, and one spawn pass opens a window for each remaining
-/// entry. With system restoration disabled there is exactly one launch
-/// window, so the order is deterministic — the windows come back in the
-/// order they were open.
+/// macOS owns window restoration: it reopens the windows (when the system
+/// setting keeps them) with their frames, and usually their values. When a
+/// value comes back empty, the window finds its folder here — matched by
+/// frame, since the reopening order is macOS's own.
 @MainActor
 enum WindowFolderMemory {
 
@@ -27,7 +26,15 @@ enum WindowFolderMemory {
     private static var unclaimed: [Entry] = []
 
     private static var hasLoaded: Bool = false
-    private static var hasRunSpawnCheck: Bool = false
+
+    /// Claims are a launch-time affair: after this moment, a window with
+    /// no value simply starts fresh. Without a deadline, a window opened
+    /// mid-session could inherit an entry left over from launch.
+    static var claimsOpenUntil: Date = Date().addingTimeInterval(10)
+
+    /// Lets a test decide what the system setting says, since the real one
+    /// belongs to the machine the tests happen to run on.
+    static var systemRestoresWindowsOverride: Bool?
 
     // MARK: - Computed properties
 
@@ -39,6 +46,9 @@ enum WindowFolderMemory {
     /// absent key is false, matching the system default of the toggle
     /// being on.
     static var systemRestoresWindows: Bool {
+        if let overridden = systemRestoresWindowsOverride {
+            return overridden
+        }
         return UserDefaults.standard.bool(forKey: "NSQuitAlwaysKeepsWindows")
     }
 
@@ -49,6 +59,9 @@ enum WindowFolderMemory {
     /// frame — which it restores faithfully — is what pairs each window
     /// with ITS folder.
     static func claimEntry(matchingFrame frame: String, defaults: UserDefaults = UserDefaults.standard) -> Entry? {
+        if Date() > claimsOpenUntil {
+            return nil
+        }
         loadIfNeeded(defaults: defaults)
         for (index, entry) in unclaimed.enumerated() {
             if entry.frame == frame && !entry.frame.isEmpty && WorkspaceModel.folderExists(atPath: entry.path) {
@@ -67,6 +80,9 @@ enum WindowFolderMemory {
 
     /// The next remembered window, skipping folders that no longer exist.
     static func claimNextEntry(defaults: UserDefaults = UserDefaults.standard) -> Entry? {
+        if Date() > claimsOpenUntil {
+            return nil
+        }
         loadIfNeeded(defaults: defaults)
         while !unclaimed.isEmpty {
             let entry: Entry = unclaimed.removeFirst()
@@ -75,31 +91,6 @@ enum WindowFolderMemory {
             }
         }
         return nil
-    }
-
-    /// True exactly once per launch: the caller becomes the window that
-    /// opens the remaining remembered windows.
-    static func beginSpawnCheckOnce() -> Bool {
-        if hasRunSpawnCheck {
-            return false
-        }
-        hasRunSpawnCheck = true
-        return true
-    }
-
-    /// The entries no window has claimed, handed over for spawning.
-    /// Claiming ends here: a window the teacher opens later must start
-    /// fresh, not inherit a stale leftover.
-    static func takeUnclaimed(defaults: UserDefaults = UserDefaults.standard) -> [Entry] {
-        loadIfNeeded(defaults: defaults)
-        var remaining: [Entry] = []
-        for entry in unclaimed {
-            if WorkspaceModel.folderExists(atPath: entry.path) {
-                remaining.append(entry)
-            }
-        }
-        unclaimed = []
-        return remaining
     }
 
     /// Records the open windows as folder-and-frame pairs, in order.
@@ -145,6 +136,14 @@ enum WindowFolderMemory {
     static func reset(with entries: [Entry]) {
         unclaimed = entries
         hasLoaded = true
-        hasRunSpawnCheck = false
+        claimsOpenUntil = Date().addingTimeInterval(10)
+    }
+
+    /// Empties the memory and forces the next claim to read from the given
+    /// store — for tests exercising the load path itself.
+    static func resetForLoading() {
+        unclaimed = []
+        hasLoaded = false
+        claimsOpenUntil = Date().addingTimeInterval(10)
     }
 }

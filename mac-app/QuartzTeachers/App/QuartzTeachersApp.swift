@@ -38,10 +38,6 @@ struct QuartzTeachersApp: App {
                     maxHeight: .infinity
                 )
         }
-        // The app restores its own windows — count, folder, and position —
-        // from the list it keeps. System restoration overlapping with that
-        // produced spare windows and shuffled folders, so it is off.
-        .restorationBehavior(.disabled)
         .commands {
             PreviewCommands()
             CommandGroup(after: .newItem) {

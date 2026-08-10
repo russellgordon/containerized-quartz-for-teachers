@@ -62,7 +62,7 @@ class WorkspaceModel {
 
     /// Writes down which folder each open window is in, paired with the
     /// window's frame so a restored window can find its own.
-    static func rememberOpenFolders() {
+    static func rememberOpenFolders(defaults: UserDefaults = UserDefaults.standard) {
         var entries: [WindowFolderMemory.Entry] = []
         for model in windowModels {
             if let path = model.workspaceURL?.path {
@@ -70,7 +70,7 @@ class WorkspaceModel {
                 entries.append(WindowFolderMemory.Entry(path: path, frame: frame))
             }
         }
-        WindowFolderMemory.record(entries)
+        WindowFolderMemory.record(entries, defaults: defaults)
     }
 
     /// The active working folder, or nil before one has been chosen.
