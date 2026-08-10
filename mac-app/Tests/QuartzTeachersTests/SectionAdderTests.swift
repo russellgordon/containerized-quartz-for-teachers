@@ -99,6 +99,71 @@ final class SectionAdderTests: XCTestCase {
         XCTAssertEqual(preserved, "precious work")
     }
 
+    /// The Exemplar bug: a course whose sections keep some pages as
+    /// unpublished drafts grew a new section whose copies of those pages
+    /// were suddenly published. A new section must behave like the sections
+    /// beside it, so each scaffolded file carries its sibling's frontmatter.
+    @MainActor
+    func testANewSectionKeepsItsSiblingsDraftsAndFlags() throws {
+        let (root, course) = try makeWorkspace()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let siblingSnippets: String = """
+        ---
+        title: Snippets
+        draft: true
+        created: 2026-09-08T07:00:00.000-0400
+        transcludeTitleSize: h2
+        ---
+        Kept out of the published site on purpose.
+        """
+        try siblingSnippets.write(to: course.sectionDirectoryURL(forSection: 1).appendingPathComponent("Snippets.md"), atomically: true, encoding: .utf8)
+
+        let siblingIndex: String = """
+        ---
+        title: Grade 11 Introduction to Computer Science, Section 1
+        created: 2026-09-08T07:00:00.000-0400
+        enableToc: false
+        excludeBacklinks: true
+        draft: false
+        ---
+        # Most Recent Class
+        """
+        try siblingIndex.write(to: course.sectionDirectoryURL(forSection: 1).appendingPathComponent("index.md"), atomically: true, encoding: .utf8)
+
+        try SectionAdder.addSection(2, to: course)
+
+        let newSnippets: String = try String(contentsOf: course.sectionDirectoryURL(forSection: 2).appendingPathComponent("Snippets.md"), encoding: .utf8)
+        XCTAssertTrue(newSnippets.contains("draft: true"),
+                      "A page the siblings keep as a draft must start as a draft here too")
+        XCTAssertTrue(newSnippets.contains("transcludeTitleSize: h2"),
+                      "Display flags the teacher set should carry over")
+        XCTAssertFalse(newSnippets.contains("2026-09-08"),
+                       "created: should be freshened, not copied")
+
+        let newIndex: String = try String(contentsOf: course.sectionDirectoryURL(forSection: 2).appendingPathComponent("index.md"), encoding: .utf8)
+        XCTAssertTrue(newIndex.contains("title: Grade 11 Introduction to Computer Science, Section 2"),
+                      "The landing page takes its sibling's title with the number swapped")
+        XCTAssertTrue(newIndex.contains("enableToc: false"))
+        XCTAssertTrue(newIndex.contains("excludeBacklinks: true"))
+    }
+
+    /// The other Exemplar bug: SNC1W is named "Grade 9 Science", and the
+    /// scaffolded title read "Grade 9 Grade 9 Science, Section 3".
+    @MainActor
+    func testTheGradeIsNotDoubledWhenTheNameAlreadyCarriesIt() throws {
+        let (root, course) = try makeWorkspace()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        course.configuration.courseName = "Grade 11 Computer Science"
+        XCTAssertEqual(SectionAdder.sectionTitle(for: course, sectionNumber: 2),
+                       "Grade 11 Computer Science, Section 2")
+
+        course.configuration.courseName = "Introduction to Computer Science"
+        XCTAssertEqual(SectionAdder.sectionTitle(for: course, sectionNumber: 2),
+                       "Grade 11 Introduction to Computer Science, Section 2")
+    }
+
     @MainActor
     func testTheSuggestionIsTheSmallestFreeNumber() {
         XCTAssertEqual(SectionAdder.suggestedNumber(existing: [1, 3]), 2)

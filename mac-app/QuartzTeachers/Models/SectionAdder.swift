@@ -44,16 +44,19 @@ enum SectionAdder {
         let created: String = timestamp()
         try fileManager.createDirectory(at: sectionURL, withIntermediateDirectories: true)
 
-        // The section's own landing page, titled the way the wizard titles
-        // one: "Grade 11 Computer Science, Section 3" — or without the grade
-        // for a club, whose code has no grade digit.
-        let gradeLabel: String = SectionAdder.gradeLabel(forCourseCode: course.code)
-        let titlePrefix: String = gradeLabel.isEmpty ? "" : "\(gradeLabel) "
+        // A new section should behave like the sections beside it — the same
+        // pages published, the same pages held back as drafts, the same
+        // display flags. So each scaffolded file copies its frontmatter from
+        // the matching file in an existing section when there is one, and
+        // only falls back to the wizard's plain template when there is not.
+        let indexFrontmatter: String = scaffoldFrontmatter(
+            sibling: siblingFile(named: "index.md", in: course),
+            replacingTitleWith: sectionTitle(for: course, sectionNumber: sectionNumber),
+            created: created
+        )
         let indexBody: String = """
         ---
-        title: \(titlePrefix)\(course.configuration.courseName), Section \(sectionNumber)
-        created: \(created)
-        draft: false
+        \(indexFrontmatter)
         ---
         """
         try indexBody.write(to: sectionURL.appendingPathComponent("index.md"), atomically: true, encoding: .utf8)
@@ -61,11 +64,15 @@ enum SectionAdder {
         for folderName in course.configuration.perSectionFolders {
             let folderURL: URL = sectionURL.appendingPathComponent(folderName)
             try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true)
+            let folderFrontmatter: String = scaffoldFrontmatter(
+                sibling: siblingFile(named: "\(folderName)/index.md", in: course),
+                replacingTitleWith: nil,
+                fallbackTitle: folderName,
+                created: created
+            )
             let folderIndex: String = """
             ---
-            title: \(folderName)
-            created: \(created)
-            draft: false
+            \(folderFrontmatter)
             ---
             This is the **\(folderName)** folder. Add Markdown files to this folder to build out your site.
             """
@@ -73,11 +80,15 @@ enum SectionAdder {
         }
 
         for fileName in course.configuration.perSectionFiles {
+            let fileFrontmatter: String = scaffoldFrontmatter(
+                sibling: siblingFile(named: fileName, in: course),
+                replacingTitleWith: nil,
+                fallbackTitle: fileName.replacingOccurrences(of: ".md", with: ""),
+                created: created
+            )
             let fileBody: String = """
             ---
-            title: \(fileName.replacingOccurrences(of: ".md", with: ""))
-            created: \(created)
-            draft: false
+            \(fileFrontmatter)
             ---
             This is the per-section file **\(fileName)**.
             """
@@ -92,6 +103,96 @@ enum SectionAdder {
         numbers.sort()
         course.configuration.setSectionNumbers(numbers)
         try course.configuration.write(to: course.configFileURL)
+    }
+
+    /// The same file in an existing section, if any section has it — the
+    /// lowest-numbered one wins, so the choice is predictable.
+    static func siblingFile(named relativePath: String, in course: Course) -> URL? {
+        var numbers: [Int] = course.sectionNumbers
+        numbers.sort()
+        for number in numbers {
+            let candidate: URL = course.sectionDirectoryURL(forSection: number).appendingPathComponent(relativePath)
+            if FileManager.default.fileExists(atPath: candidate.path) {
+                return candidate
+            }
+        }
+        return nil
+    }
+
+    /// The frontmatter for one scaffolded file. A sibling's frontmatter is
+    /// carried over whole — draft status, table-of-contents and backlink
+    /// flags, anything else the teacher set — with only `created:` freshened
+    /// and, when a new title is given, the title swapped. Without a sibling,
+    /// the wizard's plain template stands in.
+    static func scaffoldFrontmatter(
+        sibling: URL?,
+        replacingTitleWith newTitle: String?,
+        fallbackTitle: String? = nil,
+        created: String
+    ) -> String {
+        if let sibling, let siblingLines = frontmatterLines(ofFileAt: sibling) {
+            var result: [String] = []
+            for line in siblingLines {
+                if line.hasPrefix("created:") {
+                    result.append("created: \(created)")
+                } else if line.hasPrefix("title:"), let newTitle {
+                    result.append("title: \(newTitle)")
+                } else {
+                    result.append(line)
+                }
+            }
+            return result.joined(separator: "\n")
+        }
+        let title: String = newTitle ?? fallbackTitle ?? ""
+        return "title: \(title)\ncreated: \(created)\ndraft: false"
+    }
+
+    /// The lines between a file's opening and closing `---` markers, or nil
+    /// when the file has no frontmatter to speak of.
+    static func frontmatterLines(ofFileAt url: URL) -> [String]? {
+        guard let text = try? String(contentsOf: url, encoding: .utf8) else {
+            return nil
+        }
+        let lines: [String] = text.components(separatedBy: "\n")
+        guard lines.first == "---" else {
+            return nil
+        }
+        var collected: [String] = []
+        var index: Int = 1
+        while index < lines.count {
+            if lines[index] == "---" {
+                return collected
+            }
+            collected.append(lines[index])
+            index += 1
+        }
+        return nil
+    }
+
+    /// The new section's landing-page title. A sibling section's title with
+    /// the section number swapped is the most faithful source — it keeps
+    /// whatever wording the teacher chose. Failing that, the wizard's form,
+    /// without doubling the grade when the course name already leads with it
+    /// ("Grade 9 Science" must not become "Grade 9 Grade 9 Science").
+    static func sectionTitle(for course: Course, sectionNumber: Int) -> String {
+        if let siblingIndex = siblingFile(named: "index.md", in: course),
+           let siblingLines = frontmatterLines(ofFileAt: siblingIndex) {
+            for line in siblingLines {
+                if line.hasPrefix("title:") {
+                    let siblingTitle: String = String(line.dropFirst("title:".count)).trimmingCharacters(in: .whitespaces)
+                    if let range = siblingTitle.range(of: #"Section \d+$"#, options: .regularExpression) {
+                        return siblingTitle.replacingCharacters(in: range, with: "Section \(sectionNumber)")
+                    }
+                }
+            }
+        }
+        let gradeLabel: String = SectionAdder.gradeLabel(forCourseCode: course.code)
+        let courseName: String = course.configuration.courseName
+        var titlePrefix: String = ""
+        if !gradeLabel.isEmpty && !courseName.hasPrefix(gradeLabel) {
+            titlePrefix = "\(gradeLabel) "
+        }
+        return "\(titlePrefix)\(courseName), Section \(sectionNumber)"
     }
 
     /// The grade named by the course code's fourth character, matching the
