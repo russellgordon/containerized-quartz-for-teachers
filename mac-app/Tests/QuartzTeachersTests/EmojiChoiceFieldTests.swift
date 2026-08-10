@@ -8,20 +8,23 @@ final class EmojiChoiceFieldTests: XCTestCase {
     // MARK: - Functions
 
     @MainActor
-    func testTheMostRecentlyEnteredEmojiWins() {
-        // The palette inserts beside what is already there, so a field
-        // reading "📚🔬" means the teacher just chose the microscope.
-        XCTAssertEqual(EmojiChoiceField.latestEmoji(in: "📚🔬"), "🔬")
-        XCTAssertEqual(EmojiChoiceField.latestEmoji(in: "🔬"), "🔬")
+    func testTheNewlyEnteredEmojiWinsWhicheverSideItLandsOn() {
+        // An insertion can land on either side of the emoji already there;
+        // the NEW one is the one that differs from the previous choice.
+        XCTAssertEqual(EmojiChoiceField.newestEmoji(in: "📚🔬", previous: "📚"), "🔬")
+        XCTAssertEqual(EmojiChoiceField.newestEmoji(in: "🔬📚", previous: "📚"), "🔬")
+        XCTAssertEqual(EmojiChoiceField.newestEmoji(in: "🔬", previous: "📚"), "🔬")
+        // Choosing the same emoji again still settles on one copy of it.
+        XCTAssertEqual(EmojiChoiceField.newestEmoji(in: "📚📚", previous: "📚"), "📚")
     }
 
     @MainActor
     func testTextThatIsNotAnEmojiIsIgnored() {
-        XCTAssertNil(EmojiChoiceField.latestEmoji(in: "abc"))
-        XCTAssertNil(EmojiChoiceField.latestEmoji(in: "3"))
-        XCTAssertNil(EmojiChoiceField.latestEmoji(in: ""))
+        XCTAssertNil(EmojiChoiceField.newestEmoji(in: "abc", previous: "📚"))
+        XCTAssertNil(EmojiChoiceField.newestEmoji(in: "3", previous: "📚"))
+        XCTAssertNil(EmojiChoiceField.newestEmoji(in: "", previous: "📚"))
         // Typed letters around an emoji do not hide it.
-        XCTAssertEqual(EmojiChoiceField.latestEmoji(in: "a📚b"), "📚")
+        XCTAssertEqual(EmojiChoiceField.newestEmoji(in: "a🔬b", previous: "📚"), "🔬")
     }
 
     @MainActor

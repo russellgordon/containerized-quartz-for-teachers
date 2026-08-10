@@ -49,7 +49,10 @@ struct EmojiChoiceField: View {
 
                 Button {
                     // The palette types into whichever field has focus, so
-                    // focus ours before summoning it.
+                    // focus ours before summoning it — and empty it first,
+                    // so the choice arrives into a clean field rather than
+                    // beside the old emoji.
+                    entry = ""
                     fieldHasFocus = true
                     DispatchQueue.main.async {
                         NSApp.orderFrontCharacterPalette(nil)
@@ -71,38 +74,53 @@ struct EmojiChoiceField: View {
                 entry = emoji
             }
         }
+        .onChange(of: fieldHasFocus) {
+            // A field left empty (palette dismissed without choosing, or a
+            // deleted entry) goes back to showing the current choice.
+            if !fieldHasFocus && entry.isEmpty {
+                entry = emoji
+            }
+        }
     }
 
     // MARK: - Functions
 
-    /// Settles the field on the most recently entered emoji. An emptied
-    /// field is left empty while the teacher decides; anything else that is
-    /// not an emoji snaps back to the current choice.
+    /// Settles the field on one emoji the moment anything changes, so it
+    /// never shows more than one. An emptied field is left empty while the
+    /// teacher decides; anything that is not an emoji snaps back to the
+    /// current choice.
     func acceptLatestEmoji() {
         if entry.isEmpty {
             return
         }
-        if let latest = EmojiChoiceField.latestEmoji(in: entry) {
-            if entry != latest {
-                entry = latest
+        if let newest = EmojiChoiceField.newestEmoji(in: entry, previous: emoji) {
+            if entry != newest {
+                entry = newest
             }
-            if emoji != latest {
-                emoji = latest
+            if emoji != newest {
+                emoji = newest
             }
         } else {
             entry = emoji
         }
     }
 
-    /// The last emoji in the text, or nil when there is none.
-    static func latestEmoji(in text: String) -> String? {
-        var found: String?
+    /// The emoji the teacher just entered. When the text holds several —
+    /// an insertion can land on either side of what was there — the one
+    /// that DIFFERS from the previous choice is the new one; if they all
+    /// match it, any of them will do. Nil when there is no emoji at all.
+    static func newestEmoji(in text: String, previous: String) -> String? {
+        var lastSeen: String?
         for character in text {
             if EmojiChoiceField.isEmoji(character) {
-                found = String(character)
+                let candidate: String = String(character)
+                lastSeen = candidate
+                if candidate != previous {
+                    return candidate
+                }
             }
         }
-        return found
+        return lastSeen
     }
 
     /// Whether one character (one grapheme cluster) reads as an emoji.
