@@ -17,9 +17,9 @@ enum WindowChrome {
     /// rules to meet on one line.
     ///
     /// Measured from screenshots at the standard text size, by finding the
-    /// darkest row under each side: the last half point is one device pixel
-    /// on a 2x display, which is as close as the two can be brought.
-    static let sidebarBottomInset: CGFloat = 7.5
+    /// darkest row under each side and closing the gap half a point at a
+    /// time — half a point being one device pixel on a 2x display.
+    static let sidebarBottomInset: CGFloat = 8
 
     /// The height of the path bar strip, divider to window edge.
     static let pathBarHeight: CGFloat = footerHeight + sidebarBottomInset
