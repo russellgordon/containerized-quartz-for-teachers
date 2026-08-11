@@ -261,6 +261,25 @@ function Get-ToolchainHash([string]$context) {
   return ([BitConverter]::ToString($sha.ComputeHash($bytes)) -replace '-','').Substring(0,8).ToLower()
 }
 
+
+# BuildKit is what builds the image; the apt-installed WSL engine may lack
+# the buildx plugin. Install it when missing; failing that, fall back to
+# the classic builder with BuildKit enabled (mirrors the .sh launchers).
+$script:UseBuildKitFallback = $false
+function Ensure-Buildx {
+  docker buildx version *> $null
+  if ($LASTEXITCODE -eq 0) { return }
+  if ($null -ne $global:WslUserArgs) {
+    Write-Host "Installing the image builder (BuildKit) inside WSL ..."
+    wsl -u root -e sh -c "apt-get update -qq >/dev/null 2>&1; apt-get install -y -qq docker-buildx >/dev/null 2>&1 || apt-get install -y -qq docker-buildx-plugin >/dev/null 2>&1" *> $null
+    docker buildx version *> $null
+    if ($LASTEXITCODE -eq 0) { return }
+  }
+  Write-Host "WARNING: 'docker buildx' is unavailable; using the classic builder with"
+  Write-Host "         BuildKit enabled. If the built image misbehaves, install buildx."
+  $script:UseBuildKitFallback = $true
+}
+
 function Build-ImageIfMissing {
   docker image inspect "$IMAGE" *> $null
   if ($LASTEXITCODE -eq 0) { Write-Host "Website builder is ready."; return }
@@ -269,7 +288,17 @@ function Build-ImageIfMissing {
     exit 1
   }
   Write-Host "Building your website builder - the first time takes a few minutes ..."
-  docker buildx build --load --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"
+  Ensure-Buildx
+  if ($script:UseBuildKitFallback) {
+    if ($null -ne $global:WslUserArgs) {
+      wsl @($global:WslUserArgs) -e env DOCKER_BUILDKIT=1 docker build --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"
+    } else {
+      $env:DOCKER_BUILDKIT = '1'
+      docker build --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"
+    }
+  } else {
+    docker buildx build --load --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"
+  }
   if ($LASTEXITCODE -ne 0) {
     Write-Host "Could not build the website builder."
     Write-Host "The first build needs an internet connection - try again once online."
@@ -414,6 +443,14 @@ if ($containerExists) {
   }
   elseif ($DESIRED_IMAGE_ID -and $RUNNING_IMAGE_ID -and ($RUNNING_IMAGE_ID -ne $DESIRED_IMAGE_ID)) {
     Write-Host "Your workspace was built from an older version; rebuilding it so the update takes effect..."
+    if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { $null = docker stop "$CONTAINER_NAME" }
+    $null = docker rm "$CONTAINER_NAME"
+    Run-ContainerWithMount
+  }
+  elseif (-not ((docker inspect -f '{{json .HostConfig.PortBindings}}' "$CONTAINER_NAME" 2>$null) -match '9084/tcp')) {
+    # An older container publishes only one port; published ports cannot
+    # change after creation, so recreating is the only way to add them.
+    Write-Host "Rebuilding your workspace so several previews can run at once..."
     if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { $null = docker stop "$CONTAINER_NAME" }
     $null = docker rm "$CONTAINER_NAME"
     Run-ContainerWithMount

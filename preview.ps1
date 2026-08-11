@@ -77,6 +77,7 @@ $FORCE_NPM_INSTALL = $false
 $FULL_REBUILD      = $false
 $BUILD_ONLY        = $false
 $PREVIEW_PORT      = 8081
+$OVERRIDE_IMAGE    = $null
 
 if ($Flags) {
     $i = 0
@@ -90,6 +91,11 @@ if ($Flags) {
                 if ($i + 1 -ge $Flags.Count) { Write-Host "--port requires a value"; exit 1 }
                 $PREVIEW_PORT = [int]$Flags[$i + 1]
                 if ($PREVIEW_PORT -lt 8081 -or $PREVIEW_PORT -gt 8084) { Write-Host "--port must be between 8081 and 8084."; exit 1 }
+                $i += 2; continue
+            }
+            '--image'                         {
+                if ($i + 1 -ge $Flags.Count) { Write-Host "--image requires a value"; exit 1 }
+                $OVERRIDE_IMAGE = $Flags[$i + 1]
                 $i += 2; continue
             }
             default {
@@ -273,6 +279,25 @@ function Get-ToolchainHash([string]$context) {
   return ([BitConverter]::ToString($sha.ComputeHash($bytes)) -replace '-','').Substring(0,8).ToLower()
 }
 
+
+# BuildKit is what builds the image; the apt-installed WSL engine may lack
+# the buildx plugin. Install it when missing; failing that, fall back to
+# the classic builder with BuildKit enabled (mirrors the .sh launchers).
+$script:UseBuildKitFallback = $false
+function Ensure-Buildx {
+  docker buildx version *> $null
+  if ($LASTEXITCODE -eq 0) { return }
+  if ($null -ne $global:WslUserArgs) {
+    Write-Host "Installing the image builder (BuildKit) inside WSL ..."
+    wsl -u root -e sh -c "apt-get update -qq >/dev/null 2>&1; apt-get install -y -qq docker-buildx >/dev/null 2>&1 || apt-get install -y -qq docker-buildx-plugin >/dev/null 2>&1" *> $null
+    docker buildx version *> $null
+    if ($LASTEXITCODE -eq 0) { return }
+  }
+  Write-Host "WARNING: 'docker buildx' is unavailable; using the classic builder with"
+  Write-Host "         BuildKit enabled. If the built image misbehaves, install buildx."
+  $script:UseBuildKitFallback = $true
+}
+
 function Build-ImageIfMissing {
   docker image inspect "$IMAGE" *> $null
   if ($LASTEXITCODE -eq 0) { Write-Host "Website builder is ready."; return }
@@ -281,7 +306,17 @@ function Build-ImageIfMissing {
     exit 1
   }
   Write-Host "Building your website builder - the first time takes a few minutes ..."
-  docker buildx build --load --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"
+  Ensure-Buildx
+  if ($script:UseBuildKitFallback) {
+    if ($null -ne $global:WslUserArgs) {
+      wsl @($global:WslUserArgs) -e env DOCKER_BUILDKIT=1 docker build --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"
+    } else {
+      $env:DOCKER_BUILDKIT = '1'
+      docker build --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"
+    }
+  } else {
+    docker buildx build --load --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"
+  }
   if ($LASTEXITCODE -ne 0) {
     Write-Host "Could not build the website builder."
     Write-Host "The first build needs an internet connection - try again once online."
@@ -291,8 +326,12 @@ function Build-ImageIfMissing {
 }
 
 $BUILD_CONTEXT = Get-BuildContext
+if ($OVERRIDE_IMAGE) { $BUILD_CONTEXT = $null }
 if ($BUILD_CONTEXT) {
   $IMAGE = "teaching-quartz:src-$(Get-ToolchainHash $BUILD_CONTEXT)"
+}
+if ($OVERRIDE_IMAGE) {
+  $IMAGE = $OVERRIDE_IMAGE
 } else {
   Write-Host "This folder is missing the toolchain's build recipe."
   Write-Host "Open the folder in the app once to refresh it, or run from a repository copy."
@@ -376,6 +415,13 @@ if ($containerExists) {
         if ((docker ps --format '{{.Names}}' | Where-Object { $_ -eq $CONTAINER_NAME })) { docker stop "$CONTAINER_NAME" *> $null }
         docker rm "$CONTAINER_NAME" *> $null
         Run-ContainerWithMount
+    } elseif (-not ((docker inspect -f '{{json .HostConfig.PortBindings}}' "$CONTAINER_NAME" 2>$null) -match '9084/tcp')) {
+        # An older container publishes only one port; published ports cannot
+        # change after creation, so recreating is the only way to add them.
+        Write-Host "Rebuilding your workspace so several previews can run at once ..."
+        if ((docker ps --format '{{.Names}}' | Where-Object { $_ -eq $CONTAINER_NAME })) { docker stop "$CONTAINER_NAME" *> $null }
+        docker rm "$CONTAINER_NAME" *> $null
+        Run-ContainerWithMount
     } else {
         $running = ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
         if (-not $running) {
@@ -438,6 +484,18 @@ if ($FORCE_NPM_INSTALL) { $argList += "--force-npm-install" }
 if ($FULL_REBUILD)      { $argList += "--full-rebuild" }
 if ($BUILD_ONLY)        { $argList += "--build-only" }
 $argList += "--port=$PREVIEW_PORT"
+
+# ---- Announce the reachable address ----
+# The container port maps to this folder's probed host block, so the
+# address is resolved from the container rather than assumed. The exact
+# phrase below is what the app watches for.
+$HOST_PREVIEW_PORT = $null
+$portLine = docker port "$CONTAINER_NAME" "$PREVIEW_PORT/tcp" 2>$null | Select-Object -First 1
+if ($portLine -and ($portLine -match ':(\d+)\s*$')) { $HOST_PREVIEW_PORT = $Matches[1] }
+if (-not $HOST_PREVIEW_PORT) { $HOST_PREVIEW_PORT = $PREVIEW_PORT }
+if (-not $BUILD_ONLY) {
+    Write-Host ("Preview will be available at: http://localhost:{0}/" -f $HOST_PREVIEW_PORT)
+}
 
 # ---- Run build inside the container ----
 Write-Host "Running build_site.py inside the Docker container ..."

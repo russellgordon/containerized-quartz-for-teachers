@@ -485,6 +485,25 @@ function Get-ToolchainHash([string]$context) {
   return ([BitConverter]::ToString($sha.ComputeHash($bytes)) -replace '-','').Substring(0,8).ToLower()
 }
 
+
+# BuildKit is what builds the image; the apt-installed WSL engine may lack
+# the buildx plugin. Install it when missing; failing that, fall back to
+# the classic builder with BuildKit enabled (mirrors the .sh launchers).
+$script:UseBuildKitFallback = $false
+function Ensure-Buildx {
+  docker buildx version *> $null
+  if ($LASTEXITCODE -eq 0) { return }
+  if ($null -ne $global:WslUserArgs) {
+    Write-Host "Installing the image builder (BuildKit) inside WSL ..."
+    wsl -u root -e sh -c "apt-get update -qq >/dev/null 2>&1; apt-get install -y -qq docker-buildx >/dev/null 2>&1 || apt-get install -y -qq docker-buildx-plugin >/dev/null 2>&1" *> $null
+    docker buildx version *> $null
+    if ($LASTEXITCODE -eq 0) { return }
+  }
+  Write-Host "WARNING: 'docker buildx' is unavailable; using the classic builder with"
+  Write-Host "         BuildKit enabled. If the built image misbehaves, install buildx."
+  $script:UseBuildKitFallback = $true
+}
+
 function Ensure-Image([string]$ref) {
   docker image inspect "$ref" *> $null
   if ($LASTEXITCODE -eq 0) { return }
@@ -494,7 +513,17 @@ function Ensure-Image([string]$ref) {
     exit 1
   }
   Write-Host "Building your website builder - the first time takes a few minutes ..."
-  docker buildx build --load --progress=plain -t "$ref" "$context"
+  Ensure-Buildx
+  if ($script:UseBuildKitFallback) {
+    if ($null -ne $global:WslUserArgs) {
+      wsl @($global:WslUserArgs) -e env DOCKER_BUILDKIT=1 docker build --progress=plain -t "$ref" "$context"
+    } else {
+      $env:DOCKER_BUILDKIT = '1'
+      docker build --progress=plain -t "$ref" "$context"
+    }
+  } else {
+    docker buildx build --load --progress=plain -t "$ref" "$context"
+  }
   if ($LASTEXITCODE -ne 0) { Write-Host "Could not build the website builder."; exit 1 }
 }
 
@@ -552,18 +581,26 @@ function Test-ContainerWriteable {
 }
 
 Write-Host "Ensuring container is running with the correct, writable mount..."
+# The RECIPE decides which image runs — never the existing container. A
+# container built from an older recipe is recreated below, so updates
+# take effect (parity with deploy.sh).
+if (-not $script:IMAGE_REF) {
+  $context = Get-BuildContext
+  if ($context) { $script:IMAGE_REF = "teaching-quartz:src-$(Get-ToolchainHash $context)" }
+}
+if (-not $script:IMAGE_REF) {
+  Write-Host "This folder is missing the toolchain's build recipe."
+  Write-Host "Open the folder in the app once to refresh it, or run from a copy of the repository."
+  exit 1
+}
+Ensure-Image $script:IMAGE_REF
+$DESIRED_IMAGE_ID = (docker image inspect --format '{{.Id}}' "$script:IMAGE_REF" 2>$null | Select-Object -First 1)
+$RUNNING_IMAGE_ID = (docker inspect -f '{{.Image}}' "$CONTAINER_NAME" 2>$null | Select-Object -First 1)
 $containerExists = ((docker ps -a --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
 if ($containerExists) {
-  # If we have an existing container, adopt its image for any recreation.
-  try {
-    $cinfo = docker inspect "$CONTAINER_NAME" | ConvertFrom-Json
-    if ($cinfo -and $cinfo.Count -gt 0 -and $cinfo[0].Config.Image) {
-      $script:IMAGE_REF = $cinfo[0].Config.Image
-    }
-  } catch {}
-
   $CURRENT_MOUNT_SRC = $null
   try {
+    $cinfo = docker inspect "$CONTAINER_NAME" | ConvertFrom-Json
     if ($cinfo -and $cinfo.Count -gt 0) {
       foreach ($m in $cinfo[0].Mounts) {
         if ($m.Destination -eq "/teaching/courses") { $CURRENT_MOUNT_SRC = $m.Source; break }
@@ -583,6 +620,20 @@ if ($containerExists) {
     Write-Host "  Existing mount: $CURRENT_MOUNT_SRC"
     Write-Host "  Desired mount:  $MOUNT_COURSES"
     Write-Host "Recreating container '$CONTAINER_NAME' to point at the new folder..."
+    if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { docker stop "$CONTAINER_NAME" *> $null }
+    docker rm "$CONTAINER_NAME" *> $null
+    Run-ContainerWithMount
+  }
+  elseif ($DESIRED_IMAGE_ID -and $RUNNING_IMAGE_ID -and ($RUNNING_IMAGE_ID -ne $DESIRED_IMAGE_ID)) {
+    Write-Host "Your workspace was built from an older version; rebuilding it so the update takes effect..."
+    if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { docker stop "$CONTAINER_NAME" *> $null }
+    docker rm "$CONTAINER_NAME" *> $null
+    Run-ContainerWithMount
+  }
+  elseif (-not ((docker inspect -f '{{json .HostConfig.PortBindings}}' "$CONTAINER_NAME" 2>$null) -match '9084/tcp')) {
+    # An older container publishes only one port; published ports cannot
+    # change after creation, so recreating is the only way to add them.
+    Write-Host "Rebuilding your workspace so several previews can run at once..."
     if ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) { docker stop "$CONTAINER_NAME" *> $null }
     docker rm "$CONTAINER_NAME" *> $null
     Run-ContainerWithMount
