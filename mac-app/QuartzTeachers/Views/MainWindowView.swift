@@ -22,7 +22,15 @@ struct MainWindowView: View {
         @Bindable var workspace = workspace
 
         Group {
-            if workspace.workspaceURL == nil || workspace.workspaceProblem != nil || workspace.workspaceCanBeInitialized || workspace.workspaceIsUnrecognized {
+            if workspace.isResolvingRestoredFolder && workspace.workspaceURL == nil {
+                // A restored window whose folder claim has not resolved
+                // yet — a beat of quiet, never the picker it is about to
+                // replace.
+                ProgressView()
+                    .controlSize(.small)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .accessibilityIdentifier("restoringFolderPlaceholder")
+            } else if workspace.workspaceURL == nil || workspace.workspaceProblem != nil || workspace.workspaceCanBeInitialized || workspace.workspaceIsUnrecognized {
                 WorkspacePickerView()
             } else {
                 NavigationSplitView {

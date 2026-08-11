@@ -38,6 +38,27 @@ struct WindowRootView: View {
                 // shows on the way in. At launch this is a no-op and the
                 // window claims below decide instead.
                 workspace.adoptFolderForNewWindow()
+                // A restored window's folder arrives a moment after the
+                // window does. Until the claim resolves, hold quietly —
+                // flashing the folder picker for a folder-less instant
+                // reads as the wrong screen, not as loading.
+                if workspace.workspaceURL == nil && WindowFolderMemory.aClaimMayStillArrive() {
+                    workspace.isResolvingRestoredFolder = true
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(
+                for: NSApplication.didFinishRestoringWindowsNotification
+            )) { _ in
+                // AppKit has just finished state restoration, so every
+                // restored frame is final — try the frame match NOW
+                // rather than waiting for the settle-polling to notice.
+                // Success only: on a mismatch the polling keeps running,
+                // so this window cannot give up early and order-claim an
+                // entry that rightly belongs to a sibling's frame.
+                if let window = workspace.window,
+                   let entry = claimant.frameDidSettle(NSStringFromRect(window.frame)) {
+                    adopt(entry, how: "matched at restoration-complete")
+                }
             }
             .background(WindowAccessor { window in
                 workspace.window = window
@@ -97,6 +118,9 @@ struct WindowRootView: View {
                 // Normally already handled in onAppear; harmless backstop.
                 workspace.adoptFolderForNewWindow()
             }
+            // The claim is settled either way; if no folder arrived, the
+            // picker is now the honest screen to show.
+            workspace.isResolvingRestoredFolder = false
             return
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
@@ -107,6 +131,7 @@ struct WindowRootView: View {
     /// Takes a remembered window as this window's own.
     func adopt(_ entry: WindowFolderMemory.Entry, how detail: String) {
         workspace.adoptRestoredPath(entry.path)
+        workspace.isResolvingRestoredFolder = false
         AppLog.interface.info("""
             window \(windowIdentity, privacy: .public) claimed \
             "\(entry.path, privacy: .public)" — \(detail, privacy: .public)

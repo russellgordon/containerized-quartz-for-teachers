@@ -78,6 +78,18 @@ enum WindowFolderMemory {
         return !unclaimed.isEmpty
     }
 
+    /// True while a launching window might yet receive a remembered
+    /// folder: claims are still open and entries remain unclaimed. While
+    /// this holds, a window with no folder should wait quietly rather
+    /// than flash the folder picker it is about to replace.
+    static func aClaimMayStillArrive(asOf now: Date = Date(),
+                                     defaults: UserDefaults = UserDefaults.standard) -> Bool {
+        if now > claimsOpenUntil {
+            return false
+        }
+        return hasEntriesToClaim(defaults: defaults)
+    }
+
     /// The next remembered window, skipping folders that no longer exist.
     static func claimNextEntry(defaults: UserDefaults = UserDefaults.standard) -> Entry? {
         if Date() > claimsOpenUntil {

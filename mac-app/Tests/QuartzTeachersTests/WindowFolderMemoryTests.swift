@@ -99,4 +99,36 @@ final class WindowFolderMemoryTests: XCTestCase {
         let after = UserDefaults.standard.array(forKey: WindowFolderMemory.storageKey) as? [[String: String]]
         XCTAssertEqual(before, after, "A test must not disturb the teacher's own open windows")
     }
+
+    // MARK: - Holding for a pending claim
+
+    @MainActor
+    func testAClaimMayStillArriveWhileEntriesRemainAndClaimsAreOpen() {
+        WindowFolderMemory.reset(with: [
+            WindowFolderMemory.Entry(path: "/tmp", frame: "{{0, 0}, {800, 600}}"),
+        ])
+        let now: Date = Date()
+        WindowFolderMemory.claimsOpenUntil = now.addingTimeInterval(10)
+        XCTAssertTrue(WindowFolderMemory.aClaimMayStillArrive(asOf: now))
+    }
+
+    @MainActor
+    func testNoClaimCanArriveOnceClaimsHaveClosed() {
+        WindowFolderMemory.reset(with: [
+            WindowFolderMemory.Entry(path: "/tmp", frame: "{{0, 0}, {800, 600}}"),
+        ])
+        let now: Date = Date()
+        WindowFolderMemory.claimsOpenUntil = now.addingTimeInterval(-1)
+        XCTAssertFalse(WindowFolderMemory.aClaimMayStillArrive(asOf: now),
+                       "A mid-session window must never hold for a claim")
+    }
+
+    @MainActor
+    func testNoClaimCanArriveWithNothingLeftToClaim() {
+        WindowFolderMemory.reset(with: [])
+        let now: Date = Date()
+        WindowFolderMemory.claimsOpenUntil = now.addingTimeInterval(10)
+        XCTAssertFalse(WindowFolderMemory.aClaimMayStillArrive(asOf: now),
+                       "A fresh first launch shows the picker immediately")
+    }
 }

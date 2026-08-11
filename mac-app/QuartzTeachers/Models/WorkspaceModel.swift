@@ -143,6 +143,12 @@ class WorkspaceModel {
     /// The active working folder, or nil before one has been chosen.
     var workspaceURL: URL?
 
+    /// True while this window is still waiting to learn which restored
+    /// folder is its own — the brief moment between launch and the claim
+    /// resolving. While true, the window shows a quiet holding view
+    /// instead of flashing the folder picker it is about to replace.
+    var isResolvingRestoredFolder: Bool = false
+
     /// The window this model belongs to, once it is on screen. Used only
     /// to read the frame; never retained.
     @ObservationIgnored weak var window: NSWindow?
