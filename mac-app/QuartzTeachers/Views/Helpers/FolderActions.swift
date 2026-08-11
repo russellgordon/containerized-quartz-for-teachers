@@ -29,11 +29,12 @@ enum FolderActions {
     /// first (it restores its windows on relaunch); doing the quit before
     /// the write also stops Obsidian overwriting the new entry on exit.
     static func openInObsidian(revealing folderURL: URL, vaultURL: URL) {
-        guard let obsidianLink = FolderActions.obsidianURL(forFolder: folderURL) else {
+        let target: URL = FolderActions.obsidianTarget(forFolder: folderURL, vaultURL: vaultURL)
+        guard let obsidianLink = FolderActions.obsidianURL(forFolder: target) else {
             return
         }
         let registryData: Data? = try? Data(contentsOf: FolderActions.obsidianRegistryFileURL)
-        if FolderActions.folderIsInRegisteredVault(folderURL.path, registryData: registryData) {
+        if FolderActions.folderIsInRegisteredVault(target.path, registryData: registryData) {
             NSWorkspace.shared.open(obsidianLink)
             return
         }
@@ -43,6 +44,23 @@ enum FolderActions {
             FolderActions.registerVault(at: vaultURL)
             NSWorkspace.shared.open(obsidianLink)
         }
+    }
+
+    /// What the link should point at. Obsidian opens FILES, not folders —
+    /// handing it a section's folder gets "File not found" — so a folder
+    /// inside the vault is represented by its landing page (`index.md`)
+    /// when it has one, and by the vault itself when it does not. The
+    /// vault's own folder passes through untouched: a path that IS a
+    /// vault opens that vault.
+    static func obsidianTarget(forFolder folderURL: URL, vaultURL: URL) -> URL {
+        if folderURL.path == vaultURL.path {
+            return folderURL
+        }
+        let landingPage: URL = folderURL.appendingPathComponent("index.md")
+        if FileManager.default.fileExists(atPath: landingPage.path) {
+            return landingPage
+        }
+        return vaultURL
     }
 
     /// Where Obsidian keeps its list of known vaults.

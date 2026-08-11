@@ -28,6 +28,28 @@ final class ObsidianLinkTests: XCTestCase {
         XCTAssertEqual(pathValue, folder.path)
     }
 
+    /// Obsidian opens files, not folders: a section is represented by its
+    /// landing page, and a section without one falls back to the vault.
+    @MainActor
+    func testASectionOpensAtItsLandingPage() throws {
+        let vault: URL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("vault-\(UUID().uuidString)")
+        let section: URL = vault.appendingPathComponent("section6")
+        try FileManager.default.createDirectory(at: section, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: vault) }
+
+        // No landing page yet: fall back to the vault, never the bare
+        // folder — handing Obsidian a folder gets "File not found".
+        XCTAssertEqual(FolderActions.obsidianTarget(forFolder: section, vaultURL: vault), vault)
+
+        try "---\ntitle: Section 6\n---".write(to: section.appendingPathComponent("index.md"), atomically: true, encoding: .utf8)
+        XCTAssertEqual(FolderActions.obsidianTarget(forFolder: section, vaultURL: vault),
+                       section.appendingPathComponent("index.md"))
+
+        // The vault's own folder passes through: a path that IS a vault
+        // opens that vault.
+        XCTAssertEqual(FolderActions.obsidianTarget(forFolder: vault, vaultURL: vault), vault)
+    }
+
     /// The registry Obsidian keeps: a folder counts as "in a vault" when a
     /// registered vault IS the folder or contains it.
     @MainActor
