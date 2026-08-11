@@ -27,7 +27,7 @@ struct AboutView: View {
     let tagline: String = "Turns a folder of Markdown notes into a fast, searchable class website you own."
 
     /// Where the name comes from — and what the app promises to do.
-    let namesake: String = "A plantoir is a dibber — the simple hand tool that opens a hole at the right depth so a seedling can be set in and take root. This one does the same for teaching materials. Write in Obsidian, preview locally, publish when you’re ready."
+    let namesake: String = "A plantoir is a dibber — the simple hand tool that opens a hole at the right depth so a seedling can be set in and take root. This app does the same for teaching materials. Write in Obsidian, preview locally, publish when you’re ready."
 
     /// The credit lines, shown smallest, at the bottom above the copyright.
     let credits: [LocalizedStringKey] = [
