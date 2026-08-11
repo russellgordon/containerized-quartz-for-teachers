@@ -121,6 +121,14 @@ class CourseConfiguration {
         set { values["footer_html"] = newValue }
     }
 
+    /// Whether the site title leads with the grade ("Grade 12 Computer
+    /// Science…"). On by default; the build recomputes the landing title
+    /// from this on every build.
+    var showGradeInTitle: Bool {
+        get { return boolValue(forKey: "show_grade_in_title", fallback: true) }
+        set { values["show_grade_in_title"] = newValue }
+    }
+
     var showReadingTime: Bool {
         get { return boolValue(forKey: "show_reading_time", fallback: false) }
         set { values["show_reading_time"] = newValue }

@@ -196,7 +196,10 @@ enum SectionAdder {
         let gradeLabel: String = SectionAdder.gradeLabel(forCourseCode: course.code)
         let courseName: String = course.configuration.courseName
         var titlePrefix: String = ""
-        if !gradeLabel.isEmpty && !courseName.hasPrefix(gradeLabel) {
+        // Same rule the build uses: the grade leads only when the setting
+        // says so, and never when the name already carries it anywhere
+        // ("Computer Science, Grade 12, U" must not double up).
+        if course.configuration.showGradeInTitle && !gradeLabel.isEmpty && !courseName.contains(gradeLabel) {
             titlePrefix = "\(gradeLabel) "
         }
         return "\(titlePrefix)\(courseName), Section \(sectionNumber)"

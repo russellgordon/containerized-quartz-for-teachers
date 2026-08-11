@@ -37,6 +37,12 @@ struct CourseSettingsView: View {
                         }
                     }
 
+                    VStack(alignment: .leading, spacing: 4) {
+                        Toggle("Show the grade in the site title", isOn: $configuration.showGradeInTitle)
+                            .accessibilityIdentifier("gradeInTitleToggle")
+                        ExampleCaption("e.g. “Grade 12” before the course name — applied the next time each section builds")
+                    }
+
                     Toggle("Show page read-time estimates to students", isOn: $configuration.showReadingTime)
                         .accessibilityIdentifier("readingTimeToggle")
 

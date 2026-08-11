@@ -1540,7 +1540,10 @@ def setup_course(no_backup: bool = False):
         if not index_md_path.exists():
             with open(index_md_path, "w", encoding="utf-8") as f:
                 f.write("---\n")
-                title_prefix = f"{grade_label} " if grade_label else ""
+                # The built site recomputes this title from the settings on
+                # every build; this is only a sensible starting value. Never
+                # double a grade the name already carries.
+                title_prefix = f"{grade_label} " if (grade_label and grade_label not in course_name) else ""
                 f.write(f"title: {title_prefix}{course_name}, Section {sec}\n")
                 f.write(f"created: {now_str}\n")
                 f.write("draft: false\n")

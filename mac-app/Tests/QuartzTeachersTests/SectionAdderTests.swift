@@ -172,6 +172,18 @@ final class SectionAdderTests: XCTestCase {
         course.configuration.courseName = "Introduction to Computer Science"
         XCTAssertEqual(SectionAdder.sectionTitle(for: course, sectionNumber: 2),
                        "Grade 11 Introduction to Computer Science, Section 2")
+
+        // A grade EMBEDDED in the name (the Ontario catalog's style) must
+        // not be doubled either.
+        course.configuration.courseName = "Computer Science, Grade 11, U"
+        XCTAssertEqual(SectionAdder.sectionTitle(for: course, sectionNumber: 2),
+                       "Computer Science, Grade 11, U, Section 2")
+
+        // And the switch turns the grade off entirely.
+        course.configuration.showGradeInTitle = false
+        course.configuration.courseName = "Introduction to Computer Science"
+        XCTAssertEqual(SectionAdder.sectionTitle(for: course, sectionNumber: 2),
+                       "Introduction to Computer Science, Section 2")
     }
 
     @MainActor

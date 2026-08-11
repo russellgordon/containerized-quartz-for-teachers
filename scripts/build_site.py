@@ -561,56 +561,44 @@ def resolve_show_section_marker(config: dict, section_number: int) -> bool:
 # --- END ADD -----------------------------------------------------------------
 
 # --- ADD: Remove section marker from a full course title ---------------------
-def _strip_section_marker_from_title(title: str, section_number: int) -> str:
-    """
-    Remove a trailing 'Section N' (or 'S N' / 'Sec. N') from a title string.
-    Handles separators like ',', '-', '–', '—', and parenthesized forms.
-    Only trims a suffix at the end of the string (common in 'Grade 10 ..., Section 1').
-    """
-    if not isinstance(title, str) or not title.strip():
-        return title
 
-    n = int(section_number)
+GRADE_LABELS = {"1": "Grade 9", "2": "Grade 10", "3": "Grade 11", "4": "Grade 12"}
 
-    # Examples matched (at end of string):
-    #   ", Section 3"   " - Section 3"   " — Section 3"   " (Section 3)"
-    #   ", S3"          " - S 3"         " (S 3)"         ", Sec. 3"
-    patterns = [
-        rf'\s*(?:[,\-–—]\s*)?(?:Section|Sec\.?|S)\s*{n}\s*\.?\s*$',
-        rf'\s*\(\s*(?:Section|Sec\.?|S)\s*{n}\s*\)\s*$',
-    ]
 
-    out = title
-    for p in patterns:
-        out = re.sub(p, '', out, flags=re.IGNORECASE)
-    return out.strip()
-
-def maybe_adjust_index_title(index_md_path: Path, show_section_marker: bool, section_number: int):
+def computed_landing_title(cfg, section_number, show_marker):
     """
-    If show_section_marker is False, load index.md frontmatter and strip a trailing section
-    marker from the 'title' field, if present. Idempotent.
+    The landing page's title, computed from the CURRENT settings at build
+    time — never baked in at scaffold time. This is what makes a course
+    rename reach the site, makes the grade a switch (show_grade_in_title,
+    default on), and keeps the grade from doubling when the course name
+    already carries one ("Computer Science, Grade 12, U").
     """
-    if show_section_marker or not index_md_path.exists() or index_md_path.suffix.lower() != ".md":
+    name = str(cfg.get("course_name") or cfg.get("course_code") or "").strip()
+    code = str(cfg.get("course_code") or "")
+    prefix = ""
+    if cfg.get("show_grade_in_title", True) and len(code) >= 4 and code[3].isdigit():
+        label = GRADE_LABELS.get(code[3], "Grade ?")
+        if label not in name:
+            prefix = label + " "
+    title = f"{prefix}{name}"
+    if show_marker:
+        title = f"{title}, Section {section_number}"
+    return title
+
+
+def set_landing_title(index_md_path: Path, cfg, section_number, show_marker):
+    """Writes the computed title into the MERGED copy of the section's
+    landing page. The teacher's source index.md is never touched."""
+    if not index_md_path.exists():
         return
     try:
         post = frontmatter.load(index_md_path)
+        post["title"] = computed_landing_title(cfg, section_number, show_marker)
+        with open(index_md_path, "w", encoding="utf-8") as f:
+            f.write(frontmatter.dumps(post))
+        print(f"📝 Landing page title: '{post['title']}'")
     except Exception as e:
-        print(f"⚠️ Could not read frontmatter from {index_md_path}: {e}")
-        return
-
-    old_title = post.get("title")
-    new_title = _strip_section_marker_from_title(old_title, section_number) if old_title else old_title
-
-    if isinstance(old_title, str) and new_title != old_title:
-        post["title"] = new_title
-        try:
-            with open(index_md_path, "w", encoding="utf-8") as f:
-                f.write(frontmatter.dumps(post))
-            print(f"📝 Updated index title to '{new_title}' (removed section marker)")
-        except Exception as e:
-            print(f"⚠️ Could not write adjusted index title to {index_md_path}: {e}")
-    else:
-        print("ℹ️ Index title had no removable section marker (no change).")
+        print(f"⚠️ Could not set the landing page title: {e}")
 # --- END ADD -----------------------------------------------------------------
 
 
@@ -2185,8 +2173,9 @@ def build_section_site(
         shutil.copy2(section_index, dest)
         process_frontmatter(dest, section_number)
 
-        # NEW: strip trailing "Section N" from full course title if hidden
-        maybe_adjust_index_title(dest, show_marker, section_number)
+        # The landing title comes from the current settings, not from
+        # whatever was baked in at scaffold time.
+        set_landing_title(dest, config, section_number, show_marker)
 
         # rewrite section-path wikilinks in the section index
         print("🔍 Checking for wikilinks to rewrite in content/index.md...")
