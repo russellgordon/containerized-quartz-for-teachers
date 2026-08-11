@@ -493,7 +493,7 @@ $script:UseBuildKitFallback = $false
 function Ensure-Buildx {
   docker buildx version *> $null
   if ($LASTEXITCODE -eq 0) { return }
-  if ($null -ne $global:WslUserArgs) {
+  if ($global:DockerViaWsl) {
     Write-Host "Installing the image builder (BuildKit) inside WSL ..."
     wsl -u root -e sh -c "apt-get update -qq >/dev/null 2>&1; apt-get install -y -qq docker-buildx >/dev/null 2>&1 || apt-get install -y -qq docker-buildx-plugin >/dev/null 2>&1" *> $null
     docker buildx version *> $null
@@ -515,7 +515,7 @@ function Ensure-Image([string]$ref) {
   Write-Host "Building your website builder - the first time takes a few minutes ..."
   Ensure-Buildx
   if ($script:UseBuildKitFallback) {
-    if ($null -ne $global:WslUserArgs) {
+    if ($global:DockerViaWsl) {
       wsl @($global:WslUserArgs) -e env DOCKER_BUILDKIT=1 docker build --progress=plain -t "$ref" "$context"
     } else {
       $env:DOCKER_BUILDKIT = '1'

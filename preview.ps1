@@ -287,7 +287,7 @@ $script:UseBuildKitFallback = $false
 function Ensure-Buildx {
   docker buildx version *> $null
   if ($LASTEXITCODE -eq 0) { return }
-  if ($null -ne $global:WslUserArgs) {
+  if ($global:DockerViaWsl) {
     Write-Host "Installing the image builder (BuildKit) inside WSL ..."
     wsl -u root -e sh -c "apt-get update -qq >/dev/null 2>&1; apt-get install -y -qq docker-buildx >/dev/null 2>&1 || apt-get install -y -qq docker-buildx-plugin >/dev/null 2>&1" *> $null
     docker buildx version *> $null
@@ -308,7 +308,7 @@ function Build-ImageIfMissing {
   Write-Host "Building your website builder - the first time takes a few minutes ..."
   Ensure-Buildx
   if ($script:UseBuildKitFallback) {
-    if ($null -ne $global:WslUserArgs) {
+    if ($global:DockerViaWsl) {
       wsl @($global:WslUserArgs) -e env DOCKER_BUILDKIT=1 docker build --progress=plain -t "$IMAGE" "$BUILD_CONTEXT"
     } else {
       $env:DOCKER_BUILDKIT = '1'
@@ -326,12 +326,11 @@ function Build-ImageIfMissing {
 }
 
 $BUILD_CONTEXT = Get-BuildContext
-if ($OVERRIDE_IMAGE) { $BUILD_CONTEXT = $null }
-if ($BUILD_CONTEXT) {
-  $IMAGE = "teaching-quartz:src-$(Get-ToolchainHash $BUILD_CONTEXT)"
-}
 if ($OVERRIDE_IMAGE) {
+  $BUILD_CONTEXT = $null
   $IMAGE = $OVERRIDE_IMAGE
+} elseif ($BUILD_CONTEXT) {
+  $IMAGE = "teaching-quartz:src-$(Get-ToolchainHash $BUILD_CONTEXT)"
 } else {
   Write-Host "This folder is missing the toolchain's build recipe."
   Write-Host "Open the folder in the app once to refresh it, or run from a repository copy."
