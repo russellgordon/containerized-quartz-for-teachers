@@ -33,7 +33,7 @@ struct AboutView: View {
     let credits: [LocalizedStringKey] = [
         "Built on [Quartz](https://quartz.jzhao.xyz) by Jacky Zhao.",
         "Designed by Russell Gordon.",
-        "Built with Claude.",
+        "Made with Claude.",
     ]
 
     // The measurements, at the SYSTEM text size. Scaling from these keeps
