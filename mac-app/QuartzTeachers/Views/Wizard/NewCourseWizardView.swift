@@ -24,6 +24,9 @@ struct NewCourseWizardView: View {
     @State var emoji: String = "📚"
     @State var colourSchemeID: String = "quartz-standard"
     @State var showsSectionMarker: Bool = true
+
+    /// Whether the site title leads with the grade ("Grade 12 …").
+    @State var showsGradeInTitle: Bool = true
     @State var fontChoice: FontChoice = FontChoice.systemDefault
     @State var expandOnFolderClick: Bool = false
     @State var showReadingTime: Bool = false
@@ -282,6 +285,10 @@ struct NewCourseWizardView: View {
                     Toggle("Show section marker in the site title", isOn: $showsSectionMarker)
                     ExampleCaption("e.g. “S1” appears beside the course code")
                 }
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle("Show the grade in the site title", isOn: $showsGradeInTitle)
+                    ExampleCaption("e.g. “Grade 12” before the course name")
+                }
             } header: {
                 FormSectionHeader("Appearance", caption: "Applied to every section — fine-tune later in Settings")
             }
@@ -463,6 +470,7 @@ struct NewCourseWizardView: View {
             "expandOnFolderClick": expandOnFolderClick,
             "footer_html": footerHTML,
             "show_reading_time": showReadingTime,
+            "show_grade_in_title": showsGradeInTitle,
             "fonts": [
                 "default": fontChoice.dictionaryRepresentation,
                 "sections": fontsSectionsMap,
