@@ -84,6 +84,7 @@ enum SectionAdder {
                 sibling: siblingFile(named: fileName, in: course),
                 replacingTitleWith: nil,
                 fallbackTitle: fileName.replacingOccurrences(of: ".md", with: ""),
+                fallbackIsDraft: SectionAdder.unpublishedFileNames.contains(fileName),
                 created: created
             )
             let fileBody: String = """
@@ -119,6 +120,11 @@ enum SectionAdder {
         return nil
     }
 
+    /// Pages that exist for the teacher's own eyes — the wizard creates
+    /// them as drafts so they are never published, and a section added
+    /// with no sibling to imitate must do the same.
+    static let unpublishedFileNames: Set<String> = ["Private Notes.md", "Scratch Page.md"]
+
     /// The frontmatter for one scaffolded file. A sibling's frontmatter is
     /// carried over whole — draft status, table-of-contents and backlink
     /// flags, anything else the teacher set — with only `created:` freshened
@@ -128,6 +134,7 @@ enum SectionAdder {
         sibling: URL?,
         replacingTitleWith newTitle: String?,
         fallbackTitle: String? = nil,
+        fallbackIsDraft: Bool = false,
         created: String
     ) -> String {
         if let sibling, let siblingLines = frontmatterLines(ofFileAt: sibling) {
@@ -144,7 +151,7 @@ enum SectionAdder {
             return result.joined(separator: "\n")
         }
         let title: String = newTitle ?? fallbackTitle ?? ""
-        return "title: \(title)\ncreated: \(created)\ndraft: false"
+        return "title: \(title)\ncreated: \(created)\ndraft: \(fallbackIsDraft ? "true" : "false")"
     }
 
     /// The lines between a file's opening and closing `---` markers, or nil

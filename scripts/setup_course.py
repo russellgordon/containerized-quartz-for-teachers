@@ -50,6 +50,10 @@ DEFAULT_PER_SECTION_FILES = [
     "Private Notes.md", "Scratch Page.md", "Key Links.md"
 ]
 
+# Pages that exist for the teacher's own eyes: they ship as drafts so they
+# are never published, and stay that way unless the teacher flips them.
+UNPUBLISHED_PER_SECTION_FILES = {"Private Notes.md", "Scratch Page.md"}
+
 COURSE_LOOKUP_PATH = Path("/opt/support/ontario_secondary_courses.json")
 
 # ---------- NEW: Backup exclusion set ---------------------------------------
@@ -1562,13 +1566,17 @@ def setup_course(no_backup: bool = False):
         for file in per_section_files:
             file_path = section_path / file
             if not file_path.exists():
+                is_unpublished = file in UNPUBLISHED_PER_SECTION_FILES
                 with open(file_path, "w", encoding="utf-8") as f:
                     f.write("---\n")
                     f.write(f"title: {file.replace('.md', '')}\n")
                     f.write(f"created: {now_str}\n")
-                    f.write("draft: false\n")
+                    f.write(f"draft: {'true' if is_unpublished else 'false'}\n")
                     f.write("---\n")
-                    f.write(f"This is the per-section file **{file}**.\n")
+                    if is_unpublished:
+                        f.write(f"This is the per-section file **{file}**. It is marked `draft: true`, so it is never published — a private place for your own notes.\n")
+                    else:
+                        f.write(f"This is the per-section file **{file}**.\n")
 
     # ---------- Patch Quartz Explorer + OverflowList (idempotent) ------------
     ensure_quartz_explorer_anchor()

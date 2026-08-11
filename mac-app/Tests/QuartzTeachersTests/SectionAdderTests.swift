@@ -22,7 +22,7 @@ final class SectionAdderTests: XCTestCase {
             "section_numbers": [1, 3],
             "num_sections": 2,
             "per_section_folders": ["All Classes", "Notes"],
-            "per_section_files": ["Snippets.md"],
+            "per_section_files": ["Snippets.md", "Private Notes.md"],
         ]
         let data: Data = try JSONSerialization.data(withJSONObject: configuration, options: [.prettyPrinted])
         try data.write(to: courseURL.appendingPathComponent("course_config.json"))
@@ -52,6 +52,16 @@ final class SectionAdderTests: XCTestCase {
         }
         XCTAssertTrue(FileManager.default.fileExists(atPath: sectionURL.appendingPathComponent("Snippets.md").path),
                       "Per-section files should be scaffolded too")
+
+        // Even with no sibling to imitate (the fixture's sections are bare
+        // folders), the teacher's private pages start as drafts — that is
+        // what keeps them from being published.
+        let privateNotes: String = try String(contentsOf: sectionURL.appendingPathComponent("Private Notes.md"), encoding: .utf8)
+        XCTAssertTrue(privateNotes.contains("draft: true"),
+                      "Private Notes.md must start unpublished")
+        let snippets: String = try String(contentsOf: sectionURL.appendingPathComponent("Snippets.md"), encoding: .utf8)
+        XCTAssertTrue(snippets.contains("draft: false"),
+                      "An ordinary per-section file still starts published")
 
         let reloaded: CourseConfiguration = try CourseConfiguration(contentsOf: course.configFileURL)
         XCTAssertEqual(reloaded.sectionNumbers, [1, 2, 3], "The new number joins the settings, in order")
