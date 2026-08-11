@@ -38,13 +38,17 @@ shift 2
 # and no account are involved; the recipe travels with the app.
 OVERRIDE_IMAGE="${OVERRIDE_IMAGE:-}"
 
-# Parse image-related flags only; leave other flags for later parsing
+# Parse the image flag only; every other flag is for the parser further
+# down. Scan the WHOLE argument list — flags follow the course and
+# section, so stopping at the first non-flag word would never see them
+# (that is exactly how verify.sh's --image went unrecognized).
 _SAVED_ARGS=("$@")
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --image)        OVERRIDE_IMAGE="$2"; shift 2 ;;
-    --) shift; break ;;
-    -*|*) break ;;
+    --image)
+      if [[ $# -lt 2 ]]; then echo "❌ --image requires a value"; exit 1; fi
+      OVERRIDE_IMAGE="$2"; shift 2 ;;
+    *) shift ;;
   esac
 done
 set -- "${_SAVED_ARGS[@]}"
@@ -165,6 +169,10 @@ while [[ "$#" -gt 0 ]]; do
     --port)
       if [[ $# -lt 2 ]]; then echo "❌ --port requires a value"; exit 1; fi
       PREVIEW_PORT="$2"
+      shift
+      ;;
+    --image)
+      # Already applied by the image pre-parser; consume the value here.
       shift
       ;;
     *)

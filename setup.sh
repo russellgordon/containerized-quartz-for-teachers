@@ -307,6 +307,53 @@ build_image_if_missing() {
 }
 build_image_if_missing
 
+# Finds a free block of host ports for this container: four site ports and
+# their four live-reload websocket ports. Different working folders get
+# different blocks, which is what lets their previews run at the same time.
+find_free_port_block() {
+  local base offset
+  for base in 8081 8091 8101 8111 8121 8131; do
+    local all_free=true
+    for offset in 0 1 2 3; do
+      if lsof -nP -iTCP:$((base + offset)) -sTCP:LISTEN >/dev/null 2>&1; then all_free=false; break; fi
+      if lsof -nP -iTCP:$((base + 1000 + offset)) -sTCP:LISTEN >/dev/null 2>&1; then all_free=false; break; fi
+    done
+    if [[ "$all_free" == "true" ]]; then
+      echo "$base"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# The one shared container from before working folders each had their own.
+# Superseded: it holds no content (everything lives on the host), and left
+# running it would shadow the per-folder containers' ports.
+retire_legacy_container() {
+  if docker ps -a --format '{{.Names}}' | grep -Eq '^teaching-quartz$'; then
+    echo "♻️  Retiring the old shared workspace container…"
+    docker rm -f teaching-quartz >/dev/null 2>&1 || true
+  fi
+}
+
+run_container_with_mount() {
+  retire_legacy_container
+  local HOST_BASE
+  HOST_BASE=$(find_free_port_block) || {
+    echo "❌ Could not find free ports for this folder's previews."
+    echo "   Stop another preview (or another app using ports 8081+), then try again."
+    exit 1
+  }
+  echo "🔗 Binding host courses to container: $HOST_COURSES ➜ /teaching/courses"
+  docker run -dit \
+    --name "$CONTAINER_NAME" \
+    -v "$HOST_COURSES":/teaching/courses \
+    -p ${HOST_BASE}-$((HOST_BASE + 3)):8081-8084 \
+    -p $((HOST_BASE + 1000))-$((HOST_BASE + 1003)):9081-9084 \
+    "$IMAGE" \
+    tail -f /dev/null
+}
+
 # -------------------- Writability probe helper --------------------
 probe_container_write() {
   # Returns 0 if we can create & delete a file inside /teaching/courses

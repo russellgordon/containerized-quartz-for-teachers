@@ -237,7 +237,7 @@ struct TaskProgressView: View {
                 // transcript then demanded tens of thousands of points,
                 // growing the window's content past the window itself
                 // and sliding the interface out of sight.
-                TaskConsoleView(runner: runner, title: title)
+                TaskConsoleView(runner: runner)
                     .frame(minHeight: 200, idealHeight: 260, maxHeight: .infinity)
                     .clipped()
             }

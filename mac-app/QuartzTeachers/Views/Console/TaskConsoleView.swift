@@ -8,7 +8,6 @@ struct TaskConsoleView: View {
     // MARK: - Stored properties
 
     let runner: ScriptRunner
-    let title: String
 
     @State var pendingInput: String = ""
 
@@ -16,9 +15,11 @@ struct TaskConsoleView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // No title here: this console only ever sits beneath the
+            // progress header, which already names the task. Only the
+            // precise outcome — spinner, Finished, or the exit code —
+            // is added at this level.
             HStack {
-                Text(title)
-                    .font(.headline)
                 Spacer()
                 if runner.isRunning {
                     ProgressView()

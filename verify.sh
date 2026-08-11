@@ -131,6 +131,34 @@ fi
 # -------------------- 3. export-scripts fidelity --------------------
 # NOTE: must live under $HOME — Colima's VM only shares the home directory,
 # so a /var/folders/... temp dir would silently arrive empty in the container.
+
+# ---- Every helper a launcher calls must be defined in that same file ----
+# The launchers are three standalone scripts sharing copied helper blocks,
+# so a helper added to two of them but not the third fails only at runtime
+# — and only on the code path that calls it. (setup.sh once called
+# run_container_with_mount while only preview.sh and deploy.sh defined it:
+# exit 127 at the first fresh course creation, missed by every other check.)
+echo ""
+echo "🔎 Cross-checking helper functions in the launchers…"
+ALL_HELPERS="$(grep -hoE '^[a-z_][a-z0-9_]*\(\)' setup.sh preview.sh deploy.sh | tr -d '()' | sort -u)"
+HELPERS_OK="true"
+for f in setup.sh preview.sh deploy.sh; do
+  # Comments stripped, and only command-position uses count — a helper's
+  # name inside an echoed sentence is prose, not a call.
+  UNCOMMENTED="$(sed -e 's/^[[:space:]]*#.*$//' "$f")"
+  for fn in $ALL_HELPERS; do
+    if echo "$UNCOMMENTED" | grep -qE "(^[[:space:]]*(if |elif |while |until )?!?[[:space:]]*|\\$\(|&&[[:space:]]*|\|\|[[:space:]]*)${fn}([[:space:]]|;|\)|$)"; then
+      if ! grep -qE "^[[:space:]]*${fn}\(\)" "$f"; then
+        HELPERS_OK="false"
+        fail "$f calls ${fn} but never defines it (would exit 127 at runtime)"
+      fi
+    fi
+  done
+done
+if [[ "$HELPERS_OK" == "true" ]]; then
+  pass "Every helper called in a launcher is defined in that launcher"
+fi
+
 EXPORT_TMP="$(mktemp -d "$(pwd)/.verify-export.XXXXXX")"
 echo ""
 echo "📤 Testing 'export-scripts' → $EXPORT_TMP"
