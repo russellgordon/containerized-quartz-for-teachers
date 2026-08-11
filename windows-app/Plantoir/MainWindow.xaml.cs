@@ -32,6 +32,10 @@ public sealed partial class MainWindow : Window
             frame is { Height: > 200 } ? (int)frame.Height : 720));
         if (frame is { } f && f.X > -10000 && f.Y > -10000)
             AppWindow.Move(new PointInt32((int)f.X, (int)f.Y));
+        if (AppWindow.Presenter is OverlappedPresenter presenter)
+            presenter.PreferredMinimumWidth = 900;
+        if (AppWindow.Presenter is OverlappedPresenter minPresenter)
+            minPresenter.PreferredMinimumHeight = 600;
 
         Picker.Attach(this);
         Sidebar.Attach(this);
@@ -69,16 +73,19 @@ public sealed partial class MainWindow : Window
         string[] args = Environment.GetCommandLineArgs();
         int index = Array.IndexOf(args, "--auto-select");
         if (index < 0) index = Array.IndexOf(args, "--auto-preview");
+        if (index < 0) index = Array.IndexOf(args, "--auto-deploy");
         if (index < 0 || index + 2 >= args.Length) return;
         string code = args[index + 1];
         if (!int.TryParse(args[index + 2], out int section)) return;
         bool preview = args.Contains("--auto-preview");
+        bool deploy = args.Contains("--auto-deploy");
         DispatcherQueue.TryEnqueue(async () =>
         {
             await System.Threading.Tasks.Task.Delay(1500);
             Workspace.Selection = new SidebarSelection.SectionItem(code, section);
-            if (preview && DetailHost.Content is SectionDetailView detail)
-                detail.StartPreviewForAutomation();
+            if (DetailHost.Content is not SectionDetailView detail) return;
+            if (preview) detail.StartPreviewForAutomation();
+            else if (deploy) detail.StartDeployForAutomation();
         });
     }
 

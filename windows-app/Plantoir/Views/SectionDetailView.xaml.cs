@@ -41,6 +41,11 @@ public sealed partial class SectionDetailView : UserControl
         SectionTitle.Text = TitleText;
         ObsidianButton.IsEnabled = FolderActions.ObsidianIsInstalled;
 
+        // Each runner is bound to the progress view exactly once — its
+        // question dialog and outcome states follow whichever runner the
+        // view is currently showing, chosen in RefreshChrome via Show().
+        Progress.Register(_previewRunner);
+        Progress.Register(_deployRunner);
         _previewRunner.PropertyChanged += (_, _) => RefreshChrome();
         _deployRunner.PropertyChanged += (_, _) => RefreshChrome();
         Preview.NavigationCompleted += (_, _) => RefreshChrome();
@@ -67,14 +72,19 @@ public sealed partial class SectionDetailView : UserControl
         PreviewButton.IsEnabled = running || !IsBusy;
 
         // Which task owns the console: the running one, else the most recent.
+        // Bind ONCE per runner (in the constructor) and only swap which is
+        // shown here — re-subscribing on every event could swallow the
+        // IsAwaitingInput transition that raises the question dialog.
         bool showDeploy = !_previewRunner.IsRunning &&
             (_deployRunner.IsRunning ||
              (_deployRunner.StartedAt ?? DateTime.MinValue) > (_previewRunner.StartedAt ?? DateTime.MinValue));
-        if (showDeploy) Progress.Bind(_deployRunner, $"Publishing {TitleText}");
-        else Progress.Bind(_previewRunner,
-            _previewRunner.IsRunning || _isWaitingForServer
-                ? $"Preparing the preview of {TitleText}"
-                : $"Preview of {TitleText}");
+        if (showDeploy)
+            Progress.Show(_deployRunner, $"Publishing {TitleText}");
+        else
+            Progress.Show(_previewRunner,
+                _previewRunner.IsRunning || _isWaitingForServer
+                    ? $"Preparing the preview of {TitleText}"
+                    : $"Preview of {TitleText}");
 
         bool anyOutput = _previewRunner.Transcript.Lines.Count > 0 || _deployRunner.Transcript.Lines.Count > 0
                          || _previewRunner.Transcript.CurrentLine.Length > 0;
@@ -88,6 +98,9 @@ public sealed partial class SectionDetailView : UserControl
 
     /// <summary>Smoke-test entry: the same path the Preview button takes.</summary>
     public void StartPreviewForAutomation() => PreviewOrStop_Click(this, new RoutedEventArgs());
+
+    /// <summary>Smoke-test entry: the same path the Deploy button takes.</summary>
+    public void StartDeployForAutomation() => Deploy_Click(this, new RoutedEventArgs());
 
     private async void PreviewOrStop_Click(object sender, RoutedEventArgs e)
     {
@@ -251,6 +264,18 @@ public sealed partial class SectionDetailView : UserControl
     private void Back_Click(object sender, RoutedEventArgs e) { if (Preview.CanGoBack) Preview.GoBack(); }
     private void Forward_Click(object sender, RoutedEventArgs e) { if (Preview.CanGoForward) Preview.GoForward(); }
     private void Reload_Click(object sender, RoutedEventArgs e) => Preview.Reload();
+
+    private void ReloadAccelerator(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender,
+        Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+    { if (_previewUrl is not null) { Preview.Reload(); args.Handled = true; } }
+
+    private void BackAccelerator(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender,
+        Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+    { if (Preview.CanGoBack) { Preview.GoBack(); args.Handled = true; } }
+
+    private void ForwardAccelerator(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender,
+        Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+    { if (Preview.CanGoForward) { Preview.GoForward(); args.Handled = true; } }
 
     private void OpenInBrowser_Click(object sender, RoutedEventArgs e)
     {

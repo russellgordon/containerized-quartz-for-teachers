@@ -16,6 +16,7 @@ namespace Plantoir.Views;
 /// </summary>
 public sealed partial class TaskProgressView : UserControl
 {
+    private readonly System.Collections.Generic.List<ScriptRunner> _registered = new();
     private ScriptRunner? _runner;
     private string _title = "";
     private bool _detailsOpen;
@@ -24,28 +25,39 @@ public sealed partial class TaskProgressView : UserControl
 
     public TaskProgressView() => InitializeComponent();
 
-    public void Bind(ScriptRunner runner, string title)
+    /// <summary>
+    /// Subscribe to a runner ONCE. Its question dialog fires whenever this
+    /// runner awaits input — even when it is not the runner currently shown,
+    /// so a background deploy's prompt is never missed.
+    /// </summary>
+    public void Register(ScriptRunner runner)
     {
-        if (_runner is not null) _runner.PropertyChanged -= RunnerChanged;
+        if (_registered.Contains(runner)) return;
+        _registered.Add(runner);
+        runner.PropertyChanged += (sender, e) => RunnerChanged((ScriptRunner)sender!, e);
+    }
+
+    /// <summary>Choose which registered runner the panel displays.</summary>
+    public void Show(ScriptRunner runner, string title)
+    {
+        Register(runner);
+        if (!ReferenceEquals(_runner, runner)) _renderedTranscriptVersion = -1;
         _runner = runner;
         _title = title;
-        runner.PropertyChanged += RunnerChanged;
         Render();
     }
 
-    public void SetTitle(string title)
-    {
-        _title = title;
-        Render();
-    }
+    /// <summary>Single-runner callers (the wizard) register-and-show in one call.</summary>
+    public void Bind(ScriptRunner runner, string title) => Show(runner, title);
 
-    private void RunnerChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void RunnerChanged(ScriptRunner runner, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(ScriptRunner.IsAwaitingInput) && _runner is { IsAwaitingInput: true })
-            _ = AskQuestion();
-        if (e.PropertyName == nameof(ScriptRunner.LastExitCode) && _runner is { IsRunning: false })
+        if (e.PropertyName == nameof(ScriptRunner.IsAwaitingInput) && runner.IsAwaitingInput)
+            _ = AskQuestion(runner);
+        if (e.PropertyName == nameof(ScriptRunner.LastExitCode) && !runner.IsRunning
+            && ReferenceEquals(runner, _runner))
             AutoExpandOnUnexplainedFailure();
-        Render();
+        if (ReferenceEquals(runner, _runner)) Render();
     }
 
     private void Render()
@@ -130,19 +142,19 @@ public sealed partial class TaskProgressView : UserControl
 
     // ---- Question dialog -------------------------------------------------
 
-    private async System.Threading.Tasks.Task AskQuestion()
+    private async System.Threading.Tasks.Task AskQuestion(ScriptRunner runner)
     {
-        if (_runner is null || _questionDialogShowing || XamlRoot is null) return;
+        if (_questionDialogShowing || XamlRoot is null) return;
         _questionDialogShowing = true;
         try
         {
             var answerBox = new TextBox
             {
-                Text = _runner.SuggestedAnswer,   // agreeing is one keystroke
+                Text = runner.SuggestedAnswer,   // agreeing is one keystroke
                 PlaceholderText = "Your answer",
             };
             var panel = new StackPanel { Spacing = 12 };
-            panel.Children.Add(new TextBlock { Text = _runner.PendingQuestion, TextWrapping = TextWrapping.Wrap });
+            panel.Children.Add(new TextBlock { Text = runner.PendingQuestion, TextWrapping = TextWrapping.Wrap });
             panel.Children.Add(answerBox);
             var dialog = new ContentDialog
             {
@@ -154,9 +166,10 @@ public sealed partial class TaskProgressView : UserControl
                 DefaultButton = ContentDialogButton.Primary,
                 XamlRoot = XamlRoot,
             };
+            answerBox.Loaded += (_, _) => { answerBox.Focus(FocusState.Programmatic); answerBox.SelectAll(); };
             var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary) _runner.SendLine(answerBox.Text);
-            else _runner.CancelPendingQuestion();   // the script's own clean-up runs
+            if (result == ContentDialogResult.Primary) runner.SendLine(answerBox.Text);
+            else runner.CancelPendingQuestion();   // the script's own clean-up runs
         }
         finally { _questionDialogShowing = false; }
     }

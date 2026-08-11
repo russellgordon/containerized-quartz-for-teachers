@@ -158,3 +158,82 @@ install/start work is repeated.
 - Images are only ever built locally; there is nothing to publish.
 - Netlify deploys are opt-in only (they create public sites).
 - The `.sh` files are macOS-only — do not "fix" them on Windows.
+
+---
+
+## Results — 2026-08-11 (Claude Code, maintainer's Windows 11 machine)
+
+Run on Windows 11 Pro 26200, WSL 2.5.10 (no distro pre-installed —
+Ubuntu-24.04 installed for the tests), Docker Engine 29.1.3 inside WSL,
+PowerShell 5.1. Fixes were committed to **main** at the maintainer's
+direction (overriding this brief's branch instruction). Interactive
+runs were driven through `windows-app/PtyDriver`, a ConPTY harness that
+gives the launchers a real TTY.
+
+**1. Static review — FAIL → fixed.** Beyond parse-checks (clean), five
+faults found and repaired: (a) preview.ps1's image resolution was
+inverted — every run without `--image` printed "missing the toolchain's
+build recipe" and exited 1; (b) a single trailing flag arrived as a
+STRING, so `$Flags[0]` indexed characters ("Unknown option: -") — now
+always an array; (c) the three scripts hashed different paths for the
+container name (setup hashed the invocation directory before its
+Set-Location; casing changed the hash) — all three now hash the
+folder's physical path via GetFinalPathNameByHandle, after
+Set-Location; (d) no exit-code propagation from the final docker exec;
+(e) `Ensure-Buildx` guarded WSL work with an always-true null check.
+Also: under `$ErrorActionPreference='Stop'`, PS 5.1 turns wsl.exe
+stderr into TERMINATING errors at any redirected call site — probes
+that legitimately fail (inspecting a not-yet-built image) killed the
+script. The global docker wrapper now relaxes the preference around the
+wsl call. Two milestone lines the app watches for were added
+("Setting up this PC - a one-time step ...", and preview's
+"Starting container if needed ...").
+
+**2. Mechanism checks — PASS.** Empty-array flattening (`wsl $e -e
+echo hi` → clean), `WSL_UTF8=1` distro names parse, `Get-Command
+docker` returns nothing without throwing when no docker.exe exists.
+usermod fallback untested (the test distro runs as root by default).
+
+**3. Engine not installed — PASS (command path).** `apt-get install
+docker.io` inside WSL (the script's exact command) installed engine
+29.1.3; the interactive install-offer prompt itself was not exercised
+end-to-end (the engine was installed before the first full run).
+
+**4. Engine stopped — PASS.** `service docker start` + poll brought the
+engine up from cold.
+
+**5. Fast path — PASS.** With the engine running, no install/start work
+repeats; runs go straight to the container checks.
+
+**6. End-to-end teacher flow — PASS.**
+- `setup.ps1 --install-example`: image built locally from the recipe
+  (BuildKit via buildx in WSL), container `teaching-quartz-<hash8>`
+  created with `/mnt/c/...` mount, EXC2O installed, and
+  `EXAMPLE_COURSE_CODE=EXC2O` printed for the app.
+- `preview.ps1 EXC2O 1`: "Preview will be available at:
+  http://localhost:8081/" announced; page served HTTP 200 with the
+  correct title through WSL2 localhost forwarding.
+- Interactive fidelity through the wsl-routed `docker exec -it`:
+  works under a pseudo console — with one CRITICAL caveat: the process
+  that creates the ConPTY must not itself have redirected stdio, or
+  the child inherits stale pipe handles and wsl reports "the input
+  device is not a TTY". (The Plantoir app, a GUI process, is naturally
+  clean.)
+- `deploy.ps1 EXC2O 1` with a throwaway token pre-stored in Credential
+  Manager: Netlify site created, 233 files uploaded with streaming
+  counts, "✅ Deploy complete.", exit 0, site live over https. The
+  first-run token-paste prompt was not exercised (token pre-stored);
+  `/tmp/netlify_pat` injection via ProcessStartInfo worked — the token
+  reached the container intact.
+
+**7. Edge cases.** Two-folder concurrency, moved-folder recreation,
+spaces-in-path, and `--port` were NOT yet exercised on this machine
+(the per-folder hash and port-block logic are covered by unit tests in
+`windows-app/Plantoir.Tests`). The generated social card was verified
+present after the build (`.merged_output/section1/quartz/static/
+og-image.png`, 28 KB, drawn in-container). Remaining scenarios are the
+first candidates for the next session.
+
+**Untested overall:** a true fresh `wsl --install` (WSL itself was
+already present), the docker-group/usermod fallback, and pwsh 7 runs
+(everything above ran under Windows PowerShell 5.1).

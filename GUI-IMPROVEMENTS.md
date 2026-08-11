@@ -203,9 +203,79 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 96 | 2026-08-11 | Every page a class links to (a convention, a discussion, a warm-up…) carried the install-time date, so category pages (Conventions, Discussions, …) could not list their pages in the order the course actually met them — an order that has meaning for students. If Choral Speaking first happens on Unit 3, Day 5, its page should share Unit 3, Day 5's date. | ✅ Implemented — automatically, with no annotation burden on payload authors. At install time the installer reads the payload's class pages in chronological order, collects every page each class links to, and gives each shared page the date of the FIRST class that references it (`first_use_dates` in `setup_course.py`). Pages no class references — the site-reference pages in Style, for instance — keep the install-time date, which sorts them harmlessly below the semester. Verified in a built course: the Conventions listing now runs in teaching order, newest first. | The derivation lives in the shared Python installer — Windows needs nothing. Payload authors need to know only one thing: class pages' links ARE the schedule; linking a page from a class page is what dates it. |
 
+## Windows status
+
+The Windows counterpart lives in [`windows-app/`](windows-app/PROGRESS.md)
+(WinUI 3, first take built 2026-08-11). Statuses below are per entry
+number in the table above: ✅ implemented (behaviour present in the
+Windows app), 🟠 partial, ⬜ not yet, — no Windows work needed.
+
+- ✅ 1 (course-name auto-fill + suggestion buttons) · ✅ 4–6 (caption/
+  header vocabulary) · ✅ 7, 9 (list editors: + always enabled, ".md"
+  hidden, Media reserved, kind-specific wording) · ✅ 8 (every input
+  visibly editable — WinUI's stock bordered controls)
+- 🟠 2, 3 (font/scheme previews render in the bundled typefaces via
+  path#family references inside recessed sample boxes; per-process font
+  registration and the full sample layout still to polish)
+- ✅ 10, 11 (WebView2 Back/Forward/Reload, open-in-browser via
+  127.0.0.1, server probe gated on the run's own launch line) · ⬜ menu
+  accelerators for Back/Forward/Reload (toolbar-only so far)
+- ✅ 12, 77 ("Show in File Explorer" reveals selected; "Open in
+  Terminal" via wt -d) · ✅ 13–15, 17, 85 (picker states, silent
+  unrecognized-folder, empty-folder set-up offer with breadcrumb,
+  machinery-free copy) · ✅ 16, 18, 21, 22, 26, 27, 51 (milestone bar,
+  "Step k of n", upload counts, bounded clipped console, incremental
+  progress — markers re-derived from the .ps1 output) · ✅ 19, 24
+  (stable toolbar; one Preview/Stop button; console layer stays mounted
+  under the web view) · ✅ 20 (affirmative action bottom-right —
+  ContentDialog's platform placement)
+- ✅ 23, 52, 53, 58 (footer +/− with min hit targets, filter, no-matches
+  state; text-scale-relative sizing still to verify on hardware)
+- ✅ 25 (deploy freshness check; silent build-first as one task) ·
+  ✅ 30–35 ("Input required" dialog, lifted bracketed defaults, hidden
+  keystroke asides, cancel via the script's own token) · ✅ 36 (failure
+  explanations; recognise-or-stay-quiet) · ✅ 37 (panel follows the
+  current task) · ✅ 38 (live link from labelled lines; https
+  promotion) · ✅ 39, 40 (Stopped ≠ failed; titles re-read when done)
+- ✅ 41, 43 (example-course panel driving `--install-example`; code
+  read back from EXAMPLE_COURSE_CODE=) · — 42, 49, 50 (shared content)
+- ✅ 44 (No Courses Yet + Add a Course…) · ✅ 45, 46 (prompts shown
+  verbatim; no context guessing) · ✅ 47 (settings store isolated from
+  tests; stored folder validated at launch) · ✅ 48, 84 (per-window
+  folders; new window inherits the key window's folder, else picker)
+- ✅ 54, 55 (Archived group, filename rule excluding wizard backups,
+  restore with refusals and section-number bookkeeping) · ✅ 56, 57
+  (working-folder breadcrumb bar; crumbs reveal in Explorer) · ✅ 59–65
+  (the app-owned {folder, frame} list IS restoration on Windows;
+  recorded while windows exist, replayed at launch, app preference
+  defaulting to restore) · ✅ 66, 67 (port leases with both refusals;
+  per-folder containers named by physical-path hash; last-window-closed
+  stops the container) · ✅ 68, 71 (launcher refresh + .toolchain
+  mirror from the app's bundled recipe; extraneous files removed) ·
+  ✅ 69 (quit stops containers, then `wsl --terminate` only when Docker
+  is idle) · ✅ 70 (section-number validator, verbatim wording)
+- 🟠 72 (zero-prerequisite: the launchers install/start the engine in
+  WSL and the app rides that; a silent no-distro bootstrap — install
+  Ubuntu without a console question — still needs its own pass)
+- ✅ 73 (product name Plantoir; assembly Plantoir; settings in
+  %LOCALAPPDATA%\Plantoir) · ✅ 74 (Add Section dialog: digits-only,
+  stepper, reserved warning line, stay-open-on-failure, sibling-
+  mirroring scaffold) · ✅ 75 (Open Working Folder… Ctrl+O) · ✅ 76
+  (menus on crumbs only) · ✅ 78 (emoji presets + one-emoji field;
+  Win+. hint) · ✅ 79 (tooltips on all section toolbar buttons)
+- ✅ 80 (Obsidian: registry at %APPDATA%\obsidian\obsidian.json, quit-
+  then-register dance, defaults seeding, autoReveal patch, index.md
+  targeting — implemented; needs a live click-through) · ⬜ 81 (UIA
+  press-and-look regression tests) · 🟠 82 (About dialog with the
+  companion copy; real icon + accessibility scaling pending) · — 83,
+  88 (toolchain-side) · ✅ 86 (drafts via SectionAdder fallback +
+  sibling mirroring) · ✅ 87 (custom domain field, normalization,
+  orange note, link swap) · ✅ 89 (literal per-section grade toggle +
+  warning in settings and wizard) · ✅ 90 (Revert, not Cancel)
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the
   macOS app, wrapping the same toolchain via the PowerShell launchers /
-  WSL2 Docker Engine. Details to be discussed; every behaviour in the table
-  above applies unless noted.
+  WSL2 Docker Engine. First take built (see Windows status above);
+  every behaviour in the table above applies unless marked macOS-only.
