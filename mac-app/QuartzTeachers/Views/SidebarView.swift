@@ -285,7 +285,7 @@ struct SidebarView: View {
         Button("Show in Finder", systemImage: "finder") {
             FolderActions.showInFinder(folderURL)
         }
-        Button("Open in Obsidian", systemImage: "long.text.page.and.pencil") {
+        Button("Open in Obsidian", systemImage: "square.and.pencil") {
             FolderActions.openInObsidian(revealing: folderURL, vaultURL: obsidianVaultURL)
         }
         .disabled(!FolderActions.obsidianIsInstalled)

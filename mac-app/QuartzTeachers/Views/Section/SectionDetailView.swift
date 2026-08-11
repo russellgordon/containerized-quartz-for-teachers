@@ -90,7 +90,7 @@ struct SectionDetailView: View {
                 .accessibilityIdentifier("previewReloadButton")
             }
             ToolbarItemGroup {
-                Button("Open in Obsidian", systemImage: "long.text.page.and.pencil") {
+                Button("Open in Obsidian", systemImage: "square.and.pencil") {
                     FolderActions.openInObsidian(
                         revealing: course.sectionDirectoryURL(forSection: sectionNumber),
                         vaultURL: course.directoryURL

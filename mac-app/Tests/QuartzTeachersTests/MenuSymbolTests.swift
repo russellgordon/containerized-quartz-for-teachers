@@ -11,7 +11,7 @@ final class MenuSymbolTests: XCTestCase {
     func testEverySymbolUsedInAMenuExists() {
         let symbols: [String] = [
             "finder",                 // Show in Finder
-            "long.text.page.and.pencil", // Open in Obsidian
+            "square.and.pencil", // Open in Obsidian
             "arrow.up.forward.app",   // Open Folder
             "terminal",               // New Terminal at Folder
             "arrow.uturn.backward",   // Restore
