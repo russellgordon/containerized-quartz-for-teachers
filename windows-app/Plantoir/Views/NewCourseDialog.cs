@@ -191,35 +191,71 @@ public sealed class NewCourseDialog : ContentDialog
             if (schemes[i].Id == _schemeId) schemeIndex = i;
         }
         schemeBox.SelectedIndex = schemes.Count > 0 ? schemeIndex : -1;
+        var swatchRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+        void RenderSchemeSwatches()
+        {
+            var scheme = schemes.FirstOrDefault(s => s.Id == _schemeId);
+            FormBuilders.FillSwatchRow(swatchRow, scheme?.SwatchValues ?? Array.Empty<string>());
+        }
+        RenderSchemeSwatches();
         schemeBox.SelectionChanged += (_, _) =>
         {
-            if (schemeBox.SelectedIndex >= 0) _schemeId = schemes[schemeBox.SelectedIndex].Id;
+            if (schemeBox.SelectedIndex >= 0) { _schemeId = schemes[schemeBox.SelectedIndex].Id; RenderSchemeSwatches(); }
         };
-        form.Children.Add(FormBuilders.LabeledRow("Colour scheme", schemeBox));
+        var schemeRow = FormBuilders.LabeledRow("Colour scheme", schemeBox);
+        schemeRow.Children.Add(FormBuilders.SampleBox(swatchRow));
+        form.Children.Add(schemeRow);
 
+        var pairings = FontCatalog.Pairings.ToList();
         var pairingBox = new ComboBox { MinWidth = 300 };
-        foreach (var pairing in FontCatalog.Pairings)
+        foreach (var pairing in pairings)
             pairingBox.Items.Add(FontCatalog.PairingLabel(pairing.Header, pairing.Body));
-        pairingBox.SelectedIndex = FontCatalog.Pairings.Count - 1;   // system default
+        pairingBox.SelectedIndex = pairings.Count - 1;   // system default
+        var headerSample = new TextBlock { Text = "Grade 11 Computer Science", FontSize = 19 };
+        var bodySample = new TextBlock { Text = "Body text on your site will look like this sentence does.", FontSize = 13 };
+        var fontSample = new StackPanel { Spacing = 4 };
+        fontSample.Children.Add(headerSample);
+        fontSample.Children.Add(bodySample);
+        void ApplyFontSample()
+        {
+            headerSample.FontFamily = FormBuilders.BundledFontFamily(_fontChoice.Header);
+            bodySample.FontFamily = FormBuilders.BundledFontFamily(_fontChoice.Body);
+        }
+        ApplyFontSample();
         pairingBox.SelectionChanged += (_, _) =>
         {
             if (pairingBox.SelectedIndex >= 0)
             {
-                var pairing = FontCatalog.Pairings[pairingBox.SelectedIndex];
+                var pairing = pairings[pairingBox.SelectedIndex];
                 _fontChoice = _fontChoice with { Header = pairing.Header, Body = pairing.Body };
+                ApplyFontSample();
             }
         };
-        form.Children.Add(FormBuilders.LabeledRow("Header & body fonts", pairingBox));
+        var pairingRow = FormBuilders.LabeledRow("Header & body fonts", pairingBox);
+        pairingRow.Children.Add(FormBuilders.SampleBox(fontSample));
+        form.Children.Add(pairingRow);
 
+        var codeFonts = FontCatalog.CodeFonts.ToList();
         var codeFontBox = new ComboBox { MinWidth = 300 };
-        foreach (string font in FontCatalog.CodeFonts) codeFontBox.Items.Add(font);
-        codeFontBox.SelectedIndex = FontCatalog.CodeFonts.ToList().IndexOf(_fontChoice.Code);
+        foreach (string font in codeFonts) codeFontBox.Items.Add(font);
+        codeFontBox.SelectedIndex = codeFonts.IndexOf(_fontChoice.Code);
+        var codeSample = new TextBlock
+        {
+            Text = "for number in range(10):  # code samples use this font",
+            FontSize = 12,
+            FontFamily = FormBuilders.BundledFontFamily(_fontChoice.Code),
+        };
         codeFontBox.SelectionChanged += (_, _) =>
         {
             if (codeFontBox.SelectedIndex >= 0)
-                _fontChoice = _fontChoice with { Code = FontCatalog.CodeFonts[codeFontBox.SelectedIndex] };
+            {
+                _fontChoice = _fontChoice with { Code = codeFonts[codeFontBox.SelectedIndex] };
+                codeSample.FontFamily = FormBuilders.BundledFontFamily(codeFonts[codeFontBox.SelectedIndex]);
+            }
         };
-        form.Children.Add(FormBuilders.LabeledRow("Code font", codeFontBox));
+        var codeFontRow = FormBuilders.LabeledRow("Code font", codeFontBox);
+        codeFontRow.Children.Add(FormBuilders.SampleBox(codeSample));
+        form.Children.Add(codeFontRow);
 
         var markerToggle = new ToggleSwitch { IsOn = _showsMarker, OnContent = "", OffContent = "" };
         markerToggle.Toggled += (_, _) => _showsMarker = markerToggle.IsOn;

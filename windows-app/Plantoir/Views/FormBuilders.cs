@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Plantoir.Core.Catalogs;
+using Plantoir.Services;
 
 namespace Plantoir.Views;
 
@@ -252,5 +253,67 @@ public static class FormBuilders
         var panel = LabeledRow(label, row);
         panel.Children.Add(ExampleCaption("Press Win+. for the full emoji panel."));
         return panel;
+    }
+
+    // ---- Live previews (shared by the wizard and Course Settings) --------
+
+    /// <summary>
+    /// A live sample in the actual typeface: the bundled TTFs are referenced
+    /// by path#family; "Helvetica, Arial" previews as the system sans, and
+    /// any font that isn't bundled falls back to it too.
+    /// </summary>
+    public static FontFamily BundledFontFamily(string familyName)
+    {
+        if (familyName == "Helvetica, Arial") return new FontFamily("Segoe UI");
+        string file = FontCatalog.FileBaseName(familyName) + ".ttf";
+        string path = BundledToolchain.SupportPath("fonts/" + file);
+        return System.IO.File.Exists(path)
+            ? new FontFamily($"{path}#{familyName}")
+            : new FontFamily("Segoe UI");
+    }
+
+    /// <summary>Fill a horizontal row with a "Preview:" label and the scheme's swatches.</summary>
+    public static void FillSwatchRow(StackPanel row, IEnumerable<string> swatchValues)
+    {
+        row.Children.Clear();
+        row.Children.Add(new TextBlock { Text = "Preview:", FontSize = 12, Opacity = 0.7 });
+        foreach (string value in swatchValues)
+        {
+            row.Children.Add(new Border
+            {
+                Width = 22,
+                Height = 14,
+                CornerRadius = new CornerRadius(3),
+                BorderThickness = new Thickness(1),
+                BorderBrush = (Brush)Application.Current.Resources["ControlStrokeColorDefaultBrush"],
+                Background = new SolidColorBrush(ColorFromCss(value)),
+            });
+        }
+    }
+
+    /// <summary>Parse a Quartz scheme colour — #rgb, #rrggbb, or rgba(...) — degrading to mid-grey.</summary>
+    public static Windows.UI.Color ColorFromCss(string value)
+    {
+        try
+        {
+            string v = value.Trim();
+            if (v.StartsWith("rgba(", StringComparison.Ordinal))
+            {
+                var parts = v[5..].TrimEnd(')').Split(',');
+                return Windows.UI.Color.FromArgb(
+                    (byte)(double.Parse(parts[3], System.Globalization.CultureInfo.InvariantCulture) * 255),
+                    byte.Parse(parts[0]), byte.Parse(parts[1]), byte.Parse(parts[2]));
+            }
+            if (v.StartsWith('#')) v = v[1..];
+            if (v.Length == 3) v = string.Concat(v.Select(c => $"{c}{c}"));
+            byte r = Convert.ToByte(v[..2], 16);
+            byte g = Convert.ToByte(v[2..4], 16);
+            byte b = Convert.ToByte(v[4..6], 16);
+            return Windows.UI.Color.FromArgb(255, r, g, b);
+        }
+        catch
+        {
+            return Windows.UI.Color.FromArgb(255, 128, 128, 128);   // mid-grey, like the terminal picker
+        }
     }
 }

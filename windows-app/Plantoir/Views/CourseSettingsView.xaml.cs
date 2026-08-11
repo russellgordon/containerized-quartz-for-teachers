@@ -179,23 +179,9 @@ public sealed partial class CourseSettingsView : UserControl
         var swatchRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
         void RenderSwatches()
         {
-            swatchRow.Children.Clear();
-            swatchRow.Children.Add(new TextBlock { Text = "Preview:", FontSize = 12, Opacity = 0.7 });
             string id = schemeIds.ElementAtOrDefault(schemeBox.SelectedIndex) ?? "";
             var scheme = schemes.FirstOrDefault(s => s.Id == id);
-            if (scheme is null) return;
-            foreach (string value in scheme.SwatchValues)
-            {
-                swatchRow.Children.Add(new Border
-                {
-                    Width = 22,
-                    Height = 14,
-                    CornerRadius = new CornerRadius(3),
-                    BorderThickness = new Thickness(1),
-                    BorderBrush = (Brush)Application.Current.Resources["ControlStrokeColorDefaultBrush"],
-                    Background = new SolidColorBrush(ColorFromCss(value)),
-                });
-            }
+            FormBuilders.FillSwatchRow(swatchRow, scheme?.SwatchValues ?? System.Array.Empty<string>());
         }
         RenderSwatches();
         schemeBox.SelectionChanged += (_, _) =>
@@ -269,8 +255,8 @@ public sealed partial class CourseSettingsView : UserControl
         void ApplySampleFonts()
         {
             var choice = Config.Font(section);
-            headerSample.FontFamily = BundledFontFamily(choice.Header);
-            bodySample.FontFamily = BundledFontFamily(choice.Body);
+            headerSample.FontFamily = FormBuilders.BundledFontFamily(choice.Header);
+            bodySample.FontFamily = FormBuilders.BundledFontFamily(choice.Body);
         }
         ApplySampleFonts();
 
@@ -299,7 +285,7 @@ public sealed partial class CourseSettingsView : UserControl
         {
             Text = "for number in range(10):  # code samples use this font",
             FontSize = 12,
-            FontFamily = BundledFontFamily(current.Code),
+            FontFamily = FormBuilders.BundledFontFamily(current.Code),
         };
         codeBox.SelectionChanged += (_, _) =>
         {
@@ -308,26 +294,12 @@ public sealed partial class CourseSettingsView : UserControl
                 var existing = Config.Font(section);
                 Config.SetFont(section, existing with { Code = codeFonts[codeBox.SelectedIndex] });
                 MarkChanged();
-                codeSample.FontFamily = BundledFontFamily(codeFonts[codeBox.SelectedIndex]);
+                codeSample.FontFamily = FormBuilders.BundledFontFamily(codeFonts[codeBox.SelectedIndex]);
             }
         };
         var codeRow = FormBuilders.LabeledRow("Code font", codeBox);
         codeRow.Children.Add(FormBuilders.SampleBox(codeSample));
         Form.Children.Add(codeRow);
-    }
-
-    /// <summary>
-    /// Live sample in the actual typeface: the bundled TTFs are referenced
-    /// by path#family; "Helvetica, Arial" previews as the system sans.
-    /// </summary>
-    private static FontFamily BundledFontFamily(string familyName)
-    {
-        if (familyName == "Helvetica, Arial") return new FontFamily("Segoe UI");
-        string file = FontCatalog.FileBaseName(familyName) + ".ttf";
-        string path = BundledToolchain.SupportPath("fonts/" + file);
-        return System.IO.File.Exists(path)
-            ? new FontFamily($"{path}#{familyName}")
-            : new FontFamily("Segoe UI");
     }
 
     private void RebuildGradeWarnings()
@@ -383,29 +355,4 @@ public sealed partial class CourseSettingsView : UserControl
     private void Obsidian_Click(object sender, RoutedEventArgs e) =>
         _ = FolderActions.OpenInObsidian(_course.DirectoryPath, _course.DirectoryPath,
             BundledToolchain.SupportPath("obsidian_defaults/.obsidian"));
-
-    private static Windows.UI.Color ColorFromCss(string value)
-    {
-        try
-        {
-            string v = value.Trim();
-            if (v.StartsWith("rgba(", StringComparison.Ordinal))
-            {
-                var parts = v[5..].TrimEnd(')').Split(',');
-                return Windows.UI.Color.FromArgb(
-                    (byte)(double.Parse(parts[3], System.Globalization.CultureInfo.InvariantCulture) * 255),
-                    byte.Parse(parts[0]), byte.Parse(parts[1]), byte.Parse(parts[2]));
-            }
-            if (v.StartsWith('#')) v = v[1..];
-            if (v.Length == 3) v = string.Concat(v.Select(c => $"{c}{c}"));
-            byte r = Convert.ToByte(v[..2], 16);
-            byte g = Convert.ToByte(v[2..4], 16);
-            byte b = Convert.ToByte(v[4..6], 16);
-            return Windows.UI.Color.FromArgb(255, r, g, b);
-        }
-        catch
-        {
-            return Windows.UI.Color.FromArgb(255, 128, 128, 128);   // mid-grey, like the terminal picker
-        }
-    }
 }
