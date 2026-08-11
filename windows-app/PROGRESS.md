@@ -28,8 +28,16 @@ otherwise.
 - **The app itself**: launched → folder picker (all four states) →
   sidebar with EXC2O and sections → section view → **Preview built and
   embedded the live site in the app's WebView2**, via the app's own
-  ConPTY runner. Deploy runs the freshness-checked build-then-publish
-  as one milestone bar. Screenshot-verified.
+  ConPTY runner. **Deploy runs entirely inside the app**: a repeat
+  publish of EXC2O section 1 reached "Uploading your pages… 25 of 230"
+  at Step 7 of 8 and the site went live over https — the upload count
+  parsed straight from the launcher output. All screenshot-verified.
+- **The wizard's answer pump** was driven against the real
+  `setup_course.py` end to end (Enter for every prompt including the
+  raw arrow-key colour picker): the interactive flow completed exit 0
+  and scaffolded a full course (shared folders, per-section files,
+  two section folders). This is the same `NewCourseCreator.PumpAnswers`
+  the Create Course button uses.
 
 ## The hard-won platform lessons (do not relearn these)
 
@@ -79,10 +87,15 @@ several polish rounds that need human eyes on real hardware.
   is enforced yet (900×600 is only the default).
 - The Preview menu (Alt+Left/Right/Ctrl+R accelerators) is not yet a
   separate menu; Back/Forward/Reload live on the toolbar only.
-- Wizard "Create Course" flow drives the real `setup.ps1` but has not
-  had a full live run in-app yet (the creator + pump logic is the
-  tested PtyDriver path; the example-course install was proven via
-  the launcher directly).
+- The wizard's Create button was not click-driven in-app (it needs a
+  code typed and a click), but its underlying `setup.ps1` + answer-pump
+  path was proven live to completion via PtyDriver. A first true
+  in-app click-through is the natural next check.
+- Deploying a BRAND-NEW section prompts for a site name; the "Input
+  required" dialog now fires for it (the first attempt exposed and
+  fixed the re-binding bug), but the new-site dialog path itself has
+  not yet been click-confirmed in-app — the verified deploy was a
+  repeat publish to an existing site.
 - `--auto-select CODE N` / `--auto-preview CODE N` /
   `--auto-deploy CODE N` are smoke-test hooks that drive the real
   button code paths.
