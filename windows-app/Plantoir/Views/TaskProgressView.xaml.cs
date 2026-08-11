@@ -135,11 +135,31 @@ public sealed partial class TaskProgressView : UserControl
         if (_detailsOpen && _runner.Transcript.Version != _renderedTranscriptVersion)
         {
             _renderedTranscriptVersion = _runner.Transcript.Version;
+            // Terminal behaviour: keep the newest line in view as older lines
+            // scroll up out of the frame — but only while the reader is already
+            // at the bottom. Judge that against the extent BEFORE the text
+            // grows, so scrolling up to read back is never yanked away.
+            bool follow = ConsoleScroll.ScrollableHeight - ConsoleScroll.VerticalOffset <= BottomThreshold;
             string text = _runner.Transcript.DisplayText;
             ConsoleText.Text = text.Length == 0 ? "Starting…" : text;
-            ConsoleScroll.UpdateLayout();
-            ConsoleScroll.ChangeView(null, ConsoleScroll.ScrollableHeight, null, disableAnimation: true);
+            if (follow) ScrollConsoleToEnd();
         }
+    }
+
+    private const double BottomThreshold = 24;
+
+    /// <summary>
+    /// Pin the console to its last line. The immediate call handles the common
+    /// case; the deferred one covers the moment right after the text grows,
+    /// when the ScrollViewer has not yet recomputed ScrollableHeight and an
+    /// immediate ChangeView would stop short of the newest line.
+    /// </summary>
+    private void ScrollConsoleToEnd()
+    {
+        ConsoleScroll.UpdateLayout();
+        ConsoleScroll.ChangeView(null, ConsoleScroll.ScrollableHeight, null, disableAnimation: true);
+        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            ConsoleScroll.ChangeView(null, ConsoleScroll.ScrollableHeight, null, disableAnimation: true));
     }
 
     private void Outcome(string label, string glyph, Brush brush, string? detail)

@@ -430,7 +430,17 @@ public sealed class NewCourseDialog : ContentDialog
         _started = true;
         _validationText.Visibility = Visibility.Collapsed;
         _progress.Bind(_creator.Runner, title);
-        _formScroll.Content = _progress;
+        // Drop the form's ScrollViewer entirely and stand the progress view in
+        // its place with a bounded MaxHeight. Nesting the terminal inside a
+        // ScrollViewer would measure its console with infinite height, so the
+        // console could never clip, show a scrollbar, or follow its newest
+        // line. Free-standing with a MaxHeight, the console pane is itself the
+        // bounded, tail-following scroll region.
+        _progress.MaxHeight = 520;
+        _progress.VerticalAlignment = VerticalAlignment.Stretch;
+        int slot = _root.Children.IndexOf(_formScroll);
+        if (slot >= 0) _root.Children[slot] = _progress;
+        else if (!_root.Children.Contains(_progress)) _root.Children.Insert(0, _progress);
         // The closing button is present throughout so the footer never
         // reflows; it becomes usable once the work ends.
         PrimaryButtonText = "Close";
