@@ -374,8 +374,30 @@ class ScriptRunner {
     }
 
     /// The published site's address, if the output announced one.
+    /// The teacher's own domain for the section being published, applied
+    /// to the live-site link when set.
+    var customDomainForLinks: String?
+
     var publishedSiteURL: URL? {
-        return ScriptRunner.publishedSiteURL(in: transcript.recentText(maximumCharacters: 8000))
+        guard let parsed = ScriptRunner.publishedSiteURL(in: transcript.recentText(maximumCharacters: 8000)) else {
+            return nil
+        }
+        return ScriptRunner.applyingCustomDomain(customDomainForLinks, to: parsed)
+    }
+
+    /// The same address on the teacher's own domain: the host swapped, the
+    /// rest untouched. Without a domain the address passes through as-is.
+    static func applyingCustomDomain(_ domain: String?, to url: URL) -> URL {
+        guard let domain, !domain.isEmpty else {
+            return url
+        }
+        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return url
+        }
+        components.host = domain
+        components.scheme = "https"
+        components.port = nil
+        return components.url ?? url
     }
 
     /// Reads the site's address out of a publish's output.

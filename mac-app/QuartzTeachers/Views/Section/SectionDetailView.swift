@@ -272,6 +272,13 @@ struct SectionDetailView: View {
         let needsBuild: Bool = BuildFreshness.needsRebuild(course: course, sectionNumber: sectionNumber)
         deployRunner.milestones = needsBuild ? TaskMilestones.buildAndDeploy : TaskMilestones.deploy
 
+        // When this section has a custom domain, the live-site link shown
+        // after publishing wears it instead of the Netlify address.
+        let customDomain: String = CourseConfiguration.normalizedCustomDomain(
+            course.configuration.customDomain(forSection: sectionNumber)
+        )
+        deployRunner.customDomainForLinks = customDomain.isEmpty ? nil : customDomain
+
         Task {
             if needsBuild {
                 deployRunner.run(

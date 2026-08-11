@@ -185,6 +185,38 @@ class CourseConfiguration {
         setNestedValue(emoji, forKey: "emojis", childKey: "sections", entryKey: "section\(sectionNumber)")
     }
 
+    /// The teacher's own domain for a section's published site — shown in
+    /// links to the live site in place of the address Netlify assigns.
+    /// Empty when the Netlify address is used as-is.
+    func customDomain(forSection sectionNumber: Int) -> String {
+        let sectionsMap: [String: Any] = nestedDictionary(forKey: "custom_domains", childKey: "sections")
+        if let stored = sectionsMap["section\(sectionNumber)"] as? String {
+            return stored
+        }
+        return ""
+    }
+
+    func setCustomDomain(_ domain: String, forSection sectionNumber: Int) {
+        setNestedValue(domain, forKey: "custom_domains", childKey: "sections", entryKey: "section\(sectionNumber)")
+    }
+
+    /// A typed or pasted domain, reduced to just the domain: whitespace
+    /// trimmed, any scheme stripped, and anything from the first slash on
+    /// dropped — so a pasted "https://ics3u.school.ca/" stores as
+    /// "ics3u.school.ca".
+    static func normalizedCustomDomain(_ raw: String) -> String {
+        var domain: String = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        for scheme in ["https://", "http://"] {
+            if domain.hasPrefix(scheme) {
+                domain = String(domain.dropFirst(scheme.count))
+            }
+        }
+        if let slashIndex = domain.firstIndex(of: "/") {
+            domain = String(domain[..<slashIndex])
+        }
+        return domain
+    }
+
     /// Whether the site title shows the "S1"-style marker for a given section.
     func showsSectionMarker(forSection sectionNumber: Int) -> Bool {
         let sectionsMap: [String: Any] = nestedDictionary(forKey: "show_section_marker", childKey: "sections")
