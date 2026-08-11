@@ -1160,6 +1160,213 @@ def maybe_install_example_course(courses_root: Path) -> bool:
     sys.exit(0)
     return True  # not reached
 
+# ---------- Per-course-code example content ---------------------------------
+#
+# Unlike the standalone Example Course (EXC2O) above, which is copied whole
+# under its own code, example CONTENT is poured into a course the teacher is
+# creating under their real course code. Each payload lives at
+# support/example_content/<CODE>/ and is shaped like this:
+#
+#   <CODE>/
+#     manifest.json      — which folders/files the payload provides, plus
+#                          which of them to hide or make expandable, and the
+#                          name of the curriculum folder (if any)
+#     shared/            — copied into the course root
+#     per_section/       — copied into every sectionN/ folder
+#
+# Two rules keep the install safe to re-run: nothing ever overwrites a file
+# that already exists, and only items the teacher kept in the structure
+# lists are installed.
+
+EXAMPLE_CONTENT_ROOTS = [
+    Path("support/example_content"),
+    Path("/opt/support/example_content"),
+    Path(__file__).resolve().parent.parent / "support" / "example_content",
+]
+
+# Replaced with the course's real creation timestamp at install time, so
+# payload pages need no hardcoded dates.
+EXAMPLE_CONTENT_CREATED_SENTINEL = "__CREATED__"
+
+# Content that only makes sense alongside the curriculum pages sits between
+# these markers (Obsidian comments, so they are invisible on the site even
+# if something goes wrong). With curriculum pages excluded, the whole block
+# goes; with them included, only the marker lines go.
+CURRICULUM_BLOCK_START = "%%curriculum-start%%"
+CURRICULUM_BLOCK_END = "%%curriculum-end%%"
+
+
+def find_example_content_dir(course_code: str) -> Path | None:
+    """The payload folder for this course code, or None when there is none."""
+    for root in EXAMPLE_CONTENT_ROOTS:
+        candidate = root / course_code
+        if candidate.is_dir() and (candidate / "manifest.json").exists():
+            return candidate
+    return None
+
+
+def load_example_content_manifest(payload_dir: Path) -> dict:
+    with open(payload_dir / "manifest.json", "r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def merge_missing(existing: list, additions: list) -> list:
+    """The existing list with any missing additions appended, order kept."""
+    result = list(existing or [])
+    for item in additions or []:
+        if item not in result:
+            result.append(item)
+    return result
+
+
+def curriculum_page_names(payload_dir: Path, manifest: dict) -> set:
+    """The page names (file stems) of every curriculum page in the payload."""
+    folder_name = manifest.get("curriculum_folder")
+    if not folder_name:
+        return set()
+    curriculum_dir = payload_dir / "shared" / folder_name
+    names = set()
+    if curriculum_dir.is_dir():
+        for page in curriculum_dir.rglob("*.md"):
+            if page.stem != "index":
+                names.add(page.stem)
+    return names
+
+
+def strip_curriculum_blocks(text: str, keep_content: bool) -> str:
+    """
+    With keep_content True, only the marker lines are removed. With it
+    False, everything between the markers goes too.
+    """
+    result_lines = []
+    inside_block = False
+    for line in text.split("\n"):
+        stripped = line.strip()
+        if stripped == CURRICULUM_BLOCK_START:
+            inside_block = True
+            continue
+        if stripped == CURRICULUM_BLOCK_END:
+            inside_block = False
+            continue
+        if inside_block and not keep_content:
+            continue
+        result_lines.append(line)
+    return "\n".join(result_lines)
+
+
+def unlink_curriculum_references(text: str, page_names: set) -> str:
+    """
+    With the curriculum pages absent, links to them must not dangle. A
+    transclusion line (`![[A1.1]]`) disappears entirely; an inline link
+    becomes its visible words (`[[A1.1|the expectation]]` -> the words,
+    `[[A1.1]]` -> A1.1).
+    """
+    if not page_names:
+        return text
+
+    def replace_link(match):
+        is_transclusion = match.group(1) == "!"
+        target = match.group(2).strip()
+        alias = match.group(4)
+        if target not in page_names:
+            return match.group(0)
+        if is_transclusion:
+            return ""
+        if alias is not None:
+            return alias
+        return target
+
+    link_pattern = re.compile(r"(!?)\[\[([^\]#|]+)(#[^\]|]*)?(?:\|([^\]]*))?\]\]")
+
+    result_lines = []
+    for line in text.split("\n"):
+        replaced = link_pattern.sub(replace_link, line)
+        # A line that held only a transclusion (possibly inside a callout)
+        # would otherwise linger as an empty shell.
+        if replaced != line and replaced.strip() in ("", ">"):
+            continue
+        result_lines.append(replaced)
+    return "\n".join(result_lines)
+
+
+def install_payload_file(source: Path, destination: Path, now_str: str,
+                         include_curriculum: bool, page_names: set) -> bool:
+    """
+    One file from payload to course. Markdown is adjusted on the way
+    through; everything else is copied as-is. Existing files are never
+    touched. Returns True when a file was written.
+    """
+    if destination.exists():
+        return False
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if source.suffix.lower() != ".md":
+        shutil.copy2(source, destination)
+        return True
+    with open(source, "r", encoding="utf-8") as handle:
+        text = handle.read()
+    text = text.replace(EXAMPLE_CONTENT_CREATED_SENTINEL, now_str)
+    text = strip_curriculum_blocks(text, keep_content=include_curriculum)
+    if not include_curriculum:
+        text = unlink_curriculum_references(text, page_names)
+    with open(destination, "w", encoding="utf-8") as handle:
+        handle.write(text)
+    return True
+
+
+def install_example_content(course_path: Path, payload_dir: Path, manifest: dict,
+                            section_numbers: list, now_str: str,
+                            include_curriculum: bool,
+                            shared_folders: list, shared_files: list,
+                            per_section_folders: list, per_section_files: list) -> int:
+    """
+    Pour the payload into the course. Only top-level items the teacher kept
+    in the structure lists are installed; the curriculum folder also needs
+    its own flag. Returns the number of files written.
+    """
+    page_names = curriculum_page_names(payload_dir, manifest)
+    curriculum_folder = manifest.get("curriculum_folder")
+    written = 0
+
+    def top_level_allowed(entry: Path, allowed_folders: list, allowed_files: list) -> bool:
+        if entry.name == curriculum_folder:
+            return include_curriculum and entry.name in allowed_folders
+        if entry.is_dir():
+            return entry.name in allowed_folders
+        return entry.name in allowed_files
+
+    shared_root = payload_dir / "shared"
+    if shared_root.is_dir():
+        for entry in sorted(shared_root.iterdir()):
+            if not top_level_allowed(entry, shared_folders, shared_files):
+                continue
+            sources = entry.rglob("*") if entry.is_dir() else [entry]
+            for source in sources:
+                if source.is_dir():
+                    continue
+                destination = course_path / source.relative_to(shared_root)
+                if install_payload_file(source, destination, now_str,
+                                        include_curriculum, page_names):
+                    written += 1
+
+    per_section_root = payload_dir / "per_section"
+    if per_section_root.is_dir():
+        for sec in section_numbers:
+            section_path = course_path / f"section{sec}"
+            for entry in sorted(per_section_root.iterdir()):
+                if not top_level_allowed(entry, per_section_folders, per_section_files):
+                    continue
+                sources = entry.rglob("*") if entry.is_dir() else [entry]
+                for source in sources:
+                    if source.is_dir():
+                        continue
+                    destination = section_path / source.relative_to(per_section_root)
+                    if install_payload_file(source, destination, now_str,
+                                            include_curriculum, page_names):
+                        written += 1
+
+    return written
+
+
 # ---------- NEW: Timetable section numbers prompt ---------------------------
 
 def prompt_section_numbers(num_sections: int, saved_config: dict) -> list[int]:
@@ -1376,10 +1583,58 @@ def setup_course(no_backup: bool = False):
     # ---- NEW: Per-section section marker visibility (stateful) --------------
     section_marker_config = select_section_marker_visibility_for_sections(section_numbers, saved_config)
 
+    # ---------- Example content for this course code ------------------------
+    # When ready-made content exists for this exact course code, offer to
+    # pour it in. The curriculum pages get their own question: some
+    # teachers want the Ministry's expectations linkable from every lesson,
+    # others do not want them on the site at all.
+    example_payload = find_example_content_dir(course_code)
+    example_manifest = None
+    prepopulate_example = bool(saved_config.get("prepopulate_example_content", False))
+    include_curriculum = bool(saved_config.get("include_curriculum_pages", False))
+    if example_payload:
+        manifest = load_example_content_manifest(example_payload)
+        print(f"\n📖 Ready-made example content is available for {course_code}.")
+        print("It fills the course with working pages — lessons, tasks, and")
+        print("reference pages — written for this course, that you can keep,")
+        print("edit, or delete as you build your own site.")
+        prepopulate_example = prompt_yes_no_default(
+            "Pre-populate this course with example content?",
+            bool(saved_config.get("prepopulate_example_content", True))
+        )
+        if prepopulate_example and manifest.get("curriculum_folder"):
+            print(f"\n🏛️  The example content includes the official Ontario curriculum")
+            print(f"for {course_code} — every expectation as its own page, so your")
+            print("lessons and tasks can link to exactly the expectations they address.")
+            include_curriculum = prompt_yes_no_default(
+                "Include the Ontario curriculum pages?",
+                bool(saved_config.get("include_curriculum_pages", True))
+            )
+        elif not prepopulate_example:
+            include_curriculum = False
+        if prepopulate_example:
+            example_manifest = manifest
+
     # ---------- Original prompts (unchanged except for Media handling) ----------
     # Remove 'Media' from defaults so it never appears in the selection prompt
     shared_default_candidates = saved_config.get("shared_folders", DEFAULT_SHARED_FOLDERS)
     shared_default_filtered = [x for x in (shared_default_candidates or []) if x != "Media"]
+
+    # The payload's items join the structure DEFAULTS (not the results), so
+    # the teacher still sees and can veto every one in the prompts below.
+    if example_manifest:
+        payload_shared_folders = list(example_manifest.get("shared_folders", []))
+        if not include_curriculum and example_manifest.get("curriculum_folder") in payload_shared_folders:
+            payload_shared_folders.remove(example_manifest.get("curriculum_folder"))
+        shared_default_filtered = merge_missing(shared_default_filtered, payload_shared_folders)
+
+    shared_files_default = saved_config.get("shared_files", DEFAULT_SHARED_FILES)
+    per_section_folders_default = saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS)
+    per_section_files_default = saved_config.get("per_section_files", DEFAULT_PER_SECTION_FILES)
+    if example_manifest:
+        shared_files_default = merge_missing(shared_files_default, example_manifest.get("shared_files", []))
+        per_section_folders_default = merge_missing(per_section_folders_default, example_manifest.get("per_section_folders", []))
+        per_section_files_default = merge_missing(per_section_files_default, example_manifest.get("per_section_files", []))
 
     shared_folders = prompt_type_list(
         "Enter folder names to be shared across all sections – defaults are:",
@@ -1388,17 +1643,17 @@ def setup_course(no_backup: bool = False):
     )
     shared_files = prompt_type_list(
         "Enter Markdown file names to be shared across all sections – defaults are:",
-        saved_config.get("shared_files", DEFAULT_SHARED_FILES),
+        shared_files_default,
         add_md_extension=True
     )
     per_section_folders = prompt_type_list(
         "Enter folder names to be duplicated per section – defaults are:",
-        saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS),
+        per_section_folders_default,
         forbidden_names=["Media"]  # prevent user from adding 'Media'
     )
     per_section_files = prompt_type_list(
         "Enter Markdown file names to be duplicated per section – defaults are:",
-        saved_config.get("per_section_files", DEFAULT_PER_SECTION_FILES),
+        per_section_files_default,
         add_md_extension=True
     )
 
@@ -1409,6 +1664,8 @@ def setup_course(no_backup: bool = False):
         "SIC Drop-In Sessions.md", "Grove Time.md", "Learning Goals.md",
         "Private Notes.md", "Scratch Page.md", "Key Links.md"
     ] if not saved_config else saved_config.get("hidden", [])
+    if example_manifest:
+        default_hidden = merge_missing(default_hidden, example_manifest.get("hidden", []))
 
     # IMPORTANT: 'Media' will NOT appear in this prompt because it's not in all_selected,
     # but we still want it hidden in config. We'll enforce that after the prompt.
@@ -1419,6 +1676,8 @@ def setup_course(no_backup: bool = False):
         "Concepts", "Discussions", "Examples", "Exercises", "Portfolios",
         "Recaps", "Setup", "Style", "Tasks", "Tutorials"
     ] if not saved_config else saved_config.get("expandable", [])
+    if example_manifest:
+        default_expandable = merge_missing(default_expandable, example_manifest.get("expandable", []))
 
     expandable_items = prompt_select_multiple("Select folders/files that should be EXPANDABLE:", visible_items, default_expandable)
 
@@ -1463,6 +1722,9 @@ def setup_course(no_backup: bool = False):
         "fonts": fonts_config,
         # NEW: per-section section-marker visibility for site title
         "show_section_marker": section_marker_config,
+        # NEW: example-content choices, remembered for future re-runs
+        "prepopulate_example_content": prepopulate_example,
+        "include_curriculum_pages": include_curriculum,
     }
     previous_map = saved_config.get("color_schemes", {}) or {}
     if schemes:
@@ -1486,7 +1748,25 @@ def setup_course(no_backup: bool = False):
         now_str = datetime.now(tzinfo).strftime("%Y-%m-%dT%H:%M:%S.000%z")
     else:
         now_str = datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S.000%z")
-    
+
+    # ---------- Install example content (before scaffolding) ----------------
+    # The payload lands first so the scaffold below, which only writes files
+    # that do not exist yet, fills in around it rather than over it.
+    if example_manifest:
+        try:
+            files_written = install_example_content(
+                course_path, example_payload, example_manifest,
+                section_numbers, now_str, include_curriculum,
+                shared_folders, shared_files,
+                per_section_folders, per_section_files
+            )
+            if files_written > 0:
+                print(f"\n📖 Example content installed: {files_written} pages.")
+            else:
+                print("\n📖 Example content: nothing to add (every page already exists).")
+        except Exception as e:
+            print(f"⚠️ Could not install the example content: {e}")
+
     # ---------- Create shared structure (with createdSectionN + draftSectionN) ----------
     for folder in shared_folders:
         folder_path = Path("/teaching/courses") / course_code / folder

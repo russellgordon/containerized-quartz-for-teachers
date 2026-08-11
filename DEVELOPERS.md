@@ -70,6 +70,25 @@ pinned static binaries (Colima, Lima, the Docker CLI, buildx) into
 `~/Library/Application Support/Plantoir/tools` — no Homebrew, no admin
 rights. The image itself lives inside the Colima VM's disk (`~/.colima`).
 
+## Example content payloads
+
+`support/example_content/<CODE>/` holds ready-made course content, one
+folder per Ontario course code (ADA1O is the template to copy). Each payload
+is `manifest.json` (the folders/files it provides, what to hide or make
+expandable, and the curriculum folder's name) plus `shared/` and
+`per_section/` trees. Conventions the installer relies on:
+
+- every page's frontmatter uses the literal `created: __CREATED__` sentinel;
+- curriculum-dependent passages sit between `%%curriculum-start%%` and
+  `%%curriculum-end%%` comment lines, so declining the curriculum pages
+  removes them cleanly (inline `[[A2.2|words]]` links unlink automatically);
+- expectation pages are verbatim Ministry text with a `^text` block anchor,
+  generated once from researched wording — cite the source document on the
+  payload's "About These Expectations" page.
+
+Adding a new course code is pure content: drop in a payload, no code
+changes. The wizard (CLI and app) discovers it by the manifest's existence.
+
 ## Colima is shared — handle with care
 
 Colima on this machine is shared with other projects (e.g. Supabase local

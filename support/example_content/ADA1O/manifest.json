@@ -1,0 +1,31 @@
+{
+  "shared_folders": [
+    "Concepts",
+    "Conventions",
+    "Discussions",
+    "Setup",
+    "Style",
+    "Tasks",
+    "Curriculum"
+  ],
+  "shared_files": [
+    "Learning Goals.md"
+  ],
+  "per_section_folders": [
+    "All Classes"
+  ],
+  "per_section_files": [],
+  "hidden": [
+    "Curriculum",
+    "Learning Goals.md"
+  ],
+  "expandable": [
+    "Concepts",
+    "Conventions",
+    "Discussions",
+    "Setup",
+    "Style",
+    "Tasks"
+  ],
+  "curriculum_folder": "Curriculum"
+}

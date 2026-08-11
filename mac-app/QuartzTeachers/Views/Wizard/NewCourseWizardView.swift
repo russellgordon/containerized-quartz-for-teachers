@@ -27,6 +27,14 @@ struct NewCourseWizardView: View {
 
     /// Whether the site title leads with the grade ("Grade 12 …").
     @State var showsGradeInTitle: Bool = true
+
+    /// Whether the new course starts with the ready-made example content
+    /// written for its course code (when the app has some).
+    @State var prepopulatesExampleContent: Bool = true
+
+    /// Whether the example content brings the official curriculum pages
+    /// along with it.
+    @State var includesCurriculumPages: Bool = true
     @State var fontChoice: FontChoice = FontChoice.systemDefault
     @State var expandOnFolderClick: Bool = false
     @State var showReadingTime: Bool = false
@@ -278,6 +286,31 @@ struct NewCourseWizardView: View {
             }
 
             Section {
+                if ExampleContentCatalog.hasContent(forCode: courseCode) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Toggle("Pre-populate course with example content", isOn: $prepopulatesExampleContent)
+                            .accessibilityIdentifier("prepopulateToggle")
+                        ExampleCaption("Working pages written for this course — keep, edit, or delete them as you build your own site")
+                    }
+                    if ExampleContentCatalog.includesCurriculum(forCode: courseCode) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Toggle("Include Ontario curriculum pages", isOn: $includesCurriculumPages)
+                                .disabled(!prepopulatesExampleContent)
+                                .accessibilityIdentifier("curriculumToggle")
+                            ExampleCaption("Every expectation as its own page, so lessons and tasks can link to exactly what they address")
+                        }
+                    }
+                } else {
+                    Text("Example content isn’t available for this course code yet, so the course will start with empty folders ready for your own pages.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("noExampleContentNote")
+                }
+            } header: {
+                FormSectionHeader("Starting Content")
+            }
+
+            Section {
                 EmojiChoiceField(label: "Header emoji", emoji: $emoji)
                 ColourSchemePickerView(selectedSchemeID: $colourSchemeID)
                 FontChoiceEditorView(choice: $fontChoice)
@@ -484,6 +517,15 @@ struct NewCourseWizardView: View {
             "footer_html": footerHTML,
             "show_reading_time": showReadingTime,
             "show_grade_in_title": ["sections": gradeMap],
+            // The real wizard reads these as its defaults, exactly like
+            // every other answer here. False when no content exists for
+            // the code, so a stale true can never mean anything.
+            "prepopulate_example_content": ExampleContentCatalog.hasContent(forCode: code)
+                && prepopulatesExampleContent,
+            "include_curriculum_pages": ExampleContentCatalog.hasContent(forCode: code)
+                && prepopulatesExampleContent
+                && ExampleContentCatalog.includesCurriculum(forCode: code)
+                && includesCurriculumPages,
             "fonts": [
                 "default": fontChoice.dictionaryRepresentation,
                 "sections": fontsSectionsMap,

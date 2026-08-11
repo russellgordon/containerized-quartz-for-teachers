@@ -1,0 +1,79 @@
+import SwiftUI
+import XCTest
+@testable import QuartzTeachers
+
+/// The per-course-code example content: the catalog that says whether any
+/// exists, and the wizard's answers about installing it.
+final class ExampleContentTests: XCTestCase {
+
+    // MARK: - Functions
+
+    @MainActor
+    func testTheCatalogFindsTheBundledADA1OContent() {
+        XCTAssertTrue(ExampleContentCatalog.hasContent(forCode: "ADA1O"))
+        XCTAssertTrue(ExampleContentCatalog.hasContent(forCode: " ada1o "),
+                      "Lookup is case-insensitive and trims, like every other code lookup")
+    }
+
+    @MainActor
+    func testTheCatalogKnowsADA1OIncludesCurriculumPages() {
+        XCTAssertTrue(ExampleContentCatalog.includesCurriculum(forCode: "ADA1O"))
+    }
+
+    @MainActor
+    func testAnUnknownCodeHasNoContent() {
+        XCTAssertFalse(ExampleContentCatalog.hasContent(forCode: "ZZZ9X"))
+        XCTAssertFalse(ExampleContentCatalog.includesCurriculum(forCode: "ZZZ9X"))
+        XCTAssertFalse(ExampleContentCatalog.hasContent(forCode: ""))
+    }
+
+    @MainActor
+    func testTheWizardWritesBothFlagsForACodeWithContent() {
+        let wizard: NewCourseWizardView = NewCourseWizardView()
+        let configuration: [String: Any] = wizard.buildConfigurationDictionary(
+            code: "ADA1O", name: "Drama"
+        )
+        XCTAssertEqual(configuration["prepopulate_example_content"] as? Bool, true)
+        XCTAssertEqual(configuration["include_curriculum_pages"] as? Bool, true)
+    }
+
+    @MainActor
+    func testTheFlagsAreFalseForACodeWithoutContent() {
+        // The toggles default to on, but a stale on must mean nothing when
+        // there is no content for the code being created.
+        let wizard: NewCourseWizardView = NewCourseWizardView()
+        let configuration: [String: Any] = wizard.buildConfigurationDictionary(
+            code: "ZZZ9X", name: "Mystery Course"
+        )
+        XCTAssertEqual(configuration["prepopulate_example_content"] as? Bool, false)
+        XCTAssertEqual(configuration["include_curriculum_pages"] as? Bool, false)
+    }
+
+    /// Every page in the bundled ADA1O payload uses the sentinel the real
+    /// wizard replaces, never a literal timestamp — a literal would make
+    /// every new course claim its pages were created on the author's date.
+    func testTheBundledPayloadUsesTheCreatedSentinel() throws {
+        let payloadURL: URL = try XCTUnwrap(
+            Bundle.main.resourceURL?
+                .appendingPathComponent("support/example_content/ADA1O")
+        )
+        let enumerator = FileManager.default.enumerator(
+            at: payloadURL, includingPropertiesForKeys: nil
+        )
+        var pagesChecked: Int = 0
+        while let entry = enumerator?.nextObject() as? URL {
+            if entry.pathExtension != "md" {
+                continue
+            }
+            let text: String = try String(contentsOf: entry, encoding: .utf8)
+            if text.contains("created:") {
+                XCTAssertTrue(
+                    text.contains("created: __CREATED__"),
+                    "\(entry.lastPathComponent) has a created: line without the sentinel"
+                )
+            }
+            pagesChecked += 1
+        }
+        XCTAssertGreaterThan(pagesChecked, 40, "The ADA1O payload should be bundled and substantial")
+    }
+}
