@@ -34,7 +34,6 @@ struct AboutView: View {
         "Built on [Quartz](https://quartz.jzhao.xyz) by Jacky Zhao.",
         "Designed by Russell Gordon.",
         "Built with Claude.",
-        "MIT licensed — use, remix, and share freely, especially with other educators.",
     ]
 
     // The measurements, at the SYSTEM text size. Scaling from these keeps
@@ -119,6 +118,10 @@ struct AboutView: View {
         .padding(outerPadding)
         .frame(width: panelWidth, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
+        // Without this, the window opens with a focus ring around the
+        // support link — the panel has nothing else to focus. The links
+        // still work; they just stop being haloed on arrival.
+        .focusEffectDisabled()
     }
 
     /// The application icon itself — the compiled artwork macOS shows in
