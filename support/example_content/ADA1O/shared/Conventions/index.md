@@ -1,5 +1,5 @@
 ---
-title: index
+title: Conventions
 draft: false
 created: __CREATED__
 tags:

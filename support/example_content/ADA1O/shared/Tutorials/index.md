@@ -1,5 +1,5 @@
 ---
-title: index
+title: Tutorials
 draft: false
 created: __CREATED__
 tags:
