@@ -17,7 +17,7 @@ public sealed class ConPtyProcess : IDisposable
 {
     private readonly SafeFileHandle _inputWrite;   // we write keystrokes here
     private readonly SafeFileHandle _outputRead;   // we read merged output here
-    private readonly nint _pseudoConsole;
+    private nint _pseudoConsole;                    // zeroed once closed (ClosePty)
     private readonly nint _processHandle;
     private readonly nint _threadHandle;
     private readonly nint _attributeList;
@@ -118,12 +118,19 @@ public sealed class ConPtyProcess : IDisposable
         return block.ToString();
     }
 
-    /// <summary>Reads output bytes; returns 0 at end of stream (console closed).</summary>
+    /// <summary>Reads output bytes; returns 0 at end of stream (console closed or handle disposed).</summary>
     public int ReadOutput(byte[] buffer)
     {
-        if (!ReadFile(_outputRead, buffer, buffer.Length, out int read, nint.Zero))
-            return 0;   // broken pipe = console closed
-        return read;
+        try
+        {
+            if (!ReadFile(_outputRead, buffer, buffer.Length, out int read, nint.Zero))
+                return 0;   // broken pipe = console closed
+            return read;
+        }
+        catch (ObjectDisposedException)
+        {
+            return 0;       // the pty was closed/disposed from another thread
+        }
     }
 
     public void WriteInput(ReadOnlySpan<byte> bytes)
@@ -170,13 +177,22 @@ public sealed class ConPtyProcess : IDisposable
         }
     }
 
+    private readonly object _ptyGate = new();
+
     /// <summary>
     /// Closes the pseudo console. Call after the child exits so the output
-    /// read loop observes end-of-stream; safe to call once, any thread.
+    /// read loop observes end-of-stream. Idempotent and safe from any thread —
+    /// the watcher and Dispose can both call it.
     /// </summary>
     public void ClosePty()
     {
-        if (_pseudoConsole != nint.Zero) ClosePseudoConsole(_pseudoConsole);
+        lock (_ptyGate)
+        {
+            if (_pseudoConsole == nint.Zero) return;
+            var handle = _pseudoConsole;
+            _pseudoConsole = nint.Zero;
+            ClosePseudoConsole(handle);
+        }
     }
 
     public void Dispose()

@@ -20,6 +20,8 @@ public sealed class ScriptRunner : INotifyPropertyChanged
     private readonly SynchronizationContext? _ui;
     private ConPtyProcess? _process;
     private Thread? _readerThread;
+    private Thread? _exitThread;
+    private int _finished;                 // 0 until FinishRun runs, guards against a double finish
     private CancellationTokenSource? _promptCheck;
     private readonly StringBuilder _pendingOutput = new();
     private readonly object _outputGate = new();
@@ -113,11 +115,20 @@ public sealed class ScriptRunner : INotifyPropertyChanged
 
         IsRunning = true;
         StartedAt = DateTime.UtcNow;
+        _finished = 0;
         NotifyRunState();
 
         var process = _process;
         _readerThread = new Thread(() => ReadLoop(process)) { IsBackground = true };
         _readerThread.Start();
+
+        // Watch the CHILD PROCESS handle directly. The ConPTY output pipe is
+        // NOT reliably closed when the child exits — WSL leaves a background
+        // process holding it open — so waiting on end-of-stream alone can hang
+        // forever and the "Done" state would never appear. When the process
+        // exits we close the pseudo console (unblocking the reader) and finish.
+        _exitThread = new Thread(() => ExitWatch(process)) { IsBackground = true };
+        _exitThread.Start();
     }
 
     private void ReadLoop(ConPtyProcess process)
@@ -132,10 +143,18 @@ public sealed class ScriptRunner : INotifyPropertyChanged
             int charCount = decoder.GetChars(buffer, 0, count, chars, 0);
             BufferOutput(new string(chars, 0, charCount));
         }
-        // End of stream: the console closed or the process died. Wait for a
-        // real exit code, then finish on the UI thread.
+        // End of stream (the console closed on its own — the common case).
         process.WaitForExit(10_000);
         int exitCode = process.ExitCode ?? -1;
+        Post(() => FinishRun(exitCode));
+    }
+
+    private void ExitWatch(ConPtyProcess process)
+    {
+        process.WaitForExit(-1);          // block until the child actually exits
+        int exitCode = process.ExitCode ?? -1;
+        process.ClosePty();               // unblock the reader so it drains and ends
+        _readerThread?.Join(3000);        // let the final output flush through first
         Post(() => FinishRun(exitCode));
     }
 
@@ -261,6 +280,9 @@ public sealed class ScriptRunner : INotifyPropertyChanged
 
     private void FinishRun(int exitCode)
     {
+        // Either the reader (EOF) or the exit watcher can get here first;
+        // only the first one finishes.
+        if (Interlocked.Exchange(ref _finished, 1) != 0) return;
         _promptCheck?.Cancel();
         if (IsAwaitingInput) { IsAwaitingInput = false; Notify(nameof(IsAwaitingInput)); }
         FlushBufferedOutput();
