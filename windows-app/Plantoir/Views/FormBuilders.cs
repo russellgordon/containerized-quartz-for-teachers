@@ -258,9 +258,13 @@ public static class FormBuilders
     // ---- Live previews (shared by the wizard and Course Settings) --------
 
     /// <summary>
-    /// A live sample in the actual typeface: the bundled TTFs are referenced
-    /// by path#family; "Helvetica, Arial" previews as the system sans, and
-    /// any font that isn't bundled falls back to it too.
+    /// A live sample in the actual typeface. The bundled TTFs are referenced
+    /// by an ms-appx URI (path#family) — a bare filesystem path is NOT a valid
+    /// FontFamily source in WinUI, so it would silently fall back to the
+    /// default font and the preview would never change. For an unpackaged app,
+    /// ms-appx:/// resolves next to the executable, where the Toolchain lives.
+    /// "Helvetica, Arial" previews as the system sans, and any font that isn't
+    /// bundled falls back to it too.
     /// </summary>
     public static FontFamily BundledFontFamily(string familyName)
     {
@@ -268,7 +272,7 @@ public static class FormBuilders
         string file = FontCatalog.FileBaseName(familyName) + ".ttf";
         string path = BundledToolchain.SupportPath("fonts/" + file);
         return System.IO.File.Exists(path)
-            ? new FontFamily($"{path}#{familyName}")
+            ? new FontFamily($"ms-appx:///Toolchain/support/fonts/{file}#{familyName}")
             : new FontFamily("Segoe UI");
     }
 

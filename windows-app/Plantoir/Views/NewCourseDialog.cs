@@ -29,6 +29,7 @@ public sealed class NewCourseDialog : ContentDialog
     private readonly TaskProgressView _progress = new();
 
     private readonly TextBox _codeBox = new();
+    private readonly TextBlock _codeWarning;
     private readonly TextBox _nameBox = new();
     private readonly TextBox _shortBox = new() { MaxLength = 12 };
     private readonly StackPanel _shortRow;
@@ -77,6 +78,13 @@ public sealed class NewCourseDialog : ContentDialog
             Visibility = Visibility.Collapsed,
         };
         _sectionsCaption = FormBuilders.ExampleCaption("e.g. 1,3 — comma-separated");
+        _codeWarning = new TextBlock
+        {
+            FontSize = 12,
+            TextWrapping = TextWrapping.Wrap,
+            Visibility = Visibility.Collapsed,
+            Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"],
+        };
         _gradeWarningSlot = new TextBlock { FontSize = 12, TextWrapping = TextWrapping.Wrap, Visibility = Visibility.Collapsed };
         _shortRow = FormBuilders.LabeledRow("Short label beside emoji (≤ 12 characters)", _shortBox);
         _shortRow.Visibility = Visibility.Collapsed;
@@ -118,11 +126,36 @@ public sealed class NewCourseDialog : ContentDialog
     private void RefreshCreateEnabled()
     {
         if (_started) return;   // once running, the affirmative button becomes "Close"
-        string code = _codeBox.Text.Trim().ToUpperInvariant();
-        bool codeOk = code.Length > 0 && !code.Contains(' ')
-                      && !_window.Workspace.Courses.Any(c => c.Code == code);
+        bool codeOk = _codeBox.Text.Trim().Length > 0 && CourseCodeProblem() is null;
         bool sectionsOk = SectionNumbersProblem(_sectionsBox.Text) is null;
         IsPrimaryButtonEnabled = codeOk && sectionsOk;
+    }
+
+    /// <summary>
+    /// Why a non-empty code can't be used — a space or a clash with an
+    /// existing course. Null means the code is fine (or still empty, which is
+    /// simply not-ready-yet, not an error worth showing).
+    /// </summary>
+    private string? CourseCodeProblem()
+    {
+        string code = _codeBox.Text.Trim().ToUpperInvariant();
+        if (code.Length == 0) return null;
+        if (code.Contains(' ')) return "A course code cannot contain spaces.";
+        if (_window.Workspace.Courses.Any(c => c.Code == code))
+            return $"A course named {code} already exists — choose a different code.";
+        return null;
+    }
+
+    /// <summary>
+    /// Explain the blocker next to the field, so a greyed-out Create button is
+    /// never a mystery — a duplicate code is the usual reason a filled-in form
+    /// still won't submit.
+    /// </summary>
+    private void RefreshCodeValidation()
+    {
+        string? problem = CourseCodeProblem();
+        _codeWarning.Text = problem ?? "";
+        _codeWarning.Visibility = problem is null ? Visibility.Collapsed : Visibility.Visible;
     }
 
     // ---- Form ------------------------------------------------------------
@@ -156,8 +189,9 @@ public sealed class NewCourseDialog : ContentDialog
         form.Children.Add(FormBuilders.SectionHeaderWithCaption("Basics", null));
         var codeRow = FormBuilders.LabeledRow("Course code", _codeBox);
         codeRow.Children.Add(FormBuilders.ExampleCaption("e.g. ICS3U — or a club name like CODING"));
+        codeRow.Children.Add(_codeWarning);
         form.Children.Add(codeRow);
-        _codeBox.TextChanged += (_, _) => { AutoFillCourseName(); RefreshClubRow(); RefreshGradeWarning(); RefreshCreateEnabled(); };
+        _codeBox.TextChanged += (_, _) => { AutoFillCourseName(); RefreshClubRow(); RefreshGradeWarning(); RefreshCodeValidation(); RefreshCreateEnabled(); };
 
         var nameRow = FormBuilders.LabeledRow("Course name", _nameBox);
         nameRow.Children.Add(FormBuilders.ExampleCaption("e.g. Introduction to Computer Science"));
