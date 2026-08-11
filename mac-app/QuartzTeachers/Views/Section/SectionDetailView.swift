@@ -112,6 +112,10 @@ struct SectionDetailView: View {
                         startPreview()
                     }
                 }
+                // The icon alone doesn't say what these two buttons do, so
+                // they wear their titles; the neighbouring icons are the
+                // familiar Obsidian and Safari actions and stay icon-only.
+                .labelStyle(.titleAndIcon)
                 .disabled(!previewRunner.isRunning && isBusy)
                 .help(previewRunner.isRunning ? "Stop previewing this section" : "Preview this section's website")
                 .accessibilityIdentifier(previewRunner.isRunning ? "stopPreviewButton" : "previewButton")
@@ -119,6 +123,7 @@ struct SectionDetailView: View {
                 Button("Deploy", systemImage: "paperplane.fill") {
                     startDeploy()
                 }
+                .labelStyle(.titleAndIcon)
                 .disabled(isBusy)
                 .help("Publish this section's website")
                 .accessibilityIdentifier("deployButton")

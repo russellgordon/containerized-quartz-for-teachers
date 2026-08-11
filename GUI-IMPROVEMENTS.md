@@ -191,6 +191,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 90 | 2026-08-10 | The course settings window's "Cancel" should read "Revert" — Cancel belongs to dialog boxes. | ✅ Implemented — the button now says Revert (still disabled until there is something to revert), because a settings form is not a dialog: nothing closes, the values simply go back to the last save. | Same label on the Windows settings form. |
 
+| 91 | 2026-08-11 | The Preview and Deploy toolbar buttons should show text labels beside their icons — a play triangle and a paper plane are not self-explanatory. | ✅ Implemented — both buttons wear their titles via `.labelStyle(.titleAndIcon)`; while a preview runs, the first reads "Stop Preview" with the stop icon — the clearer wording won over keeping the button's width steady, since the width changes with the title anyway. The neighbouring buttons (Open in Obsidian, Open in Browser) stay icon-only: their symbols are the familiar app icons, and labelling everything would crowd the toolbar. | Give the Windows toolbar's Preview and Deploy buttons the same visible text labels; keep the others icon-only with tooltips. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the
