@@ -40,8 +40,40 @@ public sealed partial class SidebarPane : UserControl
 
     private MainWindow _window = null!;
     private WorkspaceViewModel Workspace => _window.Workspace;
+    private DateTime _lastTreeInteraction = DateTime.MinValue;
 
-    public SidebarPane() => InitializeComponent();
+    public SidebarPane()
+    {
+        InitializeComponent();
+        // Note the moments the teacher actually touches the tree (chevron
+        // clicks arrive with the event already handled, so listen to handled
+        // events too). Collapsed uses this to tell a real fold from a glitch.
+        Tree.AddHandler(PointerPressedEvent,
+            new Microsoft.UI.Xaml.Input.PointerEventHandler((_, _) => _lastTreeInteraction = DateTime.UtcNow), true);
+        Tree.AddHandler(KeyDownEvent,
+            new Microsoft.UI.Xaml.Input.KeyEventHandler((_, _) => _lastTreeInteraction = DateTime.UtcNow), true);
+        Tree.Collapsed += Tree_Collapsed;
+    }
+
+    /// <summary>
+    /// Undo a collapse the teacher didn't ask for. WinUI's TreeView spuriously
+    /// folds rows when the tree is rebuilt around a closing dialog — creating a
+    /// course folded "Courses & Clubs" the moment the wizard closed, and the
+    /// collapse can land many frames after the rebuild, so no fixed-length
+    /// re-assert after Refresh is reliable. Catching the collapse itself is:
+    /// if a row that asks to be open folds with no recent pointer or key input
+    /// on the tree, it was the glitch — reopen it.
+    /// </summary>
+    private void Tree_Collapsed(TreeView sender, TreeViewCollapsedEventArgs args)
+    {
+        if ((DateTime.UtcNow - _lastTreeInteraction).TotalMilliseconds < 1000) return;
+        if (args.Item is not SidebarRow { IsExpanded: true } row) return;
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (Tree.ContainerFromItem(row) is TreeViewItem container && !container.IsExpanded)
+                container.IsExpanded = true;
+        });
+    }
 
     public void Attach(MainWindow window)
     {
@@ -125,21 +157,17 @@ public sealed partial class SidebarPane : UserControl
     }
 
     /// <summary>
-    /// Re-apply each root's intended expansion after the ItemsSource swap.
-    /// TreeView silently drops a root's expanded state when the tree is rebuilt
-    /// while a dialog is closing — the create-course flow refreshes as the
-    /// wizard tears down — leaving "Courses & Clubs" folded even though its row
-    /// asks to be open. The collapse lands on a LATER tick than the refresh and
-    /// the containers aren't realized immediately, so re-assert repeatedly for
-    /// the length of the close animation, then stop. A no-op whenever the state
-    /// is already right (reload, filter), and it never touches a course row's
-    /// own expansion, so those stay free to fold.
+    /// Open any container that was REALIZED already folded — those never raise
+    /// Collapsed, so the glitch guard above cannot see them. Containers appear
+    /// asynchronously after the ItemsSource swap (a recycled one can surface
+    /// folded well after the first layout pass), so retry briefly and stop the
+    /// moment every row that wants to be open has an open container. Together
+    /// the two mechanisms cover both failure shapes: born-collapsed (this) and
+    /// collapsed-later (Tree_Collapsed). Section leaves and the Archived group
+    /// ask to stay closed and are never touched.
     /// </summary>
     private void ReassertExpansion(IEnumerable<SidebarRow> roots)
     {
-        // Every row that asks to be open — the groups and their course rows.
-        // (The Archived group and section leaves ask to stay closed and are
-        // left alone, so folding a course by hand still works between rebuilds.)
         var wantOpen = new List<SidebarRow>();
         void Collect(IEnumerable<SidebarRow> rows)
         {
@@ -153,13 +181,16 @@ public sealed partial class SidebarPane : UserControl
 
         var timer = DispatcherQueue.CreateTimer();
         int ticks = 0;
-        timer.Interval = TimeSpan.FromMilliseconds(60);
+        timer.Interval = TimeSpan.FromMilliseconds(100);
         timer.Tick += (t, _) =>
         {
+            bool allSettled = true;
             foreach (var row in wantOpen)
-                if (Tree.ContainerFromItem(row) is TreeViewItem container && !container.IsExpanded)
-                    container.IsExpanded = true;
-            if (++ticks >= 10) t.Stop();   // ~600 ms covers the dialog teardown
+            {
+                if (Tree.ContainerFromItem(row) is not TreeViewItem container) { allSettled = false; continue; }
+                if (!container.IsExpanded) container.IsExpanded = true;
+            }
+            if (allSettled || ++ticks >= 20) t.Stop();   // settled, or ~2 s — enough for any teardown
         };
         timer.Start();
     }
