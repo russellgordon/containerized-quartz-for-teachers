@@ -41,6 +41,21 @@ public class OutputParserTests
     }
 
     [Fact]
+    public void EmojiGluedOntoTheUrlIsStripped()
+    {
+        // The pseudo console merged "✅ Deploy complete." onto the URL line.
+        string text = " Site URL: https://exc2o-s1-2026-gordon.netlify.app✅ Deploy complete.\n";
+        Assert.Equal("https://exc2o-s1-2026-gordon.netlify.app/", OutputParsers.PublishedSiteUrl(text)!.ToString());
+    }
+
+    [Fact]
+    public void EmojiGluedWithNoSpaceIsStripped()
+    {
+        string text = " Site URL: https://exc2o-s1-2026-gordon.netlify.app✅Deploy\n";
+        Assert.Equal("https://exc2o-s1-2026-gordon.netlify.app/", OutputParsers.PublishedSiteUrl(text)!.ToString());
+    }
+
+    [Fact]
     public void DashboardOnlyOutputYieldsNothing() =>
         Assert.Null(OutputParsers.PublishedSiteUrl(" Admin: https://app.netlify.com/sites/x\nsee https://docs.netlify.com/x\n"));
 

@@ -66,6 +66,14 @@ public static class OutputParsers
 
     private static string TidiedAddress(string token)
     {
+        // A pseudo console can render a following status line onto the tail of
+        // the URL line with no separating space, gluing an emoji onto the
+        // address — the "✅" from "Deploy complete." landing on the site link
+        // and breaking it. These URLs are always ASCII, so cut at the first
+        // non-ASCII character, then strip trailing sentence punctuation.
+        int end = 0;
+        while (end < token.Length && token[end] <= '\x7e') end++;
+        token = token[..end];
         while (token.Length > 0 && (token[^1] == '.' || token[^1] == ',' || token[^1] == ')'))
             token = token[..^1];
         return token;
