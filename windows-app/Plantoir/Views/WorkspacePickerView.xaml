@@ -1,0 +1,37 @@
+<UserControl
+    x:Class="Plantoir.Views.WorkspacePickerView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" Padding="40">
+
+        <!-- Header: shown only while a folder is still being chosen — once a
+             candidate awaits confirmation, the headline would answer a
+             question that was just answered. -->
+        <StackPanel x:Name="Header" Spacing="16">
+            <FontIcon Glyph="&#xE8B7;" FontSize="56" Opacity="0.55" HorizontalAlignment="Center" />
+            <TextBlock Text="Choose Your Working Folder" FontSize="22" FontWeight="Bold"
+                       HorizontalAlignment="Center" />
+            <TextBlock MaxWidth="460" TextWrapping="Wrap" TextAlignment="Center" Opacity="0.7"
+                       Text="Pick the folder where your class websites live — the one with your courses inside (for example, &quot;Class Websites&quot; on your Desktop). Starting from scratch? Choose an empty folder instead." />
+        </StackPanel>
+
+        <!-- Empty-folder confirmation -->
+        <StackPanel x:Name="InitializeOffer" Spacing="16" Visibility="Collapsed">
+            <BreadcrumbBar x:Name="ChosenCrumbs" HorizontalAlignment="Center" MaxWidth="520" />
+            <TextBlock MaxWidth="460" TextWrapping="Wrap" TextAlignment="Center"
+                       Text="This folder is empty. Set it up as your new working folder? Everything needed will be added for you, and you can create your first course right away." />
+        </StackPanel>
+
+        <TextBlock x:Name="ProblemText" MaxWidth="460" TextWrapping="Wrap" TextAlignment="Center"
+                   Foreground="{ThemeResource SystemFillColorCriticalBrush}" Visibility="Collapsed" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+            <Button x:Name="InitializeButton" Content="Set Up This Folder" Visibility="Collapsed"
+                    Style="{StaticResource AccentButtonStyle}" Click="Initialize_Click"
+                    AutomationProperties.AutomationId="initializeFolderButton" />
+            <Button x:Name="ChooseButton" Content="Choose Folder…" Click="Choose_Click"
+                    AutomationProperties.AutomationId="chooseFolderButton" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

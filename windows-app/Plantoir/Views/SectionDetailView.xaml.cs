@@ -1,0 +1,273 @@
+using System;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Plantoir.Core.Models;
+using Plantoir.Core.Scripting;
+using Plantoir.Services;
+
+namespace Plantoir.Views;
+
+/// <summary>
+/// One section: preview it in an embedded browser, publish it, watch either
+/// as a layered progress task. Created fresh per selection so runners and
+/// leases never leak between sections.
+/// </summary>
+public sealed partial class SectionDetailView : UserControl
+{
+    private readonly MainWindow _window;
+    private readonly Course _course;
+    private readonly int _sectionNumber;
+    private readonly ScriptRunner _previewRunner = new(SynchronizationContext.Current);
+    private readonly ScriptRunner _deployRunner = new(SynchronizationContext.Current);
+    private PreviewLeases.Lease? _lease;
+    private Uri? _previewUrl;
+    private Uri? _lastLoadedUrl;
+    private bool _isWaitingForServer;
+    private CancellationTokenSource? _serverWait;
+
+    private bool IsBusy => _previewRunner.IsRunning || _deployRunner.IsRunning;
+    private string TitleText => $"{_course.Code}-S{_sectionNumber}";
+
+    public SectionDetailView(MainWindow window, Course course, int sectionNumber)
+    {
+        InitializeComponent();
+        _window = window;
+        _course = course;
+        _sectionNumber = sectionNumber;
+        SectionTitle.Text = TitleText;
+        ObsidianButton.IsEnabled = FolderActions.ObsidianIsInstalled;
+
+        _previewRunner.PropertyChanged += (_, _) => RefreshChrome();
+        _deployRunner.PropertyChanged += (_, _) => RefreshChrome();
+        Preview.NavigationCompleted += (_, _) => RefreshChrome();
+        Unloaded += (_, _) => StopPreview();
+        RefreshChrome();
+    }
+
+    // ---- Chrome state ----------------------------------------------------
+
+    private void RefreshChrome()
+    {
+        bool previewShown = _previewUrl is not null;
+        BackButton.IsEnabled = previewShown && Preview.CanGoBack;
+        ForwardButton.IsEnabled = previewShown && Preview.CanGoForward;
+        ReloadButton.IsEnabled = previewShown;
+        BrowserButton.IsEnabled = previewShown;
+        DeployButton.IsEnabled = !IsBusy;
+
+        bool running = _previewRunner.IsRunning;
+        PreviewLabel.Text = running ? "Stop Preview" : "Preview";
+        PreviewIcon.Glyph = running ? "" : "";
+        ToolTipService.SetToolTip(PreviewButton,
+            running ? "Stop previewing this section" : "Preview this section's website");
+        PreviewButton.IsEnabled = running || !IsBusy;
+
+        // Which task owns the console: the running one, else the most recent.
+        bool showDeploy = !_previewRunner.IsRunning &&
+            (_deployRunner.IsRunning ||
+             (_deployRunner.StartedAt ?? DateTime.MinValue) > (_previewRunner.StartedAt ?? DateTime.MinValue));
+        if (showDeploy) Progress.Bind(_deployRunner, $"Publishing {TitleText}");
+        else Progress.Bind(_previewRunner,
+            _previewRunner.IsRunning || _isWaitingForServer
+                ? $"Preparing the preview of {TitleText}"
+                : $"Preview of {TitleText}");
+
+        bool anyOutput = _previewRunner.Transcript.Lines.Count > 0 || _deployRunner.Transcript.Lines.Count > 0
+                         || _previewRunner.Transcript.CurrentLine.Length > 0;
+        bool showConsole = _isWaitingForServer || IsBusy || anyOutput;
+        ConsoleArea.Visibility = showConsole ? Visibility.Visible : Visibility.Collapsed;
+        NoPreviewState.Visibility = showConsole ? Visibility.Collapsed : Visibility.Visible;
+        Preview.Visibility = previewShown ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    // ---- Preview ---------------------------------------------------------
+
+    /// <summary>Smoke-test entry: the same path the Preview button takes.</summary>
+    public void StartPreviewForAutomation() => PreviewOrStop_Click(this, new RoutedEventArgs());
+
+    private async void PreviewOrStop_Click(object sender, RoutedEventArgs e)
+    {
+        if (_previewRunner.IsRunning) { StopPreview(); return; }
+        if (_window.Workspace.WorkspacePath is not { } workspacePath) return;
+
+        try
+        {
+            _lease = PreviewLeases.Take(workspacePath, _course.Code, _sectionNumber);
+        }
+        catch (PreviewLeases.LeaseRefusedException refusal)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Cannot Preview Yet",
+                Content = refusal.Message,
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot,
+            };
+            await dialog.ShowAsync();
+            return;
+        }
+
+        _previewUrl = null;
+        _lastLoadedUrl = null;
+        _isWaitingForServer = true;
+        _previewRunner.Milestones = TaskMilestones.Preview;
+        _previewRunner.Run("preview.ps1",
+            new[] { _course.Code, _sectionNumber.ToString(), "--port", _lease.Port.ToString() },
+            workspacePath);
+        RefreshChrome();
+        await WaitForPreviewServer(_lease.Port);
+    }
+
+    /// <summary>
+    /// Phase 1: never trust the port until THIS run announces its launch —
+    /// a stale server from a previous preview answers first. Phase 2: poll
+    /// until HTTP 200. Ten minutes total, because a first-ever build pulls
+    /// the image and installs dependencies.
+    /// </summary>
+    private async Task WaitForPreviewServer(int containerPort)
+    {
+        _serverWait?.Cancel();
+        var cancel = new CancellationTokenSource();
+        _serverWait = cancel;
+        Uri serverUrl = new($"http://127.0.0.1:{containerPort}/");
+        const int budgetSeconds = 600;
+        int elapsed = 0;
+
+        try
+        {
+            while (elapsed < budgetSeconds)
+            {
+                if (cancel.IsCancellationRequested) return;
+                if (!_previewRunner.IsRunning && _previewRunner.LastExitCode is not null)
+                {
+                    AbandonWait();
+                    return;
+                }
+                if (_previewRunner.PreviewAddress is { } announced) serverUrl = announced;
+                if (_previewRunner.Transcript.DisplayText.Contains("Launching Quartz preview")) break;
+                await Task.Delay(1000);
+                elapsed++;
+            }
+
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            while (elapsed < budgetSeconds)
+            {
+                if (cancel.IsCancellationRequested) return;
+                if (!_previewRunner.IsRunning && _previewRunner.LastExitCode is not null)
+                {
+                    AbandonWait();
+                    return;
+                }
+                try
+                {
+                    var response = await client.GetAsync(serverUrl);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        _isWaitingForServer = false;
+                        _previewUrl = serverUrl;
+                        LoadIfNeeded(serverUrl);
+                        RefreshChrome();
+                        return;
+                    }
+                }
+                catch { }
+                await Task.Delay(1000);
+                elapsed++;
+            }
+            _isWaitingForServer = false;
+            RefreshChrome();
+        }
+        finally
+        {
+            if (_serverWait == cancel) _serverWait = null;
+        }
+    }
+
+    private void AbandonWait()
+    {
+        _isWaitingForServer = false;
+        ReleaseLease();
+        RefreshChrome();
+    }
+
+    /// <summary>Interface updates must never yank the teacher back from a page they navigated to.</summary>
+    private void LoadIfNeeded(Uri url)
+    {
+        if (_lastLoadedUrl == url) return;
+        _lastLoadedUrl = url;
+        Preview.Source = url;
+    }
+
+    private void StopPreview()
+    {
+        _serverWait?.Cancel();
+        if (_previewRunner.IsRunning) _previewRunner.StopByUser();
+        _previewUrl = null;
+        _lastLoadedUrl = null;
+        _isWaitingForServer = false;
+        ReleaseLease();
+        RefreshChrome();
+    }
+
+    private void ReleaseLease()
+    {
+        if (_lease is { } lease) PreviewLeases.Release(lease);
+        _lease = null;
+    }
+
+    // ---- Deploy ----------------------------------------------------------
+
+    private async void Deploy_Click(object sender, RoutedEventArgs e)
+    {
+        if (IsBusy || _window.Workspace.WorkspacePath is not { } workspacePath) return;
+
+        bool needsBuild = BuildFreshness.NeedsRebuild(_course, _sectionNumber);
+        _deployRunner.Milestones = needsBuild ? TaskMilestones.BuildAndDeploy : TaskMilestones.Deploy;
+        string customDomain = CourseConfiguration.NormalizedCustomDomain(
+            _course.Configuration.CustomDomain(_sectionNumber));
+        _deployRunner.CustomDomainForLinks = customDomain.Length == 0 ? null : customDomain;
+
+        if (needsBuild)
+        {
+            // Build quietly first; a failed build stops before publishing —
+            // the failure and its output are already on screen.
+            _deployRunner.Run("preview.ps1",
+                new[] { _course.Code, _sectionNumber.ToString(), "--build-only" }, workspacePath);
+            RefreshChrome();
+            if (!await _deployRunner.WaitUntilFinished()) return;
+        }
+        _deployRunner.Run("deploy.ps1",
+            new[] { _course.Code, _sectionNumber.ToString() }, workspacePath,
+            keepTranscript: needsBuild);
+        RefreshChrome();
+    }
+
+    // ---- Browser chrome --------------------------------------------------
+
+    private void Back_Click(object sender, RoutedEventArgs e) { if (Preview.CanGoBack) Preview.GoBack(); }
+    private void Forward_Click(object sender, RoutedEventArgs e) { if (Preview.CanGoForward) Preview.GoForward(); }
+    private void Reload_Click(object sender, RoutedEventArgs e) => Preview.Reload();
+
+    private void OpenInBrowser_Click(object sender, RoutedEventArgs e)
+    {
+        // The page currently shown, not the site root; localhost is rewritten
+        // to 127.0.0.1 (browsers try IPv6 first; the container is IPv4 only).
+        Uri? current = Preview.Source ?? _previewUrl;
+        if (current is null) return;
+        var builder = new UriBuilder(current);
+        if (builder.Host == "localhost") builder.Host = "127.0.0.1";
+        try
+        {
+            Process.Start(new ProcessStartInfo(builder.Uri.AbsoluteUri) { UseShellExecute = true });
+        }
+        catch { }
+    }
+
+    private void Obsidian_Click(object sender, RoutedEventArgs e) =>
+        _ = FolderActions.OpenInObsidian(_course.SectionDirectory(_sectionNumber), _course.DirectoryPath,
+            BundledToolchain.SupportPath("obsidian_defaults/.obsidian"));
+}

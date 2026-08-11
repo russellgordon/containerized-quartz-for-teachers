@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>Plantoir</RootNamespace>
+    <AssemblyName>Plantoir</AssemblyName>
+    <ApplicationTitle>Plantoir</ApplicationTitle>
+    <Platforms>x64</Platforms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <WindowsPackageType>None</WindowsPackageType>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.*" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Plantoir.Core\Plantoir.Core.csproj" />
+  </ItemGroup>
+
+  <!-- The full toolchain recipe travels with the app and is mirrored into
+       each working folder's .toolchain (the launchers hash it to name the
+       image). The pruned paths mirror Get-ToolchainHash's prune list. -->
+  <ItemGroup>
+    <Content Include="..\..\Dockerfile" Link="Toolchain\Dockerfile" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\setup.sh" Link="Toolchain\setup.sh" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\preview.sh" Link="Toolchain\preview.sh" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\deploy.sh" Link="Toolchain\deploy.sh" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\setup.ps1" Link="Toolchain\setup.ps1" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\preview.ps1" Link="Toolchain\preview.ps1" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\deploy.ps1" Link="Toolchain\deploy.ps1" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\setup.bat" Link="Toolchain\setup.bat" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\preview.bat" Link="Toolchain\preview.bat" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\deploy.bat" Link="Toolchain\deploy.bat" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\patches\**" Link="Toolchain\patches\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\scripts\**" Link="Toolchain\scripts\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\support\**" Link="Toolchain\support\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

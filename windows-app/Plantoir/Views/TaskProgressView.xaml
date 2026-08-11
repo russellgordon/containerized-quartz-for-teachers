@@ -1,0 +1,85 @@
+<UserControl
+    x:Class="Plantoir.Views.TaskProgressView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- The header is pinned and fixed; the output pane is a bounded, clipped
+         scroll area — no amount of output can push the header out of reach. -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Padding="12" Spacing="10">
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="TitleText" FontWeight="SemiBold" FontSize="15" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                    <FontIcon x:Name="OutcomeIcon" FontSize="14" Visibility="Collapsed" />
+                    <TextBlock x:Name="PhaseText" Opacity="0.7"
+                               AutomationProperties.AutomationId="taskPhaseLabel" />
+                </StackPanel>
+            </Grid>
+            <ProgressBar x:Name="Bar" IsIndeterminate="True" />
+            <TextBlock x:Name="MilestoneText" Opacity="0.7"
+                       AutomationProperties.AutomationId="taskMilestoneLabel" />
+            <TextBlock x:Name="OutcomeDetail" Visibility="Collapsed" TextWrapping="Wrap" Opacity="0.8"
+                       AutomationProperties.AutomationId="failureExplanation" />
+            <StackPanel x:Name="LiveLink" Visibility="Collapsed" Spacing="4"
+                        AutomationProperties.AutomationId="publishedSiteLink">
+                <TextBlock Text="Your website is live." />
+                <HyperlinkButton x:Name="LiveLinkButton" Padding="0" />
+            </StackPanel>
+            <StackPanel x:Name="AwaitingNotice" Orientation="Horizontal" Spacing="6" Visibility="Collapsed"
+                        AutomationProperties.AutomationId="awaitingInputNotice">
+                <FontIcon Glyph="" FontSize="14" Foreground="{ThemeResource SystemFillColorCautionBrush}" />
+                <TextBlock Text="Waiting for your answer…" Foreground="{ThemeResource SystemFillColorCautionBrush}" />
+            </StackPanel>
+            <TextBlock x:Name="LaunchProblemText" Visibility="Collapsed" TextWrapping="Wrap"
+                       Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+        </StackPanel>
+
+        <Border Grid.Row="1" Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+        <Button Grid.Row="2" x:Name="DisclosureButton" Background="Transparent" BorderThickness="0"
+                Padding="12,6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                Click="Disclosure_Click" AutomationProperties.AutomationId="taskDetailsDisclosure">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <FontIcon x:Name="DisclosureChevron" Glyph="" FontSize="10" Opacity="0.7" />
+                <TextBlock x:Name="DisclosureLabel" Text="Show details" Opacity="0.7" FontSize="13" />
+            </StackPanel>
+        </Button>
+
+        <!-- Console: bounded height, clipped, scrolls internally. -->
+        <Grid Grid.Row="3" x:Name="ConsolePane" Visibility="Collapsed" MaxHeight="380"
+              Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <ScrollViewer x:Name="ConsoleScroll" Padding="12" VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto">
+                <TextBlock x:Name="ConsoleText" FontFamily="Consolas" FontSize="12" IsTextSelectionEnabled="True"
+                           AutomationProperties.AutomationId="consoleText" />
+            </ScrollViewer>
+            <Grid Grid.Row="1" x:Name="ConsoleInputRow" Padding="8" ColumnSpacing="8" Visibility="Collapsed"
+                  BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="ConsoleInput" PlaceholderText="If you're asked a question, type your answer here…"
+                         KeyDown="ConsoleInput_KeyDown" AutomationProperties.AutomationId="consoleInputField" />
+                <Button Grid.Column="1" Content="Send" Click="ConsoleSend_Click" />
+                <Button Grid.Column="2" Content="Stop" Click="ConsoleStop_Click" />
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

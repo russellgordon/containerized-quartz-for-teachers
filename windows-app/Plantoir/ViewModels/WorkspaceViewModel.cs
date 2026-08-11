@@ -1,0 +1,192 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using Plantoir.Core.Models;
+using Plantoir.Services;
+
+namespace Plantoir.ViewModels;
+
+/// <summary>What the sidebar has selected.</summary>
+public abstract record SidebarSelection
+{
+    public sealed record CourseItem(string Code) : SidebarSelection;
+    public sealed record SectionItem(string Code, int Number) : SidebarSelection;
+    public sealed record ArchivedEntry(string Id) : SidebarSelection;
+}
+
+/// <summary>
+/// One window's state: its working folder, discovered courses, archived
+/// items, and selection. Every window is fully independent — this is
+/// per-window, never a singleton.
+/// </summary>
+public sealed class WorkspaceViewModel : INotifyPropertyChanged
+{
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private static readonly List<WorkspaceViewModel> _windowModels = new();
+    private static string? _mostRecentKeyFolderPath;
+    public static bool IsTerminating { get; set; }
+
+    public AppSettings Settings { get; }
+
+    private string? _workspacePath;
+    public string? WorkspacePath => _workspacePath;
+
+    public WorkspaceState? State { get; private set; }
+    public string? WorkspaceProblem { get; private set; }
+    public List<Course> Courses { get; private set; } = new();
+    public List<ArchivedItem> ArchivedItems { get; private set; } = new();
+
+    private SidebarSelection? _selection;
+    public SidebarSelection? Selection
+    {
+        get => _selection;
+        set { _selection = value; Notify(); Notify(nameof(SelectedCourse)); Notify(nameof(SelectedArchivedItem)); }
+    }
+
+    private string _filterText = "";
+    public string FilterText
+    {
+        get => _filterText;
+        set { _filterText = value; Notify(); Notify(nameof(FilteredCourses)); Notify(nameof(ShowsNoFilterMatches)); }
+    }
+
+    public List<Course> FilteredCourses => Workspace.Filter(Courses, _filterText);
+
+    public bool ShowsNoFilterMatches =>
+        Workspace.ShowsNoFilterMatches(_filterText, Courses.Count, FilteredCourses.Count);
+
+    public Course? SelectedCourse => Selection switch
+    {
+        SidebarSelection.CourseItem(var code) => Courses.FirstOrDefault(c => c.Code == code),
+        SidebarSelection.SectionItem(var code, _) => Courses.FirstOrDefault(c => c.Code == code),
+        _ => null,
+    };
+
+    public ArchivedItem? SelectedArchivedItem => Selection is SidebarSelection.ArchivedEntry(var id)
+        ? ArchivedItems.FirstOrDefault(a => a.Id == id)
+        : null;
+
+    public WorkspaceViewModel(AppSettings settings)
+    {
+        Settings = settings;
+        _windowModels.Add(this);
+    }
+
+    public string CoursesDirectory() =>
+        Workspace.CoursesDirectory(_workspacePath ?? throw new InvalidOperationException("No working folder."));
+
+    // ---- Folder lifecycle ------------------------------------------------
+
+    public void ChooseWorkspace(string path)
+    {
+        string? previous = _workspacePath;
+        _workspacePath = path;
+        Settings.WorkspacePath = path;
+        Settings.Save();
+        Reload();
+        if (previous is not null && previous != path) ReleaseFolderIfUnused(previous);
+        NoteBecameKey();
+        Notify(nameof(WorkspacePath));
+    }
+
+    public void AdoptRestoredPath(string path)
+    {
+        if (string.IsNullOrEmpty(path) || !Directory.Exists(path) || path == _workspacePath) return;
+        _workspacePath = path;
+        Reload();
+        Notify(nameof(WorkspacePath));
+    }
+
+    /// <summary>New window inherits the key window's folder; first window shows the picker.</summary>
+    public void AdoptFolderForNewWindow()
+    {
+        if (_workspacePath is not null) return;
+        var others = _windowModels.Where(m => m != this && m.WorkspacePath is not null)
+                                  .Select(m => m.WorkspacePath!).ToList();
+        string? inherited = Workspace.FolderForNewWindow(others, _mostRecentKeyFolderPath);
+        if (inherited is not null) AdoptRestoredPath(inherited);
+    }
+
+    public void NoteBecameKey()
+    {
+        if (_workspacePath is not null) _mostRecentKeyFolderPath = _workspacePath;
+    }
+
+    public void UnregisterWindow()
+    {
+        if (IsTerminating) return;   // the quit path records the list itself
+        _windowModels.Remove(this);
+        if (_workspacePath is not null) ReleaseFolderIfUnused(_workspacePath);
+    }
+
+    private static void ReleaseFolderIfUnused(string path)
+    {
+        if (_windowModels.Any(m => m.WorkspacePath == path)) return;
+        FolderContainers.StopContainer(path);
+    }
+
+    public static IReadOnlyList<WorkspaceViewModel> WindowModels => _windowModels;
+
+    public static List<string> OpenFolderPaths() =>
+        _windowModels.Where(m => m.WorkspacePath is not null).Select(m => m.WorkspacePath!).Distinct().ToList();
+
+    // ---- Loading ---------------------------------------------------------
+
+    public void Reload()
+    {
+        Courses = new List<Course>();
+        ArchivedItems = new List<ArchivedItem>();
+        WorkspaceProblem = null;
+        State = null;
+        if (_workspacePath is null) { NotifyLoaded(); return; }
+
+        BundledToolchain.RefreshWorkspace(_workspacePath);
+        State = Workspace.Classify(_workspacePath);
+        if (State == WorkspaceState.Ready)
+        {
+            if (!Directory.Exists(Workspace.CoursesDirectory(_workspacePath)))
+                WorkspaceProblem = "There are no courses in this folder yet. Click New Course to create your first one.";
+            else
+            {
+                Courses = Workspace.DiscoverCourses(_workspacePath);
+                ArchivedItems = Workspace.FindArchivedItems(_workspacePath);
+            }
+        }
+        NotifyLoaded();
+    }
+
+    public void InitializeWorkspace()
+    {
+        if (_workspacePath is null) return;
+        try
+        {
+            ToolchainMirror.InitializeWorkspace(_workspacePath, BundledToolchain.Root);
+        }
+        catch (Exception error)
+        {
+            WorkspaceProblem = error is InvalidOperationException
+                ? error.Message
+                : $"Could not set up this folder: {error.Message}";
+            Notify(nameof(WorkspaceProblem));
+            return;
+        }
+        Reload();
+    }
+
+    private void NotifyLoaded()
+    {
+        Notify(nameof(State));
+        Notify(nameof(WorkspaceProblem));
+        Notify(nameof(Courses));
+        Notify(nameof(FilteredCourses));
+        Notify(nameof(ArchivedItems));
+        Notify(nameof(ShowsNoFilterMatches));
+    }
+
+    private void Notify([CallerMemberName] string? property = null) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+}
