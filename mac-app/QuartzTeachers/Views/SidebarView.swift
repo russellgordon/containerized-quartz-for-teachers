@@ -42,7 +42,10 @@ struct SidebarView: View {
                                     .tag(SidebarSelection.section(course.code, sectionNumber))
                                     .accessibilityIdentifier("sidebar-\(course.code)-section\(sectionNumber)")
                                     .contextMenu {
-                                        folderMenuItems(for: course.sectionDirectoryURL(forSection: sectionNumber))
+                                        folderMenuItems(
+                                            for: course.sectionDirectoryURL(forSection: sectionNumber),
+                                            obsidianVaultURL: course.directoryURL
+                                        )
                                     }
                             }
                         } label: {
@@ -54,7 +57,7 @@ struct SidebarView: View {
                                         addSectionCourse = course
                                     }
                                     Divider()
-                                    folderMenuItems(for: course.directoryURL)
+                                    folderMenuItems(for: course.directoryURL, obsidianVaultURL: course.directoryURL)
                                 }
                         }
                     }
@@ -274,14 +277,16 @@ struct SidebarView: View {
 
     // MARK: - Functions
 
-    /// The shared context-menu items for a course or section folder.
+    /// The shared context-menu items for a course or section folder. The
+    /// Obsidian vault is the COURSE folder even for a section row — the
+    /// section is a subfolder within it, and Obsidian lands there.
     @ViewBuilder
-    func folderMenuItems(for folderURL: URL) -> some View {
+    func folderMenuItems(for folderURL: URL, obsidianVaultURL: URL) -> some View {
         Button("Show in Finder", systemImage: "finder") {
             FolderActions.showInFinder(folderURL)
         }
         Button("Open in Obsidian", systemImage: "diamond") {
-            FolderActions.openInObsidian(folderURL)
+            FolderActions.openInObsidian(revealing: folderURL, vaultURL: obsidianVaultURL)
         }
         .disabled(!FolderActions.obsidianIsInstalled)
         Button("New Terminal at Folder", systemImage: "terminal") {

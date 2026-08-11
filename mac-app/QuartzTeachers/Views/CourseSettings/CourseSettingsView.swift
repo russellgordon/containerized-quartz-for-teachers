@@ -141,7 +141,7 @@ struct CourseSettingsView: View {
         .toolbar {
             ToolbarItem {
                 Button("Open in Obsidian", systemImage: "diamond") {
-                    FolderActions.openInObsidian(course.directoryURL)
+                    FolderActions.openInObsidian(revealing: course.directoryURL, vaultURL: course.directoryURL)
                 }
                 .disabled(!FolderActions.obsidianIsInstalled)
                 .help("Edit this course's pages in Obsidian")

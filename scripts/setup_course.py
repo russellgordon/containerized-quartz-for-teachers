@@ -1062,6 +1062,13 @@ def _copy_example_course(src: Path, dest: Path, dest_code: str) -> bool:
         print(f"❌ Failed to install Example Course: {e}")
         return False
 
+    # The interactive wizard seeds .obsidian into every course it builds;
+    # the example course must arrive equally ready to open as a vault.
+    try:
+        copy_obsidian_defaults(dest)
+    except Exception as e:
+        print(f"⚠️  Unable to install Obsidian defaults: {e}")
+
     config_path = dest / "course_config.json"
     if config_path.exists() and dest_code != EXAMPLE_COURSE_CODE:
         try:

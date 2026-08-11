@@ -121,7 +121,10 @@ struct SectionDetailView: View {
                 .accessibilityIdentifier("openInBrowserButton")
 
                 Button("Open in Obsidian", systemImage: "diamond") {
-                    FolderActions.openInObsidian(course.sectionDirectoryURL(forSection: sectionNumber))
+                    FolderActions.openInObsidian(
+                        revealing: course.sectionDirectoryURL(forSection: sectionNumber),
+                        vaultURL: course.directoryURL
+                    )
                 }
                 .disabled(!FolderActions.obsidianIsInstalled)
                 .help("Edit this section's pages in Obsidian")
