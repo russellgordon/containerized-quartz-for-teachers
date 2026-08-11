@@ -32,9 +32,9 @@ struct AboutView: View {
     /// The credit lines, shown smallest, at the bottom above the copyright.
     let credits: [LocalizedStringKey] = [
         "Built on [Quartz](https://quartz.jzhao.xyz) by Jacky Zhao.",
-        "If Plantoir is useful to you, please [sponsor him](https://github.com/sponsors/jackyzha0) — his work makes it possible.",
         "Designed by Russell Gordon.",
         "Made with Claude.",
+        "Please [sponsor Jacky](https://github.com/sponsors/jackyzha0) — his work makes this app possible.",
     ]
 
     // The measurements, at the SYSTEM text size. Scaling from these keeps
