@@ -575,6 +575,12 @@ def computed_landing_title(cfg, section_number, show_marker):
     """
     name = str(cfg.get("course_name") or cfg.get("course_code") or "").strip()
     code = str(cfg.get("course_code") or "")
+    # The Ontario catalog's citation form ("Computer Science, Grade 12, U")
+    # is a fine formal name but a poor title: strip its trailing grade-and-
+    # pathway suffix so the toggle below controls the grade cleanly.
+    stripped = re.sub(r",\s*Grade\s*\d+.*$", "", name).strip()
+    if stripped:
+        name = stripped
     prefix = ""
     if cfg.get("show_grade_in_title", True) and len(code) >= 4 and code[3].isdigit():
         label = GRADE_LABELS.get(code[3], "Grade ?")

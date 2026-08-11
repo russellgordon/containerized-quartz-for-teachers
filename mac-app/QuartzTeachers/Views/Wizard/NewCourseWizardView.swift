@@ -236,9 +236,9 @@ struct NewCourseWizardView: View {
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         HStack {
-                            Button(knownNames.formal) {
-                                courseName = knownNames.formal
-                                lastAutoFilledName = knownNames.formal
+                            Button(knownNames.display) {
+                                courseName = knownNames.display
+                                lastAutoFilledName = knownNames.display
                             }
                             .accessibilityIdentifier("suggestedFormalNameButton")
                             Button(knownNames.short) {
@@ -336,8 +336,8 @@ struct NewCourseWizardView: View {
         }
         let mayReplace: Bool = courseName.isEmpty || courseName == lastAutoFilledName
         if mayReplace {
-            courseName = knownNames.formal
-            lastAutoFilledName = knownNames.formal
+            courseName = knownNames.display
+            lastAutoFilledName = knownNames.display
         }
     }
 

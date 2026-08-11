@@ -194,7 +194,15 @@ enum SectionAdder {
             }
         }
         let gradeLabel: String = SectionAdder.gradeLabel(forCourseCode: course.code)
-        let courseName: String = course.configuration.courseName
+        var courseName: String = course.configuration.courseName
+        // The catalog citation suffix (", Grade 12, U") is not title
+        // material — the toggle below owns the grade.
+        if let suffixRange = courseName.range(of: #",\s*Grade\s*\d+.*$"#, options: .regularExpression) {
+            let stripped: String = String(courseName[..<suffixRange.lowerBound]).trimmingCharacters(in: .whitespaces)
+            if !stripped.isEmpty {
+                courseName = stripped
+            }
+        }
         var titlePrefix: String = ""
         // Same rule the build uses: the grade leads only when the setting
         // says so, and never when the name already carries it anywhere

@@ -58,4 +58,19 @@ struct CourseNames: Equatable {
 
     let formal: String
     let short: String
+
+    // MARK: - Computed properties
+
+    /// The formal name without the catalog's citation suffix: the Ministry
+    /// writes "Computer Science, Grade 12, U", but a course TITLE wants
+    /// "Computer Science" — the grade is the grade toggle's business.
+    var display: String {
+        if let suffixRange = formal.range(of: #",\s*Grade\s*\d+.*$"#, options: .regularExpression) {
+            let stripped: String = String(formal[..<suffixRange.lowerBound]).trimmingCharacters(in: .whitespaces)
+            if !stripped.isEmpty {
+                return stripped
+            }
+        }
+        return formal
+    }
 }
