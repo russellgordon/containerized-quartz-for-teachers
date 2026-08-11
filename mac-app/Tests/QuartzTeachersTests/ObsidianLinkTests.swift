@@ -50,6 +50,55 @@ final class ObsidianLinkTests: XCTestCase {
         XCTAssertEqual(FolderActions.obsidianTarget(forFolder: vault, vaultURL: vault), vault)
     }
 
+    /// Auto-reveal is flipped on in the saved layout without disturbing
+    /// anything else in it.
+    @MainActor
+    func testAutoRevealIsEnabledAndTheRestOfTheLayoutSurvives() throws {
+        let layout: [String: Any] = [
+            "main": ["id": "m1", "type": "split"],
+            "left": [
+                "type": "split",
+                "children": [
+                    [
+                        "type": "tabs",
+                        "children": [
+                            [
+                                "type": "leaf",
+                                "state": [
+                                    "type": "file-explorer",
+                                    "state": ["sortOrder": "alphabetical", "autoReveal": false],
+                                    "icon": "lucide-folder-closed",
+                                ],
+                            ],
+                            [
+                                "type": "leaf",
+                                "state": ["type": "search", "state": ["query": "keep me"]],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            "active": "m1",
+        ]
+
+        let improved: [String: Any] = try XCTUnwrap(FolderActions.layoutEnablingAutoReveal(layout) as? [String: Any])
+
+        let left: [String: Any] = try XCTUnwrap(improved["left"] as? [String: Any])
+        let tabs: [String: Any] = try XCTUnwrap((left["children"] as? [Any])?.first as? [String: Any])
+        let leaves: [Any] = try XCTUnwrap(tabs["children"] as? [Any])
+        let explorer: [String: Any] = try XCTUnwrap(leaves[0] as? [String: Any])
+        let explorerState: [String: Any] = try XCTUnwrap(explorer["state"] as? [String: Any])
+        let innerState: [String: Any] = try XCTUnwrap(explorerState["state"] as? [String: Any])
+        XCTAssertEqual(innerState["autoReveal"] as? Bool, true)
+        XCTAssertEqual(innerState["sortOrder"] as? String, "alphabetical", "The teacher's sort order survives")
+
+        let search: [String: Any] = try XCTUnwrap(leaves[1] as? [String: Any])
+        let searchState: [String: Any] = try XCTUnwrap(search["state"] as? [String: Any])
+        let searchInner: [String: Any] = try XCTUnwrap(searchState["state"] as? [String: Any])
+        XCTAssertEqual(searchInner["query"] as? String, "keep me", "Other leaves are untouched")
+        XCTAssertEqual(improved["active"] as? String, "m1")
+    }
+
     /// The registry Obsidian keeps: a folder counts as "in a vault" when a
     /// registered vault IS the folder or contains it.
     @MainActor

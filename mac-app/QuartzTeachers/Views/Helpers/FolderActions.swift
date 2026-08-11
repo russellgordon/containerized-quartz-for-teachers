@@ -35,15 +35,75 @@ enum FolderActions {
         }
         let registryData: Data? = try? Data(contentsOf: FolderActions.obsidianRegistryFileURL)
         if FolderActions.folderIsInRegisteredVault(target.path, registryData: registryData) {
+            if !FolderActions.obsidianIsRunning {
+                // While Obsidian is closed its saved layout can be improved:
+                // auto-reveal makes the folder highlight when the page opens.
+                FolderActions.enableAutoRevealInLayout(ofVault: vaultURL)
+            }
             NSWorkspace.shared.open(obsidianLink)
             return
         }
         Task { @MainActor in
             await FolderActions.quitObsidianAndWait()
             FolderActions.seedObsidianDefaultsIfMissing(inVault: vaultURL)
+            FolderActions.enableAutoRevealInLayout(ofVault: vaultURL)
             FolderActions.registerVault(at: vaultURL)
             NSWorkspace.shared.open(obsidianLink)
         }
+    }
+
+    /// Whether Obsidian is running right now.
+    static var obsidianIsRunning: Bool {
+        return !NSRunningApplication.runningApplications(withBundleIdentifier: "md.obsidian").isEmpty
+    }
+
+    /// Turns on the File Explorer's "auto-reveal current file" in a vault's
+    /// saved layout, so opening a section's page highlights its folder in
+    /// Obsidian's sidebar. Obsidian rebuilds the layout on a vault's FIRST
+    /// open (a pre-seeded one is discarded — verified live) and holds it in
+    /// memory while running, so this only helps when Obsidian is closed and
+    /// the layout already exists: from the second open onward.
+    static func enableAutoRevealInLayout(ofVault vaultURL: URL) {
+        let layoutFileURL: URL = vaultURL.appendingPathComponent(".obsidian/workspace.json")
+        guard let layoutData = try? Data(contentsOf: layoutFileURL) else {
+            return
+        }
+        guard let layout = try? JSONSerialization.jsonObject(with: layoutData) else {
+            return
+        }
+        let improved: Any = FolderActions.layoutEnablingAutoReveal(layout)
+        guard let improvedData = try? JSONSerialization.data(withJSONObject: improved) else {
+            return
+        }
+        try? improvedData.write(to: layoutFileURL)
+    }
+
+    /// The same layout with every File Explorer's `autoReveal` set true and
+    /// nothing else touched.
+    static func layoutEnablingAutoReveal(_ node: Any) -> Any {
+        if let dictionary = node as? [String: Any] {
+            var result: [String: Any] = [:]
+            for (key, value) in dictionary {
+                result[key] = FolderActions.layoutEnablingAutoReveal(value)
+            }
+            if let state = result["state"] as? [String: Any],
+               state["type"] as? String == "file-explorer" {
+                var innerState: [String: Any] = (state["state"] as? [String: Any]) ?? [:]
+                innerState["autoReveal"] = true
+                var newState: [String: Any] = state
+                newState["state"] = innerState
+                result["state"] = newState
+            }
+            return result
+        }
+        if let array = node as? [Any] {
+            var result: [Any] = []
+            for element in array {
+                result.append(FolderActions.layoutEnablingAutoReveal(element))
+            }
+            return result
+        }
+        return node
     }
 
     /// What the link should point at. Obsidian opens FILES, not folders —
