@@ -89,6 +89,10 @@ relies on:
   of the year, in chronological order) — the installer spreads them across
   the semester as real, distinct weekday dates so the All Classes listing
   sorts newest-first; never give class pages the plain sentinel;
+- class pages' links ARE the schedule: every shared page automatically
+  inherits the date of the first class that links to it, so category
+  listings sort in teaching order — a concept page no class links to keeps
+  the install-time date instead;
 - curriculum-dependent passages sit between `%%curriculum-start%%` and
   `%%curriculum-end%%` comment lines, so declining the curriculum pages
   removes them cleanly (inline `[[A2.2|words]]` links unlink automatically);

@@ -1235,6 +1235,38 @@ def replacing_class_sentinels(text: str, reference) -> str:
         return semester_class_timestamp(int(match.group(1)), reference)
     return EXAMPLE_CONTENT_CLASS_SENTINEL.sub(replace, text)
 
+
+def first_use_dates(payload_dir: Path, reference) -> dict:
+    """
+    Page name -> the date of the FIRST class that links to it. A concept
+    taught on Unit 3, Day 5 should carry Unit 3, Day 5's date — that is
+    what lets each category page (Conventions, Discussions, ...) list its
+    pages in the order the course actually met them, which has meaning
+    for students. Pages no class links to are absent from the map and
+    keep the install-time date.
+    """
+    per_section_root = payload_dir / "per_section"
+    class_pages = []
+    if per_section_root.is_dir():
+        for page in per_section_root.rglob("*.md"):
+            with open(page, "r", encoding="utf-8") as handle:
+                text = handle.read()
+            match = EXAMPLE_CONTENT_CLASS_SENTINEL.search(text)
+            if match:
+                ordinal = int(match.group(1))
+                class_pages.append((ordinal, text))
+    class_pages.sort()
+
+    link_target_pattern = re.compile(r"!?\[\[([^\]#|]+)")
+    dates = {}
+    for ordinal, text in class_pages:
+        class_date = semester_class_timestamp(ordinal, reference)
+        for match in link_target_pattern.finditer(text):
+            target = match.group(1).strip().split("/")[-1]
+            if target and target != "index" and target not in dates:
+                dates[target] = class_date
+    return dates
+
 # Content that only makes sense alongside the curriculum pages sits between
 # these markers (Obsidian comments, so they are invisible on the site even
 # if something goes wrong). With curriculum pages excluded, the whole block
@@ -1330,7 +1362,8 @@ def unlink_curriculum_references(text: str, page_names: set) -> str:
 def install_payload_file(source: Path, destination: Path, now_str: str,
                          include_curriculum: bool, page_names: set,
                          section_number: int | None = None,
-                         reference=None) -> bool:
+                         reference=None,
+                         first_use_date: str | None = None) -> bool:
     """
     One file from payload to course. Markdown is adjusted on the way
     through; everything else is copied as-is. Existing files are never
@@ -1346,6 +1379,11 @@ def install_payload_file(source: Path, destination: Path, now_str: str,
         text = handle.read()
     if reference is not None:
         text = replacing_class_sentinels(text, reference)
+    if first_use_date is not None:
+        text = text.replace(
+            f"created: {EXAMPLE_CONTENT_CREATED_SENTINEL}",
+            f"created: {first_use_date}"
+        )
     text = text.replace(EXAMPLE_CONTENT_CREATED_SENTINEL, now_str)
     if section_number is not None:
         text = text.replace("__SECTION_NUMBER__", str(section_number))
@@ -1370,6 +1408,7 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
     """
     page_names = curriculum_page_names(payload_dir, manifest)
     curriculum_folder = manifest.get("curriculum_folder")
+    class_use_dates = first_use_dates(payload_dir, reference) if reference is not None else {}
     written = 0
 
     def top_level_allowed(entry: Path, allowed_folders: list, allowed_files: list) -> bool:
@@ -1394,7 +1433,8 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
                     continue
                 destination = course_path / source.relative_to(shared_root)
                 if install_payload_file(source, destination, now_str,
-                                        include_curriculum, page_names):
+                                        include_curriculum, page_names,
+                                        first_use_date=class_use_dates.get(source.stem)):
                     written += 1
 
     per_section_root = payload_dir / "per_section"
