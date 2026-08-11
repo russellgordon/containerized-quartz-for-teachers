@@ -214,9 +214,9 @@ Windows app), 🟠 partial, ⬜ not yet, — no Windows work needed.
   header vocabulary) · ✅ 7, 9 (list editors: + always enabled, ".md"
   hidden, Media reserved, kind-specific wording) · ✅ 8 (every input
   visibly editable — WinUI's stock bordered controls)
-- 🟠 2, 3 (font/scheme previews render in the bundled typefaces via
-  path#family references inside recessed sample boxes; per-process font
-  registration and the full sample layout still to polish)
+- ✅ 2, 3 (font/scheme previews render in the bundled typefaces via
+  ms-appx references inside recessed sample boxes, in the wizard and in
+  Course Settings — a bare path#family silently fell back to Segoe UI)
 - ✅ 10, 11 (WebView2 Back/Forward/Reload, open-in-browser via
   127.0.0.1, server probe gated on the run's own launch line) · ⬜ menu
   accelerators for Back/Forward/Reload (toolbar-only so far)
@@ -272,6 +272,19 @@ Windows app), 🟠 partial, ⬜ not yet, — no Windows work needed.
   sibling mirroring) · ✅ 87 (custom domain field, normalization,
   orange note, link swap) · ✅ 89 (literal per-section grade toggle +
   warning in settings and wizard) · ✅ 90 (Revert, not Cancel)
+- ✅ 91 (Preview/Deploy wear text labels beside their icons, "Stop
+  Preview" while running; Obsidian/Browser icon-only with tooltips) ·
+  ✅ 92, 93 (Starting Content section: pre-populate + curriculum
+  toggles when a bundled payload exists for the typed code, quiet note
+  otherwise; both keys written, forced false without a payload;
+  pre-populating hides the Structure editor behind the caption —
+  verified end-to-end: a real MTH1W create installed the manifest's
+  structure, 26 dated class pages, and the Curriculum folder) · ✅ 94
+  (school-neutral factory defaults mirrored from DEFAULT_*/LCS_* with
+  the "Use LCS-specific terminology" switch swapping the factory
+  portion and writing use_lcs_terminology; hidden list covers both
+  vocabularies) · — 95, 96 (shared Python installer + payloads; ships
+  via the bundled support folder, staggered dates verified on Windows)
 
 ## Planned
 
