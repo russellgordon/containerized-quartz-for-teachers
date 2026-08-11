@@ -6,7 +6,7 @@ transcludeTitleSize: h2
 excludeBacklinks: true
 ---
 %%curriculum-start%%
-- [[Curriculum/index|Curriculum expectations]]
+- [[Curriculum/index|Curriculum Expectations]]
 %%curriculum-end%%
 - [[What This Site Can Do]]
 - [[How Marks Work]]
