@@ -11,7 +11,19 @@ public static class FailureExplainer
         RateLimitExplanation(output)
         ?? AccountExplanation(output)
         ?? ConnectionExplanation(output)
+        ?? FolderAccessExplanation(output)
         ?? MissingBuildExplanation(output);
+
+    private static readonly string[] FolderAccessSigns =
+    {
+        "FileReadError", "Get-FileHash", "Access is denied", "UnauthorizedAccess",
+        "is denied", "being used by another process",
+    };
+
+    private static string? FolderAccessExplanation(string output) =>
+        FolderAccessSigns.Any(output.Contains)
+            ? "Plantoir couldn't read every file in this working folder. It may not have permission, or a file is open in another program. Try a folder you own — for example, one on your Desktop."
+            : null;
 
     private static string? RateLimitExplanation(string output)
     {

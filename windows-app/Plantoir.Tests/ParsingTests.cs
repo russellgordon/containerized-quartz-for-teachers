@@ -157,6 +157,22 @@ public class FailureExplainerTests
     [Fact]
     public void UnrecognizedFailuresStayQuiet() =>
         Assert.Null(FailureExplainer.Explanation("something exploded mysteriously"));
+
+    [Fact]
+    public void UnreadableFolderIsExplainedGently()
+    {
+        string output = "Get-FileHash : The file '...\\Plantoir.dll' ... [Write-Error], WriteErrorException\n" +
+                        "+ FullyQualifiedErrorId : FileReadError,Get-FileHash";
+        string? message = FailureExplainer.Explanation(output);
+        Assert.NotNull(message);
+        Assert.Contains("couldn't read every file", message);
+        Assert.Contains("Try a folder you own", message);
+    }
+
+    [Fact]
+    public void AccessDeniedIsExplainedGently() =>
+        Assert.Contains("couldn't read every file",
+            FailureExplainer.Explanation("icacls: Access is denied.")!);
 }
 
 public class TranscriptBuilderTests

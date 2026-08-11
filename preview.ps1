@@ -317,7 +317,7 @@ function Get-ToolchainHash([string]$context) {
   # in the repository the context is the repo root, and build outputs or
   # app sources must not steer the tag.
   Get-ChildItem -Path $context -Recurse -File | Where-Object {
-    $_.FullName -notmatch '[\\/](\.git|courses|mac-app|node_modules|\.merged_output)[\\/]' -and $_.Name -ne '.DS_Store'
+    $_.FullName -notmatch '[\\/](\.git|courses|mac-app|windows-app|node_modules|\.merged_output|bin|obj)[\\/]' -and $_.Name -ne '.DS_Store'
   } | Sort-Object FullName | ForEach-Object {
     $combined += (Get-FileHash -Algorithm SHA256 -Path $_.FullName).Hash
   }
