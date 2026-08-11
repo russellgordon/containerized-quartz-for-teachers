@@ -126,6 +126,8 @@ before running UI tests — the test runner can't terminate it.
   Quartz customizations, deployment, config reference, mac app).
 - [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) — the GUI behaviour log and
   Windows-porting spec.
+- [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) — start here to build the
+  Windows app: architecture, config contract, and platform notes.
 - [`WINDOWS-TESTING.md`](WINDOWS-TESTING.md) — status of the (untested)
   PowerShell launchers.
 - [`mac-app/README.md`](mac-app/README.md) — building and testing the app,

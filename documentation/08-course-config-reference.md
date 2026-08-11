@@ -35,7 +35,9 @@ A representative example:
     "sections": { "section1": { "header": "Montserrat", "body": "Lora", "code": "JetBrains Mono" } }
   },
   "show_section_marker": { "sections": { "section1": true, "section3": false } },
-  "color_schemes": { "section1": "nordic-frost", "section3": "mlb-toronto-blue-jays" }
+  "show_grade_in_title": { "sections": { "section1": true, "section3": false } },
+  "color_schemes": { "section1": "nordic-frost", "section3": "mlb-toronto-blue-jays" },
+  "custom_domains": { "sections": { "section1": "ics3u.myschool.ca" } }
 }
 ```
 
@@ -44,7 +46,7 @@ A representative example:
 | Key | Type | Written by | Consumed by | Meaning |
 |---|---|---|---|---|
 | `course_code` | string | setup | build | Uppercased code, e.g. `ICS3U`. The 4th character, if a digit, encodes grade (1→9 … 4→12) and selects "course mode"; a non-digit (e.g. `CODING`) selects "club mode". |
-| `course_name` | string | setup | setup (titles) | Human name used in generated `index.md` titles. |
+| `course_name` | string | setup | setup (starting titles) + build (computed landing title, every build) | Human name. The build recomputes each section's landing title from it every time, so renames reach the site. |
 | `custom_short_name` | string | setup (club mode only) | build | ≤ 12-char label shown beside the header emoji instead of the course code. Empty → fall back to title-cased code. |
 | `locale` | string | setup | build → `quartz.config.ts` | One of Quartz's 27 locale codes; drives UI strings ([teacher-customized](06-quartz-customizations.md#d-locale-files-replaced-at-build-time)) and date formats. |
 | `emojis.sections.section<N>` | string | setup | build (page title) | Single emoji per section, e.g. `"📚"`. Legacy `emojis.default` is honoured as a fallback. |
@@ -60,8 +62,10 @@ A representative example:
 | `footer_html` | string | setup | build → `Footer.tsx` | Raw HTML injected into every page's footer. |
 | `show_reading_time` | bool | setup | build → `ContentMeta.tsx` | Show "N min read" on pages. |
 | `fonts.default` / `fonts.sections.section<N>` | object | setup | build → `quartz.config.ts` typography | `header`, `body`, `code` font family names (Google Fonts or system stacks). Section entry wins over default. |
-| `show_section_marker.sections.section<N>` | bool | setup | build (page title + index title) | Whether the header shows `S<N>` and the home title keeps ", Section N". The build also accepts several legacy shapes (plain bool, flat map, alternate key names). |
-| `color_schemes.section<N>` | string | setup | build → `quartz.config.ts` colors | Scheme id from `support/colour_schemes.json` (43 available). |
+| `show_section_marker.sections.section<N>` | bool | setup | build (page title + computed landing title) | Whether the header shows `S<N>` and the computed landing title carries ", Section N". The build also accepts several legacy shapes (plain bool, flat map, alternate key names). |
+| `show_grade_in_title.sections.section<N>` | bool (default `true`) | app (per-section settings; wizard seeds all sections) | build (computed landing title) | Whether the landing title leads with the grade ("Grade 11 …"). Deliberately literal — the switch alone decides; the app shows an orange warning when the name already contains the grade label. A legacy course-wide bool is honoured. |
+| `color_schemes.section<N>` | string | setup | build → `quartz.config.ts` colors + social card | Scheme id from `support/colour_schemes.json` (43 available). The section's social sharing card is drawn in this scheme too. |
+| `custom_domains.sections.section<N>` | string | app (Advanced, per-section settings) | app (published-site links) | The teacher's own domain for the section's published site. Links after a deploy swap the Netlify host for it (path preserved, https). `deploy.py` does not consume it; the domain itself is configured on Netlify. Entries are normalized (scheme and path stripped) on the way in. |
 
 ## Files that travel alongside it
 

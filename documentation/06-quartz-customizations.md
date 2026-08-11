@@ -182,7 +182,8 @@ build means a re-run of the setup wizard (or a hand edit of
 | C2-9 | **Locale** | `quartz.config.ts` | Sets `locale:` to the configured code (affects all UI strings via the layer-D locale files, plus date formatting). |
 | C2-10 | **Colour scheme** | `quartz.config.ts` | Replaces the entire `colors: { lightMode: {...}, darkMode: {...} }` block with the section's chosen scheme from `colour_schemes.json` (brace-counting replacement, not regex, to handle the nested object safely). |
 | C2-11 | **Social-media previews toggle** | `quartz.config.ts` | Comments/uncomments the `Plugin.CustomOgImages()` emitter line per the `--include-social-media-previews` flag. Generating Open Graph images roughly doubles build time, so it is opt-in and typically used only for deploys. |
-| C2-12 | **Index title marker strip** | `content/index.md` | If the section marker is hidden for this section, removes a trailing ", Section N" from the home page's frontmatter title. |
+| C2-12 | **Computed landing title** | `content/index.md` | The home page's frontmatter title is REPLACED with one computed from the current settings: `course_name`, the per-section grade toggle (`show_grade_in_title`), and the section-marker setting (which governs the ", Section N" suffix). Only the merged copy is written; the teacher's source file is never touched. |
+| C2-13 | **Social sharing card** | `quartz/static/og-image.png` | `social_card.py` (Pillow) redraws the 1200×630 share image every build in the section's colour scheme and fonts — course name large, emoji + course code (+ marker) beneath. Replaces the stock Quartz card the site's head already links. |
 
 ### C3. Content-level transformations (every build)
 
@@ -204,7 +205,7 @@ adapt *Obsidian conventions* to *Quartz expectations* and are detailed in
 
 `support/locales/` contains all 27 Quartz locale files, installed over
 `quartz/i18n/locales/` on first build. Each differs from stock in exactly
-three strings, translated appropriately in every language:
+four strings, translated appropriately in every language:
 
 | UI element | Stock (en-US) | Replaced with |
 |---|---|---|
@@ -233,7 +234,7 @@ a syllabus) or where the link graph would mislead.
 
 ## E. Summary: what is *not* customized
 
-Everything else is stock Quartz v4.5.0: the Markdown/OFM transformer
+Everything else is stock Quartz v4.5.0 — with one asset exception: `quartz/static/og-image.png` is overwritten every build by the generated social sharing card (see C2-13): the Markdown/OFM transformer
 pipeline, full-text search (FlexSearch), syntax highlighting, LaTeX
 rendering, callouts, popovers, RSS/sitemap emitters, mobile layout, and
 light/dark mode. The customizations are deliberately thin wrappers around

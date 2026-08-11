@@ -10,7 +10,7 @@ deploy).
 
 ```
 course_config.json ─┐
-shared folders ─────┤                       ┌─▶ preview: quartz build --serve :8081
+shared folders ─────┤                       ┌─▶ preview: quartz build --serve :8081-8084
 section<N>/ ────────┼─▶ .merged_output/section<N>/ ─┤
 patched Quartz ─────┤        (scaffold + content)   └─▶ deploy:  quartz build → public/
 support files ──────┘
@@ -135,6 +135,27 @@ locale, per-section colour scheme, and the social-media-preview emitter
 toggle. Each is detailed in
 [customizations §C2](06-quartz-customizations.md#c2-applied-on-every-build).
 
+Two more things happen here, fresh on every build:
+
+- **The landing-page title is computed** (`computed_landing_title`) from
+  the CURRENT settings — `course_name`, the per-section
+  `show_grade_in_title` toggle (default on; a legacy course-wide boolean
+  is honoured), and the per-section `show_section_marker` setting, which
+  governs the `", Section N"` suffix — and written into the MERGED copy of
+  `content/index.md` only. The teacher's source file is never rewritten,
+  a course rename reaches the site on the next build, and the behaviour is
+  deliberately literal: no name is ever edited to avoid a repeated grade
+  (the app warns instead, and the teacher decides).
+- **The social sharing card is drawn.** `social_card.py` (Pillow) renders
+  a 1200×630 card — the section's colour-scheme light background, the
+  course name large in the header font (scheme `secondary` colour,
+  auto-sized, at most two lines), and the course emoji beside the course
+  code (plus the `S<N>` marker when enabled) in the body font — and writes
+  it over the scaffold's `quartz/static/og-image.png`, which the site's
+  head already links as its share image. No logo and no domain (Apple's
+  share sheet overlays the domain itself). A failed draw prints a warning
+  and never fails the build.
+
 Additionally, `course_config.json` itself is copied to
 `<output>/quartz/course_config.json` and the patched Explorer components'
 import paths are pointed at it — the Explorer *reads course configuration at
@@ -148,9 +169,12 @@ site-build time* to know which folders are expandable.
   (2024-01-01), nudging build tooling toward reproducible output —
   part of the [determinism strategy](07-deployment.md#why-determinism-matters)
   that keeps Netlify uploads small.
-- **Preview mode (default):** kills any process holding port 8081 (`lsof`),
-  then runs `npx quartz build --concurrency 1 --serve --port 8081`. The
-  teacher browses `http://localhost:8081`; Quartz rebuilds on file changes.
+- **Preview mode (default):** kills any process holding the requested
+  port (`lsof`, that port only — several previews can run at once), then
+  runs `npx quartz build --concurrency 1 --serve --port <8081-8084>
+  --wsPort <port+1000>` (the websocket port keeps concurrent previews'
+  live reload from colliding). The teacher browses the HOST address the
+  launcher printed; Quartz rebuilds on file changes.
 - **Build-only mode:** `npx quartz build --concurrency 1`, then verifies
   `public/` exists. This is the path `deploy` uses.
 

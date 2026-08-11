@@ -35,17 +35,21 @@ This toolchain lets a teacher:
 - **Docker** removes the single largest support burden when sharing the
   workflow with other teachers: environment setup. Node.js, Python,
   `python-frontmatter`, and the patched Quartz checkout are all frozen inside
-  one image (`rwhgrwhg/teaching-quartz`), so a teacher never touches npm or
-  pip. Docker Desktop is deliberately **not** used: the launchers provision a
+  one image, built locally on each machine from the recipe every working
+  folder carries (tagged `teaching-quartz:src-<hash8>`), so a teacher never
+  touches npm or pip — and no registry account is involved. Docker Desktop is deliberately **not** used: the launchers provision a
   free, open-source runtime themselves — [Colima](https://github.com/abiosoft/colima)
   on macOS, the Docker Engine inside WSL2 on Windows — and start it
   automatically on every run, removing the "open Docker Desktop and wait"
   manual step entirely
   (see [Launcher Scripts](03-launcher-scripts.md#container-runtime-bootstrap)).
-  The container is also **the distribution mechanism for the launcher scripts
-  themselves** — the scripts are baked into the image and exported to the host
-  with a one-line `docker run … export-scripts` command, so teachers never
-  clone this repository.
+  Distribution is **the Plantoir app**: it bundles the full build recipe
+  (Dockerfile, patches, scripts, support files, launchers) and mirrors it
+  into each working folder's `.toolchain/`, refreshing stale copies — so
+  teachers never clone this repository, and an app update IS a toolchain
+  update (new recipe → new image tag → local rebuild → recreated
+  container). The image still bakes an `export-scripts` command as an
+  escape hatch.
 - **Netlify** provides free static hosting with instant cache invalidation.
   Deploys use Netlify's *file-digest* API so that a typical daily update
   uploads only the handful of files that changed
@@ -61,7 +65,7 @@ This toolchain lets a teacher:
 | Command (macOS / Windows) | Script pair | What actually happens |
 |---|---|---|
 | `./setup.sh` / `.\setup.bat` | [`setup_course.py`](04-course-setup.md) | Ensures the container is running with the right folder mounted, then runs an interactive wizard that scaffolds `courses/<CODE>/` and writes `course_config.json` |
-| `./preview.sh ICS3U 1` / `.\preview.bat ICS3U 1` | [`build_site.py`](05-build-pipeline.md) | Merges shared + section-1 content into `.merged_output/section1/`, patches the Quartz scaffold, and serves the site at `http://localhost:8081` |
+| `./preview.sh ICS3U 1` / `.\preview.bat ICS3U 1` | [`build_site.py`](05-build-pipeline.md) | Merges shared + section-1 content into `.merged_output/section1/`, patches the Quartz scaffold, draws the section's social sharing card, and serves the site — the launcher prints the address (each working folder has its own probed host port block) |
 | `./deploy.sh ICS3U 1` / `.\deploy.bat ICS3U 1` | [`deploy.py`](07-deployment.md) | Runs a static build (`--build-only`), then delta-uploads `public/` to a Netlify site tied to that section |
 
 ## Key design decisions worth understanding

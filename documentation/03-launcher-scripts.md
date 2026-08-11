@@ -49,8 +49,9 @@ Each working folder gets its own container, named
 `pwd -P | shasum -a 256` — so two folders (this year's courses and last
 year's, say) never repoint each other's mounts, and can preview at the same
 time. At creation the launcher probes for a free block of HOST ports
-(8081–8084, then 8091–8094, and so on, each with its +1000 websocket
-block) and maps it to the container's fixed ports; `preview.sh` prints the
+(bases 8081, 8091, 8101, 8111, 8121, 8131 — four site ports each, plus a
+matching +1000 websocket block for Quartz's live reload) and maps it to
+the container's fixed ports 8081–8084 and 9081–9084; `preview.sh` prints the
 resolved address ("Preview will be available at: …"), which is what the app
 and a terminal teacher should open. The old shared `teaching-quartz`
 container is retired automatically the first time a per-folder container is
@@ -59,68 +60,33 @@ not a removal) when the last window using that folder closes, and on quit —
 the container holds no content, and restarts in about a second on the next
 preview.
 - `--context NAME` (setup only) — select a Docker context.
+- `--image REF` — use a specific already-built image instead of resolving
+  one from the recipe (how `verify.sh` points the launchers at its
+  `dev-test` build). In `preview.sh` the image pre-parser deliberately
+  scans the whole argument list, since the flag follows the course and
+  section.
 
-The scripts then ensure a container runtime is available (next section),
-pull the image if needed, and print the image's OCI version/created/revision
-labels so the teacher knows exactly which build is active.
+The scripts then ensure a container runtime is available (next section)
+and build the image locally if the recipe's tag is missing — nothing is
+ever pulled from a registry.
 
 ### Staying up to date
 
 The image tag is a hash of the folder's build recipe, so staleness is
 structural rather than checked-for: an updated recipe (delivered by an app
-update refreshing `.toolchain/`) means a new tag, a local rebuild on the
-next run, and a recreated container. The old pull-and-compare update
-machinery (`--update-image`, digest checks, the update prompt) is gone.
+update refreshing `.toolchain/` — the full recipe folder the app mirrors
+into every working folder) means a new tag, a local rebuild on the next
+run, and a recreated container. The hash covers only recipe files: the
+`find` prunes `.git`, `courses`, `mac-app`, `node_modules`,
+`.merged_output`, and `.verify-export.*`, so build outputs never steer
+the tag (from the repository root they once did, at the cost of minutes
+of checksumming per run). The old pull-and-compare update machinery
+(`--update-image`, digest checks, the update prompt) is gone.
 
-### One container per working folder
-
-Each working folder gets its own container, named
-`teaching-quartz-<hash>` where the hash is the first eight characters of
-`pwd -P | shasum -a 256` — so two folders (this year's courses and last
-year's, say) never repoint each other's mounts, and can preview at the same
-time. At creation the launcher probes for a free block of HOST ports
-(8081–8084, then 8091–8094, and so on, each with its +1000 websocket
-block) and maps it to the container's fixed ports; `preview.sh` prints the
-resolved address ("Preview will be available at: …"), which is what the app
-and a terminal teacher should open. The old shared `teaching-quartz`
-container is retired automatically the first time a per-folder container is
-created. The macOS app stops a folder's container (a fast `docker stop`,
-not a removal) when the last window using that folder closes, and on quit —
-the container holds no content, and restarts in about a second on the next
-preview.
-- `--context NAME` (setup only) — select a Docker context.
-
-The scripts then ensure a container runtime is available (next section),
-pull the image if needed, and print the image's OCI version/created/revision
-labels so the teacher knows exactly which build is active.
-
-### Staying up to date
-
-An image that is already on the machine used to be accepted without
-question, so a teacher kept whichever build they first downloaded and
-later fixes never reached them. `setup.sh` and `preview.sh` (and their
-`.ps1` peers) now compare two things:
-
-1. **The published version against the installed one.** The digest from
-   the registry is compared with the digest of the local image. If they
-   differ, the teacher is told a newer version exists and asked whether to
-   install it — never installed behind their back, and never asked at all
-   when the run is not interactive (it prints how to update instead) or
-   when the image is a local build with no registry to consult. If the
-   machine is offline the check simply passes, so being away from a
-   network never blocks a build.
-
-2. **The container against the image it should be running.** A container
-   keeps running the version it was created from, so pulling a new image
-   changes nothing by itself. When the container's image ID differs from
-   the image the launcher resolved, the container is recreated. This is
-   not asked about: the container holds no state of its own — everything
-   lives in the mounted `courses/` folder — and running a version other
-   than the chosen one is simply wrong.
-
-`deploy.sh` does neither, deliberately: it resolves no image of its own,
-and interrupting a publish to install an update would be a poor moment to
-ask.
+`verify.sh` guards the launchers themselves: among its checks, every
+helper function a launcher calls must be defined in that same launcher
+file — the three scripts share copied helper blocks, and a helper missing
+from one of them is exit 127 at runtime on the one path nobody tested.
 
 <a name="container-runtime-bootstrap"></a>
 
@@ -193,27 +159,35 @@ launchers:
 
 ## 4. Mount-aware container lifecycle
 
-This is the most subtle part of the launchers. There is a single long-lived
-container named `teaching-quartz`, started as:
+This is the most subtle part of the launchers. Each working folder has its
+own long-lived container (see "One container per working folder" above),
+started as:
 
 ```bash
-docker run -dit --name teaching-quartz \
+docker run -dit --name "teaching-quartz-${WORKDIR_ID}" \
   -v "$(pwd)/courses":/teaching/courses \
-  -p 8081:8081 "$IMAGE" tail -f /dev/null
+  -p ${HOST_BASE}-$((HOST_BASE+3)):8081-8084 \
+  -p $((HOST_BASE+1000))-$((HOST_BASE+1003)):9081-9084 \
+  "$IMAGE" tail -f /dev/null
 ```
 
-Because teachers may keep *different* course folders in different locations
-(e.g. one folder per school year, or a separate folder for a club), every
-launcher inspects the existing container before using it:
+where `WORKDIR_ID` is the folder hash and `HOST_BASE` the probed port
+block. Every launcher inspects the existing container before using it:
 
 1. **No `/teaching/courses` mount at all?** Recreate the container.
 2. **Mounted from a different host folder than the current one?** Recreate
-   it pointing at `$(pwd)/courses`. This is what makes the scripts safe to
-   copy into multiple working folders — whichever folder you run from wins.
-3. **Mount correct but not writable?** (Checked by creating and deleting a
+   it pointing at `$(pwd)/courses` (rare now that names are per-folder,
+   but a moved folder keeps its old name with a stale mount).
+3. **Running a different image than the recipe resolves?** Recreate — a
+   container keeps running the version it was created from, so a changed
+   recipe only takes effect through recreation.
+4. **Missing the 9081–9084 websocket ports?** (An older container
+   published only 8081; published ports cannot be changed after creation.)
+   Recreate.
+5. **Mount correct but not writable?** (Checked by creating and deleting a
    probe file inside the container.) Recreate. This catches macOS
    permission/ACL oddities after folder moves or restores.
-4. Otherwise, start the container if stopped, or reuse it as-is.
+6. Otherwise, start the container if stopped, or reuse it as-is.
 
 Recreating the container is cheap because all state lives in the bind mount.
 
@@ -229,19 +203,23 @@ Recreating the container is cheap because all state lives in the bind mount.
   wall clock ([why this matters](05-build-pipeline.md#dates-drive-everything)).
 - If `--no-backup` is being passed through, demands explicit confirmation
   first.
-- Finally: `docker exec -it teaching-quartz python3 /opt/scripts/setup_course.py …`
+- Finally: `docker exec -it "teaching-quartz-${WORKDIR_ID}" python3 /opt/scripts/setup_course.py …`
 
 ### `preview.sh`
 
 - Takes `COURSE SECTION` as positional arguments, plus pass-through flags
   understood by `build_site.py`: `--include-social-media-previews`,
-  `--force-npm-install`, `--full-rebuild`, `--build-only`.
+  `--force-npm-install`, `--full-rebuild`, `--build-only` — plus its own
+  `--port N` (container port 8081–8084) and `--image REF`.
 - Validates the requested section against `course_config.json`
   (`section_numbers`) *on the host* before ever entering the container, so a
   typo like section `2` in a course with sections `1,3,4` fails fast with a
   helpful message.
 - Runs `build_site.py`, which (by default) ends by serving the site on
-  `http://localhost:8081` — this is why the container publishes port 8081.
+  the requested container port (8081–8084), with Quartz's live-reload
+  websocket on port + 1000 (`--wsPort`) — the reason the container
+  publishes both ranges. The reachable HOST address is the folder's
+  probed block; `preview.sh` prints it.
 
 ### `deploy.sh`
 
@@ -274,10 +252,12 @@ Recreating the container is cheap because all state lives in the bind mount.
 ## A note on line endings
 
 The repository stores every file with LF endings. At image-build time,
-`unix2dos` converts the exported `.bat`/`.ps1` copies to CRLF (Windows batch
-files can misbehave with bare LF). So the copies a teacher receives via
-`export-scripts` intentionally differ from the repo versions in line endings
-only.
+`unix2dos` converts the `.bat`/`.ps1` copies baked into the image's
+`export-scripts` bundle to CRLF (Windows batch files can misbehave with
+bare LF), and `verify.sh` checks the CRLF survives. Teachers normally
+receive launchers via the app's `.toolchain/` mirror rather than
+`export-scripts`, but the exported copies remain a supported escape hatch
+and differ from the repo versions in line endings only.
 
 ---
 

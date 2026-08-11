@@ -42,6 +42,14 @@ which gets wiped by `--full-rebuild`; markers found there are silently
 migrated to the stable location. This is also why marker storage lives under
 the *course* folder, not the *output* folder.)
 
+The `*.netlify.app` address need not be the address anyone shares: a
+teacher can attach a **custom domain** to the site in Netlify and record
+it per section in `course_config.json`
+(`custom_domains.sections.section<N>`) — the app's published-site links
+then wear that domain (host swapped, path preserved, https). `deploy.py`
+itself does not consume the key; the domain is configured on Netlify's
+side as usual.
+
 ## Every deploy: the delta algorithm
 
 Netlify supports a

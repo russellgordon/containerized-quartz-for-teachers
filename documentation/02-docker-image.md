@@ -6,8 +6,11 @@ The image is the entire runtime environment, and it is **built locally on
 each machine** from the [`Dockerfile`](../Dockerfile) — no registry of ours
 is involved. A working folder carries the build recipe in `.toolchain/`
 (kept current by the macOS app); a repository copy IS the recipe. The image
-tag is `teaching-quartz:src-<hash>` where the hash covers the recipe's
-contents, so an updated recipe produces a new tag, the launcher builds it,
+tag is `teaching-quartz:src-<hash8>` where the hash covers ONLY the
+recipe's files (the `find` prunes `.git`, `courses`, `mac-app`,
+`node_modules`, `.merged_output`, and `.verify-export.*`, and skips
+`.DS_Store` — so build outputs never steer the tag), so an updated recipe
+produces a new tag, the launcher builds it,
 and the container is recreated to match — the whole chain keyed off one
 thing: the version of the app.
 
@@ -23,13 +26,17 @@ The image is layered as follows (in order):
 1. **Base: `python:3.11-slim`** — Debian slim with Python 3.11. Python is
    needed for the three orchestration scripts; 3.11 also provides `zoneinfo`
    for timezone-correct timestamps.
-2. **`pip install python-frontmatter`** — the one Python dependency. It
-   parses and rewrites the YAML frontmatter block at the top of each Markdown
-   file (used heavily for the per-section `draft`/`created` machinery).
+2. **`pip install python-frontmatter Pillow`** — the two Python
+   dependencies. `python-frontmatter` parses and rewrites the YAML
+   frontmatter block at the top of each Markdown file (used heavily for the
+   per-section `draft`/`created` machinery); Pillow draws each section's
+   social sharing card.
 3. **Node.js 20 + tools** — installed from NodeSource. Quartz is a Node
-   program (`npx quartz build`). Also installed: `git` (needed to clone
-   Quartz), `lsof` (used to kill a previous preview server holding port
-   8081), and `dos2unix`/`unix2dos` (line-ending conversion, below).
+   program (`npx quartz build`). Also installed: `curl`, `git` (needed to
+   clone Quartz), `lsof` (used to kill a previous preview server holding
+   the requested port, 8081–8084), `dos2unix`/`unix2dos` (line-ending
+   conversion, below), and `fonts-noto-color-emoji` (the colour emoji
+   drawn onto social sharing cards).
 4. **Clone Quartz v4.5.0 → `/opt/quartz`** — a pinned checkout:
    ```dockerfile
    RUN git clone --branch v4.5.0 https://github.com/jackyzha0/quartz.git quartz
@@ -51,8 +58,9 @@ The image is layered as follows (in order):
 6. **`cp -r /opt/quartz /opt/quartz-site`** — a spare copy of the scaffold
    (not used by the current build path, which copies from `/opt/quartz`
    directly).
-7. **Copy the three Python scripts** into `/opt/scripts/`:
-   `setup_course.py`, `build_site.py`, `deploy.py`.
+7. **Copy the four Python scripts** into `/opt/scripts/`:
+   `setup_course.py`, `build_site.py`, `deploy.py`, and `social_card.py`
+   (the per-section social sharing card renderer).
 8. **Copy `support/` → `/opt/support/`** — data files consumed by the
    scripts:
    - `ontario_secondary_courses.json` — 1,930 Ontario course codes mapped to
@@ -64,19 +72,27 @@ The image is layered as follows (in order):
    - `locales/` — all 27 Quartz locale files with teacher-oriented wording
      (see [customizations §D](06-quartz-customizations.md#d-locale-files-replaced-at-build-time)).
    - `Backlinks.tsx` — a patched Backlinks component installed at build time.
+   - `fonts/` — the eighteen bundled site fonts (`.ttf`) plus their
+     licences. This is the SINGLE font source: the container draws social
+     cards with the same files the macOS app bundles for its settings
+     previews (font display name → file by stripping spaces, e.g.
+     "Playfair Display" → `PlayfairDisplay.ttf`).
    - `obsidian_defaults/.obsidian/` — Obsidian vault settings seeded into new
      courses (e.g. `attachmentFolderPath: "Media"` so pasted screenshots land
-     in the shared Media folder).
+     in the shared Media folder, and a `workspace.json` with the File
+     Explorer's auto-reveal turned on).
    - `example_course/EXC2O/` — the complete example course installable from
-     the setup wizard.
+     the setup wizard (it, too, receives the `.obsidian` defaults on
+     install).
 9. **Bake the launcher scripts into `/opt/export/`** and register an
-   `export-scripts` command. This is the distribution trick that means
-   teachers never clone this repo:
+   `export-scripts` command:
    ```bash
-   docker run --pull=always --rm -v "$PWD:/out" rwhgrwhg/teaching-quartz:latest export-scripts
+   docker run --rm -v "$PWD:/out" teaching-quartz:src-<hash8> export-scripts
    ```
    copies `setup/preview/deploy` in all three flavours (`.sh`, `.bat`, `.ps1`)
-   into the teacher's current folder. During the image build, `unix2dos`
+   into the current folder. Teachers normally receive launchers via the
+   app's `.toolchain/` mirror; this remains an escape hatch, and
+   `verify.sh` checks the baked copies match the working tree. During the image build, `unix2dos`
    converts the `.bat` and `.ps1` files to CRLF line endings — `cmd.exe` can
    misparse LF-only batch files, and the repo itself stores everything with
    LF.
@@ -99,7 +115,9 @@ The image is layered as follows (in order):
 The launchers build the image when the expected tag is missing, with
 BuildKit (`docker buildx build --load`) — the legacy builder silently
 mangles the `export-scripts` layer. `verify.sh` exercises exactly this
-build against a `dev-test` tag and remains the gate for toolchain changes.
+build against a `dev-test` tag and remains the gate for toolchain changes
+(it needs a TTY, and it also cross-checks that every helper function a
+launcher calls is defined in that same launcher file).
 The `--image REF` flag on each launcher substitutes a specific already-built
 image, which is how `verify.sh` drives the launchers against its own build.
 

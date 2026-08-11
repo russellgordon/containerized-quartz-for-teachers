@@ -1,9 +1,11 @@
 # Windows Testing Brief — WSL2 Container Runtime Path
 
 > **Audience:** a Claude Code session running on the maintainer's Windows 11 Pro
-> machine. This file gives you the context needed to test (and fix) recent
-> changes to this toolchain's Windows launchers. Read this fully before
-> touching anything.
+> machine. This file gives you the context needed to test (and fix) this
+> toolchain's Windows launchers, which remain **untested on real Windows**.
+> Read this fully before touching anything. If you are building the Windows
+> APP, start with [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) — but test the
+> launchers (this file) first; the app drives them.
 
 ## Mission
 
@@ -17,12 +19,16 @@ find what breaks, fix it, and report.
 ## Background (5-minute orientation)
 
 - This repo publishes teaching websites from Obsidian vaults using a Docker
-  container (`rwhgrwhg/teaching-quartz`, on Docker Hub) that wraps a patched
-  Quartz v4.5.0. Full architecture docs: [`documentation/README.md`](documentation/README.md),
+  container that wraps a patched Quartz v4.5.0. There is **no registry**:
+  the launchers hash the folder's build recipe and build the image locally
+  as `teaching-quartz:src-<hash8>` (`Get-BuildContext` / `Get-ToolchainHash`
+  / `Build-ImageIfMissing` in the `.ps1` files). Full architecture docs:
+  [`documentation/README.md`](documentation/README.md),
   especially [`documentation/03-launcher-scripts.md`](documentation/03-launcher-scripts.md)
   (the section "Container runtime bootstrap" describes exactly what you are testing).
 - The teacher-facing flow is: `setup.bat` (interactive course wizard) →
-  `preview.bat COURSE SECTION` (build + serve on `http://localhost:8081`) →
+  `preview.bat COURSE SECTION` (build + serve; the launcher prints the
+  host address — each working folder gets its own probed port block) →
   `deploy.bat COURSE SECTION` (delta deploy to Netlify).
 - Each `.bat` is a thin wrapper that runs the `.ps1` beside it.
 - The macOS counterpart of this change (Colima) is **already tested and
@@ -53,17 +59,18 @@ block: `Ensure-ContainerRuntime` plus helpers. Its intended behaviour:
 
 - Windows 11 Pro (build 26100), PowerShell 5.1 minimum target (also test
   under `pwsh` 7 if installed).
-- Clone/pull this repo; **test the repo's `.ps1` files directly**. Note that
-  the published Docker Hub image still exports the *old* launchers via
-  `export-scripts`, so do not test with exported copies.
+- Clone/pull this repo; **test the repo's `.ps1` files directly** (in
+  production they reach teachers via the app's `.toolchain/` mirror).
 - The repo stores files with **LF line endings** (depending on
   `core.autocrlf`, your checkout may or may not have CRLF). PowerShell
   handles LF `.ps1` fine. If a `.bat` misbehaves with LF endings, invoke the
   `.ps1` directly (`powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1`)
   and note the finding — in production, teachers receive CRLF copies (the
   image build runs `unix2dos`).
-- The container image itself needs no changes; `rwhgrwhg/teaching-quartz:latest`
-  from Docker Hub is fine for all tests.
+- The container image is **built locally by the launcher on first run**
+  (BuildKit required — `Ensure-Buildx`); expect the first run to take a few
+  minutes and to need the network. A changed recipe changes the tag and
+  rebuilds.
 - `courses/` is gitignored — a fresh clone has no courses. The setup wizard
   offers to install an Example Course (**EXC2O**); say yes and use it as the
   test fixture throughout.
@@ -115,8 +122,20 @@ install/start work is repeated.
 **7. Edge cases.**
    - Run from a folder whose path contains spaces (e.g.
      `C:\Users\<me>\Class Websites Test\`) — mount translation and quoting.
-   - Move the folder, run again — the mount-mismatch recreation logic should
-     trigger with `/mnt/c/...` comparisons.
+   - Move the folder, run again — the container NAME is derived from the
+     folder's path hash, so a moved folder gets a brand-new container (and
+     the old one is left stopped); confirm the new one mounts the new
+     `/mnt/c/...` path.
+   - Two working folders at once: confirm each gets its own container
+     (`teaching-quartz-<hash>`) and its own host port block (bases 8081,
+     8091, …, each with a +1000 websocket block), and that two previews can
+     run simultaneously.
+   - `.\preview.ps1 EXC2O 1 --port 8082` — the per-preview port flag.
+   - After any build, confirm the merged output contains the generated
+     social sharing card (`.merged_output/section1/quartz/static/og-image.png`
+     should be a title card in the course's colours, not the stock Quartz
+     crystal — the card is drawn by `scripts/social_card.py` inside the
+     container, so no Windows-side work is involved).
    - `deploy.ps1`'s token-injection steps (the `ProcessStartInfo` ones) — the
      `$DOCKER_PREFIX` quoting through `wsl.exe` is the riskiest untested
      code; verify `/tmp/netlify_pat` arrives in the container intact
@@ -136,6 +155,6 @@ install/start work is repeated.
 ## Ground rules
 
 - Never uninstall WSL or delete existing WSL distros without asking first.
-- Don't publish the Docker image (`publish.sh` is macOS-side and out of scope).
+- Images are only ever built locally; there is nothing to publish.
 - Netlify deploys are opt-in only (they create public sites).
 - The `.sh` files are macOS-only — do not "fix" them on Windows.

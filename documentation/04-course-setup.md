@@ -78,7 +78,10 @@ any mutation*, excluding caches and generated output (`node_modules`,
   the course folder *without overwriting existing files*. The important
   setting is `attachmentFolderPath: "Media"` — a screenshot pasted into
   Obsidian is saved to the shared `Media/` folder automatically. It also
-  ships the Minimal theme and disables live preview.
+  ships the Minimal theme, disables live preview, and seeds a
+  `workspace.json` with the File Explorer's auto-reveal on, so opening a
+  page highlights its folder in Obsidian's sidebar. The example-course
+  installer seeds the same defaults.
 
 ### 4. Appearance and localization (all per-section where sensible)
 
@@ -98,6 +101,12 @@ any mutation*, excluding caches and generated output (`node_modules`,
   stored under a course-wide `default` with per-section overrides.
 - **Header emoji per section** and **section marker visibility per section**
   (whether the header reads "📚 ICS3U S1" or just "📚 ICS3U").
+- Per-section (set after creation, in the app's section settings):
+  **grade in the title** (`show_grade_in_title`, default on — whether the
+  landing title leads with "Grade 11"; deliberately literal, with the app
+  warning when the course name already contains the grade label) and a
+  **custom domain** (`custom_domains.sections.sectionN`, an Advanced
+  option — the app's published-site links then wear that domain).
 
 ### 5. Content structure
 
@@ -154,11 +163,15 @@ the plain `draft`/`created` keys Quartz understands
 ([details](05-build-pipeline.md#frontmatter-processing)). Timestamps use the
 host's timezone offset (passed in as `HOST_TZ_OFFSET`).
 
-For each **section**: `section<N>/` with an `index.md` (site home page,
-titled e.g. "Grade 11 Introduction to Computer Science, Section 1") and the
-per-section folders/files, each with plain `created`/`draft` frontmatter
-(no `SectionN` suffix needed — the file already belongs to exactly one
-section).
+For each **section**: `section<N>/` with an `index.md` (site home page —
+its stored title is only a starting value: the build recomputes the
+landing title from the current settings every time, so renames and the
+grade/marker toggles always reach the site) and the per-section
+folders/files, each with plain `created`/`draft` frontmatter (no
+`SectionN` suffix needed — the file already belongs to exactly one
+section). Two of the default per-section files, `Private Notes.md` and
+`Scratch Page.md`, are created with `draft: true` — the teacher's own
+pages, never published until deliberately flipped.
 
 ### 8. Patch the in-container Quartz scaffold
 

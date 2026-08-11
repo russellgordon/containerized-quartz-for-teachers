@@ -8,13 +8,28 @@ runs the real scripts:
 | In the app | What actually runs |
 |---|---|
 | Save (course settings) | Writes `course_config.json` — the file `build_site.py` reads on the next build |
-| Preview (section) | `./preview.sh CODE N` under a pseudo-terminal; the site appears in an embedded web view once `localhost:8081` responds |
+| Preview (section) | `./preview.sh CODE N --port P` under a pseudo-terminal; the site appears in an embedded web view once the announced address responds (up to four sections per folder at once, ports leased per window) |
 | Deploy (section) | `./deploy.sh CODE N` with streamed output (and an input field for prompts like the first-time Netlify token) |
 | New Course | Writes the chosen settings as `course_config.json`, then runs the real `./setup.sh`, answering each prompt with its default (typing the course code where needed) — scaffolding, backups, and Quartz patches all come from the actual wizard |
 
-On first launch the app asks for your **working folder** — the one you use
-with the command-line toolchain (containing `setup.sh`, `preview.sh`,
-`deploy.sh`, and `courses/`) — and remembers it.
+A window without a folder asks for a **working folder** — one containing
+`setup.sh`, `preview.sh`, `deploy.sh`, and `courses/`, or an empty folder
+the app offers to initialize. Working folders are **per window**: each
+window restores its own folder across relaunches (frame-keyed), and a new
+window inherits the folder of the window that was key when it was opened —
+or shows the picker when it is the only window.
+
+The app also owns delivery and resources: it mirrors the full toolchain
+recipe into each working folder's `.toolchain/` (refreshing stale
+launchers from its bundle), self-installs missing host tools to
+`~/Library/Application Support/Plantoir/tools`, runs one container per
+working folder (stopped when the folder's last window closes and at
+quit), and stops Colima at quit only when nothing else runs in it.
+Additional actions: Add Section (course context menu), Open in Obsidian
+(vault registration included), an Archived sidebar group with restore,
+per-section settings for grade-in-title (with a repetition warning) and a
+custom domain, and a custom About panel with the Icon Composer app icon.
+The complete behavioural log is `../GUI-IMPROVEMENTS.md`.
 
 ## Building
 
@@ -81,4 +96,7 @@ requirement.
   prompt. The one exception — the course-code prompt — is answered
   explicitly.
 - The colour scheme picker's choices come from the repository's own
-  `support/colour_schemes.json`, bundled as a resource at build time.
+  `support/colour_schemes.json`, bundled as a resource at build time — and
+  the font previews register the TTFs from `support/fonts/`, the same
+  files the container draws social sharing cards with (one font source
+  for both).
