@@ -92,6 +92,20 @@ public class QuestionParserTests
         Assert.Equal("ICS3U", asked.SuggestedAnswer);
     }
 
+    [Theory]
+    // The colour-scheme picker footer, however the pseudo console lays it out —
+    // on its own line, or merged onto the tail of the last swatch line.
+    [InlineData("Use ← / → (or 'p' / 'n') to browse, Enter to select. Press 'q' to keep previous choice.", true)]
+    [InlineData("  textHighlight Use ← / → (or 'p' / 'n') to browse, Enter to select. Press 'q'.", true)]
+    [InlineData("Enter the course code (e.g. ICS3U) [Default: ICS3U]:", true)]
+    [InlineData("Select 1-27 or type a code [Default: en-US]:", true)]
+    [InlineData(">", true)]
+    [InlineData("Light Mode:", true)]     // still prompt-shaped; the settle wait keeps it from being answered mid-render
+    [InlineData("  secondary", false)]    // a bare swatch line is not a prompt
+    [InlineData("Copied per-section file: Private Notes.md", false)]
+    public void CreatorPromptShapesAreRecognized(string line, bool expected) =>
+        Assert.Equal(expected, Plantoir.Core.Scripting.NewCourseCreator.LooksLikePrompt(line));
+
     [Fact]
     public void ChoiceListsStayInTheWording()
     {

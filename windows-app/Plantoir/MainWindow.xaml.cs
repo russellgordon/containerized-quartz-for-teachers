@@ -98,10 +98,12 @@ public sealed partial class MainWindow : Window
         if (createIndex >= 0 && createIndex + 1 < args.Length)
         {
             string createCode = args[createIndex + 1];
+            string? createSections = createIndex + 2 < args.Length && !args[createIndex + 2].StartsWith("--")
+                ? args[createIndex + 2] : null;
             DispatcherQueue.TryEnqueue(async () =>
             {
                 await System.Threading.Tasks.Task.Delay(1500);
-                await Sidebar.OpenNewCourseWizard(createCode);
+                await Sidebar.OpenNewCourseWizard(createCode, createSections);
             });
             return;
         }

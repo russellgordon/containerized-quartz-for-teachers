@@ -103,10 +103,11 @@ public sealed class NewCourseDialog : ContentDialog
         RefreshCreateEnabled();
     }
 
-    /// <summary>Smoke-test entry: fill the code and press Create, the real path.</summary>
-    public void AutoCreate(string code)
+    /// <summary>Smoke-test entry: fill the code (and optional sections) and press Create.</summary>
+    public void AutoCreate(string code, string? sections = null)
     {
         _codeBox.Text = code;
+        if (sections is not null) _sectionsBox.Text = sections;
         Opened += (_, _) => _ = StartCreation();
     }
 

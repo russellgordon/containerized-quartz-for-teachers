@@ -297,10 +297,10 @@ public sealed partial class SidebarPane : UserControl
 
     // ---- Dialog launchers ------------------------------------------------
 
-    public async Task OpenNewCourseWizard(string? autoCreateCode = null)
+    public async Task OpenNewCourseWizard(string? autoCreateCode = null, string? autoSections = null)
     {
         var wizard = new NewCourseDialog(_window) { XamlRoot = XamlRoot };
-        if (autoCreateCode is not null) wizard.AutoCreate(autoCreateCode);
+        if (autoCreateCode is not null) wizard.AutoCreate(autoCreateCode, autoSections);
         await wizard.ShowAsync();
         Workspace.Reload();
         _window.ApplyState();
