@@ -90,6 +90,16 @@ struct SectionDetailView: View {
                 .accessibilityIdentifier("previewReloadButton")
             }
             ToolbarItemGroup {
+                Button("Open in Obsidian", systemImage: "long.text.page.and.pencil") {
+                    FolderActions.openInObsidian(
+                        revealing: course.sectionDirectoryURL(forSection: sectionNumber),
+                        vaultURL: course.directoryURL
+                    )
+                }
+                .disabled(!FolderActions.obsidianIsInstalled)
+                .help("Edit this section's pages in Obsidian")
+                .accessibilityIdentifier("openInObsidianButton")
+
                 // One stable item that changes face, not two swapped
                 // items — swapping rebuilds the toolbar (same glitch).
                 Button(
@@ -120,15 +130,6 @@ struct SectionDetailView: View {
                 .help("Open this preview in your web browser")
                 .accessibilityIdentifier("openInBrowserButton")
 
-                Button("Open in Obsidian", systemImage: "diamond") {
-                    FolderActions.openInObsidian(
-                        revealing: course.sectionDirectoryURL(forSection: sectionNumber),
-                        vaultURL: course.directoryURL
-                    )
-                }
-                .disabled(!FolderActions.obsidianIsInstalled)
-                .help("Edit this section's pages in Obsidian")
-                .accessibilityIdentifier("openInObsidianButton")
             }
         }
         .focusedSceneValue(\.previewController, previewURL != nil ? previewController : nil)
