@@ -90,6 +90,34 @@ final class WorkspacePersistenceTests: XCTestCase {
                        "The choice is still recorded, for preference migration")
     }
 
+    /// A mid-session window knows its folder the moment its model exists —
+    /// the fix for the picker flashing before the inherited folder arrived.
+    @MainActor
+    func testAMidSessionWindowKnowsItsFolderImmediately() throws {
+        let folderURL: URL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("ws-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folderURL) }
+
+        let savedDeadline: Date = WindowFolderMemory.claimsOpenUntil
+        let savedKeyPath: String? = WorkspaceModel.mostRecentKeyFolderPath
+        defer {
+            WindowFolderMemory.claimsOpenUntil = savedDeadline
+            WorkspaceModel.mostRecentKeyFolderPath = savedKeyPath
+        }
+
+        // Mid-session: claims are long closed, and a key window worked here.
+        WindowFolderMemory.claimsOpenUntil = Date(timeIntervalSinceNow: -60)
+        let keyWindowModel: WorkspaceModel = WorkspaceModel(defaults: TestDefaults.make())
+        keyWindowModel.adoptRestoredPath(folderURL.path)
+        WorkspaceModel.registerWindowModel(keyWindowModel)
+        WorkspaceModel.mostRecentKeyFolderPath = folderURL.path
+        defer { WorkspaceModel.unregisterWindowModel(keyWindowModel) }
+
+        let newWindowModel: WorkspaceModel = WorkspaceModel.modelForNewWindow()
+        XCTAssertEqual(newWindowModel.workspaceURL?.path, folderURL.path,
+                       "The folder must be known at creation, before anything renders")
+    }
+
     /// What a brand-new window opens to, by policy: nothing when it is
     /// the only window; the key window's folder otherwise.
     @MainActor

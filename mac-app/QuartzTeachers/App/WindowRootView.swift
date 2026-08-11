@@ -13,8 +13,9 @@ struct WindowRootView: View {
 
     // MARK: - Stored properties
 
-    /// This window's own model. Each window has one.
-    @State var workspace: WorkspaceModel = WorkspaceModel()
+    /// This window's own model. Each window has one. A mid-session window
+    /// arrives already knowing its folder, so the picker never flashes.
+    @State var workspace: WorkspaceModel = WorkspaceModel.modelForNewWindow()
 
     /// This window's claim on the remembered folders.
     @State var claimant: WindowFolderClaimant = WindowFolderClaimant()

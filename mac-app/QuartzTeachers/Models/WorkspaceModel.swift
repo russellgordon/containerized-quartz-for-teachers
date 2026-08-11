@@ -35,6 +35,30 @@ class WorkspaceModel {
     /// can open where the teacher just was.
     static var mostRecentKeyFolderPath: String?
 
+    /// The model for a window about to appear. A mid-session window — the
+    /// restoration claims have closed — knows its folder IMMEDIATELY, so
+    /// the picker never flashes before the inherited folder arrives. At
+    /// launch the folder must wait for the window claims, which need the
+    /// window's settled frame.
+    static func modelForNewWindow() -> WorkspaceModel {
+        let model: WorkspaceModel = WorkspaceModel()
+        if Date() > WindowFolderMemory.claimsOpenUntil {
+            var otherOpenFolderPaths: [String] = []
+            for existing in windowModels {
+                if let path = existing.workspaceURL?.path {
+                    otherOpenFolderPaths.append(path)
+                }
+            }
+            if let path = folderForNewWindow(
+                otherOpenFolderPaths: otherOpenFolderPaths,
+                mostRecentKeyPath: mostRecentKeyFolderPath
+            ) {
+                model.adoptRestoredPath(path)
+            }
+        }
+        return model
+    }
+
     /// What a brand-new window should open to. With no other windows open,
     /// nothing — the folder picker. Otherwise the folder of the window
     /// that was key when the command ran, falling back to any open
