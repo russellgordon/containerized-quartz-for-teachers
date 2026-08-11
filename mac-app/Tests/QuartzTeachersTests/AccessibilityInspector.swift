@@ -25,6 +25,39 @@ enum AccessibilityInspector {
         return findFrame(from: applicationElement, identifier: identifier, depth: 0)
     }
 
+    /// Presses the element with this identifier, the way a click would —
+    /// through the accessibility action, so a disabled or missing control
+    /// cannot be pressed and the press reports failure instead.
+    @MainActor
+    static func press(identifier: String) -> Bool {
+        let applicationElement: AXUIElement = AXUIElementCreateApplication(ProcessInfo.processInfo.processIdentifier)
+        guard let element = findElement(from: applicationElement, identifier: identifier, depth: 0) else {
+            return false
+        }
+        return AXUIElementPerformAction(element, kAXPressAction as CFString) == .success
+    }
+
+    private static func findElement(from element: AXUIElement, identifier: String, depth: Int) -> AXUIElement? {
+        if depth > 60 {
+            return nil
+        }
+        var identifierValue: CFTypeRef?
+        let identifierResult: AXError = AXUIElementCopyAttributeValue(element, kAXIdentifierAttribute as CFString, &identifierValue)
+        if identifierResult == .success, let found = identifierValue as? String, found == identifier {
+            return element
+        }
+        var childrenValue: CFTypeRef?
+        let childrenResult: AXError = AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenValue)
+        if childrenResult == .success, let children = childrenValue as? [AXUIElement] {
+            for child in children {
+                if let foundElement = findElement(from: child, identifier: identifier, depth: depth + 1) {
+                    return foundElement
+                }
+            }
+        }
+        return nil
+    }
+
     private static func findFrame(from element: AXUIElement, identifier: String, depth: Int) -> CGRect? {
         if depth > 60 {
             return nil

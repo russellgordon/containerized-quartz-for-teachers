@@ -109,25 +109,31 @@ struct SidebarView: View {
 
             bottomBar
         }
-        .alert(item: $removalRequest) { request in
-            Alert(
-                title: Text(request.title),
-                message: Text(request.message),
-                primaryButton: .destructive(Text("Remove")) {
-                    performRemoval(request)
-                },
-                secondaryButton: .cancel()
-            )
+        .alert(
+            removalRequest?.title ?? "",
+            isPresented: removalRequestIsPresented,
+            presenting: removalRequest
+        ) { request in
+            Button("Remove", role: .destructive) {
+                performRemoval(request)
+            }
+            Button("Cancel", role: .cancel) {
+            }
+        } message: { request in
+            Text(request.message)
         }
-        .alert(item: restoreRequestBinding) { item in
-            Alert(
-                title: Text("Restore \(item.title)?"),
-                message: Text(restoreMessage(for: item)),
-                primaryButton: .default(Text("Restore")) {
-                    workspace.restore(item)
-                },
-                secondaryButton: .cancel()
-            )
+        .alert(
+            "Restore \(workspace.restoreRequest?.title ?? "")?",
+            isPresented: restoreRequestIsPresented,
+            presenting: workspace.restoreRequest
+        ) { item in
+            Button("Restore") {
+                workspace.restore(item)
+            }
+            Button("Cancel", role: .cancel) {
+            }
+        } message: { item in
+            Text(restoreMessage(for: item))
         }
         .alert("Could not restore", isPresented: restoreProblemBinding) {
             Button("OK") {
@@ -250,10 +256,25 @@ struct SidebarView: View {
         return "\(item.courseCode) will be put back into Courses & Clubs, and will no longer be listed as archived."
     }
 
-    var restoreRequestBinding: Binding<ArchivedItem?> {
+    var removalRequestIsPresented: Binding<Bool> {
         return Binding(
-            get: { workspace.restoreRequest },
-            set: { item in workspace.restoreRequest = item }
+            get: { removalRequest != nil },
+            set: { isPresented in
+                if !isPresented {
+                    removalRequest = nil
+                }
+            }
+        )
+    }
+
+    var restoreRequestIsPresented: Binding<Bool> {
+        return Binding(
+            get: { workspace.restoreRequest != nil },
+            set: { isPresented in
+                if !isPresented {
+                    workspace.restoreRequest = nil
+                }
+            }
         )
     }
 

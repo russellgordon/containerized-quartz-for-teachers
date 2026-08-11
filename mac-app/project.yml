@@ -11,7 +11,11 @@ settings:
     SWIFT_VERSION: "6.0"
     SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
     SWIFT_APPROACHABLE_CONCURRENCY: YES
-    CODE_SIGN_IDENTITY: "-"
+    # A real (stable) development signature: ad-hoc signing ("-") changes
+    # every rebuild, so macOS forgot the Desktop-access grant each time and
+    # asked again. Personal team, matching the personal GitHub account.
+    CODE_SIGN_IDENTITY: "Apple Development"
+    DEVELOPMENT_TEAM: C7DL9Y9A7R
     CODE_SIGN_STYLE: Automatic
     ENABLE_HARDENED_RUNTIME: NO
     MACOSX_DEPLOYMENT_TARGET: "15.0"

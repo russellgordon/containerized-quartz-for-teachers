@@ -26,6 +26,14 @@ open Plantoir.xcodeproj
 Re-run `xcodegen generate` any time `project.yml` changes (or when files are
 added/removed, since the file lists are directory-based).
 
+Debug builds are signed with a real "Apple Development" identity
+(`DEVELOPMENT_TEAM` in `project.yml`) rather than ad-hoc — an ad-hoc
+signature changes every rebuild, so macOS forgets permission grants (like
+Desktop access) and re-asks on every build-and-run. On a machine without
+that team's certificate, point `DEVELOPMENT_TEAM` at your own (Xcode →
+Settings → Accounts shows the ID) or set `CODE_SIGN_IDENTITY: "-"` and
+live with the permission prompts.
+
 ## App name vs. module name
 
 The app's user-facing name is **Plantoir** (bundle, binary, Dock, window
