@@ -40,8 +40,17 @@ struct WorkspacePickerView: View {
 
             if workspace.workspaceCanBeInitialized {
                 if let chosenURL = workspace.workspaceURL {
-                    FinderPathBarView(folderURL: chosenURL)
-                        .frame(maxWidth: 520)
+                    // The bar's scroll view greedily fills any width it is
+                    // given, pinning a short path to the left of centred
+                    // content. At its natural size the stack can centre
+                    // it; only a path too long for the cap gets the
+                    // full-width scrolling form.
+                    ViewThatFits(in: .horizontal) {
+                        FinderPathBarView(folderURL: chosenURL)
+                            .fixedSize(horizontal: true, vertical: false)
+                        FinderPathBarView(folderURL: chosenURL)
+                    }
+                    .frame(maxWidth: 520)
                 }
 
                 Text("This folder is empty. Set it up as your new working folder? Everything needed will be added for you, and you can create your first course right away.")
