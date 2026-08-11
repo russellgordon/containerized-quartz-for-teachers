@@ -87,56 +87,108 @@ public sealed partial class SidebarPane : UserControl
 
     // ---- Building the tree ----------------------------------------------
 
+    // The tree is UPDATED IN PLACE, never rebuilt. Replacing ItemsSource
+    // wholesale forces the TreeView to destroy and recreate every container,
+    // and WinUI drops expansion state somewhere in that churn — "Courses &
+    // Clubs" kept folding up after the create-course dialog closed, on no
+    // schedule any timed re-assert could reliably beat. With persistent row
+    // objects reconciled against the workspace, the group containers are
+    // never re-created, so there is no state to lose.
+    private readonly ObservableCollection<SidebarRow> _roots = new();
+    private SidebarRow? _coursesGroup;
+    private SidebarRow? _archivedGroup;
+
     public void Refresh()
     {
-        var roots = new ObservableCollection<SidebarRow>();
-
-        var coursesGroup = new SidebarRow
+        if (_coursesGroup is null)
         {
-            Title = "Courses & Clubs",
-            Glyph = "",
-            IsExpanded = true,
-        };
+            _coursesGroup = new SidebarRow { Title = "Courses & Clubs", Glyph = "", IsExpanded = true };
+            _roots.Add(_coursesGroup);
+            Tree.ItemsSource = _roots;
+        }
+        ReconcileCourses();
+        ReconcileArchived();
+        RefreshNoMatches();
+        ReassertExpansion();
+    }
+
+    private void ReconcileCourses()
+    {
+        var byCode = new Dictionary<string, SidebarRow>();
+        foreach (var row in _coursesGroup!.Children) byCode[row.Title] = row;
+
+        var desired = new List<SidebarRow>();
         foreach (var course in Workspace.FilteredCourses)
         {
-            var courseRow = new SidebarRow
-            {
-                Title = course.Code,
-                Glyph = LibraryGlyph,
-                IsExpanded = true,
-                Selection = new SidebarSelection.CourseItem(course.Code),
-                AutomationId = $"sidebar-{course.Code}",
-            };
-            courseRow.Menu = CourseMenu(course);
-            foreach (int number in course.SectionNumbers)
-            {
-                var sectionRow = new SidebarRow
+            if (!byCode.TryGetValue(course.Code, out var row))
+                row = new SidebarRow
+                {
+                    Title = course.Code,
+                    Glyph = LibraryGlyph,
+                    IsExpanded = true,
+                    Selection = new SidebarSelection.CourseItem(course.Code),
+                    AutomationId = $"sidebar-{course.Code}",
+                };
+            // Menus are remade every pass so their closures always hold the
+            // freshly loaded Course, never a stale pre-reload instance.
+            row.Menu = CourseMenu(course);
+            ReconcileSections(row, course);
+            desired.Add(row);
+        }
+        ApplyDesiredOrder(_coursesGroup.Children, desired);
+    }
+
+    private void ReconcileSections(SidebarRow courseRow, Course course)
+    {
+        var byTitle = new Dictionary<string, SidebarRow>();
+        foreach (var row in courseRow.Children) byTitle[row.Title] = row;
+
+        var desired = new List<SidebarRow>();
+        foreach (int number in course.SectionNumbers)
+        {
+            if (!byTitle.TryGetValue($"Section {number}", out var row))
+                row = new SidebarRow
                 {
                     Title = $"Section {number}",
                     Glyph = DocumentGlyph,
                     Selection = new SidebarSelection.SectionItem(course.Code, number),
                     AutomationId = $"sidebar-{course.Code}-section{number}",
                 };
-                sectionRow.Menu = SectionMenu(course, number);
-                courseRow.Children.Add(sectionRow);
-            }
-            coursesGroup.Children.Add(courseRow);
+            row.Menu = SectionMenu(course, number);
+            desired.Add(row);
         }
-        roots.Add(coursesGroup);
+        ApplyDesiredOrder(courseRow.Children, desired);
+    }
 
-        if (Workspace.ArchivedItems.Count > 0)
+    private void ReconcileArchived()
+    {
+        if (Workspace.ArchivedItems.Count == 0)
+        {
+            if (_archivedGroup is not null) { _roots.Remove(_archivedGroup); _archivedGroup = null; }
+            return;
+        }
+        if (_archivedGroup is null)
         {
             // A place to go looking, not something to step over — closed by default.
-            var archivedGroup = new SidebarRow
+            _archivedGroup = new SidebarRow
             {
                 Title = "Archived",
                 Glyph = ArchiveGlyph,
                 IsExpanded = false,
                 AutomationId = "archivedGroup",
             };
-            foreach (var item in Workspace.ArchivedItems)
-            {
-                var row = new SidebarRow
+            _roots.Add(_archivedGroup);
+        }
+
+        var byId = new Dictionary<string, SidebarRow>();
+        foreach (var row in _archivedGroup.Children)
+            if (row.Archived is { } archived) byId[archived.Id] = row;
+
+        var desired = new List<SidebarRow>();
+        foreach (var item in Workspace.ArchivedItems)
+        {
+            if (!byId.TryGetValue(item.Id, out var row) || row.Title != item.Title || row.Tooltip != item.Subtitle)
+                row = new SidebarRow
                 {
                     Title = item.Title,
                     Glyph = item.IsCourse ? LibraryGlyph : DocumentGlyph,   // same faces as live rows
@@ -145,28 +197,38 @@ public sealed partial class SidebarPane : UserControl
                     Archived = item,
                     AutomationId = $"archived-{item.Title}",
                 };
-                row.Menu = ArchivedMenu(item);
-                archivedGroup.Children.Add(row);
-            }
-            roots.Add(archivedGroup);
+            row.Menu = ArchivedMenu(item);
+            desired.Add(row);
         }
-
-        Tree.ItemsSource = roots;
-        RefreshNoMatches();
-        ReassertExpansion(roots);
+        ApplyDesiredOrder(_archivedGroup.Children, desired);
     }
 
     /// <summary>
-    /// Open any container that was REALIZED already folded — those never raise
-    /// Collapsed, so the glitch guard above cannot see them. Containers appear
-    /// asynchronously after the ItemsSource swap (a recycled one can surface
-    /// folded well after the first layout pass), so retry briefly and stop the
-    /// moment every row that wants to be open has an open container. Together
-    /// the two mechanisms cover both failure shapes: born-collapsed (this) and
-    /// collapsed-later (Tree_Collapsed). Section leaves and the Archived group
-    /// ask to stay closed and are never touched.
+    /// Morph <paramref name="current"/> into <paramref name="desired"/> with
+    /// the smallest moves — surviving rows are never removed and re-added, so
+    /// their containers (and expansion state) ride through untouched.
     /// </summary>
-    private void ReassertExpansion(IEnumerable<SidebarRow> roots)
+    private static void ApplyDesiredOrder(ObservableCollection<SidebarRow> current, List<SidebarRow> desired)
+    {
+        for (int i = current.Count - 1; i >= 0; i--)
+            if (!desired.Contains(current[i])) current.RemoveAt(i);
+        for (int i = 0; i < desired.Count; i++)
+        {
+            int at = current.IndexOf(desired[i]);
+            if (at == i) continue;
+            if (at >= 0) current.Move(at, i);
+            else current.Insert(i, desired[i]);
+        }
+    }
+
+    /// <summary>
+    /// Open any container that was REALIZED already folded — a brand-new row's
+    /// container can surface collapsed without ever raising Collapsed, so the
+    /// glitch guard above cannot see it. Retries briefly, stopping the moment
+    /// every row that wants to be open has an open container. Section leaves
+    /// and the Archived group ask to stay closed and are never touched.
+    /// </summary>
+    private void ReassertExpansion()
     {
         var wantOpen = new List<SidebarRow>();
         void Collect(IEnumerable<SidebarRow> rows)
@@ -177,7 +239,7 @@ public sealed partial class SidebarPane : UserControl
                 Collect(row.Children);
             }
         }
-        Collect(roots);
+        Collect(_roots);
 
         var timer = DispatcherQueue.CreateTimer();
         int ticks = 0;
@@ -190,7 +252,7 @@ public sealed partial class SidebarPane : UserControl
                 if (Tree.ContainerFromItem(row) is not TreeViewItem container) { allSettled = false; continue; }
                 if (!container.IsExpanded) container.IsExpanded = true;
             }
-            if (allSettled || ++ticks >= 20) t.Stop();   // settled, or ~2 s — enough for any teardown
+            if (allSettled || ++ticks >= 20) t.Stop();   // settled, or ~2 s
         };
         timer.Start();
     }
