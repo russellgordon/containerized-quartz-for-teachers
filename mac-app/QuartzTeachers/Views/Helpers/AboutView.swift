@@ -14,11 +14,11 @@ struct AboutView: View {
     // MARK: - Stored properties
 
     /// Where teachers go for help.
-    let supportURL: URL = URL(string: "https://github.com/russellgordon/containerized-quartz-for-teachers")!
+    let supportURL: URL = URL(string: "https://plantoir.app/support")!
 
-    /// Where teachers write in for help. nil until a real address exists —
-    /// the row and its spacing disappear rather than advertise a dead inbox.
-    let supportEmailAddress: String? = nil
+    /// Where teachers write in for help. Set to nil to omit the row —
+    /// it and its spacing disappear together.
+    let supportEmailAddress: String? = "support@plantoir.app"
 
     /// Shown at the very bottom. Set to nil to omit the line.
     let copyrightNotice: String? = "Copyright 2026 Russell Gordon"
