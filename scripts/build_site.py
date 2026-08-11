@@ -2312,6 +2312,24 @@ def build_section_site(
     else:
         print("Warning: quartz.config.ts not found to toggle CustomOgImages")
 
+    # ---- Social sharing card -------------------------------------------
+    # Drawn fresh on every build, so changes to the course name, scheme,
+    # fonts, emoji, or marker setting always reach the card. Written over
+    # Quartz's default og-image, which the site's head already links —
+    # and never allowed to fail a build: a site without a custom card
+    # still has the stock one.
+    try:
+        import social_card
+        card_path = output_dir / "quartz" / "static" / "og-image.png"
+        social_card.generate_card(
+            course_config=config,
+            section_number=section_number,
+            output_path=card_path,
+        )
+        print(f"🖼️  Social sharing card drawn for {section_key}.")
+    except Exception as e:
+        print(f"⚠️ Could not draw the social sharing card: {e}")
+
     # Install npm dependencies if needed
     node_modules_dir = output_dir / "node_modules"
     package_json = output_dir / "package.json"

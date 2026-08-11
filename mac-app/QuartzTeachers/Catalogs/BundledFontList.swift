@@ -49,7 +49,12 @@ enum BundledFontList: String, CaseIterable {
     /// missing font only means a preview falls back to the system font,
     /// which is never worth stopping a teacher's work over.
     private static func registerFont(fontName: String, fontExtension: String) {
-        guard let fontURL = Bundle.main.url(forResource: fontName, withExtension: fontExtension) else {
+        // The font files live in the toolchain's support folder — the same
+        // files the container uses to draw social cards — bundled whole
+        // into the app, so there is exactly one copy of each font.
+        let bundledURL = Bundle.main.url(forResource: fontName, withExtension: fontExtension, subdirectory: "support/fonts")
+            ?? Bundle.main.url(forResource: fontName, withExtension: fontExtension)
+        guard let fontURL = bundledURL else {
             print("⚠️ Bundled font not found: \(fontName).\(fontExtension)")
             return
         }

@@ -1,11 +1,13 @@
 # Use a slim Node+Python base image
 FROM python:3.11-slim
 
-# Install Python package for frontmatter parsing
-RUN pip install python-frontmatter
+# Python packages: frontmatter parsing, and Pillow to draw each
+# section's social sharing card.
+RUN pip install python-frontmatter Pillow
 
 # Install Node.js (needed for Quartz) and other tools (incl. dos2unix)
-RUN apt-get update && apt-get install -y curl git lsof dos2unix \
+# fonts-noto-color-emoji: the colour emoji drawn onto social cards.
+RUN apt-get update && apt-get install -y curl git lsof dos2unix fonts-noto-color-emoji \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -26,6 +28,7 @@ RUN cp -r /opt/quartz /opt/quartz-site
 COPY scripts/setup_course.py /opt/scripts/setup_course.py
 COPY scripts/build_site.py /opt/scripts/build_site.py
 COPY scripts/deploy.py /opt/scripts/deploy.py
+COPY scripts/social_card.py /opt/scripts/social_card.py
 
 # Copy course metadata lookup & other support files into container
 COPY support/ /opt/support/

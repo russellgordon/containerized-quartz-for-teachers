@@ -1,3 +1,4 @@
+#!/bin/bash
 # ---- Determine host OS for help text ---------------------------------
 _detect_host_os() {
   local u
@@ -15,7 +16,6 @@ else
   SELF_CMD="./preview.sh"
 fi
 # ----------------------------------------------------------------------
-#!/bin/bash
 
 # Ensure we're in the same directory as this script
 cd "$(dirname "$0")"
@@ -64,8 +64,18 @@ resolve_build_context() {
 }
 
 toolchain_hash() {
+  # Hash only what the recipe is made of. In a working folder the context
+  # (.toolchain/) contains nothing else, so the prunes change nothing —
+  # but in the repository the context is the repo root, and without them
+  # this walked (and checksummed) courses/, node_modules, and the app
+  # sources: many minutes of hashing, and a tag that changed on every
+  # build because build outputs were part of it.
   local context="$1"
-  (cd "$context" && find . -type f -not -path './.git/*' -not -name '.DS_Store' \
+  (cd "$context" && find . \
+      \( -path './.git' -o -path './courses' -o -path './mac-app' \
+         -o -name node_modules -o -name '.merged_output' \
+         -o -name '.verify-export.*' \) -prune \
+      -o -type f -not -name '.DS_Store' -print \
     | LC_ALL=C sort \
     | while IFS= read -r file; do shasum -a 256 "$file"; done \
     | shasum -a 256 | cut -c1-8)
