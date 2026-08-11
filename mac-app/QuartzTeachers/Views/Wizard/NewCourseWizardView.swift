@@ -236,9 +236,9 @@ struct NewCourseWizardView: View {
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         HStack {
-                            Button(knownNames.display) {
-                                courseName = knownNames.display
-                                lastAutoFilledName = knownNames.display
+                            Button(knownNames.formal) {
+                                courseName = knownNames.formal
+                                lastAutoFilledName = knownNames.formal
                             }
                             .accessibilityIdentifier("suggestedFormalNameButton")
                             Button(knownNames.short) {
@@ -287,7 +287,18 @@ struct NewCourseWizardView: View {
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     Toggle("Show the grade in the site title", isOn: $showsGradeInTitle)
-                    ExampleCaption("e.g. “Grade 12” before the course name")
+                    if let warning = CourseConfiguration.gradeInTitleWarning(
+                        courseName: courseName,
+                        courseCode: courseCode.trimmingCharacters(in: .whitespaces).uppercased(),
+                        showsGrade: showsGradeInTitle
+                    ) {
+                        Text(warning)
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                            .accessibilityIdentifier("wizardGradeInTitleWarning")
+                    } else {
+                        ExampleCaption("e.g. “Grade 12” before the course name")
+                    }
                 }
             } header: {
                 FormSectionHeader("Appearance", caption: "Applied to every section — fine-tune later in Settings")
@@ -336,8 +347,8 @@ struct NewCourseWizardView: View {
         }
         let mayReplace: Bool = courseName.isEmpty || courseName == lastAutoFilledName
         if mayReplace {
-            courseName = knownNames.display
-            lastAutoFilledName = knownNames.display
+            courseName = knownNames.formal
+            lastAutoFilledName = knownNames.formal
         }
     }
 
@@ -424,12 +435,14 @@ struct NewCourseWizardView: View {
 
         var emojiMap: [String: String] = [:]
         var markerMap: [String: Bool] = [:]
+        var gradeMap: [String: Bool] = [:]
         var schemeMap: [String: String] = [:]
         var fontsSectionsMap: [String: Any] = [:]
         for sectionNumber in sectionNumbers {
             let key: String = "section\(sectionNumber)"
             emojiMap[key] = emoji
             markerMap[key] = showsSectionMarker
+            gradeMap[key] = showsGradeInTitle
             schemeMap[key] = colourSchemeID
             fontsSectionsMap[key] = fontChoice.dictionaryRepresentation
         }
@@ -470,7 +483,7 @@ struct NewCourseWizardView: View {
             "expandOnFolderClick": expandOnFolderClick,
             "footer_html": footerHTML,
             "show_reading_time": showReadingTime,
-            "show_grade_in_title": showsGradeInTitle,
+            "show_grade_in_title": ["sections": gradeMap],
             "fonts": [
                 "default": fontChoice.dictionaryRepresentation,
                 "sections": fontsSectionsMap,

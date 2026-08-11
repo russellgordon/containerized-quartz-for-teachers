@@ -121,12 +121,44 @@ class CourseConfiguration {
         set { values["footer_html"] = newValue }
     }
 
-    /// Whether the site title leads with the grade ("Grade 12 Computer
-    /// Science…"). On by default; the build recomputes the landing title
-    /// from this on every build.
-    var showGradeInTitle: Bool {
-        get { return boolValue(forKey: "show_grade_in_title", fallback: true) }
-        set { values["show_grade_in_title"] = newValue }
+    /// Whether a section's site title leads with the grade ("Grade 12
+    /// Computer Science…") — per section, like the section marker. On by
+    /// default; the build recomputes the landing title on every build.
+    /// An older config that stored one course-wide Bool is honoured.
+    func showsGradeInTitle(forSection sectionNumber: Int) -> Bool {
+        if let legacy = values["show_grade_in_title"] as? Bool {
+            return legacy
+        }
+        let sectionsMap: [String: Any] = nestedDictionary(forKey: "show_grade_in_title", childKey: "sections")
+        if let stored = sectionsMap["section\(sectionNumber)"] as? Bool {
+            return stored
+        }
+        return true
+    }
+
+    func setShowsGradeInTitle(_ shows: Bool, forSection sectionNumber: Int) {
+        // A legacy course-wide Bool would shadow the per-section map, so
+        // it is replaced by the map the first time a section is set.
+        if values["show_grade_in_title"] is Bool {
+            values["show_grade_in_title"] = [String: Any]()
+        }
+        setNestedValue(shows, forKey: "show_grade_in_title", childKey: "sections", entryKey: "section\(sectionNumber)")
+    }
+
+    /// A quiet warning when turning the grade on would repeat a grade the
+    /// course name already carries — "Computer Science, Grade 12, U" would
+    /// become "Grade 12 Computer Science, Grade 12, U". The behaviour
+    /// stays exactly what the switch says; this only points the problem
+    /// out, and the teacher decides: edit the name, or turn the switch off.
+    static func gradeInTitleWarning(courseName: String, courseCode: String, showsGrade: Bool) -> String? {
+        guard showsGrade else {
+            return nil
+        }
+        let label: String = SectionAdder.gradeLabel(forCourseCode: courseCode)
+        guard !label.isEmpty, courseName.contains(label) else {
+            return nil
+        }
+        return "The course name already includes “\(label)”, so the site title would repeat it. Edit the name, or turn this off."
     }
 
     var showReadingTime: Bool {

@@ -565,6 +565,15 @@ def resolve_show_section_marker(config: dict, section_number: int) -> bool:
 GRADE_LABELS = {"1": "Grade 9", "2": "Grade 10", "3": "Grade 11", "4": "Grade 12"}
 
 
+def resolve_show_grade_in_title(cfg, section_number):
+    """Per-section, like the section marker; defaults on. An older config
+    that stored one course-wide boolean is honoured."""
+    raw = cfg.get("show_grade_in_title", True)
+    if isinstance(raw, dict):
+        return bool((raw.get("sections") or {}).get(f"section{section_number}", True))
+    return bool(raw)
+
+
 def computed_landing_title(cfg, section_number, show_marker):
     """
     The landing page's title, computed from the CURRENT settings at build
@@ -575,17 +584,12 @@ def computed_landing_title(cfg, section_number, show_marker):
     """
     name = str(cfg.get("course_name") or cfg.get("course_code") or "").strip()
     code = str(cfg.get("course_code") or "")
-    # The Ontario catalog's citation form ("Computer Science, Grade 12, U")
-    # is a fine formal name but a poor title: strip its trailing grade-and-
-    # pathway suffix so the toggle below controls the grade cleanly.
-    stripped = re.sub(r",\s*Grade\s*\d+.*$", "", name).strip()
-    if stripped:
-        name = stripped
+    # Deliberately literal: the switch alone decides. The app warns when
+    # the name already carries the grade; what to do about it — edit the
+    # name or turn the switch off — is the teacher's call, never guessed.
     prefix = ""
-    if cfg.get("show_grade_in_title", True) and len(code) >= 4 and code[3].isdigit():
-        label = GRADE_LABELS.get(code[3], "Grade ?")
-        if label not in name:
-            prefix = label + " "
+    if resolve_show_grade_in_title(cfg, section_number) and len(code) >= 4 and code[3].isdigit():
+        prefix = GRADE_LABELS.get(code[3], "Grade ?") + " "
     title = f"{prefix}{name}"
     if show_marker:
         title = f"{title}, Section {section_number}"

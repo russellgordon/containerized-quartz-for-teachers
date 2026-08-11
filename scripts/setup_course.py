@@ -1541,9 +1541,14 @@ def setup_course(no_backup: bool = False):
             with open(index_md_path, "w", encoding="utf-8") as f:
                 f.write("---\n")
                 # The built site recomputes this title from the settings on
-                # every build; this is only a sensible starting value. Never
-                # double a grade the name already carries.
-                title_prefix = f"{grade_label} " if (grade_label and grade_label not in course_name) else ""
+                # every build; this is only a starting value, and it follows
+                # the same literal rule: the switch alone decides.
+                raw_show_grade = saved_config.get("show_grade_in_title", True)
+                if isinstance(raw_show_grade, dict):
+                    show_grade = bool((raw_show_grade.get("sections") or {}).get(f"section{sec}", True))
+                else:
+                    show_grade = bool(raw_show_grade)
+                title_prefix = f"{grade_label} " if (grade_label and show_grade) else ""
                 f.write(f"title: {title_prefix}{course_name}, Section {sec}\n")
                 f.write(f"created: {now_str}\n")
                 f.write("draft: false\n")

@@ -19,6 +19,13 @@ struct SectionSettingsView: View {
         )
     }
 
+    var gradeInTitleBinding: Binding<Bool> {
+        return Binding(
+            get: { configuration.showsGradeInTitle(forSection: sectionNumber) },
+            set: { newValue in configuration.setShowsGradeInTitle(newValue, forSection: sectionNumber) }
+        )
+    }
+
     var markerBinding: Binding<Bool> {
         return Binding(
             get: { configuration.showsSectionMarker(forSection: sectionNumber) },
@@ -73,6 +80,23 @@ struct SectionSettingsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Toggle("Show section marker in the site title", isOn: markerBinding)
                 ExampleCaption("e.g. “S\(sectionNumber)” appears beside the course code")
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Toggle("Show the grade in the site title", isOn: gradeInTitleBinding)
+                    .accessibilityIdentifier("gradeInTitleToggle-section\(sectionNumber)")
+                if let warning = CourseConfiguration.gradeInTitleWarning(
+                    courseName: configuration.courseName,
+                    courseCode: configuration.courseCode,
+                    showsGrade: configuration.showsGradeInTitle(forSection: sectionNumber)
+                ) {
+                    Text(warning)
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                        .accessibilityIdentifier("gradeInTitleWarning-section\(sectionNumber)")
+                } else {
+                    ExampleCaption("e.g. “Grade 12” before the course name — applied the next time this section builds")
+                }
             }
 
             ColourSchemePickerView(selectedSchemeID: schemeBinding)

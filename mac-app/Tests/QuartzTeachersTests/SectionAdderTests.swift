@@ -161,34 +161,48 @@ final class SectionAdderTests: XCTestCase {
     /// The other Exemplar bug: SNC1W is named "Grade 9 Science", and the
     /// scaffolded title read "Grade 9 Grade 9 Science, Section 3".
     @MainActor
-    func testTheGradeIsNotDoubledWhenTheNameAlreadyCarriesIt() throws {
+    func testTheGradeSwitchAloneDecidesTheTitle() throws {
         let (root, course) = try makeWorkspace()
         defer { try? FileManager.default.removeItem(at: root) }
-
-        course.configuration.courseName = "Grade 11 Computer Science"
-        XCTAssertEqual(SectionAdder.sectionTitle(for: course, sectionNumber: 2),
-                       "Grade 11 Computer Science, Section 2")
 
         course.configuration.courseName = "Introduction to Computer Science"
         XCTAssertEqual(SectionAdder.sectionTitle(for: course, sectionNumber: 2),
                        "Grade 11 Introduction to Computer Science, Section 2")
 
-        // The catalog's citation form loses its suffix, and the toggle
-        // then owns the grade: prepended once, cleanly.
+        // Deliberately literal: the switch alone decides, even when the
+        // name already carries the grade — the settings WARN about the
+        // repetition, and resolving it is the teacher's call.
         course.configuration.courseName = "Computer Science, Grade 11, U"
         XCTAssertEqual(SectionAdder.sectionTitle(for: course, sectionNumber: 2),
-                       "Grade 11 Computer Science, Section 2")
+                       "Grade 11 Computer Science, Grade 11, U, Section 2")
 
-        // A name that leads with its grade is left alone — never doubled.
-        course.configuration.courseName = "Grade 11 Computer Science"
-        XCTAssertEqual(SectionAdder.sectionTitle(for: course, sectionNumber: 2),
-                       "Grade 11 Computer Science, Section 2")
-
-        // And the switch turns the grade off entirely.
-        course.configuration.showGradeInTitle = false
+        // The switch is per section, like the marker: off for this one
+        // turns the grade off entirely, and only here.
+        course.configuration.setShowsGradeInTitle(false, forSection: 2)
         course.configuration.courseName = "Introduction to Computer Science"
         XCTAssertEqual(SectionAdder.sectionTitle(for: course, sectionNumber: 2),
                        "Introduction to Computer Science, Section 2")
+        XCTAssertTrue(course.configuration.showsGradeInTitle(forSection: 3),
+                      "Another section keeps its own default")
+    }
+
+    /// The warning that keeps the literal switch honest: it appears
+    /// exactly when the grade would repeat, and never otherwise.
+    @MainActor
+    func testTheGradeRepetitionWarning() {
+        XCTAssertNotNil(CourseConfiguration.gradeInTitleWarning(
+            courseName: "Computer Science, Grade 11, U", courseCode: "ICS3U", showsGrade: true))
+        XCTAssertNotNil(CourseConfiguration.gradeInTitleWarning(
+            courseName: "Grade 11 Computer Science", courseCode: "ICS3U", showsGrade: true))
+        XCTAssertNil(CourseConfiguration.gradeInTitleWarning(
+            courseName: "Computer Science", courseCode: "ICS3U", showsGrade: true),
+            "A clean name earns no warning")
+        XCTAssertNil(CourseConfiguration.gradeInTitleWarning(
+            courseName: "Computer Science, Grade 11, U", courseCode: "ICS3U", showsGrade: false),
+            "With the switch off there is nothing to warn about")
+        XCTAssertNil(CourseConfiguration.gradeInTitleWarning(
+            courseName: "Coding Club", courseCode: "CODING", showsGrade: true),
+            "A club has no grade to repeat")
     }
 
     @MainActor
