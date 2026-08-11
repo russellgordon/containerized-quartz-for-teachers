@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 6
 draft: true
-created: __CREATED__
+created: __CREATED_CLASS_26__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true

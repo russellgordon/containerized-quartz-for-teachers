@@ -67,9 +67,13 @@ final class ExampleContentTests: XCTestCase {
             }
             let text: String = try String(contentsOf: entry, encoding: .utf8)
             if text.contains("created:") {
+                // Regular pages use __CREATED__; class pages use
+                // __CREATED_CLASS_K__ so the installer can spread real,
+                // distinct dates across the semester (the All Classes
+                // listing sorts by date).
                 XCTAssertTrue(
-                    text.contains("created: __CREATED__"),
-                    "\(entry.lastPathComponent) has a created: line without the sentinel"
+                    text.contains("created: __CREATED"),
+                    "\(entry.lastPathComponent) has a created: line without a sentinel"
                 )
             }
             pagesChecked += 1

@@ -85,6 +85,10 @@ relies on:
 - every page's frontmatter uses the literal `created: __CREATED__` sentinel,
   and per-section pages may use `__SECTION_NUMBER__` (e.g. the section
   landing page's title);
+- class pages use `created: __CREATED_CLASS_K__` (K = 1 for the first class
+  of the year, in chronological order) — the installer spreads them across
+  the semester as real, distinct weekday dates so the All Classes listing
+  sorts newest-first; never give class pages the plain sentinel;
 - curriculum-dependent passages sit between `%%curriculum-start%%` and
   `%%curriculum-end%%` comment lines, so declining the curriculum pages
   removes them cleanly (inline `[[A2.2|words]]` links unlink automatically);

@@ -1201,6 +1201,40 @@ EXAMPLE_CONTENT_ROOTS = [
 # payload pages need no hardcoded dates.
 EXAMPLE_CONTENT_CREATED_SENTINEL = "__CREATED__"
 
+# Class pages instead carry `__CREATED_CLASS_K__`, where K is the class's
+# position in the course (1 = the first class of the year). The installer
+# turns these into REAL, DISTINCT dates spread across the semester, because
+# the All Classes listing sorts by date — with identical dates the most
+# recent class cannot float to the top.
+EXAMPLE_CONTENT_CLASS_SENTINEL = re.compile(r"__CREATED_CLASS_(\d+)__")
+
+
+def semester_class_timestamp(class_ordinal: int, reference) -> str:
+    """
+    The `created:` timestamp for the K-th class of the semester: every
+    other weekday at 07:00, anchored at September 8 of the current school
+    year (the year whose September has most recently begun, or is about
+    to). Matches the semestered September-to-January shape of the example
+    content, and the 07:00 convention real courses here use.
+    """
+    year = reference.year if reference.month >= 8 else reference.year - 1
+    date = reference.replace(year=year, month=9, day=8,
+                             hour=7, minute=0, second=0, microsecond=0)
+    while date.weekday() >= 5:
+        date += timedelta(days=1)
+    remaining_weekday_steps = (class_ordinal - 1) * 2
+    while remaining_weekday_steps > 0:
+        date += timedelta(days=1)
+        if date.weekday() < 5:
+            remaining_weekday_steps -= 1
+    return date.strftime("%Y-%m-%dT%H:%M:%S.000%z")
+
+
+def replacing_class_sentinels(text: str, reference) -> str:
+    def replace(match):
+        return semester_class_timestamp(int(match.group(1)), reference)
+    return EXAMPLE_CONTENT_CLASS_SENTINEL.sub(replace, text)
+
 # Content that only makes sense alongside the curriculum pages sits between
 # these markers (Obsidian comments, so they are invisible on the site even
 # if something goes wrong). With curriculum pages excluded, the whole block
@@ -1295,7 +1329,8 @@ def unlink_curriculum_references(text: str, page_names: set) -> str:
 
 def install_payload_file(source: Path, destination: Path, now_str: str,
                          include_curriculum: bool, page_names: set,
-                         section_number: int | None = None) -> bool:
+                         section_number: int | None = None,
+                         reference=None) -> bool:
     """
     One file from payload to course. Markdown is adjusted on the way
     through; everything else is copied as-is. Existing files are never
@@ -1309,6 +1344,8 @@ def install_payload_file(source: Path, destination: Path, now_str: str,
         return True
     with open(source, "r", encoding="utf-8") as handle:
         text = handle.read()
+    if reference is not None:
+        text = replacing_class_sentinels(text, reference)
     text = text.replace(EXAMPLE_CONTENT_CREATED_SENTINEL, now_str)
     if section_number is not None:
         text = text.replace("__SECTION_NUMBER__", str(section_number))
@@ -1324,7 +1361,8 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
                             section_numbers: list, now_str: str,
                             include_curriculum: bool,
                             shared_folders: list, shared_files: list,
-                            per_section_folders: list, per_section_files: list) -> int:
+                            per_section_folders: list, per_section_files: list,
+                            reference=None) -> int:
     """
     Pour the payload into the course. Only top-level items the teacher kept
     in the structure lists are installed; the curriculum folder also needs
@@ -1373,7 +1411,8 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
                     destination = section_path / source.relative_to(per_section_root)
                     if install_payload_file(source, destination, now_str,
                                             include_curriculum, page_names,
-                                            section_number=sec):
+                                            section_number=sec,
+                                            reference=reference):
                         written += 1
 
     return written
@@ -1786,9 +1825,10 @@ def setup_course(no_backup: bool = False):
         hours = int(tz_offset_str[1:3])
         minutes = int(tz_offset_str[3:])
         tzinfo = timezone(sign * timedelta(hours=hours, minutes=minutes))
-        now_str = datetime.now(tzinfo).strftime("%Y-%m-%dT%H:%M:%S.000%z")
+        now_dt = datetime.now(tzinfo)
     else:
-        now_str = datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S.000%z")
+        now_dt = datetime.now().astimezone()
+    now_str = now_dt.strftime("%Y-%m-%dT%H:%M:%S.000%z")
 
     # ---------- Install example content (before scaffolding) ----------------
     # The payload lands first so the scaffold below, which only writes files
@@ -1799,7 +1839,8 @@ def setup_course(no_backup: bool = False):
                 course_path, example_payload, example_manifest,
                 section_numbers, now_str, include_curriculum,
                 shared_folders, shared_files,
-                per_section_folders, per_section_files
+                per_section_folders, per_section_files,
+                reference=now_dt
             )
             if files_written > 0:
                 print(f"\n📖 Example content installed: {files_written} pages.")
