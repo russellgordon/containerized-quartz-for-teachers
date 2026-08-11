@@ -37,8 +37,39 @@ Set-Location -LiteralPath $ScriptDir
 # Defaults / constants
 # ======================
 # One container per working folder, so two folders never repoint each
-# other's mounts. The name is a short hash of this folder's path.
-$WORKDIR_ID = ([BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes("$((Get-Location).Path)`n"))) -replace '-','').Substring(0,8).ToLower()
+# other's mounts. The name is a short hash of this folder's PHYSICAL path
+# (true on-disk casing, symlinks resolved) plus a trailing newline —
+# parity with `pwd -P | shasum -a 256` on macOS. The app derives the
+# identical name, so this derivation must not drift.
+if (-not ([System.Management.Automation.PSTypeName]'Plantoir.PathApi').Type) {
+  Add-Type -Namespace Plantoir -Name PathApi -MemberDefinition @'
+[DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Unicode)]
+public static extern IntPtr CreateFileW(string lpFileName, uint dwDesiredAccess, uint dwShareMode, IntPtr lpSecurityAttributes, uint dwCreationDisposition, uint dwFlagsAndAttributes, IntPtr hTemplateFile);
+[DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Unicode)]
+public static extern uint GetFinalPathNameByHandleW(IntPtr hFile, System.Text.StringBuilder lpszFilePath, uint cchFilePath, uint dwFlags);
+[DllImport("kernel32.dll")]
+public static extern bool CloseHandle(IntPtr hObject);
+'@
+}
+function Get-PhysicalPath([string]$p) {
+  try {
+    $h = [Plantoir.PathApi]::CreateFileW($p, 0, 7, [IntPtr]::Zero, 3, 0x02000000, [IntPtr]::Zero)
+    if ($h.ToInt64() -ne -1) {
+      $sb = New-Object System.Text.StringBuilder 4096
+      $len = [Plantoir.PathApi]::GetFinalPathNameByHandleW($h, $sb, 4096, 0)
+      [void][Plantoir.PathApi]::CloseHandle($h)
+      if ($len -gt 0) {
+        $r = $sb.ToString()
+        if ($r.StartsWith('\\?\UNC\')) { $r = '\\' + $r.Substring(8) }
+        elseif ($r.StartsWith('\\?\')) { $r = $r.Substring(4) }
+        return $r.TrimEnd('\')
+      }
+    }
+  } catch {}
+  return ([System.IO.Path]::GetFullPath($p)).TrimEnd('\')
+}
+$WORKDIR_PHYSICAL = Get-PhysicalPath (Get-Location).Path
+$WORKDIR_ID = ([BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes("$WORKDIR_PHYSICAL`n"))) -replace '-','').Substring(0,8).ToLower()
 $CONTAINER_NAME = "teaching-quartz-$WORKDIR_ID"
 $KEY_TARGET     = 'containerized-quartz-netlify'  # Windows Credential Manager target
 $TOKENS_FILE    = Join-Path -Path $ScriptDir -ChildPath 'courses\.internal\tokens.json'
@@ -369,7 +400,17 @@ function Use-WslDocker {
   $global:DockerViaWsl = $true
   # Shadow 'docker' so every call in this script is routed through WSL.
   # PowerShell functions take precedence over external commands.
-  function global:docker { & wsl $global:WslUserArgs -e docker @args }
+  # wsl.exe writes docker's stderr to OUR stderr; when a call site
+  # redirects it (*> $null), PowerShell 5.1 wraps each line in an
+  # ErrorRecord, and under ErrorActionPreference=Stop the first line
+  # would TERMINATE the script even for probes that are expected to
+  # fail (e.g. inspecting a not-yet-built image). Relax the preference
+  # inside the wrapper so stderr stays plain output.
+  function global:docker {
+    $eap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try { & wsl $global:WslUserArgs -e docker @args } finally { $ErrorActionPreference = $eap }
+  }
   Write-Host "Using the Docker engine inside WSL2."
 }
 
@@ -399,6 +440,11 @@ function Ensure-ContainerRuntime {
   if (Test-WslDockerReady) { Use-WslDocker; return }
   $global:WslUserArgs = @()
 
+  # One-time provisioning begins here. The line below is a milestone
+  # marker the app watches for (parity with the .sh launchers' one-time
+  # "Setting up this Mac" moment).
+  Write-Host "Setting up this PC - a one-time step that runs on its own ..."
+
   # Is the engine installed inside WSL at all?
   $dockerInWsl = $false
   try { wsl -e sh -c "command -v docker" *> $null; $dockerInWsl = ($LASTEXITCODE -eq 0) } catch {}
@@ -416,7 +462,7 @@ function Ensure-ContainerRuntime {
     }
     $wslUser = ''
     try { $wslUser = (wsl -e sh -c "whoami" 2>$null | Select-Object -First 1).Trim() } catch {}
-    if ($wslUser -and $wslUser -ne 'root') { wsl -u root -e sh -c "usermod -aG docker $wslUser" *> $null }
+    if ($wslUser -and $wslUser -ne 'root') { try { wsl -u root -e sh -c "usermod -aG docker $wslUser" *> $null } catch {} }
   }
 
   Write-Host "Starting the Docker engine inside WSL..."
@@ -495,7 +541,7 @@ function Ensure-Buildx {
   if ($LASTEXITCODE -eq 0) { return }
   if ($global:DockerViaWsl) {
     Write-Host "Installing the image builder (BuildKit) inside WSL ..."
-    wsl -u root -e sh -c "apt-get update -qq >/dev/null 2>&1; apt-get install -y -qq docker-buildx >/dev/null 2>&1 || apt-get install -y -qq docker-buildx-plugin >/dev/null 2>&1" *> $null
+    try { wsl -u root -e sh -c "apt-get update -qq >/dev/null 2>&1; apt-get install -y -qq docker-buildx >/dev/null 2>&1 || apt-get install -y -qq docker-buildx-plugin >/dev/null 2>&1" *> $null } catch {}
     docker buildx version *> $null
     if ($LASTEXITCODE -eq 0) { return }
   }
@@ -725,3 +771,6 @@ if ($DIAGNOSE)  { $envList += @("-e","DIAGNOSE=$DIAGNOSE") }
 if ($TEAM_SLUG) { $envList += @("-e","TEAM_SLUG=$TEAM_SLUG") }
 $execArgs = @("exec","-it") + $envList + @("$CONTAINER_NAME","sh","-lc","/bin/sh /tmp/deploy_inner.sh")
 & docker @execArgs
+# Propagate the deploy's exit code — without this the script reports
+# success even when the run inside the container failed.
+exit $LASTEXITCODE
