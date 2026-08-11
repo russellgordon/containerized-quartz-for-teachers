@@ -31,32 +31,32 @@ calculation; the other half is choosing the tool. Round to one decimal.
 
 ## Answers
 
-> [!success]- Answer 1 (click to expand)
+> [!success]- Answer 1
 > Opposite over hypotenuse is sine: $x = 12 \sin 35° \approx 6.9$ cm.
 > Size check: shorter than the hypotenuse, as it must be. ✓
 
-> [!success]- Answer 2 (click to expand)
+> [!success]- Answer 2
 > $h = 18 \tan 32° \approx 11.2$ m. The right angle at the wall's
 > base is what makes a primary ratio legal here.
 
-> [!success]- Answer 3 (click to expand)
+> [!success]- Answer 3
 > A known side faces a known angle — sine law:
 > $\frac{b}{\sin 75°} = \frac{10}{\sin 40°}$, so $b \approx 15.0$ cm.
 > Check: the bigger angle faces the bigger side. ✓
 
-> [!success]- Answer 4 (click to expand)
+> [!success]- Answer 4
 > No known side faces a known angle — cosine law:
 > $f^2 = 7^2 + 9^2 - 2(7)(9)\cos 52° \approx 52.4$, so
 > $f \approx 7.2$ cm.
 
-> [!success]- Answer 5 (click to expand)
+> [!success]- Answer 5
 > (a) Primary ratios — a right angle is present. (b) Sine law — the
 > third angle comes free, so a known side faces a known angle.
 > (c) Cosine law — the known angle sits *between* the sides.
 > (d) Cosine law, rearranged for an angle — the sine law cannot start
 > without one. The decider: does a known side face a known angle?
 
-> [!success]- Answer 6 (click to expand)
+> [!success]- Answer 6
 > The largest angle faces the longest side, so hunt opposite the $8$ m
 > side: $\cos\theta = \frac{5^2 + 7^2 - 8^2}{2(5)(7)} = \frac{1}{7}$,
 > so $\theta \approx 81.8°$ — under $90°$: the triangle is truly acute.

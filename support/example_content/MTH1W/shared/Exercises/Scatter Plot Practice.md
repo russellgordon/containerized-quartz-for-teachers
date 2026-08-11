@@ -30,33 +30,33 @@ back to [[Box Plots and Quartiles]], data's other big move.
 
 ## Answers
 
-> [!success]- Answer 1 (click to expand)
+> [!success]- Answer 1
 > Likely *negative*: more sleep, faster (lower) reaction times.
 > Predicting first makes the plot a test of your thinking.
 
-> [!success]- Answer 2 (click to expand)
+> [!success]- Answer 2
 > The points climb about 40 cm per storey in a nearly straight
 > band — real data wobbles; a real trend shows through anyway. A line
 > near $y = 40x$ predicts about $320$ cm at 8 storeys. At 80, trust
 > fades: interpolation is borrowing; extrapolation is gambling.
 
-> [!success]- Answer 3 (click to expand)
+> [!success]- Answer 3
 > No — hot sunny weather drives both. A hidden third variable moving
 > two others together is why correlation alone never proves
 > causation. [[Who Does Data Serve]] pushes on deliberate misuse.
 
-> [!success]- Answer 4 (click to expand)
+> [!success]- Answer 4
 > Same median (7), different spreads: Class A's interquartile range
 > is $8 - 6 = 2$; Class B's is $9 - 5 = 4$, with a lower minimum.
 > Class A is more consistent; Class B has more strugglers *and* more
 > high flyers. "Better" depends on what you value — say which, and why.
 
-> [!success]- Answer 5 (click to expand)
+> [!success]- Answer 5
 > A best-fit line balances the *whole cloud* — roughly as many points
 > above as below, as close as possible overall. The endpoints are
 > just two observations, often the flakiest. Kai ignored the rest.
 
-> [!success]- Answer 6 (click to expand)
+> [!success]- Answer 6
 > One good sketch: points rising steeply then flattening — height
 > versus age. A curve fits better than any line; testing models
 > against data is regression's job, and it returns in [[A Data Story]].

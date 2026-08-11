@@ -29,34 +29,34 @@ before expanding its answer.
 
 ## Answers
 
-> [!success]- Answer 1 (click to expand)
+> [!success]- Answer 1
 > Collect like terms: $3x + 2x = 5x$ and $5 - 1 = 4$, giving
 > $5x + 4$. Only terms measuring the same thing can combine.
 
-> [!success]- Answer 2 (click to expand)
+> [!success]- Answer 2
 > The 4 multiplies *both* terms inside: $8n + 12$. Picture four
 > copies of a strip holding $2n + 3$ tiles.
 
-> [!success]- Answer 3 (click to expand)
+> [!success]- Answer 3
 > At $n = 5$: $2(5+3) = 16$ but $2(5) + 3 = 13$ — not equivalent,
 > and one failed test settles it. Careful, though: a *match* would
 > prove nothing — agreeing at one value is not agreeing at all values.
 
-> [!success]- Answer 4 (click to expand)
+> [!success]- Answer 4
 > Numerically, $n = 1$ gives 6 and 6; $n = 2$ gives 10 and 10.
 > Algebraically, expanding Theo's: $2(2n + 1) = 4n + 2$ — identical
 > to Maya's. Same pattern, two honest descriptions of it.
 
-> [!success]- Answer 5 (click to expand)
+> [!success]- Answer 5
 > $5a - 3a = 2a$ and $2b + b = 3b$, so $2a + 3b$. The $a$s and $b$s
 > stay separate — they count different things.
 
-> [!success]- Answer 6 (click to expand)
+> [!success]- Answer 6
 > The 3 multiplied the $x$ but skipped the 2; correct is $3x + 6$.
 > At $x = 0$: $3(0 + 2) = 6$ while Lena's $3(0) + 2 = 2$. One
 > substitution, error exposed — test equivalence, don't trust it.
 
-> [!success]- Answer 7 (click to expand)
+> [!success]- Answer 7
 > Adding the sides: $w + (w + 5) + w + (w + 5)$. Doubling the pair:
 > $2w + 2(w + 5)$. Both simplify to $4w + 10$ — the geometry did not
 > change, only the story told about it.

@@ -5,6 +5,18 @@ created: __CREATED__
 tags:
   - exercises
 ---
+> [!tip] How to use these pages
+> Answer the question **first**, on paper. Then click the answer to unfold it.
+>
+> Reading a worked answer feels like learning and mostly is not — recognising
+> an answer is a completely different skill from producing one, and only one of
+> them is any use in an exam.
+
+> [!success]- Try it: click this line
+> That is what every answer on these pages looks like. Nothing is hidden from
+> you — it is hidden from your *eye*, so that a page of questions stays a page
+> of questions until you have had a go.
+
 Practice here comes after the thinking, never instead of it — each
 set follows a concept page and the board work that built it. Attempt
 every question before peeking: answers hide in folded callouts, each

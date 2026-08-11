@@ -32,31 +32,31 @@ its *size* makes sense against the triangle it lives in.
 
 ## Answers
 
-> [!success]- Answer 1 (click to expand)
+> [!success]- Answer 1
 > The scale factor is $\frac{10}{4} = 2.5$, so
 > $EF = 6 \times 2.5 = 15$. Bigger triangle, bigger side. ✓
 
-> [!success]- Answer 2 (click to expand)
+> [!success]- Answer 2
 > Congruent triangles are similar with scale factor exactly $1$.
 > Similar triangles allow *any* scale factor: a $2:1$ enlargement
 > keeps every angle but matches no side. Congruence locks the zoom.
 
-> [!success]- Answer 3 (click to expand)
+> [!success]- Answer 3
 > $\frac{9}{6} = \frac{12}{8} = \frac{15}{10} = 1.5$ — all three
 > ratios agree, so the triangles are similar and corresponding angles
 > are equal. Both are $3$–$4$–$5$ right triangles, scaled.
 
-> [!success]- Answer 4 (click to expand)
+> [!success]- Answer 4
 > $\frac{h}{12.8} = \frac{1}{1.6}$, so $h = 8$ m. The sun's rays land
 > at the same angle on stick and tree; with right angles at the
 > ground, two matching angles make the triangles similar.
 
-> [!success]- Answer 5 (click to expand)
+> [!success]- Answer 5
 > Size check: $\triangle ABC$ is the smaller triangle, so $BC$ must
 > be under $15$ — and $37.5$ fails instantly. Sam flipped one ratio.
 > Correctly, $\frac{BC}{15} = \frac{4}{10}$, so $BC = 6$. ✓
 
-> [!success]- Answer 6 (click to expand)
+> [!success]- Answer 6
 > Post and wall form right triangles sharing the angle at the ramp's
 > foot — similar. So $\frac{h}{1.2} = \frac{7.5}{3}$, giving
 > $h = 3$ m. The wall is farther out, so it must beat the post. ✓

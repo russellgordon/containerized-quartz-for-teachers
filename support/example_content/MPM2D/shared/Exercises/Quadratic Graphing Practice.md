@@ -31,32 +31,32 @@ any sketch in seconds with [[Using Desmos]].
 
 ## Answers
 
-> [!success]- Answer 1 (click to expand)
+> [!success]- Answer 1
 > Vertex $(2, -5)$, axis $x = 2$, opens up. Sketch from the vertex,
 > then one honest point: $x = 3$ gives $y = -4$, and symmetry gives
 > its mirror at $x = 1$.
 
-> [!success]- Answer 2 (click to expand)
+> [!success]- Answer 2
 > Start from $y = a(x - 3)^2 - 4$ and feed it the known point:
 > $4 = a(2)^2 - 4$, so $a = 2$ and $y = 2(x - 3)^2 - 4$. Verify:
 > $2(5-3)^2 - 4 = 4$. ✓
 
-> [!success]- Answer 3 (click to expand)
+> [!success]- Answer 3
 > Zeros $x = 1$ and $x = 5$; the axis splits them at $x = 3$, and the
 > vertex sits there at $y = (2)(-2) = -4$. The zeros come free — the
 > vertex costs one substitution.
 
-> [!success]- Answer 4 (click to expand)
+> [!success]- Answer 4
 > $y$-intercept $5$, read off the constant. Factoring
 > $(x + 1)(x + 5)$ gives zeros $-1$ and $-5$; the axis is $x = -3$
 > and the vertex is $(-3, -4)$. Three features, three sources.
 
-> [!success]- Answer 5 (click to expand)
+> [!success]- Answer 5
 > Vertex form: vertex $(1, -8)$. Factored: zeros $-1$ and $3$.
 > Standard: $y$-intercept $-6$. At $x = 0$ all three give $-6$ ✓ —
 > loyalty to one form is the only losing strategy.
 
-> [!success]- Answer 6 (click to expand)
+> [!success]- Answer 6
 > Reflect in the $x$-axis, compress vertically by factor
 > $\frac{1}{2}$, translate right $3$ and up $4$: opens down, wide,
 > vertex $(3, 4)$ — the sketch behind [[The Perfect Arc]].

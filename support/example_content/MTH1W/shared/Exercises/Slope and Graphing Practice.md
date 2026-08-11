@@ -27,36 +27,36 @@ Sketch by hand first; [[Using Desmos]] is for checking, not guessing.
 
 ## Answers
 
-> [!success]- Answer 1 (click to expand)
+> [!success]- Answer 1
 > $m = \frac{11 - 2}{4 - 1} = \frac{9}{3} = 3$. Three up for every
 > one across.
 
-> [!success]- Answer 2 (click to expand)
+> [!success]- Answer 2
 > Each step right adds 3, so $m = 3$; the value at zero is 8, so
 > $b = 8$: $y = 3x + 8$. Rate of change and initial value are the
 > table's two secrets, and the equation wears both openly.
 
-> [!success]- Answer 3 (click to expand)
+> [!success]- Answer 3
 > $y = 3$ is horizontal: every height is 3, slope 0 — no change.
 > $x = -2$ is vertical: the run between any two of its points is 0,
 > and dividing by 0 is meaningless — *undefined* slope, not zero.
 
-> [!success]- Answer 4 (click to expand)
+> [!success]- Answer 4
 > Intercepts where the other variable is 0: $(10, 0)$ and $(0, 10)$.
 > Slope $-1$: every extra unit of $x$ costs one unit of $y$, because
 > the two must always total 10.
 
-> [!success]- Answer 5 (click to expand)
+> [!success]- Answer 5
 > Nadia put the $x$-changes on top. Slope is rise over run:
 > $\frac{9 - 3}{5 - 2} = 2$. Her $\frac{1}{2}$ is the reciprocal — a
 > quick sketch shows a line steeper than 1, catching the slip.
 
-> [!success]- Answer 6 (click to expand)
+> [!success]- Answer 6
 > Rate $= \frac{250 - 130}{5 - 2} = \$40$/hour. Work backwards from
 > the 2-hour job: $130 - 2(40) = \$50$ call-out fee. Check with the
 > other point: $50 + 5(40) = 250$. ✓
 
-> [!success]- Answer 7 (click to expand)
+> [!success]- Answer 7
 > $x + y = 7$ is $y = -x + 7$: slope $-1$. Try $y = -x + b$ through
 > $(2, 5)$: $b = 7$ — the *same* line. Since $2 + 5 = 7$, the point
 > already sat on the line; the only parallel line through it is itself.

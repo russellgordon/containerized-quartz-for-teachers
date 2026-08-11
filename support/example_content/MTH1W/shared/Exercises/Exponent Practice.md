@@ -28,35 +28,35 @@ class during [[How Big Is a Million]]. Attempt each before expanding.
 
 ## Answers
 
-> [!success]- Answer 1 (click to expand)
+> [!success]- Answer 1
 > $2^5 = 32$. $(-3)^2 = 9$: the brackets square the whole number,
 > negative included. $-3^2 = -9$: without brackets the exponent binds
 > first, so this reads "the opposite of $3^2$".
 
-> [!success]- Answer 2 (click to expand)
+> [!success]- Answer 2
 > Each step down divides by 3, so $3^0 = 1$ and $3^{-1} = \frac{1}{3}$.
 > Zero and negative exponents are the old pattern refusing to stop.
 
-> [!success]- Answer 3 (click to expand)
+> [!success]- Answer 3
 > $150{,}000{,}000 = 1.5 \times 10^8$ — one non-zero digit, then the
 > power counts the place shifts. And $4.5 \times 10^{-3} = 0.0045$:
 > a negative exponent shifts the other way.
 
-> [!success]- Answer 4 (click to expand)
+> [!success]- Answer 4
 > $x^4 \cdot x^3 = x^{7}$ — four $x$s times three $x$s is seven $x$s
 > multiplied together. $\frac{2^5}{2^2} = 2^{3} = 8$ — two of the
 > five factors cancel.
 
-> [!success]- Answer 5 (click to expand)
+> [!success]- Answer 5
 > $(a^2 b)^3 = a^2 b \cdot a^2 b \cdot a^2 b = a^6 b^3$. The cube
 > applies to *every* factor inside the brackets.
 
-> [!success]- Answer 6 (click to expand)
+> [!success]- Answer 6
 > The bases were multiplied, but the product rule adds exponents
 > over a *common* base: $2^3 \cdot 2^4 = 2^7 = 128$. A size check
 > exposes $4^7$ instantly — far too big for $8 \times 16$.
 
-> [!success]- Answer 7 (click to expand)
+> [!success]- Answer 7
 > $2^{100} = (2^{10})^{10} \approx (10^3)^{10} = 10^{30}$ — but each
 > of the ten factors was really $1024$, a little *more* than $10^3$,
 > so $2^{100} > 10^{30}$. Patterning beats computation here.

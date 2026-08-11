@@ -30,33 +30,33 @@ length is Pythagoras wearing coordinates.
 
 ## Answers
 
-> [!success]- Answer 1 (click to expand)
+> [!success]- Answer 1
 > Average each coordinate: $\left(\frac{2+8}{2}, \frac{6+10}{2}\right)
 > = (5, 8)$. It should land between $A$ and $B$ — it does.
 
-> [!success]- Answer 2 (click to expand)
+> [!success]- Answer 2
 > Run $8$, rise $6$: $\sqrt{8^2 + 6^2} = 10$ — a 6–8–10 triangle on the grid.
 
-> [!success]- Answer 3 (click to expand)
+> [!success]- Answer 3
 > Work the averages backwards: $\frac{-4+x}{2} = 1$ gives $x = 6$ and
 > $\frac{7+y}{2} = 2$ gives $y = -3$. Verify: the midpoint of
 > $(-4, 7)$ and $(6, -3)$ is indeed $(1, 2)$. ✓
 
-> [!success]- Answer 4 (click to expand)
+> [!success]- Answer 4
 > Midpoints: $(2, 3)$ and $(6, 3)$ — a horizontal segment of length
 > $4$: exactly half of $AB = 8$, and parallel to it. No coincidence,
 > as [[The Quadrilateral Case File]] will demand you prove.
 
-> [!success]- Answer 5 (click to expand)
+> [!success]- Answer 5
 > (a) Midpoint — it averages coordinates to locate a *position*:
 > $(5, 6)$. (b) Length — Pythagoras on rise and run measures a
 > *distance*: $\sqrt{8^2 + 6^2} = 10$ km. A point, then a number.
 
-> [!success]- Answer 6 (click to expand)
+> [!success]- Answer 6
 > $AC = \sqrt{3^2 + 4^2} = 5$ and $BC = \sqrt{3^2 + 4^2} = 5$, while
 > $AB = 6$. Two equal sides — isosceles. ✓
 
-> [!success]- Answer 7 (click to expand)
+> [!success]- Answer 7
 > On the $y$-axis, $x = 0$; setting squared distances equal gives
 > $4 + (y-1)^2 = 36 + (y-3)^2$, so $4y = 40$ and the point is
 > $(0, 10)$. Verify: both distances are $\sqrt{85}$. ✓

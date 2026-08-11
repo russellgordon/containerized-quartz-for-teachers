@@ -5,6 +5,18 @@ created: __CREATED__
 tags:
   - exercises
 ---
+> [!tip] How to use these pages
+> Answer the question **first**, on paper. Then click the answer to unfold it.
+>
+> Reading a worked answer feels like learning and mostly is not — recognising
+> an answer is a completely different skill from producing one, and only one of
+> them is any use in an exam.
+
+> [!success]- Try it: click this line
+> That is what every answer on these pages looks like. Nothing is hidden from
+> you — it is hidden from your *eye*, so that a page of questions stays a page
+> of questions until you have had a go.
+
 Practice in this course comes *after* sense-making, never instead of it.
 Each set below follows a concept page — build the idea first, then use
 the exercises to make it dependable. Attempt every question before

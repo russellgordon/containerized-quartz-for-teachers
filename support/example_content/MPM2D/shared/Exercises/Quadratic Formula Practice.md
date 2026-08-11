@@ -29,34 +29,34 @@ is for equations that will not budge, not a substitute for noticing.
 
 ## Answers
 
-> [!success]- Answer 1 (click to expand)
+> [!success]- Answer 1
 > It factors: $(x - 3)(x - 4) = 0$, so $x = 3$ or $x = 4$. Verify
 > $x = 3$: $9 - 21 + 12 = 0$. ✓ No formula required.
 
-> [!success]- Answer 2 (click to expand)
+> [!success]- Answer 2
 > No integer pair multiplies to $-7$ and adds to $4$, so the formula:
 > $x = \frac{-4 \pm \sqrt{16 + 28}}{2} = -2 \pm \sqrt{11}$. Verify
 > $x = -2 + \sqrt{11}$: squaring gives $15 - 4\sqrt{11}$; adding
 > $4x = -8 + 4\sqrt{11}$ and then $-7$ leaves $0$. ✓ The surds cancel
 > — that cancellation *is* the verification.
 
-> [!success]- Answer 3 (click to expand)
+> [!success]- Answer 3
 > (a) $36 - 36 = 0$: one $x$-intercept — the vertex sits on the axis.
 > (b) $1 - 40 = -39 < 0$: none — the parabola never reaches the axis.
 > The discriminant answers "how many" without finding "where".
 
-> [!success]- Answer 4 (click to expand)
+> [!success]- Answer 4
 > Set $h = 0$: $5t^2 - 14t - 3 = 0$ factors as $(5t + 1)(t - 3) = 0$:
 > $t = 3$ or $t = -\frac{1}{5}$. Negative time is before the throw —
 > the ball lands at $t = 3$ s. Rejecting a root is interpreting it.
 
-> [!success]- Answer 5 (click to expand)
+> [!success]- Answer 5
 > Check $x = -4$: $16 + 8 - 8 = 16 \neq 0$ — the check fails, doing
 > its job. With $b = -2$ the formula needs $-b = 2$, not $-2$: Ava
 > kept the minus. Correctly $x = \frac{2 \pm 6}{2}$, so $x = 4$ or
 > $x = -2$, and both survive substitution. ✓
 
-> [!success]- Answer 6 (click to expand)
+> [!success]- Answer 6
 > Exactly one root needs $b^2 - 4ac = 0$: $36 - 4k = 0$, so $k = 9$.
 > Sensible, because $x^2 + 6x + 9 = (x + 3)^2$ — a perfect square,
 > touching the axis once at $x = -3$.

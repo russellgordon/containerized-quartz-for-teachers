@@ -29,35 +29,35 @@ reasoning behind them was built in class through [[Number Strings]] and
 
 ## Answers
 
-> [!success]- Answer 1 (click to expand)
+> [!success]- Answer 1
 > $-8 + 15 = 7$ °C. On a number line: start 8 below zero, climb 8 to
 > reach zero, then 7 more.
 
-> [!success]- Answer 2 (click to expand)
+> [!success]- Answer 2
 > $35 + 45 - 60 - 20 = 0$. Exactly zero — nothing left, nothing
 > owed. A negative balance would have meant owing the bank money.
 
-> [!success]- Answer 3 (click to expand)
+> [!success]- Answer 3
 > $-7, -3, 0, 2, 5$. Least means furthest *left* on the number line,
 > not smallest in size — that is why $-7$ comes before $-3$.
 
-> [!success]- Answer 4 (click to expand)
+> [!success]- Answer 4
 > $4 - (-9) = 13$. Subtraction measures the gap: from $-9$ up to $4$
 > is a distance of 13. Removing a debt of 9 leaves you 9 better off.
 
-> [!success]- Answer 5 (click to expand)
+> [!success]- Answer 5
 > All three equal $-0.75$. A single negative sign, wherever it sits,
 > flips the whole fraction once; two flip it back: $\frac{-3}{-4} = \frac{3}{4}$.
 
-> [!success]- Answer 6 (click to expand)
+> [!success]- Answer 6
 > $-3$ floors per 10 seconds, or $-0.3$ floors/second. The sign
 > carries the *direction* (down); the number carries the speed.
 
-> [!success]- Answer 7 (click to expand)
+> [!success]- Answer 7
 > Sam compared sizes, not positions. On a number line $-5$ sits to
 > the *left* of $-2$, so $-5 < -2$ — owing $\$5$ is worse than $\$2$.
 
-> [!success]- Answer 8 (click to expand)
+> [!success]- Answer 8
 > Pair opposites: every integer from $-49$ to $49$ cancels with its
 > opposite, summing to 0. That leaves $50 + 51 = 101$.
 
