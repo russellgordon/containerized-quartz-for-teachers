@@ -12,18 +12,24 @@ struct WorkspacePickerView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Image(systemName: "folder.badge.gearshape")
-                .font(.system(size: 56))
-                .foregroundStyle(.secondary)
+            // Once a folder HAS been chosen and is awaiting confirmation,
+            // a headline saying "Choose Your Working Folder" answers a
+            // question that was just answered — so the header appears only
+            // while choosing, and the confirmation stands on its own.
+            if !workspace.workspaceCanBeInitialized {
+                Image(systemName: "folder.badge.gearshape")
+                    .font(.system(size: 56))
+                    .foregroundStyle(.secondary)
 
-            Text("Choose Your Working Folder")
-                .font(.title2)
-                .bold()
+                Text("Choose Your Working Folder")
+                    .font(.title2)
+                    .bold()
 
-            Text("Pick the folder where your class websites live — the one with your courses inside (for example, “Class Websites” on your Desktop). Starting from scratch? Choose an empty folder instead.")
-                .frame(maxWidth: 460)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+                Text("Pick the folder where your class websites live — the one with your courses inside (for example, “Class Websites” on your Desktop). Starting from scratch? Choose an empty folder instead.")
+                    .frame(maxWidth: 460)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+            }
 
             if let problem = workspace.workspaceProblem {
                 Text(problem)
