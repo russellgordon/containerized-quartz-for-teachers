@@ -1,0 +1,27 @@
+---
+title: Unit 2, Day 5
+draft: false
+created: __CREATED_CLASS_11__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. Warm-up: [[Tech Headlines]] — a breach in this week's news
+2. Safety notes, then bench time: [[The Network Job]] workday — build
+   to the brief, document as you go
+3. Discussion: [[Locked Down or Wide Open]] — how open should our
+   network be?
+4. Compare and name it: [[Security and Ethics]]
+5. Tools away, log it in your [[Tech Journal]]
+
+## Things to do before our next class
+
+- [ ] Skim [[Writing About Technology]] — your handover document is a
+      service note, and that page holds the standard it is read by.
+- [ ] Draft the handover document for [[The Network Job]].
+- [ ] Journal: one thing you would lock down on our network, and the
+      cost of doing it.
