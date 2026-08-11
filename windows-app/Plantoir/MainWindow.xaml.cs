@@ -25,13 +25,23 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
         Workspace = new WorkspaceViewModel(App.Settings);
 
-        // Min 900×600, ideal 1100×720 — the bounded-ideal lesson from the
-        // mac app carries over as a sensible default size.
-        AppWindow.Resize(new SizeInt32(
-            frame is { Width: > 200 } ? (int)frame.Width : 1100,
-            frame is { Height: > 200 } ? (int)frame.Height : 720));
+        // A remembered window restores exactly; a first run opens at a share of
+        // the display's work area, not a fixed pixel count. AppWindow sizes are
+        // raw pixels, so a fixed 1100×720 looks postage-stamp small on a 200%
+        // display — a proportion of the work area is right at any scale. Clamped
+        // so it never dwarfs a small screen or sprawls across a huge one.
+        var workArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Primary).WorkArea;
+        int defaultWidth = Math.Clamp((int)(workArea.Width * 0.62), 1000, 2000);
+        int defaultHeight = Math.Clamp((int)(workArea.Height * 0.72), 680, 1400);
+        int width = frame is { Width: > 200 } ? (int)frame.Width : defaultWidth;
+        int height = frame is { Height: > 200 } ? (int)frame.Height : defaultHeight;
+        AppWindow.Resize(new SizeInt32(width, height));
         if (frame is { } f && f.X > -10000 && f.Y > -10000)
             AppWindow.Move(new PointInt32((int)f.X, (int)f.Y));
+        else   // First run: sit centred on the work area rather than at (0,0).
+            AppWindow.Move(new PointInt32(
+                workArea.X + (workArea.Width - width) / 2,
+                workArea.Y + (workArea.Height - height) / 2));
         if (AppWindow.Presenter is OverlappedPresenter presenter)
             presenter.PreferredMinimumWidth = 900;
         if (AppWindow.Presenter is OverlappedPresenter minPresenter)

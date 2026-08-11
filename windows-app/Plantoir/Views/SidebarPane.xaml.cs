@@ -121,6 +121,47 @@ public sealed partial class SidebarPane : UserControl
 
         Tree.ItemsSource = roots;
         RefreshNoMatches();
+        ReassertExpansion(roots);
+    }
+
+    /// <summary>
+    /// Re-apply each root's intended expansion after the ItemsSource swap.
+    /// TreeView silently drops a root's expanded state when the tree is rebuilt
+    /// while a dialog is closing — the create-course flow refreshes as the
+    /// wizard tears down — leaving "Courses & Clubs" folded even though its row
+    /// asks to be open. The collapse lands on a LATER tick than the refresh and
+    /// the containers aren't realized immediately, so re-assert repeatedly for
+    /// the length of the close animation, then stop. A no-op whenever the state
+    /// is already right (reload, filter), and it never touches a course row's
+    /// own expansion, so those stay free to fold.
+    /// </summary>
+    private void ReassertExpansion(IEnumerable<SidebarRow> roots)
+    {
+        // Every row that asks to be open — the groups and their course rows.
+        // (The Archived group and section leaves ask to stay closed and are
+        // left alone, so folding a course by hand still works between rebuilds.)
+        var wantOpen = new List<SidebarRow>();
+        void Collect(IEnumerable<SidebarRow> rows)
+        {
+            foreach (var row in rows)
+            {
+                if (row.IsExpanded) wantOpen.Add(row);
+                Collect(row.Children);
+            }
+        }
+        Collect(roots);
+
+        var timer = DispatcherQueue.CreateTimer();
+        int ticks = 0;
+        timer.Interval = TimeSpan.FromMilliseconds(60);
+        timer.Tick += (t, _) =>
+        {
+            foreach (var row in wantOpen)
+                if (Tree.ContainerFromItem(row) is TreeViewItem container && !container.IsExpanded)
+                    container.IsExpanded = true;
+            if (++ticks >= 10) t.Stop();   // ~600 ms covers the dialog teardown
+        };
+        timer.Start();
     }
 
     private void RefreshNoMatches()
