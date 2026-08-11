@@ -3,7 +3,7 @@ title: Drama Journal
 draft: false
 created: __CREATED__
 tags:
-  - tasks
+  - portfolio
 enableToc: true
 ---
 > [!abstract] At a glance

@@ -1,6 +1,6 @@
 ---
 title: Unit 1, Day 4
-draft: true
+draft: false
 created: __CREATED__
 transcludeTitleSize: h2
 enableToc: false
@@ -8,20 +8,22 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-%% This page is an example of a DRAFT: `draft: true` in the frontmatter
-means it is never published to the site. Plan tomorrow today, publish it
-when class ends — just flip draft to false. Delete this comment when you
-reuse the page; comments never appear on the site either. %%
-
 ## Agenda
 
-1. Circle up
-2. Warm-up: group counting to twenty, eyes closed
-3. Convention: [[Thought Tracking]] on yesterday's tableaux
-4. Rehearsal: [[Tableau Story Sequence]] — choose your story, block your
-   five images
-5. Share: one image per group, cold
+1. Warm-up: statues in pairs
+2. Concept: [[Focus and Emphasis]] — where does the eye go, and why?
+3. Convention: [[Tableau]] — levels, focus, contrast
+4. Launch our first task: [[Tableau Story Sequence]]
+5. Groups form; shortlist two stories each
+
+%%curriculum-start%%
+Today's work points here:
+
+![[A2.2]]
+%%curriculum-end%%
 
 ## Things to do before our next class
 
-- [ ] Journal: which of your five images is weakest, and what would fix it?
+- [ ] Read [[Tableau Story Sequence]] — your group chooses its story next
+      class.
+- [ ] Skim [[Thought Tracking]]; we add it to tableaux on Day 5.

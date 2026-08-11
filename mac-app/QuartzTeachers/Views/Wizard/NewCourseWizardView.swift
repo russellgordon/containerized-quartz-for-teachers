@@ -35,6 +35,11 @@ struct NewCourseWizardView: View {
     /// Whether the example content brings the official curriculum pages
     /// along with it.
     @State var includesCurriculumPages: Bool = true
+
+    /// Whether the factory structure uses LCS's own words and folders
+    /// (Grove Time, SIC, College Board Curriculum) instead of the
+    /// school-neutral defaults.
+    @State var usesLCSTerminology: Bool = false
     @State var fontChoice: FontChoice = FontChoice.systemDefault
     @State var expandOnFolderClick: Bool = false
     @State var showReadingTime: Bool = false
@@ -112,6 +117,14 @@ struct NewCourseWizardView: View {
     /// The problem with the sections as typed, live.
     var sectionNumbersProblem: String? {
         return NewCourseWizardView.sectionNumbersProblem(sectionNumbersText)
+    }
+
+    /// True when the example content, not the teacher, decides the
+    /// course's folders and files — the pages were written for one exact
+    /// layout, and a hand-edited structure would strand their links.
+    var structureComesFromExampleContent: Bool {
+        return prepopulatesExampleContent
+            && ExampleContentCatalog.hasContent(forCode: courseCode)
     }
 
     var parsedSectionNumbers: [Int] {
@@ -290,7 +303,7 @@ struct NewCourseWizardView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Toggle("Pre-populate course with example content", isOn: $prepopulatesExampleContent)
                             .accessibilityIdentifier("prepopulateToggle")
-                        ExampleCaption("Working pages written for this course — keep, edit, or delete them as you build your own site")
+                        ExampleCaption("Working pages written for this course — keep, edit, or delete them as you build your own site. The example content also chooses the course's folders and files, so they fit the pages.")
                     }
                     if ExampleContentCatalog.includesCurriculum(forCode: courseCode) {
                         VStack(alignment: .leading, spacing: 4) {
@@ -348,16 +361,45 @@ struct NewCourseWizardView: View {
             }
 
             Section {
-                // The lists are long, so they stay collapsed until needed.
-                DisclosureGroup("Folders and files") {
-                    StringListEditorView(title: "Shared folders", items: $sharedFolders)
-                    StringListEditorView(title: "Shared files", hidesMarkdownExtension: true, items: $sharedFiles)
-                    StringListEditorView(title: "Per-section folders", items: $perSectionFolders)
-                    StringListEditorView(title: "Per-section files", hidesMarkdownExtension: true, items: $perSectionFiles)
+                if structureComesFromExampleContent {
+                    Text("The example content chooses the folders and files for this course, so every page lands where its links expect it. Turn off pre-populating to choose your own structure.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("structureFromExampleNote")
+                } else {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Toggle("Use LCS-specific terminology", isOn: $usesLCSTerminology)
+                            .accessibilityIdentifier("lcsTerminologyToggle")
+                        ExampleCaption("e.g. “Grove Time” instead of “Extra Help”, plus the College Board Curriculum folder")
+                    }
+                    .onChange(of: usesLCSTerminology) { wasLCS, isLCS in
+                        sharedFolders = WizardDefaults.switchingFactoryItems(
+                            in: sharedFolders,
+                            toFactory: isLCS ? WizardDefaults.lcsSharedFolders : WizardDefaults.sharedFolders,
+                            fromFactory: wasLCS ? WizardDefaults.lcsSharedFolders : WizardDefaults.sharedFolders
+                        )
+                        sharedFiles = WizardDefaults.switchingFactoryItems(
+                            in: sharedFiles,
+                            toFactory: isLCS ? WizardDefaults.lcsSharedFiles : WizardDefaults.sharedFiles,
+                            fromFactory: wasLCS ? WizardDefaults.lcsSharedFiles : WizardDefaults.sharedFiles
+                        )
+                    }
+
+                    // The lists are long, so they stay collapsed until needed.
+                    DisclosureGroup("Folders and files") {
+                        StringListEditorView(title: "Shared folders", items: $sharedFolders)
+                        StringListEditorView(title: "Shared files", hidesMarkdownExtension: true, items: $sharedFiles)
+                        StringListEditorView(title: "Per-section folders", items: $perSectionFolders)
+                        StringListEditorView(title: "Per-section files", hidesMarkdownExtension: true, items: $perSectionFiles)
+                    }
+                    .accessibilityIdentifier("structureDisclosure")
                 }
-                .accessibilityIdentifier("structureDisclosure")
             } header: {
-                FormSectionHeader("Structure", caption: "Defaults are fine for most courses")
+                if structureComesFromExampleContent {
+                    FormSectionHeader("Structure", caption: "Chosen by the example content")
+                } else {
+                    FormSectionHeader("Structure", caption: "Defaults are fine for most courses")
+                }
             }
 
             Section {
@@ -526,6 +568,7 @@ struct NewCourseWizardView: View {
                 && prepopulatesExampleContent
                 && ExampleContentCatalog.includesCurriculum(forCode: code)
                 && includesCurriculumPages,
+            "use_lcs_terminology": usesLCSTerminology,
             "fonts": [
                 "default": fontChoice.dictionaryRepresentation,
                 "sections": fontsSectionsMap,

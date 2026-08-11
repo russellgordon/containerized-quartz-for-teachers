@@ -74,11 +74,17 @@ rights. The image itself lives inside the Colima VM's disk (`~/.colima`).
 
 `support/example_content/<CODE>/` holds ready-made course content, one
 folder per Ontario course code (ADA1O is the template to copy). Each payload
-is `manifest.json` (the folders/files it provides, what to hide or make
-expandable, and the curriculum folder's name) plus `shared/` and
-`per_section/` trees. Conventions the installer relies on:
+is `manifest.json` plus `shared/` and `per_section/` trees. The manifest is
+the course's ENTIRE structure when a teacher pre-populates — folders,
+files, hidden, expandable — and the wizard asks no structure questions, so
+a payload must be complete: no folder should ship empty, and reference
+pages (Help Sessions, a populated Key Links, the section landing page with
+its transclusions) belong in every payload. Conventions the installer
+relies on:
 
-- every page's frontmatter uses the literal `created: __CREATED__` sentinel;
+- every page's frontmatter uses the literal `created: __CREATED__` sentinel,
+  and per-section pages may use `__SECTION_NUMBER__` (e.g. the section
+  landing page's title);
 - curriculum-dependent passages sit between `%%curriculum-start%%` and
   `%%curriculum-end%%` comment lines, so declining the curriculum pages
   removes them cleanly (inline `[[A2.2|words]]` links unlink automatically);

@@ -11,13 +11,13 @@ tags:
 ## Agenda
 
 1. Circle up; finalise [[Our Ensemble Agreement]] from your suggestions
-2. Warm-up: mirrors, then group counting
+2. Warm-up: [[Mirrors]], then [[Group Counting]]
 3. Discussion: [[Why Trust Comes First]]
-4. Workshop: first steps into [[Improvisation Showcase|improvisation]] —
-   accepting offers
-5. Reflect: journal — "one offer I accepted today"
+4. Launch the [[Drama Journal]] — write [[Your First Entry]] in class
+5. Read together: [[What a Strong Entry Looks Like]]
 
 ## Things to do before our next class
 
-- [ ] Nothing written — but notice one moment of everyday performance
-      around you today. We will use these on Day 3.
+- [ ] Finish [[Your First Entry]] if you did not in class.
+- [ ] Notice one moment of everyday performance around you today — we use
+      these sightings on Day 3.

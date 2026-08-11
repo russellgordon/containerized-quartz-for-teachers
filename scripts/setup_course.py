@@ -34,13 +34,26 @@ def _cmd_example(script_base: str, course, section, host_os: str) -> str:
         return f"./{script_base}.sh {course} {section}"
 # ----------------------------------------------------------------------------
 
+# The factory defaults are deliberately school-neutral. One switch brings
+# back LCS's own set-up — its terms (Grove Time, SIC) and the College Board
+# folder its AP courses use. These four lists are the whole difference.
 DEFAULT_SHARED_FOLDERS = [
+    "Concepts", "Discussions", "Examples", "Exercises", "Media",
+    "Ontario Curriculum", "Portfolios",
+    "Recaps", "Setup", "Style", "Tasks", "Tutorials"
+]
+
+LCS_SHARED_FOLDERS = [
     "Concepts", "Discussions", "Examples", "Exercises", "Media",
     "Ontario Curriculum", "College Board Curriculum", "Portfolios",
     "Recaps", "Setup", "Style", "Tasks", "Tutorials"
 ]
 
 DEFAULT_SHARED_FILES = [
+    "Extra Help.md", "Learning Goals.md"
+]
+
+LCS_SHARED_FILES = [
     "SIC Drop-In Sessions.md", "Grove Time.md", "Learning Goals.md"
 ]
 
@@ -1210,15 +1223,6 @@ def load_example_content_manifest(payload_dir: Path) -> dict:
         return json.load(handle)
 
 
-def merge_missing(existing: list, additions: list) -> list:
-    """The existing list with any missing additions appended, order kept."""
-    result = list(existing or [])
-    for item in additions or []:
-        if item not in result:
-            result.append(item)
-    return result
-
-
 def curriculum_page_names(payload_dir: Path, manifest: dict) -> set:
     """The page names (file stems) of every curriculum page in the payload."""
     folder_name = manifest.get("curriculum_folder")
@@ -1290,7 +1294,8 @@ def unlink_curriculum_references(text: str, page_names: set) -> str:
 
 
 def install_payload_file(source: Path, destination: Path, now_str: str,
-                         include_curriculum: bool, page_names: set) -> bool:
+                         include_curriculum: bool, page_names: set,
+                         section_number: int | None = None) -> bool:
     """
     One file from payload to course. Markdown is adjusted on the way
     through; everything else is copied as-is. Existing files are never
@@ -1305,6 +1310,8 @@ def install_payload_file(source: Path, destination: Path, now_str: str,
     with open(source, "r", encoding="utf-8") as handle:
         text = handle.read()
     text = text.replace(EXAMPLE_CONTENT_CREATED_SENTINEL, now_str)
+    if section_number is not None:
+        text = text.replace("__SECTION_NUMBER__", str(section_number))
     text = strip_curriculum_blocks(text, keep_content=include_curriculum)
     if not include_curriculum:
         text = unlink_curriculum_references(text, page_names)
@@ -1332,6 +1339,10 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
             return include_curriculum and entry.name in allowed_folders
         if entry.is_dir():
             return entry.name in allowed_folders
+        # A payload's index.md is the landing page of the folder it sits
+        # in (e.g. the section's own front page) — always welcome.
+        if entry.name == "index.md":
+            return True
         return entry.name in allowed_files
 
     shared_root = payload_dir / "shared"
@@ -1361,7 +1372,8 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
                         continue
                     destination = section_path / source.relative_to(per_section_root)
                     if install_payload_file(source, destination, now_str,
-                                            include_curriculum, page_names):
+                                            include_curriculum, page_names,
+                                            section_number=sec):
                         written += 1
 
     return written
@@ -1615,71 +1627,98 @@ def setup_course(no_backup: bool = False):
         if prepopulate_example:
             example_manifest = manifest
 
-    # ---------- Original prompts (unchanged except for Media handling) ----------
-    # Remove 'Media' from defaults so it never appears in the selection prompt
-    shared_default_candidates = saved_config.get("shared_folders", DEFAULT_SHARED_FOLDERS)
-    shared_default_filtered = [x for x in (shared_default_candidates or []) if x != "Media"]
-
-    # The payload's items join the structure DEFAULTS (not the results), so
-    # the teacher still sees and can veto every one in the prompts below.
+    # ---------- Structure: from the example content, or from prompts --------
     if example_manifest:
-        payload_shared_folders = list(example_manifest.get("shared_folders", []))
-        if not include_curriculum and example_manifest.get("curriculum_folder") in payload_shared_folders:
-            payload_shared_folders.remove(example_manifest.get("curriculum_folder"))
-        shared_default_filtered = merge_missing(shared_default_filtered, payload_shared_folders)
+        # The example content decides the structure WHOLE: which folders and
+        # files exist, which stay hidden, which expand. No structure
+        # questions are asked — pages were written for exactly this layout,
+        # and empty leftover folders would only dilute it. (Everything
+        # cosmetic — fonts, colours, emoji, footer — is still the
+        # teacher's, above and below.)
+        curriculum_folder = example_manifest.get("curriculum_folder")
+        # The example content names its own files, so the terminology
+        # switch has nothing to decide here; the choice is only carried.
+        use_lcs_terminology = bool(saved_config.get("use_lcs_terminology", False))
+        shared_folders = [x for x in example_manifest.get("shared_folders", []) if x != "Media"]
+        shared_files = list(example_manifest.get("shared_files", []))
+        per_section_folders = list(example_manifest.get("per_section_folders", []))
+        per_section_files = list(example_manifest.get("per_section_files", []))
+        hidden_items = list(example_manifest.get("hidden", []))
+        expandable_items = list(example_manifest.get("expandable", []))
+        if not include_curriculum and curriculum_folder:
+            shared_folders = [x for x in shared_folders if x != curriculum_folder]
+            hidden_items = [x for x in hidden_items if x != curriculum_folder]
+            expandable_items = [x for x in expandable_items if x != curriculum_folder]
+        print("\n🗂️  The example content chooses this course's folders and files:")
+        print(f"   Shared folders: {', '.join(shared_folders)}")
+        print(f"   Shared files: {', '.join(shared_files) or '—'}")
+        print(f"   Per-section folders: {', '.join(per_section_folders) or '—'}")
+        print(f"   Per-section files: {', '.join(per_section_files) or '—'}")
+    else:
+        # ---------- Terminology for the factory defaults ---------------------
+        # The factory defaults are school-neutral; one switch brings back
+        # LCS's own set-up. Saved lists always win over either factory set —
+        # the switch only decides what a fresh course is offered.
+        use_lcs_terminology = prompt_yes_no_default(
+            "Use LCS-specific terminology (e.g. “Grove Time” instead of “Extra Help”)?",
+            bool(saved_config.get("use_lcs_terminology", False))
+        )
+        factory_shared_folders = LCS_SHARED_FOLDERS if use_lcs_terminology else DEFAULT_SHARED_FOLDERS
+        factory_shared_files = LCS_SHARED_FILES if use_lcs_terminology else DEFAULT_SHARED_FILES
 
-    shared_files_default = saved_config.get("shared_files", DEFAULT_SHARED_FILES)
-    per_section_folders_default = saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS)
-    per_section_files_default = saved_config.get("per_section_files", DEFAULT_PER_SECTION_FILES)
-    if example_manifest:
-        shared_files_default = merge_missing(shared_files_default, example_manifest.get("shared_files", []))
-        per_section_folders_default = merge_missing(per_section_folders_default, example_manifest.get("per_section_folders", []))
-        per_section_files_default = merge_missing(per_section_files_default, example_manifest.get("per_section_files", []))
+        # ---------- Original prompts (unchanged except for Media handling) ----------
+        # Remove 'Media' from defaults so it never appears in the selection prompt
+        shared_default_candidates = saved_config.get("shared_folders", factory_shared_folders)
+        shared_default_filtered = [x for x in (shared_default_candidates or []) if x != "Media"]
 
-    shared_folders = prompt_type_list(
-        "Enter folder names to be shared across all sections – defaults are:",
-        shared_default_filtered,
-        forbidden_names=["Media"]  # prevent user from adding 'Media'
-    )
-    shared_files = prompt_type_list(
-        "Enter Markdown file names to be shared across all sections – defaults are:",
-        shared_files_default,
-        add_md_extension=True
-    )
-    per_section_folders = prompt_type_list(
-        "Enter folder names to be duplicated per section – defaults are:",
-        per_section_folders_default,
-        forbidden_names=["Media"]  # prevent user from adding 'Media'
-    )
-    per_section_files = prompt_type_list(
-        "Enter Markdown file names to be duplicated per section – defaults are:",
-        per_section_files_default,
-        add_md_extension=True
-    )
+        shared_folders = prompt_type_list(
+            "Enter folder names to be shared across all sections – defaults are:",
+            shared_default_filtered,
+            forbidden_names=["Media"]  # prevent user from adding 'Media'
+        )
+        shared_files = prompt_type_list(
+            "Enter Markdown file names to be shared across all sections – defaults are:",
+            saved_config.get("shared_files", factory_shared_files),
+            add_md_extension=True
+        )
+        per_section_folders = prompt_type_list(
+            "Enter folder names to be duplicated per section – defaults are:",
+            saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS),
+            forbidden_names=["Media"]  # prevent user from adding 'Media'
+        )
+        per_section_files = prompt_type_list(
+            "Enter Markdown file names to be duplicated per section – defaults are:",
+            saved_config.get("per_section_files", DEFAULT_PER_SECTION_FILES),
+            add_md_extension=True
+        )
 
-    all_selected = shared_folders + shared_files + per_section_folders + per_section_files
+        all_selected = shared_folders + shared_files + per_section_folders + per_section_files
 
-    default_hidden = [
-        "Media", "Ontario Curriculum", "College Board Curriculum",
-        "SIC Drop-In Sessions.md", "Grove Time.md", "Learning Goals.md",
-        "Private Notes.md", "Scratch Page.md", "Key Links.md"
-    ] if not saved_config else saved_config.get("hidden", [])
-    if example_manifest:
-        default_hidden = merge_missing(default_hidden, example_manifest.get("hidden", []))
+        if use_lcs_terminology:
+            factory_hidden = [
+                "Media", "Ontario Curriculum", "College Board Curriculum",
+                "SIC Drop-In Sessions.md", "Grove Time.md", "Learning Goals.md",
+                "Private Notes.md", "Scratch Page.md", "Key Links.md"
+            ]
+        else:
+            factory_hidden = [
+                "Media", "Ontario Curriculum",
+                "Extra Help.md", "Learning Goals.md",
+                "Private Notes.md", "Scratch Page.md", "Key Links.md"
+            ]
+        default_hidden = factory_hidden if not saved_config else saved_config.get("hidden", [])
 
-    # IMPORTANT: 'Media' will NOT appear in this prompt because it's not in all_selected,
-    # but we still want it hidden in config. We'll enforce that after the prompt.
-    hidden_items = prompt_select_multiple("Select folders/files to HIDE from the sidebar:", all_selected, default_hidden)
-    visible_items = [item for item in all_selected if item not in hidden_items]
+        # IMPORTANT: 'Media' will NOT appear in this prompt because it's not in all_selected,
+        # but we still want it hidden in config. We'll enforce that after the prompt.
+        hidden_items = prompt_select_multiple("Select folders/files to HIDE from the sidebar:", all_selected, default_hidden)
+        visible_items = [item for item in all_selected if item not in hidden_items]
 
-    default_expandable = [
-        "Concepts", "Discussions", "Examples", "Exercises", "Portfolios",
-        "Recaps", "Setup", "Style", "Tasks", "Tutorials"
-    ] if not saved_config else saved_config.get("expandable", [])
-    if example_manifest:
-        default_expandable = merge_missing(default_expandable, example_manifest.get("expandable", []))
+        default_expandable = [
+            "Concepts", "Discussions", "Examples", "Exercises", "Portfolios",
+            "Recaps", "Setup", "Style", "Tasks", "Tutorials"
+        ] if not saved_config else saved_config.get("expandable", [])
 
-    expandable_items = prompt_select_multiple("Select folders/files that should be EXPANDABLE:", visible_items, default_expandable)
+        expandable_items = prompt_select_multiple("Select folders/files that should be EXPANDABLE:", visible_items, default_expandable)
 
     # ---------- Explorer expansion behaviour (stateful, applies to all sections) ----------
     expand_on_click = prompt_explorer_expansion_behavior(saved_config)
@@ -1725,6 +1764,8 @@ def setup_course(no_backup: bool = False):
         # NEW: example-content choices, remembered for future re-runs
         "prepopulate_example_content": prepopulate_example,
         "include_curriculum_pages": include_curriculum,
+        # NEW: whether the default file names use LCS's own words
+        "use_lcs_terminology": use_lcs_terminology,
     }
     previous_map = saved_config.get("color_schemes", {}) or {}
     if schemes:

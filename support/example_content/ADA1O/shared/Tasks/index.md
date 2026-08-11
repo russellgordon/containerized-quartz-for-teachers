@@ -20,7 +20,10 @@ our [[Learning Goals]].
   but three slips of paper.
 - [[Scene Study from a Story]] — a fairy tale, myth, or legend becomes a
   scripted scene shaped by one convention.
-- [[Drama Journal]] — an ongoing, private record of what you did, noticed,
-  and would try next.
 - [[Production Roles Interview]] — you become a theatre professional and
   take questions in role.
+- [[Culminating Performance]] — everything the course built, on stage for a
+  real audience.
+
+Alongside the tasks, your [[Drama Journal]] runs all course long — it lives
+in Portfolios, because it is where your growth gets recorded.
