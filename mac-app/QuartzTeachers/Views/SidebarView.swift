@@ -42,10 +42,12 @@ struct SidebarView: View {
                                     .tag(SidebarSelection.section(course.code, sectionNumber))
                                     .accessibilityIdentifier("sidebar-\(course.code)-section\(sectionNumber)")
                                     .contextMenu {
-                                        folderMenuItems(
-                                            for: course.sectionDirectoryURL(forSection: sectionNumber),
-                                            obsidianVaultURL: course.directoryURL
+                                        openInObsidianItem(
+                                            revealing: course.sectionDirectoryURL(forSection: sectionNumber),
+                                            vaultURL: course.directoryURL
                                         )
+                                        Divider()
+                                        folderMenuItems(for: course.sectionDirectoryURL(forSection: sectionNumber))
                                     }
                             }
                         } label: {
@@ -57,7 +59,9 @@ struct SidebarView: View {
                                         addSectionCourse = course
                                     }
                                     Divider()
-                                    folderMenuItems(for: course.directoryURL, obsidianVaultURL: course.directoryURL)
+                                    openInObsidianItem(revealing: course.directoryURL, vaultURL: course.directoryURL)
+                                    Divider()
+                                    folderMenuItems(for: course.directoryURL)
                                 }
                         }
                     }
@@ -277,18 +281,23 @@ struct SidebarView: View {
 
     // MARK: - Functions
 
-    /// The shared context-menu items for a course or section folder. The
-    /// Obsidian vault is the COURSE folder even for a section row — the
-    /// section is a subfolder within it, and Obsidian lands there.
+    /// The editing action, set apart in its own menu section. The Obsidian
+    /// vault is the COURSE folder even for a section row — the section is a
+    /// subfolder within it, and Obsidian lands there.
     @ViewBuilder
-    func folderMenuItems(for folderURL: URL, obsidianVaultURL: URL) -> some View {
+    func openInObsidianItem(revealing folderURL: URL, vaultURL: URL) -> some View {
+        Button("Open in Obsidian", systemImage: "square.and.pencil") {
+            FolderActions.openInObsidian(revealing: folderURL, vaultURL: vaultURL)
+        }
+        .disabled(!FolderActions.obsidianIsInstalled)
+    }
+
+    /// The shared context-menu items for a course or section folder.
+    @ViewBuilder
+    func folderMenuItems(for folderURL: URL) -> some View {
         Button("Show in Finder", systemImage: "finder") {
             FolderActions.showInFinder(folderURL)
         }
-        Button("Open in Obsidian", systemImage: "square.and.pencil") {
-            FolderActions.openInObsidian(revealing: folderURL, vaultURL: obsidianVaultURL)
-        }
-        .disabled(!FolderActions.obsidianIsInstalled)
         Button("New Terminal at Folder", systemImage: "terminal") {
             FolderActions.openTerminal(at: folderURL)
         }
