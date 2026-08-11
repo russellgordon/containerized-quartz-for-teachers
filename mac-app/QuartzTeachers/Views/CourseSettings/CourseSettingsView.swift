@@ -113,11 +113,14 @@ struct CourseSettingsView: View {
             Divider()
 
             HStack {
-                Button("Cancel") {
+                // "Revert", not "Cancel": this is a settings form, not a
+                // dialog — the button puts the values back the way the last
+                // save left them.
+                Button("Revert") {
                     try? course.configuration.discardChanges()
                 }
                 .disabled(!course.configuration.hasUnsavedChanges)
-                .accessibilityIdentifier("cancelButton")
+                .accessibilityIdentifier("revertButton")
 
                 Spacer()
 

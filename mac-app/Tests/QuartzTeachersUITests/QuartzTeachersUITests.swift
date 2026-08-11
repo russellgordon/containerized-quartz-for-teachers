@@ -246,9 +246,9 @@ final class QuartzTeachersUITests: XCTestCase {
 
         readingTimeToggle.click()
 
-        let cancelButton: XCUIElement = application.buttons["cancelButton"]
-        XCTAssertTrue(cancelButton.isEnabled, "Cancel should enable after an edit")
-        cancelButton.click()
+        let revertButton: XCUIElement = application.buttons["revertButton"]
+        XCTAssertTrue(revertButton.isEnabled, "Revert should enable after an edit")
+        revertButton.click()
 
         let restoredValue: String = "\(readingTimeToggle.value ?? "")"
         XCTAssertEqual(initialValue, restoredValue, "Cancel should revert the toggle")
