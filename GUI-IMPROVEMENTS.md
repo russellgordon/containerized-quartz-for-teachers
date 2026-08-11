@@ -169,6 +169,8 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 | 79 | 2026-08-10 | Tooltips for the window's top-trailing toolbar buttons, matching the hover labels controls elsewhere in the app already show. | ✅ Implemented — all six section-view toolbar buttons carry `.help()` tooltips in plain words: Back/Forward/Reload on the page, "Preview this section's website" / "Stop previewing this section" (the label follows the button's current face), "Publish this section's website", and "Open this preview in your web browser". No machinery words, per the standing rule. | Same strings as ToolTip text on the Windows toolbar. |
 
+| 80 | 2026-08-10 | Context-clicking a course or section should offer "Open in Obsidian" — the vault the folder belongs to (a vault being just a folder of text files) — and the same action belongs in the window's top-trailing toolbar, tooltip included. | ✅ Implemented — `obsidian://open?path=…` (percent-encoded; a test pins the encoding, since a space would hand Obsidian a broken path) opens the vault the folder belongs to, or offers to make it one. Offered in three places: the course/section context menu ("Open in Obsidian", `diamond` — the closest SF Symbol to Obsidian's gem), the section view's toolbar ("Edit this section's pages in Obsidian"), and a new toolbar on the course settings view ("Edit this course's pages in Obsidian"). Everywhere it is disabled when nothing on the Mac answers `obsidian://` links. | Windows: identical URI scheme (`obsidian://open?path=…`) via ShellExecute; probe the registry for the protocol handler to disable when absent. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the

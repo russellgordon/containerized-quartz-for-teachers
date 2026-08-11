@@ -280,6 +280,10 @@ struct SidebarView: View {
         Button("Show in Finder", systemImage: "finder") {
             FolderActions.showInFinder(folderURL)
         }
+        Button("Open in Obsidian", systemImage: "diamond") {
+            FolderActions.openInObsidian(folderURL)
+        }
+        .disabled(!FolderActions.obsidianIsInstalled)
         Button("New Terminal at Folder", systemImage: "terminal") {
             FolderActions.openTerminal(at: folderURL)
         }

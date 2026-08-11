@@ -138,6 +138,16 @@ struct CourseSettingsView: View {
             .padding(12)
         }
         .navigationTitle(course.code)
+        .toolbar {
+            ToolbarItem {
+                Button("Open in Obsidian", systemImage: "diamond") {
+                    FolderActions.openInObsidian(course.directoryURL)
+                }
+                .disabled(!FolderActions.obsidianIsInstalled)
+                .help("Edit this course's pages in Obsidian")
+                .accessibilityIdentifier("openCourseInObsidianButton")
+            }
+        }
         .navigationSubtitle(course.configuration.courseName)
     }
 

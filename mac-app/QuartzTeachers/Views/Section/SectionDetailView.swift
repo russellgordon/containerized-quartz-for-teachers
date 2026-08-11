@@ -119,6 +119,13 @@ struct SectionDetailView: View {
                 .disabled(previewURL == nil)
                 .help("Open this preview in your web browser")
                 .accessibilityIdentifier("openInBrowserButton")
+
+                Button("Open in Obsidian", systemImage: "diamond") {
+                    FolderActions.openInObsidian(course.sectionDirectoryURL(forSection: sectionNumber))
+                }
+                .disabled(!FolderActions.obsidianIsInstalled)
+                .help("Edit this section's pages in Obsidian")
+                .accessibilityIdentifier("openInObsidianButton")
             }
         }
         .focusedSceneValue(\.previewController, previewURL != nil ? previewController : nil)
