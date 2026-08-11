@@ -13,9 +13,11 @@ struct WindowRootView: View {
 
     // MARK: - Stored properties
 
-    /// This window's own model. Each window has one. A mid-session window
-    /// arrives already knowing its folder, so the picker never flashes.
-    @State var workspace: WorkspaceModel = WorkspaceModel.modelForNewWindow()
+    /// This window's own model. Each window has one. Created bare: the
+    /// window-group closure runs on every render, so anything decided in
+    /// an initializer here runs at the wrong moments — the folder is
+    /// decided in onAppear instead, on the actual new window.
+    @State var workspace: WorkspaceModel = WorkspaceModel()
 
     /// This window's claim on the remembered folders.
     @State var claimant: WindowFolderClaimant = WindowFolderClaimant()
@@ -31,6 +33,11 @@ struct WindowRootView: View {
             .focusedSceneValue(\.workspace, workspace)
             .onAppear {
                 WorkspaceModel.registerWindowModel(workspace)
+                // Before the first frame commits: a mid-session window
+                // takes the key window's folder here, so the picker never
+                // shows on the way in. At launch this is a no-op and the
+                // window claims below decide instead.
+                workspace.adoptFolderForNewWindow()
             }
             .background(WindowAccessor { window in
                 workspace.window = window
@@ -87,40 +94,14 @@ struct WindowRootView: View {
             if let entry = claimant.giveUp() {
                 adopt(entry, how: "fell back to order")
             } else {
-                inheritFromOpenWindows()
+                // Normally already handled in onAppear; harmless backstop.
+                workspace.adoptFolderForNewWindow()
             }
             return
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             attemptClaim(for: window, attemptsLeft: attemptsLeft - 1)
         }
-    }
-
-    /// A brand-new window with nothing to restore: open in the folder of
-    /// the window that was key when it was created — or, as the only
-    /// window, stay empty so the picker shows.
-    func inheritFromOpenWindows() {
-        guard workspace.workspaceURL == nil else {
-            return
-        }
-        var otherOpenFolderPaths: [String] = []
-        for model in WorkspaceModel.windowModels {
-            if model !== workspace, let path = model.workspaceURL?.path {
-                otherOpenFolderPaths.append(path)
-            }
-        }
-        guard let path = WorkspaceModel.folderForNewWindow(
-            otherOpenFolderPaths: otherOpenFolderPaths,
-            mostRecentKeyPath: WorkspaceModel.mostRecentKeyFolderPath
-        ) else {
-            AppLog.interface.info("window \(windowIdentity, privacy: .public) is the only window — opening without a folder")
-            return
-        }
-        workspace.adoptRestoredPath(path)
-        AppLog.interface.info("""
-            window \(windowIdentity, privacy: .public) inherited \
-            "\(path, privacy: .public)" from the key window
-            """)
     }
 
     /// Takes a remembered window as this window's own.

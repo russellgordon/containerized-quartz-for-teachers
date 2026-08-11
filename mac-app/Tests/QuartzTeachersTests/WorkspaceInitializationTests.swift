@@ -113,9 +113,10 @@ final class WorkspacePersistenceTests: XCTestCase {
         WorkspaceModel.mostRecentKeyFolderPath = folderURL.path
         defer { WorkspaceModel.unregisterWindowModel(keyWindowModel) }
 
-        let newWindowModel: WorkspaceModel = WorkspaceModel.modelForNewWindow()
+        let newWindowModel: WorkspaceModel = WorkspaceModel(defaults: TestDefaults.make())
+        newWindowModel.adoptFolderForNewWindow()
         XCTAssertEqual(newWindowModel.workspaceURL?.path, folderURL.path,
-                       "The folder must be known at creation, before anything renders")
+                       "The folder must be known before anything renders")
     }
 
     /// What a brand-new window opens to, by policy: nothing when it is

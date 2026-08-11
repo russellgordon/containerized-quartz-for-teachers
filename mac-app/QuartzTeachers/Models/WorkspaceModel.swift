@@ -35,28 +35,31 @@ class WorkspaceModel {
     /// can open where the teacher just was.
     static var mostRecentKeyFolderPath: String?
 
-    /// The model for a window about to appear. A mid-session window — the
-    /// restoration claims have closed — knows its folder IMMEDIATELY, so
-    /// the picker never flashes before the inherited folder arrives. At
-    /// launch the folder must wait for the window claims, which need the
-    /// window's settled frame.
-    static func modelForNewWindow() -> WorkspaceModel {
-        let model: WorkspaceModel = WorkspaceModel()
-        if Date() > WindowFolderMemory.claimsOpenUntil {
-            var otherOpenFolderPaths: [String] = []
-            for existing in windowModels {
-                if let path = existing.workspaceURL?.path {
-                    otherOpenFolderPaths.append(path)
-                }
-            }
-            if let path = folderForNewWindow(
-                otherOpenFolderPaths: otherOpenFolderPaths,
-                mostRecentKeyPath: mostRecentKeyFolderPath
-            ) {
-                model.adoptRestoredPath(path)
+    /// Takes the folder a brand-new window should open in, right now — the
+    /// key window's. Only for MID-SESSION windows: the restoration claims
+    /// have closed, so there is nothing to wait for, and deciding before
+    /// the first frame renders is what keeps the picker from flashing. At
+    /// launch this does nothing; the folder waits for the window claims,
+    /// which need the window's settled frame.
+    func adoptFolderForNewWindow() {
+        guard workspaceURL == nil else {
+            return
+        }
+        guard Date() > WindowFolderMemory.claimsOpenUntil else {
+            return
+        }
+        var otherOpenFolderPaths: [String] = []
+        for existing in WorkspaceModel.windowModels {
+            if existing !== self, let path = existing.workspaceURL?.path {
+                otherOpenFolderPaths.append(path)
             }
         }
-        return model
+        if let path = WorkspaceModel.folderForNewWindow(
+            otherOpenFolderPaths: otherOpenFolderPaths,
+            mostRecentKeyPath: WorkspaceModel.mostRecentKeyFolderPath
+        ) {
+            adoptRestoredPath(path)
+        }
     }
 
     /// What a brand-new window should open to. With no other windows open,
