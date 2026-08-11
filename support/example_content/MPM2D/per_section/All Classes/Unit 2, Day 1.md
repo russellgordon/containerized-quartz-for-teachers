@@ -1,0 +1,23 @@
+---
+title: Unit 2, Day 1
+draft: false
+created: __CREATED_CLASS_7__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. Number talk: [[Estimation Duels]] — how far apart are those two
+   points, no ruler allowed?
+2. Random groups — [[The Circle on the Grid]] at the boards
+3. Consolidate: every distance question hides a right triangle
+4. Check your understanding — one distance, found two ways
+5. Journals returned — read your feedback before you leave
+
+## Things to do before our next class
+
+- [ ] Reread your returned [[Math Journal]] feedback.
+- [ ] Journal: where did the right triangle hide in your group's method?
