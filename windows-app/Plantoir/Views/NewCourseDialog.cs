@@ -81,16 +81,47 @@ public sealed class NewCourseDialog : ContentDialog
         _shortRow = FormBuilders.LabeledRow("Short label beside emoji (≤ 12 characters)", _shortBox);
         _shortRow.Visibility = Visibility.Collapsed;
 
-        _root = new StackPanel { Spacing = 8, MinWidth = 560 };
+        // Pin the whole dialog to a fixed width so the form and the progress
+        // view share the same size and the "Step x of y" label can't be
+        // clipped off the right edge (issue 3). ContentDialog width is driven
+        // by these theme resources, not by the content's own Width.
+        Resources["ContentDialogMinWidth"] = 600.0;
+        Resources["ContentDialogMaxWidth"] = 600.0;
+        _root = new StackPanel { Spacing = 8 };
         _formScroll = new ScrollViewer
         {
             Content = BuildForm(),
             MaxHeight = 520,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollMode = ScrollMode.Disabled,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
         };
+        _progress.HorizontalAlignment = HorizontalAlignment.Stretch;
         _root.Children.Add(_formScroll);
         _root.Children.Add(_validationText);
         Content = _root;
+        RefreshCreateEnabled();
+    }
+
+    /// <summary>Smoke-test entry: fill the code and press Create, the real path.</summary>
+    public void AutoCreate(string code)
+    {
+        _codeBox.Text = code;
+        Opened += (_, _) => _ = StartCreation();
+    }
+
+    /// <summary>
+    /// The Create button stays disabled until there is enough to make a course:
+    /// a spaceless, non-duplicate code and a valid section-numbers list (issue 2).
+    /// </summary>
+    private void RefreshCreateEnabled()
+    {
+        if (_started) return;   // once running, the affirmative button becomes "Close"
+        string code = _codeBox.Text.Trim().ToUpperInvariant();
+        bool codeOk = code.Length > 0 && !code.Contains(' ')
+                      && !_window.Workspace.Courses.Any(c => c.Code == code);
+        bool sectionsOk = SectionNumbersProblem(_sectionsBox.Text) is null;
+        IsPrimaryButtonEnabled = codeOk && sectionsOk;
     }
 
     // ---- Form ------------------------------------------------------------
@@ -100,22 +131,18 @@ public sealed class NewCourseDialog : ContentDialog
         var form = new StackPanel { Spacing = 6 };
 
         // "New to this?" — a finished course teaches more than an empty form.
-        var invitation = new Grid { ColumnSpacing = 12, Padding = new Thickness(12) };
-        invitation.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        invitation.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var invitationText = new StackPanel { Spacing = 3 };
-        invitationText.Children.Add(new TextBlock { Text = "New to this?", FontWeight = FontWeights.SemiBold });
-        invitationText.Children.Add(new TextBlock
+        // Stacked vertically so the button never clips at any dialog width.
+        var invitation = new StackPanel { Spacing = 8, Padding = new Thickness(12) };
+        invitation.Children.Add(new TextBlock { Text = "New to this?", FontWeight = FontWeights.SemiBold });
+        invitation.Children.Add(new TextBlock
         {
             Text = "Add a complete example course — a real Grade 9 science course you can explore, change, and remove whenever you like.",
             TextWrapping = TextWrapping.Wrap,
             FontSize = 12,
             Opacity = 0.7,
         });
-        invitation.Children.Add(invitationText);
-        var exampleButton = new Button { Content = "Add Example Course", VerticalAlignment = VerticalAlignment.Center };
+        var exampleButton = new Button { Content = "Add Example Course", HorizontalAlignment = HorizontalAlignment.Left };
         exampleButton.Click += (_, _) => _ = StartExampleInstall();
-        Grid.SetColumn(exampleButton, 1);
         invitation.Children.Add(exampleButton);
         form.Children.Add(new Border
         {
@@ -129,7 +156,7 @@ public sealed class NewCourseDialog : ContentDialog
         var codeRow = FormBuilders.LabeledRow("Course code", _codeBox);
         codeRow.Children.Add(FormBuilders.ExampleCaption("e.g. ICS3U — or a club name like CODING"));
         form.Children.Add(codeRow);
-        _codeBox.TextChanged += (_, _) => { AutoFillCourseName(); RefreshClubRow(); RefreshGradeWarning(); };
+        _codeBox.TextChanged += (_, _) => { AutoFillCourseName(); RefreshClubRow(); RefreshGradeWarning(); RefreshCreateEnabled(); };
 
         var nameRow = FormBuilders.LabeledRow("Course name", _nameBox);
         nameRow.Children.Add(FormBuilders.ExampleCaption("e.g. Introduction to Computer Science"));
@@ -142,7 +169,7 @@ public sealed class NewCourseDialog : ContentDialog
         var sectionsRow = FormBuilders.LabeledRow("Timetable section numbers", _sectionsBox);
         sectionsRow.Children.Add(_sectionsCaption);
         form.Children.Add(sectionsRow);
-        _sectionsBox.TextChanged += (_, _) => RefreshSectionsValidation();
+        _sectionsBox.TextChanged += (_, _) => { RefreshSectionsValidation(); RefreshCreateEnabled(); };
 
         foreach (string code in LocaleCatalog.Codes) _localeBox.Items.Add(LocaleCatalog.DisplayName(code));
         _localeBox.SelectedIndex = LocaleCatalog.Codes.ToList().IndexOf(WizardDefaults.DefaultLocale);

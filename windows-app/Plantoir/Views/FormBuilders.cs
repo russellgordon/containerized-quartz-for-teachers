@@ -104,12 +104,13 @@ public static class FormBuilders
                 row.Children.Add(new TextBlock { Text = display, VerticalAlignment = VerticalAlignment.Center });
                 var remove = new Button
                 {
-                    Content = new FontIcon { Glyph = "", FontSize = 12 },
+                    Content = new FontIcon { Glyph = Glyphs.Remove, FontSize = 12 },
                     Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent),
                     BorderThickness = new Thickness(0),
                     MinWidth = 28,
                     MinHeight = 24,
                     Padding = new Thickness(0),
+                    VerticalAlignment = VerticalAlignment.Center,   // align with the row's label
                 };
                 ToolTipService.SetToolTip(remove, $"Remove {display}");
                 remove.Click += (_, _) =>
@@ -136,7 +137,7 @@ public static class FormBuilders
         };
         var addButton = new Button
         {
-            Content = new FontIcon { Glyph = "", FontSize = 12 },
+            Content = new FontIcon { Glyph = Glyphs.Add, FontSize = 12 },
             MinWidth = 28,
             MinHeight = 24,
             Padding = new Thickness(0),

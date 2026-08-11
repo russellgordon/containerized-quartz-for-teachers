@@ -66,7 +66,7 @@ public sealed partial class SectionDetailView : UserControl
 
         bool running = _previewRunner.IsRunning;
         PreviewLabel.Text = running ? "Stop Preview" : "Preview";
-        PreviewIcon.Glyph = running ? "" : "";
+        PreviewIcon.Glyph = running ? Glyphs.Stop : Glyphs.Play;
         ToolTipService.SetToolTip(PreviewButton,
             running ? "Stop previewing this section" : "Preview this section's website");
         PreviewButton.IsEnabled = running || !IsBusy;
@@ -89,7 +89,7 @@ public sealed partial class SectionDetailView : UserControl
         bool anyOutput = _previewRunner.Transcript.Lines.Count > 0 || _deployRunner.Transcript.Lines.Count > 0
                          || _previewRunner.Transcript.CurrentLine.Length > 0;
         bool showConsole = _isWaitingForServer || IsBusy || anyOutput;
-        ConsoleArea.Visibility = showConsole ? Visibility.Visible : Visibility.Collapsed;
+        Progress.Visibility = showConsole ? Visibility.Visible : Visibility.Collapsed;
         NoPreviewState.Visibility = showConsole ? Visibility.Collapsed : Visibility.Visible;
         Preview.Visibility = previewShown ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -98,6 +98,9 @@ public sealed partial class SectionDetailView : UserControl
 
     /// <summary>Smoke-test entry: the same path the Preview button takes.</summary>
     public void StartPreviewForAutomation() => PreviewOrStop_Click(this, new RoutedEventArgs());
+
+    /// <summary>Smoke-test entry: open the console details pane.</summary>
+    public void ShowDetailsForAutomation() => Progress.ExpandDetailsForAutomation();
 
     /// <summary>Smoke-test entry: the same path the Deploy button takes.</summary>
     public void StartDeployForAutomation() => Deploy_Click(this, new RoutedEventArgs());

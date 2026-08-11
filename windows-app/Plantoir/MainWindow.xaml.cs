@@ -71,6 +71,53 @@ public sealed partial class MainWindow : Window
     private void RunAutomationHooks()
     {
         string[] args = Environment.GetCommandLineArgs();
+
+        // --auto-course CODE : open a course's settings.  --auto-wizard : the
+        // New Course dialog.  --auto-addsection CODE : the Add Section dialog.
+        int courseIndex = Array.IndexOf(args, "--auto-course");
+        if (courseIndex >= 0 && courseIndex + 1 < args.Length)
+        {
+            string courseCode = args[courseIndex + 1];
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                await System.Threading.Tasks.Task.Delay(1500);
+                Workspace.Selection = new SidebarSelection.CourseItem(courseCode);
+            });
+            return;
+        }
+        if (args.Contains("--auto-wizard"))
+        {
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                await System.Threading.Tasks.Task.Delay(1500);
+                await Sidebar.OpenNewCourseWizard();
+            });
+            return;
+        }
+        int createIndex = Array.IndexOf(args, "--auto-createcourse");
+        if (createIndex >= 0 && createIndex + 1 < args.Length)
+        {
+            string createCode = args[createIndex + 1];
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                await System.Threading.Tasks.Task.Delay(1500);
+                await Sidebar.OpenNewCourseWizard(createCode);
+            });
+            return;
+        }
+        int addIndex = Array.IndexOf(args, "--auto-addsection");
+        if (addIndex >= 0 && addIndex + 1 < args.Length)
+        {
+            string addCode = args[addIndex + 1];
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                await System.Threading.Tasks.Task.Delay(1500);
+                if (Workspace.Courses.FirstOrDefault(c => c.Code == addCode) is { } course)
+                    await Sidebar.OpenAddSectionDialog(course);
+            });
+            return;
+        }
+
         int index = Array.IndexOf(args, "--auto-select");
         if (index < 0) index = Array.IndexOf(args, "--auto-preview");
         if (index < 0) index = Array.IndexOf(args, "--auto-deploy");
@@ -86,6 +133,11 @@ public sealed partial class MainWindow : Window
             if (DetailHost.Content is not SectionDetailView detail) return;
             if (preview) detail.StartPreviewForAutomation();
             else if (deploy) detail.StartDeployForAutomation();
+            if (args.Contains("--details"))
+            {
+                await System.Threading.Tasks.Task.Delay(3000);
+                detail.ShowDetailsForAutomation();
+            }
         });
     }
 

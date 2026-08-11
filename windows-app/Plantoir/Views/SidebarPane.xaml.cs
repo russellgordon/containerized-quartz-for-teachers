@@ -29,14 +29,14 @@ public sealed class SidebarRow
 public sealed partial class SidebarPane : UserControl
 {
     // Segoe Fluent glyphs, mirroring the mac symbol choices.
-    private const string LibraryGlyph = "";        // books.vertical
-    private const string DocumentGlyph = "";       // doc.richtext
-    private const string ArchiveGlyph = "";        // archivebox
-    private const string AddSectionGlyph = "";     // plus
-    private const string ObsidianGlyph = "";       // square.and.pencil
-    private const string ExplorerGlyph = "";       // finder analogue
-    private const string TerminalGlyph = "";       // terminal
-    private const string RestoreGlyph = "";        // arrow.uturn.backward
+    private const string LibraryGlyph = Glyphs.Library;
+    private const string DocumentGlyph = Glyphs.Document;
+    private const string ArchiveGlyph = Glyphs.Archive;
+    private const string AddSectionGlyph = Glyphs.Add;
+    private const string ObsidianGlyph = Glyphs.Edit;
+    private const string ExplorerGlyph = Glyphs.Explorer;
+    private const string TerminalGlyph = Glyphs.Terminal;
+    private const string RestoreGlyph = Glyphs.Restore;
 
     private MainWindow _window = null!;
     private WorkspaceViewModel Workspace => _window.Workspace;
@@ -297,9 +297,10 @@ public sealed partial class SidebarPane : UserControl
 
     // ---- Dialog launchers ------------------------------------------------
 
-    public async Task OpenNewCourseWizard()
+    public async Task OpenNewCourseWizard(string? autoCreateCode = null)
     {
         var wizard = new NewCourseDialog(_window) { XamlRoot = XamlRoot };
+        if (autoCreateCode is not null) wizard.AutoCreate(autoCreateCode);
         await wizard.ShowAsync();
         Workspace.Reload();
         _window.ApplyState();

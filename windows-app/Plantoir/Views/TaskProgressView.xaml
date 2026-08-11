@@ -38,7 +38,7 @@
             </StackPanel>
             <StackPanel x:Name="AwaitingNotice" Orientation="Horizontal" Spacing="6" Visibility="Collapsed"
                         AutomationProperties.AutomationId="awaitingInputNotice">
-                <FontIcon Glyph="" FontSize="14" Foreground="{ThemeResource SystemFillColorCautionBrush}" />
+                <FontIcon Glyph="&#xE897;" FontSize="14" Foreground="{ThemeResource SystemFillColorCautionBrush}" />
                 <TextBlock Text="Waiting for your answer…" Foreground="{ThemeResource SystemFillColorCautionBrush}" />
             </StackPanel>
             <TextBlock x:Name="LaunchProblemText" Visibility="Collapsed" TextWrapping="Wrap"
@@ -51,13 +51,14 @@
                 Padding="12,6" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                 Click="Disclosure_Click" AutomationProperties.AutomationId="taskDetailsDisclosure">
             <StackPanel Orientation="Horizontal" Spacing="4">
-                <FontIcon x:Name="DisclosureChevron" Glyph="" FontSize="10" Opacity="0.7" />
+                <FontIcon x:Name="DisclosureChevron" Glyph="&#xE76C;" FontSize="10" Opacity="0.7" />
                 <TextBlock x:Name="DisclosureLabel" Text="Show details" Opacity="0.7" FontSize="13" />
             </StackPanel>
         </Button>
 
-        <!-- Console: bounded height, clipped, scrolls internally. -->
-        <Grid Grid.Row="3" x:Name="ConsolePane" Visibility="Collapsed" MaxHeight="380"
+        <!-- Console fills the remaining height (row 3 is *, clipped, scrolls
+             internally); the wizard bounds it with its own ScrollViewer. -->
+        <Grid Grid.Row="3" x:Name="ConsolePane" Visibility="Collapsed"
               Background="{ThemeResource LayerFillColorDefaultBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />

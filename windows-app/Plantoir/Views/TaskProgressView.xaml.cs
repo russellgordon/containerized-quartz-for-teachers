@@ -22,8 +22,23 @@ public sealed partial class TaskProgressView : UserControl
     private bool _detailsOpen;
     private bool _questionDialogShowing;
     private long _renderedTranscriptVersion = -1;
+    private readonly DispatcherTimer _tick;
 
-    public TaskProgressView() => InitializeComponent();
+    public TaskProgressView()
+    {
+        InitializeComponent();
+        // Re-renders once a second while a task runs, so the "still working…"
+        // timer keeps moving even when the script itself is momentarily quiet.
+        _tick = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _tick.Tick += (_, _) => { if (_runner is { IsRunning: true }) Render(); };
+        Unloaded += (_, _) => _tick.Stop();
+    }
+
+    private void EnsureTicking(bool on)
+    {
+        if (on && !_tick.IsEnabled) _tick.Start();
+        else if (!on && _tick.IsEnabled) _tick.Stop();
+    }
 
     /// <summary>
     /// Subscribe to a runner ONCE. Its question dialog fires whenever this
@@ -74,12 +89,22 @@ public sealed partial class TaskProgressView : UserControl
             if (hasMilestones) Bar.Value = _runner.ProgressFraction * 100;
             Bar.Visibility = Visibility.Visible;
             string detail = _runner.StepDetail;
-            MilestoneText.Text = detail.Length > 0
-                ? $"{_runner.CurrentMilestoneLabel} {detail}"
-                : _runner.CurrentMilestoneLabel;
+            string label = _runner.CurrentMilestoneLabel;
+            if (detail.Length > 0)
+                MilestoneText.Text = $"{label} {detail}";
+            else
+            {
+                // When a step reports its own count (uploads, build steps) that
+                // count IS the movement. Otherwise, if a step has gone quiet for
+                // a few seconds — long npm installs are the usual culprit — show
+                // a live "still working…" timer so it never looks frozen.
+                int quiet = (int)(DateTime.UtcNow - _runner.LastOutputAt).TotalSeconds;
+                MilestoneText.Text = quiet >= 4 ? $"{label} still working… ({quiet}s)" : label;
+            }
             MilestoneText.Visibility = hasMilestones ? Visibility.Visible : Visibility.Collapsed;
             OutcomeDetail.Visibility = Visibility.Collapsed;
             LiveLink.Visibility = Visibility.Collapsed;
+            EnsureTicking(true);
         }
         else if (_runner.LastExitCode is { } exitCode)
         {
@@ -87,10 +112,10 @@ public sealed partial class TaskProgressView : UserControl
             Bar.Value = _runner.WasCancelled || _runner.WasStoppedByUser ? Bar.Value : 100;
             MilestoneText.Visibility = Visibility.Collapsed;
             // An ending the teacher asked for is not a fault.
-            if (_runner.WasCancelled) Outcome("Cancelled", "", Caution(), $"{_title} was cancelled.");
-            else if (_runner.WasStoppedByUser) Outcome("Stopped", "", Secondary(), null);
-            else if (exitCode == 0) Outcome("Done", "", Success(), null);
-            else Outcome("Something went wrong", "", Critical(), _runner.FailureExplanation);
+            if (_runner.WasCancelled) Outcome("Cancelled", Glyphs.Cancel, Caution(), $"{_title} was cancelled.");
+            else if (_runner.WasStoppedByUser) Outcome("Stopped", Glyphs.Stop, Secondary(), null);
+            else if (exitCode == 0) Outcome("Done", Glyphs.CheckMark, Success(), null);
+            else Outcome("Something went wrong", Glyphs.Cancel, Critical(), _runner.FailureExplanation);
 
             if (exitCode == 0 && !_runner.WasCancelled && _runner.PublishedSiteUrl is { } url)
             {
@@ -99,6 +124,8 @@ public sealed partial class TaskProgressView : UserControl
                 LiveLinkButton.NavigateUri = url;
             }
         }
+
+        if (!_runner.IsRunning) EnsureTicking(false);
 
         AwaitingNotice.Visibility = _runner.IsAwaitingInput ? Visibility.Visible : Visibility.Collapsed;
         LaunchProblemText.Text = _runner.LaunchProblem ?? "";
@@ -176,13 +203,16 @@ public sealed partial class TaskProgressView : UserControl
 
     // ---- Details disclosure ----------------------------------------------
 
+    /// <summary>Smoke-test entry: open the details pane the way the button does.</summary>
+    public void ExpandDetailsForAutomation() => ToggleDetails(true);
+
     private void Disclosure_Click(object sender, RoutedEventArgs e) => ToggleDetails(!_detailsOpen);
 
     private void ToggleDetails(bool open)
     {
         _detailsOpen = open;
         ConsolePane.Visibility = open ? Visibility.Visible : Visibility.Collapsed;
-        DisclosureChevron.Glyph = open ? "" : "";
+        DisclosureChevron.Glyph = open ? Glyphs.ChevronDown : Glyphs.ChevronRight;
         DisclosureLabel.Text = open ? "Hide details" : "Show details";
         _renderedTranscriptVersion = -1;
         Render();

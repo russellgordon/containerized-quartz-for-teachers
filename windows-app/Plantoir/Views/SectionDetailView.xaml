@@ -37,19 +37,19 @@
                     Background="Transparent" BorderThickness="0" MinWidth="34" MinHeight="30"
                     ToolTipService.ToolTip="Go back a page"
                     AutomationProperties.AutomationId="previewBackButton">
-                <FontIcon Glyph="" FontSize="14" />
+                <FontIcon Glyph="&#xE72B;" FontSize="14" />
             </Button>
             <Button x:Name="ForwardButton" Grid.Column="1" IsEnabled="False" Click="Forward_Click"
                     Background="Transparent" BorderThickness="0" MinWidth="34" MinHeight="30"
                     ToolTipService.ToolTip="Go forward a page"
                     AutomationProperties.AutomationId="previewForwardButton">
-                <FontIcon Glyph="" FontSize="14" />
+                <FontIcon Glyph="&#xE72A;" FontSize="14" />
             </Button>
             <Button x:Name="ReloadButton" Grid.Column="2" IsEnabled="False" Click="Reload_Click"
                     Background="Transparent" BorderThickness="0" MinWidth="34" MinHeight="30"
                     ToolTipService.ToolTip="Reload this page"
                     AutomationProperties.AutomationId="previewReloadButton">
-                <FontIcon Glyph="" FontSize="14" />
+                <FontIcon Glyph="&#xE72C;" FontSize="14" />
             </Button>
             <TextBlock Grid.Column="3" x:Name="SectionTitle" VerticalAlignment="Center"
                        FontWeight="SemiBold" Margin="10,0,0,0" />
@@ -58,14 +58,14 @@
                     Background="Transparent" BorderThickness="0" MinWidth="34" MinHeight="30"
                     ToolTipService.ToolTip="Edit this section's pages in Obsidian"
                     AutomationProperties.AutomationId="openInObsidianButton">
-                <FontIcon Glyph="" FontSize="14" />
+                <FontIcon Glyph="&#xE70F;" FontSize="14" />
             </Button>
             <Button x:Name="PreviewButton" Grid.Column="6" Click="PreviewOrStop_Click"
                     MinWidth="34" MinHeight="30"
                     ToolTipService.ToolTip="Preview this section's website"
                     AutomationProperties.AutomationId="previewButton">
                 <StackPanel Orientation="Horizontal" Spacing="6">
-                    <FontIcon x:Name="PreviewIcon" Glyph="" FontSize="14" />
+                    <FontIcon x:Name="PreviewIcon" Glyph="&#xE768;" FontSize="14" />
                     <TextBlock x:Name="PreviewLabel" Text="Preview" />
                 </StackPanel>
             </Button>
@@ -74,7 +74,7 @@
                     ToolTipService.ToolTip="Publish this section's website"
                     AutomationProperties.AutomationId="deployButton">
                 <StackPanel Orientation="Horizontal" Spacing="6">
-                    <FontIcon Glyph="" FontSize="14" />
+                    <FontIcon Glyph="&#xE724;" FontSize="14" />
                     <TextBlock Text="Deploy" />
                 </StackPanel>
             </Button>
@@ -82,7 +82,7 @@
                     Background="Transparent" BorderThickness="0" MinWidth="34" MinHeight="30"
                     ToolTipService.ToolTip="Open this preview in your web browser"
                     AutomationProperties.AutomationId="openInBrowserButton">
-                <FontIcon Glyph="" FontSize="14" />
+                <FontIcon Glyph="&#xE774;" FontSize="14" />
             </Button>
         </Grid>
 
@@ -92,19 +92,18 @@
             <Grid x:Name="BaseLayer">
                 <StackPanel x:Name="NoPreviewState" HorizontalAlignment="Center" VerticalAlignment="Center"
                             Spacing="8" MaxWidth="460">
-                    <FontIcon Glyph="" FontSize="40" Opacity="0.5" HorizontalAlignment="Center" />
+                    <FontIcon Glyph="&#xE774;" FontSize="40" Opacity="0.5" HorizontalAlignment="Center" />
                     <TextBlock Text="No Preview Running" FontSize="20" FontWeight="SemiBold"
                                HorizontalAlignment="Center" />
                     <TextBlock Opacity="0.7" TextWrapping="Wrap" TextAlignment="Center"
                                Text="Click Preview to build this section's website and see it here, or Deploy to publish it to Netlify." />
                 </StackPanel>
-                <Grid x:Name="ConsoleArea" Visibility="Collapsed" VerticalAlignment="Stretch">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <views:TaskProgressView x:Name="Progress" xmlns:views="using:Plantoir.Views" />
-                </Grid>
+                <!-- The progress view fills the whole detail area so its console
+                     grows to fill and its input row pins to the bottom, level
+                     with the sidebar's Filter field. -->
+                <views:TaskProgressView x:Name="Progress" xmlns:views="using:Plantoir.Views"
+                                        Visibility="Collapsed"
+                                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
             </Grid>
             <WebView2 x:Name="Preview" Visibility="Collapsed"
                       AutomationProperties.AutomationId="previewWebView" />
