@@ -83,6 +83,7 @@ public sealed class ScriptRunner : INotifyPropertyChanged
         WasCancelled = false;
         WasStoppedByUser = false;
         StepDetail = "";
+        if (!keepTranscript) _announcedPreviewAddress = null;
         NotifyRunState();
 
         string scriptPath = Path.Combine(workingDirectory, scriptName);
@@ -191,6 +192,12 @@ public sealed class ScriptRunner : INotifyPropertyChanged
     {
         Transcript.Append(text);
         AdvanceMilestones(text);
+        // Capture the announced preview address the instant it is printed. It
+        // appears early (before the build), so by the time the site is serving
+        // it has long scrolled out of the recent-text window — relying on that
+        // window left the app polling the wrong host port when a second folder
+        // got a different port block, and its preview never appeared (issue 7).
+        if (OutputParsers.PreviewAddress(text) is { } address) _announcedPreviewAddress = address;
         LastOutputAt = DateTime.UtcNow;
         if (IsAwaitingInput) { IsAwaitingInput = false; Notify(nameof(IsAwaitingInput)); }
         Notify(nameof(Transcript));
@@ -361,7 +368,11 @@ public sealed class ScriptRunner : INotifyPropertyChanged
 
     // ---- Derived answers -------------------------------------------------
 
-    public Uri? PreviewAddress => OutputParsers.PreviewAddress(Transcript.RecentText(8000));
+    private Uri? _announcedPreviewAddress;
+
+    /// <summary>The address the launcher announced — captured when printed, so it survives a long build.</summary>
+    public Uri? PreviewAddress =>
+        _announcedPreviewAddress ?? OutputParsers.PreviewAddress(Transcript.RecentText(8000));
 
     public Uri? PublishedSiteUrl
     {
