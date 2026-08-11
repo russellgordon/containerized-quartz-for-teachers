@@ -7,6 +7,9 @@ struct QuartzTeachersApp: App {
 
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
+    /// Used to open the About window from the application menu.
+    @Environment(\.openWindow) var openWindow
+
     // MARK: - Initializer
 
     init() {
@@ -39,10 +42,27 @@ struct QuartzTeachersApp: App {
                 )
         }
         .commands {
+            // The standard About item is replaced so it opens the custom
+            // panel instead of the stock one.
+            CommandGroup(replacing: .appInfo) {
+                Button("About Plantoir") {
+                    openWindow(id: "about")
+                }
+            }
             PreviewCommands()
             CommandGroup(after: .newItem) {
                 WorkspaceCommands()
             }
         }
+
+        // The About panel itself: traffic lights only, sized to content,
+        // and never restored on relaunch.
+        Window("About Plantoir", id: "about") {
+            AboutView()
+        }
+        .windowStyle(.hiddenTitleBar)
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
+        .restorationBehavior(.disabled)
     }
 }

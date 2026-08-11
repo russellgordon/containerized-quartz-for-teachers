@@ -26,6 +26,9 @@ targets:
     platform: macOS
     sources:
       - path: QuartzTeachers
+      # The app icon, authored in Icon Composer.
+      - path: Plantoir.icon
+        buildPhase: resources
       # The colour schemes and Ontario course lookup are the toolchain's
       # own support files, bundled so the app offers the same choices and
       # suggestions as the command-line wizard.
@@ -84,6 +87,10 @@ targets:
         PRODUCT_NAME: Plantoir
         PRODUCT_MODULE_NAME: QuartzTeachers
         ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+        # The Icon Composer icon: compiled by the asset tooling, named here.
+        ASSETCATALOG_COMPILER_APPICON_NAME: Plantoir
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
 
   QuartzTeachersTests:
     type: bundle.unit-test
