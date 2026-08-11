@@ -28,7 +28,9 @@ to the codes it addresses. The codes are also tags, so every page tagged
 Strands **AA** (social-emotional learning skills) and **A** (mathematical
 processes and connections) have no specific expectations on purpose:
 they are practised *inside* the learning of every other strand — in this
-course, most visibly at the whiteboards and in your journal. Strands
+course, most visibly at the whiteboards and in your journal. The source
+document also notes that AA1 "is to be included in classroom
+instruction, but not in assessment, evaluation, or reporting". Strands
 **B** through **F** name the mathematics: Number, Algebra (including
 coding), Data, Geometry and Measurement, and Financial Literacy.
 

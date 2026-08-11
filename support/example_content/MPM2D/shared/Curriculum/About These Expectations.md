@@ -8,7 +8,8 @@ Curriculum, Grades 9 and 10: Mathematics** (revised 2005), the Grade 10
 academic course **MPM2D**, published by the Ontario Ministry of
 Education, together with the Ministry's **Addendum to Principles of
 Mathematics** (issued Winter 2022, effective September 2022), which
-added three expectations to bridge from the de-streamed Grade 9 course.
+added three expectations — B1.3, B1.4, and B1.5 — to bridge from the
+de-streamed Grade 9 course.
 
 > [!info] The official sources
 > [Principles of Mathematics, Grade 10, Academic (MPM2D) — Ontario Curriculum and Resources](https://www.dcp.edu.gov.on.ca/en/curriculum/secondary-mathematics/courses/mpm2d)
