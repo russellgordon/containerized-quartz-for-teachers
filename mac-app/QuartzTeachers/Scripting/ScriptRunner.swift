@@ -770,6 +770,23 @@ class ScriptRunner {
         return milestones[reached].label
     }
 
+    /// The milestone label with reassurance for slow, quiet steps. A
+    /// step that reports its own count (uploads, build steps) shows that
+    /// count — the count IS the movement. Otherwise, when the script has
+    /// gone quiet for a few seconds — long npm installs are the usual
+    /// culprit — a live "still working… (Ns)" timer counts up so the
+    /// step never looks frozen. Mirrors the Windows app's behaviour.
+    func milestoneText(asOf now: Date) -> String {
+        if !stepDetail.isEmpty {
+            return "\(currentMilestoneLabel) \(stepDetail)"
+        }
+        let quietSeconds: Int = Int(now.timeIntervalSince(lastOutputAt))
+        if isRunning && quietSeconds >= 4 {
+            return "\(currentMilestoneLabel) still working… (\(quietSeconds)s)"
+        }
+        return currentMilestoneLabel
+    }
+
     /// "Step 2 of 6" for the label beside the bar.
     var stepDescription: String {
         if milestones.isEmpty {

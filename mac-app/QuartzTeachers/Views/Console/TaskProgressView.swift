@@ -138,9 +138,10 @@ struct TaskProgressView: View {
                             ProgressView(value: runner.progressFraction)
                                 .progressViewStyle(.linear)
                                 .animation(.easeInOut(duration: 0.4), value: runner.progressFraction)
-                            Text(runner.stepDetail.isEmpty
-                                 ? runner.currentMilestoneLabel
-                                 : "\(runner.currentMilestoneLabel) \(runner.stepDetail)")
+                            // The TimelineView above ticks once a second,
+                            // so the "still working… (Ns)" timer counts up
+                            // even while the script itself is quiet.
+                            Text(runner.milestoneText(asOf: context.date))
                                 .foregroundStyle(.secondary)
                                 .accessibilityIdentifier("taskMilestoneLabel")
                         }

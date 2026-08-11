@@ -237,4 +237,47 @@ final class PreviewAddressTests: XCTestCase {
     func testOrdinaryOutputAnnouncesNothing() {
         XCTAssertNil(ScriptRunner.previewAddress(in: "🚀 Starting container if needed...\n"))
     }
+
+    // MARK: - Slow-step reassurance
+
+    @MainActor
+    func testAQuietStepShowsALiveStillWorkingTimer() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.milestones = TaskMilestones.courseCreation
+        runner.isRunning = true
+        let now: Date = Date()
+
+        // Fresh output: the plain label, no timer.
+        runner.lastOutputAt = now
+        XCTAssertFalse(runner.milestoneText(asOf: now).contains("still working"))
+
+        // Quiet for eight seconds: the timer appears and counts.
+        runner.lastOutputAt = now.addingTimeInterval(-8)
+        XCTAssertTrue(runner.milestoneText(asOf: now).hasSuffix("still working… (8s)"),
+                      "got: \(runner.milestoneText(asOf: now))")
+    }
+
+    @MainActor
+    func testAStepWithItsOwnCountNeverShowsTheTimer() {
+        // A step reporting "3 of 8" IS visibly moving — the count wins.
+        let runner: ScriptRunner = ScriptRunner()
+        runner.milestones = TaskMilestones.courseCreation
+        runner.isRunning = true
+        runner.stepDetail = "3 of 8"
+        let now: Date = Date()
+        runner.lastOutputAt = now.addingTimeInterval(-30)
+        let text: String = runner.milestoneText(asOf: now)
+        XCTAssertTrue(text.hasSuffix("3 of 8"))
+        XCTAssertFalse(text.contains("still working"))
+    }
+
+    @MainActor
+    func testAFinishedTaskShowsNoTimerHoweverQuiet() {
+        let runner: ScriptRunner = ScriptRunner()
+        runner.milestones = TaskMilestones.courseCreation
+        runner.isRunning = false
+        let now: Date = Date()
+        runner.lastOutputAt = now.addingTimeInterval(-120)
+        XCTAssertFalse(runner.milestoneText(asOf: now).contains("still working"))
+    }
 }

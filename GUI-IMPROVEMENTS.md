@@ -273,6 +273,8 @@ Windows app), 🟠 partial, ⬜ not yet, — no Windows work needed.
   orange note, link swap) · ✅ 89 (literal per-section grade toggle +
   warning in settings and wizard) · ✅ 90 (Revert, not Cancel)
 
+| 97 | 2026-08-11 | During first preview or deploy, the per-section dependency install (npm) can run quietly for a long time on slower machines, and the milestone label looks frozen. Show a live seconds counter — "still working… (Ns)" — while a step is quiet. | ✅ Implemented on macOS, ported FROM the Windows app (the feature's origin — commit "Fix empty glyphs, layout, wizard gating and slow-step reassurance"). Identical semantics: a step that reports its own count (uploads, build steps) shows the count — the count is the movement; otherwise, once the script has been quiet for 4 seconds, the milestone label appends "still working… (Ns)" with N counting up live each second. On macOS this rides the existing one-second TimelineView tick and the runner's `lastOutputAt`; three unit tests pin the quiet threshold, the own-count precedence, and that a finished task never shows the timer. | Already present on Windows — this row records the macOS port for parity. |
+
 ## Planned
 
 - **Windows equivalent of the GUI** — a native Windows counterpart to the
