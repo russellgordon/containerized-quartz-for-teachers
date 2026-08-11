@@ -31,6 +31,25 @@ class WorkspaceModel {
     /// interface rather than a model nothing is showing.
     static private(set) var windowModels: [WorkspaceModel] = []
 
+    /// The working folder of the window most recently key, so a new window
+    /// can open where the teacher just was.
+    static var mostRecentKeyFolderPath: String?
+
+    /// What a brand-new window should open to. With no other windows open,
+    /// nothing — the folder picker. Otherwise the folder of the window
+    /// that was key when the command ran, falling back to any open
+    /// window's folder if the remembered key folder is no longer among
+    /// them.
+    static func folderForNewWindow(otherOpenFolderPaths: [String], mostRecentKeyPath: String?) -> String? {
+        if otherOpenFolderPaths.isEmpty {
+            return nil
+        }
+        if let mostRecentKeyPath, otherOpenFolderPaths.contains(mostRecentKeyPath) {
+            return mostRecentKeyPath
+        }
+        return otherOpenFolderPaths[0]
+    }
+
     static func registerWindowModel(_ model: WorkspaceModel) {
         for existing in windowModels {
             if existing === model {
@@ -206,16 +225,13 @@ class WorkspaceModel {
         } else {
             self.isUnderUITest = false
             WorkspaceModel.migratePreferencesFromOldName(into: defaults)
-            if let storedPath = defaults.string(forKey: WorkspaceModel.storedPathKey) {
-                // A folder that has since been deleted or renamed is worse
-                // than none: the app would claim a working folder it cannot
-                // read anything from.
-                if WorkspaceModel.folderExists(atPath: storedPath) {
-                    self.workspaceURL = URL(fileURLWithPath: storedPath)
-                } else {
-                    defaults.removeObject(forKey: WorkspaceModel.storedPathKey)
-                }
-            }
+            // No folder is adopted here. A RESTORED window's folder arrives
+            // through the window claims; a brand-new window inherits from
+            // the window that was key when it was opened, or — when it is
+            // the only window — starts with the picker. The last-chosen
+            // path stays recorded for migration, but a lone new window
+            // silently opening on whatever folder was used last proved
+            // surprising.
         }
         reloadCourses()
     }

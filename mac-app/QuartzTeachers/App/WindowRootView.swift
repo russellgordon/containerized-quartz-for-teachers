@@ -47,6 +47,20 @@ struct WindowRootView: View {
                     "\(workspace.workspaceURL?.path ?? "", privacy: .public)"
                     """)
                 WorkspaceModel.rememberOpenFolders()
+                if workspace.window?.isKeyWindow == true, let path = workspace.workspaceURL?.path {
+                    WorkspaceModel.mostRecentKeyFolderPath = path
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { notification in
+                // Remember where the teacher is working, so the NEXT new
+                // window can open there. A window with no folder yet (this
+                // one, freshly opened) must not erase the memory.
+                guard (notification.object as? NSWindow) === workspace.window else {
+                    return
+                }
+                if let path = workspace.workspaceURL?.path {
+                    WorkspaceModel.mostRecentKeyFolderPath = path
+                }
             }
             .onDisappear {
                 WorkspaceModel.unregisterWindowModel(workspace)
@@ -64,15 +78,48 @@ struct WindowRootView: View {
             adopt(entry, how: "matched by frame")
             return
         }
-        if attemptsLeft <= 0 {
+        // Once the claims have closed there is nothing to keep retrying
+        // for — this is a mid-session window, and it should get its folder
+        // (or its picker) right away rather than a second later.
+        let claimsHaveClosed: Bool = Date() > WindowFolderMemory.claimsOpenUntil
+        if attemptsLeft <= 0 || claimsHaveClosed {
             if let entry = claimant.giveUp() {
                 adopt(entry, how: "fell back to order")
+            } else {
+                inheritFromOpenWindows()
             }
             return
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             attemptClaim(for: window, attemptsLeft: attemptsLeft - 1)
         }
+    }
+
+    /// A brand-new window with nothing to restore: open in the folder of
+    /// the window that was key when it was created — or, as the only
+    /// window, stay empty so the picker shows.
+    func inheritFromOpenWindows() {
+        guard workspace.workspaceURL == nil else {
+            return
+        }
+        var otherOpenFolderPaths: [String] = []
+        for model in WorkspaceModel.windowModels {
+            if model !== workspace, let path = model.workspaceURL?.path {
+                otherOpenFolderPaths.append(path)
+            }
+        }
+        guard let path = WorkspaceModel.folderForNewWindow(
+            otherOpenFolderPaths: otherOpenFolderPaths,
+            mostRecentKeyPath: WorkspaceModel.mostRecentKeyFolderPath
+        ) else {
+            AppLog.interface.info("window \(windowIdentity, privacy: .public) is the only window — opening without a folder")
+            return
+        }
+        workspace.adoptRestoredPath(path)
+        AppLog.interface.info("""
+            window \(windowIdentity, privacy: .public) inherited \
+            "\(path, privacy: .public)" from the key window
+            """)
     }
 
     /// Takes a remembered window as this window's own.

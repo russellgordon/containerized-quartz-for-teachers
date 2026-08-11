@@ -71,7 +71,11 @@ final class WorkspacePersistenceTests: XCTestCase {
     // MARK: - Functions
 
     @MainActor
-    func testChoosingAFolderIsRemembered() throws {
+    /// A brand-new model adopts nothing on its own: a lone new window
+    /// shows the picker, and restored or inherited folders arrive through
+    /// the window claims and the new-window policy — never silently from
+    /// the last-used preference.
+    func testAFreshModelStartsWithoutAFolder() throws {
         let defaults: UserDefaults = TestDefaults.make()
         let folderURL: URL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("ws-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
@@ -81,22 +85,23 @@ final class WorkspacePersistenceTests: XCTestCase {
         workspace.chooseWorkspace(at: folderURL)
 
         let reopened: WorkspaceModel = WorkspaceModel(defaults: defaults)
-        XCTAssertEqual(reopened.workspaceURL?.path, folderURL.path, "The folder must survive a relaunch")
+        XCTAssertNil(reopened.workspaceURL, "A fresh window opens without a folder, even after one was chosen before")
+        XCTAssertEqual(defaults.string(forKey: WorkspaceModel.storedPathKey), folderURL.path,
+                       "The choice is still recorded, for preference migration")
     }
 
+    /// What a brand-new window opens to, by policy: nothing when it is
+    /// the only window; the key window's folder otherwise.
     @MainActor
-    func testAFolderThatNoLongerExistsIsForgotten() throws {
-        let defaults: UserDefaults = TestDefaults.make()
-        let folderURL: URL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("ws-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
-
-        let workspace: WorkspaceModel = WorkspaceModel(defaults: defaults)
-        workspace.chooseWorkspace(at: folderURL)
-        try FileManager.default.removeItem(at: folderURL)
-
-        let reopened: WorkspaceModel = WorkspaceModel(defaults: defaults)
-        XCTAssertNil(reopened.workspaceURL, "A deleted folder must not be presented as the working folder")
-        XCTAssertNil(defaults.string(forKey: WorkspaceModel.storedPathKey), "The stale path should be cleared")
+    func testANewWindowFollowsTheKeyWindow() {
+        XCTAssertNil(WorkspaceModel.folderForNewWindow(otherOpenFolderPaths: [], mostRecentKeyPath: "/a"),
+                     "With no other windows open, a new window has no folder — even if one was key earlier")
+        XCTAssertEqual(WorkspaceModel.folderForNewWindow(otherOpenFolderPaths: ["/a", "/b"], mostRecentKeyPath: "/b"), "/b",
+                       "The key window's folder wins")
+        XCTAssertEqual(WorkspaceModel.folderForNewWindow(otherOpenFolderPaths: ["/a", "/b"], mostRecentKeyPath: "/gone"), "/a",
+                       "A stale key memory falls back to an open window's folder")
+        XCTAssertEqual(WorkspaceModel.folderForNewWindow(otherOpenFolderPaths: ["/a"], mostRecentKeyPath: nil), "/a",
+                       "No key memory yet still inherits from the open window")
     }
 
     @MainActor
