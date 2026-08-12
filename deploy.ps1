@@ -83,6 +83,9 @@ $KEY_TARGET     = 'containerized-quartz-netlify'  # Windows Credential Manager t
 # courses to Netlify and others to Cloudflare keeps both without one clobbering
 # the other, and --reset-token only clears the one they are actually using.
 $CF_KEY_TARGET  = 'containerized-quartz-cloudflare'
+# Remembered separately, and only used when the token cannot name its own
+# account — a teacher should never be asked for this twice.
+$CF_ACCT_TARGET = 'containerized-quartz-cloudflare-account'
 $TOKENS_FILE    = Join-Path -Path $ScriptDir -ChildPath 'courses\.internal\tokens.json'
 $KEY_FILE       = Join-Path -Path $ScriptDir -ChildPath 'courses\.internal\.key'
 
@@ -321,11 +324,31 @@ function Set-CfTokenInCredMan([string]$token) {
 }
 function Remove-CfTokenInCredMan { [CredApi]::DeleteSecret($CF_KEY_TARGET) | Out-Null }
 
-# Checking a Cloudflare token and finding its account are the same request:
-# /accounts both proves the token works and says which account it reaches. That
-# is why a teacher only ever pastes a token — the account ID, a 32-character
-# hex string buried in the dashboard, is never something they have to find.
-# Returns the account ID on success, or $null if the token is no good.
+function Get-CfAccountFromCredMan { [CredApi]::ReadSecret($CF_ACCT_TARGET) }
+function Set-CfAccountInCredMan([string]$id) { [CredApi]::WriteSecret($CF_ACCT_TARGET, $env:USERNAME, $id) | Out-Null }
+function Remove-CfAccountInCredMan { [CredApi]::DeleteSecret($CF_ACCT_TARGET) | Out-Null }
+
+# Does Cloudflare still recognise this token at all? Kept separate from the
+# account lookup below because the two can disagree: a token can be perfectly
+# valid and still list no accounts (see Get-CloudflareAccountId).
+function Test-CloudflareToken([string]$token) {
+  if (-not $token) { return $false }
+  try {
+    $r = Invoke-RestMethod -Uri 'https://api.cloudflare.com/client/v4/user/tokens/verify' `
+                           -Headers @{ Authorization = "Bearer $token" } `
+                           -Method GET -TimeoutSec 20
+    return [bool]$r.success
+  } catch { return $false }
+}
+
+# Best-effort account lookup, so that in the common case a teacher pastes a
+# token and nothing else — the account ID is a 32-character hex string buried
+# in the dashboard and asking for it loses people.
+#
+# This is deliberately NOT treated as proof of validity. Tested against a real
+# token: /accounts can answer success with an EMPTY list, because listing
+# accounts is its own permission and a token scoped only to Pages need not
+# carry it. Returns $null to mean "ask the teacher", never "bad token".
 function Get-CloudflareAccountId([string]$token) {
   if (-not $token) { return $null }
   try {
@@ -338,6 +361,26 @@ function Get-CloudflareAccountId([string]$token) {
     }
   } catch {}
   return $null
+}
+
+# Only reached when the token cannot name its own account.
+function Read-CloudflareAccountId {
+@"
+One more thing: this token cannot list your Cloudflare account, so please
+paste your Account ID as well. You only have to do this once.
+
+Where to find it:
+  Open https://dash.cloudflare.com and select Workers and Pages.
+  The Account ID is shown on the right-hand side, and it is also the long
+  code in the address bar just after dash.cloudflare.com/.
+"@ | Out-Host
+  try { Start-Process "https://dash.cloudflare.com" | Out-Null } catch {}
+  $entered = (Read-Host "Paste Cloudflare Account ID").Trim()
+  if ($entered -notmatch '^[0-9a-fA-F]{32}$') {
+    Write-Host "That does not look like an Account ID (it should be 32 letters and digits)."
+    return ''
+  }
+  return $entered.ToLower()
 }
 
 function Test-TokenValid([string]$token) {
@@ -389,6 +432,7 @@ function Prune-LegacyNetlifyEntry {
 if ($RESET_TOKEN -and $TARGET -eq 'cloudflare') {
   Write-Host "Clearing saved Cloudflare token from Windows Credential Manager..."
   Remove-CfTokenInCredMan
+  Remove-CfAccountInCredMan
   Write-Host "Done. Next publish will ask for a new token."
   exit 0
 }
@@ -408,13 +452,11 @@ $CF_TOKEN   = ''
 $CF_ACCOUNT = ''
 if ($TARGET -eq 'cloudflare') {
   $CF_TOKEN = Get-CfTokenFromCredMan
-  if ($CF_TOKEN) {
-    $CF_ACCOUNT = Get-CloudflareAccountId $CF_TOKEN
-    if (-not $CF_ACCOUNT) {
-      Write-Host "The saved Cloudflare token no longer works, so it has been cleared."
-      Remove-CfTokenInCredMan
-      $CF_TOKEN = ''
-    }
+  if ($CF_TOKEN -and -not (Test-CloudflareToken $CF_TOKEN)) {
+    Write-Host "The saved Cloudflare token no longer works, so it has been cleared."
+    Remove-CfTokenInCredMan
+    Remove-CfAccountInCredMan
+    $CF_TOKEN = ''
   }
   if (-not $CF_TOKEN) {
 @"
@@ -433,8 +475,7 @@ You need a Cloudflare API token to publish to Cloudflare Pages.
     $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($pastedSec)
     try   { $plain = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) }
     finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
-    $CF_ACCOUNT = Get-CloudflareAccountId $plain
-    if (-not $CF_ACCOUNT) {
+    if (-not (Test-CloudflareToken $plain)) {
       Write-Host "Cloudflare did not accept that token."
       Write-Host "Check that it has the 'Cloudflare Pages - Edit' permission, then try again."
       exit 1
@@ -442,6 +483,18 @@ You need a Cloudflare API token to publish to Cloudflare Pages.
     Set-CfTokenInCredMan $plain
     $CF_TOKEN = $plain
     Write-Host "Saved token to Windows Credential Manager (target: $CF_KEY_TARGET)."
+  }
+
+  # Preferred: the token names its own account. Otherwise fall back to what we
+  # were told last time, and only then ask. A token can be entirely valid and
+  # still list no accounts, so an empty answer here is never treated as a bad
+  # token — it just means we have to ask once.
+  $CF_ACCOUNT = Get-CloudflareAccountId $CF_TOKEN
+  if (-not $CF_ACCOUNT) { $CF_ACCOUNT = Get-CfAccountFromCredMan }
+  if (-not $CF_ACCOUNT) {
+    $CF_ACCOUNT = Read-CloudflareAccountId
+    if (-not $CF_ACCOUNT) { exit 1 }
+    Set-CfAccountInCredMan $CF_ACCOUNT
   }
 }
 
