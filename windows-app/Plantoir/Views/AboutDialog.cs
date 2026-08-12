@@ -86,12 +86,31 @@ public sealed class AboutDialog : ContentDialog
         ContactRow(1, "Email", Link("mailto:support@plantoir.app", "support@plantoir.app"));
         panel.Children.Add(contact);
 
-        var credits = new StackPanel { Spacing = 3, Margin = new Thickness(0, 18, 0, 0) };
+        // The sponsor callout, arranged as plantoir.app's footer arranges it:
+        // the rounded panel making the case for Jacky, then the plain
+        // acknowledgement lines beneath.
+        var sponsorText = new TextBlock { FontSize = 12, Opacity = 0.85, TextWrapping = TextWrapping.Wrap };
+        sponsorText.Inlines.Add(new Run { Text = "Plantoir is a friendly wrapper around " });
+        sponsorText.Inlines.Add(InlineLink("Quartz", "https://quartz.jzhao.xyz"));
+        sponsorText.Inlines.Add(new Run { Text = ", which Jacky Zhao builds and gives away for free. If you end up using Plantoir regularly, please consider " });
+        sponsorText.Inlines.Add(InlineLink("sponsoring him on GitHub", "https://github.com/sponsors/jackyzha0"));
+        sponsorText.Inlines.Add(new Run { Text = " — it is his work that makes all of this possible." });
+        panel.Children.Add(new Border
+        {
+            Child = sponsorText,
+            Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorSecondaryBrush"],
+            BorderBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["DividerStrokeColorDefaultBrush"],
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(14, 12, 14, 12),
+            Margin = new Thickness(0, 18, 0, 0),
+        });
+
+        var credits = new StackPanel { Spacing = 3, Margin = new Thickness(0, 14, 0, 0) };
         credits.Children.Add(CreditLine("Built on ", "Quartz", "https://quartz.jzhao.xyz", " by Jacky Zhao."));
-        credits.Children.Add(new TextBlock { Text = "Designed by Russell Gordon.", FontSize = 11, Opacity = 0.7 });
-        credits.Children.Add(new TextBlock { Text = "Made with Claude.", FontSize = 11, Opacity = 0.7 });
-        credits.Children.Add(CreditLine("Please ", "sponsor Jacky", "https://github.com/sponsors/jackyzha0",
-            " — his work makes this app possible."));
+        credits.Children.Add(CreditLine("Icon from ", "Phosphor Icons", "https://phosphoricons.com", " (MIT)."));
+        credits.Children.Add(CreditLine("Designed by ", "Russell Gordon", "https://www.russellgordon.ca", "."));
+        credits.Children.Add(new TextBlock { Text = "Built with Claude.", FontSize = 11, Opacity = 0.7 });
         panel.Children.Add(credits);
 
         panel.Children.Add(new TextBlock
@@ -112,6 +131,13 @@ public sealed class AboutDialog : ContentDialog
         Padding = new Thickness(0),
         FontSize = 12,
     };
+
+    private static Hyperlink InlineLink(string text, string uri)
+    {
+        var link = new Hyperlink { NavigateUri = new Uri(uri) };
+        link.Inlines.Add(new Run { Text = text });
+        return link;
+    }
 
     private static TextBlock CreditLine(string before, string linkText, string uri, string after)
     {

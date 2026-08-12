@@ -10,6 +10,20 @@ picked them up.
 
 ## To implement
 
+- **About box credits match plantoir.app's footer** (Windows, 2026-08-11).
+  The credits section is now: a rounded-rect callout carrying the full
+  sponsor message ("Plantoir is a friendly wrapper around [Quartz], which
+  Jacky Zhao builds and gives away for free. If you end up using Plantoir
+  regularly, please consider [sponsoring him on GitHub] — it is his work
+  that makes all of this possible."), then four plain acknowledgement
+  lines: "Built on [Quartz] by Jacky Zhao." / "Icon from [Phosphor Icons]
+  (MIT)." / "Designed by [Russell Gordon]." / "Built with Claude." —
+  links to quartz.jzhao.xyz, github.com/sponsors/jackyzha0,
+  phosphoricons.com, russellgordon.ca. (This replaces the old one-line
+  "Please sponsor Jacky" credit; also "Made with Claude" became "Built
+  with Claude" to match the site.) Mirror in the mac About window.
+  Reference: `windows-app/Plantoir/Views/AboutDialog.cs`.
+
 - **Preview builds are never deploy-fresh** (from `94e25f8`, 2026-08-11).
   Deploying right after previewing published the preview's build, whose
   pages carry Quartz's live-reload client (`new WebSocket('ws://localhost:…')`)
