@@ -177,16 +177,36 @@ function Use-WslDocker {
     # would TERMINATE the script even for probes that are expected to
     # fail (e.g. inspecting a not-yet-built image). Relax the preference
     # inside the wrapper so stderr stays plain output.
+    # $input must be forwarded by hand: a plain function does NOT pass its
+    # pipeline input on to a native command, so "script | docker exec -i"
+    # would leave the remote process waiting forever on stdin (the --stop
+    # hang). An empty $input just gives stdin an immediate EOF, which none
+    # of the launcher's docker calls mind.
     function global:docker {
         $eap = $ErrorActionPreference
         $ErrorActionPreference = 'Continue'
-        try { & wsl $global:WslUserArgs -e docker @args } finally { $ErrorActionPreference = $eap }
+        try {
+      if ($MyInvocation.ExpectingInput) { $input | & wsl $global:WslUserArgs -e docker @args }
+      else { & wsl $global:WslUserArgs -e docker @args }
+    } finally { $ErrorActionPreference = $eap }
     }
     Write-Host "Using the Docker engine inside WSL2."
 }
 
 function Ensure-ContainerRuntime {
     if (Test-NativeDockerReady) { return }
+
+    # Stop mode must NEVER start anything — no provisioning, no prompts, no
+    # waiting for an engine. Detect a running engine (native above, WSL
+    # here); when none answers, there is nothing to stop.
+    if ($STOP_MODE) {
+        if (Test-WslDockerReady) { Use-WslDocker; return }
+        $global:WslUserArgs = @('-u','root')
+        if (Test-WslDockerReady) { Use-WslDocker; return }
+        $global:WslUserArgs = @()
+        Write-Host "Nothing to stop - the website builder isn't running."
+        exit 0
+    }
 
     if (-not (Get-Command wsl -ErrorAction SilentlyContinue)) {
         Write-Host "ERROR: No container runtime found."

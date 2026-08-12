@@ -437,10 +437,15 @@ function Use-WslDocker {
   # would TERMINATE the script even for probes that are expected to
   # fail (e.g. inspecting a not-yet-built image). Relax the preference
   # inside the wrapper so stderr stays plain output.
+  # $input forwarded by hand: a plain function does not pass pipeline input
+  # on to a native command (an empty $input is a harmless immediate EOF).
   function global:docker {
     $eap = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
-    try { & wsl $global:WslUserArgs -e docker @args } finally { $ErrorActionPreference = $eap }
+    try {
+      if ($MyInvocation.ExpectingInput) { $input | & wsl $global:WslUserArgs -e docker @args }
+      else { & wsl $global:WslUserArgs -e docker @args }
+    } finally { $ErrorActionPreference = $eap }
   }
   Write-Host "Using the Docker engine inside WSL2."
 }

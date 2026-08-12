@@ -226,8 +226,14 @@ public sealed partial class SectionDetailView : UserControl
 
     private void StopPreview()
     {
+        // Whenever a preview was actually running (or still building),
+        // reclaim its container-side processes too — ending the host
+        // launcher alone leaves the serve chain alive inside the container.
+        bool hadPreview = _previewRunner.IsRunning || _isWaitingForServer || _previewUrl is not null;
         _serverWait?.Cancel();
         if (_previewRunner.IsRunning) _previewRunner.StopByUser();
+        if (hadPreview && _window.Workspace.WorkspacePath is { } workspacePath)
+            PreviewStopper.StopSectionProcesses(workspacePath, _course.Code, _sectionNumber);
         _previewUrl = null;
         _lastLoadedUrl = null;
         _isWaitingForServer = false;
