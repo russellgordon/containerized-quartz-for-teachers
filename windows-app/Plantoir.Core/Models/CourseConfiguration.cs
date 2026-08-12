@@ -144,6 +144,24 @@ public sealed class CourseConfiguration
     public bool DeploysToLocalFolder =>
         DeployTarget == "local_folder" && DeployFolderPath.Trim().Length > 0;
 
+    /// <summary>True when this course publishes to Cloudflare Pages.</summary>
+    public bool DeploysToCloudflare => DeployTarget == "cloudflare_pages";
+
+    /// <summary>
+    /// What is wrong with a Cloudflare account ID, or null when it looks
+    /// usable. A token scoped to Pages cannot list its own account — verified
+    /// against a real token — so the teacher supplies it once here, and the
+    /// app checks the shape before a publish can fail on it.
+    /// </summary>
+    public static string? CloudflareAccountProblem(string rawId)
+    {
+        string id = rawId.Trim();
+        if (id.Length == 0) return "Paste your Cloudflare Account ID.";
+        if (id.Length != 32 || !id.All(Uri.IsHexDigit))
+            return "That doesn’t look like an Account ID — it’s 32 letters and digits.";
+        return null;
+    }
+
     /// <summary>
     /// What is wrong with a folder chosen for local-folder publishing, or
     /// null when the folder is usable. Both the settings form and the wizard

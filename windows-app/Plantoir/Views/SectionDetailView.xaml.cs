@@ -272,10 +272,30 @@ public sealed partial class SectionDetailView : UserControl
             return;
         }
 
+        // Cloudflare needs the teacher's account, and the launcher's console
+        // prompt for it can never be answered from here — so decline plainly
+        // and point at the setting that fixes it.
+        bool toCloudflare = _course.Configuration.DeploysToCloudflare;
+        string cloudflareAccount = _window.Workspace.Settings.CloudflareAccountId.Trim();
+        if (toCloudflare && CourseConfiguration.CloudflareAccountProblem(cloudflareAccount) is { } accountProblem)
+        {
+            var accountDialog = new ContentDialog
+            {
+                Title = "Cloudflare needs your Account ID",
+                Content = accountProblem + " Add it in this course's settings, under Publishing, then publish again.",
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot,
+            };
+            await accountDialog.ShowAsync();
+            return;
+        }
+
         bool needsBuild = BuildFreshness.NeedsRebuild(_course, _sectionNumber);
         _deployRunner.Milestones = toFolder
             ? (needsBuild ? TaskMilestones.BuildAndDeployToFolder : TaskMilestones.DeployToFolder)
-            : (needsBuild ? TaskMilestones.BuildAndDeploy : TaskMilestones.Deploy);
+            : toCloudflare
+                ? (needsBuild ? TaskMilestones.BuildAndDeployToCloudflare : TaskMilestones.DeployToCloudflare)
+                : (needsBuild ? TaskMilestones.BuildAndDeploy : TaskMilestones.Deploy);
         string customDomain = CourseConfiguration.NormalizedCustomDomain(
             _course.Configuration.CustomDomain(_sectionNumber));
         _deployRunner.CustomDomainForLinks = customDomain.Length == 0 ? null : customDomain;
@@ -297,7 +317,9 @@ public sealed partial class SectionDetailView : UserControl
         }
         var deployArguments = toFolder
             ? new[] { _course.Code, _sectionNumber.ToString(), "--to-folder", deployFolder }
-            : new[] { _course.Code, _sectionNumber.ToString() };
+            : toCloudflare
+                ? new[] { _course.Code, _sectionNumber.ToString(), "--target", "cloudflare", "--account", cloudflareAccount }
+                : new[] { _course.Code, _sectionNumber.ToString() };
         _deployRunner.Run("deploy.ps1", deployArguments, workspacePath,
             keepTranscript: needsBuild);
         RefreshChrome();

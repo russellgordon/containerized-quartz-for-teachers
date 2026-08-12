@@ -8,13 +8,18 @@ using Plantoir.Core.Models;
 namespace Plantoir.Views;
 
 /// <summary>
-/// The publishing choice — Netlify, or a folder on this PC — used by BOTH
-/// Course Settings and the new-course wizard, so the two offer exactly the
-/// same behaviour and wording (rows 101–102; mirrors the mac's
+/// The publishing choice — Netlify, Cloudflare Pages, or a folder on this PC —
+/// used by BOTH Course Settings and the new-course wizard, so the two offer
+/// exactly the same behaviour and wording (rows 101–102; mirrors the mac's
 /// PublishingChoiceView). Validation is live: the problem line follows every
 /// keystroke and every choice, and callers gate Save/Create on
-/// <see cref="Problem"/> so a publish can never discover a bad folder after
+/// <see cref="Problem"/> so a publish can never discover a bad setting after
 /// the fact.
+///
+/// The Cloudflare account ID is asked for here rather than left to the
+/// launcher's console prompt, because the app publishes with nothing attached
+/// to answer a prompt — and a token scoped to Pages cannot look its own
+/// account up (checked against a real token).
 /// </summary>
 public sealed class PublishingChoiceView
 {
@@ -23,43 +28,61 @@ public sealed class PublishingChoiceView
     /// <summary>Raised after every change the teacher makes here.</summary>
     public event Action? Changed;
 
+    private const int NetlifyIndex = 0;
+    private const int CloudflareIndex = 1;
+    private const int FolderIndex = 2;
+
     private readonly Func<string> _getTarget;
-    private readonly Action<string> _setTarget;
     private readonly Func<string> _getPath;
-    private readonly Action<string> _setPath;
+    private readonly Func<string> _getAccount;
     private readonly StackPanel _folderArea;
+    private readonly StackPanel _cloudflareArea;
     private readonly TextBox _pathBox;
+    private readonly TextBox _accountBox;
     private readonly TextBlock _problemText;
     private readonly TextBlock _caption;
+    private readonly TextBlock _cloudflareProblemText;
+    private readonly TextBlock _cloudflareCaption;
     private readonly Window _pickerOwner;
     private bool _updatingFromModel;
 
     /// <summary>
-    /// What is wrong with the chosen folder, or null when nothing is —
-    /// always null in Netlify mode.
+    /// What is wrong with the current choice, or null when nothing is —
+    /// always null in Netlify mode, which needs no settings here.
     /// </summary>
-    public string? Problem =>
-        _getTarget() == "local_folder" ? CourseConfiguration.DeployFolderProblem(_getPath()) : null;
+    public string? Problem => _getTarget() switch
+    {
+        "local_folder" => CourseConfiguration.DeployFolderProblem(_getPath()),
+        "cloudflare_pages" => CourseConfiguration.CloudflareAccountProblem(_getAccount()),
+        _ => null,
+    };
 
     public PublishingChoiceView(Window pickerOwner,
                                 Func<string> getTarget, Action<string> setTarget,
-                                Func<string> getPath, Action<string> setPath)
+                                Func<string> getPath, Action<string> setPath,
+                                Func<string> getAccount, Action<string> setAccount)
     {
         _pickerOwner = pickerOwner;
         _getTarget = getTarget;
-        _setTarget = setTarget;
         _getPath = getPath;
-        _setPath = setPath;
+        _getAccount = getAccount;
 
         Root = new StackPanel { Spacing = 6 };
 
         var targetBox = new ComboBox { MinWidth = 300 };
         targetBox.Items.Add("Netlify");
+        targetBox.Items.Add("Cloudflare Pages");
         targetBox.Items.Add("A folder on this PC");
-        targetBox.SelectedIndex = getTarget() == "local_folder" ? 1 : 0;
+        targetBox.SelectedIndex = getTarget() switch
+        {
+            "local_folder" => FolderIndex,
+            "cloudflare_pages" => CloudflareIndex,
+            _ => NetlifyIndex,
+        };
         AutomationProperties.SetAutomationId(targetBox, "deployTargetPicker");
         Root.Children.Add(FormBuilders.LabeledRow("Publish to", targetBox));
 
+        // ---- Folder ----
         _folderArea = new StackPanel { Spacing = 4 };
         var pathRow = new Grid { ColumnSpacing = 8 };
         pathRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -73,32 +96,49 @@ public sealed class PublishingChoiceView
         pathRow.Children.Add(chooseButton);
         _folderArea.Children.Add(pathRow);
 
-        _problemText = new TextBlock
-        {
-            FontSize = 12,
-            TextWrapping = TextWrapping.Wrap,
-            Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"],
-            Visibility = Visibility.Collapsed,
-        };
-        AutomationProperties.SetAutomationId(_problemText, "deployFolderProblem");
+        _problemText = CautionLine("deployFolderProblem");
         _folderArea.Children.Add(_problemText);
         _caption = FormBuilders.ExampleCaption(
             "Each section publishes into its own subfolder here — section1, section2 — and only changed files are copied. Upload the folder to your web host however you prefer (e.g. over SFTP). Netlify isn’t involved.");
         _folderArea.Children.Add(_caption);
         Root.Children.Add(_folderArea);
 
+        // ---- Cloudflare ----
+        _cloudflareArea = new StackPanel { Spacing = 4 };
+        _accountBox = new TextBox { Text = getAccount(), PlaceholderText = "Account ID" };
+        AutomationProperties.SetAutomationId(_accountBox, "cloudflareAccountField");
+        _cloudflareArea.Children.Add(FormBuilders.LabeledRow("Cloudflare Account ID", _accountBox));
+        _cloudflareProblemText = CautionLine("cloudflareAccountProblem");
+        _cloudflareArea.Children.Add(_cloudflareProblemText);
+        _cloudflareCaption = FormBuilders.ExampleCaption(
+            "Each section gets its own free site at yourproject.pages.dev. Sign in at dash.cloudflare.com and open Workers and Pages — the Account ID is shown on the right, and it’s also the long code in the address bar. You only enter it once. The first publish asks for an API token with the Cloudflare Pages permission. Individual files must stay under 25 MB, so a long video may need shortening.");
+        _cloudflareArea.Children.Add(_cloudflareCaption);
+        Root.Children.Add(_cloudflareArea);
+
         targetBox.SelectionChanged += (_, _) =>
         {
             if (_updatingFromModel) return;
-            setTarget(targetBox.SelectedIndex == 1 ? "local_folder" : "netlify");
-            RefreshFolderArea();
+            setTarget(targetBox.SelectedIndex switch
+            {
+                FolderIndex => "local_folder",
+                CloudflareIndex => "cloudflare_pages",
+                _ => "netlify",
+            });
+            RefreshAreas();
             Changed?.Invoke();
         };
         _pathBox.TextChanged += (_, _) =>
         {
             if (_updatingFromModel) return;
             setPath(_pathBox.Text);
-            RefreshFolderArea();
+            RefreshAreas();
+            Changed?.Invoke();
+        };
+        _accountBox.TextChanged += (_, _) =>
+        {
+            if (_updatingFromModel) return;
+            setAccount(_accountBox.Text.Trim());
+            RefreshAreas();
             Changed?.Invoke();
         };
         chooseButton.Click += async (_, _) =>
@@ -113,20 +153,45 @@ public sealed class PublishingChoiceView
             _pathBox.Text = folder.Path;
             _updatingFromModel = false;
             setPath(folder.Path);
-            RefreshFolderArea();   // validation runs on the choice instantly
+            RefreshAreas();   // validation runs on the choice instantly
             Changed?.Invoke();
         };
 
-        RefreshFolderArea();
+        RefreshAreas();
     }
 
-    private void RefreshFolderArea()
+    private static TextBlock CautionLine(string automationId)
     {
-        bool folderMode = _getTarget() == "local_folder";
+        var line = new TextBlock
+        {
+            FontSize = 12,
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"],
+            Visibility = Visibility.Collapsed,
+        };
+        AutomationProperties.SetAutomationId(line, automationId);
+        return line;
+    }
+
+    private void RefreshAreas()
+    {
+        string target = _getTarget();
+        bool folderMode = target == "local_folder";
+        bool cloudflareMode = target == "cloudflare_pages";
         _folderArea.Visibility = folderMode ? Visibility.Visible : Visibility.Collapsed;
+        _cloudflareArea.Visibility = cloudflareMode ? Visibility.Visible : Visibility.Collapsed;
+
+        // Only the visible area's problem is shown; Problem itself already
+        // reports on whichever mode is active.
         string? problem = Problem;
-        _problemText.Text = problem ?? "";
-        _problemText.Visibility = problem is null ? Visibility.Collapsed : Visibility.Visible;
-        _caption.Visibility = problem is null ? Visibility.Visible : Visibility.Collapsed;
+        ShowProblem(_problemText, _caption, folderMode ? problem : null);
+        ShowProblem(_cloudflareProblemText, _cloudflareCaption, cloudflareMode ? problem : null);
+    }
+
+    private static void ShowProblem(TextBlock line, TextBlock caption, string? problem)
+    {
+        line.Text = problem ?? "";
+        line.Visibility = problem is null ? Visibility.Collapsed : Visibility.Visible;
+        caption.Visibility = problem is null ? Visibility.Visible : Visibility.Collapsed;
     }
 }

@@ -305,6 +305,34 @@ public class TaskMilestoneTests
     }
 
     [Fact]
+    public void CloudflarePublishingNeverMentionsNetlify()
+    {
+        // Same rule as folder publishing: a Cloudflare publish that said
+        // "Connecting to Netlify…" would be naming the wrong company.
+        foreach (var list in new[] { TaskMilestones.DeployToCloudflare, TaskMilestones.BuildAndDeployToCloudflare })
+            foreach (var milestone in list)
+                Assert.DoesNotContain("Netlify", milestone.Label, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void ACloudflareLiveUrlIsFoundByItsLabel()
+    {
+        // deploy.py prints "Live URL: https://<project>.pages.dev" — the same
+        // label the Netlify path uses, which is why no parser change was
+        // needed. wrangler's own chatter must not win over it.
+        const string transcript = """
+             Uploading the built site to Cloudflare…
+            Deploying to https://abc123.mcv4u-s1-2026-gordon.pages.dev
+             Live URL: https://mcv4u-s1-2026-gordon.pages.dev
+
+            ✅ Deploy complete.
+            """;
+        Uri? found = OutputParsers.PublishedSiteUrl(transcript);
+        Assert.NotNull(found);
+        Assert.Equal("https://mcv4u-s1-2026-gordon.pages.dev", found!.ToString().TrimEnd('/'));
+    }
+
+    [Fact]
     public void ALaterMarkerImpliesEarlierSteps()
     {
         var runner = new ScriptRunner(uiContext: null) { Milestones = TaskMilestones.Preview };

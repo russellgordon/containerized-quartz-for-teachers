@@ -111,7 +111,12 @@ public sealed partial class CourseSettingsView : UserControl
         Form.Children.Add(FormBuilders.SectionHeaderWithCaption("Publishing", null));
         _publishingChoice = new PublishingChoiceView(_window,
             () => Config.DeployTarget, v => Config.DeployTarget = v,
-            () => Config.DeployFolderPath, v => Config.DeployFolderPath = v);
+            () => Config.DeployFolderPath, v => Config.DeployFolderPath = v,
+            // The account identifies the teacher, not the course, so it is
+            // kept in app settings and saved as it is typed — a teacher
+            // should never enter it twice.
+            () => _window.Workspace.Settings.CloudflareAccountId,
+            v => { _window.Workspace.Settings.CloudflareAccountId = v; _window.Workspace.Settings.Save(); });
         _publishingChoice.Changed += MarkChanged;
         Form.Children.Add(_publishingChoice.Root);
 

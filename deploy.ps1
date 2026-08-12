@@ -105,6 +105,7 @@ $TEAM_SLUG   = ''
 $RESET_TOKEN = $false
 $TO_FOLDER = ''
 $TARGET = 'netlify'
+$ACCOUNT_ARG = ''
 
 for ($i = 2; $i -lt $args.Count; $i++) {
   switch -Regex ($args[$i]) {
@@ -112,6 +113,8 @@ for ($i = 2; $i -lt $args.Count; $i++) {
     '^--diagnose$'       { $DIAGNOSE = '--diagnose'; continue }
     '^--target$'         { if ($i + 1 -ge $args.Count) { Write-Host "Missing value for --target"; Show-Help; exit 1 }; $TARGET = ([string]$args[$i+1]).ToLower(); $i++; continue }
     '^--target=(.+)$'    { $TARGET = $Matches[1].ToLower(); continue }
+    '^--account$'        { if ($i + 1 -ge $args.Count) { Write-Host "Missing value for --account"; Show-Help; exit 1 }; $ACCOUNT_ARG = ([string]$args[$i+1]).Trim(); $i++; continue }
+    '^--account=(.+)$'   { $ACCOUNT_ARG = $Matches[1].Trim(); continue }
     '^--team$'           { if ($i + 1 -ge $args.Count) { Write-Host "Missing value for --team"; Show-Help; exit 1 }; $TEAM_SLUG = $args[$i+1]; $i++; continue }
     '^--team=(.+)$'      { $TEAM_SLUG = $Matches[1]; continue }
     '^--team-slug$'      { if ($i + 1 -ge $args.Count) { Write-Host "Missing value for --team-slug"; Show-Help; exit 1 }; $TEAM_SLUG = $args[$i+1]; $i++; continue }
@@ -489,7 +492,12 @@ You need a Cloudflare API token to publish to Cloudflare Pages.
   # were told last time, and only then ask. A token can be entirely valid and
   # still list no accounts, so an empty answer here is never treated as a bad
   # token — it just means we have to ask once.
-  $CF_ACCOUNT = Get-CloudflareAccountId $CF_TOKEN
+  if ($ACCOUNT_ARG) {
+    # The app collected it from the teacher, which beats any guess we can make.
+    $CF_ACCOUNT = $ACCOUNT_ARG
+    Set-CfAccountInCredMan $CF_ACCOUNT
+  }
+  if (-not $CF_ACCOUNT) { $CF_ACCOUNT = Get-CloudflareAccountId $CF_TOKEN }
   if (-not $CF_ACCOUNT) { $CF_ACCOUNT = Get-CfAccountFromCredMan }
   if (-not $CF_ACCOUNT) {
     $CF_ACCOUNT = Read-CloudflareAccountId

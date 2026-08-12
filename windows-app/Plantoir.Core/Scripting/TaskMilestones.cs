@@ -93,6 +93,34 @@ public static class TaskMilestones
         new TaskMilestone("Finishing up…", "Published."),
     };
 
+    /// <summary>
+    /// Cloudflare publish. The phrases match what deploy.py prints on that
+    /// path — and, like folder mode, never say Netlify.
+    /// </summary>
+    public static readonly IReadOnlyList<TaskMilestone> DeployToCloudflare = new[]
+    {
+        new TaskMilestone("Getting this PC ready…", "Setting up this PC"),
+        new TaskMilestone("Building your website builder…", "Building your website builder"),
+        new TaskMilestone("Starting up…", "Ensuring container is running"),
+        new TaskMilestone("Checking your site…", "Deploying from local build"),
+        new TaskMilestone("Connecting to Cloudflare…", "Cloudflare project ready"),
+        new TaskMilestone("Uploading your pages…", "Uploading the built site"),
+        new TaskMilestone("Finishing up…", "Deploy complete"),
+    };
+
+    /// <summary>Rebuild + Cloudflare publish presented as ONE task with one bar.</summary>
+    public static readonly IReadOnlyList<TaskMilestone> BuildAndDeployToCloudflare = new[]
+    {
+        new TaskMilestone("Getting this PC ready…", "Setting up this PC"),
+        new TaskMilestone("Building your website builder…", "Building your website builder"),
+        new TaskMilestone("Starting up…", "Starting container if needed"),
+        new TaskMilestone("Gathering your content…", "Copying shared folders"),
+        new TaskMilestone("Building your site…", "Quartz v4"),
+        new TaskMilestone("Connecting to Cloudflare…", "Cloudflare project ready"),
+        new TaskMilestone("Uploading your pages…", "Uploading the built site"),
+        new TaskMilestone("Finishing up…", "Deploy complete"),
+    };
+
     public static IEnumerable<IReadOnlyList<TaskMilestone>> AllLists
     {
         get
@@ -104,6 +132,8 @@ public static class TaskMilestones
             yield return BuildAndDeploy;
             yield return DeployToFolder;
             yield return BuildAndDeployToFolder;
+            yield return DeployToCloudflare;
+            yield return BuildAndDeployToCloudflare;
         }
     }
 }

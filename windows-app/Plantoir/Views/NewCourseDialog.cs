@@ -393,7 +393,9 @@ public sealed class NewCourseDialog : ContentDialog
         form.Children.Add(FormBuilders.SectionHeaderWithCaption("Publishing", null));
         _publishingChoice = new PublishingChoiceView(_window,
             () => _deployTarget, v => _deployTarget = v,
-            () => _deployFolderPath, v => _deployFolderPath = v);
+            () => _deployFolderPath, v => _deployFolderPath = v,
+            () => _window.Workspace.Settings.CloudflareAccountId,
+            v => { _window.Workspace.Settings.CloudflareAccountId = v; _window.Workspace.Settings.Save(); });
         _publishingChoice.Changed += RefreshCreateEnabled;
         form.Children.Add(_publishingChoice.Root);
 

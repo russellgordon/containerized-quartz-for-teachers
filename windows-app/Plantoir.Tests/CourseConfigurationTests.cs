@@ -24,6 +24,36 @@ public class CourseConfigurationTests
     }
 
     [Fact]
+    public void CloudflareIsAThirdDestinationAndRoundTrips()
+    {
+        var config = FromJson("""{"course_code":"ICS3U"}""");
+        Assert.False(config.DeploysToCloudflare);
+
+        config.DeployTarget = "cloudflare_pages";
+        Assert.True(config.DeploysToCloudflare);
+        // The three destinations stay strangers — picking one never reads as
+        // another.
+        Assert.False(config.DeploysToLocalFolder);
+    }
+
+    [Fact]
+    public void CloudflareAccountProblemsAreNamedInPlainWords()
+    {
+        Assert.Equal("Paste your Cloudflare Account ID.",
+            CourseConfiguration.CloudflareAccountProblem("   "));
+
+        // 32 hex characters is the shape Cloudflare uses; anything else is
+        // caught here rather than by a failed publish.
+        string valid = new string('a', 24) + "0123456f";
+        Assert.Null(CourseConfiguration.CloudflareAccountProblem(valid));
+        Assert.Null(CourseConfiguration.CloudflareAccountProblem("  " + valid.ToUpperInvariant() + "  "));
+
+        Assert.NotNull(CourseConfiguration.CloudflareAccountProblem(valid[..31]));       // too short
+        Assert.NotNull(CourseConfiguration.CloudflareAccountProblem(valid + "a"));       // too long
+        Assert.NotNull(CourseConfiguration.CloudflareAccountProblem(valid[..31] + "z")); // not hex
+    }
+
+    [Fact]
     public void DeployFolderProblemsAreNamedInPlainWords()
     {
         Assert.Equal("Choose the folder this course publishes into.",
