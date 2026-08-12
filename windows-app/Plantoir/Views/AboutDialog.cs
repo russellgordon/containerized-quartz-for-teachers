@@ -58,10 +58,31 @@ public sealed class AboutDialog : ContentDialog
             Margin = new Thickness(0, 8, 0, 0),
         });
 
-        var support = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Margin = new Thickness(0, 18, 0, 0) };
-        support.Children.Add(new TextBlock { Text = "Support", FontSize = 12, Opacity = 0.7 });
-        support.Children.Add(Link("https://plantoir.app/support", "plantoir.app/support"));
-        panel.Children.Add(support);
+        // Support and Email rows with aligned labels, as the mac About has.
+        var contact = new Grid { ColumnSpacing = 16, RowSpacing = 4, Margin = new Thickness(0, 18, 0, 0) };
+        contact.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        contact.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        contact.RowDefinitions.Add(new RowDefinition());
+        contact.RowDefinitions.Add(new RowDefinition());
+        void ContactRow(int row, string label, HyperlinkButton link)
+        {
+            var caption = new TextBlock
+            {
+                Text = label,
+                FontSize = 12,
+                Opacity = 0.7,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+            Grid.SetRow(caption, row);
+            contact.Children.Add(caption);
+            link.VerticalAlignment = VerticalAlignment.Center;
+            Grid.SetRow(link, row);
+            Grid.SetColumn(link, 1);
+            contact.Children.Add(link);
+        }
+        ContactRow(0, "Support", Link("https://plantoir.app/support", "plantoir.app/support"));
+        ContactRow(1, "Email", Link("mailto:support@plantoir.app", "support@plantoir.app"));
+        panel.Children.Add(contact);
 
         var credits = new StackPanel { Spacing = 3, Margin = new Thickness(0, 18, 0, 0) };
         credits.Children.Add(CreditLine("Built on ", "Quartz", "https://quartz.jzhao.xyz", " by Jacky Zhao."));
