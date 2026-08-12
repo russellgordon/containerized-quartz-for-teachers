@@ -1,0 +1,46 @@
+{
+  "shared_folders": [
+    "Concepts",
+    "Curriculum",
+    "Discussions",
+    "Exercises",
+    "Investigations",
+    "Portfolios",
+    "Setup",
+    "Style",
+    "Tasks",
+    "Tutorials"
+  ],
+  "shared_files": [
+    "Learning Goals.md",
+    "Help Sessions.md"
+  ],
+  "per_section_folders": [
+    "All Classes"
+  ],
+  "per_section_files": [
+    "Key Links.md",
+    "Private Notes.md",
+    "Scratch Page.md"
+  ],
+  "hidden": [
+    "Curriculum",
+    "Learning Goals.md",
+    "Help Sessions.md",
+    "Key Links.md",
+    "Private Notes.md",
+    "Scratch Page.md"
+  ],
+  "expandable": [
+    "Concepts",
+    "Discussions",
+    "Exercises",
+    "Investigations",
+    "Portfolios",
+    "Setup",
+    "Style",
+    "Tasks",
+    "Tutorials"
+  ],
+  "curriculum_folder": "Curriculum"
+}

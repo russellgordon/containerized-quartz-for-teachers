@@ -1,0 +1,52 @@
+---
+created: __CREATED__
+createdSection1: 2026-09-23T08:00:00.000-0400
+draftSection1: false
+createdSection2: 2026-09-24T08:00:00.000-0400
+draftSection2: false
+enableToc: true
+tags:
+  - biology
+---
+## The idea
+
+Carbon atoms move between the atmosphere, living things, the oceans, soil, and
+rock. Not one atom is created or destroyed — the same carbon has been through
+countless organisms before you.
+
+```mermaid
+graph TD
+    ATM["Atmosphere: CO2"] -->|photosynthesis| PLANTS["Producers"]
+    PLANTS -->|eaten| ANIMALS["Consumers"]
+    PLANTS -->|respiration| ATM
+    ANIMALS -->|respiration| ATM
+    ANIMALS -->|death| SOIL["Soil and decomposers"]
+    PLANTS -->|death| SOIL
+    SOIL -->|decomposition| ATM
+    SOIL -->|"buried over millions of years"| FOSSIL["Fossil fuels"]
+    FOSSIL -->|combustion| ATM
+    ATM <-->|dissolving| OCEAN["Oceans"]
+```
+
+## The slow loop and the fast loop
+
+Two paths matter here, and they run at wildly different speeds:
+
+- **The fast loop** — photosynthesis, respiration, decomposition. Days to
+  decades. Balanced for most of human history.
+- **The slow loop** — burial into fossil fuels and weathering back out.
+  *Millions* of years.
+
+Burning fossil fuels takes carbon out of the slow loop and injects it into the
+fast one. That is climate change in a sentence.
+
+> [!question] Something to sit with
+> The carbon dioxide released by a car this afternoon may spend the next century
+> in the atmosphere. Which of the arrows above decides how long it stays?
+
+%%curriculum-start%%
+## Curriculum
+
+- [[B2.2]] — ![[B2.2#^text]]
+- [[B2.6]] — ![[B2.6#^text]]
+%%curriculum-end%%

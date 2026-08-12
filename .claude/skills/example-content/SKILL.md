@@ -229,6 +229,34 @@ the linter.
 7. No GUI-IMPROVEMENTS entry for a content-only payload (the spec tracks
    behaviour); commit with a message naming the course code.
 
+## Converting an existing complete course into a payload
+
+The SNC1W payload was made by CONVERTING the EXC2O example course rather
+than authoring from scratch — worth repeating when a finished course
+already holds the content. The conversion is mechanical, and the linter
+is the contract; what EXC2O needed:
+
+- Real `created:` dates → sentinels: class pages get
+  `__CREATED_CLASS_K__` by sorting their dates (K = chronological
+  position); everything else gets `__CREATED__`. Pages with NO created
+  line get `created: __CREATED__` ADDED — that upgrade lets the
+  installer date them to the class that first links them, so category
+  listings sort in teaching order.
+- End-of-page "## Curriculum" listings wrapped in
+  `%%curriculum-start%%`/`%%curriculum-end%%`; the Key Links first
+  entry replaced with the canonical marked
+  `[[Curriculum/index|Curriculum Expectations]]`; standalone prose
+  pointers at the curriculum wrapped too, so a curriculum-free install
+  leaves no dangling sentence.
+- The finale class becomes the `draft: true` example (with the standard
+  `%%` comment), and the landing transclusion steps back to the newest
+  PUBLISHED class.
+- Section landing title becomes `title: Section __SECTION_NUMBER__`.
+- Content the course holds beyond its scheduled classes (EXC2O has a
+  space/electricity library its 26 agendas never link) is fine — the
+  linter's "no class links" notes list it; confirm the list reads as
+  deliberate extras, not forgotten links.
+
 ## Known traps
 
 - Wizard structure prompts are SKIPPED when pre-populating — a payload

@@ -1,0 +1,11 @@
+---
+title: Style
+draft: false
+created: __CREATED__
+enableToc: false
+---
+How this site works, how it is put together, and how to write about science.
+
+- [[What This Site Can Do]] — every feature these pages can use, with examples
+- [[How This Site Is Organised]] — class pages versus reference pages
+- [[Writing About Science]] — saying exactly what you mean
