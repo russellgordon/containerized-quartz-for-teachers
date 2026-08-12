@@ -21,7 +21,10 @@ picked them up.
   and github.com/sponsors/jackyzha0 (in the callout), phosphoricons.com,
   russellgordon.ca. No "Built on Quartz" line: the callout already says
   whose work this stands on. (Replaces the old one-line "Please sponsor
-  Jacky" credit; plantoir.app's footer matches.) Mirror in the mac About
+  Jacky" credit; plantoir.app's footer matches.) Also: the
+  plantoir.app/support row is REMOVED from the Windows About — help is
+  coming into the app itself — leaving Email as the only contact row;
+  drop the mac About's Support row to match. Mirror in the mac About
   window. Reference: `windows-app/Plantoir/Views/AboutDialog.cs`.
 
 - **Preview builds are never deploy-fresh** (from `94e25f8`, 2026-08-11).

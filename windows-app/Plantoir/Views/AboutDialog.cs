@@ -60,30 +60,19 @@ public sealed class AboutDialog : ContentDialog
             Margin = new Thickness(0, 8, 0, 0),
         });
 
-        // Support and Email rows with aligned labels, as the mac About has.
-        var contact = new Grid { ColumnSpacing = 16, RowSpacing = 4, Margin = new Thickness(0, 18, 0, 0) };
-        contact.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        contact.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        contact.RowDefinitions.Add(new RowDefinition());
-        contact.RowDefinitions.Add(new RowDefinition());
-        void ContactRow(int row, string label, HyperlinkButton link)
+        // Email only — no support-site link: help is coming into the app
+        // itself, so the About panel should not send people out for it.
+        var contact = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Margin = new Thickness(0, 18, 0, 0) };
+        contact.Children.Add(new TextBlock
         {
-            var caption = new TextBlock
-            {
-                Text = label,
-                FontSize = 12,
-                Opacity = 0.7,
-                VerticalAlignment = VerticalAlignment.Center,
-            };
-            Grid.SetRow(caption, row);
-            contact.Children.Add(caption);
-            link.VerticalAlignment = VerticalAlignment.Center;
-            Grid.SetRow(link, row);
-            Grid.SetColumn(link, 1);
-            contact.Children.Add(link);
-        }
-        ContactRow(0, "Support", Link("https://plantoir.app/support", "plantoir.app/support"));
-        ContactRow(1, "Email", Link("mailto:support@plantoir.app", "support@plantoir.app"));
+            Text = "Email",
+            FontSize = 12,
+            Opacity = 0.7,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        var email = Link("mailto:support@plantoir.app", "support@plantoir.app");
+        email.VerticalAlignment = VerticalAlignment.Center;
+        contact.Children.Add(email);
         panel.Children.Add(contact);
 
         // The sponsor callout, arranged as plantoir.app's footer arranges it:
