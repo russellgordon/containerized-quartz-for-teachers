@@ -6,18 +6,25 @@ $ErrorActionPreference = 'Stop'
 function Show-Help {
 @"
 Usage:
-  .\deploy.bat <COURSE_CODE> <SECTION_NUMBER> [--diagnose] [--team <TEAM_SLUG>] [--reset-token|--logout]
+  .\deploy.bat <COURSE_CODE> <SECTION_NUMBER> [--target netlify|cloudflare] [--diagnose] [--team <TEAM_SLUG>] [--to-folder <PATH>] [--reset-token|--logout]
 
 Examples:
   .\deploy.bat ICS3U 1
   .\deploy.bat ICS3U 1 --diagnose
   .\deploy.bat ICS3U 1 --team my-org-slug
+  .\deploy.bat ICS3U 1 --target cloudflare
 
 Notes:
 - Deploys from /teaching/courses/<COURSE>/.merged_output/section<SECTION> inside the container.
 - You must build first (the static site goes to 'public/' in that section folder).
-- The Netlify Personal Access Token (PAT) is stored as a Windows Generic Credential and injected securely at runtime.
-- Use --reset-token (or --logout) to remove the saved PAT and re-link on next run.
+- --target chooses where the built site goes. netlify (the default) or cloudflare.
+- The token for whichever service you publish to is stored as a Windows Generic
+  Credential and injected securely at runtime. Netlify and Cloudflare tokens are
+  stored separately, so using one never disturbs the other.
+- A Cloudflare token needs one permission: Account - Cloudflare Pages - Edit.
+  The account is discovered from the token, so there is nothing else to enter.
+- Use --reset-token (or --logout) to remove the saved token and re-link on next
+  run; combine it with --target cloudflare to clear the Cloudflare one instead.
 - If your course code ends with '0' (zero), you'll be prompted to correct it to 'O' for Open-level courses.
 "@ | Out-Host
 }
@@ -72,6 +79,10 @@ $WORKDIR_PHYSICAL = Get-PhysicalPath (Get-Location).Path
 $WORKDIR_ID = ([BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes("$WORKDIR_PHYSICAL`n"))) -replace '-','').Substring(0,8).ToLower()
 $CONTAINER_NAME = "teaching-quartz-$WORKDIR_ID"
 $KEY_TARGET     = 'containerized-quartz-netlify'  # Windows Credential Manager target
+# Cloudflare's token lives under its own name, so a teacher who publishes some
+# courses to Netlify and others to Cloudflare keeps both without one clobbering
+# the other, and --reset-token only clears the one they are actually using.
+$CF_KEY_TARGET  = 'containerized-quartz-cloudflare'
 $TOKENS_FILE    = Join-Path -Path $ScriptDir -ChildPath 'courses\.internal\tokens.json'
 $KEY_FILE       = Join-Path -Path $ScriptDir -ChildPath 'courses\.internal\.key'
 
@@ -90,11 +101,14 @@ $DIAGNOSE    = ''
 $TEAM_SLUG   = ''
 $RESET_TOKEN = $false
 $TO_FOLDER = ''
+$TARGET = 'netlify'
 
 for ($i = 2; $i -lt $args.Count; $i++) {
   switch -Regex ($args[$i]) {
     '^--help$|^-h$'      { Show-Help; exit 0 }
     '^--diagnose$'       { $DIAGNOSE = '--diagnose'; continue }
+    '^--target$'         { if ($i + 1 -ge $args.Count) { Write-Host "Missing value for --target"; Show-Help; exit 1 }; $TARGET = ([string]$args[$i+1]).ToLower(); $i++; continue }
+    '^--target=(.+)$'    { $TARGET = $Matches[1].ToLower(); continue }
     '^--team$'           { if ($i + 1 -ge $args.Count) { Write-Host "Missing value for --team"; Show-Help; exit 1 }; $TEAM_SLUG = $args[$i+1]; $i++; continue }
     '^--team=(.+)$'      { $TEAM_SLUG = $Matches[1]; continue }
     '^--team-slug$'      { if ($i + 1 -ge $args.Count) { Write-Host "Missing value for --team-slug"; Show-Help; exit 1 }; $TEAM_SLUG = $args[$i+1]; $i++; continue }
@@ -105,6 +119,11 @@ for ($i = 2; $i -lt $args.Count; $i++) {
     '^--logout$'         { $RESET_TOKEN = $true; continue }
     default              { Write-Host "Unknown option: $($args[$i])"; Show-Help; exit 1 }
   }
+}
+
+if ($TARGET -ne 'netlify' -and $TARGET -ne 'cloudflare') {
+  Write-Host ("Unknown publishing target '{0}'. Use netlify or cloudflare." -f $TARGET)
+  exit 1
 }
 
 # Friendly guard: 'Open' course code ended with zero
@@ -295,6 +314,32 @@ function Set-TokenInCredMan([string]$token) {
 }
 function Remove-TokenInCredMan { [CredApi]::DeleteSecret($KEY_TARGET) | Out-Null }
 
+function Get-CfTokenFromCredMan { [CredApi]::ReadSecret($CF_KEY_TARGET) }
+function Set-CfTokenInCredMan([string]$token) {
+  $ok = [CredApi]::WriteSecret($CF_KEY_TARGET, $env:USERNAME, $token)
+  if (-not $ok) { throw "Failed to write token to Windows Credential Manager." }
+}
+function Remove-CfTokenInCredMan { [CredApi]::DeleteSecret($CF_KEY_TARGET) | Out-Null }
+
+# Checking a Cloudflare token and finding its account are the same request:
+# /accounts both proves the token works and says which account it reaches. That
+# is why a teacher only ever pastes a token — the account ID, a 32-character
+# hex string buried in the dashboard, is never something they have to find.
+# Returns the account ID on success, or $null if the token is no good.
+function Get-CloudflareAccountId([string]$token) {
+  if (-not $token) { return $null }
+  try {
+    $r = Invoke-RestMethod -Uri 'https://api.cloudflare.com/client/v4/accounts' `
+                           -Headers @{ Authorization = "Bearer $token" } `
+                           -Method GET -TimeoutSec 20
+    if ($r.success) {
+      $accounts = @($r.result)
+      if ($accounts.Count -ge 1) { return $accounts[0].id }
+    }
+  } catch {}
+  return $null
+}
+
 function Test-TokenValid([string]$token) {
   if (-not $token) { return $false }
   try {
@@ -341,6 +386,13 @@ function Prune-LegacyNetlifyEntry {
   } catch {}
 }
 
+if ($RESET_TOKEN -and $TARGET -eq 'cloudflare') {
+  Write-Host "Clearing saved Cloudflare token from Windows Credential Manager..."
+  Remove-CfTokenInCredMan
+  Write-Host "Done. Next publish will ask for a new token."
+  exit 0
+}
+
 if ($RESET_TOKEN) {
   Write-Host "Clearing saved Netlify token from Windows Credential Manager..."
   Remove-TokenInCredMan
@@ -352,6 +404,49 @@ if ($RESET_TOKEN) {
   exit 0
 }
 
+$CF_TOKEN   = ''
+$CF_ACCOUNT = ''
+if ($TARGET -eq 'cloudflare') {
+  $CF_TOKEN = Get-CfTokenFromCredMan
+  if ($CF_TOKEN) {
+    $CF_ACCOUNT = Get-CloudflareAccountId $CF_TOKEN
+    if (-not $CF_ACCOUNT) {
+      Write-Host "The saved Cloudflare token no longer works, so it has been cleared."
+      Remove-CfTokenInCredMan
+      $CF_TOKEN = ''
+    }
+  }
+  if (-not $CF_TOKEN) {
+@"
+You need a Cloudflare API token to publish to Cloudflare Pages.
+1) Open this page: https://dash.cloudflare.com/profile/api-tokens
+2) Select 'Create Token', then 'Create Custom Token'.
+   Tips:
+   a. Name it something like 'For class website publishing'
+   b. Give it ONE permission: Account - Cloudflare Pages - Edit
+   c. Leave the expiry alone, or set it to never expire
+3) Copy the generated token and paste it here.
+"@ | Out-Host
+    try { Start-Process "https://dash.cloudflare.com/profile/api-tokens" | Out-Null } catch {}
+    $pastedSec = Read-Host -AsSecureString "Paste Cloudflare token"
+    $plain = $null
+    $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($pastedSec)
+    try   { $plain = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr) }
+    finally { [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
+    $CF_ACCOUNT = Get-CloudflareAccountId $plain
+    if (-not $CF_ACCOUNT) {
+      Write-Host "Cloudflare did not accept that token."
+      Write-Host "Check that it has the 'Cloudflare Pages - Edit' permission, then try again."
+      exit 1
+    }
+    Set-CfTokenInCredMan $plain
+    $CF_TOKEN = $plain
+    Write-Host "Saved token to Windows Credential Manager (target: $CF_KEY_TARGET)."
+  }
+}
+
+$TOKEN = ''
+if ($TARGET -eq 'netlify') {
 $TOKEN = Get-TokenFromCredMan
 if (-not $TOKEN -and (Test-Path $TOKENS_FILE)) {
   $migrated = $false
@@ -402,6 +497,7 @@ You need a Netlify Personal Access Token (PAT) to deploy.
   $TOKEN = $plain
   Write-Host "Saved token to Windows Credential Manager (target: $KEY_TARGET)."
 }
+}  # end: Netlify-only token discovery
 
 # ======================
 # Docker / container (mount-aware + writability probe)
@@ -755,11 +851,14 @@ $SECTION_DIR_IN_CONTAINER = "/teaching/courses/$COURSE_CODE/.merged_output/secti
 Write-Host ("Deploying {0} S{1} from: {2}" -f $COURSE_CODE, $SECTION_NUM, $SECTION_DIR_IN_CONTAINER)
 
 # 1) Securely inject token: filter CRLF and BOM inside the container before saving.
-$tokenBytes = [Text.Encoding]::UTF8.GetBytes($TOKEN + "`n")
+# One channel carries whichever service's token this publish needs, so the
+# secret still never appears in a command line or a host environment variable.
+$ACTIVE_TOKEN = if ($TARGET -eq 'cloudflare') { $CF_TOKEN } else { $TOKEN }
+$tokenBytes = [Text.Encoding]::UTF8.GetBytes($ACTIVE_TOKEN + "`n")
 
 $psi = New-Object System.Diagnostics.ProcessStartInfo
 $psi.FileName = $DOCKER_EXE
-$psi.Arguments = $DOCKER_PREFIX + "exec -i $CONTAINER_NAME sh -lc ""umask 077; tr -d '\r' | sed '1s/^\xEF\xBB\xBF//' > /tmp/netlify_pat"""
+$psi.Arguments = $DOCKER_PREFIX + "exec -i $CONTAINER_NAME sh -lc ""umask 077; tr -d '\r' | sed '1s/^\xEF\xBB\xBF//' > /tmp/deploy_pat"""
 $psi.RedirectStandardInput = $true
 $psi.UseShellExecute = $false
 $psi.CreateNoWindow = $true
@@ -774,14 +873,20 @@ try {
 
 # 2) Compose inner shell and stream it through the same CRLF/BOM filter.
 $inner = @'
-tok=$(cat /tmp/netlify_pat)
-rm -f /tmp/netlify_pat
+tok=$(cat /tmp/deploy_pat)
+rm -f /tmp/deploy_pat
 
 opts=""
 if [ -n "$DIAGNOSE" ]; then opts="$opts $DIAGNOSE"; fi
 if [ -n "$TEAM_SLUG" ]; then opts="$opts --team $TEAM_SLUG"; fi
 
-NETLIFY_AUTH_TOKEN="$tok" python3 /opt/scripts/deploy.py --host-os windows --course __COURSE__ --section __SECTION__ $opts
+if [ "$TARGET" = "cloudflare" ]; then
+  CLOUDFLARE_API_TOKEN="$tok" CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT" \
+    python3 /opt/scripts/deploy.py --host-os windows --target cloudflare --course __COURSE__ --section __SECTION__ $opts
+else
+  NETLIFY_AUTH_TOKEN="$tok" \
+    python3 /opt/scripts/deploy.py --host-os windows --course __COURSE__ --section __SECTION__ $opts
+fi
 '@
 $inner = $inner.Replace('__COURSE__', $COURSE_CODE).Replace('__SECTION__', $SECTION_NUM)
 $innerBytes = [Text.Encoding]::UTF8.GetBytes($inner + "`n")
@@ -805,6 +910,8 @@ try {
 $envList = @("-e","HOST_TZ_OFFSET=$HOST_TZ_OFFSET")
 if ($DIAGNOSE)  { $envList += @("-e","DIAGNOSE=$DIAGNOSE") }
 if ($TEAM_SLUG) { $envList += @("-e","TEAM_SLUG=$TEAM_SLUG") }
+$envList += @("-e","TARGET=$TARGET")
+if ($CF_ACCOUNT) { $envList += @("-e","CF_ACCOUNT=$CF_ACCOUNT") }
 $execArgs = @("exec","-it") + $envList + @("$CONTAINER_NAME","sh","-lc","/bin/sh /tmp/deploy_inner.sh")
 & docker @execArgs
 # Propagate the deploy's exit code — without this the script reports
