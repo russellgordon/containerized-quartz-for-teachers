@@ -24,16 +24,25 @@ enum CourseArchiver {
         )
     }
 
-    /// Archives and removes an entire course folder.
+    /// Writes an archive of an entire course folder without removing it —
+    /// for restores, which replace the course's CONTENTS in place so
+    /// Obsidian's file watcher (anchored to the folder) keeps up.
     /// Returns the archive that was written.
     @discardableResult
-    static func archiveAndRemoveCourse(_ course: Course, coursesDirectoryURL: URL) throws -> URL {
-        let archiveURL: URL = try archive(
+    static func archiveCourse(_ course: Course, coursesDirectoryURL: URL) throws -> URL {
+        return try archive(
             folderURL: course.directoryURL,
             named: timestampedName(prefix: course.code),
             forCourseCode: course.code,
             coursesDirectoryURL: coursesDirectoryURL
         )
+    }
+
+    /// Archives and removes an entire course folder.
+    /// Returns the archive that was written.
+    @discardableResult
+    static func archiveAndRemoveCourse(_ course: Course, coursesDirectoryURL: URL) throws -> URL {
+        let archiveURL: URL = try archiveCourse(course, coursesDirectoryURL: coursesDirectoryURL)
         try FileManager.default.removeItem(at: course.directoryURL)
         return archiveURL
     }

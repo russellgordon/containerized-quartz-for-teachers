@@ -66,16 +66,46 @@ enum CourseRestorer {
         try? fileManager.removeItem(at: item.fileURL)
     }
 
-    /// Puts a backed-up course into the working folder. The caller has
-    /// already cleared the destination (by archiving the current version
-    /// first); unlike an archive restore, the backup zip STAYS — it only
-    /// leaves when the teacher deletes it.
+    /// Puts a backed-up course back. Unlike an archive restore, the
+    /// backup zip STAYS — it only leaves when the teacher deletes it.
+    ///
+    /// When the course folder still exists, its CONTENTS are replaced
+    /// rather than the folder itself: the folder is Obsidian's vault, and
+    /// Obsidian's file watcher is anchored to it — swap the folder and
+    /// Obsidian shows stale files until the vault is closed and reopened;
+    /// swap the contents and it refreshes on its own. The caller has
+    /// already archived the current version.
     static func restoreBackup(_ item: BackupItem, coursesDirectoryURL: URL) throws {
+        let fileManager: FileManager = FileManager.default
         let destination: URL = coursesDirectoryURL.appendingPathComponent(item.courseCode)
-        if FileManager.default.fileExists(atPath: destination.path) {
-            throw Problem.courseAlreadyPresent(item.courseCode)
+
+        if !fileManager.fileExists(atPath: destination.path) {
+            try extract(item.fileURL, named: item.courseCode, into: coursesDirectoryURL)
+            return
         }
-        try extract(item.fileURL, named: item.courseCode, into: coursesDirectoryURL)
+
+        let staging: URL = fileManager.temporaryDirectory.appendingPathComponent("restore-" + UUID().uuidString)
+        try fileManager.createDirectory(at: staging, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: staging) }
+
+        // Unpack and verify BEFORE touching the course, so an unreadable
+        // zip can never leave an emptied folder behind.
+        let payload: URL = try unpack(item.fileURL, named: item.courseCode, into: staging)
+
+        // Out with the current contents (hidden files included — the
+        // backup carries its own .obsidian), in with the backup's.
+        let currentChildren: [URL] = try fileManager.contentsOfDirectory(
+            at: destination, includingPropertiesForKeys: nil, options: []
+        )
+        for child in currentChildren {
+            try fileManager.removeItem(at: child)
+        }
+        let restoredChildren: [URL] = try fileManager.contentsOfDirectory(
+            at: payload, includingPropertiesForKeys: nil, options: []
+        )
+        for child in restoredChildren {
+            try fileManager.moveItem(at: child, to: destination.appendingPathComponent(child.lastPathComponent))
+        }
     }
 
     /// Adds the section number back to the course's settings, in order.
@@ -98,6 +128,17 @@ enum CourseRestorer {
         let staging: URL = fileManager.temporaryDirectory.appendingPathComponent("restore-" + UUID().uuidString)
         try fileManager.createDirectory(at: staging, withIntermediateDirectories: true)
         defer { try? fileManager.removeItem(at: staging) }
+
+        let payload: URL = try unpack(archiveURL, named: expectedName, into: staging)
+
+        try fileManager.createDirectory(at: destinationParent, withIntermediateDirectories: true)
+        try fileManager.moveItem(at: payload, to: destinationParent.appendingPathComponent(expectedName))
+    }
+
+    /// Unzips into the given staging folder and returns the payload — the
+    /// folder the archive's name promised, or the single folder it holds.
+    private static func unpack(_ archiveURL: URL, named expectedName: String, into staging: URL) throws -> URL {
+        let fileManager: FileManager = FileManager.default
 
         let unzip: Process = Process()
         unzip.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
@@ -123,8 +164,6 @@ enum CourseRestorer {
                 throw Problem.archiveUnreadable("it does not contain \(expectedName)")
             }
         }
-
-        try fileManager.createDirectory(at: destinationParent, withIntermediateDirectories: true)
-        try fileManager.moveItem(at: payload, to: destinationParent.appendingPathComponent(expectedName))
+        return payload
     }
 }

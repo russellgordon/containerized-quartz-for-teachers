@@ -68,47 +68,81 @@ final class BackupTests: XCTestCase {
     func testRestoringABackupBringsTheOldContentBackAndKeepsTheZip() throws {
         let fixture: BackupFixture = try BackupFixture()
         defer { fixture.tearDown() }
+        let fileManager: FileManager = FileManager.default
 
         _ = try CourseArchiver.backUpCourse(
             fixture.course, coursesDirectoryURL: fixture.coursesDirectoryURL
         )
 
-        // The LLM makes a mess of the page…
+        // The LLM makes a mess: a ruined page and a stray new file.
         try Data("ruined".utf8).write(to: fixture.pageURL)
+        let strayURL: URL = fixture.courseURL.appendingPathComponent("stray.md")
+        try Data("stray".utf8).write(to: strayURL)
 
-        // …the teacher clears the course (the app archives it first)…
-        try CourseArchiver.archiveAndRemoveCourse(
+        // The app archives the current version (without removing it),
+        // then restores the backup in place.
+        try CourseArchiver.archiveCourse(
             fixture.course, coursesDirectoryURL: fixture.coursesDirectoryURL
         )
-
-        // …and restores the backup.
         let items: [BackupItem] = WorkspaceModel.findBackupItems(in: fixture.coursesDirectoryURL)
         XCTAssertEqual(items.count, 1)
         try CourseRestorer.restoreBackup(items[0], coursesDirectoryURL: fixture.coursesDirectoryURL)
 
         let restored: String = try String(contentsOf: fixture.pageURL, encoding: .utf8)
         XCTAssertEqual(restored, "original", "The backup's content is back")
-        XCTAssertTrue(FileManager.default.fileExists(atPath: items[0].fileURL.path),
+        XCTAssertFalse(fileManager.fileExists(atPath: strayURL.path),
+                       "Files that were not in the backup are gone after restoring")
+        XCTAssertTrue(fileManager.fileExists(atPath: items[0].fileURL.path),
                       "Restoring keeps the backup — only deleting removes it")
         XCTAssertFalse(
-            FileManager.default.fileExists(atPath: fixture.courseURL.appendingPathComponent(".merged_output").path),
+            fileManager.fileExists(atPath: fixture.courseURL.appendingPathComponent(".merged_output").path),
             "Rebuildable output stays out of backups"
         )
     }
 
     @MainActor
-    func testRestoringDeclinesWhenTheCourseIsStillInPlace() throws {
+    func testRestoringKeepsTheCourseFolderItselfInPlace() throws {
+        // The course folder is Obsidian's vault, and Obsidian's file
+        // watcher is anchored to the folder's identity: replace the
+        // folder and Obsidian shows stale files until the vault is
+        // reopened; replace only its CONTENTS and it refreshes itself.
+        let fixture: BackupFixture = try BackupFixture()
+        defer { fixture.tearDown() }
+        let fileManager: FileManager = FileManager.default
+
+        _ = try CourseArchiver.backUpCourse(
+            fixture.course, coursesDirectoryURL: fixture.coursesDirectoryURL
+        )
+        let identityBefore: Any? =
+            try fileManager.attributesOfItem(atPath: fixture.courseURL.path)[.systemFileNumber]
+
+        try Data("ruined".utf8).write(to: fixture.pageURL)
+        let items: [BackupItem] = WorkspaceModel.findBackupItems(in: fixture.coursesDirectoryURL)
+        try CourseRestorer.restoreBackup(items[0], coursesDirectoryURL: fixture.coursesDirectoryURL)
+
+        let identityAfter: Any? =
+            try fileManager.attributesOfItem(atPath: fixture.courseURL.path)[.systemFileNumber]
+        XCTAssertEqual(identityBefore as? Int, identityAfter as? Int,
+                       "The vault folder must be the SAME folder after a restore")
+        let restored: String = try String(contentsOf: fixture.pageURL, encoding: .utf8)
+        XCTAssertEqual(restored, "original")
+    }
+
+    @MainActor
+    func testRestoringIntoAMissingCourseRecreatesIt() throws {
         let fixture: BackupFixture = try BackupFixture()
         defer { fixture.tearDown() }
 
         _ = try CourseArchiver.backUpCourse(
             fixture.course, coursesDirectoryURL: fixture.coursesDirectoryURL
         )
+        try FileManager.default.removeItem(at: fixture.courseURL)
+
         let items: [BackupItem] = WorkspaceModel.findBackupItems(in: fixture.coursesDirectoryURL)
-        XCTAssertThrowsError(
-            try CourseRestorer.restoreBackup(items[0], coursesDirectoryURL: fixture.coursesDirectoryURL),
-            "The caller must clear (archive) the current course first"
-        )
+        try CourseRestorer.restoreBackup(items[0], coursesDirectoryURL: fixture.coursesDirectoryURL)
+
+        let restored: String = try String(contentsOf: fixture.pageURL, encoding: .utf8)
+        XCTAssertEqual(restored, "original", "A removed course comes back whole from its backup")
     }
 }
 

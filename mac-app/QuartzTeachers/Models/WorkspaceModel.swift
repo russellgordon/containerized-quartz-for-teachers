@@ -689,9 +689,13 @@ class WorkspaceModel {
             }
         }
         do {
+            // Archive WITHOUT removing: the restore replaces the course's
+            // contents in place, so Obsidian's file watcher — anchored to
+            // the course folder, which is the vault — keeps up instead of
+            // showing stale files until the vault is reopened.
             for course in courses {
                 if course.code == item.courseCode {
-                    try CourseArchiver.archiveAndRemoveCourse(course, coursesDirectoryURL: coursesDirectoryURL)
+                    try CourseArchiver.archiveCourse(course, coursesDirectoryURL: coursesDirectoryURL)
                 }
             }
             try CourseRestorer.restoreBackup(item, coursesDirectoryURL: coursesDirectoryURL)
