@@ -217,7 +217,7 @@ struct SidebarView: View {
 
                 Nothing is lost, though: the version you have right now moves to Archived, at the bottom of the sidebar, where you can get it back.
 
-                The backup itself is kept.
+                This backup is kept.
                 """)
         }
         .alert(
