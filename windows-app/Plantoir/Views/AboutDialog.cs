@@ -11,7 +11,9 @@ public sealed class AboutDialog : ContentDialog
 {
     public AboutDialog()
     {
-        Title = "About Plantoir";
+        // Just "About": the panel's own heading says Plantoir, large, right
+        // below — repeating it in the title would say nothing new.
+        Title = "About";
         CloseButtonText = "Close";
 
         var panel = new StackPanel { Spacing = 0, MaxWidth = 460 };
