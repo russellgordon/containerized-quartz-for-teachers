@@ -391,6 +391,7 @@ public sealed partial class SidebarPane : UserControl
         var busyNote = new MenuFlyoutItem { IsEnabled = false, Visibility = Visibility.Collapsed };
         menu.Items.Add(addItem);
         menu.Items.Add(busyNote);
+        menu.Items.Add(new MenuFlyoutSeparator());
         // Backing up stays available mid-preview — it only reads (row 106).
         menu.Items.Add(MenuItem("Back Up Now", RestoreGlyph, () => _ = BackUpCourse(course)));
         // The staleness lesson from the mac (row 104): menu content is built
