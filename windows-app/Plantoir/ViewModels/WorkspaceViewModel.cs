@@ -15,6 +15,7 @@ public abstract record SidebarSelection
     public sealed record CourseItem(string Code) : SidebarSelection;
     public sealed record SectionItem(string Code, int Number) : SidebarSelection;
     public sealed record ArchivedEntry(string Id) : SidebarSelection;
+    public sealed record BackupEntry(string Id) : SidebarSelection;
 
     /// <summary>The stored string form for per-window restore (row 99).</summary>
     public string Serialized => this switch
@@ -22,6 +23,7 @@ public abstract record SidebarSelection
         CourseItem(var code) => WindowMemoryCodec.EncodeCourse(code),
         SectionItem(var code, var number) => WindowMemoryCodec.EncodeSection(code, number),
         ArchivedEntry(var id) => WindowMemoryCodec.EncodeArchived(id),
+        BackupEntry(var id) => WindowMemoryCodec.EncodeBackup(id),
         _ => "",
     };
 
@@ -32,6 +34,7 @@ public abstract record SidebarSelection
             { Kind: "course" } d => new CourseItem(d.Code),
             { Kind: "section" } d => new SectionItem(d.Code, d.Section),
             { Kind: "archived" } d => new ArchivedEntry(d.Id),
+            { Kind: "backup" } d => new BackupEntry(d.Id),
             _ => null,
         };
 }
@@ -58,6 +61,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
     public string? WorkspaceProblem { get; private set; }
     public List<Course> Courses { get; private set; } = new();
     public List<ArchivedItem> ArchivedItems { get; private set; } = new();
+    public List<BackupItem> BackupItems { get; private set; } = new();
 
     private SidebarSelection? _selection;
     public SidebarSelection? Selection
@@ -72,6 +76,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
     // restores all-collapsed here; Windows deliberately does not).
     public HashSet<string>? ExpandedCourseCodes { get; set; }
     public bool IsShowingArchived { get; set; }
+    public bool IsShowingBackups { get; set; }
 
     public bool IsCourseExpanded(string code) => ExpandedCourseCodes?.Contains(code) ?? true;
 
@@ -105,6 +110,10 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
 
     public ArchivedItem? SelectedArchivedItem => Selection is SidebarSelection.ArchivedEntry(var id)
         ? ArchivedItems.FirstOrDefault(a => a.Id == id)
+        : null;
+
+    public BackupItem? SelectedBackupItem => Selection is SidebarSelection.BackupEntry(var id)
+        ? BackupItems.FirstOrDefault(b => b.Id == id)
         : null;
 
     public WorkspaceViewModel(AppSettings settings)
@@ -177,6 +186,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
     {
         Courses = new List<Course>();
         ArchivedItems = new List<ArchivedItem>();
+        BackupItems = new List<BackupItem>();
         WorkspaceProblem = null;
         State = null;
         if (_workspacePath is null) { NotifyLoaded(); return; }
@@ -191,6 +201,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
             {
                 Courses = Workspace.DiscoverCourses(_workspacePath);
                 ArchivedItems = Workspace.FindArchivedItems(_workspacePath);
+                BackupItems = Workspace.FindBackups(_workspacePath);
             }
         }
         NotifyLoaded();

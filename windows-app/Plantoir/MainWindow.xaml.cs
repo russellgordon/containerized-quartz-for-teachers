@@ -78,6 +78,7 @@ public sealed partial class MainWindow : Window
         // the tree the way this window left it (row 99).
         Workspace.ExpandedCourseCodes = WindowMemoryCodec.ParseExpandedCourses(frame?.ExpandedCourses);
         Workspace.IsShowingArchived = frame?.ShowsArchived ?? false;
+        Workspace.IsShowingBackups = frame?.ShowsBackups ?? false;
         if (folderPath is not null && Directory.Exists(folderPath))
             Workspace.AdoptRestoredPath(folderPath);
         ApplyState();
@@ -186,6 +187,10 @@ public sealed partial class MainWindow : Window
                 when Workspace.ArchivedItems.Any(a => a.Id == id):
                 Workspace.Selection = new SidebarSelection.ArchivedEntry(id);
                 break;
+            case SidebarSelection.BackupEntry(var id)
+                when Workspace.BackupItems.Any(b => b.Id == id):
+                Workspace.Selection = new SidebarSelection.BackupEntry(id);
+                break;
         }
     }
 
@@ -197,7 +202,8 @@ public sealed partial class MainWindow : Window
         return new RememberedWindow(Workspace.WorkspacePath, position.X, position.Y, size.Width, size.Height,
             WindowMemoryCodec.EncodeExpandedCourses(Workspace.ExpandedCourseCodes),
             Workspace.IsShowingArchived,
-            Workspace.Selection?.Serialized);
+            Workspace.Selection?.Serialized,
+            Workspace.IsShowingBackups);
     }
 
     // ---- State switching -------------------------------------------------
@@ -262,6 +268,13 @@ public sealed partial class MainWindow : Window
                 DetailHost.Content = EmptyState(item.Title,
                     $"{item.Subtitle}. It is not part of your courses until you restore it.",
                     "Restore…", () => Sidebar.ConfirmRestore(item));
+                break;
+            case SidebarSelection.BackupEntry(var backupId)
+                when Workspace.BackupItems.FirstOrDefault(b => b.Id == backupId) is { } backup:
+                DetailHost.Content = EmptyState(backup.Title,
+                    $"{backup.Subtitle}. Restoring puts {backup.CourseCode} back to exactly this " +
+                    "moment — the current version is archived first, and the backup is kept.",
+                    "Restore…", () => Sidebar.ConfirmRestoreBackup(backup));
                 break;
             case null when Workspace.Courses.Count == 0:
                 DetailHost.Content = EmptyState("No Courses Yet",

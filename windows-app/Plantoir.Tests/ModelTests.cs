@@ -266,6 +266,159 @@ public class ArchiveRoundTripTests
 }
 
 /// <summary>
+/// Whole-course backups (row 106): the three zip name forms stay strangers,
+/// backing up touches nothing, and a restore replaces the course folder's
+/// CONTENTS — never the folder itself, which is Obsidian's vault anchor.
+/// </summary>
+public class CourseBackupTests
+{
+    private static string Temp()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "backup-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        return root;
+    }
+
+    private static Course MakeCourse(string coursesDir, string code)
+    {
+        string dir = Path.Combine(coursesDir, code);
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(Path.Combine(dir, "course_config.json"),
+            $$"""{"course_code":"{{code}}","section_numbers":[1]}""");
+        File.WriteAllText(Path.Combine(dir, "Learning Goals.md"), "original goals");
+        Directory.CreateDirectory(Path.Combine(dir, ".merged_output"));
+        File.WriteAllText(Path.Combine(dir, ".merged_output", "huge.txt"), "rebuildable");
+        return Workspace.DiscoverCourses(Path.GetDirectoryName(coursesDir)!).First(c => c.Code == code);
+    }
+
+    [Fact]
+    public void TheThreeZipNameFormsNeverCrossMatch()
+    {
+        const string backup = @"C:\x\ICS3U_backup_2026-08-12_101500.zip";
+        const string archive = @"C:\x\ICS3U_2026-08-12_101500.zip";
+        const string wizard = @"C:\x\2026-08-12_101500.zip";
+
+        Assert.NotNull(BackupItem.From(backup, "ICS3U"));
+        Assert.Null(ArchivedItem.From(backup, "ICS3U"));
+
+        Assert.NotNull(ArchivedItem.From(archive, "ICS3U"));
+        Assert.Null(BackupItem.From(archive, "ICS3U"));
+
+        Assert.Null(BackupItem.From(wizard, "ICS3U"));
+        Assert.Null(ArchivedItem.From(wizard, "ICS3U"));
+    }
+
+    [Fact]
+    public void BackingUpTouchesNothingAndSkipsTheRebuildableBulk()
+    {
+        string root = Temp();
+        try
+        {
+            string coursesDir = Path.Combine(root, "courses");
+            var course = MakeCourse(coursesDir, "ICS3U");
+
+            string zipPath = CourseArchiver.BackUpCourse(course, coursesDir);
+
+            Assert.True(File.Exists(Path.Combine(course.DirectoryPath, "Learning Goals.md")));
+            Assert.NotNull(BackupItem.From(zipPath, "ICS3U"));
+            using var zip = System.IO.Compression.ZipFile.OpenRead(zipPath);
+            Assert.Contains(zip.Entries, e => e.FullName.EndsWith("Learning Goals.md"));
+            Assert.DoesNotContain(zip.Entries, e => e.FullName.Contains(".merged_output"));
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public void RestoreReplacesContentsInPlaceKeepsTheFolderAndTheZip()
+    {
+        string root = Temp();
+        try
+        {
+            string coursesDir = Path.Combine(root, "courses");
+            var course = MakeCourse(coursesDir, "ICS3U");
+            string zipPath = CourseArchiver.BackUpCourse(course, coursesDir);
+            var backup = BackupItem.From(zipPath, "ICS3U")!;
+
+            // The mess an LLM might make: a page rewritten, a stray added.
+            File.WriteAllText(Path.Combine(course.DirectoryPath, "Learning Goals.md"), "MANGLED");
+            File.WriteAllText(Path.Combine(course.DirectoryPath, "Rogue.md"), "should vanish");
+            DateTime folderCreated = Directory.GetCreationTimeUtc(course.DirectoryPath);
+
+            CourseRestorer.RestoreBackup(backup, coursesDir);
+
+            Assert.Equal("original goals", File.ReadAllText(Path.Combine(course.DirectoryPath, "Learning Goals.md")));
+            Assert.False(File.Exists(Path.Combine(course.DirectoryPath, "Rogue.md")));
+            // The folder itself never left: same file-system identity for
+            // Obsidian's watcher (a recreated folder gets a new creation time).
+            Assert.Equal(folderCreated, Directory.GetCreationTimeUtc(course.DirectoryPath));
+            Assert.True(File.Exists(zipPath));   // the backup STAYS after restoring
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public void RestoreSurvivesReadonlyFilesAndUntraversableLinks()
+    {
+        // What a course folder REALLY holds after container builds: readonly
+        // droppings and links Directory.Delete(recursive) cannot traverse —
+        // the failure seen live before the delete learned to cope.
+        string root = Temp();
+        try
+        {
+            string coursesDir = Path.Combine(root, "courses");
+            var course = MakeCourse(coursesDir, "ICS3U");
+            string zipPath = CourseArchiver.BackUpCourse(course, coursesDir);
+            var backup = BackupItem.From(zipPath, "ICS3U")!;
+
+            File.WriteAllText(Path.Combine(course.DirectoryPath, "Learning Goals.md"), "MANGLED");
+            string stubborn = Path.Combine(course.DirectoryPath, ".merged_output", "locked.txt");
+            File.WriteAllText(stubborn, "readonly dropping");
+            File.SetAttributes(stubborn, FileAttributes.ReadOnly);
+            try
+            {
+                // A link like the container's content\Media, when this
+                // machine permits creating one (Developer Mode / admin).
+                Directory.CreateSymbolicLink(
+                    Path.Combine(course.DirectoryPath, ".merged_output", "Media"),
+                    Path.Combine(root, "no-such-target"));
+            }
+            catch { /* the readonly file still exercises the robust delete */ }
+
+            CourseRestorer.RestoreBackup(backup, coursesDir);
+
+            Assert.Equal("original goals", File.ReadAllText(Path.Combine(course.DirectoryPath, "Learning Goals.md")));
+            Assert.False(Directory.Exists(Path.Combine(course.DirectoryPath, ".merged_output")));
+        }
+        finally
+        {
+            // The readonly dropping would also stop the cleanup.
+            foreach (string file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories))
+                try { File.SetAttributes(file, FileAttributes.Normal); } catch { }
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void DeletingRemovesOnlyTheZip()
+    {
+        string root = Temp();
+        try
+        {
+            string coursesDir = Path.Combine(root, "courses");
+            var course = MakeCourse(coursesDir, "ICS3U");
+            string zipPath = CourseArchiver.BackUpCourse(course, coursesDir);
+            var backup = BackupItem.From(zipPath, "ICS3U")!;
+
+            CourseRestorer.DeleteBackup(backup);
+            Assert.False(File.Exists(zipPath));
+            Assert.True(Directory.Exists(course.DirectoryPath));
+            Assert.Empty(Workspace.FindBackups(root));
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+}
+
+/// <summary>
 /// The per-window sidebar memory's string forms (row 99): selection and
 /// expansion round-trips, unrecognized forms restoring nothing, and the
 /// deliberate Windows divergence — no stored state means all-open.

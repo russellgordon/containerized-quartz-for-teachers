@@ -18,6 +18,7 @@ public static class WindowMemoryCodec
     public static string EncodeCourse(string code) => $"course|{code}";
     public static string EncodeSection(string code, int section) => $"section|{code}|{section}";
     public static string EncodeArchived(string id) => $"archived|{id}";
+    public static string EncodeBackup(string id) => $"backup|{id}";
 
     public static DecodedSelection? ParseSelection(string? stored)
     {
@@ -31,6 +32,8 @@ public static class WindowMemoryCodec
                 new DecodedSelection("section", code, int.Parse(number), ""),
             ["archived", var id] when id.Length > 0 =>
                 new DecodedSelection("archived", "", 0, id),
+            ["backup", var id] when id.Length > 0 =>
+                new DecodedSelection("backup", "", 0, id),
             _ => null,
         };
     }

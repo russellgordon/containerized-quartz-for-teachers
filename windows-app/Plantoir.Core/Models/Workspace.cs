@@ -91,6 +91,31 @@ public static class Workspace
         return items;
     }
 
+    /// <summary>
+    /// Backups live beside archives under courses/_backups/&lt;CODE&gt;/; only
+    /// names shaped like &lt;CODE&gt;_backup_&lt;timestamp&gt;.zip count (row 106).
+    /// Newest first.
+    /// </summary>
+    public static List<BackupItem> FindBackups(string workspacePath)
+    {
+        var items = new List<BackupItem>();
+        string backupsRoot = Path.Combine(CoursesDirectory(workspacePath), "_backups");
+        IEnumerable<string> courseDirs;
+        try { courseDirs = Directory.EnumerateDirectories(backupsRoot); }
+        catch { return items; }
+        foreach (string courseDir in courseDirs)
+        {
+            string code = Path.GetFileName(courseDir);
+            IEnumerable<string> files;
+            try { files = Directory.EnumerateFiles(courseDir); }
+            catch { continue; }
+            foreach (string file in files)
+                if (BackupItem.From(file, code) is { } item) items.Add(item);
+        }
+        items.Sort((a, b) => b.BackedUpAt.CompareTo(a.BackedUpAt));
+        return items;
+    }
+
     /// <summary>Case-insensitive match against code OR name; blank shows all.</summary>
     public static List<Course> Filter(IReadOnlyList<Course> courses, string filterText)
     {

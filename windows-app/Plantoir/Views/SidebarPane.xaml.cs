@@ -83,6 +83,12 @@ public sealed partial class SidebarPane : UserControl
             Workspace.IsShowingArchived = expanded;
             App.RememberOpenWindows();
         }
+        else if (ReferenceEquals(row, _backupsGroup))
+        {
+            if (Workspace.IsShowingBackups == expanded) return;
+            Workspace.IsShowingBackups = expanded;
+            App.RememberOpenWindows();
+        }
     }
 
     /// <summary>
@@ -140,6 +146,7 @@ public sealed partial class SidebarPane : UserControl
     // never re-created, so there is no state to lose.
     private readonly ObservableCollection<SidebarRow> _roots = new();
     private SidebarRow? _coursesGroup;
+    private SidebarRow? _backupsGroup;
     private SidebarRow? _archivedGroup;
 
     public void Refresh()
@@ -151,9 +158,59 @@ public sealed partial class SidebarPane : UserControl
             Tree.ItemsSource = _roots;
         }
         ReconcileCourses();
+        ReconcileBackups();
         ReconcileArchived();
+
+        // Root order: courses, then Backups, then Archived (row 106).
+        var desiredRoots = new List<SidebarRow> { _coursesGroup };
+        if (_backupsGroup is not null) desiredRoots.Add(_backupsGroup);
+        if (_archivedGroup is not null) desiredRoots.Add(_archivedGroup);
+        ApplyDesiredOrder(_roots, desiredRoots);
+
         RefreshNoMatches();
         ReassertExpansion();
+    }
+
+    /// <summary>
+    /// The Backups group sits above Archived, hidden while there are no
+    /// backups; rows are reused by zip path so their containers survive.
+    /// </summary>
+    private void ReconcileBackups()
+    {
+        if (Workspace.BackupItems.Count == 0)
+        {
+            if (_backupsGroup is not null) { _roots.Remove(_backupsGroup); _backupsGroup = null; }
+            return;
+        }
+        _backupsGroup ??= new SidebarRow
+        {
+            Title = "Backups",
+            Glyph = RestoreGlyph,
+            IsExpanded = Workspace.IsShowingBackups,
+            AutomationId = "backupsGroup",
+        };
+        if (!_roots.Contains(_backupsGroup)) _roots.Add(_backupsGroup);
+
+        var byId = new Dictionary<string, SidebarRow>();
+        foreach (var row in _backupsGroup.Children)
+            if (row.Selection is SidebarSelection.BackupEntry(var id)) byId[id] = row;
+
+        var desired = new List<SidebarRow>();
+        foreach (var item in Workspace.BackupItems)
+        {
+            if (!byId.TryGetValue(item.Id, out var row))
+                row = new SidebarRow
+                {
+                    Title = item.Title,
+                    Glyph = RestoreGlyph,
+                    Tooltip = item.Subtitle,
+                    Selection = new SidebarSelection.BackupEntry(item.Id),
+                    AutomationId = $"backup-{Path.GetFileName(item.FilePath)}",
+                };
+            row.Menu = BackupMenu(item);
+            desired.Add(row);
+        }
+        ApplyDesiredOrder(_backupsGroup.Children, desired);
     }
 
     private void ReconcileCourses()
@@ -263,8 +320,12 @@ public sealed partial class SidebarPane : UserControl
         {
             int at = current.IndexOf(desired[i]);
             if (at == i) continue;
-            if (at >= 0) current.Move(at, i);
-            else current.Insert(i, desired[i]);
+            // Remove+insert, not Move: the TreeView ignores Move on its root
+            // collection (seen live: Backups stayed below Archived). The
+            // re-created container reads its expansion from the row, which
+            // the window's memory keeps truthful, so nothing is lost.
+            if (at >= 0) current.RemoveAt(at);
+            current.Insert(Math.Min(i, current.Count), desired[i]);
         }
     }
 
@@ -322,11 +383,16 @@ public sealed partial class SidebarPane : UserControl
 
     private MenuFlyout CourseMenu(Course course)
     {
+        // The mac's order: Obsidian, Add Section, Back Up Now, folder items.
         var menu = new MenuFlyout();
+        menu.Items.Add(ObsidianItem(course.DirectoryPath, course.DirectoryPath));
+        menu.Items.Add(new MenuFlyoutSeparator());
         var addItem = MenuItem("Add Section…", AddSectionGlyph, () => _ = OpenAddSectionDialog(course));
         var busyNote = new MenuFlyoutItem { IsEnabled = false, Visibility = Visibility.Collapsed };
         menu.Items.Add(addItem);
         menu.Items.Add(busyNote);
+        // Backing up stays available mid-preview — it only reads (row 106).
+        menu.Items.Add(MenuItem("Back Up Now", RestoreGlyph, () => _ = BackUpCourse(course)));
         // The staleness lesson from the mac (row 104): menu content is built
         // when the ROW renders, not when the teacher opens it — so the busy
         // state is read the moment the menu opens, never captured earlier.
@@ -339,10 +405,18 @@ public sealed partial class SidebarPane : UserControl
             busyNote.Visibility = reason is null ? Visibility.Collapsed : Visibility.Visible;
         };
         menu.Items.Add(new MenuFlyoutSeparator());
-        menu.Items.Add(ObsidianItem(course.DirectoryPath, course.DirectoryPath));
-        menu.Items.Add(new MenuFlyoutSeparator());
         menu.Items.Add(MenuItem("Show in File Explorer", ExplorerGlyph, () => FolderActions.ShowInFileExplorer(course.DirectoryPath)));
         menu.Items.Add(MenuItem("Open in Terminal", TerminalGlyph, () => FolderActions.OpenTerminal(course.DirectoryPath)));
+        return menu;
+    }
+
+    private MenuFlyout BackupMenu(BackupItem item)
+    {
+        var menu = new MenuFlyout();
+        menu.Items.Add(MenuItem("Restore…", RestoreGlyph, () => ConfirmRestoreBackup(item)));
+        menu.Items.Add(MenuItem("Show in File Explorer", ExplorerGlyph, () => FolderActions.ShowInFileExplorer(item.FilePath)));
+        menu.Items.Add(new MenuFlyoutSeparator());
+        menu.Items.Add(MenuItem("Delete Backup…", Glyphs.Remove, () => ConfirmDeleteBackup(item)));
         return menu;
     }
 
@@ -364,6 +438,8 @@ public sealed partial class SidebarPane : UserControl
         var menu = new MenuFlyout();
         menu.Items.Add(MenuItem("Restore…", RestoreGlyph, () => ConfirmRestore(item)));
         menu.Items.Add(MenuItem("Show in File Explorer", ExplorerGlyph, () => FolderActions.ShowInFileExplorer(item.FilePath)));
+        menu.Items.Add(new MenuFlyoutSeparator());
+        menu.Items.Add(MenuItem("Delete Archive…", Glyphs.Remove, () => ConfirmDeleteArchive(item)));
         return menu;
     }
 
@@ -437,6 +513,158 @@ public sealed partial class SidebarPane : UserControl
         catch (Exception error)
         {
             await ShowError("Could not remove", error.Message);
+        }
+    }
+
+    // ---- Backups (row 106) -------------------------------------------------
+
+    /// <summary>Zip the whole course, leave it untouched, show it in Backups.</summary>
+    private async Task BackUpCourse(Course course)
+    {
+        if (Workspace.WorkspacePath is null) return;
+        string when;
+        try
+        {
+            string zipPath = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory());
+            when = BackupItem.From(zipPath, course.Code)?.WhenDescription ?? "just now";
+        }
+        catch (Exception error)
+        {
+            await ShowError("Could not back up", error.Message);
+            return;
+        }
+        Workspace.IsShowingBackups = true;   // the new backup should be visible
+        Workspace.Reload();
+        _window.ApplyState();
+        App.RememberOpenWindows();
+
+        var dialog = new ContentDialog
+        {
+            Title = $"{course.Code} is backed up",
+            Content = "The copy was saved to the Backups group at the bottom of the sidebar.\n\n" +
+                      "Restoring it later brings the whole course back to exactly this moment. " +
+                      "Anything you add from now on won't be in this backup.",
+            CloseButtonText = "OK",
+            XamlRoot = XamlRoot,
+        };
+        await dialog.ShowAsync();
+        _ = when;
+    }
+
+    public async void ConfirmRestoreBackup(BackupItem item)
+    {
+        // Restoring rewrites the course's folders — never mid-copy (row 104's rule).
+        if (Workspace.WorkspacePath is { } folder
+            && CourseActivity.BusyReason(folder, item.CourseCode) is not null)
+        {
+            await ShowError($"{item.CourseCode} is busy right now",
+                "Restoring replaces the course's folders and files, and a preview or publish " +
+                "of this course is still using them. Try again when it finishes.");
+            return;
+        }
+
+        var dialog = new ContentDialog
+        {
+            Title = $"Restore {item.CourseCode}?",
+            Content = $"{item.CourseCode} goes back to the way it was at this moment:\n\n" +
+                      $"{item.WhenDescription}\n\n" +
+                      "Anything added since then won't be in it — so the current version is " +
+                      "archived first, without being removed. This backup is kept.",
+            PrimaryButtonText = "Restore",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = XamlRoot,
+        };
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+
+        try
+        {
+            // Even a restore has an undo: the current version is archived
+            // (and stays in place) before the backup's contents move in.
+            if (Workspace.Courses.FirstOrDefault(c => c.Code == item.CourseCode) is { } current)
+                CourseArchiver.ArchiveCourseWithoutRemoving(current, Workspace.CoursesDirectory());
+            CourseRestorer.RestoreBackup(item, Workspace.CoursesDirectory());
+            Workspace.Reload();
+            Workspace.Selection = new SidebarSelection.CourseItem(item.CourseCode);
+            _window.ApplyState();
+        }
+        catch (Exception error)
+        {
+            await ShowError("Could not restore", error.Message);
+        }
+    }
+
+    /// <summary>
+    /// True when deleting this zip would erase the LAST copy of the course:
+    /// it is gone from Courses & Clubs and no other archive or backup of it
+    /// remains. The warning surveys the other copies before it speaks.
+    /// </summary>
+    private bool IsOnlyRemainingCopy(string courseCode, string zipPath) =>
+        !Workspace.Courses.Any(c => c.Code == courseCode)
+        && !Workspace.ArchivedItems.Any(a => a.CourseCode == courseCode && a.SectionNumber is null && a.FilePath != zipPath)
+        && !Workspace.BackupItems.Any(b => b.CourseCode == courseCode && b.FilePath != zipPath);
+
+    private async void ConfirmDeleteBackup(BackupItem item)
+    {
+        string consequence = IsOnlyRemainingCopy(item.CourseCode, item.FilePath)
+            ? $"This backup is the only remaining copy of {item.CourseCode} — the course is no longer " +
+              $"in Courses & Clubs. Deleting it removes {item.CourseCode} for good."
+            : $"The backup made {item.WhenDescription} is deleted for good. " +
+              $"{item.CourseCode} itself, and every other copy of it, stays put.";
+        var dialog = new ContentDialog
+        {
+            Title = $"Delete this backup of {item.CourseCode}?",
+            Content = consequence,
+            PrimaryButtonText = "Delete",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = XamlRoot,
+        };
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+        try
+        {
+            CourseRestorer.DeleteBackup(item);
+            if (Workspace.Selection is SidebarSelection.BackupEntry(var id) && id == item.Id)
+                Workspace.Selection = null;
+            Workspace.Reload();
+            _window.ApplyState();
+        }
+        catch (Exception error)
+        {
+            await ShowError("Could not delete", error.Message);
+        }
+    }
+
+    public async void ConfirmDeleteArchive(ArchivedItem item)
+    {
+        // Sections inside a still-present course are never the only copy;
+        // the survey matters for whole-course archives.
+        bool onlyCopy = item.SectionNumber is null && IsOnlyRemainingCopy(item.CourseCode, item.FilePath);
+        string consequence = onlyCopy
+            ? $"This archive is the only remaining copy of {item.CourseCode} — the course is no longer " +
+              $"in Courses & Clubs. Deleting it removes {item.CourseCode} for good."
+            : $"The archive of {item.Title} is deleted for good. Everything else stays put.";
+        var dialog = new ContentDialog
+        {
+            Title = $"Delete this archive of {item.Title}?",
+            Content = consequence,
+            PrimaryButtonText = "Delete",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = XamlRoot,
+        };
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+        try
+        {
+            CourseRestorer.DeleteArchive(item);
+            if (Workspace.Selection is SidebarSelection.ArchivedEntry(var id) && id == item.Id)
+                Workspace.Selection = null;
+            Workspace.Reload();
+            _window.ApplyState();
+        }
+        catch (Exception error)
+        {
+            await ShowError("Could not delete", error.Message);
         }
     }
 

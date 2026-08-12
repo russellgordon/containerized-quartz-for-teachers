@@ -13,7 +13,7 @@ namespace Plantoir.Services;
 /// </summary>
 public sealed record RememberedWindow(string Path, double X, double Y, double Width, double Height,
                                       string? ExpandedCourses = null, bool ShowsArchived = false,
-                                      string? Selection = null);
+                                      string? Selection = null, bool ShowsBackups = false);
 
 /// <summary>
 /// The app's own settings store (%LOCALAPPDATA%\Plantoir\settings.json).
