@@ -7,6 +7,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import urllib.request
@@ -549,6 +550,32 @@ def main():
         print(f" Please build before deploying.\n For example:")
         print(f"{_cmd_example('preview', args.course, args.section, _HOST_OS)}")
         sys.exit(1)
+
+    # A PREVIEW build must never reach the public site. Serve mode bakes a
+    # live-reload client — new WebSocket('ws://localhost:<port>') — into every
+    # page; on the published site that script makes browsers ask permission to
+    # "access other apps and services on this device". Since previewing is the
+    # documented way to produce public/, detect the client and quietly re-emit
+    # a production build from the same merged sources before uploading.
+    index_html = public_dir / "index.html"
+    try:
+        is_preview_build = "ws://localhost:" in index_html.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        is_preview_build = False
+    if is_preview_build:
+        print(" Preview build detected (live-reload client) — rebuilding for production…")
+        env = os.environ.copy()
+        env.setdefault("TZ", "UTC")
+        env.setdefault("SOURCE_DATE_EPOCH", "1704067200")  # match build_site.py
+        try:
+            subprocess.run(["npx", "quartz", "build", "--concurrency", "1"],
+                           cwd=section_dir, env=env, check=True)
+        except (subprocess.CalledProcessError, OSError):
+            print("❌ Could not rebuild the site for production, so this deploy would")
+            print(" publish the preview's live-reload page. Run the preview again, then retry:")
+            print(f"{_cmd_example('preview', args.course, args.section, _HOST_OS)}")
+            sys.exit(1)
+        print("✅ Production build complete.")
 
     # Determine course dir (for stable marker)
     course_dir = section_dir.parent.parent  # .../<COURSE>/.merged_output/section#

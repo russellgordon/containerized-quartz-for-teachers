@@ -16,3 +16,6 @@ windows-app/**/obj/
 !.claude/
 .claude/*
 !.claude/skills/
+
+# Windows release bundles (publish.ps1 output)
+windows-app/dist/

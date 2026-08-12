@@ -15,9 +15,22 @@ public static class BuildFreshness
         catch { return true; }
         if (!File.Exists(builtIndex)) return true;
 
+        // A preview's build is never deploy-fresh: serve mode bakes a
+        // live-reload client pointed at ws://localhost into every page, and
+        // publishing that makes browsers ask to "access other apps and
+        // services on this device" on the live site.
+        if (BuiltForPreview(builtIndex)) return true;
+
         DateTime? contentDate = NewestContentDate(course.DirectoryPath);
         if (contentDate is null) return false;   // nothing readable: nothing to rebuild for
         return contentDate > builtDate;
+    }
+
+    /// <summary>True when the built page carries the preview server's live-reload client.</summary>
+    internal static bool BuiltForPreview(string builtIndexPath)
+    {
+        try { return File.ReadAllText(builtIndexPath).Contains("ws://localhost:", StringComparison.Ordinal); }
+        catch { return true; }   // unreadable: rebuild rather than trust it
     }
 
     /// <summary>

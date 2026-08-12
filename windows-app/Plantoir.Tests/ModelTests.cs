@@ -322,6 +322,33 @@ public class BuildFreshnessTests
         }
         finally { Directory.Delete(root, recursive: true); }
     }
+
+    [Fact]
+    public void APreviewBuildIsNeverDeployFresh()
+    {
+        // Serve mode bakes a live-reload client into every page; deploying it
+        // makes the public site knock on ws://localhost and browsers prompt.
+        string root = Path.Combine(Path.GetTempPath(), "fresh-" + Guid.NewGuid());
+        try
+        {
+            var course = SectionAdderTests.MakeCourse(root, "ICS3U", """{"course_code":"ICS3U"}""");
+            string publicDir = Path.Combine(course.DirectoryPath, ".merged_output", "section1", "public");
+            Directory.CreateDirectory(publicDir);
+            string index = Path.Combine(publicDir, "index.html");
+            File.WriteAllText(index,
+                "<script>const socket = new WebSocket('ws://localhost:9081')</script>");
+            File.SetLastWriteTimeUtc(index, DateTime.UtcNow.AddMinutes(5));
+
+            Assert.True(BuildFreshness.BuiltForPreview(index));
+            Assert.True(BuildFreshness.NeedsRebuild(course, 1));
+
+            File.WriteAllText(index, "a clean production page");
+            File.SetLastWriteTimeUtc(index, DateTime.UtcNow.AddMinutes(5));
+            Assert.False(BuildFreshness.BuiltForPreview(index));
+            Assert.False(BuildFreshness.NeedsRebuild(course, 1));
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
 }
 
 public class FolderContainerTests

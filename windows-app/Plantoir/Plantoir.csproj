@@ -6,6 +6,15 @@
     <RootNamespace>Plantoir</RootNamespace>
     <AssemblyName>Plantoir</AssemblyName>
     <ApplicationTitle>Plantoir</ApplicationTitle>
+    <!-- The product version: the single source the About panel reads, the
+         release zip is named after, and the git tag must match (v1.0.0).
+         Keep in lockstep with the mac app's marketing version. -->
+    <Version>1.0.0</Version>
+    <Company>Russell Gordon</Company>
+    <Product>Plantoir</Product>
+    <Copyright>Copyright 2026 Russell Gordon</Copyright>
+    <!-- A clean "1.0.0" in the file's Properties dialog, not "1.0.0+<hash>". -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Platforms>x64</Platforms>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseWinUI>true</UseWinUI>
@@ -14,7 +23,17 @@
     <WindowsPackageType>None</WindowsPackageType>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!-- The exe's own icon: Explorer, taskbar, Alt-Tab. Derived from the mac
+         Icon Composer art (see AboutDialog for the in-app copy). -->
+    <ApplicationIcon>Assets\Plantoir.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Runtime copies: the window icon (AppWindow.SetIcon wants a file) and
+         the About panel's image. -->
+    <Content Include="Assets\Plantoir.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\PlantoirIcon.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.*" />

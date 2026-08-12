@@ -10,6 +10,21 @@ public class CourseConfigurationTests
     private static CourseConfiguration FromJson(string json) =>
         CourseConfiguration.FromBytes(Encoding.UTF8.GetBytes(json));
 
+    /// <summary>
+    /// Mirrors build_site.py's computed_landing_title: [Grade X ]Name[, Section N],
+    /// each switch literal, empty name falling back to the code.
+    /// </summary>
+    [Theory]
+    [InlineData("Computer Science", "ICS3U", 1, true, true, "Grade 11 Computer Science, Section 1")]
+    [InlineData("Computer Science", "ICS3U", 1, false, true, "Computer Science, Section 1")]
+    [InlineData("Computer Science", "ICS3U", 3, true, false, "Grade 11 Computer Science")]
+    [InlineData("Computer Science", "ICS3U", 3, false, false, "Computer Science")]
+    [InlineData("Newsroom", "CODING", 1, true, true, "Newsroom, Section 1")]   // clubs carry no grade
+    [InlineData("", "ics3u", 2, true, true, "Grade 11 ICS3U, Section 2")]      // nameless falls back to code
+    public void ComputedSiteTitleMatchesTheBuild(string name, string code, int section,
+        bool grade, bool marker, string expected) =>
+        Assert.Equal(expected, CourseConfiguration.ComputedSiteTitle(name, code, section, grade, marker));
+
     [Fact]
     public void UnknownKeysSurviveARoundTrip()
     {

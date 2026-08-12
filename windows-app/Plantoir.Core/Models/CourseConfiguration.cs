@@ -293,6 +293,24 @@ public sealed class CourseConfiguration
         return $"The course name already includes “{label}”, so the site title would repeat it. Edit the name, or turn this off.";
     }
 
+    /// <summary>
+    /// The site title as build_site.py's computed_landing_title will compute
+    /// it at build time — [Grade X ]Name[, Section N], deliberately literal:
+    /// the grade switch alone decides the prefix, the marker switch alone
+    /// decides the suffix, and an empty name falls back to the code.
+    /// </summary>
+    public static string ComputedSiteTitle(string courseName, string courseCode, int sectionNumber,
+                                           bool showsGrade, bool showsMarker)
+    {
+        string code = courseCode.Trim().ToUpperInvariant();
+        string name = courseName.Trim();
+        if (name.Length == 0) name = code;
+        string label = SectionAdder.GradeLabel(code);
+        string prefix = showsGrade && label.Length > 0 ? label + " " : "";
+        string suffix = showsMarker ? $", Section {sectionNumber}" : "";
+        return prefix + name + suffix;
+    }
+
     // ---- Helpers --------------------------------------------------------
 
     internal static string SectionKey(int section) => "section" + section;

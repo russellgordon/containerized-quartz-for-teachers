@@ -37,7 +37,22 @@ public sealed partial class CourseSettingsView : UserControl
     {
         RefreshDirtyState();
         HeaderName.Text = Config.CourseName;
+        foreach (var (section, sample) in _fontSampleHeaders) sample.Text = SampleHeaderText(section);
     }
+
+    // ---- Font sample text ------------------------------------------------
+
+    /// <summary>
+    /// Each section's font sample shows that section's OWN site title —
+    /// computed exactly as the build will compute it, so the name, the grade
+    /// switch, and the section-marker switch are all reflected in the
+    /// candidate typeface.
+    /// </summary>
+    private readonly List<(int Section, TextBlock Block)> _fontSampleHeaders = new();
+
+    private string SampleHeaderText(int section) =>
+        CourseConfiguration.ComputedSiteTitle(Config.CourseName, _course.Code, section,
+            Config.ShowsGradeInTitle(section), Config.ShowsSectionMarker(section));
 
     private void RefreshDirtyState()
     {
@@ -51,6 +66,7 @@ public sealed partial class CourseSettingsView : UserControl
     private void BuildForm()
     {
         Form.Children.Clear();
+        _fontSampleHeaders.Clear();   // rebuilt below; Revert re-enters here
 
         // -------- Settings — Overall --------
         Form.Children.Add(FormBuilders.SectionHeaderWithCaption("Settings — Overall", null));
@@ -246,7 +262,8 @@ public sealed partial class CourseSettingsView : UserControl
         }
         pairingBox.SelectedIndex = selected;
 
-        var headerSample = new TextBlock { Text = "Grade 11 Computer Science", FontSize = 19 };
+        var headerSample = new TextBlock { Text = SampleHeaderText(section), FontSize = 19 };
+        _fontSampleHeaders.Add((section, headerSample));
         var bodySample = new TextBlock { Text = "Body text on your site will look like this sentence does.", FontSize = 13 };
         var samplePanel = new StackPanel { Spacing = 4 };
         samplePanel.Children.Add(headerSample);

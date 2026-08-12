@@ -6,15 +6,34 @@ using Microsoft.UI.Xaml.Documents;
 
 namespace Plantoir.Views;
 
-/// <summary>The About panel: name, version, tagline, the namesake story, support links, credits.</summary>
+/// <summary>The About panel: icon, name, version, tagline, the namesake story, support links, credits.</summary>
 public sealed class AboutDialog : ContentDialog
 {
     public AboutDialog()
     {
-        Title = "About Plantoir";
+        // No dialog title at all: the icon and the large "Plantoir" heading
+        // ARE the title, as on the mac About window. The menu item that opens
+        // this panel still says "About Plantoir", so nothing is left unnamed.
         CloseButtonText = "Close";
 
         var panel = new StackPanel { Spacing = 0, MaxWidth = 460 };
+
+        // The app icon beside the text column, as the mac About arranges it.
+        var layout = new Grid { ColumnSpacing = 20 };
+        layout.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        var icon = new Image
+        {
+            Width = 96,
+            Height = 96,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(0, 6, 0, 0),
+            Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(
+                new Uri("ms-appx:///Assets/PlantoirIcon.png")),
+        };
+        layout.Children.Add(icon);
+        Grid.SetColumn(panel, 1);
+        layout.Children.Add(panel);
 
         panel.Children.Add(new TextBlock { Text = "Plantoir", FontSize = 26, FontWeight = FontWeights.Bold });
         string version = typeof(AboutDialog).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
@@ -41,17 +60,47 @@ public sealed class AboutDialog : ContentDialog
             Margin = new Thickness(0, 8, 0, 0),
         });
 
-        var support = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Margin = new Thickness(0, 18, 0, 0) };
-        support.Children.Add(new TextBlock { Text = "Support", FontSize = 12, Opacity = 0.7 });
-        support.Children.Add(Link("https://plantoir.app/support", "plantoir.app/support"));
-        panel.Children.Add(support);
+        // Email only — no support-site link: help is coming into the app
+        // itself, so the About panel should not send people out for it.
+        var contact = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Margin = new Thickness(0, 18, 0, 0) };
+        contact.Children.Add(new TextBlock
+        {
+            Text = "Email",
+            FontSize = 12,
+            Opacity = 0.7,
+            VerticalAlignment = VerticalAlignment.Center,
+        });
+        var email = Link("mailto:support@plantoir.app", "support@plantoir.app");
+        email.VerticalAlignment = VerticalAlignment.Center;
+        contact.Children.Add(email);
+        panel.Children.Add(contact);
 
-        var credits = new StackPanel { Spacing = 3, Margin = new Thickness(0, 18, 0, 0) };
-        credits.Children.Add(CreditLine("Built on ", "Quartz", "https://quartz.jzhao.xyz", " by Jacky Zhao."));
-        credits.Children.Add(new TextBlock { Text = "Designed by Russell Gordon.", FontSize = 11, Opacity = 0.7 });
+        // The sponsor callout, arranged as plantoir.app's footer arranges it:
+        // the rounded panel making the case for Jacky, then the plain
+        // acknowledgement lines beneath.
+        var sponsorText = new TextBlock { FontSize = 12, Opacity = 0.85, TextWrapping = TextWrapping.Wrap };
+        sponsorText.Inlines.Add(new Run { Text = "Plantoir is a friendly wrapper around " });
+        sponsorText.Inlines.Add(InlineLink("Quartz", "https://quartz.jzhao.xyz"));
+        sponsorText.Inlines.Add(new Run { Text = ", which Jacky Zhao builds and gives away for free. If you end up using Plantoir regularly, please consider " });
+        sponsorText.Inlines.Add(InlineLink("sponsoring him on GitHub", "https://github.com/sponsors/jackyzha0"));
+        sponsorText.Inlines.Add(new Run { Text = " — it is his work that makes all of this possible." });
+        panel.Children.Add(new Border
+        {
+            Child = sponsorText,
+            Background = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["CardBackgroundFillColorSecondaryBrush"],
+            BorderBrush = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["DividerStrokeColorDefaultBrush"],
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(14, 12, 14, 12),
+            Margin = new Thickness(0, 18, 0, 0),
+        });
+
+        // No "Built on Quartz" line: the sponsor callout above already says
+        // whose work this stands on.
+        var credits = new StackPanel { Spacing = 3, Margin = new Thickness(0, 14, 0, 0) };
+        credits.Children.Add(CreditLine("Icon from ", "Phosphor Icons", "https://phosphoricons.com", " (MIT)."));
+        credits.Children.Add(CreditLine("Designed by ", "Russell Gordon", "https://www.russellgordon.ca", "."));
         credits.Children.Add(new TextBlock { Text = "Made with Claude.", FontSize = 11, Opacity = 0.7 });
-        credits.Children.Add(CreditLine("Please ", "sponsor Jacky", "https://github.com/sponsors/jackyzha0",
-            " — his work makes this app possible."));
         panel.Children.Add(credits);
 
         panel.Children.Add(new TextBlock
@@ -62,7 +111,7 @@ public sealed class AboutDialog : ContentDialog
             Margin = new Thickness(0, 14, 0, 0),
         });
 
-        Content = panel;
+        Content = layout;
     }
 
     private static HyperlinkButton Link(string uri, string label) => new()
@@ -72,6 +121,13 @@ public sealed class AboutDialog : ContentDialog
         Padding = new Thickness(0),
         FontSize = 12,
     };
+
+    private static Hyperlink InlineLink(string text, string uri)
+    {
+        var link = new Hyperlink { NavigateUri = new Uri(uri) };
+        link.Inlines.Add(new Run { Text = text });
+        return link;
+    }
 
     private static TextBlock CreditLine(string before, string linkText, string uri, string after)
     {

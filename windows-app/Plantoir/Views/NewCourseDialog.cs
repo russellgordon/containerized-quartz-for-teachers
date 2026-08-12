@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Newtonsoft.Json.Linq;
@@ -58,6 +59,56 @@ public sealed class NewCourseDialog : ContentDialog
     private readonly TextBlock _gradeWarningSlot;
     private bool _started;
 
+    // Starting Content (rows 92–94): the ready-made pages and their two
+    // toggles, plus the terminology switch for the factory structure.
+    private bool _prepopulate = true;
+    private bool _includeCurriculum = true;
+    private bool _useLcs;
+    private readonly StackPanel _startingContentBody = new() { Spacing = 6 };
+    private readonly TextBlock _structureCaption;
+    private readonly TextBlock _structureLockedNote;
+    private readonly StackPanel _structureEditorArea = new() { Spacing = 6 };
+    private readonly Expander _structureExpander = new()
+    {
+        Header = "Folders and files",
+        HorizontalAlignment = HorizontalAlignment.Stretch,
+        HorizontalContentAlignment = HorizontalAlignment.Stretch,
+    };
+
+    /// <summary>
+    /// The font sample shows the course's OWN site title once there is one —
+    /// computed exactly as the build will compute it, so the grade and
+    /// section-marker switches are reflected too. The stand-in remains for
+    /// the blank-form moment only.
+    /// </summary>
+    private TextBlock? _fontSampleHeader;
+
+    private string SampleHeaderText()
+    {
+        if (_nameBox.Text.Trim().Length == 0 && _codeBox.Text.Trim().Length == 0)
+            return "Grade 11 Computer Science";
+        int firstSection = ParsedSectionNumbers(_sectionsBox.Text).FirstOrDefault();
+        if (firstSection == 0) firstSection = 1;
+        return CourseConfiguration.ComputedSiteTitle(
+            _nameBox.Text, _codeBox.Text, firstSection, _showsGrade, _showsMarker);
+    }
+
+    private void RefreshFontSample()
+    {
+        if (_fontSampleHeader is not null) _fontSampleHeader.Text = SampleHeaderText();
+    }
+
+    private static string ExampleContentRoot => BundledToolchain.SupportPath("example_content");
+    private string NormalizedCode => _codeBox.Text.Trim().ToUpperInvariant();
+
+    /// <summary>
+    /// True when the example content, not the teacher, decides the course's
+    /// folders and files — the pages were written for one exact layout, and
+    /// a hand-edited structure would strand their links.
+    /// </summary>
+    private bool StructureComesFromExampleContent =>
+        _prepopulate && ExampleContentCatalog.HasContent(ExampleContentRoot, NormalizedCode);
+
     public NewCourseDialog(MainWindow window)
     {
         _window = window;
@@ -86,6 +137,11 @@ public sealed class NewCourseDialog : ContentDialog
             Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"],
         };
         _gradeWarningSlot = new TextBlock { FontSize = 12, TextWrapping = TextWrapping.Wrap, Visibility = Visibility.Collapsed };
+        _structureCaption = FormBuilders.ExampleCaption("Defaults are fine for most courses");
+        _structureLockedNote = FormBuilders.ExampleCaption(
+            "The example content chooses the folders and files for this course, so every page lands where its links expect it. Turn off pre-populating to choose your own structure.");
+        _structureLockedNote.Visibility = Visibility.Collapsed;
+        AutomationProperties.SetAutomationId(_structureLockedNote, "structureFromExampleNote");
         _shortRow = FormBuilders.LabeledRow("Short label beside emoji (≤ 12 characters)", _shortBox);
         _shortRow.Visibility = Visibility.Collapsed;
 
@@ -191,24 +247,33 @@ public sealed class NewCourseDialog : ContentDialog
         codeRow.Children.Add(FormBuilders.ExampleCaption("e.g. ICS3U — or a club name like CODING"));
         codeRow.Children.Add(_codeWarning);
         form.Children.Add(codeRow);
-        _codeBox.TextChanged += (_, _) => { AutoFillCourseName(); RefreshClubRow(); RefreshGradeWarning(); RefreshCodeValidation(); RefreshCreateEnabled(); };
+        _codeBox.TextChanged += (_, _) =>
+        {
+            AutoFillCourseName(); RefreshClubRow(); RefreshGradeWarning(); RefreshCodeValidation(); RefreshCreateEnabled();
+            RefreshStartingContent(); RefreshStructureArea(); RefreshFontSample();
+        };
 
         var nameRow = FormBuilders.LabeledRow("Course name", _nameBox);
         nameRow.Children.Add(FormBuilders.ExampleCaption("e.g. Introduction to Computer Science"));
         nameRow.Children.Add(_suggestionsRow);
         form.Children.Add(nameRow);
-        _nameBox.TextChanged += (_, _) => RefreshGradeWarning();
+        _nameBox.TextChanged += (_, _) => { RefreshGradeWarning(); RefreshFontSample(); };
 
         form.Children.Add(_shortRow);
 
         var sectionsRow = FormBuilders.LabeledRow("Timetable section numbers", _sectionsBox);
         sectionsRow.Children.Add(_sectionsCaption);
         form.Children.Add(sectionsRow);
-        _sectionsBox.TextChanged += (_, _) => { RefreshSectionsValidation(); RefreshCreateEnabled(); };
+        _sectionsBox.TextChanged += (_, _) => { RefreshSectionsValidation(); RefreshCreateEnabled(); RefreshFontSample(); };
 
         foreach (string code in LocaleCatalog.Codes) _localeBox.Items.Add(LocaleCatalog.DisplayName(code));
         _localeBox.SelectedIndex = LocaleCatalog.Codes.ToList().IndexOf(WizardDefaults.DefaultLocale);
         form.Children.Add(FormBuilders.LabeledRow("Language / region", _localeBox));
+
+        // -------- Starting Content (offered per course code) --------
+        form.Children.Add(FormBuilders.SectionHeaderWithCaption("Starting Content", null));
+        form.Children.Add(_startingContentBody);
+        RefreshStartingContent();
 
         // -------- Appearance --------
         form.Children.Add(FormBuilders.SectionHeaderWithCaption("Appearance",
@@ -245,7 +310,8 @@ public sealed class NewCourseDialog : ContentDialog
         foreach (var pairing in pairings)
             pairingBox.Items.Add(FontCatalog.PairingLabel(pairing.Header, pairing.Body));
         pairingBox.SelectedIndex = pairings.Count - 1;   // system default
-        var headerSample = new TextBlock { Text = "Grade 11 Computer Science", FontSize = 19 };
+        _fontSampleHeader = new TextBlock { Text = SampleHeaderText(), FontSize = 19 };
+        var headerSample = _fontSampleHeader;
         var bodySample = new TextBlock { Text = "Body text on your site will look like this sentence does.", FontSize = 13 };
         var fontSample = new StackPanel { Spacing = 4 };
         fontSample.Children.Add(headerSample);
@@ -292,13 +358,13 @@ public sealed class NewCourseDialog : ContentDialog
         form.Children.Add(codeFontRow);
 
         var markerToggle = new ToggleSwitch { IsOn = _showsMarker, OnContent = "", OffContent = "" };
-        markerToggle.Toggled += (_, _) => _showsMarker = markerToggle.IsOn;
+        markerToggle.Toggled += (_, _) => { _showsMarker = markerToggle.IsOn; RefreshFontSample(); };
         var markerRow = FormBuilders.LabeledRow("Show section marker in the site title", markerToggle);
         markerRow.Children.Add(FormBuilders.ExampleCaption("e.g. \"S1\" appears beside the course code"));
         form.Children.Add(markerRow);
 
         var gradeToggle = new ToggleSwitch { IsOn = _showsGrade, OnContent = "", OffContent = "" };
-        gradeToggle.Toggled += (_, _) => { _showsGrade = gradeToggle.IsOn; RefreshGradeWarning(); };
+        gradeToggle.Toggled += (_, _) => { _showsGrade = gradeToggle.IsOn; RefreshGradeWarning(); RefreshFontSample(); };
         var gradeRow = FormBuilders.LabeledRow("Show the grade in the site title", gradeToggle);
         gradeRow.Children.Add(_gradeWarningSlot);
         gradeRow.Children.Add(FormBuilders.ExampleCaption("e.g. \"Grade 12\" before the course name"));
@@ -318,24 +384,36 @@ public sealed class NewCourseDialog : ContentDialog
         form.Children.Add(FormBuilders.LabeledRow("Show page read-time estimates to students", readTimeToggle));
 
         // -------- Structure (long lists stay collapsed) --------
-        form.Children.Add(FormBuilders.SectionHeaderWithCaption("Structure", "Defaults are fine for most courses"));
-        var structure = new Expander
+        var structureHeader = new StackPanel { Spacing = 2, Margin = new Thickness(0, 18, 0, 4) };
+        structureHeader.Children.Add(new TextBlock { Text = "Structure", FontSize = 18, FontWeight = FontWeights.SemiBold });
+        structureHeader.Children.Add(_structureCaption);
+        form.Children.Add(structureHeader);
+        form.Children.Add(_structureLockedNote);
+
+        var lcsToggle = new ToggleSwitch { IsOn = _useLcs, OnContent = "", OffContent = "" };
+        lcsToggle.Toggled += (_, _) =>
         {
-            Header = "Folders and files",
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            HorizontalContentAlignment = HorizontalAlignment.Stretch,
+            bool wasLcs = _useLcs;
+            if (lcsToggle.IsOn == wasLcs) return;
+            _useLcs = lcsToggle.IsOn;
+            _sharedFolders = WizardDefaults.SwitchingFactoryItems(_sharedFolders,
+                _useLcs ? WizardDefaults.LcsSharedFolders : WizardDefaults.SharedFolders,
+                wasLcs ? WizardDefaults.LcsSharedFolders : WizardDefaults.SharedFolders);
+            _sharedFiles = WizardDefaults.SwitchingFactoryItems(_sharedFiles,
+                _useLcs ? WizardDefaults.LcsSharedFiles : WizardDefaults.SharedFiles,
+                wasLcs ? WizardDefaults.LcsSharedFiles : WizardDefaults.SharedFiles);
+            RebuildStructureLists();   // the editors re-read the swapped lists
         };
-        var lists = new StackPanel { Spacing = 4 };
-        lists.Children.Add(FormBuilders.StringListEditor("Shared folders", false,
-            () => _sharedFolders, v => _sharedFolders = v, () => { }));
-        lists.Children.Add(FormBuilders.StringListEditor("Shared files", true,
-            () => _sharedFiles, v => _sharedFiles = v, () => { }));
-        lists.Children.Add(FormBuilders.StringListEditor("Per-section folders", false,
-            () => _perSectionFolders, v => _perSectionFolders = v, () => { }));
-        lists.Children.Add(FormBuilders.StringListEditor("Per-section files", true,
-            () => _perSectionFiles, v => _perSectionFiles = v, () => { }));
-        structure.Content = lists;
-        form.Children.Add(structure);
+        AutomationProperties.SetAutomationId(lcsToggle, "lcsTerminologyToggle");
+        var lcsRow = FormBuilders.LabeledRow("Use LCS-specific terminology", lcsToggle);
+        lcsRow.Children.Add(FormBuilders.ExampleCaption(
+            "e.g. “Grove Time” instead of “Extra Help”, plus the College Board Curriculum folder"));
+        _structureEditorArea.Children.Add(lcsRow);
+        AutomationProperties.SetAutomationId(_structureExpander, "structureDisclosure");
+        _structureEditorArea.Children.Add(_structureExpander);
+        RebuildStructureLists();
+        form.Children.Add(_structureEditorArea);
+        RefreshStructureArea();
 
         // -------- Footer --------
         form.Children.Add(FormBuilders.SectionHeaderWithCaption("Footer", null));
@@ -352,6 +430,87 @@ public sealed class NewCourseDialog : ContentDialog
         form.Children.Add(footerBox);
 
         return form;
+    }
+
+    // ---- Starting content and structure ----------------------------------
+
+    /// <summary>
+    /// The Starting Content section follows the typed course code: the two
+    /// toggles when a bundled payload exists for it, a quiet note when none
+    /// does yet. Rebuilt on every code change; toggle values survive.
+    /// </summary>
+    private void RefreshStartingContent()
+    {
+        _startingContentBody.Children.Clear();
+        if (ExampleContentCatalog.HasContent(ExampleContentRoot, NormalizedCode))
+        {
+            var prepopToggle = new ToggleSwitch { IsOn = _prepopulate, OnContent = "", OffContent = "" };
+            AutomationProperties.SetAutomationId(prepopToggle, "prepopulateToggle");
+            var prepopRow = FormBuilders.LabeledRow("Pre-populate course with example content", prepopToggle);
+            prepopRow.Children.Add(FormBuilders.ExampleCaption(
+                "Working pages written for this course — keep, edit, or delete them as you build your own site. The example content also chooses the course's folders and files, so they fit the pages."));
+            _startingContentBody.Children.Add(prepopRow);
+
+            ToggleSwitch? curriculumToggle = null;
+            if (ExampleContentCatalog.IncludesCurriculum(ExampleContentRoot, NormalizedCode))
+            {
+                curriculumToggle = new ToggleSwitch
+                {
+                    IsOn = _includeCurriculum,
+                    IsEnabled = _prepopulate,
+                    OnContent = "",
+                    OffContent = "",
+                };
+                AutomationProperties.SetAutomationId(curriculumToggle, "curriculumToggle");
+                curriculumToggle.Toggled += (_, _) => _includeCurriculum = curriculumToggle.IsOn;
+                var curriculumRow = FormBuilders.LabeledRow("Include Ontario curriculum pages", curriculumToggle);
+                curriculumRow.Children.Add(FormBuilders.ExampleCaption(
+                    "Every expectation as its own page, so lessons and tasks can link to exactly what they address"));
+                _startingContentBody.Children.Add(curriculumRow);
+            }
+
+            prepopToggle.Toggled += (_, _) =>
+            {
+                _prepopulate = prepopToggle.IsOn;
+                if (curriculumToggle is not null) curriculumToggle.IsEnabled = _prepopulate;
+                RefreshStructureArea();
+            };
+        }
+        else
+        {
+            var note = FormBuilders.ExampleCaption(
+                "Example content isn’t available for this course code yet, so the course will start with empty folders ready for your own pages.");
+            AutomationProperties.SetAutomationId(note, "noExampleContentNote");
+            _startingContentBody.Children.Add(note);
+        }
+    }
+
+    /// <summary>
+    /// Pre-populating LOCKS the structure: the editor (and the terminology
+    /// switch) give way to a caption explaining that the example content
+    /// chooses the layout, and return when the toggle goes off.
+    /// </summary>
+    private void RefreshStructureArea()
+    {
+        bool locked = StructureComesFromExampleContent;
+        _structureLockedNote.Visibility = locked ? Visibility.Visible : Visibility.Collapsed;
+        _structureEditorArea.Visibility = locked ? Visibility.Collapsed : Visibility.Visible;
+        _structureCaption.Text = locked ? "Chosen by the example content" : "Defaults are fine for most courses";
+    }
+
+    /// <summary>Recreate the four list editors so they read the current lists.</summary>
+    private void RebuildStructureLists()
+    {
+        var lists = new StackPanel { Spacing = 4 };
+        lists.Children.Add(FormBuilders.StringListEditor("Shared folders", false,
+            () => _sharedFolders, v => _sharedFolders = v, () => { }));
+        lists.Children.Add(FormBuilders.StringListEditor("Shared files", true,
+            () => _sharedFiles, v => _sharedFiles = v, () => { }));
+        lists.Children.Add(FormBuilders.StringListEditor("Per-section folders", false,
+            () => _perSectionFolders, v => _perSectionFolders = v, () => { }));
+        lists.Children.Add(FormBuilders.StringListEditor("Per-section files", true,
+            () => _perSectionFiles, v => _perSectionFiles = v, () => { }));
+        _structureExpander.Content = lists;
     }
 
     // ---- Validation and auto-fill ---------------------------------------
@@ -551,6 +710,12 @@ public sealed class NewCourseDialog : ContentDialog
         var expandableSource = _sharedFolders.Concat(_perSectionFolders).ToHashSet();
         var expandable = WizardDefaults.ExpandableItems.Where(expandableSource.Contains).ToList();
 
+        // The real wizard reads these as its defaults, exactly like every
+        // other answer here. False when no content exists for the code, so a
+        // stale true can never mean anything.
+        bool hasContent = ExampleContentCatalog.HasContent(ExampleContentRoot, code);
+        bool includesCurriculum = ExampleContentCatalog.IncludesCurriculum(ExampleContentRoot, code);
+
         return new JObject
         {
             ["course_code"] = code,
@@ -570,6 +735,9 @@ public sealed class NewCourseDialog : ContentDialog
             ["footer_html"] = _footerHtml,
             ["show_reading_time"] = _showReadingTime,
             ["show_grade_in_title"] = PerSection(_ => _showsGrade),
+            ["prepopulate_example_content"] = hasContent && _prepopulate,
+            ["include_curriculum_pages"] = hasContent && _prepopulate && includesCurriculum && _includeCurriculum,
+            ["use_lcs_terminology"] = _useLcs,
             ["fonts"] = new JObject
             {
                 ["default"] = _fontChoice.ToJson(),
