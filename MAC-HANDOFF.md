@@ -6,7 +6,9 @@ needs (or deserves a look from) the **macOS app**. The reverse of
 mac app after Windows-side sessions. Each entry names the commit that
 landed the Windows/shared work, what the mac side should do, and where
 the reference implementation lives. Remove entries once the mac side has
-picked them up.
+picked them up. (Cross-side rebases rewrite commit hashes, so treat the
+hashes as hints from the moment of writing — the file and test
+references are the durable pointers.)
 
 ## To implement
 
@@ -73,6 +75,23 @@ picked them up.
   in `windows-app/Plantoir/Views/NewCourseDialog.cs`.
 
 ## Already shared — no mac code needed, just awareness
+
+- **The Windows icon derives from `mac-app/Plantoir.icon`** (2026-08-11).
+  `windows-app/Plantoir/Assets/make-icon.ps1` turns a full-bleed 1024px
+  Icon Composer export into the exe/.ico and About-panel assets, applying
+  the macOS rounded-rect silhouette; `site/icon.png` on plantoir.app
+  comes from the same export. If the icon art ever changes, tell the
+  Windows side so those derived assets are regenerated — nothing updates
+  them automatically.
+
+- **Auto-update plans need appcast coordination** (2026-08-12). Windows
+  will adopt WinSparkle (paired with an Inno Setup installer, planned
+  after v1.0); if/when the mac app adopts Sparkle, BOTH appcasts should
+  live on plantoir.app in this repo's `site/` — use per-platform file
+  names from the start (`appcast-windows.xml`, `appcast-macos.xml`) so
+  the two update feeds never collide, and add the release-time appcast
+  edit to the shared checklist in `windows-app/RELEASING.md` when the
+  first one lands.
 
 - **The mac release asset must be named exactly `Plantoir-macOS.zip`**
   (2026-08-11; SPECCED — the mac ships a zip, not a dmg: Safari
