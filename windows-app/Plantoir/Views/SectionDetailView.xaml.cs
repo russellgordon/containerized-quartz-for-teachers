@@ -41,6 +41,12 @@ public sealed partial class SectionDetailView : UserControl
         SectionTitle.Text = TitleText;
         ObsidianButton.IsEnabled = FolderActions.ObsidianIsInstalled;
 
+        // The empty-state invitation follows the course's publishing choice —
+        // "to Netlify" would be wrong twice over for a folder-publishing course.
+        NoPreviewDetail.Text = course.Configuration.DeploysToLocalFolder
+            ? "Click Preview to build this section's website and see it here, or Publish to copy it to your publishing folder."
+            : "Click Preview to build this section's website and see it here, or Publish to put it online.";
+
         // Each runner is bound to the progress view exactly once — its
         // question dialog and outcome states follow whichever runner the
         // view is currently showing, chosen in RefreshChrome via Show().
