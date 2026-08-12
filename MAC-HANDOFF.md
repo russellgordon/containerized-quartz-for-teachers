@@ -12,6 +12,103 @@ references are the durable pointers.)
 
 ## To implement
 
+- **Cloudflare Pages as a third publishing destination** (Windows +
+  shared, 2026-08-12). Commits `0306c98` (container side), `4575647`
+  (account fallback), `e6611cc` (Windows UI). **The shared half is
+  already done and the mac inherits it** — `scripts/deploy.py` and the
+  `Dockerfile` are common to both apps. The mac side needs two things:
+  `deploy.sh`, and the GUI.
+
+  **What already works, in shared code.** `deploy.py --target cloudflare`
+  discovers the account, creates or reuses this section's Pages project,
+  hands the built folder to wrangler, and prints `Live URL: https://…` —
+  the label both apps' parsers already read, so no parser change was
+  needed on either side. Per-section state lives in
+  `courses/<CODE>/.cloudflare_sites/section<N>.json`, deliberately
+  mirroring the existing `.netlify_sites/` marker.
+
+  **Design decisions, and why — please keep these rather than re-deciding:**
+
+  1. *Publishing rides on wrangler, not a reimplementation.* Cloudflare's
+     direct-upload protocol is multi-stage and undocumented: BLAKE3 hashes
+     computed over base64-of-contents plus the file extension, a
+     short-lived upload JWT that can expire mid-upload on a large site,
+     and batched asset uploads. Community write-ups exist, but a
+     reimplementation would break teachers' publishing silently whenever
+     Cloudflare changed it. wrangler is Cloudflare's own supported
+     implementation and already handles those edges.
+  2. *wrangler is pinned at 4.80.0 — and pinned BELOW 4.100 on purpose.*
+     From 4.100 wrangler requires Node 22; the image ships Node 20 because
+     that is what Quartz v4.5.0 is known-good against. Raising Node to
+     chase a newer CLI would mean revalidating every teacher's site build.
+     Install and `--version` were verified on `node:20-slim` before
+     committing. **If you bump Node, revisit this pin — and revalidate
+     Quartz first.**
+  3. *A token scoped to Pages CANNOT list its own account.* This was
+     found by testing a real token: `/user/tokens/verify` reports
+     `active`, while `/accounts` returns success with an EMPTY list and
+     `/memberships` returns 403. The first cut treated "no accounts" as
+     "bad token" and would have sent teachers off to re-mint a perfectly
+     good one. **Validity and account lookup are now separate questions**
+     — validity against `/user/tokens/verify`, the account by discovery →
+     remembered value → asking. Please do not collapse them again.
+  4. *Because of (3), the account ID must be collected in the GUI.* The
+     app publishes with nothing attached that can answer a console
+     prompt, so the launcher's prompt is unreachable from the GUI. On
+     Windows it is a field in the Publishing section, validated live (32
+     hex characters) with Save/Create gated on it, and passed to the
+     launcher as `--account`. It is stored in **app settings, not course
+     settings**, because it identifies the teacher rather than the course
+     — the same reasoning that puts the token in the OS keychain — so it
+     is entered once and used by every course.
+  5. *The 25 MB per-file cap is checked before anything uploads.*
+     Cloudflare refuses larger files, and the failure otherwise surfaces
+     from deep inside the upload as an unhelpful error. `deploy.py` lists
+     the offending files by name and suggests compressing the video or
+     publishing that section to Netlify, which allows larger files. This
+     is the one real functional difference between the destinations and
+     is worth saying plainly in the mac UI too.
+  6. *Tokens are stored under separate keychain entries.* A teacher
+     publishing some courses to Netlify and others to Cloudflare keeps
+     both, and `--reset-token --target cloudflare` clears only the
+     Cloudflare one (plus its remembered account).
+
+  **What the mac side must write.** `deploy.sh` needs the `--target`
+  and `--account` flags, its own keychain entry for the Cloudflare token
+  (plus one for the remembered account ID), token validation against
+  `/user/tokens/verify`, and the same env hand-off into the container:
+  `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, with
+  `--target cloudflare` passed to `deploy.py`. **`deploy.sh` was left
+  deliberately untouched on the Windows side** — shipping an edit to a
+  launcher that could not be tested here would be worse than shipping
+  none. GUI-wise: the third picker option, the account field with live
+  validation, the milestone list (never saying "Netlify" — pinned by a
+  test on Windows), and a decline path if the account is missing.
+  Reference: `windows-app/Plantoir/Views/PublishingChoiceView.cs`,
+  `SectionDetailView.xaml.cs` (`Deploy_Click`),
+  `Plantoir.Core/Scripting/TaskMilestones.cs`,
+  `CourseConfiguration.CloudflareAccountProblem`.
+
+  **Status: not yet published end to end.** Everything is built, builds
+  clean and is unit-tested (154 tests), and the UI is verified in the
+  running app, but no site has actually been pushed to Cloudflare yet —
+  that was blocked on a correctly-scoped token. Treat the first live
+  publish as the remaining acceptance test on both platforms, and check
+  while doing it whether Direct Uploads move the dashboard's build
+  counter (they should not; the 500/month limit is documented as applying
+  to git-triggered builds, which this path never uses).
+
+- **`sanitize_last_name` folds accents instead of dropping them**
+  (shared, 2026-08-12, commit `0306c98`). Pre-existing bug in
+  `scripts/deploy.py`, found while testing Cloudflare project naming: the
+  function kept only `a-z`, so a teacher named **Côté** got `ct` in her
+  site name and Müller got `mller`. In an Ontario staff list that is not
+  an edge case. It now normalises (NFKD) and strips combining marks
+  first, so Côté → `cote`. **This affected Netlify site names too**, and
+  the mac inherits the fix automatically since `deploy.py` is shared —
+  no mac code needed, but worth knowing the suggested names changed.
+  Existing sites are pinned by their marker files and are unaffected.
+
 - **About box credits match plantoir.app's footer** (Windows, 2026-08-11).
   The credits section is now: a rounded-rect callout carrying the full
   sponsor message ("Plantoir is a friendly wrapper around [Quartz], which
