@@ -50,7 +50,9 @@ struct SectionDetailView: View {
                     ContentUnavailableView(
                         "No Preview Running",
                         systemImage: "globe",
-                        description: Text("Click Preview to build this section's website and see it here, or Deploy to publish it to Netlify.")
+                        description: Text(course.configuration.deploysToLocalFolder
+                            ? "Click Preview to build this section's website and see it here, or Publish to copy it to your publishing folder."
+                            : "Click Preview to build this section's website and see it here, or Publish to put it online.")
                     )
                 }
             }
@@ -120,7 +122,7 @@ struct SectionDetailView: View {
                 .help(previewRunner.isRunning ? "Stop previewing this section" : "Preview this section's website")
                 .accessibilityIdentifier(previewRunner.isRunning ? "stopPreviewButton" : "previewButton")
 
-                Button("Deploy", systemImage: "paperplane.fill") {
+                Button("Publish", systemImage: "paperplane.fill") {
                     startDeploy()
                 }
                 .labelStyle(.titleAndIcon)
