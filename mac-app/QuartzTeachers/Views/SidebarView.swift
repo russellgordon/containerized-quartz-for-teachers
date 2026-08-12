@@ -213,7 +213,11 @@ struct SidebarView: View {
             }
         } message: { item in
             Text("""
-                \(item.courseCode) goes back to how it was when this backup was made (\(item.subtitle.lowercased())). Anything added since then isn’t in the backup.
+                \(item.courseCode) goes back to how it was when this backup was made:
+
+                \(item.whenDescription)
+
+                Anything added since then isn’t in the backup.
 
                 Nothing is lost, though: the version you have right now moves to Archived, at the bottom of the sidebar, where you can get it back.
 

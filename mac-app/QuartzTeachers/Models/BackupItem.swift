@@ -31,13 +31,18 @@ struct BackupItem: Identifiable, Hashable {
         return courseCode
     }
 
-    /// "Backed up 11 August 2026 at 10:15 PM" — with the time, because
-    /// a careful teacher may make several backups in one evening.
-    var subtitle: String {
+    /// "11 August 2026 at 10:15 PM" — the moment alone, with the time,
+    /// because a careful teacher may make several backups in one evening.
+    var whenDescription: String {
         let formatter: DateFormatter = DateFormatter()
         formatter.dateStyle = .long
         formatter.timeStyle = .short
-        return "Backed up \(formatter.string(from: backedUpAt))"
+        return formatter.string(from: backedUpAt)
+    }
+
+    /// "Backed up 11 August 2026 at 10:15 PM".
+    var subtitle: String {
+        return "Backed up \(whenDescription)"
     }
 
     var symbolName: String {
