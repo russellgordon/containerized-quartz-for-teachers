@@ -6,10 +6,18 @@ enum BuildFreshness {
 
     // MARK: - Functions
 
-    /// True when there is no built site yet, or the content has changed
-    /// since it was built.
+    /// True when there is no built site yet, the built site is a
+    /// preview's build, or the content has changed since it was built.
     static func needsRebuild(course: Course, sectionNumber: Int) -> Bool {
-        guard let builtDate = builtSiteDate(course: course, sectionNumber: sectionNumber) else {
+        let indexURL: URL = builtIndexURL(course: course, sectionNumber: sectionNumber)
+        guard let builtDate = modificationDate(of: indexURL) else {
+            return true
+        }
+        // A preview's build is never deploy-fresh: serve mode bakes a
+        // live-reload client pointed at ws://localhost into every page,
+        // and publishing that makes browsers ask visitors about
+        // "access to other apps and services on this device".
+        if builtForPreview(indexURL) {
             return true
         }
         guard let contentDate = newestContentDate(course: course) else {
@@ -19,14 +27,28 @@ enum BuildFreshness {
         return contentDate > builtDate
     }
 
-    /// When the section's site was last built, or nil if it never was.
-    static func builtSiteDate(course: Course, sectionNumber: Int) -> Date? {
-        let indexURL: URL = course.directoryURL
+    /// True when the built page carries the preview server's
+    /// live-reload client.
+    static func builtForPreview(_ builtIndexURL: URL) -> Bool {
+        guard let html = try? String(contentsOf: builtIndexURL, encoding: .utf8) else {
+            // Unreadable: rebuild rather than trust it.
+            return true
+        }
+        return html.contains("ws://localhost:")
+    }
+
+    /// Where the section's built landing page lives.
+    static func builtIndexURL(course: Course, sectionNumber: Int) -> URL {
+        return course.directoryURL
             .appendingPathComponent(".merged_output")
             .appendingPathComponent("section\(sectionNumber)")
             .appendingPathComponent("public")
             .appendingPathComponent("index.html")
-        return modificationDate(of: indexURL)
+    }
+
+    /// When the section's site was last built, or nil if it never was.
+    static func builtSiteDate(course: Course, sectionNumber: Int) -> Date? {
+        return modificationDate(of: builtIndexURL(course: course, sectionNumber: sectionNumber))
     }
 
     /// The newest change anywhere in the course's own content.

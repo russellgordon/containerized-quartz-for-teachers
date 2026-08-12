@@ -53,4 +53,22 @@ final class SectionNumbersValidationTests: XCTestCase {
         XCTAssertNil(NewCourseWizardView.sectionNumbersProblem("3"))
         XCTAssertNil(NewCourseWizardView.sectionNumbersProblem("7,2"))
     }
+
+    @MainActor
+    func testTheCodeFieldExplainsItsOwnProblems() {
+        let existing: [String] = ["ICS4U", "MPM2D"]
+
+        XCTAssertNil(NewCourseWizardView.courseCodeProblem("", existingCodes: existing),
+                     "An empty code is not-ready-yet, not an error worth showing")
+        XCTAssertNil(NewCourseWizardView.courseCodeProblem("SNC1W", existingCodes: existing))
+
+        XCTAssertEqual(NewCourseWizardView.courseCodeProblem("ICS 4U", existingCodes: existing),
+                       "A course code cannot contain spaces.")
+        XCTAssertEqual(NewCourseWizardView.courseCodeProblem("ics4u", existingCodes: existing),
+                       "A course named ICS4U already exists — choose a different code.",
+                       "The clash is found case-insensitively")
+        XCTAssertEqual(NewCourseWizardView.courseCodeProblem("  MPM2D  ", existingCodes: existing),
+                       "A course named MPM2D already exists — choose a different code.",
+                       "Whitespace never hides a clash")
+    }
 }

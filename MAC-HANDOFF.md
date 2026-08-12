@@ -12,67 +12,11 @@ references are the durable pointers.)
 
 ## To implement
 
-- **About box credits match plantoir.app's footer** (Windows, 2026-08-11).
-  The credits section is now: a rounded-rect callout carrying the full
-  sponsor message ("Plantoir is a friendly wrapper around [Quartz], which
-  Jacky Zhao builds and gives away for free. If you end up using Plantoir
-  regularly, please consider [sponsoring him on GitHub] — it is his work
-  that makes all of this possible."), then three plain acknowledgement
-  lines: "Icon from [Phosphor Icons] (MIT)." / "Designed by
-  [Russell Gordon]." / "Made with Claude." — links to quartz.jzhao.xyz
-  and github.com/sponsors/jackyzha0 (in the callout), phosphoricons.com,
-  russellgordon.ca. No "Built on Quartz" line: the callout already says
-  whose work this stands on. (Replaces the old one-line "Please sponsor
-  Jacky" credit; plantoir.app's footer matches.) Also: the
-  plantoir.app/support row is REMOVED from the Windows About — help is
-  coming into the app itself — leaving Email as the only contact row;
-  drop the mac About's Support row to match. Mirror in the mac About
-  window. Reference: `windows-app/Plantoir/Views/AboutDialog.cs`.
-
-- **Preview builds are never deploy-fresh** (from `94e25f8`, 2026-08-11).
-  Deploying right after previewing published the preview's build, whose
-  pages carry Quartz's live-reload client (`new WebSocket('ws://localhost:…')`)
-  — so the PUBLISHED site knocked on every visitor's localhost and
-  Chromium-family browsers prompted "wants to access other apps and
-  services on this device" on first load. The shared `scripts/deploy.py`
-  now detects the client and re-emits a production build before
-  uploading, which already protects the mac app functionally — but the
-  mac app's own deploy-freshness check shares the Windows one's blind
-  spot (it compares only content dates). Mirror the Windows fix so the
-  app's ordinary, visible build-first step runs instead of the silent
-  in-deploy rebuild: a built `public/index.html` containing
-  `ws://localhost:` is never fresh. Reference:
-  `windows-app/Plantoir.Core/Models/BuildFreshness.cs`
-  (`BuiltForPreview`) and the `APreviewBuildIsNeverDeployFresh` test in
-  `windows-app/Plantoir.Tests/ModelTests.cs`.
-
-- **Font samples show the course's own computed site title** (Windows,
-  2026-08-11). The header font sample renders the title the build will
-  actually produce — `[Grade X ]Name[, Section N]`, i.e. the course name
-  with the grade and section-marker switches applied — in the candidate
-  typeface, updating live as the name, code, section numbers, or either
-  toggle changes. The "Grade 11 Computer Science" stand-in remains only
-  while the form is blank; the body-sentence sample is unchanged. In
-  Course Settings each section's sample uses that section's own toggles.
-  The compute is `CourseConfiguration.ComputedSiteTitle` (Core),
-  mirroring `computed_landing_title` in `scripts/build_site.py` and
-  pinned by a six-case theory test. Mirror in the mac wizard's
-  FontChoiceEditorView and Course Settings. References:
-  `SampleHeaderText()` in `windows-app/Plantoir/Views/NewCourseDialog.cs`
-  and `windows-app/Plantoir/Views/CourseSettingsView.xaml.cs`;
-  `ComputedSiteTitleMatchesTheBuild` in
-  `windows-app/Plantoir.Tests/CourseConfigurationTests.cs`.
-
-- **Explain a disabled Create button in the wizard** (from `2d10e4c`,
-  2026-08-11). On Windows, a filled-in New Course form with a DUPLICATE
-  course code left Create greyed with no explanation — the sections
-  field explained its problems inline while the code field stayed
-  silent. Windows now shows the reason under the code field ("A course
-  named ICS4U already exists — choose a different code."), single-sourced
-  with the check that gates the button. Worth checking whether the mac
-  wizard has the same silent-disable and wants the same inline
-  explanation. Reference: `CourseCodeProblem()` / `RefreshCodeValidation()`
-  in `windows-app/Plantoir/Views/NewCourseDialog.cs`.
+- (Nothing at the moment — all entries picked up on 2026-08-12:
+  About credits + Support-row removal, the preview-build deploy-freshness
+  check, the computed-title font samples — already on macOS as spec
+  entry 100 — and the live code-field explanation. Spec entries 107–109
+  record the mirrors.)
 
 ## Already shared — no mac code needed, just awareness
 
@@ -113,9 +57,9 @@ references are the durable pointers.)
   drafted by Claude via the `cut-release` skill
   (`.claude/skills/cut-release/`) — teacher-friendly bullets from the
   commit log plus a SHA-256 downloads table; the mac asset should be
-  attached to the same release and hashed into the same table. Also:
-  the spec's `.claude/skills/example-content/` skill did not arrive in
-  the merged repo — bring it over if it lives only on the mac checkout.
+  attached to the same release and hashed into the same table. (The
+  `.claude/skills/example-content/` skill has since arrived — the mac
+  side un-ignored `.claude/skills/` and committed it.)
 
 - **Course-catalog repairs** (`37dc6c8`): MTH1W read "Mathematics,
   Grade 9, Grade 9, Destreamed" (short name "Math,") and PLF4M had the

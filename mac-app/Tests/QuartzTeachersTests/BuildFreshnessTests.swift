@@ -66,6 +66,32 @@ final class BuildFreshnessTests: XCTestCase {
     }
 
     @MainActor
+    func testAPreviewBuildIsNeverDeployFresh() throws {
+        // Serve mode bakes a live-reload client into every page;
+        // deploying it makes the public site knock on ws://localhost
+        // and browsers prompt every visitor. Newer-than-content is not
+        // enough — a preview's build always rebuilds before publishing.
+        let course: Course = try makeCourse(withBuiltSite: true)
+        let builtIndexURL: URL = course.directoryURL
+            .appendingPathComponent(".merged_output/section1/public/index.html")
+
+        try backdateEverything(in: course.directoryURL, to: Date(timeIntervalSinceNow: -600))
+        try Data("<script>const socket = new WebSocket('ws://localhost:9081')</script>".utf8)
+            .write(to: builtIndexURL)
+        try setModificationDate(Date(timeIntervalSinceNow: 300), of: builtIndexURL)
+
+        XCTAssertTrue(BuildFreshness.builtForPreview(builtIndexURL))
+        XCTAssertTrue(BuildFreshness.needsRebuild(course: course, sectionNumber: 1),
+                      "A preview's build is never deploy-fresh, however new it is")
+
+        try Data("a clean production page".utf8).write(to: builtIndexURL)
+        try setModificationDate(Date(timeIntervalSinceNow: 300), of: builtIndexURL)
+        XCTAssertFalse(BuildFreshness.builtForPreview(builtIndexURL))
+        XCTAssertFalse(BuildFreshness.needsRebuild(course: course, sectionNumber: 1),
+                       "A clean production build newer than the content is current")
+    }
+
+    @MainActor
     func testBuiltAfterContentIsUpToDate() throws {
         let course: Course = try makeCourse(withBuiltSite: true)
         let lessonURL: URL = course.directoryURL.appendingPathComponent("section1/index.md")

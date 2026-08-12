@@ -125,6 +125,34 @@ struct NewCourseWizardView: View {
         return NewCourseWizardView.sectionNumbersProblem(sectionNumbersText)
     }
 
+    /// Why a non-empty code can't be used — a space, or a clash with an
+    /// existing course. Nil means the code is fine (or still empty,
+    /// which is simply not-ready-yet, not an error worth showing).
+    /// Shown live under the field AND checked again at Create, so the
+    /// explanation and the gate can never disagree.
+    static func courseCodeProblem(_ text: String, existingCodes: [String]) -> String? {
+        let code: String = text.trimmingCharacters(in: .whitespaces).uppercased()
+        if code.isEmpty {
+            return nil
+        }
+        if code.contains(" ") {
+            return "A course code cannot contain spaces."
+        }
+        if existingCodes.contains(code) {
+            return "A course named \(code) already exists — choose a different code."
+        }
+        return nil
+    }
+
+    /// The problem with the code as typed, live.
+    var courseCodeProblem: String? {
+        var existingCodes: [String] = []
+        for course in workspace.courses {
+            existingCodes.append(course.code)
+        }
+        return NewCourseWizardView.courseCodeProblem(courseCode, existingCodes: existingCodes)
+    }
+
     /// True when the example content, not the teacher, decides the
     /// course's folders and files — the pages were written for one exact
     /// layout, and a hand-edited structure would strand their links.
@@ -246,7 +274,18 @@ struct NewCourseWizardView: View {
                         .onChange(of: courseCode) {
                             autoFillCourseName()
                         }
-                    ExampleCaption("e.g. ICS3U — or a club name like CODING")
+                    if let problem = courseCodeProblem {
+                        // The same orange every other inline warning
+                        // wears — a duplicate code is the usual reason a
+                        // filled-in form still won't submit, so it must
+                        // never be a mystery.
+                        Text(problem)
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                            .accessibilityIdentifier("courseCodeWarning")
+                    } else {
+                        ExampleCaption("e.g. ICS3U — or a club name like CODING")
+                    }
                 }
                 VStack(alignment: .leading, spacing: 4) {
                     TextField("Course name", text: $courseName)
@@ -502,19 +541,18 @@ struct NewCourseWizardView: View {
         validationProblem = nil
 
         let code: String = courseCode.trimmingCharacters(in: .whitespaces).uppercased()
-        if code.isEmpty || code.contains(" ") {
-            validationProblem = "Enter a course code without spaces."
+        if code.isEmpty {
+            validationProblem = "Enter a course code."
+            return
+        }
+        // The same check the live warning under the field uses.
+        if let problem = courseCodeProblem {
+            validationProblem = problem
             return
         }
         if let problem = NewCourseWizardView.sectionNumbersProblem(sectionNumbersText) {
             validationProblem = problem
             return
-        }
-        for existingCourse in workspace.courses {
-            if existingCourse.code == code {
-                validationProblem = "A course named \(code) already exists."
-                return
-            }
         }
         guard let workspaceURL = workspace.workspaceURL else {
             validationProblem = "No working folder is selected."

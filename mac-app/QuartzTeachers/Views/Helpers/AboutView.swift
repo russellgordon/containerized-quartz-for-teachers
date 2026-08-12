@@ -13,11 +13,10 @@ struct AboutView: View {
 
     // MARK: - Stored properties
 
-    /// Where teachers go for help.
-    let supportURL: URL = URL(string: "https://plantoir.app/support")!
-
     /// Where teachers write in for help. Set to nil to omit the row —
-    /// it and its spacing disappear together.
+    /// it and its spacing disappear together. Email is the ONLY contact
+    /// row: help is coming into the app itself, so the About panel does
+    /// not send people out to a support site.
     let supportEmailAddress: String? = "support@plantoir.app"
 
     /// Shown at the very bottom. Set to nil to omit the line.
@@ -29,12 +28,16 @@ struct AboutView: View {
     /// Where the name comes from — and what the app promises to do.
     let namesake: String = "A plantoir is a dibber — the simple hand tool that opens a hole at the right depth so a seedling can be set in and take root. This app does the same for teaching materials. Write in Obsidian, preview locally, publish when you’re ready."
 
-    /// The credit lines, shown smallest, at the bottom above the copyright.
+    /// The case for Jacky, in a callout — arranged as plantoir.app's
+    /// footer arranges it. No separate "Built on Quartz" credit line:
+    /// this already says whose work the app stands on.
+    let sponsorMessage: LocalizedStringKey = "Plantoir is a friendly wrapper around [Quartz](https://quartz.jzhao.xyz), which Jacky Zhao builds and gives away for free. If you end up using Plantoir regularly, please consider [sponsoring him on GitHub](https://github.com/sponsors/jackyzha0) — it is his work that makes all of this possible."
+
+    /// The plain acknowledgement lines beneath the sponsor callout.
     let credits: [LocalizedStringKey] = [
-        "Built on [Quartz](https://quartz.jzhao.xyz) by Jacky Zhao.",
-        "Designed by Russell Gordon.",
+        "Icon from [Phosphor Icons](https://phosphoricons.com) (MIT).",
+        "Designed by [Russell Gordon](https://www.russellgordon.ca).",
         "Made with Claude.",
-        "Please [sponsor Jacky](https://github.com/sponsors/jackyzha0) — his work makes this app possible.",
     ]
 
     // The measurements, at the SYSTEM text size. Scaling from these keeps
@@ -103,8 +106,11 @@ struct AboutView: View {
                 contactDetails
                     .padding(.top, 18)
 
-                creditLines
+                sponsorCallout
                     .padding(.top, 18)
+
+                creditLines
+                    .padding(.top, 14)
 
                 if let copyrightNotice {
                     Text(copyrightNotice)
@@ -141,17 +147,6 @@ struct AboutView: View {
     /// to a common edge.
     var contactDetails: some View {
         Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 16, verticalSpacing: 8) {
-
-            GridRow {
-                Text("Support")
-                    .font(.system(size: bodySize))
-                    .foregroundStyle(.secondary)
-                Link(destination: supportURL) {
-                    Text(supportURL.absoluteString)
-                        .font(.system(size: bodySize, weight: .semibold))
-                }
-            }
-
             if let supportEmailAddress, let supportEmailURL {
                 GridRow {
                     Text("Email")
@@ -166,6 +161,26 @@ struct AboutView: View {
         }
         .buttonStyle(.plain)
         .foregroundStyle(.tint)
+    }
+
+    /// The sponsor message in a rounded-rect callout, matching the
+    /// Windows About panel and plantoir.app's footer.
+    var sponsorCallout: some View {
+        Text(sponsorMessage)
+            .font(.system(size: bodySize))
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(nsColor: .quaternarySystemFill))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color(nsColor: .separatorColor), lineWidth: 1)
+            )
+            .tint(.accentColor)
     }
 
     /// Who and what the app is built on, one quiet line each.
