@@ -138,6 +138,10 @@ struct SidebarView: View {
                                     Button("Show in Finder", systemImage: "finder") {
                                         NSWorkspace.shared.activateFileViewerSelecting([item.fileURL])
                                     }
+                                    Divider()
+                                    Button("Delete Archive…", systemImage: "trash", role: .destructive) {
+                                        workspace.archiveDeleteRequest = item
+                                    }
                                 }
                         }
                     } header: {
@@ -239,6 +243,23 @@ struct SidebarView: View {
                 This deletes the backup for good — unlike removing a course, nothing is kept.
 
                 \(item.courseCode) itself is not touched.
+                """)
+        }
+        .alert(
+            "Delete this archive of \(workspace.archiveDeleteRequest?.title ?? "")?",
+            isPresented: archiveDeleteRequestIsPresented,
+            presenting: workspace.archiveDeleteRequest
+        ) { item in
+            Button("Delete", role: .destructive) {
+                workspace.deleteArchive(item)
+            }
+            Button("Cancel", role: .cancel) {
+            }
+        } message: { item in
+            Text("""
+                This deletes the archive for good — nothing is kept.
+
+                If \(item.title) isn’t in Courses & Clubs any more, this archive is its only remaining copy.
                 """)
         }
         .alert("Could not do that", isPresented: backupProblemBinding) {
@@ -419,6 +440,17 @@ struct SidebarView: View {
             set: { isPresented in
                 if !isPresented {
                     workspace.backupDeleteRequest = nil
+                }
+            }
+        )
+    }
+
+    var archiveDeleteRequestIsPresented: Binding<Bool> {
+        return Binding(
+            get: { workspace.archiveDeleteRequest != nil },
+            set: { isPresented in
+                if !isPresented {
+                    workspace.archiveDeleteRequest = nil
                 }
             }
         )

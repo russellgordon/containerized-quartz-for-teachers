@@ -124,6 +124,10 @@ struct MainWindowView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("restoreArchivedButton")
+                    Button("Delete Archive…") {
+                        workspace.archiveDeleteRequest = item
+                    }
+                    .accessibilityIdentifier("deleteArchivedButton")
                 }
             } else {
                 missingSelectionView

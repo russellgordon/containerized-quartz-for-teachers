@@ -178,6 +178,9 @@ class WorkspaceModel {
     /// The archived item a confirmation is being shown for, if any.
     var restoreRequest: ArchivedItem?
 
+    /// The archived item a DELETE confirmation is being shown for, if any.
+    var archiveDeleteRequest: ArchivedItem?
+
     /// Why a restore could not go ahead, shown as an alert.
     var restoreProblem: String?
 
@@ -709,8 +712,8 @@ class WorkspaceModel {
         selection = SidebarSelection.course(item.courseCode)
     }
 
-    /// Deletes a backup for good — the one removal in the app with no
-    /// archive behind it, which is why its confirmation says so.
+    /// Deletes a backup for good — no archive behind it, which is why
+    /// its confirmation says so.
     func deleteBackup(_ item: BackupItem) {
         do {
             try FileManager.default.removeItem(at: item.fileURL)
@@ -719,6 +722,22 @@ class WorkspaceModel {
             return
         }
         if selection == SidebarSelection.backup(item.id) {
+            selection = nil
+        }
+        reloadCourses()
+    }
+
+    /// Deletes an archive for good. The promise made at removal time —
+    /// "nothing is deleted" — was about REMOVING; this is a second,
+    /// deliberate act with its own plain-spoken confirmation.
+    func deleteArchive(_ item: ArchivedItem) {
+        do {
+            try FileManager.default.removeItem(at: item.fileURL)
+        } catch {
+            backupProblem = error.localizedDescription
+            return
+        }
+        if selection == SidebarSelection.archived(item.id) {
             selection = nil
         }
         reloadCourses()
