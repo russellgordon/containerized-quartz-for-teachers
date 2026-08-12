@@ -192,4 +192,40 @@ final class WindowFolderMemoryTests: XCTestCase {
         XCTAssertEqual(entry?["expanded"], "ICS3U")
         XCTAssertEqual(entry?["archived"], "1")
     }
+
+    @MainActor
+    func testSelectionSurvivesTheStorageRoundTrip() throws {
+        let defaults: UserDefaults = TestDefaults.make()
+        let folders: [String] = try makeFolders(1)
+        defer { removeAll(folders) }
+        WindowFolderMemory.record([
+            WindowFolderMemory.Entry(
+                path: folders[0],
+                frame: "{{9, 9}, {9, 9}}",
+                selection: SidebarSelection.section("ICS3U", 2).storageValue
+            ),
+        ], defaults: defaults)
+
+        WindowFolderMemory.resetForLoading()
+        WindowFolderMemory.systemRestoresWindowsOverride = true
+        defer { WindowFolderMemory.systemRestoresWindowsOverride = nil }
+        let entry = WindowFolderMemory.claimEntry(matchingFrame: "{{9, 9}, {9, 9}}", defaults: defaults)
+        XCTAssertEqual(SidebarSelection.fromStorageValue(entry?.selection ?? ""),
+                       .section("ICS3U", 2))
+    }
+
+    @MainActor
+    func testEverySelectionKindRoundTripsThroughItsStorageForm() {
+        let selections: [SidebarSelection] = [
+            .course("ADA1O"),
+            .section("MTH1W", 3),
+            .archived("2026-01-15-ICS3U"),
+        ]
+        for selection in selections {
+            XCTAssertEqual(SidebarSelection.fromStorageValue(selection.storageValue), selection)
+        }
+        XCTAssertNil(SidebarSelection.fromStorageValue(""),
+                     "An old entry with no selection restores none")
+        XCTAssertNil(SidebarSelection.fromStorageValue("section|ICS3U|not-a-number"))
+    }
 }

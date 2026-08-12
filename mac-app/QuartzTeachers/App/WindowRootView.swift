@@ -132,13 +132,20 @@ struct WindowRootView: View {
     func adopt(_ entry: WindowFolderMemory.Entry, how detail: String) {
         workspace.adoptRestoredPath(entry.path)
         // The sidebar as it was left: the same courses unfolded, the
-        // Archived group open if it was.
+        // Archived group open if it was, and the same course or section
+        // selected.
         workspace.expandedCourseCodes = Set(entry.expandedCourses)
         workspace.isShowingArchived = entry.archivedExpanded
+        if let selection = SidebarSelection.fromStorageValue(entry.selection) {
+            workspace.selection = selection
+        }
         workspace.isResolvingRestoredFolder = false
         AppLog.interface.info("""
             window \(windowIdentity, privacy: .public) claimed \
-            "\(entry.path, privacy: .public)" — \(detail, privacy: .public)
+            "\(entry.path, privacy: .public)" — \(detail, privacy: .public), \
+            expanded: [\(entry.expandedCourses.joined(separator: ","), privacy: .public)], \
+            archived: \(entry.archivedExpanded, privacy: .public), \
+            selection: "\(entry.selection, privacy: .public)"
             """)
     }
 }

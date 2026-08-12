@@ -138,7 +138,8 @@ class WorkspaceModel {
                     path: path,
                     frame: frame,
                     expandedCourses: model.expandedCourseCodes.sorted(),
-                    archivedExpanded: model.isShowingArchived
+                    archivedExpanded: model.isShowingArchived,
+                    selection: model.selection?.storageValue ?? ""
                 ))
             }
         }

@@ -101,6 +101,9 @@ struct SidebarView: View {
             .onChange(of: workspace.isShowingArchived) {
                 WorkspaceModel.rememberOpenFolders()
             }
+            .onChange(of: workspace.selection) {
+                WorkspaceModel.rememberOpenFolders()
+            }
             .overlay {
                 if showsNoFilterMatches {
                     ContentUnavailableView {

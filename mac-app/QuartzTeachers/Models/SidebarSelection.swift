@@ -8,3 +8,40 @@ enum SidebarSelection: Hashable {
     /// An archived course or section, identified by its archive.
     case archived(String)
 }
+
+// MARK: - Storage form
+
+extension SidebarSelection {
+
+    /// A plain-string form for the per-window memory. Course codes never
+    /// contain "|", so the pieces join safely.
+    var storageValue: String {
+        switch self {
+        case .course(let code):
+            return "course|\(code)"
+        case .section(let code, let number):
+            return "section|\(code)|\(number)"
+        case .archived(let identifier):
+            return "archived|\(identifier)"
+        }
+    }
+
+    /// The selection a stored string names, or nil for anything
+    /// unrecognized — including the empty string old entries carry.
+    static func fromStorageValue(_ stored: String) -> SidebarSelection? {
+        let pieces: [String] = stored.components(separatedBy: "|")
+        switch pieces.first {
+        case "course" where pieces.count == 2:
+            return .course(pieces[1])
+        case "section" where pieces.count == 3:
+            if let number = Int(pieces[2]) {
+                return .section(pieces[1], number)
+            }
+            return nil
+        case "archived" where pieces.count == 2:
+            return .archived(pieces[1])
+        default:
+            return nil
+        }
+    }
+}

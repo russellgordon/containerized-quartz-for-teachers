@@ -22,6 +22,10 @@ enum WindowFolderMemory {
         /// courses unfolded that were being worked on.
         var expandedCourses: [String] = []
         var archivedExpanded: Bool = false
+
+        /// The selected course, section, or archived item, in
+        /// `SidebarSelection`'s storage form; empty for none.
+        var selection: String = ""
     }
 
     // MARK: - Stored properties
@@ -126,6 +130,7 @@ enum WindowFolderMemory {
                 "frame": entry.frame,
                 "expanded": entry.expandedCourses.joined(separator: ","),
                 "archived": entry.archivedExpanded ? "1" : "0",
+                "selection": entry.selection,
             ])
         }
         defaults.set(stored, forKey: storageKey)
@@ -162,7 +167,8 @@ enum WindowFolderMemory {
                         path: path,
                         frame: pair["frame"] ?? "",
                         expandedCourses: expandedCourses,
-                        archivedExpanded: pair["archived"] == "1"
+                        archivedExpanded: pair["archived"] == "1",
+                        selection: pair["selection"] ?? ""
                     ))
                 }
                 // An entry from the earlier format: a bare path string.
