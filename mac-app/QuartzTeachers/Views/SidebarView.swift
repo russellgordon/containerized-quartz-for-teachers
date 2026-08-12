@@ -212,7 +212,13 @@ struct SidebarView: View {
             Button("Cancel", role: .cancel) {
             }
         } message: { item in
-            Text("\(item.courseCode) goes back to how it was when this backup was made (\(item.subtitle.lowercased())). Anything added since then isn’t in the backup. Your current version is archived first, so it can come back too. The backup itself is kept.")
+            Text("""
+                \(item.courseCode) goes back to how it was when this backup was made (\(item.subtitle.lowercased())). Anything added since then isn’t in the backup.
+
+                Nothing is lost, though: the version you have right now moves to Archived, at the bottom of the sidebar, where you can get it back.
+
+                The backup itself is kept.
+                """)
         }
         .alert(
             "Delete this backup of \(workspace.backupDeleteRequest?.courseCode ?? "")?",
@@ -225,7 +231,11 @@ struct SidebarView: View {
             Button("Cancel", role: .cancel) {
             }
         } message: { item in
-            Text("This deletes the backup for good — unlike removing a course, nothing is kept. \(item.courseCode) itself is not touched.")
+            Text("""
+                This deletes the backup for good — unlike removing a course, nothing is kept.
+
+                \(item.courseCode) itself is not touched.
+                """)
         }
         .alert("Could not do that", isPresented: backupProblemBinding) {
             Button("OK") {
