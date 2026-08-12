@@ -4,23 +4,6 @@ Ideas and deferred work, in no particular order. Add items freely; remove
 an item when it ships (finished behaviour is recorded in
 [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md), not here).
 
-- **Stopping a preview orphans its server inside the container** —
-  proven empirically 2026-08-11. The app's stop (and clicking away from
-  a section, which stops the preview) terminates only the HOST-side
-  `preview.sh` process; inside the container the whole serve chain
-  (`python3 → npm exec quartz → node → esbuild`) keeps running — the
-  orphaned server still answered HTTP 200 after the host script died.
-  Bounded in practice: it idles (file-watcher CPU is negligible, though
-  it holds node's RAM), the next preview of the same section SIGKILLs
-  whatever holds its ports first (`kill_existing_quartz` in
-  `build_site.py`), and closing the folder's last window stops the
-  whole container. A kill mid-BUILD likewise orphans the build, which
-  burns real CPU until it completes, then exits. A proper fix: give the
-  launcher a stop mode (e.g. `preview.sh --stop CODE N`) that kills the
-  container-side processes for that section's ports, and have the app
-  call it whenever a preview stops. Do the same on Windows when this is
-  fixed.
-
 - **Container recreation can kill live previews** — noted 2026-08-11.
   Every launcher "ensures" the working folder's container, and on a
   toolchain-recipe hash or mount mismatch it recreates it (`docker rm

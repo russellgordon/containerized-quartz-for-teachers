@@ -55,6 +55,7 @@ if ($args.Count -lt 2 -or ($args[0] -eq '--help') -or ($args[0] -eq '-h')) {
     Write-Host "  --force-npm-install               Force npm install even if deps present"
     Write-Host "  --full-rebuild                    Clear entire output folder and re-copy scaffold"
     Write-Host "  --build-only                      Build static site only (no local preview server)"
+    Write-Host "  --stop                            Stop this section's preview processes (build or server) and exit"
     Write-Host "  --port N                          Serve the preview on port N (default 8081; 8081-8084 available)"
     Write-Host "  --help, -h                        Show this help and exit"
     Write-Host ""
@@ -76,6 +77,7 @@ $INCLUDE_SOCIAL    = $false
 $FORCE_NPM_INSTALL = $false
 $FULL_REBUILD      = $false
 $BUILD_ONLY        = $false
+$STOP_MODE         = $false
 $PREVIEW_PORT      = 8081
 $OVERRIDE_IMAGE    = $null
 
@@ -87,6 +89,7 @@ if ($Flags) {
             '--force-npm-install'             { $FORCE_NPM_INSTALL = $true; $i++; continue }
             '--full-rebuild'                  { $FULL_REBUILD = $true; $i++; continue }
             '--build-only'                    { $BUILD_ONLY = $true; $i++; continue }
+            '--stop'                          { $STOP_MODE = $true; $i++; continue }
             '--port'                          {
                 if ($i + 1 -ge $Flags.Count) { Write-Host "--port requires a value"; exit 1 }
                 $PREVIEW_PORT = [int]$Flags[$i + 1]
@@ -302,6 +305,72 @@ function Get-PhysicalPath([string]$p) {
 $WORKDIR_PHYSICAL = Get-PhysicalPath (Get-Location).Path
 $WORKDIR_ID = ([BitConverter]::ToString([System.Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes("$WORKDIR_PHYSICAL`n"))) -replace '-','').Substring(0,8).ToLower()
 $CONTAINER_NAME = "teaching-quartz-$WORKDIR_ID"
+
+# ---- Stop mode -------------------------------------------------------
+# .\preview.ps1 CODE N --stop : kill this section's preview processes
+# INSIDE the container. Ending the host-side script leaves the
+# container-side build or server running; this reclaims those
+# resources. It must never start anything — no engine setup, no image
+# build, no container creation. Processes are found by WORKING
+# DIRECTORY, not port, so builds are caught as well as servers and
+# other sections' processes can never be touched (parity: preview.sh).
+if ($STOP_MODE) {
+    $dockerReady = $false
+    try { docker info *> $null; if ($LASTEXITCODE -eq 0) { $dockerReady = $true } } catch {}
+    if (-not $dockerReady) {
+        Write-Host "Nothing to stop - the website builder isn't running."
+        exit 0
+    }
+    $containerRunning = ((docker ps --format '{{.Names}}') | Where-Object { $_ -eq $CONTAINER_NAME }) -ne $null
+    if (-not $containerRunning) {
+        Write-Host "Nothing to stop - no container is running for this folder."
+        exit 0
+    }
+    Write-Host "Stopping preview processes for $COURSE section $SECTION ..."
+    $stopScript = @'
+import os
+import signal
+import time
+
+target = os.environ["TARGET_DIR"]
+own_pid = os.getpid()
+
+def preview_pids():
+    """PIDs whose working directory is inside this section's output."""
+    found = []
+    for entry in os.listdir("/proc"):
+        if not entry.isdigit():
+            continue
+        pid = int(entry)
+        if pid == own_pid:
+            continue
+        try:
+            cwd = os.readlink(f"/proc/{entry}/cwd")
+        except OSError:
+            continue
+        if cwd == target or cwd.startswith(target + "/"):
+            found.append(pid)
+    return found
+
+victims = preview_pids()
+for pid in victims:
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+if victims:
+    time.sleep(1)
+for pid in preview_pids():
+    try:
+        os.kill(pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+print(f"Stopped {len(victims)} process(es).")
+'@
+    $targetDir = "/teaching/courses/$COURSE/.merged_output/section$SECTION"
+    $stopScript | docker exec -i -e "TARGET_DIR=$targetDir" $CONTAINER_NAME python3 -
+    exit 0
+}
 
 # ---- The image is built HERE, from this folder's own recipe ----------
 function Get-BuildContext {

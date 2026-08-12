@@ -254,6 +254,15 @@ struct SectionDetailView: View {
     }
 
     func stopPreview() {
+        // Ending the host-side script leaves the build or server inside
+        // the container running; the launcher's stop mode reclaims them.
+        if previewRunner.isRunning, let workspaceURL = workspace.workspaceURL {
+            PreviewStopper.stopSectionProcesses(
+                courseCode: course.code,
+                sectionNumber: sectionNumber,
+                workspaceURL: workspaceURL
+            )
+        }
         previewRunner.stopByUser()
         previewURL = nil
         isWaitingForServer = false

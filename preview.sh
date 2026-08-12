@@ -141,6 +141,7 @@ if [[ "$1" == "--help" || "$1" == "-h" ]]; then
   echo "  --force-npm-install                Force npm install even if dependencies are present"
   echo "  --full-rebuild                     Clear entire output folder and re-copy Quartz scaffold"
   echo "  --build-only                       Build the static site only (no local preview server)"
+  echo "  --stop                             Stop this section's preview processes (build or server) and exit"
   echo "  --port N                           Serve the preview on port N (default 8081; 8081-8084 available)"
   echo "  --help, -h                         Show this help message"
   echo ""
@@ -175,6 +176,9 @@ while [[ "$#" -gt 0 ]]; do
       ;;
     --build-only)
       BUILD_ONLY="--build-only"
+      ;;
+    --stop)
+      STOP_MODE="1"
       ;;
     --port)
       if [[ $# -lt 2 ]]; then echo "❌ --port requires a value"; exit 1; fi
@@ -271,6 +275,72 @@ _wait_for_docker() {
 # as-is; downloads happen only for what is missing.
 TOOLS_DIR="$HOME/Library/Application Support/Plantoir/tools"
 export PATH="$TOOLS_DIR/bin:$PATH"
+
+# -------------------- Stop mode ----------------------------------------
+# ./preview.sh CODE N --stop : kill this section's preview processes
+# INSIDE the container. Ending the host-side script (closing the app's
+# preview, Ctrl+C at the wrong moment) leaves the container-side build
+# or server running — idle for a server, but a mid-flight build keeps
+# burning CPU. This mode reclaims those resources. It must never start
+# anything: no engine bootstrap, no image build, no container creation —
+# if nothing is running, there is nothing to stop.
+#
+# Processes are found by WORKING DIRECTORY, not port: everything a
+# preview runs (python3, npm, node, esbuild) lives in the section's
+# .merged_output folder, so this catches builds as well as servers and
+# can never touch another section's processes.
+if [[ -n "${STOP_MODE:-}" ]]; then
+  if ! command -v docker >/dev/null 2>&1 || ! docker info >/dev/null 2>&1; then
+    echo "✅ Nothing to stop — the website builder isn't running."
+    exit 0
+  fi
+  if ! docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+    echo "✅ Nothing to stop — no container is running for this folder."
+    exit 0
+  fi
+  echo "🧹 Stopping preview processes for ${COURSE} section ${SECTION}…"
+  docker exec -i -e TARGET_DIR="/teaching/courses/${COURSE}/.merged_output/section${SECTION}" "$CONTAINER_NAME" python3 - <<'PY'
+import os
+import signal
+import time
+
+target = os.environ["TARGET_DIR"]
+own_pid = os.getpid()
+
+def preview_pids():
+    """PIDs whose working directory is inside this section's output."""
+    found = []
+    for entry in os.listdir("/proc"):
+        if not entry.isdigit():
+            continue
+        pid = int(entry)
+        if pid == own_pid:
+            continue
+        try:
+            cwd = os.readlink(f"/proc/{entry}/cwd")
+        except OSError:
+            continue
+        if cwd == target or cwd.startswith(target + "/"):
+            found.append(pid)
+    return found
+
+victims = preview_pids()
+for pid in victims:
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+if victims:
+    time.sleep(1)
+for pid in preview_pids():
+    try:
+        os.kill(pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+print(f"✅ Stopped {len(victims)} process(es).")
+PY
+  exit 0
+fi
 
 # Pinned versions, bumped deliberately with toolchain updates.
 COLIMA_VERSION="v0.10.3"
