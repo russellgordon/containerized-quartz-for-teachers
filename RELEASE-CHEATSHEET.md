@@ -29,9 +29,9 @@ all the whys: [`windows-app/RELEASING.md`](windows-app/RELEASING.md).
    `v<version>`, and publishes to GitHub. The push makes Netlify redeploy
    plantoir.app by itself, and the site's download buttons serve the new
    files automatically (evergreen links — as long as the assets keep
-   their exact names: `Plantoir-win-x64.zip`, `Plantoir-macOS.dmg`).
+   their exact names: `Plantoir-win-x64.zip`, `Plantoir-macOS.zip`).
 
 6. **Same release, mac asset too** — both platforms ship on one GitHub
-   release page, the mac file named exactly `Plantoir-macOS.dmg`.
+   release page, the mac file named exactly `Plantoir-macOS.zip`.
 
 That's it. Steps 5–6 take five minutes; step 3 takes a coffee.

@@ -48,7 +48,7 @@ one GitHub release carrying both platforms' assets.
 
    **Asset names are LOAD-BEARING and must never change**:
    `Plantoir-win-x64.zip` (publish.ps1 emits exactly this) and
-   `Plantoir-macOS.dmg`. plantoir.app's download cards point at
+   `Plantoir-macOS.zip`. plantoir.app's download cards point at
    `releases/latest/download/<asset-name>` — GitHub's evergreen URL that
    serves the newest release's asset, so teachers click Windows or macOS
    and get the file, no GitHub in sight. Renaming an asset silently

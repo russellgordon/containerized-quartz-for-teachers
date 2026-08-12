@@ -22,7 +22,7 @@ this skill automates its steps 5–6 and the note-writing.
    `(Get-FileHash <zip> -Algorithm SHA256).Hash.ToLower()` — from the
    EXACT file being uploaded, never trusted from memory or logs.
    Asset names are LOAD-BEARING: `Plantoir-win-x64.zip` and
-   `Plantoir-macOS.dmg`, exactly — plantoir.app's download links resolve
+   `Plantoir-macOS.zip`, exactly — plantoir.app's download links resolve
    `releases/latest/download/<asset-name>`, so a renamed asset silently
    breaks the site. Refuse to attach an asset under any other name.
 4. Confirm `<Version>` in `windows-app/Plantoir/Plantoir.csproj` matches
@@ -76,5 +76,5 @@ gh release create v<version> <assets...> --title "Plantoir <version>" --notes-fi
 The push redeploys plantoir.app automatically (Netlify watches `site/`),
 and the evergreen download links now serve the new assets — nothing
 manual remains for the site. Remind the user only of: the mac asset (if
-it attaches separately, named exactly `Plantoir-macOS.dmg`), and — once
+it attaches separately, named exactly `Plantoir-macOS.zip`), and — once
 WinSparkle lands — the appcast entry.
