@@ -25,9 +25,9 @@ multiplies by $1.05$ ten times: a curve that starts lazily and
 steepens forever.
 
 > [!success]- Quick self-check (click to expand)
-> Invest $\$1000$ at $5\%$ per year for $10$ years. Simple:
-> $1000 + 10 \times 50 = \$1500$. Compounded annually:
-> $1000 \times 1.05^{10} \approx \$1628.89$. The extra $\$128.89$ is
+> Invest \$1000 at $5\%$ per year for $10$ years. Simple:
+> $1000 + 10 \times 50 = \textdollar 1500$. Compounded annually:
+> $1000 \times 1.05^{10} \approx \textdollar 1628.89$. The extra \$128.89 is
 > interest earned by earlier interest — and the gap between the line
 > and the curve only widens from here.
 

@@ -19,20 +19,13 @@ finite list of answers. All domains are $0 \le x \le 2\pi$.
 
 > [!success]- Answer 1
 > $\frac{\pi}{12} = \frac{\pi}{4} - \frac{\pi}{6}$, so
-> $$\sin\frac{\pi}{12} = \sin\frac{\pi}{4}\cos\frac{\pi}{6} -
-> \cos\frac{\pi}{4}\sin\frac{\pi}{6} =
-> \frac{\sqrt{2}}{2}\cdot\frac{\sqrt{3}}{2} -
-> \frac{\sqrt{2}}{2}\cdot\frac{1}{2} = \frac{\sqrt{6}-\sqrt{2}}{4}$$
+> $$\sin\frac{\pi}{12} = \sin\frac{\pi}{4}\cos\frac{\pi}{6} - \cos\frac{\pi}{4}\sin\frac{\pi}{6} = \frac{\sqrt{2}}{2}\cdot\frac{\sqrt{3}}{2} - \frac{\sqrt{2}}{2}\cdot\frac{1}{2} = \frac{\sqrt{6}-\sqrt{2}}{4}$$
 > Sanity check: that is about $0.259$, small and positive, as the
 > sine of a small angle should be. ✓
 
 > [!success]- Answer 2
 > $\frac{7\pi}{12} = \frac{\pi}{3} + \frac{\pi}{4}$, so
-> $$\cos\frac{7\pi}{12} = \cos\frac{\pi}{3}\cos\frac{\pi}{4} -
-> \sin\frac{\pi}{3}\sin\frac{\pi}{4} =
-> \frac{1}{2}\cdot\frac{\sqrt{2}}{2} -
-> \frac{\sqrt{3}}{2}\cdot\frac{\sqrt{2}}{2} =
-> \frac{\sqrt{2}-\sqrt{6}}{4}$$
+> $$\cos\frac{7\pi}{12} = \cos\frac{\pi}{3}\cos\frac{\pi}{4} - \sin\frac{\pi}{3}\sin\frac{\pi}{4} = \frac{1}{2}\cdot\frac{\sqrt{2}}{2} - \frac{\sqrt{3}}{2}\cdot\frac{\sqrt{2}}{2} = \frac{\sqrt{2}-\sqrt{6}}{4}$$
 > Negative, about $-0.259$ — correct for a second-quadrant angle.
 
 > [!success]- Answer 3
@@ -52,8 +45,7 @@ finite list of answers. All domains are $0 \le x \le 2\pi$.
 
 > [!success]- Answer 4
 > Work the left side only. Pythagorean identity up top:
-> $$\frac{\sin^2 x}{1 - \cos x} = \frac{1 - \cos^2 x}{1 - \cos x}
-> = \frac{(1 - \cos x)(1 + \cos x)}{1 - \cos x} = 1 + \cos x$$
+> $$\begin{aligned} \frac{\sin^2 x}{1 - \cos x} &= \frac{1 - \cos^2 x}{1 - \cos x} \\ &= \frac{(1 - \cos x)(1 + \cos x)}{1 - \cos x} = 1 + \cos x \end{aligned}$$
 > The cancellation requires $1 - \cos x \ne 0$, so the identity is
 > silent where $\cos x = 1$ — at $x = 0$ and $x = 2\pi$ in this
 > domain, the left side is undefined.

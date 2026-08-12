@@ -41,9 +41,7 @@ Compute $f'(a)$ at enough points and a pattern appears — the slopes
 themselves form a function, $f'(x)$, the derivative function. For
 $f(x) = x^2$ the definition gives, at any $x$:
 
-$$f'(x) = \lim_{h \to 0} \frac{(x+h)^2 - x^2}{h}
-        = \lim_{h \to 0} \frac{2xh + h^2}{h}
-        = \lim_{h \to 0} (2x + h) = 2x$$
+$$\begin{aligned} f'(x) &= \lim_{h \to 0} \frac{(x+h)^2 - x^2}{h} \\ &= \lim_{h \to 0} \frac{2xh + h^2}{h} \\ &= \lim_{h \to 0} (2x + h) = 2x \end{aligned}$$
 
 - [ ] Check that against your group's secant tables from
       [[Zooming In]]: at $x = 3$, were the slopes settling near 6?

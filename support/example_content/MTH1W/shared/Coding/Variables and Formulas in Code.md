@@ -45,7 +45,7 @@ than a table of values ever could.
 
 ## Alter it
 
-A rival plan charges a $\$10$ base fee but $\$3$ per gigabyte.
+A rival plan charges a \$10 base fee but \$3 per gigabyte.
 Alter the program to model it, predict the bill for 6 GB before
 running, then find — by experimenting with `data_used` — the amount
 of data where the two plans cost exactly the same. That crossover

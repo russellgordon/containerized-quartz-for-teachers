@@ -34,7 +34,7 @@ print("Saved after a year:", savings * 12)
 Predict all three printed numbers before touching the run button.
 Then check — and if any missed, trace which line surprised you.
 
-One more prediction: which single variable, reduced by $\$10$, would
+One more prediction: which single variable, reduced by \$10, would
 change *all three* outputs? Is there any variable that would change
 only some of them?
 
@@ -42,11 +42,11 @@ only some of them?
 
 Life intervenes, twice:
 
-1. The transit pass rises to $\$75$ a month. Change one line,
+1. The transit pass rises to \$75 a month. Change one line,
    predict the new yearly savings before running, and write one
    sentence justifying which *other* line you would change to
    protect your savings — every budget change needs a rationale.
-2. You want a $\$480$ concert ticket. Add a line that prints how
+2. You want a \$480 concert ticket. Add a line that prints how
    many months of saving it takes at your adjusted rate. If the
    answer feels too slow, decide what to cut — and defend the cut.
 

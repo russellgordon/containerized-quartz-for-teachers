@@ -19,8 +19,8 @@ a point that satisfies only one line is just a resident.
 4. Try to solve $2x + 3y = 12$ and $4x + 6y = 30$. What happens
    algebraically — and what must the graphs be doing?
 5. **Create, then solve.** A school play sells 250 tickets. Adult
-   tickets cost $\$12$, student tickets $\$8$, and the total is
-   $\$2540$. How many of each sold? This is [[Break-Even]] mathematics.
+   tickets cost \$12, student tickets \$8, and the total is
+   \$2540. How many of each sold? This is [[Break-Even]] mathematics.
 6. **Find the error.** Substituting $y = 2x - 5$ into $3x - 2y = 8$,
    Noah writes $3x - 4x - 10 = 8$ and gets $x = -18$. Find the slip,
    fix it, and check the corrected point in both equations.

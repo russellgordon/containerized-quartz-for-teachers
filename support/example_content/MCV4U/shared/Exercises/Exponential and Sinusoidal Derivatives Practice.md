@@ -72,9 +72,7 @@ always.
 
 > [!success]- Answer 8
 > Write $f(x) = \sin x\,(\cos x)^{-1}$. Then
-> $$f'(x) = \cos x\,(\cos x)^{-1}
-> + \sin x \cdot (-1)(\cos x)^{-2}(-\sin x)
-> = 1 + \frac{\sin^2 x}{\cos^2 x}$$
+> $$f'(x) = \cos x\,(\cos x)^{-1} + \sin x \cdot (-1)(\cos x)^{-2}(-\sin x) = 1 + \frac{\sin^2 x}{\cos^2 x}$$
 > Over a common denominator:
 > $\frac{\cos^2 x + \sin^2 x}{\cos^2 x} = \frac{1}{\cos^2 x}$ — the
 > Pythagorean identity collapsing the sum. The derivative of

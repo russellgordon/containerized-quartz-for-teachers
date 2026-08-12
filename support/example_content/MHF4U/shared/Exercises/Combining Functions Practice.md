@@ -81,7 +81,7 @@ models your [[The Signature Function|Signature Function]] may need.
 > domains — the plumbing decides.
 
 > [!success]- Answer 7
-> $d(4) = 360$ km, so $C(d(4)) = 0.08 \times 360 = \$28.80$ — the
+> $d(4) = 360$ km, so $C(d(4)) = 0.08 \times 360 = \textdollar 28.80$ — the
 > fuel cost of a four-hour trip. In general
 > $C(d(t)) = 0.08(90t) = 7.2t$: cost as a function of *time*, the
 > middle variable composed away. Chained dependencies collapse into

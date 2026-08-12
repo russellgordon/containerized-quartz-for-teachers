@@ -41,7 +41,7 @@ exists. A stated reason is worth more than a memorised answer.
 
 5. A ball's height is $h(t) = -5t^2 + 20t$ metres after $t$ seconds.
    State the domain and range *of the model*, not of the algebra.
-6. Movie tickets cost $\$14$ each, so a group's cost is
+6. Movie tickets cost \$14 each, so a group's cost is
    $C(n) = 14n$. What are the domain and range, and what makes this
    function different in kind from the ones above?
 

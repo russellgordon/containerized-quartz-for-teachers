@@ -46,8 +46,7 @@ and *audit* your candidate before you crown it.
 
 > [!success]- Answer 3
 > $V(x) = x(24 - 2x)^2$ on $0 < x < 12$. Product and chain rules:
-> $$V'(x) = (24 - 2x)^2 + x \cdot 2(24 - 2x)(-2)
-> = (24 - 2x)(24 - 6x)$$
+> $$\begin{aligned} V'(x) &= (24 - 2x)^2 + x \cdot 2(24 - 2x)(-2) \\ &= (24 - 2x)(24 - 6x) \end{aligned}$$
 > Zero at $x = 12$ (the domain's edge — a flattened box of volume
 > zero) and $x = 4$. Sign of $V'$ around 4: positive then negative
 > — a maximum. $V(4) = 4(16)^2 = 1024$ cm³. This is
@@ -84,7 +83,7 @@ and *audit* your candidate before you crown it.
 > $x = \frac{1}{\ln 1.15} \approx 7.16$. $R'$ is positive before
 > and negative after: a maximum. A fare of about \$7.16 — call it
 > \$7.15 at the fare box — yields revenue near
-> $R(7.16) \approx \$3159$ per day. Cheaper fares carry more riders
+> $R(7.16) \approx \textdollar 3159$ per day. Cheaper fares carry more riders
 > for too little each; dearer fares charge fewer riders too much.
 
 > [!success]- Answer 6
@@ -92,8 +91,7 @@ and *audit* your candidate before you crown it.
 > plus travel:
 > $$R(t) = \frac{3000t}{(t + 4)(t + 2)} = \frac{3000t}{t^2 + 6t + 8}$$
 > Writing this as $3000t\,(t^2 + 6t + 8)^{-1}$ and differentiating:
-> $$R'(t) = \frac{3000(t^2 + 6t + 8) - 3000t(2t + 6)}{(t^2 + 6t + 8)^2}
-> = \frac{3000(8 - t^2)}{(t^2 + 6t + 8)^2}$$
+> $$\begin{aligned} R'(t) &= \frac{3000(t^2 + 6t + 8) - 3000t(2t + 6)}{(t^2 + 6t + 8)^2} \\ &= \frac{3000(8 - t^2)}{(t^2 + 6t + 8)^2} \end{aligned}$$
 > Zero at $t = \sqrt{8} = 2\sqrt{2} \approx 2.8$ minutes, with $R'$
 > positive before and negative after: a maximum. The bird should
 > stay about 2.8 minutes — leave while berries remain, because the

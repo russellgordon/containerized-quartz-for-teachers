@@ -95,8 +95,7 @@ numeric road first where you can; the estimate audits the algebra.
 > function is. The sentence is about the *point*, not the formula.
 
 > [!success]- Answer 9
-> $$\frac{(x+h)^2 - 5(x+h) - (x^2 - 5x)}{h}
-> = \frac{2xh + h^2 - 5h}{h} = 2x + h - 5$$
+> $$\begin{aligned} \frac{(x+h)^2 - 5(x+h) - (x^2 - 5x)}{h}  \\ &= \frac{2xh + h^2 - 5h}{h} = 2x + h - 5 \end{aligned}$$
 > As $h \to 0$: $f'(x) = 2x - 5$. Sanity check with the toolbox to
 > come: the power rule will say the same thing in one line — but
 > you just proved it, and that is better.

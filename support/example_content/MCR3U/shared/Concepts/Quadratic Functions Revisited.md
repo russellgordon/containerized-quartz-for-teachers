@@ -31,10 +31,7 @@ $f(x) = -2(x + 1)(x - 3)$.
 Completing the square converts standard form to vertex form even when
 $a \ne 1$ — factor $a$ out of the $x$-terms first:
 
-$$
-f(x) = 2x^2 - 12x + 7 = 2(x^2 - 6x) + 7 = 2(x - 3)^2 - 18 + 7
-     = 2(x - 3)^2 - 11
-$$
+$$\begin{aligned} f(x) &= 2x^2 - 12x + 7 = 2(x^2 - 6x) + 7 = 2(x - 3)^2 - 18 + 7 \\ &= 2(x - 3)^2 - 11 \end{aligned}$$
 
 Minimum value $-11$, at $x = 3$. A slicker route when it applies:
 *partial factoring*. Write $f(x) = 3x^2 - 6x + 5$ as

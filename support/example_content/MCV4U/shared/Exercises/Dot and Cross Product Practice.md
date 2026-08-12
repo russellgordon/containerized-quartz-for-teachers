@@ -55,8 +55,7 @@ picture audits the arithmetic.
 > [!success]- Answer 4
 > Dot product: $3(1) + (-1)(4) + 2(-2) = 3 - 4 - 4 = -5$.
 > Magnitudes: $|\vec{a}| = \sqrt{14}$, $|\vec{b}| = \sqrt{21}$. So
-> $$\cos\theta = \frac{-5}{\sqrt{14}\sqrt{21}} = \frac{-5}{7\sqrt{6}}
-> \approx -0.292, \qquad \theta \approx 107°$$
+> $$\cos\theta = \frac{-5}{\sqrt{14}\sqrt{21}} = \frac{-5}{7\sqrt{6}} \approx -0.292, \qquad \theta \approx 107°$$
 > The negative dot product promised an obtuse angle before the
 > inverse cosine said which one.
 
@@ -86,16 +85,14 @@ picture audits the arithmetic.
    helps as much as a stronger pull.
 
 > [!success]- Answer 7
-> $$\vec{a} \times \vec{b} = (0(-1) - 1(1),\; 1(0) - 1(-1),\;
-> 1(1) - 0(0)) = (-1, 1, 1)$$
+> $$\vec{a} \times \vec{b} = (0(-1) - 1(1),\; 1(0) - 1(-1),\; 1(1) - 0(0)) = (-1, 1, 1)$$
 > Verification by dot product: $(1, 0, 1) \cdot (-1, 1, 1) =
 > -1 + 0 + 1 = 0$ and $(0, 1, -1) \cdot (-1, 1, 1) = 0 + 1 - 1 =
 > 0$. Both zero — the answer stands. Run this check every time; it
 > is free.
 
 > [!success]- Answer 8
-> $$\vec{a} \times \vec{b} = (1(0) - 0(3),\; 0(1) - 2(0),\;
-> 2(3) - 1(1)) = (0, 0, 5)$$
+> $$\vec{a} \times \vec{b} = (1(0) - 0(3),\; 0(1) - 2(0),\; 2(3) - 1(1)) = (0, 0, 5)$$
 > Area $= |(0, 0, 5)| = 5$ square units. Both sides lie in the
 > $xy$-plane, so the cross product points straight up the $z$-axis
 > — perpendicular to the plane containing the parallelogram,

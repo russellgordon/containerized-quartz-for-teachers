@@ -14,8 +14,7 @@ are new.
 
 ## Three new names, one old move
 
-$$\csc x = \frac{1}{\sin x} \qquad \sec x = \frac{1}{\cos x} \qquad
-\cot x = \frac{1}{\tan x}$$
+$$\csc x = \frac{1}{\sin x} \qquad \sec x = \frac{1}{\cos x} \qquad \cot x = \frac{1}{\tan x}$$
 
 Cosecant, secant, cotangent — the reciprocals of sine, cosine, and
 tangent. Their exact values at special angles cost nothing new: flip

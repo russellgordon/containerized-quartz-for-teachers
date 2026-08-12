@@ -20,8 +20,8 @@ Sketch by hand first; [[Using Desmos]] is for checking, not guessing.
 5. **Find the error.** For $(2, 3)$ and $(5, 9)$, Nadia computes
    slope $= \frac{5 - 2}{9 - 3} = \frac{3}{6} = \frac{1}{2}$.
    What went wrong, and what is the correct slope?
-6. A repair shop's data: a 2-hour job costs $\$130$; a 5-hour job
-   costs $\$250$. Find the hourly rate and the flat call-out fee.
+6. A repair shop's data: a 2-hour job costs \$130; a 5-hour job
+   costs \$250. Find the hourly rate and the flat call-out fee.
 7. **Challenge.** Find the equation of the line through $(2, 5)$
    that is parallel to $x + y = 7$.
 
@@ -52,8 +52,8 @@ Sketch by hand first; [[Using Desmos]] is for checking, not guessing.
 > quick sketch shows a line steeper than 1, catching the slip.
 
 > [!success]- Answer 6
-> Rate $= \frac{250 - 130}{5 - 2} = \$40$/hour. Work backwards from
-> the 2-hour job: $130 - 2(40) = \$50$ call-out fee. Check with the
+> Rate $= \frac{250 - 130}{5 - 2} = \textdollar 40$/hour. Work backwards from
+> the 2-hour job: $130 - 2(40) = \textdollar 50$ call-out fee. Check with the
 > other point: $50 + 5(40) = 250$. ✓
 
 > [!success]- Answer 7

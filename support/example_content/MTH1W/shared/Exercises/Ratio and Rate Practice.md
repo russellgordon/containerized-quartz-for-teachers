@@ -11,8 +11,8 @@ comparisons behind them were argued out in class during
 
 ## Questions
 
-1. Which is the better buy: 3 granola bars for $\$5$, or 5 of the same
-   bars for $\$8$? Show the comparison.
+1. Which is the better buy: 3 granola bars for \$5, or 5 of the same
+   bars for \$8? Show the comparison.
 2. A juice mix uses concentrate and water in the ratio $3:2$. How much
    water goes with 12 cans of concentrate?
 3. A bus travels 240 km in 3 hours at a steady speed. Find its speed,
@@ -30,8 +30,8 @@ comparisons behind them were argued out in class during
 ## Answers
 
 > [!success]- Answer 1
-> Compare unit prices: $\$5 \div 3 \approx \$1.67$ per bar versus
-> $\$8 \div 5 = \$1.60$ per bar. The 5-pack wins — the point of a
+> Compare unit prices: $\textdollar 5 \div 3 \approx \textdollar 1.67$ per bar versus
+> $\textdollar 8 \div 5 = \textdollar 1.60$ per bar. The 5-pack wins — the point of a
 > unit rate is that it makes unequal groups comparable.
 
 > [!success]- Answer 2

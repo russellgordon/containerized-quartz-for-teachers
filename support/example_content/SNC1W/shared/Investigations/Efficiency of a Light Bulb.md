@@ -58,7 +58,7 @@ where $c = 4.18\ \mathrm{J/(g \cdot ^\circ C)}$ for water.
 1. Which bulb wasted more energy as heat? By how much?
 2. This method underestimates waste heat. Give two reasons.
 3. An LED costs more up front. Using your percentages and a rate of
-   $0.13\ \mathrm{\$/kWh}$, estimate how long it takes to pay for itself at
+   $0.13\ \mathrm{\textdollar /kWh}$, estimate how long it takes to pay for itself at
    4 hours a day.
 
 ## Hand in

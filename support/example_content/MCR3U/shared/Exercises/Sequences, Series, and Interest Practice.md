@@ -63,24 +63,24 @@ the nearest cent.
 
 ## Money
 
-7. $\$1000$ is invested for 10 years at 6% per year. Find the amount
+7. \$1000 is invested for 10 years at 6% per year. Find the amount
    if interest compounds (a) annually and (b) monthly, and state how
    much the extra compounding earned.
 8. An investment earns 8% per year, compounded annually. Use
    systematic guess-and-check to find how many years it takes to
    double.
-9. You deposit $\$100$ at the end of every month for 5 years into an
+9. You deposit \$100 at the end of every month for 5 years into an
    account earning 6% per year, compounded monthly. Find the future
    value, and how much of it is interest.
-10. A $\$2000$ credit-card balance sits unpaid for two years at 20%
+10. A \$2000 credit-card balance sits unpaid for two years at 20%
     per year, compounded monthly. What is the debt then, and what
     did the waiting cost?
 
 > [!success]- Answer 7
-> (a) $A = 1000(1.06)^{10} \approx \$1790.85$.
+> (a) $A = 1000(1.06)^{10} \approx \textdollar 1790.85$.
 > (b) $i = 0.005$, $n = 120$:
-> $A = 1000(1.005)^{120} \approx \$1819.40$. Monthly compounding
-> earned an extra $\$28.55$ — same rate on paper, more meetings with
+> $A = 1000(1.005)^{120} \approx \textdollar 1819.40$. Monthly compounding
+> earned an extra \$28.55 — same rate on paper, more meetings with
 > the multiplier.
 
 > [!success]- Answer 8
@@ -91,14 +91,14 @@ the nearest cent.
 
 > [!success]- Answer 9
 > An ordinary annuity: $R = 100$, $i = 0.005$, $n = 60$, so
-> $FV = \dfrac{100\left[(1.005)^{60} - 1\right]}{0.005} \approx
-> \$6977.00$. You deposited $60 \times \$100 = \$6000$; the other
-> $\$977.00$ is interest — the geometric series doing the saving
+> $FV = \dfrac{100\left[(1.005)^{60} - 1\right]}{0.005} \approx \textdollar 6977.00$.
+> You deposited $60 \times \textdollar 100 = \textdollar 6000$; the other
+> \$977.00 is interest — the geometric series doing the saving
 > alongside you.
 
 > [!success]- Answer 10
 > $i = \frac{0.20}{12}$, $n = 24$:
-> $A = 2000\left(1 + \frac{0.20}{12}\right)^{24} \approx \$2973.86$.
-> Waiting cost about $\$974$ — nearly half the original debt again,
+> $A = 2000\left(1 + \frac{0.20}{12}\right)^{24} \approx \textdollar 2973.86$.
+> Waiting cost about \$974 — nearly half the original debt again,
 > in two years. The same exponential that grew question 9's savings
 > works just as tirelessly for the lender.

@@ -51,8 +51,7 @@ loud; the sorting is most of the skill.
 
 > [!success]- Answer 4
 > As a power: $f(x) = (x^2 + 5)^{1/2}$, so
-> $$f'(x) = \frac{1}{2}(x^2 + 5)^{-1/2} \cdot 2x
-> = \frac{x}{\sqrt{x^2 + 5}}$$
+> $$\begin{aligned} f'(x) &= \frac{1}{2}(x^2 + 5)^{-1/2} \cdot 2x \\ &= \frac{x}{\sqrt{x^2 + 5}} \end{aligned}$$
 > At $x = 2$: $f'(2) = \frac{2}{\sqrt{9}} = \frac{2}{3}$.
 
 > [!success]- Answer 5
@@ -60,15 +59,13 @@ loud; the sorting is most of the skill.
 > on the second factor:
 > $$f'(x) = 2x(x - 1)^{-1} + (x^2 + 1)(-1)(x - 1)^{-2}$$
 > Common denominator $(x - 1)^2$:
-> $$f'(x) = \frac{2x(x - 1) - (x^2 + 1)}{(x - 1)^2}
-> = \frac{x^2 - 2x - 1}{(x - 1)^2}$$
+> $$\begin{aligned} f'(x) &= \frac{2x(x - 1) - (x^2 + 1)}{(x - 1)^2} \\ &= \frac{x^2 - 2x - 1}{(x - 1)^2} \end{aligned}$$
 > Audit at $x = 0$: $f'(0) = \frac{-1}{1} = -1$, and nearby values
 > of $f$ confirm a slope near $-1$ there.
 
 > [!success]- Answer 6
 > As a power: $f(x) = (3x + 1)^{-1/2}$, so
-> $$f'(x) = -\frac{1}{2}(3x + 1)^{-3/2} \cdot 3
-> = \frac{-3}{2(3x + 1)^{3/2}}$$
+> $$\begin{aligned} f'(x) &= -\frac{1}{2}(3x + 1)^{-3/2} \cdot 3 \\ &= \frac{-3}{2(3x + 1)^{3/2}} \end{aligned}$$
 > At $x = 1$: $(4)^{3/2} = 8$, so $f'(1) = -\frac{3}{16}$. Negative
 > is right — the function shrinks as its denominator grows.
 

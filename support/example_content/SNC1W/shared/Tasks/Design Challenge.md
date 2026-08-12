@@ -15,7 +15,7 @@ tags:
 ## The task
 
 Design, build, and test a working device that solves a real problem using an
-electric circuit. Constraints: battery power only, under $\$15$ in materials,
+electric circuit. Constraints: battery power only, under \$15 in materials,
 must fit in a shoebox.
 
 ## The engineering design process

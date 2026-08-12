@@ -10,7 +10,7 @@ $5 - (-2) = 3$ — comes down to what a negative sign is actually doing.
 Integers answer three different questions, and keeping them separate
 untangles most sign confusion:
 
-- **Position** — where are you? A balance of $-\$20$, a temperature of
+- **Position** — where are you? A balance of −\$20, a temperature of
   $-8$ °C, a parking level of $-2$.
 - **Direction** — which way does the sign point? Negative means left
   on the number line, down on a thermometer, owed rather than owned.

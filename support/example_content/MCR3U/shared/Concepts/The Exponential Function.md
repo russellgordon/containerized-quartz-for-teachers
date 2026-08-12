@@ -11,9 +11,7 @@ When your group graphed the layer counts from
 left the page — a shape no line or parabola makes. Join those dots
 and you have $f(x) = 2^x$: the exponential function. In general,
 
-$$
-f(x) = a^x, \qquad a > 0,\ a \ne 1
-$$
+$$f(x) = a^x, \qquad a > 0,\ a \ne 1$$
 
 is a function — each input gets exactly one output — and thanks to
 [[Rational Exponents]] it now makes sense at *every* real input, not

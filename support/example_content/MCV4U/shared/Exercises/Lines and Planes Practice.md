@@ -60,8 +60,7 @@ you know is on it.
 > [!success]- Answer 4
 > Two vectors in the plane, first point to the others:
 > $\vec{u} = (-3, -4, -3)$ and $\vec{v} = (-2, 1, -4)$. Normal:
-> $$\vec{n} = \vec{u} \times \vec{v} = ((-4)(-4) - (-3)(1),\;
-> (-3)(-2) - (-3)(-4),\; (-3)(1) - (-4)(-2)) = (19, -6, -11)$$
+> $$\vec{n} = \vec{u} \times \vec{v} = ((-4)(-4) - (-3)(1),\; (-3)(-2) - (-3)(-4),\; (-3)(1) - (-4)(-2)) = (19, -6, -11)$$
 > Using $(3, 2, 5)$: $19(3) - 6(2) - 11(5) = 57 - 12 - 55 = -10$,
 > so the plane is $19x - 6y - 11z + 10 = 0$. Audit with the other
 > two points: $0 + 12 - 22 + 10 = 0$ ✓ and $19 - 18 - 11 + 10 = 0$
@@ -69,8 +68,7 @@ you know is on it.
 
 > [!success]- Answer 5
 > The normal is the cross product of the two direction vectors:
-> $$(1, -1, 3) \times (2, 0, -5) = ((-1)(-5) - 3(0),\;
-> 3(2) - 1(-5),\; 1(0) - (-1)(2)) = (5, 11, 2)$$
+> $$(1, -1, 3) \times (2, 0, -5) = ((-1)(-5) - 3(0),\; 3(2) - 1(-5),\; 1(0) - (-1)(2)) = (5, 11, 2)$$
 > Through $(2, 1, 0)$: $5(2) + 11(1) + 2(0) = 21$, so
 > $5x + 11y + 2z - 21 = 0$. Audit: the normal dotted with each
 > direction vector gives $5 - 11 + 6 = 0$ and $10 + 0 - 10 = 0$ —
@@ -105,8 +103,7 @@ you know is on it.
 
 > [!success]- Answer 8
 > The distance is measured along the normal:
-> $$d = \frac{|2(3) - 1(1) + 2(2) - 5|}{\sqrt{2^2 + (-1)^2 + 2^2}}
-> = \frac{|6 - 1 + 4 - 5|}{3} = \frac{4}{3}$$
+> $$\begin{aligned} d &= \frac{|2(3) - 1(1) + 2(2) - 5|}{\sqrt{2^2 + (-1)^2 + 2^2}} \\ &= \frac{|6 - 1 + 4 - 5|}{3} = \frac{4}{3} \end{aligned}$$
 > The numerator is the plane's equation *evaluated at the point* —
 > zero would mean the point lies on the plane, and the farther from
 > zero, the farther from the plane. Dividing by $|\vec{n}| = 3$

@@ -142,6 +142,17 @@ expectation transcluded in document order). Curriculum pages have NO
   teacher declines curriculum pages. Never let a curriculum reference sit
   outside these two forms.
 - Piped wikilinks inside table cells escape the pipe: `[[Page\|words]]`.
+- **Mathematics that must render** (KaTeX is strict about markdown's
+  seams): display math is a SINGLE physical line, or an unindented
+  multi-line block OUTSIDE callouts — a 4-space-indented continuation
+  line becomes a markdown code block and splits the `$$` pair, and any
+  multi-line `$$` inside a `>` callout breaks the same way. Multi-step
+  derivations go on one line as
+  `$$\begin{aligned} f'(x) &= … \\ &= … \end{aligned}$$`. Currency
+  NEVER uses `\$` inside a math span (markdown eats the escape and the
+  span shatters): a pure amount is escaped prose (`\$14`), an amount
+  inside an expression is `\textdollar 14`. The container render gate
+  (Phase 7) catches violations.
 - Link only to pages that will exist. Maintain the full page inventory
   BEFORE fanning out authoring agents; hand every agent the complete
   sanctioned link list.
@@ -224,7 +235,10 @@ the linter.
    then inspect the built HTML: landing transclusions render, the draft
    finale is NOT published, `%%` comments invisible, All Classes and one
    category listing sort correctly (check the `page-listing` region of the
-   HTML, not the whole page — index prose also mentions page names).
+   HTML, not the whole page — index prose also mentions page names), and
+   `grep -rl katex-error <public dir>` finds NOTHING — a katex-error span
+   means an equation shattered at a markdown seam (see the math rules in
+   Phase 5).
 6. Clean up: `docker rm -f <container>`, `rm -rf courses/<CODE>`.
 7. No GUI-IMPROVEMENTS entry for a content-only payload (the spec tracks
    behaviour); commit with a message naming the course code.

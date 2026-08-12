@@ -36,12 +36,7 @@ A numerator bigger than 1 just adds a power:
 $x^{m/n} = \left(\sqrt[n]{x}\right)^m$. Take the root *first* — it
 keeps the numbers small enough for mental math:
 
-$$
-27^{2/3} = \left(\sqrt[3]{27}\right)^2 = 3^2 = 9
-\qquad
-16^{-3/4} = \frac{1}{\left(\sqrt[4]{16}\right)^3} = \frac{1}{2^3}
-          = \frac{1}{8}
-$$
+$$27^{2/3} = \left(\sqrt[3]{27}\right)^2 = 3^2 = 9 \qquad 16^{-3/4} = \frac{1}{\left(\sqrt[4]{16}\right)^3} = \frac{1}{2^3} = \frac{1}{8}$$
 
 The negative sign still means reciprocal, exactly as it did for
 integer exponents. And the laws mix freely with variables:

@@ -35,11 +35,7 @@ special angles now has an exact value.
 
 > [!example]- Worked: the exact value of $\cos\frac{\pi}{12}$
 > $\frac{\pi}{12} = \frac{\pi}{3} - \frac{\pi}{4}$, so
-> $$\cos\frac{\pi}{12} = \cos\frac{\pi}{3}\cos\frac{\pi}{4} +
-> \sin\frac{\pi}{3}\sin\frac{\pi}{4} =
-> \frac{1}{2}\cdot\frac{\sqrt{2}}{2} +
-> \frac{\sqrt{3}}{2}\cdot\frac{\sqrt{2}}{2} =
-> \frac{\sqrt{2}+\sqrt{6}}{4}$$
+> $$\cos\frac{\pi}{12} = \cos\frac{\pi}{3}\cos\frac{\pi}{4} + \sin\frac{\pi}{3}\sin\frac{\pi}{4} = \frac{1}{2}\cdot\frac{\sqrt{2}}{2} + \frac{\sqrt{3}}{2}\cdot\frac{\sqrt{2}}{2} = \frac{\sqrt{2}+\sqrt{6}}{4}$$
 > Sanity check, the habit from [[Showing Your Thinking]]:
 > $\frac{\pi}{12}$ is a small angle, so its cosine should be near 1 —
 > and $\frac{\sqrt{2}+\sqrt{6}}{4} \approx 0.966$. It holds.

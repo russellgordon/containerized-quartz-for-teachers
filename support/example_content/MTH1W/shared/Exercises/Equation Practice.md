@@ -15,8 +15,8 @@ with a *verification*: an unchecked solution is a guess with confidence.
 2. Solve $3n - 5 = 16$, and verify.
 3. Solve $2(x + 4) = 22$.
 4. Solve $5x - 3 = 2x + 9$.
-5. **Create, then solve.** A phone plan costs $\$15$ plus $\$2$ per
-   gigabyte. One month's bill is $\$27$. Write an equation for the
+5. **Create, then solve.** A phone plan costs \$15 plus \$2 per
+   gigabyte. One month's bill is \$27. Write an equation for the
    data used, solve it, and check it against the story — this is the
    maths behind [[Which Phone Plan]].
 6. **Find the error.** Solving $4x + 2 = 18$, Omar gets $x = 5$.
@@ -45,7 +45,7 @@ with a *verification*: an unchecked solution is a guess with confidence.
 
 > [!success]- Answer 5
 > Let $g$ be gigabytes used: $15 + 2g = 27$, so $2g = 12$ and
-> $g = 6$. Check the story: $\$15$ plus $6 \times \$2$ is $\$27$. ✓
+> $g = 6$. Check the story: \$15 plus $6 \times \textdollar 2$ is \$27. ✓
 > The equation is the story, compressed.
 
 > [!success]- Answer 6
