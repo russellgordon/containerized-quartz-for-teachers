@@ -4,6 +4,16 @@ Ideas and deferred work, in no particular order. Add items freely; remove
 an item when it ships (finished behaviour is recorded in
 [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md), not here).
 
+- **Container recreation can kill live previews** — noted 2026-08-11.
+  Every launcher "ensures" the working folder's container, and on a
+  toolchain-recipe hash or mount mismatch it recreates it (`docker rm
+  -f`) — taking any live preview servers down with it. In steady state
+  hashes match and this never triggers; it can bite mid-session only in
+  rare cases (e.g. an app update refreshing `.toolchain` while another
+  window previews). A thorough fix would make the ensure-container step
+  decline (or warn) when the container hosts running previews. Low
+  priority — rare, and the next preview self-heals.
+
 - **Publish stops an active preview itself** — deferred 2026-08-11. The
   idea: the Publish button stays enabled while a preview runs; clicking it
   stops this section's preview, waits for it to end, then publishes —

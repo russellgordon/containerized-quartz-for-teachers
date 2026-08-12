@@ -292,7 +292,23 @@ struct SectionDetailView: View {
         )
         deployRunner.customDomainForLinks = customDomain.isEmpty ? nil : customDomain
 
+        // Let the rest of the app know this course is mid-publish (so,
+        // for example, Add Section… declines until it finishes).
+        CourseActivity.beginPublish(
+            folderPath: workspaceURL.path,
+            courseCode: course.code,
+            sectionNumber: sectionNumber
+        )
+
         Task {
+            defer {
+                CourseActivity.endPublish(
+                    folderPath: workspaceURL.path,
+                    courseCode: course.code,
+                    sectionNumber: sectionNumber
+                )
+            }
+
             if needsBuild {
                 deployRunner.run(
                     scriptNamed: "preview.sh",
@@ -319,6 +335,7 @@ struct SectionDetailView: View {
                 workingDirectory: workspaceURL,
                 keepingTranscript: needsBuild
             )
+            _ = await deployRunner.waitUntilFinished()
         }
     }
 

@@ -56,8 +56,16 @@ struct SidebarView: View {
                                 .tag(SidebarSelection.course(course.code))
                                 .accessibilityIdentifier("sidebar-\(course.code)")
                                 .contextMenu {
+                                    // Adding a section re-runs the course
+                                    // setup, which rewrites the course's
+                                    // folders — never while a preview or
+                                    // publish could be reading them.
                                     Button("Add Section…", systemImage: "doc.badge.plus") {
                                         addSectionCourse = course
+                                    }
+                                    .disabled(courseIsBusy(course))
+                                    if courseIsBusy(course) {
+                                        Text("Available once this course finishes previewing and publishing")
                                     }
                                     Divider()
                                     openInObsidianItem(revealing: course.directoryURL, vaultURL: course.directoryURL)
@@ -311,6 +319,15 @@ struct SidebarView: View {
     }
 
     // MARK: - Functions
+
+    /// True while any section of the course is previewing or publishing,
+    /// in any window showing this working folder.
+    func courseIsBusy(_ course: Course) -> Bool {
+        guard let workspaceURL = workspace.workspaceURL else {
+            return false
+        }
+        return CourseActivity.courseIsBusy(folderPath: workspaceURL.path, courseCode: course.code)
+    }
 
     /// The open/closed state of one course's disclosure triangle, living
     /// on the window's model so restoration can bring it back.
