@@ -1,0 +1,34 @@
+---
+title: Unit 2, Day 5
+draft: false
+created: __CREATED_CLASS_12__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. Number talk: [[Which One Doesn't Belong]] — four histograms: one
+   symmetric, one skewed, one bimodal, one with a hole in it
+2. Random groups: three tables measure three unrelated things —
+   reaction times, heights, dice totals. Post the histograms and stare
+3. Name it: [[The Normal Distribution]] — one shape, two numbers, and
+   the rule your wall just predicted before it was stated
+4. Launch: [[The Culminating Investigation]] — it runs to the last day
+   of the course; [[Choosing a Data Set]] makes a question answerable
+5. Practise: [[Normal Distribution Practice]], first set
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[E1.1]]
+
+![[E1.2]]
+%%curriculum-end%%
+
+## Things to do before our next class
+
+- [ ] Investigation milestone: bring two candidate questions, with the
+      variables each needs and where that data might plausibly live.
