@@ -69,12 +69,19 @@ public sealed partial class MainWindow : Window
                 or nameof(WorkspaceViewModel.WorkspaceProblem)) ApplyState();
             if (args.PropertyName is nameof(WorkspaceViewModel.Selection)
                 or nameof(WorkspaceViewModel.Courses)) ShowDetailForSelection();
+            // The selection is part of the window's memory (row 99).
+            if (args.PropertyName is nameof(WorkspaceViewModel.Selection)) App.RememberOpenWindows();
         };
 
         // Decide the folder BEFORE first paint so the picker never flashes.
+        // The sidebar memory seeds first, so the very first Refresh builds
+        // the tree the way this window left it (row 99).
+        Workspace.ExpandedCourseCodes = WindowMemoryCodec.ParseExpandedCourses(frame?.ExpandedCourses);
+        Workspace.IsShowingArchived = frame?.ShowsArchived ?? false;
         if (folderPath is not null && Directory.Exists(folderPath))
             Workspace.AdoptRestoredPath(folderPath);
         ApplyState();
+        RestoreRememberedSelection(frame?.Selection);
         RunAutomationHooks();
     }
 
@@ -158,12 +165,39 @@ public sealed partial class MainWindow : Window
         });
     }
 
+    /// <summary>
+    /// Restore the remembered selection — but only when its target still
+    /// exists, so a course removed between sessions never greets the teacher
+    /// with "Course Not Found". Unrecognized stored forms restore none.
+    /// </summary>
+    private void RestoreRememberedSelection(string? stored)
+    {
+        switch (SidebarSelection.Parse(stored))
+        {
+            case SidebarSelection.CourseItem(var code)
+                when Workspace.Courses.Any(c => c.Code == code):
+                Workspace.Selection = new SidebarSelection.CourseItem(code);
+                break;
+            case SidebarSelection.SectionItem(var code, var number)
+                when Workspace.Courses.FirstOrDefault(c => c.Code == code)?.SectionNumbers.Contains(number) == true:
+                Workspace.Selection = new SidebarSelection.SectionItem(code, number);
+                break;
+            case SidebarSelection.ArchivedEntry(var id)
+                when Workspace.ArchivedItems.Any(a => a.Id == id):
+                Workspace.Selection = new SidebarSelection.ArchivedEntry(id);
+                break;
+        }
+    }
+
     public RememberedWindow? RememberedEntry()
     {
         if (Workspace.WorkspacePath is null) return null;
         var position = AppWindow.Position;
         var size = AppWindow.Size;
-        return new RememberedWindow(Workspace.WorkspacePath, position.X, position.Y, size.Width, size.Height);
+        return new RememberedWindow(Workspace.WorkspacePath, position.X, position.Y, size.Width, size.Height,
+            WindowMemoryCodec.EncodeExpandedCourses(Workspace.ExpandedCourseCodes),
+            Workspace.IsShowingArchived,
+            Workspace.Selection?.Serialized);
     }
 
     // ---- State switching -------------------------------------------------

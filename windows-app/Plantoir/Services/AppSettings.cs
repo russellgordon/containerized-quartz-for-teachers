@@ -5,8 +5,15 @@ using Newtonsoft.Json;
 
 namespace Plantoir.Services;
 
-/// <summary>One remembered window: its folder and frame.</summary>
-public sealed record RememberedWindow(string Path, double X, double Y, double Width, double Height);
+/// <summary>
+/// One remembered window: its folder, frame, and sidebar state (row 99).
+/// The three sidebar fields are optional so entries written before they
+/// existed still load: a null ExpandedCourses restores all-expanded (the
+/// Windows fallback), null Selection restores none.
+/// </summary>
+public sealed record RememberedWindow(string Path, double X, double Y, double Width, double Height,
+                                      string? ExpandedCourses = null, bool ShowsArchived = false,
+                                      string? Selection = null);
 
 /// <summary>
 /// The app's own settings store (%LOCALAPPDATA%\Plantoir\settings.json).

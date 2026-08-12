@@ -18,7 +18,7 @@ public sealed class SidebarRow
     public required string Title { get; init; }
     public required string Glyph { get; init; }
     public string? Tooltip { get; init; }
-    public bool IsExpanded { get; init; }
+    public bool IsExpanded { get; set; }   // mutable: user toggles are recorded (row 99)
     public string AutomationId { get; init; } = "";
     public ObservableCollection<SidebarRow> Children { get; init; } = new();
     public MenuFlyout? Menu { get; set; }
@@ -53,6 +53,36 @@ public sealed partial class SidebarPane : UserControl
         Tree.AddHandler(KeyDownEvent,
             new Microsoft.UI.Xaml.Input.KeyEventHandler((_, _) => _lastTreeInteraction = DateTime.UtcNow), true);
         Tree.Collapsed += Tree_Collapsed;
+        Tree.Expanding += Tree_Expanding;
+    }
+
+    /// <summary>
+    /// An expand is always worth recording — a deliberate one changes the
+    /// per-window memory (row 99), and a programmatic re-assert writes back
+    /// the value the model already holds.
+    /// </summary>
+    private void Tree_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
+    {
+        if (args.Item is not SidebarRow row) return;
+        row.IsExpanded = true;
+        RecordExpansion(row, expanded: true);
+    }
+
+    /// <summary>Write a group/course toggle into the window's memory.</summary>
+    private void RecordExpansion(SidebarRow row, bool expanded)
+    {
+        if (row.Selection is SidebarSelection.CourseItem(var code))
+        {
+            if (Workspace.IsCourseExpanded(code) == expanded) return;
+            Workspace.SetCourseExpanded(code, expanded);
+            App.RememberOpenWindows();
+        }
+        else if (ReferenceEquals(row, _archivedGroup))
+        {
+            if (Workspace.IsShowingArchived == expanded) return;
+            Workspace.IsShowingArchived = expanded;
+            App.RememberOpenWindows();
+        }
     }
 
     /// <summary>
@@ -66,10 +96,24 @@ public sealed partial class SidebarPane : UserControl
     /// </summary>
     private void Tree_Collapsed(TreeView sender, TreeViewCollapsedEventArgs args)
     {
-        if ((DateTime.UtcNow - _lastTreeInteraction).TotalMilliseconds < 1000) return;
-        if (args.Item is not SidebarRow { IsExpanded: true } row) return;
-        DispatcherQueue.TryEnqueue(() =>
+        if (args.Item is not SidebarRow row) return;
+        // The chevron raises Collapsed BEFORE its own pointer event bubbles
+        // up to the tree (measured live: collapse, then the pointer 6 ms
+        // later) — so deciding user-vs-glitch NOW would call every real
+        // fold a glitch and reopen it. Defer one dispatcher pass; by then a
+        // real click's pointer has been seen, while the rebuild glitch
+        // (whose trigger is a dialog click that never routes through the
+        // tree) still shows no input.
+        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
         {
+            if ((DateTime.UtcNow - _lastTreeInteraction).TotalMilliseconds < 1000)
+            {
+                // The teacher folded this on purpose: remember it (row 99).
+                row.IsExpanded = false;
+                RecordExpansion(row, expanded: false);
+                return;
+            }
+            if (!row.IsExpanded) return;
             if (Tree.ContainerFromItem(row) is TreeViewItem container && !container.IsExpanded)
                 container.IsExpanded = true;
         });
@@ -125,7 +169,9 @@ public sealed partial class SidebarPane : UserControl
                 {
                     Title = course.Code,
                     Glyph = LibraryGlyph,
-                    IsExpanded = true,
+                    // The window's own memory decides (row 99); a window
+                    // without stored state opens everything.
+                    IsExpanded = Workspace.IsCourseExpanded(course.Code),
                     Selection = new SidebarSelection.CourseItem(course.Code),
                     AutomationId = $"sidebar-{course.Code}",
                 };
@@ -169,12 +215,13 @@ public sealed partial class SidebarPane : UserControl
         }
         if (_archivedGroup is null)
         {
-            // A place to go looking, not something to step over — closed by default.
+            // A place to go looking, not something to step over — closed by
+            // default, but a window that had it open gets it back (row 99).
             _archivedGroup = new SidebarRow
             {
                 Title = "Archived",
                 Glyph = ArchiveGlyph,
-                IsExpanded = false,
+                IsExpanded = Workspace.IsShowingArchived,
                 AutomationId = "archivedGroup",
             };
             _roots.Add(_archivedGroup);

@@ -266,6 +266,61 @@ public class ArchiveRoundTripTests
 }
 
 /// <summary>
+/// The per-window sidebar memory's string forms (row 99): selection and
+/// expansion round-trips, unrecognized forms restoring nothing, and the
+/// deliberate Windows divergence — no stored state means all-open.
+/// </summary>
+public class WindowMemoryCodecTests
+{
+    [Theory]
+    [InlineData("course|ICS3U", "course", "ICS3U", 0, "")]
+    [InlineData("section|MCV4U|3", "section", "MCV4U", 3, "")]
+    [InlineData("archived|abc-123", "archived", "", 0, "abc-123")]
+    public void SelectionsRoundTrip(string stored, string kind, string code, int section, string id)
+    {
+        var decoded = WindowMemoryCodec.ParseSelection(stored)!;
+        Assert.Equal(kind, decoded.Kind);
+        Assert.Equal(code, decoded.Code);
+        Assert.Equal(section, decoded.Section);
+        Assert.Equal(id, decoded.Id);
+    }
+
+    [Fact]
+    public void EncodersProduceWhatTheParserReads()
+    {
+        Assert.Equal("course|ICS3U", WindowMemoryCodec.EncodeCourse("ICS3U"));
+        Assert.Equal("section|MCV4U|3", WindowMemoryCodec.EncodeSection("MCV4U", 3));
+        Assert.Equal("archived|x", WindowMemoryCodec.EncodeArchived("x"));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("course|")]
+    [InlineData("section|ICS3U|zero")]
+    [InlineData("section|ICS3U|0")]
+    [InlineData("bookmark|whatever")]
+    public void UnrecognizedSelectionsRestoreNothing(string? stored) =>
+        Assert.Null(WindowMemoryCodec.ParseSelection(stored));
+
+    [Fact]
+    public void ExpansionRoundTripsAndNullMeansEverythingOpen()
+    {
+        Assert.Null(WindowMemoryCodec.EncodeExpandedCourses(null));
+        Assert.Null(WindowMemoryCodec.ParseExpandedCourses(null));   // legacy entry: all open
+
+        Assert.Equal("ICS3U,MCV4U", WindowMemoryCodec.EncodeExpandedCourses(new[] { "MCV4U", "ICS3U" }));
+        Assert.Equal(new[] { "ICS3U", "MCV4U" },
+            WindowMemoryCodec.ParseExpandedCourses("ICS3U,MCV4U")!.OrderBy(c => c));
+
+        // An explicit empty string is "the teacher collapsed everything".
+        Assert.Equal("", WindowMemoryCodec.EncodeExpandedCourses(Array.Empty<string>()));
+        Assert.Empty(WindowMemoryCodec.ParseExpandedCourses("")!);
+    }
+}
+
+/// <summary>
 /// The cross-window busy registry gating Add Section (row 104). Folder paths
 /// are unique per test so the static registry never crosses wires with the
 /// lease tests.

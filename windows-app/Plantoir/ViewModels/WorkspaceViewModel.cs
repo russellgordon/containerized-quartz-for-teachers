@@ -15,6 +15,25 @@ public abstract record SidebarSelection
     public sealed record CourseItem(string Code) : SidebarSelection;
     public sealed record SectionItem(string Code, int Number) : SidebarSelection;
     public sealed record ArchivedEntry(string Id) : SidebarSelection;
+
+    /// <summary>The stored string form for per-window restore (row 99).</summary>
+    public string Serialized => this switch
+    {
+        CourseItem(var code) => WindowMemoryCodec.EncodeCourse(code),
+        SectionItem(var code, var number) => WindowMemoryCodec.EncodeSection(code, number),
+        ArchivedEntry(var id) => WindowMemoryCodec.EncodeArchived(id),
+        _ => "",
+    };
+
+    /// <summary>Unrecognized or empty stored forms restore no selection.</summary>
+    public static SidebarSelection? Parse(string? stored) =>
+        WindowMemoryCodec.ParseSelection(stored) switch
+        {
+            { Kind: "course" } d => new CourseItem(d.Code),
+            { Kind: "section" } d => new SectionItem(d.Code, d.Section),
+            { Kind: "archived" } d => new ArchivedEntry(d.Id),
+            _ => null,
+        };
 }
 
 /// <summary>
@@ -45,6 +64,24 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
     {
         get => _selection;
         set { _selection = value; Notify(); Notify(nameof(SelectedCourse)); Notify(nameof(SelectedArchivedItem)); }
+    }
+
+    // ---- Per-window sidebar memory (row 99) -------------------------------
+    // null means "every course open" — the Windows fallback for brand-new
+    // windows and for entries remembered before this state existed (the mac
+    // restores all-collapsed here; Windows deliberately does not).
+    public HashSet<string>? ExpandedCourseCodes { get; set; }
+    public bool IsShowingArchived { get; set; }
+
+    public bool IsCourseExpanded(string code) => ExpandedCourseCodes?.Contains(code) ?? true;
+
+    public void SetCourseExpanded(string code, bool expanded)
+    {
+        // First explicit toggle materializes the all-open fallback so the
+        // OTHER courses keep their current openness.
+        ExpandedCourseCodes ??= Courses.Select(c => c.Code).ToHashSet(StringComparer.Ordinal);
+        if (expanded) ExpandedCourseCodes.Add(code);
+        else ExpandedCourseCodes.Remove(code);
     }
 
     private string _filterText = "";
