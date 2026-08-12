@@ -344,7 +344,7 @@ struct SectionDetailView: View {
                 workingDirectory: workspaceURL,
                 keepingTranscript: needsBuild
             )
-            _ = await deployRunner.waitUntilFinished()
+            await deployRunner.waitUntilFinished()
         }
     }
 

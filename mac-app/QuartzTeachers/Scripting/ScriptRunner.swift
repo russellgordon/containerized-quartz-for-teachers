@@ -175,6 +175,10 @@ class ScriptRunner {
     }
 
     /// Waits for the current run to finish; true when it succeeded.
+    /// Waits for the script to end. The result says whether it succeeded;
+    /// callers that only need to sequence work after the script (whatever
+    /// its outcome) are free to ignore it.
+    @discardableResult
     func waitUntilFinished() async -> Bool {
         while isRunning {
             try? await Task.sleep(for: .milliseconds(300))
