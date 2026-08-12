@@ -26,10 +26,11 @@ by the Ontario Ministry of Education.
 > within this site, but you will not find the combined codes printed
 > in the Ministry's pages.
 
-One honesty note about the reproduction: typeset mathematics (stacked
-fractions, radicals, true superscripts) is linearized for the web,
-wording untouched. A note on the teaching order: this site teaches the
-strands in the order polynomials → rational → trigonometric →
+One honesty note about the reproduction: the mathematics is typeset
+(stacked fractions, radical bars, true superscripts) the way the
+document prints it, using LaTeX — wording untouched. A note on the
+teaching order: this site teaches the strands in the order
+polynomials → rational → trigonometric →
 exponential/logarithmic with rates of change, which is not the order
 the document prints them in — the codes always point at the document's
 own arrangement.

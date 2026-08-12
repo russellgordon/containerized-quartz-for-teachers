@@ -35,9 +35,10 @@ Two small honesty notes about the reproduction:
   problems throughout the course."*
 - The sample problem in `C2.3` is printed beside a diagram (a
   staircase pattern of grey and white linking cubes) that cannot be
-  reproduced as text; a bracketed note marks its place. Typeset
-  mathematics (stacked fractions, radicals, true superscripts) is
-  linearized, wording untouched.
+  reproduced as text; a bracketed note marks its place. The
+  mathematics is typeset (stacked fractions, radical bars, true
+  superscripts) the way the document prints it, using LaTeX — wording
+  untouched.
 
 Each page keeps its code, and every lesson, exploration, and task in
 this course links back to the codes it addresses. The codes are also
