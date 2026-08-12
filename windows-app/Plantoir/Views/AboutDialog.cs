@@ -106,11 +106,12 @@ public sealed class AboutDialog : ContentDialog
             Margin = new Thickness(0, 18, 0, 0),
         });
 
+        // No "Built on Quartz" line: the sponsor callout above already says
+        // whose work this stands on.
         var credits = new StackPanel { Spacing = 3, Margin = new Thickness(0, 14, 0, 0) };
-        credits.Children.Add(CreditLine("Built on ", "Quartz", "https://quartz.jzhao.xyz", " by Jacky Zhao."));
         credits.Children.Add(CreditLine("Icon from ", "Phosphor Icons", "https://phosphoricons.com", " (MIT)."));
         credits.Children.Add(CreditLine("Designed by ", "Russell Gordon", "https://www.russellgordon.ca", "."));
-        credits.Children.Add(new TextBlock { Text = "Built with Claude.", FontSize = 11, Opacity = 0.7 });
+        credits.Children.Add(new TextBlock { Text = "Made with Claude.", FontSize = 11, Opacity = 0.7 });
         panel.Children.Add(credits);
 
         panel.Children.Add(new TextBlock
