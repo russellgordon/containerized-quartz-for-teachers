@@ -65,4 +65,40 @@ final class ArchivedItemTests: XCTestCase {
         XCTAssertEqual(found.first?.sectionNumber, 2, "Newest first")
         XCTAssertEqual(found.last?.sectionNumber, 1)
     }
+
+    @MainActor
+    func testTheDeleteWarningKnowsWhenAnArchiveIsTheOnlyCopy() {
+        // One live course, ICS3U, with sections 1 and 2.
+        let configuration: CourseConfiguration = CourseConfiguration(
+            values: ["course_code": "ICS3U", "section_numbers": [1, 2]],
+            lastSavedData: Data()
+        )
+        let liveCourses: [Course] = [
+            Course(code: "ICS3U", directoryURL: URL(fileURLWithPath: "/w/courses/ICS3U"), configuration: configuration)
+        ]
+        let stamp: Date = Date()
+        let zipURL: URL = URL(fileURLWithPath: "/w/courses/_backups/ICS3U/x.zip")
+
+        let liveCourseArchive: ArchivedItem = ArchivedItem(
+            courseCode: "ICS3U", sectionNumber: nil, archivedAt: stamp, fileURL: zipURL
+        )
+        XCTAssertFalse(WorkspaceModel.archiveIsOnlyRemainingCopy(liveCourseArchive, among: liveCourses),
+                       "The course is still live, so the archive is a spare copy")
+
+        let liveSectionArchive: ArchivedItem = ArchivedItem(
+            courseCode: "ICS3U", sectionNumber: 2, archivedAt: stamp, fileURL: zipURL
+        )
+        XCTAssertFalse(WorkspaceModel.archiveIsOnlyRemainingCopy(liveSectionArchive, among: liveCourses))
+
+        let goneSectionArchive: ArchivedItem = ArchivedItem(
+            courseCode: "ICS3U", sectionNumber: 3, archivedAt: stamp, fileURL: zipURL
+        )
+        XCTAssertTrue(WorkspaceModel.archiveIsOnlyRemainingCopy(goneSectionArchive, among: liveCourses),
+                      "The live course no longer has section 3, so its archive is the only copy")
+
+        let goneCourseArchive: ArchivedItem = ArchivedItem(
+            courseCode: "MPM2D", sectionNumber: nil, archivedAt: stamp, fileURL: zipURL
+        )
+        XCTAssertTrue(WorkspaceModel.archiveIsOnlyRemainingCopy(goneCourseArchive, among: liveCourses))
+    }
 }

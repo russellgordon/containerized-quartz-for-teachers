@@ -256,11 +256,21 @@ struct SidebarView: View {
             Button("Cancel", role: .cancel) {
             }
         } message: { item in
-            Text("""
-                This deletes the archive for good — nothing is kept.
+            // The app knows whether the archived thing still exists among
+            // the live courses, so the warning states a fact, not an "if".
+            if workspace.archiveIsOnlyRemainingCopy(item) {
+                Text("""
+                    This deletes the archive for good — nothing is kept.
 
-                If \(item.title) isn’t in Courses & Clubs any more, this archive is its only remaining copy.
-                """)
+                    \(item.title) isn’t in Courses & Clubs any more, so this archive is its only remaining copy.
+                    """)
+            } else {
+                Text("""
+                    This deletes the archive for good — nothing is kept.
+
+                    \(item.title) itself is not touched — it’s still in Courses & Clubs.
+                    """)
+            }
         }
         .alert("Could not do that", isPresented: backupProblemBinding) {
             Button("OK") {

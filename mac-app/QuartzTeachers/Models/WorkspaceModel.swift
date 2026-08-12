@@ -727,6 +727,28 @@ class WorkspaceModel {
         reloadCourses()
     }
 
+    /// True when the archived thing no longer exists among the live
+    /// courses — deleting the archive then destroys the only copy, and
+    /// the confirmation must say so.
+    func archiveIsOnlyRemainingCopy(_ item: ArchivedItem) -> Bool {
+        return WorkspaceModel.archiveIsOnlyRemainingCopy(item, among: courses)
+    }
+
+    static func archiveIsOnlyRemainingCopy(_ item: ArchivedItem, among courses: [Course]) -> Bool {
+        for course in courses {
+            if course.code == item.courseCode {
+                guard let sectionNumber = item.sectionNumber else {
+                    // A course archive, and the course is live.
+                    return false
+                }
+                // A section archive: the copy survives only if the live
+                // course still has that section.
+                return !course.sectionNumbers.contains(sectionNumber)
+            }
+        }
+        return true
+    }
+
     /// Deletes an archive for good. The promise made at removal time —
     /// "nothing is deleted" — was about REMOVING; this is a second,
     /// deliberate act with its own plain-spoken confirmation.
