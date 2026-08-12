@@ -27,16 +27,22 @@ picked them up.
   (`BuiltForPreview`) and the `APreviewBuildIsNeverDeployFresh` test in
   `windows-app/Plantoir.Tests/ModelTests.cs`.
 
-- **Font samples show the course's own name** (Windows, 2026-08-11).
-  Once a course name is set (typed in the wizard, or stored in settings),
-  the header font sample renders THAT name in the candidate typeface
-  instead of the "Grade 11 Computer Science" stand-in — the teacher sees
-  their actual site title. The stand-in remains only while no name
-  exists; the body-sentence sample is unchanged; samples update live as
-  the name is edited. Mirror in the mac wizard's FontChoiceEditorView
-  and Course Settings. Reference: `SampleHeaderText()` in
-  `windows-app/Plantoir/Views/NewCourseDialog.cs` and
-  `windows-app/Plantoir/Views/CourseSettingsView.xaml.cs`.
+- **Font samples show the course's own computed site title** (Windows,
+  2026-08-11). The header font sample renders the title the build will
+  actually produce — `[Grade X ]Name[, Section N]`, i.e. the course name
+  with the grade and section-marker switches applied — in the candidate
+  typeface, updating live as the name, code, section numbers, or either
+  toggle changes. The "Grade 11 Computer Science" stand-in remains only
+  while the form is blank; the body-sentence sample is unchanged. In
+  Course Settings each section's sample uses that section's own toggles.
+  The compute is `CourseConfiguration.ComputedSiteTitle` (Core),
+  mirroring `computed_landing_title` in `scripts/build_site.py` and
+  pinned by a six-case theory test. Mirror in the mac wizard's
+  FontChoiceEditorView and Course Settings. References:
+  `SampleHeaderText()` in `windows-app/Plantoir/Views/NewCourseDialog.cs`
+  and `windows-app/Plantoir/Views/CourseSettingsView.xaml.cs`;
+  `ComputedSiteTitleMatchesTheBuild` in
+  `windows-app/Plantoir.Tests/CourseConfigurationTests.cs`.
 
 - **Explain a disabled Create button in the wizard** (from `2d10e4c`,
   2026-08-11). On Windows, a filled-in New Course form with a DUPLICATE

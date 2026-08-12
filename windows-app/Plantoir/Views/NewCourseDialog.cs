@@ -76,14 +76,27 @@ public sealed class NewCourseDialog : ContentDialog
     };
 
     /// <summary>
-    /// The font sample shows the course's OWN name once one is typed — the
-    /// teacher sees their actual site title in the candidate typeface, not a
-    /// stand-in. The stand-in remains for the nameless moment only.
+    /// The font sample shows the course's OWN site title once there is one —
+    /// computed exactly as the build will compute it, so the grade and
+    /// section-marker switches are reflected too. The stand-in remains for
+    /// the blank-form moment only.
     /// </summary>
     private TextBlock? _fontSampleHeader;
 
-    private string SampleHeaderText() =>
-        _nameBox.Text.Trim() is { Length: > 0 } name ? name : "Grade 11 Computer Science";
+    private string SampleHeaderText()
+    {
+        if (_nameBox.Text.Trim().Length == 0 && _codeBox.Text.Trim().Length == 0)
+            return "Grade 11 Computer Science";
+        int firstSection = ParsedSectionNumbers(_sectionsBox.Text).FirstOrDefault();
+        if (firstSection == 0) firstSection = 1;
+        return CourseConfiguration.ComputedSiteTitle(
+            _nameBox.Text, _codeBox.Text, firstSection, _showsGrade, _showsMarker);
+    }
+
+    private void RefreshFontSample()
+    {
+        if (_fontSampleHeader is not null) _fontSampleHeader.Text = SampleHeaderText();
+    }
 
     private static string ExampleContentRoot => BundledToolchain.SupportPath("example_content");
     private string NormalizedCode => _codeBox.Text.Trim().ToUpperInvariant();
@@ -237,25 +250,21 @@ public sealed class NewCourseDialog : ContentDialog
         _codeBox.TextChanged += (_, _) =>
         {
             AutoFillCourseName(); RefreshClubRow(); RefreshGradeWarning(); RefreshCodeValidation(); RefreshCreateEnabled();
-            RefreshStartingContent(); RefreshStructureArea();
+            RefreshStartingContent(); RefreshStructureArea(); RefreshFontSample();
         };
 
         var nameRow = FormBuilders.LabeledRow("Course name", _nameBox);
         nameRow.Children.Add(FormBuilders.ExampleCaption("e.g. Introduction to Computer Science"));
         nameRow.Children.Add(_suggestionsRow);
         form.Children.Add(nameRow);
-        _nameBox.TextChanged += (_, _) =>
-        {
-            RefreshGradeWarning();
-            if (_fontSampleHeader is not null) _fontSampleHeader.Text = SampleHeaderText();
-        };
+        _nameBox.TextChanged += (_, _) => { RefreshGradeWarning(); RefreshFontSample(); };
 
         form.Children.Add(_shortRow);
 
         var sectionsRow = FormBuilders.LabeledRow("Timetable section numbers", _sectionsBox);
         sectionsRow.Children.Add(_sectionsCaption);
         form.Children.Add(sectionsRow);
-        _sectionsBox.TextChanged += (_, _) => { RefreshSectionsValidation(); RefreshCreateEnabled(); };
+        _sectionsBox.TextChanged += (_, _) => { RefreshSectionsValidation(); RefreshCreateEnabled(); RefreshFontSample(); };
 
         foreach (string code in LocaleCatalog.Codes) _localeBox.Items.Add(LocaleCatalog.DisplayName(code));
         _localeBox.SelectedIndex = LocaleCatalog.Codes.ToList().IndexOf(WizardDefaults.DefaultLocale);
@@ -349,13 +358,13 @@ public sealed class NewCourseDialog : ContentDialog
         form.Children.Add(codeFontRow);
 
         var markerToggle = new ToggleSwitch { IsOn = _showsMarker, OnContent = "", OffContent = "" };
-        markerToggle.Toggled += (_, _) => _showsMarker = markerToggle.IsOn;
+        markerToggle.Toggled += (_, _) => { _showsMarker = markerToggle.IsOn; RefreshFontSample(); };
         var markerRow = FormBuilders.LabeledRow("Show section marker in the site title", markerToggle);
         markerRow.Children.Add(FormBuilders.ExampleCaption("e.g. \"S1\" appears beside the course code"));
         form.Children.Add(markerRow);
 
         var gradeToggle = new ToggleSwitch { IsOn = _showsGrade, OnContent = "", OffContent = "" };
-        gradeToggle.Toggled += (_, _) => { _showsGrade = gradeToggle.IsOn; RefreshGradeWarning(); };
+        gradeToggle.Toggled += (_, _) => { _showsGrade = gradeToggle.IsOn; RefreshGradeWarning(); RefreshFontSample(); };
         var gradeRow = FormBuilders.LabeledRow("Show the grade in the site title", gradeToggle);
         gradeRow.Children.Add(_gradeWarningSlot);
         gradeRow.Children.Add(FormBuilders.ExampleCaption("e.g. \"Grade 12\" before the course name"));

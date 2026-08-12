@@ -37,20 +37,22 @@ public sealed partial class CourseSettingsView : UserControl
     {
         RefreshDirtyState();
         HeaderName.Text = Config.CourseName;
-        foreach (var sample in _fontSampleHeaders) sample.Text = SampleHeaderText();
+        foreach (var (section, sample) in _fontSampleHeaders) sample.Text = SampleHeaderText(section);
     }
 
     // ---- Font sample text ------------------------------------------------
 
     /// <summary>
-    /// The font samples show the course's OWN name once there is one — the
-    /// teacher sees their actual site title in the candidate typeface, not a
-    /// stand-in. The stand-in remains for the nameless moment only.
+    /// Each section's font sample shows that section's OWN site title —
+    /// computed exactly as the build will compute it, so the name, the grade
+    /// switch, and the section-marker switch are all reflected in the
+    /// candidate typeface.
     /// </summary>
-    private readonly List<TextBlock> _fontSampleHeaders = new();
+    private readonly List<(int Section, TextBlock Block)> _fontSampleHeaders = new();
 
-    private string SampleHeaderText() =>
-        Config.CourseName.Trim() is { Length: > 0 } name ? name : "Grade 11 Computer Science";
+    private string SampleHeaderText(int section) =>
+        CourseConfiguration.ComputedSiteTitle(Config.CourseName, _course.Code, section,
+            Config.ShowsGradeInTitle(section), Config.ShowsSectionMarker(section));
 
     private void RefreshDirtyState()
     {
@@ -260,8 +262,8 @@ public sealed partial class CourseSettingsView : UserControl
         }
         pairingBox.SelectedIndex = selected;
 
-        var headerSample = new TextBlock { Text = SampleHeaderText(), FontSize = 19 };
-        _fontSampleHeaders.Add(headerSample);
+        var headerSample = new TextBlock { Text = SampleHeaderText(section), FontSize = 19 };
+        _fontSampleHeaders.Add((section, headerSample));
         var bodySample = new TextBlock { Text = "Body text on your site will look like this sentence does.", FontSize = 13 };
         var samplePanel = new StackPanel { Spacing = 4 };
         samplePanel.Children.Add(headerSample);
