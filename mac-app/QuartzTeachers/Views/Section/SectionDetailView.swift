@@ -275,7 +275,13 @@ struct SectionDetailView: View {
         }
 
         let needsBuild: Bool = BuildFreshness.needsRebuild(course: course, sectionNumber: sectionNumber)
-        deployRunner.milestones = needsBuild ? TaskMilestones.buildAndDeploy : TaskMilestones.deploy
+        // Folder deploys never touch Netlify, so their progress must not
+        // talk about it either.
+        if course.configuration.deploysToLocalFolder {
+            deployRunner.milestones = needsBuild ? TaskMilestones.buildAndDeployToFolder : TaskMilestones.deployToFolder
+        } else {
+            deployRunner.milestones = needsBuild ? TaskMilestones.buildAndDeploy : TaskMilestones.deploy
+        }
 
         // When this section has a custom domain, the live-site link shown
         // after publishing wears it instead of the Netlify address.

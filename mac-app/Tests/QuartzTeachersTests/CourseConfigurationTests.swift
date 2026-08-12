@@ -174,4 +174,38 @@ final class CourseConfigurationTests: XCTestCase {
         XCTAssertTrue(configuration.deploysToLocalFolder)
         XCTAssertEqual(configuration.deployTarget, "local_folder")
     }
+
+    @MainActor
+    func testAnEmptyOrMissingPublishFolderIsAProblem() {
+        XCTAssertNotNil(CourseConfiguration.deployFolderProblem(forPath: ""),
+                        "An empty folder path must block saving")
+        XCTAssertNotNil(CourseConfiguration.deployFolderProblem(forPath: "   "),
+                        "A whitespace-only path is still empty")
+        XCTAssertNotNil(CourseConfiguration.deployFolderProblem(forPath: "/no/such/folder/anywhere"),
+                        "A folder that does not exist cannot receive a site")
+    }
+
+    @MainActor
+    func testAWritableFolderIsNoProblemAndAFileOrReadOnlyFolderIs() throws {
+        let fileManager: FileManager = FileManager.default
+        let base: URL = fileManager.temporaryDirectory
+            .appendingPathComponent("publish-folder-checks-\(UUID().uuidString)")
+        try fileManager.createDirectory(at: base, withIntermediateDirectories: true)
+        defer {
+            try? fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: base.path)
+            try? fileManager.removeItem(at: base)
+        }
+
+        XCTAssertNil(CourseConfiguration.deployFolderProblem(forPath: base.path),
+                     "A writable folder is a fine publish destination")
+
+        let file: URL = base.appendingPathComponent("not-a-folder.txt")
+        try Data("hello".utf8).write(to: file)
+        XCTAssertNotNil(CourseConfiguration.deployFolderProblem(forPath: file.path),
+                        "A file is not a publish destination")
+
+        try fileManager.setAttributes([.posixPermissions: 0o555], ofItemAtPath: base.path)
+        XCTAssertNotNil(CourseConfiguration.deployFolderProblem(forPath: base.path),
+                        "A read-only folder cannot receive a site")
+    }
 }

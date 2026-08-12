@@ -41,6 +41,12 @@ struct NewCourseWizardView: View {
     /// school-neutral defaults.
     @State var usesLCSTerminology: Bool = false
     @State var fontChoice: FontChoice = FontChoice.systemDefault
+
+    /// Where this course's sections publish: Netlify (the default), or a
+    /// folder on this Mac for teachers who upload to their own web host.
+    @State var deployTarget: String = "netlify"
+    @State var deployFolderPath: String = ""
+
     @State var expandOnFolderClick: Bool = false
     @State var showReadingTime: Bool = false
     @State var footerHTML: String = ""
@@ -376,6 +382,15 @@ struct NewCourseWizardView: View {
             }
 
             Section {
+                PublishingChoiceView(
+                    deployTarget: $deployTarget,
+                    deployFolderPath: $deployFolderPath
+                )
+            } header: {
+                FormSectionHeader("Publishing", caption: "Netlify is the usual choice — change any time in Settings")
+            }
+
+            Section {
                 if structureComesFromExampleContent {
                     Text("The example content chooses the folders and files for this course, so every page lands where its links expect it. Turn off pre-populating to choose your own structure.")
                         .font(.caption)
@@ -505,6 +520,12 @@ struct NewCourseWizardView: View {
             validationProblem = "No working folder is selected."
             return
         }
+        if deployTarget == "local_folder" {
+            if let problem = CourseConfiguration.deployFolderProblem(forPath: deployFolderPath) {
+                validationProblem = problem
+                return
+            }
+        }
 
         var name: String = courseName.trimmingCharacters(in: .whitespaces)
         if name.isEmpty {
@@ -584,6 +605,10 @@ struct NewCourseWizardView: View {
                 && ExampleContentCatalog.includesCurriculum(forCode: code)
                 && includesCurriculumPages,
             "use_lcs_terminology": usesLCSTerminology,
+            "deploy_target": deployTarget,
+            "deploy_folder_path": deployTarget == "local_folder"
+                ? deployFolderPath.trimmingCharacters(in: .whitespaces)
+                : "",
             "fonts": [
                 "default": fontChoice.dictionaryRepresentation,
                 "sections": fontsSectionsMap,

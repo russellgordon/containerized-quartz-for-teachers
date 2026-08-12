@@ -54,6 +54,30 @@ class CourseConfiguration {
         return deployTarget == "local_folder" && !deployFolderPath.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
+    /// What is wrong with a folder chosen for local-folder publishing, or
+    /// nil when the folder is usable. Both the settings form and the
+    /// wizard check this live — and block saving — so a deploy never
+    /// discovers the problem after the fact.
+    static func deployFolderProblem(forPath rawPath: String) -> String? {
+        let path: String = rawPath.trimmingCharacters(in: .whitespaces)
+        if path.isEmpty {
+            return "Choose the folder this course publishes into."
+        }
+        let fileManager: FileManager = FileManager.default
+        var isDirectory: ObjCBool = false
+        let exists: Bool = fileManager.fileExists(atPath: path, isDirectory: &isDirectory)
+        if !exists {
+            return "That folder doesn’t exist — use Choose… to pick or create one."
+        }
+        if !isDirectory.boolValue {
+            return "That’s a file — publishing needs a folder."
+        }
+        if !fileManager.isWritableFile(atPath: path) {
+            return "That folder can’t be written to — choose a different one."
+        }
+        return nil
+    }
+
     var customShortName: String {
         get { return stringValue(forKey: "custom_short_name") }
         set { values["custom_short_name"] = newValue }

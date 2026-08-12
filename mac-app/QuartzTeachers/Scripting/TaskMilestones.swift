@@ -78,4 +78,24 @@ enum TaskMilestones {
         TaskMilestone(label: "Finishing up…", marker: "Deploy complete"),
     ]
 
+    /// Publishing a section to a folder on this Mac. Netlify is never
+    /// involved, and neither is the container: the built site already
+    /// sits on this Mac, so the whole publish is a quick local copy.
+    static let deployToFolder: [TaskMilestone] = [
+        TaskMilestone(label: "Checking your site…", marker: "Host timezone offset"),
+        TaskMilestone(label: "Copying your files…", marker: "to a folder"),
+        TaskMilestone(label: "Finishing up…", marker: "PUBLISHED_FOLDER="),
+    ]
+
+    /// Publishing to a folder when the site has to be rebuilt first.
+    static let buildAndDeployToFolder: [TaskMilestone] = [
+        TaskMilestone(label: "Getting this Mac ready…", marker: "Setting up this Mac"),
+        TaskMilestone(label: "Building your website builder…", marker: "Building your website builder"),
+        TaskMilestone(label: "Starting up…", marker: "Starting container if needed"),
+        TaskMilestone(label: "Gathering your content…", marker: "Copying shared folders"),
+        TaskMilestone(label: "Building your site…", marker: "Quartz v4"),
+        TaskMilestone(label: "Copying your files…", marker: "to a folder"),
+        TaskMilestone(label: "Finishing up…", marker: "PUBLISHED_FOLDER="),
+    ]
+
 }

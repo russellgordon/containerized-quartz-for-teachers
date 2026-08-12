@@ -1854,6 +1854,13 @@ def setup_course(no_backup: bool = False):
         # No schemes available now; keep whatever was previously saved
         config["color_schemes"] = previous_map
 
+    # Keys this wizard does not own — the desktop apps' publishing choice
+    # (deploy_target, deploy_folder_path), and anything a future version
+    # adds — must survive a re-run rather than being silently dropped.
+    for saved_key, saved_value in saved_config.items():
+        if saved_key not in config:
+            config[saved_key] = saved_value
+
     with open(config_path, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)
         f.write("\n")  # nice-to-have: trailing newline

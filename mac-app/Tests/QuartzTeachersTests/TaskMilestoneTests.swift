@@ -58,6 +58,41 @@ final class TaskMilestoneTests: XCTestCase {
     }
 
     @MainActor
+    func testFolderPublishingNeverMentionsNetlify() {
+        // A folder deploy never touches Netlify, so its progress must
+        // not talk about it either.
+        let folderLists: [[TaskMilestone]] = [
+            TaskMilestones.deployToFolder,
+            TaskMilestones.buildAndDeployToFolder,
+        ]
+        for list in folderLists {
+            for milestone in list {
+                XCTAssertFalse(milestone.label.contains("Netlify"),
+                               "Folder publishing must not mention Netlify: \(milestone.label)")
+            }
+        }
+    }
+
+    @MainActor
+    func testFolderDeployProgressFollowsItsOwnOutput() {
+        // The exact lines deploy.sh prints in folder mode, in order.
+        let runner: ScriptRunner = ScriptRunner()
+        runner.milestones = TaskMilestones.deployToFolder
+        runner.isRunning = true
+
+        runner.receiveOutput("🕒 Host timezone offset: -0400\n")
+        XCTAssertEqual(runner.milestonesReached, 1)
+        XCTAssertEqual(runner.currentMilestoneLabel, "Copying your files…")
+
+        runner.receiveOutput("📦 Publishing ICS3U section 1 to a folder…\n")
+        XCTAssertEqual(runner.milestonesReached, 2)
+
+        runner.receiveOutput("PUBLISHED_FOLDER=/Users/someone/Sites/ics3u/section1\n")
+        XCTAssertEqual(runner.milestonesReached, 3)
+        XCTAssertEqual(runner.progressFraction, 1.0, accuracy: 0.001)
+    }
+
+    @MainActor
     func testWithoutMilestonesTheViewFallsBackToPhaseText() {
         let runner: ScriptRunner = ScriptRunner()
         runner.isRunning = true
@@ -73,6 +108,8 @@ final class TaskMilestoneTests: XCTestCase {
             TaskMilestones.courseCreation,
             TaskMilestones.preview,
             TaskMilestones.deploy,
+            TaskMilestones.deployToFolder,
+            TaskMilestones.buildAndDeployToFolder,
         ]
         for list in lists {
             XCTAssertGreaterThan(list.count, 2, "A useful milestone list needs several steps")
