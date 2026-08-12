@@ -122,4 +122,36 @@ final class CourseConfigurationTests: XCTestCase {
         )
         XCTAssertTrue(configuration.isClub)
     }
+
+    // MARK: - Landing title mirrors the build
+
+    @MainActor
+    func testTheLandingTitleHonoursBothSwitches() {
+        XCTAssertEqual(
+            CourseConfiguration.landingTitle(
+                courseName: "Drama", courseCode: "ADA1O",
+                showsGrade: true, showsSectionMarker: true, sectionNumber: 2),
+            "Grade 9 Drama, Section 2")
+        XCTAssertEqual(
+            CourseConfiguration.landingTitle(
+                courseName: "Drama", courseCode: "ADA1O",
+                showsGrade: false, showsSectionMarker: true, sectionNumber: 2),
+            "Drama, Section 2")
+        XCTAssertEqual(
+            CourseConfiguration.landingTitle(
+                courseName: "Drama", courseCode: "ADA1O",
+                showsGrade: true, showsSectionMarker: false, sectionNumber: 2),
+            "Grade 9 Drama")
+    }
+
+    @MainActor
+    func testTheLandingTitleSkipsTheGradeForClubCodes() {
+        // "CODING" has no grade digit in position four, exactly as the
+        // build's rule reads it — no prefix, switch on or not.
+        XCTAssertEqual(
+            CourseConfiguration.landingTitle(
+                courseName: "Coding Club", courseCode: "CODING",
+                showsGrade: true, showsSectionMarker: false, sectionNumber: 1),
+            "Coding Club")
+    }
 }

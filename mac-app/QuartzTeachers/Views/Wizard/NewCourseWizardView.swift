@@ -326,9 +326,22 @@ struct NewCourseWizardView: View {
             Section {
                 EmojiChoiceField(label: "Header emoji", emoji: $emoji)
                 ColourSchemePickerView(selectedSchemeID: $colourSchemeID)
-                // The sample follows the name field live: type "Drama"
-                // above and the header font previews with "Drama".
-                FontChoiceEditorView(choice: $fontChoice, sampleHeadline: courseName)
+                // The sample follows the fields live and shows the
+                // landing title as the build will compute it — type
+                // "Drama" above with the grade and marker switches on
+                // and the header previews "Grade 9 Drama, Section 1".
+                FontChoiceEditorView(
+                    choice: $fontChoice,
+                    sampleHeadline: courseName.trimmingCharacters(in: .whitespaces).isEmpty
+                        ? ""
+                        : CourseConfiguration.landingTitle(
+                            courseName: courseName,
+                            courseCode: courseCode.trimmingCharacters(in: .whitespaces).uppercased(),
+                            showsGrade: showsGradeInTitle,
+                            showsSectionMarker: showsSectionMarker,
+                            sectionNumber: parsedSectionNumbers.first ?? 1
+                        )
+                )
                 VStack(alignment: .leading, spacing: 4) {
                     Toggle("Show section marker in the site title", isOn: $showsSectionMarker)
                     ExampleCaption("e.g. “S1” appears beside the course code")

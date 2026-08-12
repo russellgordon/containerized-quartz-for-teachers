@@ -101,7 +101,21 @@ struct SectionSettingsView: View {
 
             ColourSchemePickerView(selectedSchemeID: schemeBinding)
 
-            FontChoiceEditorView(choice: fontBinding, sampleHeadline: configuration.courseName)
+            // The sample shows the landing title as the build will
+            // actually compute it — grade prefix and section marker
+            // included, exactly as this section's switches say.
+            FontChoiceEditorView(
+                choice: fontBinding,
+                sampleHeadline: configuration.courseName.trimmingCharacters(in: .whitespaces).isEmpty
+                    ? ""
+                    : CourseConfiguration.landingTitle(
+                        courseName: configuration.courseName,
+                        courseCode: configuration.courseCode,
+                        showsGrade: configuration.showsGradeInTitle(forSection: sectionNumber),
+                        showsSectionMarker: configuration.showsSectionMarker(forSection: sectionNumber),
+                        sectionNumber: sectionNumber
+                    )
+            )
 
             DisclosureGroup("Advanced") {
                 VStack(alignment: .leading, spacing: 4) {

@@ -145,6 +145,31 @@ class CourseConfiguration {
         setNestedValue(shows, forKey: "show_grade_in_title", childKey: "sections", entryKey: "section\(sectionNumber)")
     }
 
+    /// The landing page's title as the build will compute it — the same
+    /// literal rule as `computed_landing_title` in `scripts/build_site.py`:
+    /// the grade prefix when its switch is on and the code carries a grade
+    /// digit, the course name, and ", Section N" when the marker switch is
+    /// on. Used wherever the app previews the site's own headline.
+    static func landingTitle(
+        courseName: String,
+        courseCode: String,
+        showsGrade: Bool,
+        showsSectionMarker: Bool,
+        sectionNumber: Int
+    ) -> String {
+        let name: String = courseName.trimmingCharacters(in: .whitespaces)
+        var prefix: String = ""
+        let gradeLabel: String = SectionAdder.gradeLabel(forCourseCode: courseCode)
+        if showsGrade && !gradeLabel.isEmpty {
+            prefix = "\(gradeLabel) "
+        }
+        var title: String = "\(prefix)\(name)"
+        if showsSectionMarker {
+            title = "\(title), Section \(sectionNumber)"
+        }
+        return title
+    }
+
     /// A quiet warning when turning the grade on would repeat a grade the
     /// course name already carries — "Computer Science, Grade 12, U" would
     /// become "Grade 12 Computer Science, Grade 12, U". The behaviour
