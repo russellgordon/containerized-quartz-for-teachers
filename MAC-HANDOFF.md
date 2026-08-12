@@ -57,6 +57,17 @@ picked them up.
 
 ## Already shared — no mac code needed, just awareness
 
+- **The mac release asset must be named exactly `Plantoir-macOS.dmg`**
+  (2026-08-11). plantoir.app now lives in `site/` in this repo (Netlify
+  deploys it on push) and its download cards link straight to
+  `releases/latest/download/<asset-name>` — GitHub's evergreen URL that
+  only works while every release names its assets identically. Windows
+  ships `Plantoir-win-x64.zip`; the mac card expects
+  `Plantoir-macOS.dmg`. If the mac bundle is a zip instead of a dmg, say
+  so and the site link gets changed ONCE, in `site/index.html` — after
+  that the name is frozen. Renaming an asset silently breaks the site's
+  download button.
+
 - **The release process is shared — read `windows-app/RELEASING.md`**
   (2026-08-11). The decisions that bind both sides: ONE product version
   series in lockstep (Windows reads `<Version>` in `Plantoir.csproj`;

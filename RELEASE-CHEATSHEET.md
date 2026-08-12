@@ -25,12 +25,13 @@ all the whys: [`windows-app/RELEASING.md`](windows-app/RELEASING.md).
 
 5. **Tell Claude: "cut the release."** It drafts teacher-friendly notes
    from the commits, adds the SHA-256 table, shows you the draft, and
-   only after your OK tags `v<version>` and publishes to GitHub.
+   only after your OK: updates the site's version line, tags
+   `v<version>`, and publishes to GitHub. The push makes Netlify redeploy
+   plantoir.app by itself, and the site's download buttons serve the new
+   files automatically (evergreen links — as long as the assets keep
+   their exact names: `Plantoir-win-x64.zip`, `Plantoir-macOS.dmg`).
 
 6. **Same release, mac asset too** — both platforms ship on one GitHub
-   release page.
+   release page, the mac file named exactly `Plantoir-macOS.dmg`.
 
-7. **plantoir.app**: update the version + date line in `index.html`,
-   redeploy on Netlify.
-
-That's it. Steps 5–7 take five minutes; step 3 takes a coffee.
+That's it. Steps 5–6 take five minutes; step 3 takes a coffee.

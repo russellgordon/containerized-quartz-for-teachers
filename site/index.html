@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plantoir — class websites from Markdown notes</title>
+<meta name="description" content="Turns a folder of Markdown notes into a fast, searchable class website you own.">
+
+<!-- Social preview. Update the URLs if the domain changes. -->
+<meta property="og:site_name" content="Plantoir">
+<meta property="og:title" content="Plantoir">
+<meta property="og:description" content="Turns a folder of Markdown notes into a fast, searchable class website you own.">
+<meta property="og:url" content="https://plantoir.app">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://plantoir.app/social-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Plantoir seedling icon beside the words Plantoir, on a cream background.">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Plantoir">
+<meta name="twitter:description" content="Turns a folder of Markdown notes into a fast, searchable class website you own.">
+<meta name="twitter:image" content="https://plantoir.app/social-card.png">
+
+<meta name="theme-color" content="#F7EEDA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1C1A15" media="(prefers-color-scheme: dark)">
+
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+
+<style>
+:root {
+  color-scheme: light dark;
+
+  --paper:      #F7EEDA;
+  --paper-deep: #F0E3C9;
+  --card:       #FCF8EE;
+  --rule:       #DFD4B8;
+  --ink:        #2B2A24;
+  --ink-soft:   #6E6858;
+  --green:      #3E8C26;
+  --green-deep: #2D6620;
+}
+
+/* Dark mode. Warm near-black rather than blue-black, so the page still reads
+   as soil and paper. Greens lighten because the roles invert: --green-deep
+   is used for headings and links, which now sit on a dark background. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:      #1C1A15;
+    --paper-deep: #252118;
+    --card:       #24211A;
+    --rule:       #3D382C;
+    --ink:        #EDE7D6;
+    --ink-soft:   #A8A08C;
+    --green:      #A3DD87;
+    --green-deep: #86CC66;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  padding: 0 24px 96px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 620px; margin: 0 auto; }
+
+/* ---------- Masthead ---------- */
+
+header { padding: 88px 0 0; text-align: center; }
+
+header img {
+  width: 104px; height: 104px;
+  border-radius: 23px;
+  display: block; margin: 0 auto 26px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 46px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  color: var(--green-deep);
+}
+
+.tagline {
+  margin: 14px auto 0;
+  max-width: 460px;
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* ---------- Rules and sections ---------- */
+
+.rule {
+  height: 1px;
+  background: var(--rule);
+  border: 0;
+  margin: 56px 0;
+}
+
+h2 {
+  margin: 0 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--green-deep);
+}
+
+p { margin: 0 0 18px; }
+p:last-child { margin-bottom: 0; }
+
+em { font-style: italic; }
+
+a { color: var(--green-deep); text-decoration-thickness: 1px; text-underline-offset: 3px; overflow-wrap: break-word; }
+a:hover { color: var(--green); }
+
+/* ---------- Steps ---------- */
+
+ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: step; }
+
+ol.steps li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 42px;
+  margin-bottom: 16px;
+}
+
+ol.steps li:last-child { margin-bottom: 0; }
+
+ol.steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0; top: 2px;
+  width: 26px; height: 26px;
+  border: 1px solid var(--green);
+  border-radius: 50%;
+  color: var(--green-deep);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 24px;
+  text-align: center;
+}
+
+/* ---------- Downloads ---------- */
+
+.downloads { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.dl {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 22px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color .15s, transform .15s;
+}
+
+@media (hover: hover) {
+  .dl:hover { border-color: var(--green); transform: translateY(-2px); color: var(--ink); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dl { transition: none; }
+}
+
+.dl .platform { display: block; font-size: 19px; font-weight: 600; color: var(--green-deep); }
+.dl .meta { display: block; margin-top: 4px; font-size: 14px; color: var(--ink-soft); }
+
+.version-note { margin-top: 16px; font-size: 15px; color: var(--ink-soft); }
+
+/* ---------- Note panel ---------- */
+
+.note {
+  background: var(--paper-deep);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 22px 24px;
+  font-size: 15.5px;
+}
+
+.note h3 { margin: 0 0 10px; font-size: 16px; font-weight: 600; color: var(--green-deep); }
+.note h3:not(:first-child) { margin-top: 22px; }
+.note p { margin-bottom: 0; color: var(--ink-soft); }
+
+kbd {
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+/* ---------- Links list ---------- */
+
+ul.links { margin: 0; padding: 0; list-style: none; }
+ul.links li { margin-bottom: 10px; }
+ul.links li:last-child { margin-bottom: 0; }
+ul.links .label { display: inline-block; min-width: 100px; color: var(--ink-soft); font-size: 15px; }
+
+/* ---------- Footer ---------- */
+
+.sponsor {
+  background: var(--paper-deep);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 56px;
+  font-size: 15.5px;
+  color: var(--ink-soft);
+}
+
+.sponsor p { margin: 0; }
+
+footer {
+  margin-top: 32px;
+  padding-top: 28px;
+  border-top: 1px solid var(--rule);
+  font-size: 14.5px;
+  line-height: 2;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 560px) {
+  body { padding: 0 20px 72px; }
+  header { padding-top: 56px; }
+  h1 { font-size: 36px; }
+  .tagline { font-size: 18px; }
+  .downloads { grid-template-columns: 1fr; }
+  .rule { margin: 44px 0; }
+  .note { padding: 20px; }
+
+  /* Stack the label above its link instead of squeezing it into a column */
+  ul.links .label { display: block; min-width: 0; margin-bottom: 1px; }
+  ul.links li { margin-bottom: 16px; }
+
+  /* Long key names must be allowed to wrap rather than overflow */
+  kbd { white-space: normal; }
+
+  ol.steps li { padding-left: 38px; }
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<header>
+  <!-- Drop the 1024x1024 icon in this folder as icon.png -->
+  <img src="icon.png" alt="Plantoir icon: a green seedling">
+  <h1>Plantoir</h1>
+  <p class="tagline">Turns a folder of Markdown notes into a fast, searchable class website you own.</p>
+</header>
+
+<hr class="rule">
+
+<section>
+  <h2>What it is</h2>
+  <p>A <em>plantoir</em> is a dibber — the simple hand tool that opens a hole at the right depth so a seedling can be set in and take root. This one does the same for teaching materials.</p>
+  <p>Write in Obsidian, preview locally, publish when you're ready. No content management system, no fifteen clicks to post a handout, and no platform holding your work hostage when you move schools.</p>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>How it works</h2>
+  <ol class="steps">
+    <li>Add a course.</li>
+    <li>Write your notes as Markdown files, in Obsidian or any text editor.</li>
+    <li>Preview the site on your own machine, as often as you like.</li>
+    <li>Publish when you're ready. Your students get a real website.</li>
+  </ol>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>Download</h2>
+  <div class="downloads">
+    <!-- These links are EVERGREEN: GitHub's releases/latest/download/ serves
+         the newest release's asset as long as the asset NAME stays stable.
+         Never rename the assets without updating these hrefs (and vice
+         versa) — the names are pinned in windows-app/RELEASING.md. -->
+    <a class="dl" href="https://github.com/russellgordon/plantoir/releases/latest/download/Plantoir-macOS.dmg">
+      <span class="platform">macOS</span>
+      <span class="meta">Apple silicon and Intel</span>
+    </a>
+    <a class="dl" href="https://github.com/russellgordon/plantoir/releases/latest/download/Plantoir-win-x64.zip">
+      <span class="platform">Windows</span>
+      <span class="meta">Windows 10 and 11</span>
+    </a>
+  </div>
+  <!-- AUTO-UPDATED when a release is cut (the cut-release skill rewrites
+       this line); Netlify redeploys the site on push. -->
+  <p class="version-note">Version 1.0.0 &middot; Released August 2026 &middot; <a href="https://github.com/russellgordon/plantoir/releases">All releases</a></p>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>Source and support</h2>
+  <ul class="links">
+    <li><span class="label">Source</span> <a href="https://github.com/russellgordon/plantoir">github.com/russellgordon/plantoir</a></li>
+    <li><span class="label">Questions</span> <a href="https://github.com/russellgordon/plantoir/issues">Open an issue</a></li>
+    <li><span class="label">Email</span> <a href="mailto:support@plantoir.app">support@plantoir.app</a></li>
+  </ul>
+</section>
+
+<div class="sponsor">
+  <p>Plantoir is a friendly wrapper around <a href="https://quartz.jzhao.xyz">Quartz</a>, which Jacky Zhao builds and gives away for free. If you end up using Plantoir regularly, please consider <a href="https://github.com/sponsors/jackyzha0">sponsoring him on GitHub</a> — it is his work that makes all of this possible.</p>
+</div>
+
+<footer>
+  Built on <a href="https://quartz.jzhao.xyz">Quartz</a> by Jacky Zhao.<br>
+  Icon from <a href="https://phosphoricons.com">Phosphor Icons</a> (MIT).<br>
+  Designed by <a href="https://www.russellgordon.ca">Russell Gordon</a>.<br>
+  Built with Claude.<br>
+  MIT licensed — use, remix, and share freely, especially with other educators.
+</footer>
+
+</div>
+</body>
+</html>

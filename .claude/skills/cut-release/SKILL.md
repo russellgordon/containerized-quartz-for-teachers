@@ -15,12 +15,16 @@ this skill automates its steps 5–6 and the note-writing.
 1. Last release: `git describe --tags --abbrev=0` (if no tag exists,
    this is the first release — summarize the product, not the delta).
 2. The story since: `git log <last-tag>..HEAD --pretty=format:'%s%n%b%n---'`
-3. The bundle(s) to attach — normally `windows-app/dist/Plantoir-<version>-win-x64.zip`
+3. The bundle(s) to attach — normally `windows-app/dist/Plantoir-win-x64.zip`
    freshly produced by `publish.ps1 -Sign` (confirm with the user that
    the SIGNED bundle exists; never attach an unsigned one to a public
    release). Compute each asset's hash yourself:
    `(Get-FileHash <zip> -Algorithm SHA256).Hash.ToLower()` — from the
    EXACT file being uploaded, never trusted from memory or logs.
+   Asset names are LOAD-BEARING: `Plantoir-win-x64.zip` and
+   `Plantoir-macOS.dmg`, exactly — plantoir.app's download links resolve
+   `releases/latest/download/<asset-name>`, so a renamed asset silently
+   breaks the site. Refuse to attach an asset under any other name.
 4. Confirm `<Version>` in `windows-app/Plantoir/Plantoir.csproj` matches
    the intended tag, and that the working tree is clean.
 
@@ -58,12 +62,19 @@ publishing anything.
 
 ## Publish (after approval)
 
+1. Update the site's version line: in `site/index.html`, rewrite the
+   `class="version-note"` line to the new version and release month/year
+   (keep the "All releases" link). Commit it.
+2. Tag and release:
+
 ```
 git tag v<version>
 git push origin main v<version>
 gh release create v<version> <assets...> --title "Plantoir <version>" --notes-file <notes.md>
 ```
 
-Then remind the user of the manual tail from RELEASING.md: the mac asset
-(if it attaches separately), the plantoir.app version-note line, and —
-once WinSparkle lands — the appcast entry.
+The push redeploys plantoir.app automatically (Netlify watches `site/`),
+and the evergreen download links now serve the new assets — nothing
+manual remains for the site. Remind the user only of: the mac asset (if
+it attaches separately, named exactly `Plantoir-macOS.dmg`), and — once
+WinSparkle lands — the appcast entry.

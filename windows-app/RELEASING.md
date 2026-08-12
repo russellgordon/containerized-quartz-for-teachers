@@ -44,11 +44,20 @@ one GitHub release carrying both platforms' assets.
        gh release create v<version> dist/Plantoir-<version>-win-x64.zip \
          --title "Plantoir <version>" --notes "..."
 
-   The mac side attaches its own asset (dmg/zip) to the SAME release, so
-   plantoir.app's two download cards can both point at
-   `releases/latest`.
-6. **Update plantoir.app**: the version-note line (version + date) in
-   `index.html`; redeploy the site.
+   The mac side attaches its own asset to the SAME release.
+
+   **Asset names are LOAD-BEARING and must never change**:
+   `Plantoir-win-x64.zip` (publish.ps1 emits exactly this) and
+   `Plantoir-macOS.dmg`. plantoir.app's download cards point at
+   `releases/latest/download/<asset-name>` — GitHub's evergreen URL that
+   serves the newest release's asset, so teachers click Windows or macOS
+   and get the file, no GitHub in sight. Renaming an asset silently
+   breaks the site's download link.
+6. **plantoir.app updates itself**: the site lives in `site/` in this
+   repo, and Netlify deploys it on every push (one-time setup: in the
+   Netlify UI, link the site to the GitHub repo, publish directory
+   `site/`, no build command). Cutting the release edits the
+   version-note line in `site/index.html` and pushes — nothing manual.
 7. **Update the WinSparkle appcast** once in-app updates land (see
    below): add an `<item>` for the new version to `appcast.xml` on
    plantoir.app, pointing at the GitHub release asset URL.

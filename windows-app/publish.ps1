@@ -74,8 +74,12 @@ if ($Sign) {
 }
 
 # ---- Package ----------------------------------------------------------------
+# STABLE asset name, deliberately unversioned: plantoir.app's download link
+# is releases/latest/download/Plantoir-win-x64.zip, which GitHub resolves to
+# the newest release only when every release names the asset identically.
+# The version lives inside (exe metadata, About panel) and in the tag.
 New-Item -ItemType Directory -Force "dist" | Out-Null
-$zip = "dist\Plantoir-$version-win-x64.zip"
+$zip = "dist\Plantoir-win-x64.zip"
 if (Test-Path $zip) { Remove-Item $zip -Force }
 Compress-Archive -Path "$publishDir\*" -DestinationPath $zip
 $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
