@@ -1,0 +1,28 @@
+---
+title: Unit 3, Day 6
+draft: false
+created: __CREATED_CLASS_19__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-3
+---
+## Agenda
+
+1. Warm-up: [[Spot the Hazard]] — the integration round: three
+   subsystems, one supply, one ground
+2. Bench: connect the parts that each worked alone and find the
+   assumption they were quietly sharing. Predict which one will break
+   first, then run it and see
+3. Make the code refuse to fail quietly: [[Defensive Embedded Code]] —
+   check what a sensor returns before you trust it with a motor
+4. Discussion: [[Who Owns the Firmware]] — you wrote it, the school
+   owns the board, and somebody else will have to service it
+5. Control systems demonstrated and handed in. Journals open:
+   [[Showing Growth]] asks you to set today beside your first entry
+
+## Things to do before our next class
+
+- [ ] Journal: the integration failure you did not predict, traced
+      back to the assumption that caused it.
