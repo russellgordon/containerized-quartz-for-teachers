@@ -143,8 +143,8 @@ Keys the Windows settings UI must round-trip (per-section maps use
 ## Example content (entries 92–96)
 
 Ready-made course payloads ship in `support/example_content/<CODE>/`
-(ten as of 2026-08-12: ADA1O, ICD2O, MCR3U, MCV4U, MHF4U, MPM2D,
-MTH1W, SNC1W, TEJ2O, TGJ2O — SNC1W is the example course's content converted
+(eleven as of 2026-08-12: ADA1O, ICD2O, MCR3U, MCV4U, MDM4U, MHF4U,
+MPM2D, MTH1W, SNC1W, TEJ2O, TGJ2O — SNC1W is the example course's content converted
 to payload form, so a teacher actually teaching Grade 9 science gets
 it as starting content). All
 the installing, date logic, and curriculum handling is shared Python —
