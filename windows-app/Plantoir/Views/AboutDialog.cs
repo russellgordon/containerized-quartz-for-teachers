@@ -11,9 +11,9 @@ public sealed class AboutDialog : ContentDialog
 {
     public AboutDialog()
     {
-        // Just "About": the panel's own heading says Plantoir, large, right
-        // below — repeating it in the title would say nothing new.
-        Title = "About";
+        // No dialog title at all: the icon and the large "Plantoir" heading
+        // ARE the title, as on the mac About window. The menu item that opens
+        // this panel still says "About Plantoir", so nothing is left unnamed.
         CloseButtonText = "Close";
 
         var panel = new StackPanel { Spacing = 0, MaxWidth = 460 };
