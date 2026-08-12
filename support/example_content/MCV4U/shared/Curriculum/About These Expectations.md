@@ -35,9 +35,9 @@ A few honesty notes about the reproduction:
   reproduced as text (a function with a corner at a point P in `A1.2`,
   and a graph of y = g(x) in `B1.4`); bracketed notes mark their
   places.
-- Typeset mathematics is linearized for the web (in-line fractions
-  parenthesized, `lim[h→0]` for the limit notation, `→a` describing an
-  over-letter vector arrow), wording untouched.
+- The mathematics is typeset (stacked fractions, radical bars, vector
+  arrows) the way the document prints it, using LaTeX — wording
+  untouched.
 
 Each page keeps its code, and every lesson, exploration, and task in
 this course links back to the codes it addresses. The codes are also
