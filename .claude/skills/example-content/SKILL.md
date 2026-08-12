@@ -111,6 +111,16 @@ line, why codes matter). Plus `index.md` (strand mermaid graph + every
 expectation transcluded in document order). Curriculum pages have NO
 `created:` line.
 
+**Mathematics on curriculum pages is ALWAYS pretty-printed** — KaTeX
+via `$...$` spans, never linearized ASCII (no `x^2` carets, `(a)/(b)`
+fractions, `lim[h→0]`, or `→a` vector arrows in the published pages;
+those conventions belong only in the research capture file). The
+Ministry's own documents typeset their mathematics, so pretty print IS
+the verbatim appearance: stacked fractions, radical bars, limits with
+the approach beneath, arrows over vectors. Wording stays untouched —
+only notation is wrapped, minimally. Currency and markdown-seam rules
+from Phase 5 apply here too.
+
 ## Phase 5 — Author the content
 
 **The style contract** (gold standard: `ADA1O/shared/Conventions/Tableau.md`):
@@ -239,8 +249,20 @@ the linter.
    `grep -rl katex-error <public dir>` finds NOTHING — a katex-error span
    means an equation shattered at a markdown seam (see the math rules in
    Phase 5).
-6. Clean up: `docker rm -f <container>`, `rm -rf courses/<CODE>`.
-7. No GUI-IMPROVEMENTS entry for a content-only payload (the spec tracks
+6. **Math fidelity check**: where the source curriculum document
+   typesets its mathematics (the 2007 mathematics PDF does), an
+   adversarial verifier MUST compare every rendered expression
+   side-by-side against renders of the document's own pages (150–400
+   dpi as legibility demands): every coefficient, sign, exponent,
+   subscript, fraction orientation, radical scope, vector arrow, and
+   relation symbol. MCV4U is the reference for this pass (37/37 pages
+   matched print). Older or plainer documents may print no typeset
+   equations to compare against — best effort MUST still be made that
+   the KaTeX output matches the regular-print equivalent: verify each
+   expression against the document's plain-text form token by token,
+   and read the rendered pages.
+7. Clean up: `docker rm -f <container>`, `rm -rf courses/<CODE>`.
+8. No GUI-IMPROVEMENTS entry for a content-only payload (the spec tracks
    behaviour); commit with a message naming the course code.
 
 ## Converting an existing complete course into a payload
