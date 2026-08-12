@@ -26,6 +26,21 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 
+# ---- Signing preflight: fail in seconds, not after a minutes-long build ----
+if ($Sign) {
+    if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
+        throw "Azure CLI not found. One-time install:  winget install --exact --id Microsoft.AzureCLI  (then open a NEW terminal)"
+    }
+    if (-not (Get-Command sign -ErrorAction SilentlyContinue)) {
+        throw "The 'sign' tool is not installed. One-time install:  dotnet tool install --global sign --prerelease"
+    }
+    az account show --output none 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Not signed in to Azure. Run:  az login  (sign in as the Azure signing account) and retry."
+    }
+    Write-Host "Signing preflight OK: az CLI, sign tool, and an active az login." -ForegroundColor Green
+}
+
 # ---- Version, from the csproj alone ----------------------------------------
 $csproj = [xml](Get-Content "Plantoir\Plantoir.csproj")
 $version = ($csproj.Project.PropertyGroup.Version | Where-Object { $_ }) | Select-Object -First 1

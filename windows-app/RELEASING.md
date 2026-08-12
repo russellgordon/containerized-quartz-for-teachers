@@ -11,13 +11,21 @@ one GitHub release carrying both platforms' assets.
 1. **Bump the version** in `Plantoir/Plantoir.csproj` (`<Version>`), commit.
 2. **Full test pass**: `dotnet test Plantoir.Tests` (all green), plus a
    hand smoke of create → preview → deploy on a real course.
-3. **Build the signed bundle** (one-time setup: the Azure Artifact
-   Signing runbook; per-session: `az login`):
+3. **Build the signed bundle**:
 
        powershell -File publish.ps1 -Sign
 
-   The script refuses to package a signature without a timestamp. Output:
-   `dist/Plantoir-<version>-win-x64.zip` + its SHA-256.
+   One-time tooling on a new machine (the Azure account/identity setup
+   itself lives in the private Artifact Signing runbook):
+
+       winget install --exact --id Microsoft.AzureCLI   # then open a NEW terminal
+       dotnet tool install --global sign --prerelease
+
+   Per session: `az login` (as the Azure signing account). The script
+   preflights all three — missing tool or stale login fails in seconds
+   with the remedy, before the minutes-long build. It signs with the
+   RFC 3161 timestamp and refuses to package a signature without one.
+   Output: `dist/Plantoir-<version>-win-x64.zip` + its SHA-256.
 4. **Verify like a teacher** (the only test that reproduces what they
    see): copy the zip to a machine — or at least a fresh folder —
    download it through a browser if possible, extract, right-click
