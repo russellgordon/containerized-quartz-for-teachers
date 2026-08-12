@@ -87,9 +87,41 @@ Keys the Windows settings UI must round-trip (per-section maps use
 - `shared_folders`, `shared_files`, `per_section_folders`,
   `per_section_files`, `hidden`, `expandable`, `expandOnFolderClick`,
   `show_reading_time`, `footer_html`
+- `prepopulate_example_content`, `include_curriculum_pages` (entries
+  92–93) — written by the new-course wizard, read by the shared Python
+  wizard as its defaults; both forced false when no example content
+  exists for the course code
+- `use_lcs_terminology` (entry 94) — whether the factory structure
+  defaults use LCS's own set-up; the two factory sets live as
+  `DEFAULT_*` vs `LCS_*` constants in `scripts/setup_course.py` and the
+  Windows equivalent of `WizardDefaults` must mirror them exactly
 - **Edit keys in place and preserve unknown keys** — the macOS app keeps
   the decoded JSON as a dictionary precisely so future toolchain keys
   survive a settings round-trip.
+
+## Example content (entries 92–96)
+
+Ready-made course payloads ship in `support/example_content/<CODE>/`
+(six as of 2026-08-11: ADA1O, ICD2O, MPM2D, MTH1W, TEJ2O, TGJ2O). All
+the installing, date logic, and curriculum handling is shared Python —
+Windows needs exactly three UI behaviours:
+
+- **Detection**: example content exists for a code when the bundled
+  `support/example_content/<CODE>/manifest.json` exists; the curriculum
+  toggle additionally needs the manifest's `curriculum_folder` to be
+  non-empty (reference logic: `ExampleContentCatalog.swift`).
+- **Starting Content section** in the new-course wizard: "Pre-populate
+  course with example content" (default ON) with "Include Ontario
+  curriculum pages" beneath it (default ON, disabled when the first is
+  off); a quiet caption instead when no content exists for the code.
+- **Structure lock**: when pre-populating, HIDE the folders/files
+  editor behind a caption — the payload's manifest is the entire
+  structure authority and the Python wizard skips all structure
+  prompts.
+
+Authoring new payloads is content work, governed by the repo-local
+skill `.claude/skills/example-content/` and checked by its
+`lint_payload.py` — no app code changes on either platform.
 
 ## Behaviours with platform-specific mechanics
 
@@ -103,8 +135,15 @@ Keys the Windows settings UI must round-trip (per-section maps use
   the File Explorer's auto-reveal by patching the vault's
   `workspace.json` whenever Obsidian is closed (a pre-seeded layout is
   discarded on a vault's first open — verified).
-- **Window restoration** (entries 64–65): keep per-window state in the
-  app's own store, keyed by something the platform restores faithfully.
+- **Window restoration** (entries 64–65, 98–99): keep per-window state
+  in the app's own store, keyed by something the platform restores
+  faithfully. Each entry now carries, beside the folder: the expanded
+  course codes, whether the Archived group is open, and the sidebar
+  selection (`course|CODE`, `section|CODE|N`, `archived|ID`) — restore
+  all of it when a window claims its entry. Two rules learned the hard
+  way: resolve claims on the platform's restoration-complete signal
+  rather than polling, and while a claim may still arrive show a quiet
+  loading state, never the folder picker the claim is about to replace.
   The scenario test suite in the macOS app is the porting spec.
 - **New windows** (entry 84): inherit the folder of the window that was
   key when the command ran; with no windows open, show the folder picker.
