@@ -14,7 +14,7 @@ inside the container, and the PowerShell launchers (`setup.ps1`,
 job is the interface: the same behaviours as the macOS app, driving the
 `.ps1` launchers instead of the `.sh` ones.
 
-**The specification is [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md)** — 90
+**The specification is [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md)** — 106
 numbered entries, each describing a behaviour the macOS app has and each
 carrying a Windows-porting note. Work through it top to bottom; it is the
 product of a great deal of live testing and every entry earned its place.
@@ -24,7 +24,9 @@ product of a great deal of live testing and every entry earned its place.
 1. **The GUI never mentions the machinery.** No "toolchain", "script",
    "Docker", "container", or "WSL" in user-facing text. Plain words:
    "Building your website builder…", "Getting this Mac ready…" (yours will
-   say "this PC").
+   say "this PC"). Same rule for developer jargon: the visible verb is
+   **Publish**, never "Deploy" (entry 103) — internal names, script file
+   names, and config keys keep "deploy".
 2. **Use the script logic itself as much as possible.** The app runs the
    real launchers and answers their real prompts; it does not reimplement
    them. Progress comes from parsing their output (milestone markers,
@@ -57,6 +59,34 @@ product of a great deal of live testing and every entry earned its place.
   folder (`PreviewLeases` in the macOS app), parses the announced
   "Preview will be available at:" address rather than assuming it, and
   refuses a duplicate preview of the same section in the same folder.
+- **Course activity registry** (entry 104): one cross-window record of
+  which courses are previewing (the port leases already know) or
+  publishing (begin/end records around the publish flow, ended on EVERY
+  exit path). "Add Section…" declines while its course is active, with a
+  short line naming the blocker ("Available once preview completed").
+  Staleness lesson: read the enabled state when the menu OPENS, or make
+  registry changes re-render whatever hosts the menu — a state captured
+  at an earlier render shows yesterday's answer.
+- **Stopping a preview reclaims the container side** (entry 105): killing
+  the host-side launcher orphans the build or server INSIDE the
+  container (an orphaned build burns real CPU). `preview.ps1 CODE N
+  --stop` kills that section's container-side processes (found by
+  working directory, so other sections are safe) and never starts
+  anything. Call it fire-and-forget — output discarded — wherever a
+  preview ends: stop button, navigating away, window close.
+- **Backups and archives** (entry 106): three zip kinds share
+  `courses/_backups/<CODE>/`, told apart ONLY by name —
+  `<CODE>_backup_<timestamp>.zip` (teacher-made backups),
+  `<CODE>_<timestamp>.zip` / `<CODE>-sectionN_<timestamp>.zip`
+  (archives from removals), `<timestamp>.zip` (the wizard's automatic
+  zips, never listed). Backups get their own sidebar group above
+  Archived. Restoring a backup archives the current course FIRST, then
+  replaces the course folder's CONTENTS in place — never the folder
+  itself (see the Obsidian note below) — and keeps the zip. Deleting a
+  backup or an archive is the app's only true deletion; the archive
+  confirmation states a FACT about what remains (live course / other
+  copies / only remaining copy — a whole-course archive covers a
+  section archive, never the reverse).
 - **Container engine**: Docker Engine in WSL2. The macOS zero-prerequisite
   bootstrap (static Colima/Lima/docker/buildx downloads into the app's own
   Application Support folder) needs a Windows analogue — silent WSL2 +
@@ -148,13 +178,18 @@ skill `.claude/skills/example-content/` and checked by its
   open at their `index.md` (Obsidian opens files, not folders). Enable
   the File Explorer's auto-reveal by patching the vault's
   `workspace.json` whenever Obsidian is closed (a pre-seeded layout is
-  discarded on a vault's first open — verified).
-- **Window restoration** (entries 64–65, 98–99): keep per-window state
-  in the app's own store, keyed by something the platform restores
+  discarded on a vault's first open — verified). One more watcher
+  lesson (entry 106): Obsidian's file watcher is anchored to the vault
+  FOLDER's identity — replace the folder and an open vault shows stale
+  files until reopened; replace only its contents and Obsidian
+  refreshes itself. Any feature that rewrites a course wholesale (like
+  restoring a backup) must swap contents, never the folder.
+- **Window restoration** (entries 64–65, 98–99, 106): keep per-window
+  state in the app's own store, keyed by something the platform restores
   faithfully. Each entry now carries, beside the folder: the expanded
-  course codes, whether the Archived group is open, and the sidebar
-  selection (`course|CODE`, `section|CODE|N`, `archived|ID`) — restore
-  all of it when a window claims its entry. Two rules learned the hard
+  course codes, whether the Archived and Backups groups are open, and
+  the sidebar selection (`course|CODE`, `section|CODE|N`, `archived|ID`,
+  `backup|ID`) — restore all of it when a window claims its entry. Two rules learned the hard
   way: resolve claims on the platform's restoration-complete signal
   rather than polling, and while a claim may still arrive show a quiet
   loading state, never the folder picker the claim is about to replace.
@@ -175,7 +210,12 @@ skill `.claude/skills/example-content/` and checked by its
 
 - The **PowerShell launchers are written but UNTESTED on real Windows** —
   see [`WINDOWS-TESTING.md`](WINDOWS-TESTING.md). Test them first; they
-  are the foundation everything else drives.
+  are the foundation everything else drives. Two flags are newer than
+  any Windows test pass and need their own checks: `deploy.ps1
+  --to-folder <path>` (robocopy mirror into `<path>\sectionN`, exit
+  codes below 8 are success) and `preview.ps1 CODE N --stop` (kills the
+  section's container-side processes over stdin-piped Python; must
+  never start the engine or a container).
 - `verify.sh` is the toolchain gate on macOS/Linux; a Windows verify
   script should mirror it, including its cross-check that every helper a
   launcher calls is defined in that same launcher file (a missing helper
@@ -186,7 +226,7 @@ skill `.claude/skills/example-content/` and checked by its
 
 ## Documentation map
 
-- [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) — THE spec (90 entries).
+- [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) — THE spec (106 entries).
 - [`documentation/`](documentation/README.md) — toolchain deep dives 01–09.
 - [`DEVELOPERS.md`](DEVELOPERS.md) — repo conventions, testing, setup.
 - [`WINDOWS-TESTING.md`](WINDOWS-TESTING.md) — .ps1 launcher status.
