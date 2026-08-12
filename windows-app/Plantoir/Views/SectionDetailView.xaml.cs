@@ -24,6 +24,7 @@ public sealed partial class SectionDetailView : UserControl
     private readonly ScriptRunner _previewRunner = new(SynchronizationContext.Current);
     private readonly ScriptRunner _deployRunner = new(SynchronizationContext.Current);
     private PreviewLeases.Lease? _lease;
+    private IDisposable? _publishActivity;
     private Uri? _previewUrl;
     private Uri? _lastLoadedUrl;
     private bool _isWaitingForServer;
@@ -259,6 +260,12 @@ public sealed partial class SectionDetailView : UserControl
             _course.Configuration.CustomDomain(_sectionNumber));
         _deployRunner.CustomDomainForLinks = customDomain.Length == 0 ? null : customDomain;
 
+        // The publish is on the books for its WHOLE life — the quiet build
+        // included — and comes off them on every exit path (EndPublish runs
+        // from the runner-stopped transition in RefreshChrome).
+        _publishActivity?.Dispose();
+        _publishActivity = CourseActivity.BeginPublish(workspacePath, _course.Code, _sectionNumber);
+
         if (needsBuild)
         {
             // Build quietly first; a failed build stops before publishing —
@@ -266,12 +273,20 @@ public sealed partial class SectionDetailView : UserControl
             _deployRunner.Run("preview.ps1",
                 new[] { _course.Code, _sectionNumber.ToString(), "--build-only" }, workspacePath);
             RefreshChrome();
-            if (!await _deployRunner.WaitUntilFinished()) return;
+            if (!await _deployRunner.WaitUntilFinished()) { EndPublishActivity(); return; }
         }
         _deployRunner.Run("deploy.ps1",
             new[] { _course.Code, _sectionNumber.ToString() }, workspacePath,
             keepTranscript: needsBuild);
         RefreshChrome();
+        await _deployRunner.WaitUntilFinished();   // outcome already on screen
+        EndPublishActivity();
+    }
+
+    private void EndPublishActivity()
+    {
+        _publishActivity?.Dispose();
+        _publishActivity = null;
     }
 
     // ---- Browser chrome --------------------------------------------------

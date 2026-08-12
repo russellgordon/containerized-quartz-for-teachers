@@ -276,7 +276,21 @@ public sealed partial class SidebarPane : UserControl
     private MenuFlyout CourseMenu(Course course)
     {
         var menu = new MenuFlyout();
-        menu.Items.Add(MenuItem("Add Section…", AddSectionGlyph, () => _ = OpenAddSectionDialog(course)));
+        var addItem = MenuItem("Add Section…", AddSectionGlyph, () => _ = OpenAddSectionDialog(course));
+        var busyNote = new MenuFlyoutItem { IsEnabled = false, Visibility = Visibility.Collapsed };
+        menu.Items.Add(addItem);
+        menu.Items.Add(busyNote);
+        // The staleness lesson from the mac (row 104): menu content is built
+        // when the ROW renders, not when the teacher opens it — so the busy
+        // state is read the moment the menu opens, never captured earlier.
+        menu.Opening += (_, _) =>
+        {
+            string? reason = Workspace.WorkspacePath is { } folder
+                ? CourseActivity.BusyReason(folder, course.Code) : null;
+            addItem.IsEnabled = reason is null;
+            busyNote.Text = reason ?? "";
+            busyNote.Visibility = reason is null ? Visibility.Collapsed : Visibility.Visible;
+        };
         menu.Items.Add(new MenuFlyoutSeparator());
         menu.Items.Add(ObsidianItem(course.DirectoryPath, course.DirectoryPath));
         menu.Items.Add(new MenuFlyoutSeparator());
@@ -448,6 +462,17 @@ public sealed partial class SidebarPane : UserControl
 
     public async Task OpenAddSectionDialog(Course course)
     {
+        // Belt to the menu's braces: adding a section re-runs the course
+        // setup, which rewrites folders a live preview or publish may be
+        // mid-copy of. Decline while the course is busy anywhere.
+        if (Workspace.WorkspacePath is { } folder
+            && CourseActivity.BusyReason(folder, course.Code) is not null)
+        {
+            await ShowError($"{course.Code} is busy right now",
+                "Adding a section rewrites the course's folders and files, and a " +
+                "preview or publish of this course is still using them. Try again when it finishes.");
+            return;
+        }
         var dialog = new AddSectionDialog(course) { XamlRoot = XamlRoot };
         await dialog.ShowAsync();
         if (dialog.AddedNumber is { } number)

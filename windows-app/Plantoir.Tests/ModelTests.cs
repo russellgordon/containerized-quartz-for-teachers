@@ -265,6 +265,70 @@ public class ArchiveRoundTripTests
     }
 }
 
+/// <summary>
+/// The cross-window busy registry gating Add Section (row 104). Folder paths
+/// are unique per test so the static registry never crosses wires with the
+/// lease tests.
+/// </summary>
+public class CourseActivityTests
+{
+    private static string Folder() => @"C:\activity-" + Guid.NewGuid().ToString("N");
+
+    [Fact]
+    public void PublishesAreScopedToTheirCourseAndFolder()
+    {
+        string folder = Folder(), other = Folder();
+        using var publish = CourseActivity.BeginPublish(folder, "ICS3U", 1);
+        Assert.True(CourseActivity.IsPublishing(folder, "ICS3U"));
+        Assert.False(CourseActivity.IsPublishing(folder, "ICS4U"));
+        Assert.False(CourseActivity.IsPublishing(other, "ICS3U"));   // same code, other folder = other course
+    }
+
+    [Fact]
+    public void TwoPublishesOfOneCourseEndIndependently()
+    {
+        string folder = Folder();
+        var first = CourseActivity.BeginPublish(folder, "ICS3U", 1);
+        var second = CourseActivity.BeginPublish(folder, "ICS3U", 3);
+        first.Dispose();
+        Assert.True(CourseActivity.IsPublishing(folder, "ICS3U"));   // section 3 still going
+        second.Dispose();
+        Assert.False(CourseActivity.IsPublishing(folder, "ICS3U"));
+        second.Dispose();   // double-dispose is harmless
+        Assert.False(CourseActivity.IsPublishing(folder, "ICS3U"));
+    }
+
+    [Fact]
+    public void BusyReasonNamesWhatStandsInTheWay()
+    {
+        string folder = Folder();
+        Assert.Null(CourseActivity.BusyReason(folder, "ICS3U"));
+
+        var publish = CourseActivity.BeginPublish(folder, "ICS3U", 1);
+        Assert.Equal("Available once publish completed", CourseActivity.BusyReason(folder, "ICS3U"));
+
+        var lease = PreviewLeases.Take(folder, "ICS3U", 2);
+        Assert.Equal("Available once preview and publish complete", CourseActivity.BusyReason(folder, "ICS3U"));
+
+        publish.Dispose();
+        Assert.Equal("Available once preview completed", CourseActivity.BusyReason(folder, "ICS3U"));
+
+        PreviewLeases.Release(lease);
+        Assert.Null(CourseActivity.BusyReason(folder, "ICS3U"));
+    }
+
+    [Fact]
+    public void PreviewsCountThroughTheirLeases()
+    {
+        string folder = Folder();
+        var lease = PreviewLeases.Take(folder, "MCV4U", 1);
+        Assert.True(CourseActivity.IsPreviewing(folder, "MCV4U"));
+        Assert.False(CourseActivity.IsPreviewing(folder, "ICS3U"));
+        PreviewLeases.Release(lease);
+        Assert.False(CourseActivity.IsPreviewing(folder, "MCV4U"));
+    }
+}
+
 public class BuildFreshnessTests
 {
     [Fact]
