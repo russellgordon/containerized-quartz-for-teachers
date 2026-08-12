@@ -14,7 +14,17 @@
     <WindowsPackageType>None</WindowsPackageType>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!-- The exe's own icon: Explorer, taskbar, Alt-Tab. Derived from the mac
+         Icon Composer art (see AboutDialog for the in-app copy). -->
+    <ApplicationIcon>Assets\Plantoir.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Runtime copies: the window icon (AppWindow.SetIcon wants a file) and
+         the About panel's image. -->
+    <Content Include="Assets\Plantoir.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\PlantoirIcon.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.*" />

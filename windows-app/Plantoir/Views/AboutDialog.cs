@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Documents;
 
 namespace Plantoir.Views;
 
-/// <summary>The About panel: name, version, tagline, the namesake story, support links, credits.</summary>
+/// <summary>The About panel: icon, name, version, tagline, the namesake story, support links, credits.</summary>
 public sealed class AboutDialog : ContentDialog
 {
     public AboutDialog()
@@ -15,6 +15,23 @@ public sealed class AboutDialog : ContentDialog
         CloseButtonText = "Close";
 
         var panel = new StackPanel { Spacing = 0, MaxWidth = 460 };
+
+        // The app icon beside the text column, as the mac About arranges it.
+        var layout = new Grid { ColumnSpacing = 20 };
+        layout.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        var icon = new Image
+        {
+            Width = 96,
+            Height = 96,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(0, 6, 0, 0),
+            Source = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(
+                new Uri("ms-appx:///Assets/PlantoirIcon.png")),
+        };
+        layout.Children.Add(icon);
+        Grid.SetColumn(panel, 1);
+        layout.Children.Add(panel);
 
         panel.Children.Add(new TextBlock { Text = "Plantoir", FontSize = 26, FontWeight = FontWeights.Bold });
         string version = typeof(AboutDialog).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
@@ -62,7 +79,7 @@ public sealed class AboutDialog : ContentDialog
             Margin = new Thickness(0, 14, 0, 0),
         });
 
-        Content = panel;
+        Content = layout;
     }
 
     private static HyperlinkButton Link(string uri, string label) => new()

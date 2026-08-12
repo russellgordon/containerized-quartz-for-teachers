@@ -267,7 +267,9 @@ Windows app), 🟠 partial, ⬜ not yet, — no Windows work needed.
   then-register dance, defaults seeding, autoReveal patch, index.md
   targeting — implemented; needs a live click-through) · ⬜ 81 (UIA
   press-and-look regression tests) · 🟠 82 (About dialog with the
-  companion copy; real icon + accessibility scaling pending) · — 83,
+  companion copy AND the real icon — derived from the mac Icon Composer
+  art via Assets/make-icon.ps1, on the exe, title bar, and About panel;
+  accessibility scaling still pending) · — 83,
   88 (toolchain-side) · ✅ 86 (drafts via SectionAdder fallback +
   sibling mirroring) · ✅ 87 (custom domain field, normalization,
   orange note, link swap) · ✅ 89 (literal per-section grade toggle +

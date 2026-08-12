@@ -47,6 +47,11 @@ public sealed partial class MainWindow : Window
         if (AppWindow.Presenter is OverlappedPresenter minPresenter)
             minPresenter.PreferredMinimumHeight = 600;
 
+        // Title-bar and Alt-Tab icon. The exe's ApplicationIcon covers
+        // Explorer and pinned taskbar buttons; a live window wants its own.
+        try { AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "Plantoir.ico")); }
+        catch { /* a missing icon must never stop the window */ }
+
         Picker.Attach(this);
         Sidebar.Attach(this);
 
