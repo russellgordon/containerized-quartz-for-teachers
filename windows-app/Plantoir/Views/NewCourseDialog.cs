@@ -75,6 +75,16 @@ public sealed class NewCourseDialog : ContentDialog
         HorizontalContentAlignment = HorizontalAlignment.Stretch,
     };
 
+    /// <summary>
+    /// The font sample shows the course's OWN name once one is typed — the
+    /// teacher sees their actual site title in the candidate typeface, not a
+    /// stand-in. The stand-in remains for the nameless moment only.
+    /// </summary>
+    private TextBlock? _fontSampleHeader;
+
+    private string SampleHeaderText() =>
+        _nameBox.Text.Trim() is { Length: > 0 } name ? name : "Grade 11 Computer Science";
+
     private static string ExampleContentRoot => BundledToolchain.SupportPath("example_content");
     private string NormalizedCode => _codeBox.Text.Trim().ToUpperInvariant();
 
@@ -234,7 +244,11 @@ public sealed class NewCourseDialog : ContentDialog
         nameRow.Children.Add(FormBuilders.ExampleCaption("e.g. Introduction to Computer Science"));
         nameRow.Children.Add(_suggestionsRow);
         form.Children.Add(nameRow);
-        _nameBox.TextChanged += (_, _) => RefreshGradeWarning();
+        _nameBox.TextChanged += (_, _) =>
+        {
+            RefreshGradeWarning();
+            if (_fontSampleHeader is not null) _fontSampleHeader.Text = SampleHeaderText();
+        };
 
         form.Children.Add(_shortRow);
 
@@ -287,7 +301,8 @@ public sealed class NewCourseDialog : ContentDialog
         foreach (var pairing in pairings)
             pairingBox.Items.Add(FontCatalog.PairingLabel(pairing.Header, pairing.Body));
         pairingBox.SelectedIndex = pairings.Count - 1;   // system default
-        var headerSample = new TextBlock { Text = "Grade 11 Computer Science", FontSize = 19 };
+        _fontSampleHeader = new TextBlock { Text = SampleHeaderText(), FontSize = 19 };
+        var headerSample = _fontSampleHeader;
         var bodySample = new TextBlock { Text = "Body text on your site will look like this sentence does.", FontSize = 13 };
         var fontSample = new StackPanel { Spacing = 4 };
         fontSample.Children.Add(headerSample);

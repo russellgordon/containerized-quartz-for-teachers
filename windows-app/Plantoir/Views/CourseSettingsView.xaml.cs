@@ -37,7 +37,20 @@ public sealed partial class CourseSettingsView : UserControl
     {
         RefreshDirtyState();
         HeaderName.Text = Config.CourseName;
+        foreach (var sample in _fontSampleHeaders) sample.Text = SampleHeaderText();
     }
+
+    // ---- Font sample text ------------------------------------------------
+
+    /// <summary>
+    /// The font samples show the course's OWN name once there is one — the
+    /// teacher sees their actual site title in the candidate typeface, not a
+    /// stand-in. The stand-in remains for the nameless moment only.
+    /// </summary>
+    private readonly List<TextBlock> _fontSampleHeaders = new();
+
+    private string SampleHeaderText() =>
+        Config.CourseName.Trim() is { Length: > 0 } name ? name : "Grade 11 Computer Science";
 
     private void RefreshDirtyState()
     {
@@ -51,6 +64,7 @@ public sealed partial class CourseSettingsView : UserControl
     private void BuildForm()
     {
         Form.Children.Clear();
+        _fontSampleHeaders.Clear();   // rebuilt below; Revert re-enters here
 
         // -------- Settings — Overall --------
         Form.Children.Add(FormBuilders.SectionHeaderWithCaption("Settings — Overall", null));
@@ -246,7 +260,8 @@ public sealed partial class CourseSettingsView : UserControl
         }
         pairingBox.SelectedIndex = selected;
 
-        var headerSample = new TextBlock { Text = "Grade 11 Computer Science", FontSize = 19 };
+        var headerSample = new TextBlock { Text = SampleHeaderText(), FontSize = 19 };
+        _fontSampleHeaders.Add(headerSample);
         var bodySample = new TextBlock { Text = "Body text on your site will look like this sentence does.", FontSize = 13 };
         var samplePanel = new StackPanel { Spacing = 4 };
         samplePanel.Children.Add(headerSample);

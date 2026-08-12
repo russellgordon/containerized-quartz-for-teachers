@@ -27,6 +27,17 @@ picked them up.
   (`BuiltForPreview`) and the `APreviewBuildIsNeverDeployFresh` test in
   `windows-app/Plantoir.Tests/ModelTests.cs`.
 
+- **Font samples show the course's own name** (Windows, 2026-08-11).
+  Once a course name is set (typed in the wizard, or stored in settings),
+  the header font sample renders THAT name in the candidate typeface
+  instead of the "Grade 11 Computer Science" stand-in — the teacher sees
+  their actual site title. The stand-in remains only while no name
+  exists; the body-sentence sample is unchanged; samples update live as
+  the name is edited. Mirror in the mac wizard's FontChoiceEditorView
+  and Course Settings. Reference: `SampleHeaderText()` in
+  `windows-app/Plantoir/Views/NewCourseDialog.cs` and
+  `windows-app/Plantoir/Views/CourseSettingsView.xaml.cs`.
+
 - **Explain a disabled Create button in the wizard** (from `2d10e4c`,
   2026-08-11). On Windows, a filled-in New Course form with a DUPLICATE
   course code left Create greyed with no explanation — the sections
