@@ -17,11 +17,12 @@ enum WindowFolderMemory {
         let frame: String
 
         /// The sidebar as the teacher left it: which courses' disclosure
-        /// triangles were open, and whether the Archived group was.
-        /// Restored with the folder, so a reopened window shows the same
-        /// courses unfolded that were being worked on.
+        /// triangles were open, and whether the Archived and Backups
+        /// groups were. Restored with the folder, so a reopened window
+        /// shows the same courses unfolded that were being worked on.
         var expandedCourses: [String] = []
         var archivedExpanded: Bool = false
+        var backupsExpanded: Bool = false
 
         /// The selected course, section, or archived item, in
         /// `SidebarSelection`'s storage form; empty for none.
@@ -130,6 +131,7 @@ enum WindowFolderMemory {
                 "frame": entry.frame,
                 "expanded": entry.expandedCourses.joined(separator: ","),
                 "archived": entry.archivedExpanded ? "1" : "0",
+                "backups": entry.backupsExpanded ? "1" : "0",
                 "selection": entry.selection,
             ])
         }
@@ -168,6 +170,7 @@ enum WindowFolderMemory {
                         frame: pair["frame"] ?? "",
                         expandedCourses: expandedCourses,
                         archivedExpanded: pair["archived"] == "1",
+                        backupsExpanded: pair["backups"] == "1",
                         selection: pair["selection"] ?? ""
                     ))
                 }

@@ -7,6 +7,8 @@ enum SidebarSelection: Hashable {
     case section(String, Int)
     /// An archived course or section, identified by its archive.
     case archived(String)
+    /// A saved backup of a course, identified by its zip.
+    case backup(String)
 }
 
 // MARK: - Storage form
@@ -23,6 +25,8 @@ extension SidebarSelection {
             return "section|\(code)|\(number)"
         case .archived(let identifier):
             return "archived|\(identifier)"
+        case .backup(let identifier):
+            return "backup|\(identifier)"
         }
     }
 
@@ -40,6 +44,8 @@ extension SidebarSelection {
             return nil
         case "archived" where pieces.count == 2:
             return .archived(pieces[1])
+        case "backup" where pieces.count == 2:
+            return .backup(pieces[1])
         default:
             return nil
         }

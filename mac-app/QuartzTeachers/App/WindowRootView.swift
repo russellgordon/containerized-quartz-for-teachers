@@ -136,6 +136,7 @@ struct WindowRootView: View {
         // selected.
         workspace.expandedCourseCodes = Set(entry.expandedCourses)
         workspace.isShowingArchived = entry.archivedExpanded
+        workspace.isShowingBackups = entry.backupsExpanded
         if let selection = SidebarSelection.fromStorageValue(entry.selection) {
             workspace.selection = selection
         }

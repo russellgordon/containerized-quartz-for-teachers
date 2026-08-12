@@ -8,6 +8,22 @@ enum CourseArchiver {
 
     // MARK: - Functions
 
+    /// Saves a copy of an entire course — and touches nothing: the course
+    /// stays exactly where it is. Made on purpose before risky editing so
+    /// there is always a way back. Returns the backup that was written.
+    ///
+    /// The name (`<CODE>_backup_<timestamp>.zip`) is what separates a
+    /// backup from an archive in the shared `_backups` folder.
+    @discardableResult
+    static func backUpCourse(_ course: Course, coursesDirectoryURL: URL) throws -> URL {
+        return try archive(
+            folderURL: course.directoryURL,
+            named: timestampedName(prefix: "\(course.code)_backup"),
+            forCourseCode: course.code,
+            coursesDirectoryURL: coursesDirectoryURL
+        )
+    }
+
     /// Archives and removes an entire course folder.
     /// Returns the archive that was written.
     @discardableResult

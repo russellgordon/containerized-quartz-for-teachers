@@ -66,6 +66,18 @@ enum CourseRestorer {
         try? fileManager.removeItem(at: item.fileURL)
     }
 
+    /// Puts a backed-up course into the working folder. The caller has
+    /// already cleared the destination (by archiving the current version
+    /// first); unlike an archive restore, the backup zip STAYS — it only
+    /// leaves when the teacher deletes it.
+    static func restoreBackup(_ item: BackupItem, coursesDirectoryURL: URL) throws {
+        let destination: URL = coursesDirectoryURL.appendingPathComponent(item.courseCode)
+        if FileManager.default.fileExists(atPath: destination.path) {
+            throw Problem.courseAlreadyPresent(item.courseCode)
+        }
+        try extract(item.fileURL, named: item.courseCode, into: coursesDirectoryURL)
+    }
+
     /// Adds the section number back to the course's settings, in order.
     /// Archiving took it out; restoring has to put it back or the section
     /// exists on disk while the course carries on ignoring it.

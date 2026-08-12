@@ -220,6 +220,7 @@ final class WindowFolderMemoryTests: XCTestCase {
             .course("ADA1O"),
             .section("MTH1W", 3),
             .archived("2026-01-15-ICS3U"),
+            .backup("/folder/_backups/ICS3U/ICS3U_backup_2026-08-11_221530.zip"),
         ]
         for selection in selections {
             XCTAssertEqual(SidebarSelection.fromStorageValue(selection.storageValue), selection)

@@ -139,6 +139,7 @@ class WorkspaceModel {
                     frame: frame,
                     expandedCourses: model.expandedCourseCodes.sorted(),
                     archivedExpanded: model.isShowingArchived,
+                    backupsExpanded: model.isShowingBackups,
                     selection: model.selection?.storageValue ?? ""
                 ))
             }
@@ -179,6 +180,21 @@ class WorkspaceModel {
 
     /// Why a restore could not go ahead, shown as an alert.
     var restoreProblem: String?
+
+    /// Saved copies of whole courses, newest first.
+    var backupItems: [BackupItem] = []
+
+    /// Whether the sidebar's Backups group is open.
+    var isShowingBackups: Bool = false
+
+    /// The backup a restore confirmation is being shown for, if any.
+    var backupRestoreRequest: BackupItem?
+
+    /// The backup a delete confirmation is being shown for, if any.
+    var backupDeleteRequest: BackupItem?
+
+    /// Why a backup action could not go ahead, shown as an alert.
+    var backupProblem: String?
 
     /// The current sidebar selection.
     var selection: SidebarSelection?
@@ -242,6 +258,9 @@ class WorkspaceModel {
             selectedCode = code
         case .archived:
             // An archived item belongs to no live course.
+            selectedCode = nil
+        case .backup:
+            // A backup is a copy, not the live course itself.
             selectedCode = nil
         case nil:
             selectedCode = nil
@@ -588,6 +607,7 @@ class WorkspaceModel {
         }
         courses = loadedCourses
         archivedItems = WorkspaceModel.findArchivedItems(in: coursesDirectoryURL)
+        backupItems = WorkspaceModel.findBackupItems(in: coursesDirectoryURL)
     }
 
     /// The archived item matching a sidebar selection, if that is what is
@@ -623,6 +643,117 @@ class WorkspaceModel {
         } else {
             selection = SidebarSelection.course(item.courseCode)
         }
+    }
+
+    /// The backup matching a sidebar selection, if that is what is
+    /// selected.
+    var selectedBackupItem: BackupItem? {
+        guard case .backup(let identifier) = selection else {
+            return nil
+        }
+        for item in backupItems {
+            if item.id == identifier {
+                return item
+            }
+        }
+        return nil
+    }
+
+    /// Saves a copy of a whole course, then reloads so the Backups group
+    /// shows it — opened, so the new row is visible feedback.
+    func backUp(_ course: Course) {
+        guard let coursesDirectoryURL else {
+            return
+        }
+        do {
+            try CourseArchiver.backUpCourse(course, coursesDirectoryURL: coursesDirectoryURL)
+        } catch {
+            backupProblem = error.localizedDescription
+            return
+        }
+        isShowingBackups = true
+        reloadCourses()
+    }
+
+    /// Puts a backed-up course back in place of the current one. The
+    /// current version is ARCHIVED first — even a restore has an undo —
+    /// and the backup itself stays until the teacher deletes it.
+    func restoreBackup(_ item: BackupItem) {
+        guard let coursesDirectoryURL else {
+            return
+        }
+        if let workspacePath = workspaceURL?.path {
+            if CourseActivity.courseIsBusy(folderPath: workspacePath, courseCode: item.courseCode) {
+                backupProblem = "\(item.courseCode) is previewing or publishing right now. Stop that first, then restore."
+                return
+            }
+        }
+        do {
+            for course in courses {
+                if course.code == item.courseCode {
+                    try CourseArchiver.archiveAndRemoveCourse(course, coursesDirectoryURL: coursesDirectoryURL)
+                }
+            }
+            try CourseRestorer.restoreBackup(item, coursesDirectoryURL: coursesDirectoryURL)
+        } catch {
+            backupProblem = error.localizedDescription
+            reloadCourses()
+            return
+        }
+        selection = nil
+        reloadCourses()
+        selection = SidebarSelection.course(item.courseCode)
+    }
+
+    /// Deletes a backup for good — the one removal in the app with no
+    /// archive behind it, which is why its confirmation says so.
+    func deleteBackup(_ item: BackupItem) {
+        do {
+            try FileManager.default.removeItem(at: item.fileURL)
+        } catch {
+            backupProblem = error.localizedDescription
+            return
+        }
+        if selection == SidebarSelection.backup(item.id) {
+            selection = nil
+        }
+        reloadCourses()
+    }
+
+    /// Finds the teacher's saved backups, newest first.
+    static func findBackupItems(in coursesDirectoryURL: URL) -> [BackupItem] {
+        let fileManager: FileManager = FileManager.default
+        let backupsRoot: URL = coursesDirectoryURL.appendingPathComponent("_backups")
+        var found: [BackupItem] = []
+
+        guard let courseFolders = try? fileManager.contentsOfDirectory(
+            at: backupsRoot,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return found
+        }
+
+        for courseFolder in courseFolders {
+            let courseCode: String = courseFolder.lastPathComponent
+            guard let zips = try? fileManager.contentsOfDirectory(
+                at: courseFolder,
+                includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles]
+            ) else {
+                continue
+            }
+            for zipURL in zips {
+                if let item = BackupItem.from(fileURL: zipURL, courseCode: courseCode) {
+                    found.append(item)
+                }
+            }
+        }
+
+        found.sort { first, second in
+            return first.backedUpAt > second.backedUpAt
+        }
+        return found
     }
 
     /// Finds what the teacher has archived, newest first.

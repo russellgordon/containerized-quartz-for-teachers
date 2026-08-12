@@ -128,6 +128,26 @@ struct MainWindowView: View {
             } else {
                 missingSelectionView
             }
+        case .backup(let identifier):
+            if let item = backupItem(withIdentifier: identifier) {
+                ContentUnavailableView {
+                    Label(item.title, systemImage: item.symbolName)
+                } description: {
+                    Text("\(item.subtitle). A saved copy of \(item.courseCode), kept until you delete it — restore it to put the course back the way it was then.")
+                } actions: {
+                    Button("Restore…") {
+                        workspace.backupRestoreRequest = item
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier("restoreBackupButton")
+                    Button("Delete Backup…") {
+                        workspace.backupDeleteRequest = item
+                    }
+                    .accessibilityIdentifier("deleteBackupButton")
+                }
+            } else {
+                missingSelectionView
+            }
         case nil:
             // Telling someone to choose from an empty list is a dead end.
             if workspace.courses.isEmpty {
@@ -164,6 +184,15 @@ struct MainWindowView: View {
 
     func archivedItem(withIdentifier identifier: String) -> ArchivedItem? {
         for item in workspace.archivedItems {
+            if item.id == identifier {
+                return item
+            }
+        }
+        return nil
+    }
+
+    func backupItem(withIdentifier identifier: String) -> BackupItem? {
+        for item in workspace.backupItems {
             if item.id == identifier {
                 return item
             }

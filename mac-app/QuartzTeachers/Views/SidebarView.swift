@@ -64,6 +64,14 @@ struct SidebarView: View {
                                 .tag(SidebarSelection.course(course.code))
                                 .accessibilityIdentifier("sidebar-\(course.code)")
                                 .contextMenu {
+                                    // Backing up only READS the course, so
+                                    // it stays available even mid-preview —
+                                    // the moment before risky editing is
+                                    // exactly when it's wanted.
+                                    Button("Back Up Now", systemImage: "clock.arrow.circlepath") {
+                                        workspace.backUp(course)
+                                    }
+                                    Divider()
                                     // Adding a section re-runs the course
                                     // setup, which rewrites the course's
                                     // folders — never while a preview or
@@ -81,6 +89,35 @@ struct SidebarView: View {
                                     folderMenuItems(for: course.directoryURL)
                                 }
                         }
+                    }
+                }
+
+                if !workspace.backupItems.isEmpty {
+                    // Saved copies of whole courses, above Archived: these
+                    // are safety nets the teacher made on purpose, not
+                    // things put away.
+                    Section(isExpanded: $workspace.isShowingBackups) {
+                        ForEach(workspace.backupItems) { item in
+                            Label(item.title, systemImage: item.symbolName)
+                                .help(item.subtitle)
+                                .tag(SidebarSelection.backup(item.id))
+                                .accessibilityIdentifier("backup-\(item.id)")
+                                .contextMenu {
+                                    Button("Restore…", systemImage: "arrow.uturn.backward") {
+                                        workspace.backupRestoreRequest = item
+                                    }
+                                    Button("Show in Finder", systemImage: "finder") {
+                                        NSWorkspace.shared.activateFileViewerSelecting([item.fileURL])
+                                    }
+                                    Divider()
+                                    Button("Delete Backup…", systemImage: "trash", role: .destructive) {
+                                        workspace.backupDeleteRequest = item
+                                    }
+                                }
+                        }
+                    } header: {
+                        Text("Backups")
+                            .accessibilityIdentifier("backupsGroup")
                     }
                 }
 
@@ -115,6 +152,9 @@ struct SidebarView: View {
                 WorkspaceModel.rememberOpenFolders()
             }
             .onChange(of: workspace.isShowingArchived) {
+                WorkspaceModel.rememberOpenFolders()
+            }
+            .onChange(of: workspace.isShowingBackups) {
                 WorkspaceModel.rememberOpenFolders()
             }
             .onChange(of: workspace.selection) {
@@ -160,6 +200,39 @@ struct SidebarView: View {
             }
         } message: { item in
             Text(restoreMessage(for: item))
+        }
+        .alert(
+            "Restore \(workspace.backupRestoreRequest?.courseCode ?? "") from this backup?",
+            isPresented: backupRestoreRequestIsPresented,
+            presenting: workspace.backupRestoreRequest
+        ) { item in
+            Button("Restore") {
+                workspace.restoreBackup(item)
+            }
+            Button("Cancel", role: .cancel) {
+            }
+        } message: { item in
+            Text("\(item.courseCode) goes back to how it was when this backup was made (\(item.subtitle.lowercased())). Anything added since then isn’t in the backup. Your current version is archived first, so it can come back too. The backup itself is kept.")
+        }
+        .alert(
+            "Delete this backup of \(workspace.backupDeleteRequest?.courseCode ?? "")?",
+            isPresented: backupDeleteRequestIsPresented,
+            presenting: workspace.backupDeleteRequest
+        ) { item in
+            Button("Delete", role: .destructive) {
+                workspace.deleteBackup(item)
+            }
+            Button("Cancel", role: .cancel) {
+            }
+        } message: { item in
+            Text("This deletes the backup for good — unlike removing a course, nothing is kept. \(item.courseCode) itself is not touched.")
+        }
+        .alert("Could not do that", isPresented: backupProblemBinding) {
+            Button("OK") {
+                workspace.backupProblem = nil
+            }
+        } message: {
+            Text(workspace.backupProblem ?? "")
         }
         .alert("Could not restore", isPresented: restoreProblemBinding) {
             Button("OK") {
@@ -315,6 +388,39 @@ struct SidebarView: View {
         )
     }
 
+    var backupRestoreRequestIsPresented: Binding<Bool> {
+        return Binding(
+            get: { workspace.backupRestoreRequest != nil },
+            set: { isPresented in
+                if !isPresented {
+                    workspace.backupRestoreRequest = nil
+                }
+            }
+        )
+    }
+
+    var backupDeleteRequestIsPresented: Binding<Bool> {
+        return Binding(
+            get: { workspace.backupDeleteRequest != nil },
+            set: { isPresented in
+                if !isPresented {
+                    workspace.backupDeleteRequest = nil
+                }
+            }
+        )
+    }
+
+    var backupProblemBinding: Binding<Bool> {
+        return Binding(
+            get: { workspace.backupProblem != nil },
+            set: { isPresented in
+                if !isPresented {
+                    workspace.backupProblem = nil
+                }
+            }
+        )
+    }
+
     var removalProblemBinding: Binding<Bool> {
         return Binding(
             get: { removalProblem != nil },
@@ -394,6 +500,10 @@ struct SidebarView: View {
         case .archived:
             // The minus button removes live courses; an archived item is
             // already put away.
+            return
+        case .backup:
+            // Deleting a backup is a real deletion, so it happens only
+            // through its own explicit menu item, never the minus button.
             return
         case .section(_, let sectionNumber):
             if course.sectionNumbers.count <= 1 {
