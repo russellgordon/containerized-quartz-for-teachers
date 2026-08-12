@@ -274,6 +274,31 @@ Windows app), 🟠 partial, ⬜ not yet, — no Windows work needed.
   sibling mirroring) · ✅ 87 (custom domain field, normalization,
   orange note, link swap) · ✅ 89 (literal per-section grade toggle +
   warning in settings and wizard) · ✅ 90 (Revert, not Cancel)
+- ✅ 97 (the still-working timer originated on Windows) · ✅ 98 (no
+  picker flash on Windows: the folder is decided synchronously before
+  first paint — no claim polling exists to race) · ✅ 99 (per-window
+  sidebar memory: open courses, Archived/Backups disclosure, and the
+  selection restore exactly; deliberate divergence per the user — legacy
+  entries restore all-EXPANDED, not the mac's all-collapsed; en route,
+  fixed chevron collapses being eaten: WinUI raises Collapsed BEFORE the
+  chevron's pointer event reaches the tree, so the glitch guard now
+  defers its user-vs-glitch decision one dispatcher pass) · ✅ 100
+  (computed-title font samples — implemented Windows-first, both
+  rounds) · ✅ 101, 102 (folder publishing: shared Publishing control in
+  settings AND wizard, live plain-words validation gating Save/Create,
+  --to-folder deploys under never-Netlify milestones, PUBLISHED_FOLDER
+  completion with Show in File Explorer and the render note; verified
+  end to end including the incremental second publish) · ✅ 103
+  (Publish, never Deploy; the empty-state invitation follows
+  deploy_target) · ✅ 104 (Add Section declines while its course
+  previews or publishes anywhere; CourseActivity registry beside the
+  port leases; menu state read at open time per the staleness lesson) ·
+  ✅ 105 (stop preview reclaims container processes — plus two Windows
+  launcher fixes: the WSL docker wrapper swallowed pipeline stdin, and
+  stop mode bootstrapped the engine) · ✅ 106 (whole-course backups +
+  deletable archives, all confirmations in the mac's wording; two
+  Windows-only fixes for container-made links that sank the zip walk
+  and the restore's delete)
 - ✅ 91 (Preview/Deploy wear text labels beside their icons, "Stop
   Preview" while running; Obsidian/Browser icon-only with tooltips) ·
   ✅ 92, 93 (Starting Content section: pre-populate + curriculum
