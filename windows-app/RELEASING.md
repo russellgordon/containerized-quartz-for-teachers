@@ -23,7 +23,13 @@ one GitHub release carrying both platforms' assets.
    download it through a browser if possible, extract, right-click
    `Plantoir.exe` → Properties → Digital Signatures → signature OK,
    timestamp present, no street address in the certificate subject.
-5. **Tag and release**:
+5. **Tag and release** — ask Claude to "cut the release": the
+   `cut-release` skill (`.claude/skills/cut-release/`) drafts
+   teacher-friendly release notes from the commits since the last tag
+   (grouped New / Improved / Fixed, internal work omitted), appends a
+   Downloads table with each asset's size and SHA-256 computed from the
+   exact files being uploaded, shows the draft for approval, then tags
+   and publishes via `gh release create`. Manual equivalent:
 
        git tag v<version>
        git push origin main v<version>

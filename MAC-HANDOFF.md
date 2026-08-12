@@ -57,6 +57,19 @@ picked them up.
 
 ## Already shared — no mac code needed, just awareness
 
+- **The release process is shared — read `windows-app/RELEASING.md`**
+  (2026-08-11). The decisions that bind both sides: ONE product version
+  series in lockstep (Windows reads `<Version>` in `Plantoir.csproj`;
+  keep the mac marketing version matching), ONE GitHub release per
+  version carrying BOTH platforms' assets (plantoir.app's download cards
+  point at `releases/latest`), tag `v<version>`. Release notes are
+  drafted by Claude via the `cut-release` skill
+  (`.claude/skills/cut-release/`) — teacher-friendly bullets from the
+  commit log plus a SHA-256 downloads table; the mac asset should be
+  attached to the same release and hashed into the same table. Also:
+  the spec's `.claude/skills/example-content/` skill did not arrive in
+  the merged repo — bring it over if it lives only on the mac checkout.
+
 - **Course-catalog repairs** (`37dc6c8`): MTH1W read "Mathematics,
   Grade 9, Grade 9, Destreamed" (short name "Math,") and PLF4M had the
   same doubled-grade + trailing-comma pattern; both repaired in
