@@ -54,10 +54,14 @@ public sealed partial class CourseSettingsView : UserControl
         CourseConfiguration.ComputedSiteTitle(Config.CourseName, _course.Code, section,
             Config.ShowsGradeInTitle(section), Config.ShowsSectionMarker(section));
 
+    private PublishingChoiceView? _publishingChoice;
+
     private void RefreshDirtyState()
     {
         bool dirty = Config.HasUnsavedChanges;
-        SaveButton.IsEnabled = dirty;
+        // A folder-publishing course with a bad folder cannot be saved — a
+        // publish must never discover the problem after the fact (row 102).
+        SaveButton.IsEnabled = dirty && _publishingChoice?.Problem is null;
         RevertButton.IsEnabled = dirty;
     }
 
@@ -102,6 +106,14 @@ public sealed partial class CourseSettingsView : UserControl
         expandBox.SelectedIndex = Config.ExpandOnFolderClick ? 0 : 1;
         expandBox.SelectionChanged += (_, _) => { Config.ExpandOnFolderClick = expandBox.SelectedIndex == 0; MarkChanged(); };
         Form.Children.Add(FormBuilders.LabeledRow("Sidebar folders expand when clicking", expandBox));
+
+        // -------- Publishing (course-level: every section goes the same way) --------
+        Form.Children.Add(FormBuilders.SectionHeaderWithCaption("Publishing", null));
+        _publishingChoice = new PublishingChoiceView(_window,
+            () => Config.DeployTarget, v => Config.DeployTarget = v,
+            () => Config.DeployFolderPath, v => Config.DeployFolderPath = v);
+        _publishingChoice.Changed += MarkChanged;
+        Form.Children.Add(_publishingChoice.Root);
 
         // -------- Footer --------
         Form.Children.Add(FormBuilders.SectionHeaderWithCaption("Footer", null));

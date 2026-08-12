@@ -383,6 +383,9 @@ public sealed class ScriptRunner : INotifyPropertyChanged
         }
     }
 
+    /// <summary>The folder a folder-mode publish landed in, or null (a Netlify publish).</summary>
+    public string? PublishedFolder => OutputParsers.PublishedFolder(Transcript.RecentText(8000));
+
     public string? FailureExplanation => FailureExplainer.Explanation(Transcript.RecentText(8000));
 
     public bool LastRunSucceeded => LastExitCode == 0;

@@ -10,6 +10,39 @@ public class CourseConfigurationTests
     private static CourseConfiguration FromJson(string json) =>
         CourseConfiguration.FromBytes(Encoding.UTF8.GetBytes(json));
 
+    [Fact]
+    public void PublishingAccessorsDefaultToNetlifyAndRoundTrip()
+    {
+        var config = FromJson("""{"course_code":"ICS3U"}""");
+        Assert.Equal("netlify", config.DeployTarget);
+        Assert.False(config.DeploysToLocalFolder);
+
+        config.DeployTarget = "local_folder";
+        Assert.False(config.DeploysToLocalFolder);   // no folder chosen yet
+        config.DeployFolderPath = @"C:\somewhere";
+        Assert.True(config.DeploysToLocalFolder);
+    }
+
+    [Fact]
+    public void DeployFolderProblemsAreNamedInPlainWords()
+    {
+        Assert.Equal("Choose the folder this course publishes into.",
+            CourseConfiguration.DeployFolderProblem("   "));
+
+        string missing = Path.Combine(Path.GetTempPath(), "no-such-" + Guid.NewGuid().ToString("N"));
+        Assert.Contains("doesn’t exist", CourseConfiguration.DeployFolderProblem(missing));
+
+        string file = Path.Combine(Path.GetTempPath(), "file-" + Guid.NewGuid().ToString("N") + ".txt");
+        File.WriteAllText(file, "x");
+        try { Assert.Contains("That’s a file", CourseConfiguration.DeployFolderProblem(file)); }
+        finally { File.Delete(file); }
+
+        string good = Path.Combine(Path.GetTempPath(), "ok-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(good);
+        try { Assert.Null(CourseConfiguration.DeployFolderProblem(good)); }
+        finally { Directory.Delete(good); }
+    }
+
     /// <summary>
     /// Mirrors build_site.py's computed_landing_title: [Grade X ]Name[, Section N],
     /// each switch literal, empty name falling back to the code.

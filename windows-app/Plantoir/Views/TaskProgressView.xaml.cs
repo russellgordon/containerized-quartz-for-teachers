@@ -104,6 +104,7 @@ public sealed partial class TaskProgressView : UserControl
             MilestoneText.Visibility = hasMilestones ? Visibility.Visible : Visibility.Collapsed;
             OutcomeDetail.Visibility = Visibility.Collapsed;
             LiveLink.Visibility = Visibility.Collapsed;
+            FolderResult.Visibility = Visibility.Collapsed;
             EnsureTicking(true);
         }
         else if (_runner.LastExitCode is { } exitCode)
@@ -117,7 +118,13 @@ public sealed partial class TaskProgressView : UserControl
             else if (exitCode == 0) Outcome("Done", Glyphs.CheckMark, Success(), null);
             else Outcome("Something went wrong", Glyphs.Cancel, Critical(), _runner.FailureExplanation);
 
-            if (exitCode == 0 && !_runner.WasCancelled && _runner.PublishedSiteUrl is { } url)
+            if (exitCode == 0 && !_runner.WasCancelled && _runner.PublishedFolder is { } folder)
+            {
+                // Folder publishing ends at a folder, not a live link.
+                FolderResult.Visibility = Visibility.Visible;
+                _publishedFolder = folder;
+            }
+            else if (exitCode == 0 && !_runner.WasCancelled && _runner.PublishedSiteUrl is { } url)
             {
                 LiveLink.Visibility = Visibility.Visible;
                 LiveLinkButton.Content = url.AbsoluteUri;
@@ -252,4 +259,11 @@ public sealed partial class TaskProgressView : UserControl
     }
 
     private void ConsoleStop_Click(object sender, RoutedEventArgs e) => _runner?.Terminate();
+
+    private string? _publishedFolder;
+
+    private void FolderResult_Click(object sender, RoutedEventArgs e)
+    {
+        if (_publishedFolder is { } folder) FolderActions.ShowInFileExplorer(folder);
+    }
 }

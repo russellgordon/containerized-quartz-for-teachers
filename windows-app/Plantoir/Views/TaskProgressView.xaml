@@ -36,6 +36,17 @@
                 <TextBlock Text="Your website is live." />
                 <HyperlinkButton x:Name="LiveLinkButton" Padding="0" />
             </StackPanel>
+            <!-- Folder publishing's completion: the folder, not a live link
+                 (rows 101-102) — with the quiet note that pages opened
+                 straight from the folder will not look right. -->
+            <StackPanel x:Name="FolderResult" Visibility="Collapsed" Spacing="6"
+                        AutomationProperties.AutomationId="publishedFolderResult">
+                <TextBlock Text="Your website was copied to its publishing folder." />
+                <Button x:Name="FolderResultButton" Content="Show in File Explorer"
+                        Click="FolderResult_Click" />
+                <TextBlock Opacity="0.7" FontSize="12" TextWrapping="Wrap"
+                           Text="Opened straight from the folder, the pages won't look right — the site only displays properly once it's on your web host." />
+            </StackPanel>
             <StackPanel x:Name="AwaitingNotice" Orientation="Horizontal" Spacing="6" Visibility="Collapsed"
                         AutomationProperties.AutomationId="awaitingInputNotice">
                 <FontIcon Glyph="&#xE897;" FontSize="14" Foreground="{ThemeResource SystemFillColorCautionBrush}" />

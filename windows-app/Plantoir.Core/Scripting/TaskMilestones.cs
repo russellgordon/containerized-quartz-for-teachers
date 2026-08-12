@@ -69,6 +69,30 @@ public static class TaskMilestones
         new TaskMilestone("Finishing up…", "Deploy complete"),
     };
 
+    /// <summary>
+    /// Folder-mode publish: the site is already built on the host, so the
+    /// launcher only mirrors changed files into the chosen folder — quick,
+    /// containerless, and never mentioning Netlify (row 102d).
+    /// </summary>
+    public static readonly IReadOnlyList<TaskMilestone> DeployToFolder = new[]
+    {
+        new TaskMilestone("Checking your site…", "Host timezone offset"),
+        new TaskMilestone("Copying your files…", "to a folder"),
+        new TaskMilestone("Finishing up…", "Published."),
+    };
+
+    /// <summary>Rebuild + folder publish presented as ONE task with one bar.</summary>
+    public static readonly IReadOnlyList<TaskMilestone> BuildAndDeployToFolder = new[]
+    {
+        new TaskMilestone("Getting this PC ready…", "Setting up this PC"),
+        new TaskMilestone("Building your website builder…", "Building your website builder"),
+        new TaskMilestone("Starting up…", "Starting container if needed"),
+        new TaskMilestone("Gathering your content…", "Copying shared folders"),
+        new TaskMilestone("Building your site…", "Quartz v4"),
+        new TaskMilestone("Copying your files…", "to a folder"),
+        new TaskMilestone("Finishing up…", "Published."),
+    };
+
     public static IEnumerable<IReadOnlyList<TaskMilestone>> AllLists
     {
         get
@@ -78,6 +102,8 @@ public static class TaskMilestones
             yield return Preview;
             yield return Deploy;
             yield return BuildAndDeploy;
+            yield return DeployToFolder;
+            yield return BuildAndDeployToFolder;
         }
     }
 }

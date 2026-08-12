@@ -27,6 +27,18 @@ public class OutputParserTests
     }
 
     [Fact]
+    public void PublishedFolderComesFromItsMarkerLastWins()
+    {
+        string text = "Published.\n Folder: C:\\old\\section1\nPUBLISHED_FOLDER=C:\\old\\section1\n" +
+                      "noise\nPUBLISHED_FOLDER=C:\\Users\\pat\\site\\section1\n";
+        Assert.Equal(@"C:\Users\pat\site\section1", OutputParsers.PublishedFolder(text));
+    }
+
+    [Fact]
+    public void ANetlifyPublishHasNoFolderMarker() =>
+        Assert.Null(OutputParsers.PublishedFolder(" Live URL: https://x.netlify.app\n✅ Deploy complete.\n"));
+
+    [Fact]
     public void RepeatPublishPlainHttpIsPromoted()
     {
         string text = " Using existing Netlify site for this section.\n Site: http://ics3u-s1.netlify.app\n";
@@ -280,6 +292,16 @@ public class TaskMilestoneTests
                 Assert.DoesNotContain("WSL", milestone.Label);
                 Assert.DoesNotContain("script", milestone.Label, StringComparison.OrdinalIgnoreCase);
             }
+    }
+
+    [Fact]
+    public void FolderPublishingNeverMentionsNetlify()
+    {
+        // Row 102d: a folder publish saying "Connecting to Netlify…" was
+        // wrong twice over. The folder lists must never say the word.
+        foreach (var list in new[] { TaskMilestones.DeployToFolder, TaskMilestones.BuildAndDeployToFolder })
+            foreach (var milestone in list)
+                Assert.DoesNotContain("Netlify", milestone.Label, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

@@ -64,6 +64,11 @@ public sealed class NewCourseDialog : ContentDialog
     private bool _prepopulate = true;
     private bool _includeCurriculum = true;
     private bool _useLcs;
+
+    // Publishing (rows 101–102): Netlify by default, or a folder on this PC.
+    private string _deployTarget = "netlify";
+    private string _deployFolderPath = "";
+    private PublishingChoiceView? _publishingChoice;
     private readonly StackPanel _startingContentBody = new() { Spacing = 6 };
     private readonly TextBlock _structureCaption;
     private readonly TextBlock _structureLockedNote;
@@ -184,7 +189,8 @@ public sealed class NewCourseDialog : ContentDialog
         if (_started) return;   // once running, the affirmative button becomes "Close"
         bool codeOk = _codeBox.Text.Trim().Length > 0 && CourseCodeProblem() is null;
         bool sectionsOk = SectionNumbersProblem(_sectionsBox.Text) is null;
-        IsPrimaryButtonEnabled = codeOk && sectionsOk;
+        bool publishingOk = _publishingChoice?.Problem is null;   // a bad folder blocks Create (row 102)
+        IsPrimaryButtonEnabled = codeOk && sectionsOk && publishingOk;
     }
 
     /// <summary>
@@ -382,6 +388,14 @@ public sealed class NewCourseDialog : ContentDialog
         var readTimeToggle = new ToggleSwitch { IsOn = _showReadingTime, OnContent = "", OffContent = "" };
         readTimeToggle.Toggled += (_, _) => _showReadingTime = readTimeToggle.IsOn;
         form.Children.Add(FormBuilders.LabeledRow("Show page read-time estimates to students", readTimeToggle));
+
+        // -------- Publishing --------
+        form.Children.Add(FormBuilders.SectionHeaderWithCaption("Publishing", null));
+        _publishingChoice = new PublishingChoiceView(_window,
+            () => _deployTarget, v => _deployTarget = v,
+            () => _deployFolderPath, v => _deployFolderPath = v);
+        _publishingChoice.Changed += RefreshCreateEnabled;
+        form.Children.Add(_publishingChoice.Root);
 
         // -------- Structure (long lists stay collapsed) --------
         var structureHeader = new StackPanel { Spacing = 2, Margin = new Thickness(0, 18, 0, 4) };
@@ -738,6 +752,8 @@ public sealed class NewCourseDialog : ContentDialog
             ["prepopulate_example_content"] = hasContent && _prepopulate,
             ["include_curriculum_pages"] = hasContent && _prepopulate && includesCurriculum && _includeCurriculum,
             ["use_lcs_terminology"] = _useLcs,
+            ["deploy_target"] = _deployTarget,
+            ["deploy_folder_path"] = _deployFolderPath,
             ["fonts"] = new JObject
             {
                 ["default"] = _fontChoice.ToJson(),

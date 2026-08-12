@@ -254,8 +254,28 @@ public sealed partial class SectionDetailView : UserControl
     {
         if (IsBusy || _window.Workspace.WorkspacePath is not { } workspacePath) return;
 
+        // Folder publishing (rows 101–102): the save gate keeps the folder
+        // valid, but a hand-edited config could still slip a bad one in —
+        // decline plainly rather than let the launcher discover it.
+        bool toFolder = _course.Configuration.DeploysToLocalFolder;
+        string deployFolder = _course.Configuration.DeployFolderPath.Trim();
+        if (toFolder && CourseConfiguration.DeployFolderProblem(deployFolder) is { } folderProblem)
+        {
+            var problemDialog = new ContentDialog
+            {
+                Title = "The publishing folder needs attention",
+                Content = folderProblem + " Fix it in this course's settings, then publish again.",
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot,
+            };
+            await problemDialog.ShowAsync();
+            return;
+        }
+
         bool needsBuild = BuildFreshness.NeedsRebuild(_course, _sectionNumber);
-        _deployRunner.Milestones = needsBuild ? TaskMilestones.BuildAndDeploy : TaskMilestones.Deploy;
+        _deployRunner.Milestones = toFolder
+            ? (needsBuild ? TaskMilestones.BuildAndDeployToFolder : TaskMilestones.DeployToFolder)
+            : (needsBuild ? TaskMilestones.BuildAndDeploy : TaskMilestones.Deploy);
         string customDomain = CourseConfiguration.NormalizedCustomDomain(
             _course.Configuration.CustomDomain(_sectionNumber));
         _deployRunner.CustomDomainForLinks = customDomain.Length == 0 ? null : customDomain;
@@ -275,8 +295,10 @@ public sealed partial class SectionDetailView : UserControl
             RefreshChrome();
             if (!await _deployRunner.WaitUntilFinished()) { EndPublishActivity(); return; }
         }
-        _deployRunner.Run("deploy.ps1",
-            new[] { _course.Code, _sectionNumber.ToString() }, workspacePath,
+        var deployArguments = toFolder
+            ? new[] { _course.Code, _sectionNumber.ToString(), "--to-folder", deployFolder }
+            : new[] { _course.Code, _sectionNumber.ToString() };
+        _deployRunner.Run("deploy.ps1", deployArguments, workspacePath,
             keepTranscript: needsBuild);
         RefreshChrome();
         await _deployRunner.WaitUntilFinished();   // outcome already on screen
