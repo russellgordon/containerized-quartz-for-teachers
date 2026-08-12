@@ -52,6 +52,14 @@ struct SidebarView: View {
                                     }
                             }
                         } label: {
+                            // Read the busy state HERE, during the row's
+                            // render: the registries are observable, so
+                            // the row redraws — menu included — the
+                            // moment a preview or publish starts or
+                            // stops. Reading it only inside the menu
+                            // closure left the menu showing the state
+                            // from whenever the row last drew.
+                            let busyReason: String? = busyReason(for: course)
                             Label(course.code, systemImage: "books.vertical")
                                 .tag(SidebarSelection.course(course.code))
                                 .accessibilityIdentifier("sidebar-\(course.code)")
@@ -63,9 +71,9 @@ struct SidebarView: View {
                                     Button("Add Section…", systemImage: "doc.badge.plus") {
                                         addSectionCourse = course
                                     }
-                                    .disabled(courseIsBusy(course))
-                                    if courseIsBusy(course) {
-                                        Text("Available once this course finishes previewing and publishing")
+                                    .disabled(busyReason != nil)
+                                    if let busyReason {
+                                        Text(busyReason)
                                     }
                                     Divider()
                                     openInObsidianItem(revealing: course.directoryURL, vaultURL: course.directoryURL)
@@ -320,13 +328,13 @@ struct SidebarView: View {
 
     // MARK: - Functions
 
-    /// True while any section of the course is previewing or publishing,
-    /// in any window showing this working folder.
-    func courseIsBusy(_ course: Course) -> Bool {
+    /// Why the course is busy — previewing or publishing, in any window
+    /// showing this working folder — or nil when it isn't.
+    func busyReason(for course: Course) -> String? {
         guard let workspaceURL = workspace.workspaceURL else {
-            return false
+            return nil
         }
-        return CourseActivity.courseIsBusy(folderPath: workspaceURL.path, courseCode: course.code)
+        return CourseActivity.busyDescription(folderPath: workspaceURL.path, courseCode: course.code)
     }
 
     /// The open/closed state of one course's disclosure triangle, living

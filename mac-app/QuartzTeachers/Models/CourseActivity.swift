@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 
 /// Which courses are doing something right now, across every window:
 /// previewing (known via `PreviewLeases`) or publishing (recorded here).
@@ -18,10 +19,24 @@ enum CourseActivity {
         let sectionNumber: Int
     }
 
+    /// The backing store is observable for the same reason as
+    /// `PreviewLeases.Store`: views reading `courseIsBusy` must
+    /// re-render the moment a publish begins or ends.
+    @Observable
+    final class Store {
+        var activePublishes: [PublishRecord] = []
+    }
+
     // MARK: - Stored properties
 
+    static let store: Store = Store()
+
+    // MARK: - Computed properties
+
     /// The publishes currently running, across all windows.
-    private(set) static var activePublishes: [PublishRecord] = []
+    static var activePublishes: [PublishRecord] {
+        return store.activePublishes
+    }
 
     // MARK: - Functions
 
@@ -32,7 +47,7 @@ enum CourseActivity {
             courseCode: courseCode,
             sectionNumber: sectionNumber
         )
-        activePublishes.append(record)
+        store.activePublishes.append(record)
     }
 
     /// Records that a publish has finished, however it finished.
@@ -51,26 +66,44 @@ enum CourseActivity {
             }
             remaining.append(existing)
         }
-        activePublishes = remaining
+        store.activePublishes = remaining
     }
 
     /// True while any section of the course is previewing or publishing.
     static func courseIsBusy(folderPath: String, courseCode: String) -> Bool {
+        return busyDescription(folderPath: folderPath, courseCode: courseCode) != nil
+    }
+
+    /// A short reason the course is busy — naming whichever activity is
+    /// in the way — or nil when it isn't. Menu-length on purpose: it
+    /// sits under a disabled menu item.
+    static func busyDescription(folderPath: String, courseCode: String) -> String? {
+        var isPreviewing: Bool = false
         for lease in PreviewLeases.active {
             if lease.folderPath == folderPath && lease.courseCode == courseCode {
-                return true
+                isPreviewing = true
             }
         }
+        var isPublishing: Bool = false
         for publish in activePublishes {
             if publish.folderPath == folderPath && publish.courseCode == courseCode {
-                return true
+                isPublishing = true
             }
         }
-        return false
+        if isPreviewing && isPublishing {
+            return "Available once preview and publish completed"
+        }
+        if isPreviewing {
+            return "Available once preview completed"
+        }
+        if isPublishing {
+            return "Available once publish completed"
+        }
+        return nil
     }
 
     /// Starts from nothing — for tests.
     static func reset() {
-        activePublishes = []
+        store.activePublishes = []
     }
 }

@@ -23,6 +23,8 @@ final class CourseActivityTests: XCTestCase {
             folderPath: "/folder", courseCode: "ICS3U", sectionNumber: 1
         )
         XCTAssertTrue(CourseActivity.courseIsBusy(folderPath: "/folder", courseCode: "ICS3U"))
+        XCTAssertEqual(CourseActivity.busyDescription(folderPath: "/folder", courseCode: "ICS3U"),
+                       "Available once preview completed")
         XCTAssertFalse(CourseActivity.courseIsBusy(folderPath: "/folder", courseCode: "MPM2D"),
                        "Only the previewing course is busy, not its neighbours")
         XCTAssertFalse(CourseActivity.courseIsBusy(folderPath: "/other-folder", courseCode: "ICS3U"),
@@ -38,6 +40,8 @@ final class CourseActivityTests: XCTestCase {
         PreviewLeases.reset()
         CourseActivity.beginPublish(folderPath: "/folder", courseCode: "ICS3U", sectionNumber: 2)
         XCTAssertTrue(CourseActivity.courseIsBusy(folderPath: "/folder", courseCode: "ICS3U"))
+        XCTAssertEqual(CourseActivity.busyDescription(folderPath: "/folder", courseCode: "ICS3U"),
+                       "Available once publish completed")
 
         CourseActivity.endPublish(folderPath: "/folder", courseCode: "ICS3U", sectionNumber: 2)
         XCTAssertFalse(CourseActivity.courseIsBusy(folderPath: "/folder", courseCode: "ICS3U"))

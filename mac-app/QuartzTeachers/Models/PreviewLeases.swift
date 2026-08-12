@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 
 /// Hands out preview ports, one per running preview, across every window.
 ///
@@ -34,13 +35,28 @@ enum PreviewLeases {
         }
     }
 
+    /// The backing store is observable so that views deciding what to
+    /// offer — like the sidebar disabling "Add Section…" for a busy
+    /// course — re-render the moment a preview starts or stops. A plain
+    /// static array would leave such views showing yesterday's answer.
+    @Observable
+    final class Store {
+        var active: [Lease] = []
+    }
+
     // MARK: - Stored properties
 
     /// The ports the container publishes.
     static let availablePorts: [Int] = [8081, 8082, 8083, 8084]
 
+    static let store: Store = Store()
+
+    // MARK: - Computed properties
+
     /// The previews currently running, across all windows.
-    private(set) static var active: [Lease] = []
+    static var active: [Lease] {
+        return store.active
+    }
 
     // MARK: - Functions
 
@@ -72,7 +88,7 @@ enum PreviewLeases {
                     courseCode: courseCode,
                     sectionNumber: sectionNumber
                 )
-                active.append(lease)
+                store.active.append(lease)
                 return lease
             }
         }
@@ -87,11 +103,11 @@ enum PreviewLeases {
                 remaining.append(existing)
             }
         }
-        active = remaining
+        store.active = remaining
     }
 
     /// Starts from nothing — for tests.
     static func reset() {
-        active = []
+        store.active = []
     }
 }
