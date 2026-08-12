@@ -298,9 +298,16 @@ struct SectionDetailView: View {
                 }
             }
 
+            // Publishing to a folder never involves Netlify: the built
+            // site syncs incrementally into the course's chosen folder,
+            // each section in its own subfolder.
+            var deployArguments: [String] = [course.code, String(sectionNumber)]
+            if course.configuration.deploysToLocalFolder {
+                deployArguments.append(contentsOf: ["--to-folder", course.configuration.deployFolderPath])
+            }
             deployRunner.run(
                 scriptNamed: "deploy.sh",
-                arguments: [course.code, String(sectionNumber)],
+                arguments: deployArguments,
                 workingDirectory: workspaceURL,
                 keepingTranscript: needsBuild
             )

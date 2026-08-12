@@ -280,4 +280,22 @@ final class PreviewAddressTests: XCTestCase {
         runner.lastOutputAt = now.addingTimeInterval(-120)
         XCTAssertFalse(runner.milestoneText(asOf: now).contains("still working"))
     }
+
+    // MARK: - Published folder
+
+    @MainActor
+    func testThePublishedFolderIsReadFromTheOutput() {
+        let output: String = """
+        ✅ Published: 3 file(s) updated.
+           Folder: /Users/pat/Sites/ics3u/section1
+        PUBLISHED_FOLDER=/Users/pat/Sites/ics3u/section1
+        """
+        XCTAssertEqual(ScriptRunner.publishedFolderURL(in: output)?.path,
+                       "/Users/pat/Sites/ics3u/section1")
+    }
+
+    @MainActor
+    func testANetlifyDeployAnnouncesNoFolder() {
+        XCTAssertNil(ScriptRunner.publishedFolderURL(in: "Site URL: https://example.netlify.app"))
+    }
 }

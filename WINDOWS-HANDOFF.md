@@ -87,6 +87,11 @@ Keys the Windows settings UI must round-trip (per-section maps use
 - `shared_folders`, `shared_files`, `per_section_folders`,
   `per_section_files`, `hidden`, `expandable`, `expandOnFolderClick`,
   `show_reading_time`, `footer_html`
+- `deploy_target` ("netlify" default | "local_folder") and
+  `deploy_folder_path` (entry 101) — folder deploys pass
+  `--to-folder <path>` to the launcher, which robocopy-mirrors each
+  section into `<path>\sectionN`; completion is announced by a
+  `PUBLISHED_FOLDER=` line the app turns into a Show-in-Explorer button
 - `prepopulate_example_content`, `include_curriculum_pages` (entries
   92–93) — written by the new-course wizard, read by the shared Python
   wizard as its defaults; both forced false when no example content

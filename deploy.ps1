@@ -89,6 +89,7 @@ $SECTION_NUM = $args[1]
 $DIAGNOSE    = ''
 $TEAM_SLUG   = ''
 $RESET_TOKEN = $false
+$TO_FOLDER = ''
 
 for ($i = 2; $i -lt $args.Count; $i++) {
   switch -Regex ($args[$i]) {
@@ -98,6 +99,8 @@ for ($i = 2; $i -lt $args.Count; $i++) {
     '^--team=(.+)$'      { $TEAM_SLUG = $Matches[1]; continue }
     '^--team-slug$'      { if ($i + 1 -ge $args.Count) { Write-Host "Missing value for --team-slug"; Show-Help; exit 1 }; $TEAM_SLUG = $args[$i+1]; $i++; continue }
     '^--team-slug=(.+)$' { $TEAM_SLUG = $Matches[1]; continue }
+    '^--to-folder$'      { if ($i + 1 -ge $args.Count) { Write-Host "Missing value for --to-folder"; Show-Help; exit 1 }; $TO_FOLDER = $args[$i+1]; $i++; continue }
+    '^--to-folder=(.+)$' { $TO_FOLDER = $Matches[1]; continue }
     '^--reset-token$'    { $RESET_TOKEN = $true; continue }
     '^--logout$'         { $RESET_TOKEN = $true; continue }
     default              { Write-Host "Unknown option: $($args[$i])"; Show-Help; exit 1 }
@@ -176,6 +179,34 @@ if (-not (Test-Path -LiteralPath $PUBLIC_DIR_HOST) -or -not (Get-ChildItem -Lite
   Write-Host "Build first:"
   Write-Host (" .\preview.bat {0} {1} --build-only" -f $COURSE_CODE, $SECTION_NUM)
   exit 1
+}
+
+# ======================
+# Publish to a local folder
+# ======================
+# The built site already sits on the host (the working folder is
+# bind-mounted), so publishing to a folder is a host-side incremental
+# mirror via robocopy — only changed files move, removals propagate.
+# Each section lands in its own subfolder so sections never overwrite
+# one another. Netlify is not involved.
+if ($TO_FOLDER) {
+  $targetDir = Join-Path -Path ($TO_FOLDER.TrimEnd('\','/')) -ChildPath ("section{0}" -f $SECTION_NUM)
+  New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
+  Write-Host ("Publishing {0} section {1} to a folder..." -f $COURSE_CODE, $SECTION_NUM)
+  # /MIR mirrors (copies changes, deletes removals); robocopy exit codes
+  # below 8 all mean success.
+  robocopy $PUBLIC_DIR_HOST $targetDir /MIR /NFL /NDL /NJH /NJS /NP | Out-Null
+  if ($LASTEXITCODE -ge 8) {
+    Write-Host ("Publishing to the folder failed (robocopy exit {0})." -f $LASTEXITCODE)
+    exit 1
+  }
+  $global:LASTEXITCODE = 0
+  Write-Host "Published."
+  Write-Host (" Folder: {0}" -f $targetDir)
+  Write-Host " Upload that folder to your web host however you prefer (e.g. SFTP)."
+  # The app reads this line to offer the folder in Explorer.
+  Write-Host ("PUBLISHED_FOLDER={0}" -f $targetDir)
+  exit 0
 }
 
 # ======================

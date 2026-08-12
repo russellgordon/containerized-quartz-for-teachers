@@ -154,4 +154,24 @@ final class CourseConfigurationTests: XCTestCase {
                 showsGrade: true, showsSectionMarker: false, sectionNumber: 1),
             "Coding Club")
     }
+
+    // MARK: - Deploy target
+
+    @MainActor
+    func testNetlifyIsTheDeployDefault() {
+        let configuration: CourseConfiguration = CourseConfiguration(values: [:], lastSavedData: Data())
+        XCTAssertEqual(configuration.deployTarget, "netlify")
+        XCTAssertFalse(configuration.deploysToLocalFolder)
+    }
+
+    @MainActor
+    func testAFolderDeployNeedsBothTheTargetAndAPath() {
+        let configuration: CourseConfiguration = CourseConfiguration(values: [:], lastSavedData: Data())
+        configuration.deployTarget = "local_folder"
+        XCTAssertFalse(configuration.deploysToLocalFolder,
+                       "Choosing the folder target without a folder must not divert deploys")
+        configuration.deployFolderPath = "/Users/someone/Sites/ics3u"
+        XCTAssertTrue(configuration.deploysToLocalFolder)
+        XCTAssertEqual(configuration.deployTarget, "local_folder")
+    }
 }

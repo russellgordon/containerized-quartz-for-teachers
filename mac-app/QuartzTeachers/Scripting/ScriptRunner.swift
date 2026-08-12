@@ -385,6 +385,30 @@ class ScriptRunner {
         return ScriptRunner.applyingCustomDomain(customDomainForLinks, to: parsed)
     }
 
+    /// The folder a local-folder deploy published into, if the output
+    /// announced one — the deployer prints `PUBLISHED_FOLDER=<path>`.
+    var publishedFolderURL: URL? {
+        return ScriptRunner.publishedFolderURL(in: transcript.recentText(maximumCharacters: 8000))
+    }
+
+    static func publishedFolderURL(in text: String) -> URL? {
+        let marker: String = "PUBLISHED_FOLDER="
+        var found: String?
+        for rawLine in text.split(separator: "\n", omittingEmptySubsequences: false) {
+            let line: String = String(rawLine).trimmingCharacters(in: .whitespaces)
+            if let markerRange = line.range(of: marker) {
+                let path: String = String(line[markerRange.upperBound...]).trimmingCharacters(in: .whitespaces)
+                if !path.isEmpty {
+                    found = path
+                }
+            }
+        }
+        guard let found else {
+            return nil
+        }
+        return URL(fileURLWithPath: found)
+    }
+
     /// The same address on the teacher's own domain: the host swapped, the
     /// rest untouched. Without a domain the address passes through as-is.
     static func applyingCustomDomain(_ domain: String?, to url: URL) -> URL {

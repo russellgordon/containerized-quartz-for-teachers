@@ -63,6 +63,9 @@ Examples:
 Notes:
 - Deploys from /teaching/courses/<COURSE>/.merged_output/section<SECTION> inside the container.
 - You must build first (the static site goes to 'public/' in that section folder).
+- With --to-folder <path>, the site is published to <path>/section<N> on THIS
+  computer instead of Netlify — an incremental copy (only changed files move),
+  for teachers who upload to their own web host (e.g. over SFTP).
 - The Netlify Personal Access Token (PAT) is stored in the macOS Keychain and injected securely at runtime.
 - Use --reset-token (or --logout) to remove the saved PAT and re-link on next run.
 - --image REF publishes using a particular already-built image; normally the
@@ -123,8 +126,14 @@ fi
 DIAGNOSE=""
 TEAM_SLUG=""
 RESET_TOKEN="false"
+TO_FOLDER=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --to-folder)
+      if [[ $# -lt 2 ]]; then echo "❌ Missing value for $1"; echo; usage; exit 1; fi
+      TO_FOLDER="$2"; shift ;;
+    --to-folder=*)
+      TO_FOLDER="${1#*=}" ;;
     --diagnose) DIAGNOSE="--diagnose" ;;
     --team|--team-slug)
       if [[ $# -lt 2 ]]; then echo "❌ Missing value for $1"; echo; usage; exit 1; fi
@@ -209,6 +218,31 @@ if [[ ! -d "${PUBLIC_DIR_HOST}" || -z "$(ls -A "${PUBLIC_DIR_HOST}" 2>/dev/null 
   echo " Build first:"
   echo " ${PREVIEW_CMD} ${COURSE_CODE} ${SECTION_NUM} --build-only"
   exit 1
+fi
+
+# -------------------- Publish to a local folder ------------------------
+# The built site already sits on the host (the working folder is
+# bind-mounted), so publishing to a folder is a host-side incremental
+# sync — only changed files move, and files deleted from the site are
+# deleted from the folder. Each section lands in its own subfolder so
+# sections can never overwrite one another. Netlify is not involved.
+if [[ -n "$TO_FOLDER" ]]; then
+  TARGET_DIR="${TO_FOLDER%/}/section${SECTION_NUM}"
+  mkdir -p "$TARGET_DIR" || {
+    echo "❌ Cannot create the publish folder:"
+    echo "   $TARGET_DIR"
+    exit 1
+  }
+  echo "📦 Publishing ${COURSE_CODE} section ${SECTION_NUM} to a folder…"
+  # -a preserves what matters, --delete mirrors removals, and the
+  # itemized output is counted so the teacher sees how little moved.
+  CHANGED_COUNT="$(rsync -a --delete --itemize-changes "${PUBLIC_DIR_HOST}/" "${TARGET_DIR}/" | grep -c '^[<>ch.]f' || true)"
+  echo "✅ Published: ${CHANGED_COUNT} file(s) updated."
+  echo "   Folder: ${TARGET_DIR}"
+  echo "   Upload that folder to your web host however you prefer (e.g. SFTP)."
+  # The app reads this line to offer the folder in Finder.
+  echo "PUBLISHED_FOLDER=${TARGET_DIR}"
+  exit 0
 fi
 
 # -------------------- macOS Keychain token handling --------------------

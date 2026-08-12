@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// The settings editor for one course: the same choices the setup wizard
@@ -46,6 +47,31 @@ struct CourseSettingsView: View {
                     }
                 } header: {
                     FormSectionHeader("Settings — Overall")
+                }
+
+                Section {
+                    Picker("Publish to", selection: $configuration.deployTarget) {
+                        Text("Netlify").tag("netlify")
+                        Text("A folder on this Mac").tag("local_folder")
+                    }
+                    .accessibilityIdentifier("deployTargetPicker")
+
+                    if configuration.deployTarget == "local_folder" {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                TextField("Folder", text: $configuration.deployFolderPath)
+                                    .textFieldStyle(.roundedBorder)
+                                    .accessibilityIdentifier("deployFolderField")
+                                Button("Choose…") {
+                                    chooseDeployFolder()
+                                }
+                                .accessibilityIdentifier("deployFolderChooseButton")
+                            }
+                            ExampleCaption("Each section publishes into its own subfolder here — section1, section2 — and only changed files are copied. Upload the folder to your web host however you prefer (e.g. over SFTP). Netlify isn’t involved.")
+                        }
+                    }
+                } header: {
+                    FormSectionHeader("Publishing")
                 }
 
                 Section {
@@ -155,6 +181,19 @@ struct CourseSettingsView: View {
     }
 
     // MARK: - Functions
+
+    /// The standard folder chooser, writing straight into the setting.
+    func chooseDeployFolder() {
+        let panel: NSOpenPanel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.canCreateDirectories = true
+        panel.prompt = "Choose"
+        panel.message = "Choose the folder this course's sections publish into."
+        if panel.runModal() == .OK, let chosen = panel.url {
+            course.configuration.deployFolderPath = chosen.path
+        }
+    }
 
     func save() {
         saveProblem = nil

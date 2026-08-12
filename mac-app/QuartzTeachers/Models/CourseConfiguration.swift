@@ -30,6 +30,30 @@ class CourseConfiguration {
         set { values["course_name"] = newValue }
     }
 
+    /// Where deploys go: "netlify" (the default) or "local_folder" — a
+    /// folder on this computer, for teachers who upload to their own web
+    /// host themselves (e.g. over SFTP). Course-level: every section of
+    /// the course publishes the same way.
+    var deployTarget: String {
+        get {
+            let stored: String = stringValue(forKey: "deploy_target")
+            return stored.isEmpty ? "netlify" : stored
+        }
+        set { values["deploy_target"] = newValue }
+    }
+
+    /// The folder local-folder deploys publish into; each section lands
+    /// in its own sectionN subfolder inside it.
+    var deployFolderPath: String {
+        get { return stringValue(forKey: "deploy_folder_path") }
+        set { values["deploy_folder_path"] = newValue }
+    }
+
+    /// True when this course publishes to a folder rather than Netlify.
+    var deploysToLocalFolder: Bool {
+        return deployTarget == "local_folder" && !deployFolderPath.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
     var customShortName: String {
         get { return stringValue(forKey: "custom_short_name") }
         set { values["custom_short_name"] = newValue }

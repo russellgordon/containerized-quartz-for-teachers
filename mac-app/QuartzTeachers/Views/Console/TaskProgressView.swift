@@ -180,12 +180,21 @@ struct TaskProgressView: View {
                                 .accessibilityIdentifier("failureExplanation")
                         }
 
-                        // Finish with something to click: the live site.
+                        // Finish with something to click: the live site,
+                        // or — for folder deploys — the published folder.
                         if !runner.wasCancelled, exitCode == 0, let siteURL = runner.publishedSiteURL {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Your website is live.")
                                 Link(siteURL.absoluteString, destination: siteURL)
                                     .accessibilityIdentifier("publishedSiteLink")
+                            }
+                        } else if !runner.wasCancelled, exitCode == 0, let folderURL = runner.publishedFolderURL {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Your website was published to a folder — upload it to your web host whenever you're ready.")
+                                Button("Show in Finder", systemImage: "finder") {
+                                    NSWorkspace.shared.activateFileViewerSelecting([folderURL])
+                                }
+                                .accessibilityIdentifier("publishedFolderButton")
                             }
                         }
                     }
