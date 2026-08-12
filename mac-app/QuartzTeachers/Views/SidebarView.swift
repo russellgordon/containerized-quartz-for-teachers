@@ -64,13 +64,7 @@ struct SidebarView: View {
                                 .tag(SidebarSelection.course(course.code))
                                 .accessibilityIdentifier("sidebar-\(course.code)")
                                 .contextMenu {
-                                    // Backing up only READS the course, so
-                                    // it stays available even mid-preview —
-                                    // the moment before risky editing is
-                                    // exactly when it's wanted.
-                                    Button("Back Up Now", systemImage: "clock.arrow.circlepath") {
-                                        workspace.backUp(course)
-                                    }
+                                    openInObsidianItem(revealing: course.directoryURL, vaultURL: course.directoryURL)
                                     Divider()
                                     // Adding a section re-runs the course
                                     // setup, which rewrites the course's
@@ -84,7 +78,13 @@ struct SidebarView: View {
                                         Text(busyReason)
                                     }
                                     Divider()
-                                    openInObsidianItem(revealing: course.directoryURL, vaultURL: course.directoryURL)
+                                    // Backing up only READS the course, so
+                                    // it stays available even mid-preview —
+                                    // the moment before risky editing is
+                                    // exactly when it's wanted.
+                                    Button("Back Up Now", systemImage: "clock.arrow.circlepath") {
+                                        workspace.backUp(course)
+                                    }
                                     Divider()
                                     folderMenuItems(for: course.directoryURL)
                                 }
