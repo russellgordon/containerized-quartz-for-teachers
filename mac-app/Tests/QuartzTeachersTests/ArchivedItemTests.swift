@@ -67,7 +67,7 @@ final class ArchivedItemTests: XCTestCase {
     }
 
     @MainActor
-    func testTheDeleteWarningKnowsWhenAnArchiveIsTheOnlyCopy() {
+    func testTheDeleteWarningKnowsWhatDeletingWouldLeaveBehind() {
         // One live course, ICS3U, with sections 1 and 2.
         let configuration: CourseConfiguration = CourseConfiguration(
             values: ["course_code": "ICS3U", "section_numbers": [1, 2]],
@@ -77,28 +77,66 @@ final class ArchivedItemTests: XCTestCase {
             Course(code: "ICS3U", directoryURL: URL(fileURLWithPath: "/w/courses/ICS3U"), configuration: configuration)
         ]
         let stamp: Date = Date()
-        let zipURL: URL = URL(fileURLWithPath: "/w/courses/_backups/ICS3U/x.zip")
 
-        let liveCourseArchive: ArchivedItem = ArchivedItem(
-            courseCode: "ICS3U", sectionNumber: nil, archivedAt: stamp, fileURL: zipURL
-        )
-        XCTAssertFalse(WorkspaceModel.archiveIsOnlyRemainingCopy(liveCourseArchive, among: liveCourses),
-                       "The course is still live, so the archive is a spare copy")
+        func archive(_ code: String, section: Int? = nil, file: String) -> ArchivedItem {
+            return ArchivedItem(
+                courseCode: code, sectionNumber: section, archivedAt: stamp,
+                fileURL: URL(fileURLWithPath: "/w/courses/_backups/\(code)/\(file)")
+            )
+        }
 
-        let liveSectionArchive: ArchivedItem = ArchivedItem(
-            courseCode: "ICS3U", sectionNumber: 2, archivedAt: stamp, fileURL: zipURL
+        let liveCourseArchive: ArchivedItem = archive("ICS3U", file: "a.zip")
+        XCTAssertEqual(
+            WorkspaceModel.archiveStanding(liveCourseArchive, among: liveCourses, archives: [liveCourseArchive], backups: []),
+            .liveInCourses
         )
-        XCTAssertFalse(WorkspaceModel.archiveIsOnlyRemainingCopy(liveSectionArchive, among: liveCourses))
 
-        let goneSectionArchive: ArchivedItem = ArchivedItem(
-            courseCode: "ICS3U", sectionNumber: 3, archivedAt: stamp, fileURL: zipURL
+        let goneSectionArchive: ArchivedItem = archive("ICS3U", section: 3, file: "s3.zip")
+        XCTAssertEqual(
+            WorkspaceModel.archiveStanding(goneSectionArchive, among: liveCourses, archives: [goneSectionArchive], backups: []),
+            .onlyRemainingCopy,
+            "The live course no longer has section 3, and nothing else covers it"
         )
-        XCTAssertTrue(WorkspaceModel.archiveIsOnlyRemainingCopy(goneSectionArchive, among: liveCourses),
-                      "The live course no longer has section 3, so its archive is the only copy")
 
-        let goneCourseArchive: ArchivedItem = ArchivedItem(
-            courseCode: "MPM2D", sectionNumber: nil, archivedAt: stamp, fileURL: zipURL
+        // Two archives of a course that is gone: neither is the only copy.
+        let first: ArchivedItem = archive("ICD2O", file: "one.zip")
+        let second: ArchivedItem = archive("ICD2O", file: "two.zip")
+        XCTAssertEqual(
+            WorkspaceModel.archiveStanding(first, among: liveCourses, archives: [first, second], backups: []),
+            .otherCopiesRemain
         )
-        XCTAssertTrue(WorkspaceModel.archiveIsOnlyRemainingCopy(goneCourseArchive, among: liveCourses))
+        XCTAssertEqual(
+            WorkspaceModel.archiveStanding(second, among: liveCourses, archives: [first, second], backups: []),
+            .otherCopiesRemain
+        )
+
+        // Alone, the last archive of a gone course IS the only copy…
+        XCTAssertEqual(
+            WorkspaceModel.archiveStanding(first, among: liveCourses, archives: [first], backups: []),
+            .onlyRemainingCopy
+        )
+
+        // …unless a backup of the course still exists.
+        let backup: BackupItem = BackupItem(
+            courseCode: "ICD2O", backedUpAt: stamp,
+            fileURL: URL(fileURLWithPath: "/w/courses/_backups/ICD2O/ICD2O_backup_x.zip")
+        )
+        XCTAssertEqual(
+            WorkspaceModel.archiveStanding(first, among: liveCourses, archives: [first], backups: [backup]),
+            .otherCopiesRemain
+        )
+
+        // A surviving SECTION archive does not make a course archive
+        // deletable-without-loss: it covers one section, not the course.
+        let sectionOnly: ArchivedItem = archive("ICD2O", section: 1, file: "s1.zip")
+        XCTAssertEqual(
+            WorkspaceModel.archiveStanding(first, among: liveCourses, archives: [first, sectionOnly], backups: []),
+            .onlyRemainingCopy
+        )
+        // The reverse IS covered: a whole-course archive contains the section.
+        XCTAssertEqual(
+            WorkspaceModel.archiveStanding(sectionOnly, among: liveCourses, archives: [first, sectionOnly], backups: []),
+            .otherCopiesRemain
+        )
     }
 }

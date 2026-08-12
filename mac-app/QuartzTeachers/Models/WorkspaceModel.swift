@@ -727,26 +727,57 @@ class WorkspaceModel {
         reloadCourses()
     }
 
-    /// True when the archived thing no longer exists among the live
-    /// courses — deleting the archive then destroys the only copy, and
-    /// the confirmation must say so.
-    func archiveIsOnlyRemainingCopy(_ item: ArchivedItem) -> Bool {
-        return WorkspaceModel.archiveIsOnlyRemainingCopy(item, among: courses)
+    /// What deleting an archive would leave behind, so the confirmation
+    /// can state a fact instead of an "if".
+    enum ArchiveStanding {
+        /// The archived course or section is still in Courses & Clubs.
+        case liveInCourses
+        /// It is gone from Courses & Clubs, but another archive or a
+        /// backup still covers it.
+        case otherCopiesRemain
+        /// It is gone, and this archive is the only copy left anywhere.
+        case onlyRemainingCopy
     }
 
-    static func archiveIsOnlyRemainingCopy(_ item: ArchivedItem, among courses: [Course]) -> Bool {
+    func archiveStanding(_ item: ArchivedItem) -> ArchiveStanding {
+        return WorkspaceModel.archiveStanding(
+            item, among: courses, archives: archivedItems, backups: backupItems
+        )
+    }
+
+    static func archiveStanding(
+        _ item: ArchivedItem,
+        among courses: [Course],
+        archives: [ArchivedItem],
+        backups: [BackupItem]
+    ) -> ArchiveStanding {
         for course in courses {
             if course.code == item.courseCode {
                 guard let sectionNumber = item.sectionNumber else {
-                    // A course archive, and the course is live.
-                    return false
+                    return .liveInCourses
                 }
-                // A section archive: the copy survives only if the live
-                // course still has that section.
-                return !course.sectionNumbers.contains(sectionNumber)
+                if course.sectionNumbers.contains(sectionNumber) {
+                    return .liveInCourses
+                }
             }
         }
-        return true
+        for other in archives {
+            if other.id == item.id || other.courseCode != item.courseCode {
+                continue
+            }
+            // A whole-course archive covers every section; a section
+            // archive covers only its own section. A section archive
+            // never covers a whole-course one.
+            if other.sectionNumber == nil || other.sectionNumber == item.sectionNumber {
+                return .otherCopiesRemain
+            }
+        }
+        for backup in backups {
+            if backup.courseCode == item.courseCode {
+                return .otherCopiesRemain
+            }
+        }
+        return .onlyRemainingCopy
     }
 
     /// Deletes an archive for good. The promise made at removal time —
