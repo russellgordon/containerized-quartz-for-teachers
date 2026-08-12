@@ -20,9 +20,10 @@ struct SidebarView: View {
     /// and the path bar opposite it stay the same height.
     @ScaledMetric(relativeTo: .body) var scaledFooterHeight: CGFloat = WindowChrome.footerHeight
 
-    /// Whether the Archived group is open. Closed by default: it is a place
-    /// to go looking, not something to step over on the way to today's work.
-    @State var isShowingArchived: Bool = false
+    // The Archived group and the course disclosure triangles keep their
+    // open/closed state on the WINDOW's model, not view-locally: the
+    // window remembers them with its folder, so a restored window shows
+    // the same courses unfolded that were being worked on.
 
     /// The course "Add Section…" was chosen on, while its sheet is up.
     @State var addSectionCourse: Course?
@@ -36,7 +37,7 @@ struct SidebarView: View {
             List(selection: $workspace.selection) {
                 Section("Courses & Clubs") {
                     ForEach(workspace.filteredCourses) { course in
-                        DisclosureGroup {
+                        DisclosureGroup(isExpanded: expansionBinding(for: course.code)) {
                             ForEach(course.sectionNumbers, id: \.self) { sectionNumber in
                                 Label("Section \(sectionNumber)", systemImage: "doc.richtext")
                                     .tag(SidebarSelection.section(course.code, sectionNumber))
@@ -71,7 +72,7 @@ struct SidebarView: View {
                     // A collapsible section header, the way Finder's
                     // "Locations" behaves: the chevron appears on hover, and
                     // the rows beneath read like any other sidebar row.
-                    Section(isExpanded: $isShowingArchived) {
+                    Section(isExpanded: $workspace.isShowingArchived) {
                         ForEach(workspace.archivedItems) { item in
                             Label(item.title, systemImage: item.symbolName)
                                 .help(item.subtitle)
@@ -94,6 +95,12 @@ struct SidebarView: View {
             }
             .listStyle(.sidebar)
             .accessibilityIdentifier("coursesSidebar")
+            .onChange(of: workspace.expandedCourseCodes) {
+                WorkspaceModel.rememberOpenFolders()
+            }
+            .onChange(of: workspace.isShowingArchived) {
+                WorkspaceModel.rememberOpenFolders()
+            }
             .overlay {
                 if showsNoFilterMatches {
                     ContentUnavailableView {
@@ -301,6 +308,21 @@ struct SidebarView: View {
     }
 
     // MARK: - Functions
+
+    /// The open/closed state of one course's disclosure triangle, living
+    /// on the window's model so restoration can bring it back.
+    func expansionBinding(for courseCode: String) -> Binding<Bool> {
+        return Binding(
+            get: { workspace.expandedCourseCodes.contains(courseCode) },
+            set: { isOpen in
+                if isOpen {
+                    workspace.expandedCourseCodes.insert(courseCode)
+                } else {
+                    workspace.expandedCourseCodes.remove(courseCode)
+                }
+            }
+        )
+    }
 
     /// The editing action, set apart in its own menu section. The Obsidian
     /// vault is the COURSE folder even for a section row — the section is a

@@ -131,4 +131,65 @@ final class WindowFolderMemoryTests: XCTestCase {
         XCTAssertFalse(WindowFolderMemory.aClaimMayStillArrive(asOf: now),
                        "A fresh first launch shows the picker immediately")
     }
+
+    // MARK: - Sidebar expansion rides with the folder
+
+    @MainActor
+    func testExpansionStateSurvivesTheStorageRoundTrip() throws {
+        let defaults: UserDefaults = TestDefaults.make()
+        let folders: [String] = try makeFolders(1)
+        defer { removeAll(folders) }
+        WindowFolderMemory.record([
+            WindowFolderMemory.Entry(
+                path: folders[0],
+                frame: "{{1, 2}, {3, 4}}",
+                expandedCourses: ["ADA1O", "MTH1W"],
+                archivedExpanded: true
+            ),
+        ], defaults: defaults)
+
+        WindowFolderMemory.resetForLoading()
+        WindowFolderMemory.systemRestoresWindowsOverride = true
+        defer { WindowFolderMemory.systemRestoresWindowsOverride = nil }
+        let entry = WindowFolderMemory.claimEntry(matchingFrame: "{{1, 2}, {3, 4}}", defaults: defaults)
+        XCTAssertEqual(entry?.expandedCourses, ["ADA1O", "MTH1W"])
+        XCTAssertEqual(entry?.archivedExpanded, true)
+    }
+
+    @MainActor
+    func testAnOldEntryWithoutExpansionLoadsClosed() throws {
+        // Entries recorded before this feature carry no expansion keys;
+        // they must load as all-collapsed, not fail.
+        let defaults: UserDefaults = TestDefaults.make()
+        let folders: [String] = try makeFolders(1)
+        defer { removeAll(folders) }
+        defaults.set([["path": folders[0], "frame": "{{5, 6}, {7, 8}}"]],
+                     forKey: WindowFolderMemory.storageKey)
+
+        WindowFolderMemory.resetForLoading()
+        WindowFolderMemory.systemRestoresWindowsOverride = true
+        defer { WindowFolderMemory.systemRestoresWindowsOverride = nil }
+        let entry = WindowFolderMemory.claimEntry(matchingFrame: "{{5, 6}, {7, 8}}", defaults: defaults)
+        XCTAssertEqual(entry?.expandedCourses, [])
+        XCTAssertEqual(entry?.archivedExpanded, false)
+    }
+
+    @MainActor
+    func testRememberOpenFoldersRecordsEachWindowsExpansion() throws {
+        let defaults: UserDefaults = TestDefaults.make()
+        let folders: [String] = try makeFolders(1)
+        defer { removeAll(folders) }
+        let model: WorkspaceModel = WorkspaceModel()
+        model.workspaceURL = URL(fileURLWithPath: folders[0])
+        model.expandedCourseCodes = ["ICS3U"]
+        model.isShowingArchived = true
+        WorkspaceModel.registerWindowModel(model)
+        defer { WorkspaceModel.unregisterWindowModel(model) }
+
+        WorkspaceModel.rememberOpenFolders(defaults: defaults)
+        let stored = defaults.array(forKey: WindowFolderMemory.storageKey) as? [[String: String]]
+        let entry = stored?.first { $0["path"] == folders[0] }
+        XCTAssertEqual(entry?["expanded"], "ICS3U")
+        XCTAssertEqual(entry?["archived"], "1")
+    }
 }

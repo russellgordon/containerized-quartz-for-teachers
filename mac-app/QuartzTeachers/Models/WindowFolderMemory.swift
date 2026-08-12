@@ -15,6 +15,13 @@ enum WindowFolderMemory {
     struct Entry {
         let path: String
         let frame: String
+
+        /// The sidebar as the teacher left it: which courses' disclosure
+        /// triangles were open, and whether the Archived group was.
+        /// Restored with the folder, so a reopened window shows the same
+        /// courses unfolded that were being worked on.
+        var expandedCourses: [String] = []
+        var archivedExpanded: Bool = false
     }
 
     // MARK: - Stored properties
@@ -112,7 +119,14 @@ enum WindowFolderMemory {
         }
         var stored: [[String: String]] = []
         for entry in entries {
-            stored.append(["path": entry.path, "frame": entry.frame])
+            // Course codes never contain commas, so a joined list stores
+            // safely in the same string-to-string shape as the rest.
+            stored.append([
+                "path": entry.path,
+                "frame": entry.frame,
+                "expanded": entry.expandedCourses.joined(separator: ","),
+                "archived": entry.archivedExpanded ? "1" : "0",
+            ])
         }
         defaults.set(stored, forKey: storageKey)
     }
@@ -140,7 +154,16 @@ enum WindowFolderMemory {
         if let stored = defaults.array(forKey: storageKey) {
             for element in stored {
                 if let pair = element as? [String: String], let path = pair["path"] {
-                    loaded.append(Entry(path: path, frame: pair["frame"] ?? ""))
+                    var expandedCourses: [String] = []
+                    if let joined = pair["expanded"], !joined.isEmpty {
+                        expandedCourses = joined.components(separatedBy: ",")
+                    }
+                    loaded.append(Entry(
+                        path: path,
+                        frame: pair["frame"] ?? "",
+                        expandedCourses: expandedCourses,
+                        archivedExpanded: pair["archived"] == "1"
+                    ))
                 }
                 // An entry from the earlier format: a bare path string.
                 if let path = element as? String {

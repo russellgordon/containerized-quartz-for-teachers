@@ -134,7 +134,12 @@ class WorkspaceModel {
         for model in windowModels {
             if let path = model.workspaceURL?.path {
                 let frame: String = model.window.map { NSStringFromRect($0.frame) } ?? ""
-                entries.append(WindowFolderMemory.Entry(path: path, frame: frame))
+                entries.append(WindowFolderMemory.Entry(
+                    path: path,
+                    frame: frame,
+                    expandedCourses: model.expandedCourseCodes.sorted(),
+                    archivedExpanded: model.isShowingArchived
+                ))
             }
         }
         WindowFolderMemory.record(entries, defaults: defaults)
@@ -148,6 +153,12 @@ class WorkspaceModel {
     /// resolving. While true, the window shows a quiet holding view
     /// instead of flashing the folder picker it is about to replace.
     var isResolvingRestoredFolder: Bool = false
+
+    /// Which courses' sidebar disclosure triangles are open, and whether
+    /// the Archived group is — per window, remembered with the folder so
+    /// a restored window shows the same courses unfolded.
+    var expandedCourseCodes: Set<String> = []
+    var isShowingArchived: Bool = false
 
     /// The window this model belongs to, once it is on screen. Used only
     /// to read the frame; never retained.

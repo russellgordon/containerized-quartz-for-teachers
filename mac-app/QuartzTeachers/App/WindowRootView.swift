@@ -131,6 +131,10 @@ struct WindowRootView: View {
     /// Takes a remembered window as this window's own.
     func adopt(_ entry: WindowFolderMemory.Entry, how detail: String) {
         workspace.adoptRestoredPath(entry.path)
+        // The sidebar as it was left: the same courses unfolded, the
+        // Archived group open if it was.
+        workspace.expandedCourseCodes = Set(entry.expandedCourses)
+        workspace.isShowingArchived = entry.archivedExpanded
         workspace.isResolvingRestoredFolder = false
         AppLog.interface.info("""
             window \(windowIdentity, privacy: .public) claimed \
