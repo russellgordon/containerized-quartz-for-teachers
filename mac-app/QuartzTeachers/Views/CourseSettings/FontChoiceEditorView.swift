@@ -8,6 +8,11 @@ struct FontChoiceEditorView: View {
 
     @Binding var choice: FontChoice
 
+    /// The text the header-font sample renders. Once a course has a name,
+    /// the sample shows THAT — the teacher previews their own site's
+    /// headline, not a stand-in course's.
+    var sampleHeadline: String = ""
+
     // MARK: - Computed properties
 
     /// The pairing picker works on a "header|body" combined tag so custom
@@ -70,7 +75,7 @@ struct FontChoiceEditorView: View {
             // Live previews rendered in the actual fonts (bundled with
             // the app); an unavailable font falls back to the system font.
             SampleBox {
-                Text("Grade 11 Computer Science")
+                Text(FontChoiceEditorView.headlineSample(for: sampleHeadline))
                     .font(FontChoiceEditorView.previewFont(family: choice.header, size: 19))
                 Text("Body text on your site will look like this sentence does.")
                     .font(FontChoiceEditorView.previewFont(family: choice.body, size: 13))
@@ -94,6 +99,16 @@ struct FontChoiceEditorView: View {
     }
 
     // MARK: - Functions
+
+    /// The headline the sample shows: the course's own name once it has
+    /// one, and a stand-in until then.
+    static func headlineSample(for courseName: String) -> String {
+        let trimmed: String = courseName.trimmingCharacters(in: .whitespaces)
+        if trimmed.isEmpty {
+            return "Grade 11 Computer Science"
+        }
+        return trimmed
+    }
 
     /// A preview font for a site font family. The "Helvetica, Arial"
     /// system pairing previews as Helvetica; every other family is

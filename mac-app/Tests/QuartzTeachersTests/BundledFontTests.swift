@@ -31,4 +31,19 @@ final class BundledFontTests: XCTestCase {
             XCTAssertNotNil(matched, "Font family should be registered and available: \(familyName)")
         }
     }
+
+    // MARK: - Sample headline
+
+    @MainActor
+    func testTheFontSampleShowsTheCourseNameOnceItHasOne() {
+        XCTAssertEqual(FontChoiceEditorView.headlineSample(for: "Drama"), "Drama")
+        XCTAssertEqual(FontChoiceEditorView.headlineSample(for: "  Principles of Mathematics  "),
+                       "Principles of Mathematics")
+    }
+
+    @MainActor
+    func testTheFontSampleFallsBackBeforeANameExists() {
+        XCTAssertEqual(FontChoiceEditorView.headlineSample(for: ""), "Grade 11 Computer Science")
+        XCTAssertEqual(FontChoiceEditorView.headlineSample(for: "   "), "Grade 11 Computer Science")
+    }
 }

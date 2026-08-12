@@ -101,7 +101,7 @@ struct SectionSettingsView: View {
 
             ColourSchemePickerView(selectedSchemeID: schemeBinding)
 
-            FontChoiceEditorView(choice: fontBinding)
+            FontChoiceEditorView(choice: fontBinding, sampleHeadline: configuration.courseName)
 
             DisclosureGroup("Advanced") {
                 VStack(alignment: .leading, spacing: 4) {
