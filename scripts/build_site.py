@@ -1555,38 +1555,53 @@ def patch_mermaid_font_wait(mermaid_ts_path: Path):
 
 def patch_mermaid_pie_colours(mermaid_ts_path: Path):
     """
-    Give pie charts a palette in which every slice is actually visible.
+    Give pie charts a palette in which every slice is visible and legible,
+    whichever colour scheme the teacher picked.
 
     Mermaid's base theme takes a pie chart's first slice colour from
     `primaryColor`, and Quartz sets `primaryColor` to `--light` — the page
     background. That is right for a flowchart node and wrong for a pie
     slice: slice one was drawn in the background colour, so it vanished,
-    and its legend swatch with it. Every pie chart in every course lost
-    its first slice.
+    and its legend swatch with it.
 
-    The replacement is built from the site's own accents (`--secondary`,
-    `--tertiary`, `--darkgray`), each blended toward `--light`. Because
-    `--light` is always the page background and `--dark` always the text,
-    blending toward it works in light and dark mode alike: the slice
-    lands between the accent and the page, and the label text sits at the
-    far end.
+    The palette is SOLVED at render time rather than hardcoded, because
+    Plantoir ships 43 colour schemes and each has a light and a dark mode.
+    Fixed blend fractions tuned against one scheme failed 74 of those 86
+    combinations — some slices came out barely distinguishable from the
+    label text. Instead: build a pool of tints of the scheme's own colours,
+    keep only those with at least 4.5:1 contrast against the label text and
+    1.45:1 against the page, then walk the pool taking the farthest colour
+    from everything chosen so far. That anchors on the course's main accent
+    and keeps every later slice as distinct as the scheme allows.
 
-    The blend fractions were chosen by search rather than by eye: every
-    one of the first six slices keeps at least 4.5:1 contrast with the
-    label text and at least 1.45:1 with the page, while the six are as
-    distinct from one another as a two-accent scheme permits. Idempotent.
+    A monochrome scheme can only give tints of one hue, so its slices
+    differ by lightness alone — inherent, not a defect.
+
+    Idempotent, and it replaces the earlier fixed-fraction version in a
+    scaffold that already carries it.
     """
     if not mermaid_ts_path.exists():
         print(f"⚠️ mermaid.inline.ts not found at {mermaid_ts_path}")
         return
     try:
-        marker = "pieSliceColours"
         with open(mermaid_ts_path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        if marker in content:
+        block_start = "    // Mermaid's base theme takes a pie chart's first slice from"
+        block_end = '    pieSliceColours.pieOpacity = "1"'
+        version = "pie palette: solved per scheme"
+
+        if version in content:
             print("ℹ️ Mermaid pie palette already set (no change).")
             return
+
+        # An earlier version of this patch is in the file: take it out
+        # first, or its consts would be declared twice and the build fails.
+        if block_start in content and block_end in content:
+            head, rest = content.split(block_start, 1)
+            _, tail = rest.split(block_end, 1)
+            content = head + tail.lstrip("\n")
+            print("ℹ️ Replacing the earlier fixed-fraction pie palette.")
 
         anchor = '    const darkMode = document.documentElement.getAttribute("saved-theme") === "dark"'
         if anchor not in content:
@@ -1595,9 +1610,11 @@ def patch_mermaid_pie_colours(mermaid_ts_path: Path):
 
         palette = anchor + "\n" + '''
     // Mermaid's base theme takes a pie chart's first slice from
-    // primaryColor, which Quartz sets to the page background — so slice
-    // one was drawn in the background colour and disappeared, legend
-    // swatch and all. Build the palette from the site's own accents.
+    // primaryColor, which Quartz sets to the page background — so slice one
+    // was drawn in the background colour and disappeared, legend swatch and
+    // all. Build the palette from this scheme's own colours instead.
+    // pie palette: solved per scheme, because Plantoir ships 43 schemes and
+    // fractions tuned against one of them fail most of the others.
     const toChannels = (value: string): number[] => {
       const text = value.trim()
       if (text.startsWith("#")) {
@@ -1624,30 +1641,92 @@ def patch_mermaid_pie_colours(mermaid_ts_path: Path):
           .join("")
       )
     }
-    // Blending toward --light works in both modes: --light is always the
-    // page and --dark always the text, so a slice lands between the
-    // accent and the page while the label sits at the far end. These
-    // fractions were chosen by search — see build_site.py.
-    const sliceMix = darkMode
-      ? [0.34, 0.66, 0.6, 0.48, 0.76, 0.7, 0.42, 0.58, 0.54, 0.28, 0.82, 0.64]
-      : [0.42, 0.14, 0.44, 0.74, 0.38, 0.56, 0.58, 0.26, 0.66, 0.3, 0.5, 0.34]
-    const sliceFamilies = ["--secondary", "--tertiary", "--darkgray"] as const
-    const pieSliceColours: Record<string, string> = {}
-    sliceMix.forEach((amount, index) => {
-      pieSliceColours["pie" + (index + 1)] = blend(
-        computedStyleMap[sliceFamilies[index % 3]],
-        computedStyleMap["--light"],
-        amount,
+    const relativeLuminance = (colour: string): number => {
+      const channels = toChannels(colour).map((value) => {
+        const scaled = value / 255
+        return scaled <= 0.03928
+          ? scaled / 12.92
+          : Math.pow((scaled + 0.055) / 1.055, 2.4)
+      })
+      return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2]
+    }
+    const contrastRatio = (one: string, two: string): number => {
+      const a = relativeLuminance(one)
+      const b = relativeLuminance(two)
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
+    }
+    const separation = (one: string, two: string): number => {
+      const a = toChannels(one)
+      const b = toChannels(two)
+      return Math.sqrt(
+        [0, 1, 2].reduce((total, i) => total + (a[i] - b[i]) ** 2, 0),
       )
+    }
+
+    const pageColour = computedStyleMap["--light"]
+    const labelColour = computedStyleMap["--dark"]
+    // Readable against the label text, and clearly not the page itself.
+    const readable = (colour: string) =>
+      contrastRatio(colour, labelColour) >= 4.5 &&
+      contrastRatio(colour, pageColour) >= 1.45
+
+    const sliceSources = [
+      computedStyleMap["--secondary"],
+      computedStyleMap["--tertiary"],
+      computedStyleMap["--darkgray"],
+      computedStyleMap["--gray"],
+      labelColour,
+    ]
+    const slicePool: string[] = []
+    for (const source of sliceSources) {
+      for (let step = 0; step <= 40; step++) {
+        const candidate = blend(source, pageColour, step / 40)
+        if (readable(candidate) && !slicePool.includes(candidate)) {
+          slicePool.push(candidate)
+        }
+      }
+    }
+
+    // Start on the strongest readable tint of the course's main accent, so
+    // the chart still looks like this course, then keep taking the colour
+    // farthest from everything already chosen.
+    let anchorColour = slicePool[0]
+    for (let step = 0; step <= 40; step++) {
+      const candidate = blend(computedStyleMap["--secondary"], pageColour, step / 40)
+      if (readable(candidate)) {
+        anchorColour = candidate
+        break
+      }
+    }
+    const sliceColours: string[] = anchorColour ? [anchorColour] : []
+    while (sliceColours.length < 12 && slicePool.length > 0) {
+      let best = slicePool[0]
+      let bestGap = -1
+      for (const candidate of slicePool) {
+        const gap = Math.min(...sliceColours.map((c) => separation(candidate, c)))
+        if (gap > bestGap) {
+          bestGap = gap
+          best = candidate
+        }
+      }
+      if (bestGap <= 0) {
+        break
+      }
+      sliceColours.push(best)
+    }
+
+    const pieSliceColours: Record<string, string> = {}
+    sliceColours.forEach((colour, index) => {
+      pieSliceColours["pie" + (index + 1)] = colour
     })
-    pieSliceColours.pieSectionTextColor = computedStyleMap["--dark"]
-    pieSliceColours.pieLegendTextColor = computedStyleMap["--dark"]
-    pieSliceColours.pieStrokeColor = computedStyleMap["--light"]
+    pieSliceColours.pieSectionTextColor = labelColour
+    pieSliceColours.pieLegendTextColor = labelColour
+    pieSliceColours.pieStrokeColor = pageColour
     pieSliceColours.pieOuterStrokeColor = computedStyleMap["--darkgray"]
     // Mermaid softens its own garish defaults by drawing slices at 0.7
-    // opacity, which blends them 30% into the page. These colours are
-    // already the site's own muted accents, and the dilution pushed dark
-    // mode below the contrast the palette was chosen for.
+    // opacity, blending them 30% into the page. These are already the
+    // scheme's own colours, and the dilution broke the contrast the
+    // palette was solved for.
     pieSliceColours.pieOpacity = "1"
 '''
         content = content.replace(anchor, palette, 1)
@@ -1656,15 +1735,14 @@ def patch_mermaid_pie_colours(mermaid_ts_path: Path):
         if theme_anchor not in content:
             print("⚠️ Could not find themeVariables to extend; left unchanged.")
             return
-        content = content.replace(
-            theme_anchor,
-            theme_anchor + "\n        ...pieSliceColours,",
-            1,
-        )
+        if "...pieSliceColours," not in content:
+            content = content.replace(
+                theme_anchor, theme_anchor + "\n        ...pieSliceColours,", 1
+            )
 
         with open(mermaid_ts_path, "w", encoding="utf-8") as f:
             f.write(content)
-        print("✅ Patched mermaid.inline.ts with a visible pie chart palette")
+        print("✅ Patched mermaid.inline.ts with a per-scheme pie chart palette")
     except Exception as e:
         print(f"⚠️ Error patching mermaid pie palette: {e}")
 
