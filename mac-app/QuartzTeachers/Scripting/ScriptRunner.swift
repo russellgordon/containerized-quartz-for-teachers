@@ -171,6 +171,12 @@ class ScriptRunner {
         terminal = newTerminal
         isRunning = true
         startedAt = Date()
+        // The quiet timer measures silence from THIS task's start, not
+        // from whenever the runner happened to be created. A runner is
+        // built when its window or sheet appears, so without this the
+        // first "still working… (Ns)" counted the time the teacher spent
+        // filling in the form — opening at 35s and reading like a stall.
+        lastOutputAt = Date()
         AppLog.output.info("Started \(scriptName, privacy: .public) \(arguments, privacy: .public)")
     }
 

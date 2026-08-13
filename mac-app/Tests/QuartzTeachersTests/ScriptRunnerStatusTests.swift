@@ -258,6 +258,39 @@ final class PreviewAddressTests: XCTestCase {
     }
 
     @MainActor
+    func testTheTimerStartsFromTheTaskNotFromTheRunnersBirth() throws {
+        // A runner is built when its sheet or window appears, which can be
+        // minutes before the teacher presses the button — the whole time
+        // spent filling in the wizard, for instance. The quiet timer must
+        // measure silence from THIS task's start, or the very first step
+        // opens at "still working… (35s)" and reads like a stall.
+        let fileManager: FileManager = FileManager.default
+        let folder: URL = fileManager.temporaryDirectory
+            .appendingPathComponent("runner-timer-\(UUID().uuidString)")
+        try fileManager.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: folder) }
+        try Data("exit 0\n".utf8).write(to: folder.appendingPathComponent("setup.sh"))
+
+        let runner: ScriptRunner = ScriptRunner()
+        runner.milestones = TaskMilestones.courseCreation
+        // Stand in for a wizard that sat open for a while before Create.
+        runner.lastOutputAt = Date(timeIntervalSinceNow: -35)
+
+        runner.run(scriptNamed: "setup.sh", arguments: [], workingDirectory: folder)
+
+        XCTAssertNil(runner.launchProblem, "the stand-in script should launch")
+        XCTAssertLessThan(
+            Date().timeIntervalSince(runner.lastOutputAt), 2,
+            "starting a task resets the quiet clock"
+        )
+        XCTAssertFalse(
+            runner.milestoneText(asOf: Date()).contains("still working"),
+            "a task that just started is not a stalled task"
+        )
+        runner.terminate()
+    }
+
+    @MainActor
     func testAStepWithItsOwnCountNeverShowsTheTimer() {
         // A step reporting "3 of 8" IS visibly moving — the count wins.
         let runner: ScriptRunner = ScriptRunner()
