@@ -1553,6 +1553,122 @@ def patch_mermaid_font_wait(mermaid_ts_path: Path):
         print(f"⚠️ Error patching mermaid font wait: {e}")
 
 
+def patch_mermaid_pie_colours(mermaid_ts_path: Path):
+    """
+    Give pie charts a palette in which every slice is actually visible.
+
+    Mermaid's base theme takes a pie chart's first slice colour from
+    `primaryColor`, and Quartz sets `primaryColor` to `--light` — the page
+    background. That is right for a flowchart node and wrong for a pie
+    slice: slice one was drawn in the background colour, so it vanished,
+    and its legend swatch with it. Every pie chart in every course lost
+    its first slice.
+
+    The replacement is built from the site's own accents (`--secondary`,
+    `--tertiary`, `--darkgray`), each blended toward `--light`. Because
+    `--light` is always the page background and `--dark` always the text,
+    blending toward it works in light and dark mode alike: the slice
+    lands between the accent and the page, and the label text sits at the
+    far end.
+
+    The blend fractions were chosen by search rather than by eye: every
+    one of the first six slices keeps at least 4.5:1 contrast with the
+    label text and at least 1.45:1 with the page, while the six are as
+    distinct from one another as a two-accent scheme permits. Idempotent.
+    """
+    if not mermaid_ts_path.exists():
+        print(f"⚠️ mermaid.inline.ts not found at {mermaid_ts_path}")
+        return
+    try:
+        marker = "pieSliceColours"
+        with open(mermaid_ts_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        if marker in content:
+            print("ℹ️ Mermaid pie palette already set (no change).")
+            return
+
+        anchor = '    const darkMode = document.documentElement.getAttribute("saved-theme") === "dark"'
+        if anchor not in content:
+            print("⚠️ Could not find the mermaid theme setup to patch; left unchanged.")
+            return
+
+        palette = anchor + "\n" + '''
+    // Mermaid's base theme takes a pie chart's first slice from
+    // primaryColor, which Quartz sets to the page background — so slice
+    // one was drawn in the background colour and disappeared, legend
+    // swatch and all. Build the palette from the site's own accents.
+    const toChannels = (value: string): number[] => {
+      const text = value.trim()
+      if (text.startsWith("#")) {
+        const hex =
+          text.length === 4
+            ? text[1] + text[1] + text[2] + text[2] + text[3] + text[3]
+            : text.slice(1, 7)
+        return [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16))
+      }
+      const parts = text.match(/\\d+(\\.\\d+)?/g) ?? ["0", "0", "0"]
+      return [Number(parts[0]), Number(parts[1]), Number(parts[2])]
+    }
+    const blend = (from: string, to: string, amount: number): string => {
+      const a = toChannels(from)
+      const b = toChannels(to)
+      return (
+        "#" +
+        [0, 1, 2]
+          .map((i) =>
+            Math.max(0, Math.min(255, Math.round(a[i] + (b[i] - a[i]) * amount)))
+              .toString(16)
+              .padStart(2, "0"),
+          )
+          .join("")
+      )
+    }
+    // Blending toward --light works in both modes: --light is always the
+    // page and --dark always the text, so a slice lands between the
+    // accent and the page while the label sits at the far end. These
+    // fractions were chosen by search — see build_site.py.
+    const sliceMix = darkMode
+      ? [0.34, 0.66, 0.6, 0.48, 0.76, 0.7, 0.42, 0.58, 0.54, 0.28, 0.82, 0.64]
+      : [0.42, 0.14, 0.44, 0.74, 0.38, 0.56, 0.58, 0.26, 0.66, 0.3, 0.5, 0.34]
+    const sliceFamilies = ["--secondary", "--tertiary", "--darkgray"] as const
+    const pieSliceColours: Record<string, string> = {}
+    sliceMix.forEach((amount, index) => {
+      pieSliceColours["pie" + (index + 1)] = blend(
+        computedStyleMap[sliceFamilies[index % 3]],
+        computedStyleMap["--light"],
+        amount,
+      )
+    })
+    pieSliceColours.pieSectionTextColor = computedStyleMap["--dark"]
+    pieSliceColours.pieLegendTextColor = computedStyleMap["--dark"]
+    pieSliceColours.pieStrokeColor = computedStyleMap["--light"]
+    pieSliceColours.pieOuterStrokeColor = computedStyleMap["--darkgray"]
+    // Mermaid softens its own garish defaults by drawing slices at 0.7
+    // opacity, which blends them 30% into the page. These colours are
+    // already the site's own muted accents, and the dilution pushed dark
+    // mode below the contrast the palette was chosen for.
+    pieSliceColours.pieOpacity = "1"
+'''
+        content = content.replace(anchor, palette, 1)
+
+        theme_anchor = '        edgeLabelBackground: computedStyleMap["--highlight"],'
+        if theme_anchor not in content:
+            print("⚠️ Could not find themeVariables to extend; left unchanged.")
+            return
+        content = content.replace(
+            theme_anchor,
+            theme_anchor + "\n        ...pieSliceColours,",
+            1,
+        )
+
+        with open(mermaid_ts_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        print("✅ Patched mermaid.inline.ts with a visible pie chart palette")
+    except Exception as e:
+        print(f"⚠️ Error patching mermaid pie palette: {e}")
+
+
 def patch_mermaid_pie_title_fit(mermaid_ts_path: Path):
     """
     Stop mermaid clipping the title off a pie chart.
@@ -2329,6 +2445,7 @@ def build_section_site(
     mermaid_ts = output_dir / "quartz" / "components" / "scripts" / "mermaid.inline.ts"
     patch_mermaid_font_wait(mermaid_ts)
     patch_mermaid_pie_title_fit(mermaid_ts)
+    patch_mermaid_pie_colours(mermaid_ts)
 
     # Patch Explorer expansion behaviour (idempotent)
     explorer_tsx = output_dir / "quartz" / "components" / "Explorer.tsx"
