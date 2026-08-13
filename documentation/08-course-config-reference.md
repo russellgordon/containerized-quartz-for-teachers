@@ -67,6 +67,19 @@ A representative example:
 | `color_schemes.section<N>` | string | setup | build → `quartz.config.ts` colors + social card | Scheme id from `support/colour_schemes.json` (43 available). The section's social sharing card is drawn in this scheme too. |
 | `custom_domains.sections.section<N>` | string | app (Advanced, per-section settings) | app (published-site links) | The teacher's own domain for the section's published site. Links after a deploy swap the Netlify host for it (path preserved, https). `deploy.py` does not consume it; the domain itself is configured on Netlify. Entries are normalized (scheme and path stripped) on the way in. |
 
+### Publishing destination
+
+| Key | Type | Written by | Read by | Meaning |
+|---|---|---|---|---|
+| `deploy_target` | string (default `netlify`) | app (Course Settings → Publishing; wizard) | launcher + `deploy.py` | Where this course's sections publish: `netlify`, `cloudflare_pages`, or `local_folder`. Absent means `netlify`, so every existing course keeps working untouched. See [deployment](07-deployment.md). |
+| `deploy_folder_path` | string | app (Publishing, folder mode) | launcher (host-side copy) | Only for `local_folder`: the folder sections are mirrored into, one `sectionN` subfolder each. Validated live in the app — a missing, unwritable, or file-not-folder path blocks Save rather than failing at publish time. |
+
+The Cloudflare **account ID** is deliberately *not* here: it identifies the
+teacher rather than the course, so it lives in the app's own settings (and,
+for direct launcher use, the OS credential store) and is entered once for
+every course. The API tokens for Netlify and Cloudflare never touch this
+file — or any file in the working folder.
+
 ## Files that travel alongside it
 
 | Path (under `courses/`) | Purpose |
@@ -74,6 +87,7 @@ A representative example:
 | `<CODE>/course_config.backup.json` | Automatic backup written before build-time discovery updates the config. |
 | `<CODE>/.merged_output/section<N>/` | Generated Quartz site for the section (scaffold + merged content + `public/`). Safe to delete; rebuilt on demand. |
 | `<CODE>/.netlify_sites/section<N>.json` | Netlify site marker (site id/URL) so re-deploys target the same site. |
+| `<CODE>/.cloudflare_sites/section<N>.json` | Cloudflare Pages marker (project name/id, subdomain, account) so re-publishing reuses the same project instead of creating a second one. |
 | `<CODE>/Media/` | Shared binary assets; symlinked into every build, always hidden from the sidebar. |
 | `<CODE>/.obsidian/` | Obsidian vault settings (seeded from `support/obsidian_defaults`). |
 | `_backups/<CODE>/<timestamp>.zip` | Full course backups made by the setup wizard before re-runs. |

@@ -37,14 +37,24 @@ The image is layered as follows (in order):
    the requested port, 8081–8084), `dos2unix`/`unix2dos` (line-ending
    conversion, below), and `fonts-noto-color-emoji` (the colour emoji
    drawn onto social sharing cards).
-4. **Clone Quartz v4.5.0 → `/opt/quartz`** — a pinned checkout:
+4. **`npm install -g wrangler@4.80.0`** — Cloudflare's own deploy CLI,
+   used by `deploy.py` when a course publishes to Cloudflare Pages (see
+   [deployment](07-deployment.md)). It is pinned, and pinned **below
+   4.100** deliberately: from that version wrangler requires Node 22, and
+   this image ships Node 20 because that is the version Quartz v4.5.0 is
+   known-good against. If Node is ever raised, revalidate Quartz *before*
+   chasing a newer CLI. The pin also keeps the image reproducible and stops
+   an upstream CLI change from breaking a teacher's publishing mid-term.
+   Note this adds an npm-registry dependency to the image build, alongside
+   the Debian and GitHub sources.
+5. **Clone Quartz v4.5.0 → `/opt/quartz`** — a pinned checkout:
    ```dockerfile
    RUN git clone --branch v4.5.0 https://github.com/jackyzha0/quartz.git quartz
    ```
    Pinning matters because most customizations are regex patches that target
    the exact source text of this version
    (see [Quartz Customizations](06-quartz-customizations.md)).
-5. **Overwrite three Quartz components with patched versions** from
+6. **Overwrite three Quartz components with patched versions** from
    [`patches/`](../patches/):
    - `patches/Explorer.tsx` → `quartz/components/Explorer.tsx`
    - `patches/FolderContent.tsx` → `quartz/components/pages/FolderContent.tsx`
@@ -55,13 +65,13 @@ The image is layered as follows (in order):
    logic — and would be fragile to express as regex edits. They implement the
    *expandable vs. plain-link folder* behaviour in the sidebar; the details
    are in [customizations §A](06-quartz-customizations.md#a-components-replaced-at-image-build-time).
-6. **`cp -r /opt/quartz /opt/quartz-site`** — a spare copy of the scaffold
+7. **`cp -r /opt/quartz /opt/quartz-site`** — a spare copy of the scaffold
    (not used by the current build path, which copies from `/opt/quartz`
    directly).
-7. **Copy the four Python scripts** into `/opt/scripts/`:
+8. **Copy the four Python scripts** into `/opt/scripts/`:
    `setup_course.py`, `build_site.py`, `deploy.py`, and `social_card.py`
    (the per-section social sharing card renderer).
-8. **Copy `support/` → `/opt/support/`** — data files consumed by the
+9. **Copy `support/` → `/opt/support/`** — data files consumed by the
    scripts:
    - `ontario_secondary_courses.json` — 1,930 Ontario course codes mapped to
      formal and short names, so the wizard can auto-fill "ICS3U →
@@ -84,7 +94,7 @@ The image is layered as follows (in order):
    - `example_course/EXC2O/` — the complete example course installable from
      the setup wizard (it, too, receives the `.obsidian` defaults on
      install).
-9. **Bake the launcher scripts into `/opt/export/`** and register an
+10. **Bake the launcher scripts into `/opt/export/`** and register an
    `export-scripts` command:
    ```bash
    docker run --rm -v "$PWD:/out" teaching-quartz:src-<hash8> export-scripts
@@ -96,7 +106,7 @@ The image is layered as follows (in order):
    converts the `.bat` and `.ps1` files to CRLF line endings — `cmd.exe` can
    misparse LF-only batch files, and the repo itself stores everything with
    LF.
-10. **Default state**: working directory `/teaching`, command `/bin/bash`.
+11. **Default state**: working directory `/teaching`, command `/bin/bash`.
     The launchers start the container with `tail -f /dev/null` so it idles
     indefinitely, and every operation is a `docker exec` into it.
 
@@ -107,8 +117,10 @@ The image is layered as follows (in order):
 - **Quartz's npm dependencies.** `node_modules` is installed per section
   output folder on first build (and cached thereafter). This keeps the image
   smaller and lets each section pin its own dependency tree.
-- **Secrets.** The Netlify token lives in the host's keychain and is injected
-  per invocation (see [Deployment](07-deployment.md#token-handling)).
+- **Secrets.** Publishing tokens — Netlify's, and Cloudflare's under its own
+  separate entry — live in the host's keychain (Windows: Credential Manager)
+  and are injected per invocation, never written into the image or the
+  working folder (see [Deployment](07-deployment.md)).
 
 ## Building the image
 

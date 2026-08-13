@@ -10,7 +10,20 @@ one GitHub release carrying both platforms' assets.
 
 1. **Bump the version** in `Plantoir/Plantoir.csproj` (`<Version>`), commit.
 2. **Full test pass**: `dotnet test Plantoir.Tests` (all green), plus a
-   hand smoke of create → preview → deploy on a real course.
+   hand smoke of create → preview → publish on a real course.
+
+   > The hand smoke is **not optional, and not a formality**. The bundle
+   > carries the whole toolchain recipe (Dockerfile, `scripts/`,
+   > `patches/`, launchers) inside the app, and the xUnit suite
+   > deliberately never touches Docker — so a green test run says nothing
+   > about the thing teachers actually run. `verify.sh`, the real
+   > toolchain gate, is bash and expects `docker` on `PATH`, which does
+   > not hold on Windows where Docker Engine lives in WSL2. **On Windows
+   > the hand smoke is the only toolchain verification there is.** If the
+   > release changes anything under `scripts/`, the Dockerfile, or a
+   > launcher, smoke the publishing destination(s) it touches — there are
+   > three now (Netlify, Cloudflare Pages, a folder), and they take
+   > different code paths.
 3. **Build the signed bundle**:
 
        powershell -File publish.ps1 -Sign

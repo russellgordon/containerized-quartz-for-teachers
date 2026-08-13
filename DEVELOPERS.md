@@ -229,8 +229,9 @@ before running UI tests — the test runner can't terminate it.
   originated on Windows (or in shared `scripts/`) and needs the mac's
   attention. **Read it when syncing the two sides**; entries are removed
   once the mac has picked them up.
-- [`WINDOWS-TESTING.md`](WINDOWS-TESTING.md) — status of the (untested)
-  PowerShell launchers.
+- [`WINDOWS-TESTING.md`](WINDOWS-TESTING.md) — the WSL2 container-runtime
+  background and original test plan for the PowerShell launchers. They are
+  now well tested on real Windows; read it for *why* they look as they do.
 - [`mac-app/README.md`](mac-app/README.md) — building and testing the app,
   design notes.
 - [`windows-app/PROGRESS.md`](windows-app/PROGRESS.md) — the Windows app's

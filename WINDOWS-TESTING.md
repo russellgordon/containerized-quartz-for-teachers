@@ -1,11 +1,26 @@
 # Windows Testing Brief — WSL2 Container Runtime Path
 
+> **Status (2026-08-13): the launchers are no longer untested.** All three
+> have been exercised repeatedly on real Windows 11 through the app —
+> course creation, preview (including `--stop` reclaiming container-side
+> processes), and publishing to all three destinations, most recently a
+> live Cloudflare Pages publish end to end. Treat this file as **the WSL2
+> background and the original test plan**, not as a to-do list: the
+> historical detail on the Docker-Engine-in-WSL2 path, port blocks, and
+> line-ending traps is still the best explanation of *why* the Windows
+> launchers look the way they do.
+>
+> One thing it does NOT cover, and worth knowing: `verify.sh`, the
+> toolchain gate named in [`DEVELOPERS.md`](DEVELOPERS.md), **cannot run
+> on Windows** — it is bash and expects `docker` on `PATH`, where here it
+> lives inside WSL2. Toolchain changes made on Windows are verified by
+> driving a real publish through the app instead.
+
 > **Audience:** a Claude Code session running on the maintainer's Windows 11 Pro
 > machine. This file gives you the context needed to test (and fix) this
-> toolchain's Windows launchers, which remain **untested on real Windows**.
+> toolchain's Windows launchers.
 > Read this fully before touching anything. If you are building the Windows
-> APP, start with [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) — but test the
-> launchers (this file) first; the app drives them.
+> APP, start with [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md).
 
 ## Mission
 

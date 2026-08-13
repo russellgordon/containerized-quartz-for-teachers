@@ -20,7 +20,7 @@ static-site generator.
 | 4 | [Course Setup](04-course-setup.md) | The interactive wizard (`setup_course.py`) and the folder structure it creates |
 | 5 | [The Build Pipeline](05-build-pipeline.md) | How `build_site.py` merges content and produces a per-section Quartz site |
 | 6 | [Quartz Customizations](06-quartz-customizations.md) | **The complete list** of every change made to stock Quartz v4.5.0, with purpose and mechanism |
-| 7 | [Deployment to Netlify](07-deployment.md) | How `deploy.py` performs delta deploys against the Netlify API |
+| 7 | [Publishing a built section](07-deployment.md) | The three destinations — Netlify (delta deploys against its API), Cloudflare Pages (via wrangler), and a folder on the teacher's own machine |
 | 8 | [`course_config.json` Reference](08-course-config-reference.md) | Every key in the per-course configuration file |
 | 9 | [The macOS App — Plantoir](09-mac-app.md) | The native GUI (`mac-app/`), how it drives the same scripts, and how it delivers the toolchain itself |
 
