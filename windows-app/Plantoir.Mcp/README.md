@@ -38,14 +38,23 @@ plantoir-mcp --folder "C:\Users\me\Documents\Teaching"
 never changes — a server that could be re-pointed mid-session would make every
 path check meaningless.
 
-For a release build:
+For a release build, publish somewhere stable rather than leaving it in
+`bin\Release`, which a `dotnet clean` wipes:
 
 ```powershell
-dotnet publish Plantoir.Mcp/Plantoir.Mcp.csproj -c Release -r win-x64
+dotnet publish Plantoir.Mcp/Plantoir.Mcp.csproj -c Release -r win-x64 -o "$HOME\Plantoir\mcp"
 # macOS: -r osx-arm64
 ```
 
-It publishes self-contained and single-file, so a teacher installs no runtime.
+It publishes self-contained and single-file (~75 MB), so a teacher installs no
+runtime.
+
+**A connected client holds the binary open.** MCP servers run for the lifetime
+of the client session, so re-publishing over a copy that Claude Desktop or
+Claude Code still has connected fails with "the process cannot access the file
+… being used by another process". Close the client session first. The client
+has to be restarted to pick up a new build anyway — servers are connected at
+startup.
 
 ### Pointing a client at it
 
