@@ -219,8 +219,7 @@ graph TD
 pie title Composition of dry air
     "Nitrogen" : 78
     "Oxygen" : 21
-    "Argon" : 0.9
-    "Everything else" : 0.1
+    "Argon and everything else" : 1
 ```
 
 ### Sequence

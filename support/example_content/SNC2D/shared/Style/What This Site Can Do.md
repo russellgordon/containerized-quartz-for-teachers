@@ -231,8 +231,7 @@ graph TD
 pie title Dry air, by volume
     "Nitrogen" : 78
     "Oxygen" : 21
-    "Argon" : 0.9
-    "Everything else" : 0.1
+    "Argon and everything else" : 1
 ```
 
 Carbon dioxide is inside that last sliver.[^1]
