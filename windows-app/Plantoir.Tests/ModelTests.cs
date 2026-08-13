@@ -4,6 +4,20 @@ using Xunit;
 
 namespace Plantoir.Tests;
 
+/// <summary>
+/// Preview leases and the publish registry are process-wide statics, so the
+/// classes that touch them must not run at the same time. xUnit runs test
+/// CLASSES in parallel by default, and PreviewLeaseTests resets the lease
+/// list around every one of its methods — which would yank the lease
+/// CourseActivityTests is in the middle of asserting on, roughly one run in
+/// three. Sharing a collection serializes them.
+/// </summary>
+[CollectionDefinition(SharedActivityState.Name, DisableParallelization = true)]
+public class SharedActivityStateCollection { }
+
+public static class SharedActivityState { public const string Name = "Process-wide preview and publish state"; }
+
+[Collection(SharedActivityState.Name)]
 public class PreviewLeaseTests : IDisposable
 {
     public PreviewLeaseTests() => PreviewLeases.Reset();
@@ -478,6 +492,7 @@ public class WindowMemoryCodecTests
 /// are unique per test so the static registry never crosses wires with the
 /// lease tests.
 /// </summary>
+[Collection(SharedActivityState.Name)]
 public class CourseActivityTests
 {
     private static string Folder() => @"C:\activity-" + Guid.NewGuid().ToString("N");
