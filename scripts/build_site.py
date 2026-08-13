@@ -238,6 +238,51 @@ def append_transclusion_styles(base_scss_path: Path):
         print(f"⚠️ Error appending transclusion styles: {e}")
 # --- END ADD ---
 
+
+# --- ADD: Stop diagram labels being hyphenated ---
+def append_mermaid_styles(base_scss_path: Path):
+    """
+    Turns hyphenation off inside mermaid diagrams, idempotently.
+
+    Quartz hyphenates body text, which reads well in a paragraph. Inside
+    a mermaid diagram it is a bug: the label of a box is not prose, and
+    breaking it mid-word puts "Ca-" and "reers" on separate lines of a
+    flowchart node. WebKit does this and Chromium does not, which is why
+    a site can look right in Chrome and wrong in the Plantoir preview.
+
+    Carries its own marker rather than joining the transclusion block, so
+    course folders built before this existed pick it up on their next
+    build instead of being skipped.
+    """
+    if not base_scss_path.exists():
+        print(f"⚠️ base.scss not found at {base_scss_path}")
+        return
+    try:
+        marker = "/* Diagram labels are not prose: never hyphenate them */"
+        block = (
+            "\n\n"
+            f"{marker}\n"
+            ".mermaid,\n"
+            ".mermaid * {\n"
+            "  -webkit-hyphens: none;\n"
+            "  hyphens: none;\n"
+            "}\n"
+        )
+
+        with open(base_scss_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        if marker in content:
+            print("ℹ️ Mermaid label styles already present in base.scss (no change).")
+            return
+
+        with open(base_scss_path, "w", encoding="utf-8") as f:
+            f.write(content + block)
+        print("✅ Appended mermaid label styles to base.scss")
+    except Exception as e:
+        print(f"⚠️ Error appending mermaid label styles: {e}")
+# --- END ADD ---
+
 # --- ADD: Patch ContentMeta.tsx date format ---
 def patch_date_format(date_tsx_file_path: Path):
     """Update formatDate in Date.tsx to show full weekday, month, and day."""
@@ -2124,6 +2169,7 @@ def build_section_site(
         base_scss = output_dir / "quartz" / "styles" / "base.scss"
         patch_internal_link_highlight(base_scss)
         append_transclusion_styles(base_scss)
+        append_mermaid_styles(base_scss)
 
         # Patch renderPage.tsx for transcludeTitleSize
         render_page_tsx = output_dir / "quartz" / "components" / "renderPage.tsx"
