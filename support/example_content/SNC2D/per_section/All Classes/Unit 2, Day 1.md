@@ -1,0 +1,24 @@
+---
+title: Unit 2, Day 1
+draft: false
+created: __CREATED_CLASS_8__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+Five unknowns on the bench. Some of them made a new substance and some
+only looked like it, and you decide which is which.
+
+## Agenda
+
+1. Investigation: [[Evidence of a Chemical Change]] — observe before judging
+2. Post your criteria: what counted as proof that a new substance formed?
+3. Where the room disagreed — colour change is the weakest sign of the five
+4. Saying it precisely enough to be checked: [[Writing About Science]]
+
+## Things to do before our next class
+
+- [ ] Journal: your criteria, ranked from strongest evidence to weakest.
+- [ ] Bring one everyday change that you still cannot classify.

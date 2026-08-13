@@ -1,0 +1,197 @@
+---
+title: The Optics Design
+draft: false
+created: __CREATED__
+enableToc: true
+tags:
+  - optics
+  - task
+---
+The culminating task. Everything the course has asked of you arrives at
+once here: design something, say in advance exactly what it will do,
+build it, find out, and account honestly for the difference.
+
+Together with [[The Science Showcase]] this is the final assessment, so
+it carries real weight — see [[How Marks Work]].
+
+## The situation
+
+Somebody has a problem that light can solve. You are going to solve it
+with a device you designed, and the design has to be defended in
+numbers before anybody switches anything on.
+
+The distinguishing feature of this task is the order of operations. You
+**predict first**, on paper, with a ray diagram and a calculation. Then
+you build. Then you measure. A device that works but was never
+predicted has answered a Grade 9 question. A prediction that turns out
+wrong, and is explained convincingly, is worth more here than a lucky
+success.
+
+## Choose your problem
+
+Each of these has a stated performance requirement, because "make a
+magnifier" is a topic and "make something that magnifies text 2.5 times
+at a working distance a person can hold" is a design problem.
+
+| The problem | What your device must achieve |
+| --- | --- |
+| Small print is hard to read | A stated magnification, upright, at a working distance somebody can actually hold |
+| You cannot see over a crowd, or around a corner | A stated vertical offset, with an upright image and a usable field of view |
+| A small object must be shown to a whole room | A real image of a stated size, on a wall at a stated distance |
+| An image must be captured on a screen inside a box | A real image that fills a stated fraction of the screen, and stays sharp for a stated range of object distances |
+| Light must travel around a bend | A stated bend angle, with light still emerging at the far end |
+| Sunlight must warm a small target | A measured temperature rise, under supervision, outdoors — see the safety section |
+
+You may propose something else. Bring it to me with the performance
+requirement already written; that sentence is the hardest part and it
+is the part I will help with.
+
+## What you must predict, before you build
+
+Three documents, dated, handed in **before** any equipment is issued.
+
+**1. A ray diagram**, drawn to the conventions in
+[[Drawing Scientific Diagrams]] — principal axis ruled, $F$ and $2F$
+marked with a ruler at your measured focal length rather than guessed
+by eye, arrowheads on every ray, solid lines where light really goes
+and dashed where it does not.
+
+**2. A calculation**, using the relationships and stating the sign
+convention you are using.
+
+$$\frac{1}{f} = \frac{1}{d_o} + \frac{1}{d_i} \qquad M = \frac{h_i}{h_o} = -\frac{d_i}{d_o}$$
+
+Distances are positive on the side where the light really goes: $d_o$
+positive for a real object, $f$ positive for a converging lens, $d_i$
+positive for a real image on the far side and **negative** for a
+virtual image on the near side, and a negative $M$ meaning an inverted
+image. If your device refracts through a boundary, you will also need
+
+$$n_1 \sin\theta_1 = n_2 \sin\theta_2$$
+
+with every angle measured from the normal, and if it reflects, the
+angle of reflection equals the angle of incidence, also measured from
+the normal. Measure your own focal length rather than trusting the
+number printed on the lens — that is what
+[[Finding the Focal Length]] was for.
+
+**3. The prediction itself**, as a table of numbers you will later fill
+in beside the measurements:
+
+| Quantity | Predicted | Measured | Difference |
+| --- | --- | --- | --- |
+| Image distance $d_i$ | | | |
+| Image height $h_i$ | | | |
+| Magnification $M$ | | | |
+| Orientation | | | |
+| Real or virtual | | | |
+
+**4. The light, named.** State what is producing the light your device
+uses and **what kind of emission it is** — incandescence from a hot
+filament or from the sun, an LED, an electric discharge in a tube,
+fluorescence, phosphorescence, bioluminescence. Then state **which
+region of the electromagnetic spectrum** your device works in, and
+whether any invisible region matters to it. A concentrator handles
+infrared whether you planned for it or not; anything used outdoors is
+handling ultraviolet; a device meant for a camera sensor may be seeing
+into the near infrared. Label the regions on a sketch of the spectrum
+in order, and say where the visible band sits in it.
+
+## Safety
+
+> [!danger] Read this before you choose, not after
+> - **Never look at the sun through any optical element, ever**, and
+>   never through a device you built. A converging lens or a curved
+>   mirror concentrates enough sunlight to cause permanent eye damage
+>   instantly and painlessly, which is what makes it so dangerous.
+> - The **sunlight option requires separate written approval and my
+>   direct supervision**, is run **outdoors**, with the target on a
+>   heatproof surface, nothing flammable within reach, an extinguisher
+>   present, eye protection on, and nobody looking anywhere near the
+>   focus. A concentrator left unattended is a fire, not a metaphor.
+> - **Lasers:** the supervised class-2 pointer only, kept at bench
+>   level, never aimed at a person or along a line where an eye could
+>   be, always terminating on a card, and never looked into — including
+>   its reflection off a lens rim, a mirror, a watch, or a ring. Remove
+>   reflective jewellery before you switch on.
+> - **Lamps and ray boxes get hot** and stay hot after switch-off. Move
+>   them by the base. Keep paper, card, and tape off the housing.
+> - **Cutting and building:** cut away from your hand, on a mat, with
+>   the tool I issue. Hot-glue burns. Report every cut and burn
+>   immediately.
+> - **Glass and mirror edges cut and chip.** Use the mirror tiles with
+>   backed edges from the prep room, check for chips before use, and
+>   report a damaged one rather than working around it.
+> - Nothing mains-powered goes near water, and no cord crosses a walking
+>   route.
+>
+> Your build plan is checked before construction and your finished
+> device is checked before testing. Both checks include "what could go
+> wrong, and what would you do".
+
+## What to hand in
+
+- **The device**, and a photograph of it in use.
+- **The three prediction documents**, unaltered, with the measured
+  column now filled in and the difference expressed as a percentage of
+  the measured value.
+- **A test report**: how you measured, how many times, the resolution
+  of each instrument, and the range of positions that looked
+  acceptably sharp — that range is your uncertainty and it belongs in
+  the report.
+- **An account of the disagreement.** Where prediction and measurement
+  differ, say by how much, whether that exceeds your uncertainty, and
+  what specifically caused it. "The lens was not thin", "the object was
+  not at infinity", "we measured from the holder rather than the lens
+  centre" are real explanations. "Human error" is not.
+- **A comparison with a real technology** that addresses a related
+  problem — eyeglasses or contact lenses, a camera, a microscope, a
+  retro-reflector, a solar oven, an optical fibre, a low-light sensor.
+  What does it do that yours does not, how well does it actually work,
+  and what did its arrival change for the people who use it?
+- **Your emission type and spectrum section**, from part 4 above.
+
+## How it will be judged
+
+| What I am looking for | Level 3 sounds like | Level 4 sounds like |
+| --- | --- | --- |
+| The design | Solves the stated problem | The design choices follow from the physics, and alternatives were rejected for stated reasons |
+| Ray diagram | Correct, to convention, with $F$ measured | Correct, and the diagram is visibly what the build was made from |
+| Calculation | Right answer, sign convention stated | Right answer, and the signs are read as physics rather than as arithmetic |
+| Prediction | Written first, with numbers | Written first, with the uncertainty it should be judged against |
+| Testing | Careful measurement, repeated | Measurement designed to be able to disagree with the prediction |
+| Accounting for the difference | A plausible cause named | The cause named, its direction stated, and its size roughly checked |
+| Light and spectrum | Emission type and region identified correctly | Explains why that region matters to **this** device |
+| The real technology | Described and compared | Evaluated: what it achieves, at what cost, and for whom |
+
+## What sinks an otherwise good design
+
+- **Building first and predicting afterwards.** The whole task is the
+  order.
+- **A ray diagram with $F$ guessed by eye.** That is decoration, and it
+  cannot have informed the build.
+- **A prediction quietly adjusted to match the result.** It is always
+  visible, and it converts a strong piece of work into a dishonest one.
+- **A device that works beautifully with no numbers attached.** Nice
+  object; unfinished task.
+- **Claiming agreement without stating uncertainty.** "Close enough"
+  is a judgement, and the reader needs the number you judged against.
+
+Reference: [[Lenses and Images]], [[Reflection]], [[Refraction]], and
+[[Lenses Practice]]. Then present and defend it in
+[[The Science Showcase]], and reflect on the whole year in
+[[Final Reflection]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[E1.1]]
+
+![[E1.2]]
+
+![[E2.5]]
+
+![[E3.1]]
+
+![[E3.2]]
+%%curriculum-end%%

@@ -163,6 +163,14 @@ from Phase 5 apply here too.
   span shatters): a pure amount is escaped prose (`\$14`), an amount
   inside an expression is `\textdollar 14`. The container render gate
   (Phase 7) catches violations.
+- **CHEMISTRY: mhchem (`\ce{...}`) IS NOT AVAILABLE**, and the failure
+  is SILENT — a `\ce{}` span produces no `katex-error`, it just renders
+  as garbage (`\ce2H2+O2−>2H2O`), so the render gate will not catch it.
+  Write chemistry in plain LaTeX with UPRIGHT element symbols:
+  `$2\text{H}_2 + \text{O}_2 \rightarrow 2\text{H}_2\text{O}$`, ions as
+  `$\text{SO}_4^{2-}$`, states as `$\text{CaO(s)}$`. Verified against
+  the build's own KaTeX: `\text{}` forms render; `\ce{}` throws
+  `Undefined control sequence`.
 - Link only to pages that will exist. Maintain the full page inventory
   BEFORE fanning out authoring agents; hand every agent the complete
   sanctioned link list.
@@ -248,7 +256,13 @@ the linter.
    HTML, not the whole page — index prose also mentions page names), and
    `grep -rl katex-error <public dir>` finds NOTHING — a katex-error span
    means an equation shattered at a markdown seam (see the math rules in
-   Phase 5).
+   Phase 5). `katex-error` does NOT catch everything: an unavailable
+   extension renders as silent garbage, so also run
+   `grep -rn '\\ce{' support/example_content/<CODE>` and expect no hits.
+   For a payload with heavy notation, render every `$…$` span through
+   the build's own KaTeX with `throwOnError: true` — the module lives at
+   `courses/<CODE>/.merged_output/section1/node_modules/katex` after any
+   build.
 6. **Math fidelity check**: where the source curriculum document
    typesets its mathematics (the 2007 mathematics PDF does), an
    adversarial verifier MUST compare every rendered expression
