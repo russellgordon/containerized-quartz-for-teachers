@@ -15,6 +15,7 @@ tags:
 3. Read together: [[Our Newsroom Standards]] — we sign before we file
 4. Tour of the site: [[Using This Site]] and [[How This Site Is Organised]]
 5. The rhythm we run on: [[How the Newsroom Runs]] — standup to file-and-log
+6. The year ahead: [[Learning Goals]] — what a year of this makes you
 
 ## Things to do before our next class
 

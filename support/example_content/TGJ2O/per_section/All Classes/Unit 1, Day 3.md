@@ -21,3 +21,5 @@ tags:
 - [ ] Read [[Your First Byline]] and shortlist three school stories.
 - [ ] Try [[Interview Question Practice]], first block.
 - [ ] Journal: the question that got the best answer today.
+- [ ] Stuck on the shortlist? [[Help Sessions]] are Tuesday lunch and
+      Thursday after school.

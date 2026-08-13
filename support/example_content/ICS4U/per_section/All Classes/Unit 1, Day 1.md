@@ -17,7 +17,8 @@ tags:
 3. Compare and name it: [[Reading Somebody Else's Code]]
 4. Tour of the site, so nothing here is hidden from you:
    [[Using This Site]]
-5. Post your group's one-sentence answer to "what does it actually
+5. The year ahead: [[Learning Goals]] — where all of this is going
+6. Post your group's one-sentence answer to "what does it actually
    do?" — we keep every sentence on the wall all semester
 
 ## Things to do before our next class

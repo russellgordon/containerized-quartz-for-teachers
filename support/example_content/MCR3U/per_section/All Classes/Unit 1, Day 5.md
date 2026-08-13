@@ -22,5 +22,5 @@ tags:
 ## Things to do before our next class
 
 - [ ] Read [[The Transformation Gallery]] and choose a parent function.
-- [ ] Read [[Showing Your Thinking]] — the gallery is a communication
-      task as much as a graphing one.
+- [ ] Read [[Showing Your Thinking]] and [[Writing About Math]] — the
+      gallery is a communication task as much as a graphing one.

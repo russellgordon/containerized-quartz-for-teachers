@@ -31,6 +31,8 @@ def lint(course_code: str) -> int:
 
     class_ordinals = []
     linked_from_classes = set()
+    page_links = {}
+    class_pages = set()
 
     for page in pages:
         text = page.read_text(encoding="utf-8")
@@ -42,9 +44,17 @@ def lint(course_code: str) -> int:
         if "created:" in text and "created: __CREATED" not in text and not is_curriculum:
             problems.append(f"{rel}: created: without a sentinel")
 
+        # The whole link graph, so reachability can be checked below.
+        outside_fences = re.sub(r"```[\s\S]*?```", "", text)
+        page_links[page.stem] = {
+            link.group(1).strip().rstrip("\\").split("/")[-1]
+            for link in link_pattern.finditer(outside_fences)
+        }
+
         class_match = class_sentinel.search(text)
         if class_match:
             class_ordinals.append(int(class_match.group(1)))
+            class_pages.add(page.stem)
             for link in link_pattern.finditer(text):
                 linked_from_classes.add(link.group(1).strip().split("/")[-1])
             # A class page is a schedule, not a destination. Expectations
@@ -174,6 +184,29 @@ def lint(course_code: str) -> int:
             continue
         if page.stem not in linked_from_classes:
             unlinked.append(rel)
+
+    # Outside Key Links, no page stands on its own: every page must be
+    # reachable from a class page directly, or through one page a class
+    # page links to. Key Links is the sidebar's index of last resort, so
+    # a page reachable only through it is still an orphan.
+    first_hop = set()
+    for stem in class_pages:
+        first_hop |= page_links.get(stem, set())
+    second_hop = set()
+    for stem in first_hop:
+        second_hop |= page_links.get(stem, set())
+    reachable = class_pages | first_hop | second_hop
+    exempt = {"index", "Key Links", "Private Notes", "Scratch Page"}
+    for page in pages:
+        rel = str(page.relative_to(root))
+        if page.stem in exempt or page.stem in reachable:
+            continue
+        if curriculum_folder and rel.startswith(f"shared/{curriculum_folder}/"):
+            continue
+        problems.append(
+            f"{rel}: nothing reaches this page — link it from a class page, "
+            f"or from a page a class page links to (Key Links does not count)"
+        )
 
     print(f"{len(pages)} pages checked; {len(class_ordinals)} class pages")
     for problem in problems:

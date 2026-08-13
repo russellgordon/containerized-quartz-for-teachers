@@ -19,7 +19,8 @@ tags:
    birthday?
 4. Discuss: nearly every group guessed high. What was your first guess
    counting, and what should it have been counting instead?
-5. A quick tour with [[Using This Site]] — every page from today is
+5. The year ahead: [[Learning Goals]] — where this course is going
+6. A quick tour with [[Using This Site]] — every page from today is
    already linked above
 
 ## Things to do before our next class

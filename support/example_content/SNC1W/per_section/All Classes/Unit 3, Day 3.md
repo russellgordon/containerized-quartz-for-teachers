@@ -1,6 +1,6 @@
 ---
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_14__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,10 +9,13 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[Atomic Models Through Time]] — five models in a century
-2. Why Rutherford was so surprised
-3. Concept: [[The Bohr-Rutherford Model]]
+1. Investigation: [[Flame Tests]] — every metal, its own colour
+2. Concept: [[Atomic Models Through Time]] — five models in a century
+3. Why Rutherford was so surprised
+4. Concept: [[The Bohr-Rutherford Model]] — where those colours come from
 
 ## Things to do before our next class
 
+- [ ] Flame test analysis due next class.
 - [ ] Exercise: [[Bohr-Rutherford Diagrams]], questions 1–3.
+- [ ] Second [[Science in the News]] submission due Friday.

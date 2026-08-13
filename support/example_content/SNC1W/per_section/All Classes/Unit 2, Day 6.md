@@ -1,6 +1,6 @@
 ---
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_10__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,10 +9,10 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[The Carbon Cycle]]
-2. Concept: [[The Water Cycle]]
-3. Concept: [[The Nitrogen Cycle]]
+1. Investigation: [[Testing Water Quality]] — four samples, four indicators
+2. Concept: [[Biodiversity]] — what a healthy sample could support
+3. Concept: [[Ecological Succession]]
 
 ## Things to do before our next class
 
-- [ ] Draw all three cycles from memory. Compare with the pages afterwards.
+- [ ] Water quality ranking, justified with your numbers.

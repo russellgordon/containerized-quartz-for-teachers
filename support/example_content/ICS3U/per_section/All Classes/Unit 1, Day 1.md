@@ -17,7 +17,8 @@ tags:
 3. Compare and name it: [[What a Program Is]]
 4. Tour of the site, so nothing here is hidden from you:
    [[Using This Site]]
-5. Get the tools running: [[Setting Up Python]] — every machine, today
+5. The year ahead: [[Learning Goals]] — what this course is for
+6. Get the tools running: [[Setting Up Python]] — every machine, today
 
 ## Things to do before our next class
 

@@ -18,7 +18,8 @@ tags:
    mystery graphs, sorted by what they must have in common
 4. Consolidate: [[Polynomial Functions]] — degree, end behaviour, and
    turning points, each named by a group before the textbook could
-5. A quick tour with [[Using This Site]] — every page from today is
+5. The year ahead: [[Learning Goals]] — where this course is going
+6. A quick tour with [[Using This Site]] — every page from today is
    already linked above
 
 ## Things to do before our next class

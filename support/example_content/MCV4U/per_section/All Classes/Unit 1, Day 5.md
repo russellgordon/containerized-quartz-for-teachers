@@ -18,7 +18,8 @@ tags:
    assembled, made official
 4. Launch: [[The Speed Camera]] — one ticket, one verdict, every rate
    defended
-5. How it is assessed: [[How Marks Work]] — reasoning is the product
+5. How it is assessed: [[How Marks Work]] — reasoning is the product,
+   and [[Writing About Math]] is how you hand it over
 
 ## Things to do before our next class
 

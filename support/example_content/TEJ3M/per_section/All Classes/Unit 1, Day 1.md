@@ -18,8 +18,8 @@ tags:
 3. Read together, agree together: [[Safety in the Lab]] and
    [[Our Classroom Norms]] — the standing agreement every bench day
    after this one depends on
-4. The daily rhythm, and where everything lives: [[How the Lab Runs]]
-   and [[Using This Site]]
+4. The rhythm, the year ahead, and where everything lives:
+   [[How the Lab Runs]], [[Learning Goals]], and [[Using This Site]]
 5. Start your [[Tech Journal]] — today's guess is the first thing in it,
    in writing, before anybody knows the answer
 

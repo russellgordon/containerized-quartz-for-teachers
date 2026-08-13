@@ -1,6 +1,6 @@
 ---
 draft: false
-created: __CREATED_CLASS_12__
+created: __CREATED_CLASS_11__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,10 +9,13 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[Biodiversity]]
-2. Concept: [[Ecological Succession]]
-3. Investigation: [[Testing Water Quality]]
+1. Concept: [[The Greenhouse Effect]]
+2. Concept: [[Indicators of Climate Change]]
+3. Exercise: [[Interpreting Climate Graphs]]
+4. Discussion: [[Whose Responsibility Is Climate Action]]
 
 ## Things to do before our next class
 
-- [ ] Water quality analysis questions due next class.
+- [ ] Task assigned: [[Climate Change Action Plan]], due in one week.
+- [ ] **Unit 2 test next class.** The Concepts pages are the study guide.
+- [ ] Stuck on something? [[Help Sessions]] run twice a week.

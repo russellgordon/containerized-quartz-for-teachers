@@ -15,7 +15,8 @@ tags:
    literally
 3. Read together: [[Our Classroom Norms]]
 4. Tour of the site: [[Using This Site]] and [[How This Site Is Organised]]
-5. The daily rhythm we will live by: [[How Tech Class Works]]
+5. The daily rhythm we will live by: [[How Tech Class Works]] — and
+   the year ahead: [[Learning Goals]]
 
 ## Things to do before our next class
 

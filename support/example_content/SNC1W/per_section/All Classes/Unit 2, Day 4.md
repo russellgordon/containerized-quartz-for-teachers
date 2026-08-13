@@ -1,6 +1,6 @@
 ---
 draft: false
-created: __CREATED_CLASS_9__
+created: __CREATED_CLASS_8__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,10 +9,12 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[Photosynthesis]]
-2. Concept: [[Cellular Respiration]] — the two as one system
-3. Investigation set up: [[Investigating Photosynthesis]]
+1. Investigation: [[Investigating Photosynthesis]] — floating leaf discs
+2. Concept: [[Photosynthesis]] — now name what made the discs rise
+3. Concept: [[Cellular Respiration]] — the two as one system
+4. Portfolio: [[Reflecting on an Investigation]]
 
 ## Things to do before our next class
 
-- [ ] Read [[Photosynthesis]] and write down one thing you do not yet understand.
+- [ ] Lab report due in one week — [[Writing a Lab Report]] has the format.
+- [ ] Read [[Photosynthesis]] and note one thing you do not yet understand.

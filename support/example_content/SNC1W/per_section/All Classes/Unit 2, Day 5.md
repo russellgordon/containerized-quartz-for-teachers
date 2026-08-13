@@ -1,6 +1,6 @@
 ---
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_9__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,9 +9,10 @@ tags:
 ---
 ## Agenda
 
-1. Investigation: [[Investigating Photosynthesis]] — floating leaf discs
-2. Portfolio: [[Reflecting on an Investigation]]
+1. Concept: [[The Carbon Cycle]]
+2. Concept: [[The Water Cycle]]
+3. Concept: [[The Nitrogen Cycle]]
 
 ## Things to do before our next class
 
-- [ ] Lab report due in one week — [[Writing a Lab Report]] has the format.
+- [ ] Draw all three cycles from memory. Compare with the pages afterwards.

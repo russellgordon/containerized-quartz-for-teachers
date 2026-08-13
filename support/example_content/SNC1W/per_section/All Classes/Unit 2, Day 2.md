@@ -1,6 +1,6 @@
 ---
 draft: false
-created: __CREATED_CLASS_7__
+created: __CREATED_CLASS_6__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true

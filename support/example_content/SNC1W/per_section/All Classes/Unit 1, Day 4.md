@@ -9,10 +9,13 @@ tags:
 ---
 ## Agenda
 
-1. Skills: [[Graphing Practice]]
-2. Tutorial: [[Making Graphs in a Spreadsheet]]
-3. Tutorial: [[Writing a Lab Report]] — the six sections
+1. Tutorial: [[Writing a Lab Report]] — the six sections
+2. Skills: [[Writing About Science]] — an observation is not an interpretation
+3. Tutorial: [[Finding and Citing Sources]]
+4. Task introduced: [[Science in the News]] — first of three
+5. Discussion: [[AI in Science Class]] — where the line is
 
 ## Things to do before our next class
 
-- [ ] Finish the graph from [[Graphing Practice]] and bring it printed or on screen.
+- [ ] First [[Science in the News]] submission due in one week.
+- [ ] Dress for outdoors later this week — we work on the field rain or shine.

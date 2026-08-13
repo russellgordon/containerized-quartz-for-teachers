@@ -27,9 +27,9 @@ Everything else — Concepts, Investigations, Exercises, Tasks, Tutorials — is
 
 ```mermaid
 graph LR
-    D1["Unit 3, Day 4"] --> OHM["Ohm's Law"]
-    D2["Unit 3, Day 5"] --> OHM
-    D3["Unit 3, Day 9"] --> OHM
+    D1["Unit 4, Day 3"] --> OHM["Ohm's Law"]
+    D2["Unit 4, Day 4"] --> OHM
+    D3["Unit 4, Day 6"] --> OHM
     OHM --> BL["Backlinks show all three"]
 ```
 

@@ -17,7 +17,8 @@ tags:
    break it on purpose, fix it
 4. Compare and name it: [[Variables and Data Types]]
 5. Practise: [[Variables and Types Practice]]
-6. Start your journal: [[Your First Entry]], written here in class
+6. Start your journal: [[Your First Entry]], written here in class —
+   [[Writing About Code]] is the standard it is held to
 
 ## Things to do before our next class
 

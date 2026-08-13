@@ -18,8 +18,8 @@ tags:
    $f(-x)$, never eyeballed
 4. Verify in [[Using Desmos]] — the graph settles bets, and that page
    shows how to make it earn its keep
-5. Writing it up: [[Showing Your Thinking]] — a sketch is an argument,
-   so show the argument
+5. Writing it up — a sketch is an argument, so show the argument:
+   [[Showing Your Thinking]] and [[Writing About Math]]
 
 ## Things to do before our next class
 

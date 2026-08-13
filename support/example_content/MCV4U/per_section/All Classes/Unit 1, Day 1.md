@@ -18,7 +18,8 @@ tags:
    this entire course exists to answer
 4. Discuss: every group needed an interval to compute a speed — did
    anyone find a way to escape that?
-5. A quick tour with [[Using This Site]] — every page from today is
+5. The year ahead: [[Learning Goals]] — where this course is going
+6. A quick tour with [[Using This Site]] — every page from today is
    already linked above
 
 ## Things to do before our next class

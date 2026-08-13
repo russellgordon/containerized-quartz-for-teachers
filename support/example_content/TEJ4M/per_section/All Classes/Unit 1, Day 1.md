@@ -17,9 +17,9 @@ tags:
    killed the thing and what evidence would prove it
 3. Open it and find out. Nothing gets repaired today and nothing gets
    thrown out — we are pathologists, not technicians
-4. The agreement, read together rather than skimmed:
-   [[Safety in the Lab]], [[Our Classroom Norms]], and
-   [[How the Lab Runs]]. Same shop, same rules, higher stakes
+4. The agreement and the destination, read rather than skimmed:
+   [[Safety in the Lab]], [[Our Classroom Norms]], [[How the Lab Runs]],
+   and [[Learning Goals]]. Same shop, same rules, higher stakes
 5. Where everything lives — [[Using This Site]] — and the first page of
    this year's [[Tech Journal]]: your verdict, in writing, before
    anybody knows the answer

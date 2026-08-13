@@ -1,6 +1,6 @@
 ---
 draft: false
-created: __CREATED_CLASS_16__
+created: __CREATED_CLASS_13__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,9 +9,9 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[Physical and Chemical Properties]]
-2. Concept: [[Physical and Chemical Changes]]
-3. Investigation: [[Physical and Chemical Change Stations]]
+1. Investigation: [[Physical and Chemical Change Stations]]
+2. Concept: [[Physical and Chemical Properties]]
+3. Concept: [[Physical and Chemical Changes]] — the evidence you collected
 
 ## Things to do before our next class
 

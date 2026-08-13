@@ -1,22 +1,20 @@
 ---
-draft: true
-created: __CREATED_CLASS_26__
+draft: false
+created: __CREATED_CLASS_21__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-4
 ---
-%% This page is an example of a DRAFT: `draft: true` in the frontmatter
-means it is never published to the site. Plan tomorrow today, publish it
-when class ends — just flip draft to false. Delete this comment when you
-reuse the page; comments never appear on the site either. %%
-
 ## Agenda
 
-1. Concept: [[Ohm's Law]] — now that you have derived it
-2. Exercise: [[Ohm's Law Practice]]
+1. Investigation: [[Efficiency of a Light Bulb]] — measure the waste heat
+2. Concept: [[Electrical Power and Efficiency]] — where the rest of it went
+3. Concept: [[Where Our Electricity Comes From]] — no source without a cost
 
 ## Things to do before our next class
 
-- [ ] Finish [[Ohm's Law Practice]], showing formula, substitution, and units.
+- [ ] Lab table complete, with your largest source of error named.
+- [ ] Exercise: [[Efficiency Calculations]], all six.
+- [ ] Prepare the side of the [[Energy Source Debate]] you were assigned.

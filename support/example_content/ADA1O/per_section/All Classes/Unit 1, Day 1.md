@@ -12,9 +12,10 @@ tags:
 
 1. Welcome — what this course actually is (and is not)
 2. Circle up: names, and the first game
-3. Tour of the site: [[How This Site Is Organised]]
+3. Tour of the site: [[Using This Site]] and [[How This Site Is Organised]]
 4. Read together: [[Our Ensemble Agreement]]
-5. First reflection: set up your [[Drama Journal]]
+5. The daily rhythm we will live by: [[How Drama Class Works]]
+6. First reflection: set up your [[Drama Journal]]
 
 ## Things to do before our next class
 

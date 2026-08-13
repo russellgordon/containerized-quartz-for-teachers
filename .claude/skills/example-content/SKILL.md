@@ -193,6 +193,22 @@ from Phase 5 apply here too.
   `$\text{SO}_4^{2-}$`, states as `$\text{CaO(s)}$`. Verified against
   the build's own KaTeX: `\text{}` forms render; `\ce{}` throws
   `Undefined control sequence`.
+- **No page stands on its own.** Every page must be reachable from a
+  class page (`Unit N, Day M`) either directly, or through ONE page that
+  a class page links to — two hops, and no further. Being listed in
+  `Key Links` does NOT count: that is the sidebar's index of last resort,
+  and a page reachable only through it is an orphan. The linter fails
+  any page nothing reaches.
+  - The link has to be **honest**. A concept page must be linked from a
+    lesson or activity that genuinely uncovers that concept — never
+    stapled to an arbitrary day to satisfy the check. If a page has no
+    honest home in the arc, the arc is wrong, not the page: either the
+    semester is missing a class the course actually needs, or the page
+    should not exist.
+  - This is how the whole payload stays a course rather than a pile of
+    documents, and it is the check that catches a strand the arc forgot
+    to teach. SNC1W shipped with a complete Earth-and-Space library that
+    no class ever mentioned; the audit is what found it.
 - Link only to pages that will exist. Maintain the full page inventory
   BEFORE fanning out authoring agents; hand every agent the complete
   sanctioned link list.

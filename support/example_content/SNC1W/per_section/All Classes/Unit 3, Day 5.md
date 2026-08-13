@@ -1,6 +1,6 @@
 ---
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_16__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,10 +9,14 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[The Periodic Table]]
-2. Investigation: [[Finding Patterns in the Periodic Table]] — sort the cards first
-3. Tutorial: [[Using the Periodic Table]]
+1. Concept: [[Ions and Ionic Compounds]]
+2. Concept: [[Molecular Compounds]]
+3. Exercise: [[Naming Compounds]]
+4. Task assigned: [[Product Life Cycle Analysis]] — and why the obvious
+   product is usually the hardest one to trace
 
 ## Things to do before our next class
 
-- [ ] Write your sorting rule in your notebook before you look anything up.
+- [ ] Finish [[Naming Compounds]] — all ten.
+- [ ] Product chosen and two elements identified.
+- [ ] Halfway point: add a [[Showing Growth]] entry to your portfolio.

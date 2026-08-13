@@ -18,7 +18,8 @@ tags:
 4. Random groups — [[The Function Machine]] at the boards
 5. Consolidate: [[What Is a Function]] — and [[Function Notation]], the
    shorthand your group nearly invented on its own
-6. The daily rhythm we will live by: [[How Math Class Works]]
+6. The daily rhythm we will live by: [[How Math Class Works]] — and
+   the year ahead: [[Learning Goals]]
 
 ## Things to do before our next class
 
