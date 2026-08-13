@@ -1579,6 +1579,138 @@ def patch_content_meta_options(date_tsx_file_path: Path, show_reading_time: bool
 # --- END ADD ---
 
 # --- ADD: Patch renderPage.tsx to allow transcludeTitleSize frontmatter ---
+def patch_google_font_href(theme_ts_path: Path, head_tsx_path: Path):
+    """
+    Stop asking Google Fonts for fonts that are not Google Fonts.
+
+    Quartz builds one stylesheet request from all three typography
+    choices. Plantoir offers system stacks such as "Helvetica, Arial"
+    alongside real Google families, and Google rejects the WHOLE request
+    with HTTP 400 if any family is unknown to it. The observed effect:
+
+        GET .../css2?family=Helvetica,%20Arial:...&family=IBM%20Plex%20Mono:...
+        400
+
+    So NO font downloads — including the code font mermaid measures its
+    diagram labels in. That is why a diagram came out mangled until a
+    reload, and why `static/fonts/` was empty: the emitter fetches the
+    same URL to self-host the fonts and got the same 400.
+
+    A system stack needs no download; it is already on the machine. This
+    filters those families out of the request and, if nothing is left to
+    ask for, drops the request entirely.
+    """
+    if not theme_ts_path.exists():
+        print(f"⚠️ theme.ts not found at {theme_ts_path}")
+        return
+    try:
+        with open(theme_ts_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        marker = "isDownloadableFont"
+        if marker in content:
+            print("ℹ️ Google Fonts request already filtered (no change).")
+            return
+
+        old = (
+            "export function googleFontHref(theme: Theme) {\n"
+            "  const { code, header, body } = theme.typography\n"
+            "  const headerFont = formatFontSpecification(\"header\", header)\n"
+            "  const bodyFont = formatFontSpecification(\"body\", body)\n"
+            "  const codeFont = formatFontSpecification(\"code\", code)\n"
+            "\n"
+            "  return `https://fonts.googleapis.com/css2?family=${bodyFont}&family=${headerFont}&family=${codeFont}&display=swap`\n"
+            "}"
+        )
+        if old not in content:
+            print("⚠️ googleFontHref not in the expected shape; left unchanged.")
+            return
+
+        new = '''// A CSS font stack ("Helvetica, Arial") or a family already on the
+// machine is not something Google Fonts can serve, and ONE unknown
+// family makes it reject the whole request with 400 — taking the real
+// families down with it. Only ask for what it can actually provide.
+const SYSTEM_FONT_FAMILIES = new Set([
+  "arial",
+  "consolas",
+  "courier",
+  "courier new",
+  "georgia",
+  "helvetica",
+  "helvetica neue",
+  "menlo",
+  "monaco",
+  "monospace",
+  "sans-serif",
+  "serif",
+  "sf mono",
+  "system-ui",
+  "times",
+  "times new roman",
+  "ui-monospace",
+  "verdana",
+  "-apple-system",
+])
+
+function isDownloadableFont(spec: FontSpecification): boolean {
+  const name = getFontSpecificationName(spec).trim()
+  if (name.length === 0) {
+    return false
+  }
+  // A comma means a stack, not a family.
+  if (name.includes(",")) {
+    return false
+  }
+  return !SYSTEM_FONT_FAMILIES.has(name.toLowerCase().replace(/^["']|["']$/g, ""))
+}
+
+export function googleFontHref(theme: Theme) {
+  const { code, header, body } = theme.typography
+  const families: string[] = []
+  if (isDownloadableFont(body)) {
+    families.push(formatFontSpecification("body", body))
+  }
+  if (isDownloadableFont(header)) {
+    families.push(formatFontSpecification("header", header))
+  }
+  if (isDownloadableFont(code)) {
+    families.push(formatFontSpecification("code", code))
+  }
+  if (families.length === 0) {
+    return ""
+  }
+
+  return `https://fonts.googleapis.com/css2?${families
+    .map((family) => `family=${family}`)
+    .join("&")}&display=swap`
+}'''
+        content = content.replace(old, new, 1)
+        with open(theme_ts_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        print("✅ Patched theme.ts so only real Google families are requested")
+    except Exception as e:
+        print(f"⚠️ Error patching googleFontHref: {e}")
+        return
+
+    # With no families to fetch, the <link> must not be emitted at all.
+    if not head_tsx_path.exists():
+        return
+    try:
+        with open(head_tsx_path, "r", encoding="utf-8") as f:
+            head = f.read()
+        old_link = '            <link rel="stylesheet" href={googleFontHref(cfg.theme)} />'
+        new_link = ('            {googleFontHref(cfg.theme) !== "" && (\n'
+                    '              <link rel="stylesheet" href={googleFontHref(cfg.theme)} />\n'
+                    '            )}')
+        if old_link in head:
+            head = head.replace(old_link, new_link, 1)
+            with open(head_tsx_path, "w", encoding="utf-8") as f:
+                f.write(head)
+            print("✅ Patched Head.tsx to skip an empty font request")
+    except Exception as e:
+        print(f"⚠️ Error patching Head.tsx: {e}")
+
+
 def patch_mermaid_font_wait(mermaid_ts_path: Path):
     """
     Make mermaid wait for the code font before it measures anything.
@@ -2616,6 +2748,9 @@ def build_section_site(
     append_mermaid_styles(base_scss)
     append_sidebar_sharing_styles(base_scss)
     mermaid_ts = output_dir / "quartz" / "components" / "scripts" / "mermaid.inline.ts"
+    theme_ts = output_dir / "quartz" / "util" / "theme.ts"
+    head_tsx = output_dir / "quartz" / "components" / "Head.tsx"
+    patch_google_font_href(theme_ts, head_tsx)
     patch_mermaid_font_wait(mermaid_ts)
     patch_mermaid_pie_title_fit(mermaid_ts)
     patch_mermaid_pie_colours(mermaid_ts)
