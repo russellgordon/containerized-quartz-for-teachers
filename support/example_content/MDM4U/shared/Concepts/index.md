@@ -22,20 +22,28 @@ the difference between doing statistics and being fooled by them.
 
 ## Unit 1 — Counting and probability
 
-[[The Fundamental Counting Principle]] · [[Permutations]] ·
-[[Combinations]] · [[Pascal's Triangle]] · [[Probability Basics]] ·
-[[Conditional Probability]]
+- [[The Fundamental Counting Principle]]
+- [[Permutations]]
+- [[Combinations]]
+- [[Pascal's Triangle]]
+- [[Probability Basics]]
+- [[Conditional Probability]]
 
 ## Unit 2 — Probability distributions
 
-[[Random Variables and Distributions]] · [[Expected Value]] ·
-[[The Binomial Distribution]] · [[The Hypergeometric Distribution]] ·
-[[The Normal Distribution]]
+- [[Random Variables and Distributions]]
+- [[Expected Value]]
+- [[The Binomial Distribution]]
+- [[The Hypergeometric Distribution]]
+- [[The Normal Distribution]]
 
 ## Unit 3 — Organizing and describing data
 
-[[Sampling Techniques]] · [[Bias]] · [[One-Variable Statistics]] ·
-[[Two-Variable Statistics]] · [[Correlation and Causation]]
+- [[Sampling Techniques]]
+- [[Bias]]
+- [[One-Variable Statistics]]
+- [[Two-Variable Statistics]]
+- [[Correlation and Causation]]
 
 ## Unit 4 — Analysis, inference, and the investigation
 

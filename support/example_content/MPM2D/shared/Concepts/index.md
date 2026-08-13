@@ -12,17 +12,23 @@ after the exploration, not instead of it.
 
 ## Systems and the grid
 
-[[Linear Systems]] · [[Solving Systems Algebraically]] ·
-[[Midpoint and Length]] · [[The Equation of a Circle]] ·
-[[Properties on the Grid]]
+- [[Linear Systems]]
+- [[Solving Systems Algebraically]]
+- [[Midpoint and Length]]
+- [[The Equation of a Circle]]
+- [[Properties on the Grid]]
 
 ## The parabola
 
-[[Expanding and Factoring]] · [[Quadratic Relations]] ·
-[[Transformations of Parabolas]] · [[The Vertex Form]] ·
-[[Zeros and the Quadratic Formula]]
+- [[Expanding and Factoring]]
+- [[Quadratic Relations]]
+- [[Transformations of Parabolas]]
+- [[The Vertex Form]]
+- [[Zeros and the Quadratic Formula]]
 
 ## Triangles
 
-[[Similar Triangles]] · [[The Primary Trigonometric Ratios]] ·
-[[The Sine Law]] · [[The Cosine Law]]
+- [[Similar Triangles]]
+- [[The Primary Trigonometric Ratios]]
+- [[The Sine Law]]
+- [[The Cosine Law]]

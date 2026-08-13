@@ -18,22 +18,33 @@ somewhere the curriculum puts it — you are expected to
 [[B3.1|use a design process to design circuits]], not to copy a working
 one off a page.
 
-**Unit 1 — Systems and specifications** — [[Writing a Specification]] ·
-[[System Block Diagrams]] · [[Component Selection and Tolerances]] ·
-[[Power Supplies and Regulation]] · [[Reliability and Derating]]
+**Unit 1 — Systems and specifications**
 
-**Unit 2 — Advanced circuits and interfacing** —
-[[Transistors as Switches]] · [[Operational Amplifiers]] ·
-[[Filters and Noise]] · [[Sampling and Resolution]] ·
-[[Communication Buses]]
+- [[Writing a Specification]]
+- [[System Block Diagrams]]
+- [[Component Selection and Tolerances]]
+- [[Power Supplies and Regulation]]
+- [[Reliability and Derating]]
 
-**Unit 3 — Control, robotics, and embedded systems** —
-[[Open and Closed Loop Control]] · [[Feedback and Control Systems]] ·
-[[State Machines]]
+**Unit 2 — Advanced circuits and interfacing**
 
-**Unit 4 — Networks, security, and the profession** —
-[[Network Design]] · [[Security by Design]] ·
-[[Standards and Professional Practice]]
+- [[Transistors as Switches]]
+- [[Operational Amplifiers]]
+- [[Filters and Noise]]
+- [[Sampling and Resolution]]
+- [[Communication Buses]]
+
+**Unit 3 — Control, robotics, and embedded systems**
+
+- [[Open and Closed Loop Control]]
+- [[Feedback and Control Systems]]
+- [[State Machines]]
+
+**Unit 4 — Networks, security, and the profession**
+
+- [[Network Design]]
+- [[Security by Design]]
+- [[Standards and Professional Practice]]
 
 Every page ends with the expectations it serves, and points onward to the
 practice set that drills the arithmetic and the bench work that earned

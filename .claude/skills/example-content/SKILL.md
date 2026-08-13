@@ -206,6 +206,29 @@ stripping curriculum blocks wholesale deletes it. Every folder's
 `index.md` MUST have `title: <Folder Name>` — a literal `title: index`
 shows "index" as the page name on the built site.
 
+**The Concepts `index.md` lists every concept page, grouped by unit, as a
+bulleted list — one link per line.** Reference:
+`ICS4U/shared/Concepts/index.md`.
+
+```
+**Unit 2 — Data structures**
+
+- [[Dictionaries]]
+- [[Stacks and Queues]]
+- [[Choosing a Data Structure]]
+- [[Recursion]]
+```
+
+Not `[[A]] · [[B]] · [[C]]` run together after the heading, and not a
+prose sentence listing them. A student uses this page to find one idea,
+so it has to be scannable: a separator-delimited run reflows differently
+at every window width and the eye has nothing to land on. The heading may
+be `**bold**` or an `##` H2 — pick one and hold it for the whole page,
+and remember `enableToc: true` needs 4+ H2s to be worth setting. Every
+page in the folder appears exactly once. Explanation that is an argument
+rather than a list item stays as prose beneath its bullets. The same
+grouped-bullet shape suits any folder index long enough to need grouping.
+
 **Older curricula without printed codes** (pre-2020 documents like the
 2005 mathematics one): assign positional codes in the style teachers
 commonly use (strands lettered in document order, overalls and specifics

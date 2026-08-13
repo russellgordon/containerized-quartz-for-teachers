@@ -15,26 +15,34 @@ of it.
 
 ## Unit 1 — Polynomial functions
 
-[[Polynomial Functions]] · [[Zeros and Multiplicity]] ·
-[[The Factor Theorem]] · [[Even and Odd Functions]] ·
-[[Polynomial and Rational Inequalities]]
+- [[Polynomial Functions]]
+- [[Zeros and Multiplicity]]
+- [[The Factor Theorem]]
+- [[Even and Odd Functions]]
+- [[Polynomial and Rational Inequalities]]
 
 ## Unit 2 — Rational functions
 
-[[Rational Functions]] · [[Asymptotes]] — and
-[[Polynomial and Rational Inequalities]] returns here, because a sign
-chart does not care what kind of function it is analysing.
+- [[Rational Functions]]
+- [[Asymptotes]]
+
+And [[Polynomial and Rational Inequalities]] returns here, because a
+sign chart does not care what kind of function it is analysing.
 
 ## Unit 3 — Trigonometric functions in radians
 
-[[Radian Measure]] · [[The Unit Circle]] ·
-[[Reciprocal Trigonometric Functions]] · [[Compound Angles]] ·
-[[Trigonometric Identities]]
+- [[Radian Measure]]
+- [[The Unit Circle]]
+- [[Reciprocal Trigonometric Functions]]
+- [[Compound Angles]]
+- [[Trigonometric Identities]]
 
 ## Unit 4 — Logarithms, rates of change, and combining
 
-[[The Logarithm]] · [[Laws of Logarithms]] · [[Rates of Change]] ·
-[[Combining Functions]]
+- [[The Logarithm]]
+- [[Laws of Logarithms]]
+- [[Rates of Change]]
+- [[Combining Functions]]
 
 Most pages end by pointing at the practice set that turns the idea
 into a reflex, and at the curriculum expectations the page serves — so

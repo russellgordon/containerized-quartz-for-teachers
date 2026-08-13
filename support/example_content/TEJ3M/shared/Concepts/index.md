@@ -16,22 +16,33 @@ a meter — which is the curriculum's own expectation that you
 [[A3.3|calculate the values of components using fundamental laws]],
 rather than reach for the drawer and hope.
 
-**Unit 1 — Circuits you can trust** —
-[[Voltage, Current, and Resistance]] · [[Ohm's Law]] ·
-[[Series and Parallel Circuits]] · [[Power and Heat]] ·
-[[Reading Schematics]] · [[Components and Their Markings]]
+**Unit 1 — Circuits you can trust**
 
-**Unit 2 — Digital logic** — [[Binary and Hexadecimal]] ·
-[[Logic Gates]] · [[Boolean Algebra]] ·
-[[Sequential Logic and Memory]]
+- [[Voltage, Current, and Resistance]]
+- [[Ohm's Law]]
+- [[Series and Parallel Circuits]]
+- [[Power and Heat]]
+- [[Reading Schematics]]
+- [[Components and Their Markings]]
 
-**Unit 3 — Microcontrollers and embedded code** —
-[[Inside a Microcontroller]] · [[Digital and Analog Signals]] ·
-[[Sensors and Actuators]]
+**Unit 2 — Digital logic**
 
-**Unit 4 — Networks, systems, and the profession** —
-[[Networks and Protocols]] · [[Health and Safety in the Shop]] ·
-[[Careers and the Environment]]
+- [[Binary and Hexadecimal]]
+- [[Logic Gates]]
+- [[Boolean Algebra]]
+- [[Sequential Logic and Memory]]
+
+**Unit 3 — Microcontrollers and embedded code**
+
+- [[Inside a Microcontroller]]
+- [[Digital and Analog Signals]]
+- [[Sensors and Actuators]]
+
+**Unit 4 — Networks, systems, and the profession**
+
+- [[Networks and Protocols]]
+- [[Health and Safety in the Shop]]
+- [[Careers and the Environment]]
 
 Every page ends with the curriculum expectations it serves, and links
 onward to the practice set that drills it and the lab that earned it. If

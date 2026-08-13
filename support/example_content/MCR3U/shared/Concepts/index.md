@@ -14,24 +14,32 @@ after the exploration, never instead of it.
 
 ## Unit 1 — Functions and transformations
 
-[[What Is a Function]] · [[Function Notation]] · [[Domain and Range]] ·
-[[Transformations of Functions]] · [[The Inverse of a Function]] ·
-[[Quadratic Functions Revisited]] ·
-[[Equivalent Algebraic Expressions]]
+- [[What Is a Function]]
+- [[Function Notation]]
+- [[Domain and Range]]
+- [[Transformations of Functions]]
+- [[The Inverse of a Function]]
+- [[Quadratic Functions Revisited]]
+- [[Equivalent Algebraic Expressions]]
 
 ## Unit 2 — Exponential functions
 
-[[Exponent Laws]] · [[Rational Exponents]] ·
-[[The Exponential Function]]
+- [[Exponent Laws]]
+- [[Rational Exponents]]
+- [[The Exponential Function]]
 
 ## Unit 3 — Trigonometric functions
 
-[[Special Angles]] · [[The Sine Law]] · [[The Cosine Law]] ·
-[[Sinusoidal Functions]]
+- [[Special Angles]]
+- [[The Sine Law]]
+- [[The Cosine Law]]
+- [[Sinusoidal Functions]]
 
 ## Unit 4 — Discrete functions and your financial future
 
-[[Sequences and Their Rules]] · [[Series]] · [[Money Over Time]]
+- [[Sequences and Their Rules]]
+- [[Series]]
+- [[Money Over Time]]
 
 Most pages end by pointing at the practice set that turns the idea
 into a reflex, and at the curriculum expectations the page serves —

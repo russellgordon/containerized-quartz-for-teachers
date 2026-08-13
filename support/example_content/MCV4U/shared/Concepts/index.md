@@ -21,24 +21,31 @@ walk the same road the semester does.
 
 ## Unit 1 — Rates of change and the limit
 
-[[The Limit]] · [[The Derivative]]
+- [[The Limit]]
+- [[The Derivative]]
 
 ## Unit 2 — The derivative's toolbox
 
-[[Derivative Rules]] · [[The Chain Rule]] ·
-[[Derivatives of Exponential Functions]] ·
-[[Derivatives of Sinusoidal Functions]] · [[Motion on a Line]]
+- [[Derivative Rules]]
+- [[The Chain Rule]]
+- [[Derivatives of Exponential Functions]]
+- [[Derivatives of Sinusoidal Functions]]
+- [[Motion on a Line]]
 
 ## Unit 3 — What derivatives are for
 
-[[Curve Sketching]] · [[Optimization]]
+- [[Curve Sketching]]
+- [[Optimization]]
 
 ## Unit 4 — Vectors, lines, and planes
 
-[[What Vectors Are]] · [[Adding and Scaling Vectors]] ·
-[[The Dot Product]] · [[The Cross Product]] ·
-[[Equations of Lines]] · [[Equations of Planes]] ·
-[[Intersections of Lines and Planes]]
+- [[What Vectors Are]]
+- [[Adding and Scaling Vectors]]
+- [[The Dot Product]]
+- [[The Cross Product]]
+- [[Equations of Lines]]
+- [[Equations of Planes]]
+- [[Intersections of Lines and Planes]]
 
 Most pages end by pointing at the practice set that turns the idea
 into a reflex, and at the curriculum expectations the page serves — so
