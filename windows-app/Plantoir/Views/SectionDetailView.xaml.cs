@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Plantoir.Core.Assist;
 using Plantoir.Core.Models;
 using Plantoir.Core.Scripting;
 using Plantoir.Services;
@@ -24,6 +25,11 @@ public sealed partial class SectionDetailView : UserControl
     private readonly ScriptRunner _previewRunner = new(SynchronizationContext.Current);
     private readonly ScriptRunner _deployRunner = new(SynchronizationContext.Current);
     private PreviewLeases.Lease? _lease;
+
+    // The on-disk half of the same claims. In-memory leases are invisible to
+    // the MCP server, which is a different process entirely.
+    private IDisposable? _previewWork;
+    private IDisposable? _publishWork;
     private IDisposable? _publishActivity;
     private Uri? _previewUrl;
     private Uri? _lastLoadedUrl;
@@ -165,6 +171,9 @@ public sealed partial class SectionDetailView : UserControl
         try
         {
             _lease = PreviewLeases.Take(workspacePath, _course.Code, _sectionNumber);
+            // Say so on disk as well as in memory: an assistant is a separate
+            // process and cannot see the in-memory lease.
+            _previewWork = WorkLease.Take(workspacePath, _course.Code, WorkLease.Previewing);
         }
         catch (PreviewLeases.LeaseRefusedException refusal)
         {
@@ -289,6 +298,8 @@ public sealed partial class SectionDetailView : UserControl
 
     private void ReleaseLease()
     {
+        _previewWork?.Dispose();
+        _previewWork = null;
         if (_lease is { } lease) PreviewLeases.Release(lease);
         _lease = null;
     }
@@ -352,6 +363,7 @@ public sealed partial class SectionDetailView : UserControl
         // from the runner-stopped transition in RefreshChrome).
         _publishActivity?.Dispose();
         _publishActivity = CourseActivity.BeginPublish(workspacePath, _course.Code, _sectionNumber);
+        _publishWork = WorkLease.Take(workspacePath, _course.Code, WorkLease.Publishing);
 
         if (needsBuild)
         {
@@ -378,6 +390,8 @@ public sealed partial class SectionDetailView : UserControl
     {
         _publishActivity?.Dispose();
         _publishActivity = null;
+        _publishWork?.Dispose();
+        _publishWork = null;
     }
 
     // ---- Browser chrome --------------------------------------------------

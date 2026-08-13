@@ -79,9 +79,8 @@ Three things make that safe to offer:
   lie about something the teacher can see in the sidebar. A lock holds however
   the conversation wanders; an instruction in a prompt does not.
 - **The course is marked busy for the life of the session**, so Preview,
-  Publish and Add Section decline while it is open. Without that, an assistant
-  publishing a section and a teacher previewing it would both be building into
-  `.merged_output/section<N>/`, which the build clears before writing.
+  Publish and Add Section decline while it is open — and the server refuses to
+  build while Plantoir is previewing or publishing. See below.
 - **The menu item only appears when Claude Code and the server are both
   present.** A teacher who has neither is not offered a door onto an error.
 
@@ -416,6 +415,41 @@ The cause was wording, and it is fixed by two rules:
    (`draftSection1: true → false`). A plan that says what it saw can differ
    from an earlier plan without either looking wrong — and it makes the dual
    frontmatter schema impossible to miss.
+
+## The lease protocol, in both directions
+
+Plantoir and this server are separate processes. Preview leases and publish
+records live in the app's memory; an assist session lives in the server's.
+Neither can see the other, and **both build into
+`.merged_output/section<N>/`, which the build CLEARS before writing it** — so
+the loser of a race serves a half-written site, or ships files the other just
+deleted.
+
+Both sides now write what they are doing, and read what the other is doing.
+Files live in `courses/.internal/activity/`, named
+`<COURSE>.<kind>.<pid>.lease`, where kind is `assist`, `preview` or `publish`.
+Each file carries its owner's process id and process name.
+
+| Situation | What happens |
+|---|---|
+| Assistant holds the course | Preview, Publish and Add Section decline in the app |
+| Plantoir is previewing or publishing | `publish_pages`, `hide_pages`, `re_date_classes` and `republish_section` decline |
+| Either, on a **different** course | nothing is blocked |
+| Reading, planning, editing frontmatter | always allowed |
+
+Only *building* is blocked. A preview rebuilds from source anyway, so an
+edit lands rather than clashes — refusing those would make the assistant
+useless for the thing it is best at.
+
+**Staleness needs no cleanup pass and no timeout.** A lease whose process is
+gone is not a lease, so a crashed app or a killed session cannot leave a
+course locked. The process *name* is checked too, so a recycled process id
+cannot impersonate a dead one. A process never counts its own leases —
+otherwise the app would refuse its own publish.
+
+This is the shared registry from `MCP-PROPOSAL.md` phase 2, deliberately
+**format-first rather than API-first**, so the mac side can adopt the same
+files rather than the same code.
 
 ## Known limits
 

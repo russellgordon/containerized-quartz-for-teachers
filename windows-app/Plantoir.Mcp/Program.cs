@@ -55,7 +55,8 @@ catch (Exception error)
 // the same output folder. Only when locked to a course: an unrestricted
 // session has no single course to claim.
 IDisposable? lease = workspace.LockedCourse is { } locked
-    ? Plantoir.Core.Assist.AssistLease.Take(workspace.FolderPath, locked)
+    ? Plantoir.Core.Assist.WorkLease.Take(workspace.FolderPath, locked,
+        Plantoir.Core.Assist.WorkLease.Assisting)
     : null;
 AppDomain.CurrentDomain.ProcessExit += (_, _) => lease?.Dispose();
 

@@ -271,8 +271,82 @@ public class AssistWorkspaceTests : IDisposable
     [Fact]
     public void ALeaseHeldByThisProcessIsNotAConflictWithItself()
     {
-        using var lease = AssistLease.Take(_folder, "ICS3U");
-        Assert.False(AssistLease.IsAssisting(_folder, "ICS3U"));
+        // A process is never in its own way; counting our own lease would have
+        // the app refuse its own publish.
+        using var lease = WorkLease.Take(_folder, "ICS3U", WorkLease.Assisting);
+        Assert.Empty(WorkLease.HeldBy(_folder, "ICS3U"));
+    }
+
+    [Fact]
+    public void TheServerRefusesToBuildWhilePlantoirIsPreviewingTheSameCourse()
+    {
+        // The other half of the protocol: the app writes what it is doing and
+        // the server reads it. Both build into .merged_output/section<N>/,
+        // which the build clears before writing.
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
+        using var child = StartALongRunningChild();
+        try
+        {
+            WriteWorkLease("ICS3U", WorkLease.Previewing, child.Id, child.ProcessName);
+            var workspace = Open();
+            var plan = workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false);
+
+            var refusal = Assert.ThrowsAsync<AssistRefusal>(() => workspace.Apply(plan)).Result;
+
+            Assert.Contains("Plantoir is previewing ICS3U right now", refusal.Message);
+            Assert.Contains("Reading and planning are fine meanwhile.", refusal.Message);
+            Assert.Empty(_launcher.Runs);                 // never got as far as a build
+            Assert.Contains("draft: true",
+                File.ReadAllText(Path.Combine(_folder, "courses", "ICS3U",
+                    "section1", "All Classes", "Unit 2, Day 3.md")));   // and never edited
+        }
+        finally { try { child.Kill(entireProcessTree: true); } catch { } }
+    }
+
+    [Fact]
+    public void ReadingAndPlanningStayAvailableWhilePlantoirIsBusy()
+    {
+        // A preview rebuilds from source, so an edit lands rather than
+        // clashes. Only building is blocked.
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
+        using var child = StartALongRunningChild();
+        try
+        {
+            WriteWorkLease("ICS3U", WorkLease.Previewing, child.Id, child.ProcessName);
+            var workspace = Open();
+
+            Assert.NotEmpty(workspace.Pages(workspace.Course("ICS3U"), 1));
+            var plan = workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false);
+            Assert.Single(plan.Changing);
+        }
+        finally { try { child.Kill(entireProcessTree: true); } catch { } }
+    }
+
+    [Fact]
+    public void PlantoirBusyOnAnotherCourseDoesNotBlockThisOne()
+    {
+        AddCourse("SNC1W", "Science", 1);
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
+        using var child = StartALongRunningChild();
+        try
+        {
+            WriteWorkLease("SNC1W", WorkLease.Publishing, child.Id, child.ProcessName);
+            var workspace = Open();
+            var plan = workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false);
+
+            var result = workspace.Apply(plan).Result;
+
+            Assert.True(result.Succeeded);
+        }
+        finally { try { child.Kill(entireProcessTree: true); } catch { } }
+    }
+
+    private void WriteWorkLease(string course, string kind, int pid, string name)
+    {
+        string directory = Path.Combine(_folder, "courses", ".internal", "activity");
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(Path.Combine(directory, $"{course}.{kind}.{pid}.lease"),
+            $"{pid}\n{name}\n2026-08-13T00:00:00Z\n");
     }
 
     [Fact]
@@ -284,9 +358,9 @@ public class AssistWorkspaceTests : IDisposable
         // The name is written from what it WAS, since a process that has
         // exited will not tell you its name any more.
         var child = StartAndStopAChild();
-        WriteLease("ICS3U", child.Id, "cmd");
+        WriteAssistLease("ICS3U", child.Id, "cmd");
 
-        Assert.False(AssistLease.IsAssisting(_folder, "ICS3U"));
+        Assert.False(WorkLease.IsHeld(_folder, "ICS3U", WorkLease.Assisting));
     }
 
     [Fact]
@@ -298,23 +372,18 @@ public class AssistWorkspaceTests : IDisposable
         using var child = StartALongRunningChild();
         try
         {
-            WriteLease("ICS3U", child.Id, "definitely-not-that-program");
-            Assert.False(AssistLease.IsAssisting(_folder, "ICS3U"));
+            WriteAssistLease("ICS3U", child.Id, "definitely-not-that-program");
+            Assert.False(WorkLease.IsHeld(_folder, "ICS3U", WorkLease.Assisting));
 
             // …and the same live process WITH its real name does hold it.
-            WriteLease("ICS3U", child.Id, child.ProcessName);
-            Assert.True(AssistLease.IsAssisting(_folder, "ICS3U"));
+            WriteAssistLease("ICS3U", child.Id, child.ProcessName);
+            Assert.True(WorkLease.IsHeld(_folder, "ICS3U", WorkLease.Assisting));
         }
         finally { try { child.Kill(entireProcessTree: true); } catch { } }
     }
 
-    private void WriteLease(string course, int pid, string name)
-    {
-        string directory = Path.Combine(_folder, "courses", ".internal", "assist");
-        Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(directory, course + ".lease"),
-            $"{pid}\n{name}\n2026-08-13T00:00:00Z\n");
-    }
+    private void WriteAssistLease(string course, int pid, string name) =>
+        WriteWorkLease(course, WorkLease.Assisting, pid, name);
 
     private static System.Diagnostics.Process StartAndStopAChild()
     {
@@ -339,7 +408,7 @@ public class AssistWorkspaceTests : IDisposable
         using var child = StartALongRunningChild();
         try
         {
-            WriteLease("ICS3U", child.Id, child.ProcessName);
+            WriteAssistLease("ICS3U", child.Id, child.ProcessName);
 
             Assert.Equal("Available once you finish revising with Claude",
                 Plantoir.Core.Models.CourseActivity.BusyReason(_folder, "ICS3U"));
@@ -352,8 +421,9 @@ public class AssistWorkspaceTests : IDisposable
     [Fact]
     public void ReleasingALeaseRemovesIt()
     {
-        var lease = AssistLease.Take(_folder, "ICS3U");
-        string path = Path.Combine(_folder, "courses", ".internal", "assist", "ICS3U.lease");
+        var lease = WorkLease.Take(_folder, "ICS3U", WorkLease.Assisting);
+        string path = Path.Combine(_folder, "courses", ".internal", "activity",
+            $"ICS3U.{WorkLease.Assisting}.{Environment.ProcessId}.lease");
         Assert.True(File.Exists(path));
         lease.Dispose();
         Assert.False(File.Exists(path));

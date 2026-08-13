@@ -54,7 +54,7 @@ public static class CourseActivity
     /// server has its own memory and neither side can see the other's.
     /// </summary>
     public static bool IsAssisting(string folderPath, string courseCode) =>
-        Assist.AssistLease.IsAssisting(folderPath, courseCode);
+        Assist.WorkLease.IsHeld(folderPath, courseCode, Assist.WorkLease.Assisting);
 
     /// <summary>
     /// The short line naming what stands in the way of structural work on

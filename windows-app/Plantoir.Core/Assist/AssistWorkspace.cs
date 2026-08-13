@@ -465,6 +465,7 @@ public sealed class AssistWorkspace
         var course = Course(courseCode);
         int section = Section(course, sectionNumber);
         DeployArguments(course, section);   // refuse now if this course can't publish from here
+        RefuseIfPlantoirIsBuilding(course);
 
         progress?.Report($"Building Section {section} of {course.Code}…");
         var build = await _launcher.Run("preview", new[] { course.Code, section.ToString(), "--build-only" },
@@ -508,7 +509,11 @@ public sealed class AssistWorkspace
         // before the backup, the edits and a build that takes minutes. Failing
         // at the last step would leave the teacher with changed files, a
         // rebuilt site and a refusal — the worst of all the orders.
-        if (plan.Publishes) DeployArguments(course, section);
+        if (plan.Publishes)
+        {
+            DeployArguments(course, section);
+            RefuseIfPlantoirIsBuilding(course);
+        }
 
         string backup;
         progress?.Report($"Backing up {course.Code} first…");
@@ -572,6 +577,34 @@ public sealed class AssistWorkspace
             ? "No page needed changing"
             : $"Changed {changed.Count} page{(changed.Count == 1 ? "" : "s")} ({string.Join(", ", changed)})";
         return published ? $"{what}, and republished {code} Section {section}." : what + ".";
+    }
+
+    /// <summary>
+    /// Refuse to build while Plantoir itself is building the same course.
+    ///
+    /// The other half of the lease protocol. The app writes what it is doing;
+    /// this reads it. Without the check, a teacher previewing a section and an
+    /// assistant publishing it would both be writing
+    /// <c>.merged_output/section&lt;N&gt;/</c>, which the build clears first —
+    /// so one of them serves or ships a half-written site.
+    ///
+    /// Only building is blocked. Reading, planning and editing frontmatter are
+    /// all fine while a preview runs: the preview rebuilds from source anyway,
+    /// so an edit lands rather than clashes.
+    /// </summary>
+    private void RefuseIfPlantoirIsBuilding(Course course)
+    {
+        var held = WorkLease.HeldBy(_folder, course.Code);
+        bool previewing = held.Contains(WorkLease.Previewing);
+        bool publishing = held.Contains(WorkLease.Publishing);
+        if (!previewing && !publishing) return;
+
+        string what = previewing && publishing ? "previewing and publishing"
+            : previewing ? "previewing" : "publishing";
+        throw new AssistRefusal(
+            $"Plantoir is {what} {course.Code} right now, and building it here at the same time would " +
+            "spoil both. Wait for that to finish, then try again. " +
+            "Reading and planning are fine meanwhile.");
     }
 
     /// <summary>
