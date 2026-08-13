@@ -342,6 +342,29 @@ public class WikiLinkTests : IDisposable
     }
 
     [Fact]
+    public void AnEmbeddedImageIsAnAttachmentNotAMissingPage()
+    {
+        // Otherwise the plan tells a teacher who did nothing wrong that
+        // “diagram.png” doesn't match any page.
+        var resolved = WikiLinks.Resolve(
+            WikiLinks.Parse("![[diagram.png]] and ![[Media/handout.pdf]]"), _course, 1);
+
+        Assert.Equal(2, resolved.Count);
+        Assert.All(resolved, r => Assert.Equal(LinkOutcome.Attachment, r.Outcome));
+        Assert.All(resolved, r => Assert.Null(r.Problem));
+    }
+
+    [Fact]
+    public void ACurriculumPageIsNotMistakenForAnAttachment()
+    {
+        // Path.GetExtension("E2.6") is ".6". These pages are real, and named
+        // exactly like this throughout the Curriculum folder.
+        Write("Curriculum/E2.6.md");
+        var resolved = WikiLinks.Resolve(WikiLinks.Parse("- [[E2.6]] — ![[E2.6#^text]]"), _course, 1);
+        Assert.Equal(LinkOutcome.Resolved, Assert.Single(resolved).Outcome);
+    }
+
+    [Fact]
     public void TheSameTargetTwiceIsResolvedOnce()
     {
         Write("Concepts/Ohm's Law.md");

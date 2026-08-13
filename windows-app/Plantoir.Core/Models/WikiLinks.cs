@@ -94,6 +94,28 @@ public static class WikiLinks
     }
 
     /// <summary>
+    /// Extensions that mean "this link points at an attachment, not a page".
+    ///
+    /// Matched against a fixed list rather than by taking whatever follows the
+    /// last dot, because curriculum expectation pages are genuinely called
+    /// things like <c>A1.1</c> and <c>E2.6</c> — asking for the "extension" of
+    /// <c>[[E2.6]]</c> gives <c>.6</c>, and treating that as an attachment
+    /// would silently drop a real page from every plan.
+    /// </summary>
+    private static readonly HashSet<string> AssetExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".avif", ".bmp", ".ico",
+        ".pdf", ".mp4", ".mov", ".webm", ".mp3", ".m4a", ".wav", ".ogg",
+        ".zip", ".docx", ".pptx", ".xlsx", ".csv",
+    };
+
+    private static bool IsAsset(string target)
+    {
+        int dot = target.LastIndexOf('.');
+        return dot >= 0 && AssetExtensions.Contains(target[dot..]);
+    }
+
+    /// <summary>
     /// Resolve a page's links against the files of one course section.
     ///
     /// A target containing a slash is tried as a path relative to the course
@@ -124,6 +146,15 @@ public static class WikiLinks
         {
             if (!alreadySeen.Add(link.Target)) continue;   // one resolution per distinct target
 
+            // An embedded diagram is not a missing page. Reporting it as a
+            // problem would put "“diagram.png” doesn't match any page" in
+            // front of a teacher who did nothing wrong.
+            if (IsAsset(link.Target))
+            {
+                results.Add(new LinkResolution(link, null, LinkOutcome.Attachment, Array.Empty<string>()));
+                continue;
+            }
+
             if (link.Target.Contains('/') || link.Target.Contains('\\'))
             {
                 string? viaPath = ResolveAsPath(courseDirectory, link.Target);
@@ -134,7 +165,11 @@ public static class WikiLinks
                 }
             }
 
-            string name = Path.GetFileNameWithoutExtension(link.Target.Replace('\\', '/').Split('/')[^1]);
+            // Take the last path component and strip a trailing ".md" — and
+            // NOTHING else. GetFileNameWithoutExtension("E2.6") is "E2", which
+            // would make every curriculum-expectation link resolve to nothing.
+            string name = link.Target.Replace('\\', '/').Split('/')[^1];
+            if (name.EndsWith(".md", StringComparison.OrdinalIgnoreCase)) name = name[..^3];
             if (!byName.TryGetValue(name, out var matches) || matches.Count == 0)
             {
                 results.Add(new LinkResolution(link, null, LinkOutcome.NotFound, Array.Empty<string>()));
@@ -185,6 +220,12 @@ public enum LinkOutcome
     Ambiguous,
     /// <summary>The page links to itself; nothing to do.</summary>
     SelfReference,
+
+    /// <summary>
+    /// An image, PDF or other attachment rather than a page. It rides along
+    /// with the page that embeds it and has no draft flag of its own.
+    /// </summary>
+    Attachment,
 }
 
 /// <summary>A link and the file it points at, or why it does not point anywhere.</summary>
