@@ -224,6 +224,27 @@ public class AssistWorkspaceTests : IDisposable
 
         Assert.Contains("publishes to Cloudflare Pages", refusal.Message);
         Assert.Contains("Publish this section from Plantoir instead.", refusal.Message);
+
+        // And it refused BEFORE doing anything. Discovering this at the deploy
+        // step would leave the teacher with edited pages, a rebuilt site and a
+        // refusal — the worst possible order.
+        string page = File.ReadAllText(Path.Combine(
+            _folder, "courses", "SNC1W", "section1", "All Classes", "Unit 1, Day 1.md"));
+        Assert.Contains("draft: true", page);              // never edited
+        Assert.Empty(_launcher.Runs);                      // never built
+        Assert.False(Directory.Exists(Path.Combine(_folder, "courses", "_backups")));   // never backed up
+    }
+
+    [Fact]
+    public void ThePlanSaysUpFrontThatACloudflareCourseCannotBePublishedFromHere()
+    {
+        AddCourse("SNC1W", "Science", 1, deployTarget: "cloudflare_pages");
+        Page("SNC1W", "section1/All Classes/Unit 1, Day 1.md", draft: true);
+
+        var plan = Open().PlanPublish("SNC1W", 1, "Unit 1, Day 1", includeLinked: false);
+
+        Assert.Contains(plan.Problems, p => p.Contains("Cloudflare Pages"));
+        Assert.Contains("Publish this section from Plantoir instead.", plan.Describe());
     }
 
     // ---- Fixtures --------------------------------------------------------

@@ -136,6 +136,10 @@ public sealed class AssistWorkspace
         var problems = new List<string>();
         var linked = new List<PlannedPage>();
 
+        // Surface it in the PLAN, so the teacher learns the publish can't
+        // happen before agreeing to it rather than after.
+        if (publishes && PublishProblem(course) is { } blocked) problems.Add(blocked);
+
         if (includeLinked)
         {
             var resolutions = WikiLinks.Resolve(
@@ -198,6 +202,12 @@ public sealed class AssistWorkspace
         if (plan.ChangesNothing && !plan.Publishes)
             return new AssistResult(true, "Nothing needed changing.", null);
 
+        // Anything that would make the publish impossible has to be found NOW,
+        // before the backup, the edits and a build that takes minutes. Failing
+        // at the last step would leave the teacher with changed files, a
+        // rebuilt site and a refusal — the worst of all the orders.
+        if (plan.Publishes) DeployArguments(course, section);
+
         string backup;
         progress?.Report($"Backing up {course.Code} first…");
         try { backup = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory(_folder)); }
@@ -249,15 +259,24 @@ public sealed class AssistWorkspace
         return published ? $"{what}, and republished {code} Section {section}." : what + ".";
     }
 
+    /// <summary>
+    /// Why this course cannot be published from here, or null when it can.
+    /// A Pages-scoped Cloudflare token cannot list its own account — verified
+    /// against a real token — so the account ID lives in Plantoir's settings
+    /// and only the app can supply it.
+    /// </summary>
+    private static string? PublishProblem(Course course) =>
+        course.Configuration.DeploysToCloudflare
+            ? $"{course.Code} publishes to Cloudflare Pages, which needs the account ID Plantoir stores. " +
+              "Publish this section from Plantoir instead."
+            : null;
+
     private string[] DeployArguments(Course course, int section)
     {
+        if (PublishProblem(course) is { } problem) throw new AssistRefusal(problem);
         var configuration = course.Configuration;
         if (configuration.DeploysToLocalFolder)
             return new[] { course.Code, section.ToString(), "--to-folder", configuration.DeployFolderPath };
-        if (configuration.DeploysToCloudflare)
-            throw new AssistRefusal(
-                $"{course.Code} publishes to Cloudflare Pages, which needs the account ID Plantoir stores. " +
-                "Publish this section from Plantoir instead.");
         return new[] { course.Code, section.ToString() };
     }
 
