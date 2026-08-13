@@ -795,6 +795,123 @@ public sealed class AssistWorkspace
             backup);
     }
 
+    /// <summary>
+    /// Work out what bringing a lesson's materials into date with the lesson
+    /// would do, without touching anything.
+    ///
+    /// Naming classes scopes it to what those classes link to — the usual
+    /// case, straight after the audit says a particular lesson's material is
+    /// months out. Naming none brings every material into line with the
+    /// EARLIEST class that links to it, which is the rule the build documents:
+    /// a shared page belongs to the lesson that introduced it, not the one
+    /// that revisited it.
+    /// </summary>
+    public SyncPlan PlanSyncDates(string courseCode, int sectionNumber, IReadOnlyList<string> classTitles)
+    {
+        var course = Course(courseCode);
+        int section = Section(course, sectionNumber);
+        var classPaths = new HashSet<string>(
+            ClassPages(course, section).Select(Path.GetFullPath), StringComparer.OrdinalIgnoreCase);
+
+        var anchors = new List<string>();
+        HashSet<string>? scope = null;
+        if (classTitles.Count > 0)
+        {
+            scope = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string title in classTitles)
+            {
+                string path = Page(course, section, title);
+                if (!classPaths.Contains(Path.GetFullPath(path)))
+                    throw new AssistRefusal(
+                        $"“{title}” isn’t a class page, so it can’t anchor anything's date.");
+                scope.Add(Path.GetFullPath(path));
+                anchors.Add(Path.GetFileNameWithoutExtension(path));
+            }
+        }
+        else anchors.Add("every class");
+
+        LinkGraph graph;
+        try { graph = LinkGraph.Build(course.DirectoryPath, section); }
+        catch (Exception error) { throw new AssistRefusal($"That section couldn’t be read: {error.Message}"); }
+
+        var problems = new List<string>();
+        var dates = new List<PlannedDate>();
+
+        foreach (string page in graph.Pages)
+        {
+            if (classPaths.Contains(page)) continue;              // a class anchors, it is not anchored
+
+            // The earliest class that links to it, within scope.
+            DateOnly? target = null;
+            foreach (string linker in graph.SourcesOf(page))
+            {
+                string full = Path.GetFullPath(linker);
+                if (!classPaths.Contains(full)) continue;
+                if (scope is not null && !scope.Contains(full)) continue;
+                if (DateOf(course, section, linker) is not { } when) continue;
+                if (target is null || when < target) target = when;
+            }
+            if (target is not { } newDate) continue;
+
+            bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, page);
+            dates.Add(new PlannedDate(
+                Title: Path.GetFileNameWithoutExtension(page),
+                RelativePath: Relative(page),
+                FrontmatterKey: PageFrontmatter.CreatedKeyFor(section, sectionLocal),
+                Current: DateOf(course, section, page),
+                New: newDate,
+                MeetingNumber: 0));
+        }
+
+        if (dates.Count == 0)
+            problems.Add(scope is null
+                ? "No page in this section is linked from a class that carries a date."
+                : "Those classes don’t link to anything, or they have no date themselves.");
+
+        return new SyncPlan
+        {
+            CourseCode = course.Code,
+            SectionNumber = section,
+            Anchors = anchors,
+            Dates = dates,
+            Problems = problems,
+        };
+    }
+
+    /// <summary>Carry out a date sync the teacher has agreed to, after backing the course up.</summary>
+    public AssistResult ApplySyncDates(SyncPlan plan, IProgress<string>? progress = null)
+    {
+        var course = Course(plan.CourseCode);
+        int section = Section(course, plan.SectionNumber);
+        if (plan.ChangesNothing) return new AssistResult(true, "Every page already matches its class.", null);
+
+        string backup;
+        progress?.Report($"Backing up {course.Code} first…");
+        try { backup = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory(_folder)); }
+        catch (Exception error)
+        {
+            throw new AssistRefusal(
+                $"{course.Code} couldn’t be backed up, so no dates were changed: {error.Message}");
+        }
+
+        string tail = SiblingTimeAndOffset(course, section, ClassPages(course, section));
+        int moved = 0;
+        foreach (var date in plan.Changing)
+        {
+            string full = PagePaths.ResolveInside(_folder, date.RelativePath);
+            var (updated, changed) = PageFrontmatter.SetCreated(
+                File.ReadAllText(full), date.FrontmatterKey, date.New, tail);
+            if (!changed) continue;
+            File.WriteAllText(full, updated);
+            moved++;
+        }
+
+        return new AssistResult(true,
+            $"Brought {moved} page{(moved == 1 ? "" : "s")} into date with the class that uses " +
+            (moved == 1 ? "it" : "them") + $" in {course.Code} Section {section}. Nothing was published.",
+            backup);
+    }
+
     /// <summary>A whole-course backup, on its own.</summary>
     public string BackUp(string courseCode)
     {

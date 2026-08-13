@@ -316,6 +316,76 @@ public class ReDateTests : IDisposable
             p.Contains("Variables") && p.Contains("no class that links to it falls near that date"));
     }
 
+    // ---- Bringing materials into date ------------------------------------
+
+    [Fact]
+    public void SyncingBringsALessonsMaterialsToItsOwnDate()
+    {
+        // The fix that belongs next to the audit: told "Unit 1, Day 1 is dated
+        // October but links to a page dated February", the teacher can say
+        // "yes, fix that" without opening the files.
+        Class("Unit 1, Day 1", "2026-10-13", "Concept: [[Variables]]");
+        Material("Concepts/Variables.md", "2026-02-01");
+
+        var plan = Open().PlanSyncDates("ICS3U", 1, new[] { "Unit 1, Day 1" });
+
+        var moved = Assert.Single(plan.Changing);
+        Assert.Equal("Variables", moved.Title);
+        Assert.Equal(new DateOnly(2026, 10, 13), moved.New);
+    }
+
+    [Fact]
+    public void SyncingUsesTheEarliestClassThatLinksToAPage()
+    {
+        // The build's own rule: a shared page belongs to the lesson that
+        // introduced it, not the one that revisited it.
+        Class("Unit 1, Day 1", "2026-10-13", "Concept: [[Variables]]");
+        Class("Unit 1, Day 4", "2026-11-03", "Revisit: [[Variables]]");
+        Material("Concepts/Variables.md", "2026-02-01");
+
+        var plan = Open().PlanSyncDates("ICS3U", 1, Array.Empty<string>());
+
+        Assert.Equal(new DateOnly(2026, 10, 13), Assert.Single(plan.Changing).New);
+    }
+
+    [Fact]
+    public void SyncingScopedToOneClassUsesThatClassEvenIfAnEarlierOneLinksToo()
+    {
+        Class("Unit 1, Day 1", "2026-10-13", "Concept: [[Variables]]");
+        Class("Unit 1, Day 4", "2026-11-03", "Revisit: [[Variables]]");
+        Material("Concepts/Variables.md", "2026-02-01");
+
+        var plan = Open().PlanSyncDates("ICS3U", 1, new[] { "Unit 1, Day 4" });
+
+        Assert.Equal(new DateOnly(2026, 11, 3), Assert.Single(plan.Changing).New);
+    }
+
+    [Fact]
+    public void SyncingWritesTheDateAndLeavesTheRestOfTheFileAlone()
+    {
+        Class("Unit 1, Day 1", "2026-10-13", "Concept: [[Variables]]");
+        Material("Concepts/Variables.md", "2026-02-01");
+        var workspace = Open();
+
+        var result = workspace.ApplySyncDates(workspace.PlanSyncDates("ICS3U", 1, new[] { "Unit 1, Day 1" }));
+
+        Assert.True(result.Succeeded);
+        Assert.NotNull(result.BackupPath);
+        string text = Read("Concepts/Variables.md");
+        Assert.Contains("createdSection1: 2026-10-13T08:00:00.000-0500", text);
+        Assert.Contains("draftSection1: false", text);
+    }
+
+    [Fact]
+    public void AClassCannotBeAnchoredToAnotherPage()
+    {
+        Class("Unit 1, Day 1", "2026-10-13");
+        Material("Concepts/Variables.md", "2026-02-01");
+        var refusal = Assert.Throws<AssistRefusal>(
+            () => Open().PlanSyncDates("ICS3U", 1, new[] { "Variables" }));
+        Assert.Contains("isn’t a class page", refusal.Message);
+    }
+
     [Fact]
     public void AConceptRevisitedLaterIsNotMistakenForAMistake()
     {

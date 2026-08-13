@@ -285,6 +285,25 @@ true.
 - Pages left outside the taught range entirely, summarised as one finding with
   the reason: nothing links to them, so nothing moved them.
 
+### And the fix for it
+
+Finding out that a June lesson links to a page dated in November is only half
+an answer. `plan_sync_page_dates` / `sync_page_dates` are the other half:
+
+```
+sync_page_dates(course: "ICS3U", section: 1, classes: ["Unit 4, Day 5"])
+→ brings everything that class links to onto that class's date
+```
+
+Name classes to fix just those. Name none and every material is brought into
+line with the **earliest** class linking to it — the build's own rule, since a
+shared page belongs to the lesson that introduced it rather than the one that
+revisited it.
+
+This is deliberately separate from re-dating, and re-dating never does it on
+its own. A re-date shifts materials by a *delta*, preserving spacing the
+teacher meant; this flattens that spacing, so it only runs when asked for.
+
 ## A naming trap, written down so nobody rediscovers it
 
 **Never call `Path.GetFileNameWithoutExtension` on a wikilink target.**

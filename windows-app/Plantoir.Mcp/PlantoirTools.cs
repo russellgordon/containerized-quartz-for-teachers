@@ -296,6 +296,40 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         return Timetable.Parse(csv, block, year);
     }
 
+    [McpServerTool(Name = "plan_sync_page_dates", Title = "Plan bringing materials into date",
+                   ReadOnly = true, Destructive = false)]
+    [Description("Work out what bringing a lesson's materials into date with the lesson would do, WITHOUT changing " +
+                 "anything. This is the fix for the date problems the other tools report — when a class is dated in " +
+                 "June but the concept page it links to is dated in November, this brings the concept to the class. " +
+                 "Name classes to fix just those; name none to bring every page into line with the earliest class " +
+                 "that links to it. Always show the teacher the result before using sync_page_dates.")]
+    public string PlanSyncPageDates(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description("Class page titles whose linked pages should be brought into date. Leave empty for all.")]
+        string[]? classes = null)
+        => Guarded(() => workspace.PlanSyncDates(course, section, classes ?? Array.Empty<string>()).Describe() +
+                         "\n\nNothing has been changed. Show this to the teacher and ask before going ahead.");
+
+    [McpServerTool(Name = "sync_page_dates", Title = "Bring materials into date",
+                   Destructive = false, Idempotent = true)]
+    [Description("Set the date of the pages a class links to, to match that class. The course is backed up first, " +
+                 "automatically. Only call this after plan_sync_page_dates and after the teacher has agreed. " +
+                 "This changes dates only — nothing is published, and no page's visibility changes.")]
+    public string SyncPageDates(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description("Class page titles whose linked pages should be brought into date. Leave empty for all.")]
+        string[]? classes = null)
+        => Guarded(() =>
+        {
+            var plan = workspace.PlanSyncDates(course, section, classes ?? Array.Empty<string>());
+            var result = workspace.ApplySyncDates(plan);
+            return result.BackupPath is null
+                ? result.Message
+                : result.Message + "\n\nA backup was made first, so this can be undone from Plantoir’s Backups list.";
+        });
+
     // ---- Planning (changes nothing) --------------------------------------
 
     /// <summary>
