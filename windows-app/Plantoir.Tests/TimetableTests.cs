@@ -74,7 +74,8 @@ public class TimetableTests
     public void AnUnknownBlockIsRefusedAndTheRealOnesAreNamed()
     {
         var refusal = Assert.Throws<AssistRefusal>(() => Parse("Z"));
-        Assert.Equal("That timetable has no block “Z”. It has A, B, F.", refusal.Message);
+        // Not "block Z" — the label might be a period, a colour or a room.
+        Assert.Equal("That timetable has no “Z”. It has A, B, F.", refusal.Message);
     }
 
     [Fact]
@@ -89,6 +90,108 @@ public class TimetableTests
     {
         // Row 3 of the real sheet is a multi-line quoted instruction block.
         Assert.Equal(6, Parse().Meetings.Count);
+    }
+
+    // ---- Other schools, other sheets --------------------------------------
+
+    /// <summary>Every date style, written as the same three days.</summary>
+    [Theory]
+    [InlineData("Oct-13,Oct-14,Oct-16", "month name and day")]
+    [InlineData("13-Oct,14-Oct,16-Oct", "day and month name")]
+    [InlineData("October 13,October 14,October 16", "month name and day")]
+    [InlineData("2026-10-13,2026-10-14,2026-10-16", "year-month-day")]
+    [InlineData("10/13/2026,10/14/2026,10/16/2026", "month/day/year")]
+    [InlineData("13/10/2026,14/10/2026,16/10/2026", "day/month/year")]
+    [InlineData("Oct 13, 2026|Oct 14, 2026|Oct 16, 2026", "month name, day, year")]
+    [InlineData("13 October 2026|14 October 2026|16 October 2026", "day, month name, year")]
+    public void AnySensibleDateFormatIsRead(string dates, string expectedStyle)
+    {
+        var days = dates.Split(dates.Contains('|') ? '|' : ',');
+        string sheet = "P,\n" + string.Join("", days.Select((d, i) => $"\"{d}\",{i + 1}\n"));
+
+        var timetable = Timetable.Parse(sheet, "P", 2026);
+
+        Assert.Equal(expectedStyle, timetable.DateFormat);
+        Assert.Equal(new DateOnly(2026, 10, 13), timetable.Meetings[0].Date);
+        Assert.Equal(new DateOnly(2026, 10, 16), timetable.Meetings[2].Date);
+    }
+
+    [Fact]
+    public void AnAmbiguousNumericDateIsSettledByTheWholeColumn()
+    {
+        // "05/06" alone could be either. Read as month/day the column runs
+        // May → June → July; read as day/month it would run May → back to
+        // February, which needs a year rollover. Fewest rollovers wins.
+        var timetable = Timetable.Parse("P,\n05/06,1\n06/10,2\n07/02,3\n", "P", 2026);
+
+        Assert.Equal("month/day", timetable.DateFormat);
+        Assert.Equal(new DateOnly(2026, 5, 6), timetable.Meetings[0].Date);
+    }
+
+    [Fact]
+    public void ADayFirstColumnIsRecognisedFromAValueOverTwelve()
+    {
+        var timetable = Timetable.Parse("P,\n13/05,1\n20/05,2\n", "P", 2026);
+        Assert.Equal("day/month", timetable.DateFormat);
+        Assert.Equal(new DateOnly(2026, 5, 13), timetable.Meetings[0].Date);
+    }
+
+    [Theory]
+    [InlineData("Block F")]
+    [InlineData("Period 3")]
+    [InlineData("1A")]
+    [InlineData("Green")]
+    public void LabelsDoNotHaveToBeSingleLetters(string label)
+    {
+        string sheet = $"\"{label}\",\nOct-13,1\nOct-14,2\n";
+        Assert.Equal(2, Timetable.Parse(sheet, label, 2026).Meetings.Count);
+    }
+
+    [Fact]
+    public void ALabelMatchesWithOrWithoutTheWordBlock()
+    {
+        // A teacher says "F"; the sheet says "Block F". Same room.
+        string sheet = "Block F,\nOct-13,1\nOct-14,2\n";
+        Assert.Equal(2, Timetable.Parse(sheet, "F", 2026).Meetings.Count);
+        Assert.Equal(2, Timetable.Parse(sheet, "block f", 2026).Meetings.Count);
+    }
+
+    [Fact]
+    public void ASheetWithNoNumbersColumnStillWorks()
+    {
+        // Just dates under each label. Every dated row is a meeting, numbered
+        // in the order it appears.
+        var timetable = Timetable.Parse("A,B\nOct-13,Oct-14\nOct-20,Oct-21\n", "B", 2026);
+
+        Assert.Equal(2, timetable.Meetings.Count);
+        Assert.Equal(1, timetable.Meetings[0].Number);
+        Assert.Equal(new DateOnly(2026, 10, 14), timetable.Meetings[0].Date);
+        Assert.Empty(timetable.NonTeachingDays);
+    }
+
+    [Fact]
+    public void TheHeaderIsFoundBelowWhateverPreambleTheSheetCarries()
+    {
+        string sheet =
+            ",,\n" +
+            "St Somewhere Secondary — 2026/27 timetable,,\n" +
+            "\"Notes:\n- copy the column you need\",,\n" +
+            ",,\n" +
+            "Block A,,Block F\n" +
+            "Sep-8,1,Oct-13\n" +
+            "Sep-9,2,Oct-14\n";
+        var timetable = Timetable.Parse(sheet, "F", 2026);
+        Assert.Equal(2, timetable.Meetings.Count);
+    }
+
+    [Fact]
+    public void AColumnWrittenInsideOutIsRefusedRatherThanHalfRead()
+    {
+        // Mixed formats cannot be read reliably, and quietly dropping the rows
+        // that do not fit would produce a plausible, wrong timetable.
+        var refusal = Assert.Throws<AssistRefusal>(
+            () => Timetable.Parse("P,\nOct-13,1\n2026-10-14,2\n", "P", 2026));
+        Assert.Contains("aren’t all written the same way", refusal.Message);
     }
 
     // ---- The academic year -----------------------------------------------

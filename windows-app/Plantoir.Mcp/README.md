@@ -240,17 +240,49 @@ plan_re_date_classes(course: "ICS3U", section: 1, timetable: "…", block: "F")
 re_date_classes(...)
 ```
 
-The sheet's real shape: a header row of block letters, and under each letter a
-**pair** of columns — the date, then either the meeting number or a label for a
-day nobody teaches on (`MB`, `INT`, `Exam`, `Closing`). Numbered rows are
-classes; the rest are kept and reported, because a teacher planning a year
-wants to see where the exam sits.
+### Nothing about one school's sheet is assumed
 
-**Dates in these sheets carry no year** (`Oct-13` … `Jun-11`) and run across a
-year boundary. The academic year is taken from today — a school year is named
-for the calendar year it starts in and starts in late summer, so August 2026
-means 2026/2027 and March 2027 still does — and the year rolls forward the
-moment the month goes backwards. `startYear` overrides it.
+Every school writes these differently, so three things are worked out from the
+sheet rather than hard-coded. Verified against a real board timetable — all
+eight blocks, 54–56 meetings each, different ranges and different exam dates.
+
+**Which row is the header** is found by looking for a row whose cells sit
+directly above dates — it never reads the labels. So `A`…`H`, `Block F`,
+`Period 3`, `1A` and `Green` all work, and a sheet's title and instructions
+above the header are ignored. Labels are matched loosely too: a teacher saying
+"F" finds a column headed "Block F". Two rules keep it honest — a row
+containing dates can't be a header (or the last row of dates would look like
+one), and ties go to the *later* row, since preamble sits above the header and
+never below.
+
+**What the dates look like** is decided for the column as a whole, not cell by
+cell. All of these read:
+
+| | |
+|---|---|
+| `Oct-13`, `October 13` | month name and day |
+| `13-Oct`, `13 October 2026` | day first |
+| `2026-10-13` | ISO |
+| `10/13/2026` | month/day/year |
+| `13/10/2026` | day/month/year |
+
+A style only wins if **every** date in the column reads under it, which is what
+stops `05/06` being guessed at. Where two styles both fit, the one implying the
+fewest year rollovers wins — a school year crosses at most one new year, so an
+interpretation needing three is the wrong one. A column written inconsistently
+is refused rather than half-read, because quietly dropping the rows that don't
+fit would produce a plausible, wrong timetable.
+
+**Whether there is a meeting-number column at all.** With one, its numbers are
+used and non-numeric cells (`MB`, `INT`, `Exam`, `Closing`) become
+non-teaching days — kept and reported, because a teacher planning a year wants
+to see where the exam sits. Without one, every dated row is a meeting, numbered
+in order.
+
+**Dates with no year** (`Oct-13` … `Jun-11`) get the academic year from today:
+a school year is named for the calendar year it starts in and starts in late
+summer, so August 2026 means 2026/2027 and March 2027 still does. `startYear`
+overrides it. Dates that carry their own year are used as written.
 
 **The tool does not choose which lesson lands on which day.** Pass `pages` and
 `meetings` as matching lists to say. That choice depends on what is *in* each
