@@ -283,6 +283,84 @@ def append_mermaid_styles(base_scss_path: Path):
         print(f"⚠️ Error appending mermaid label styles: {e}")
 # --- END ADD ---
 
+
+# --- ADD: Let the right sidebar's two panels share the column ---
+def append_sidebar_sharing_styles(base_scss_path: Path):
+    """
+    Stop a long backlinks list from crowding out the table of contents.
+
+    The right sidebar holds "Navigate this page" above "When did we do
+    this?". A page linked from many others gave the backlinks list its
+    full natural height first, squeezing the table of contents down to a
+    line or two with a scrollbar — on the very pages where the contents
+    are most useful.
+
+    The rules below give each panel its own scrollbar and make them share
+    the column: the table of contents takes only the height it needs, up
+    to half, and the backlinks take whatever is left. So a short contents
+    list keeps the backlinks tucked directly beneath it, and when both are
+    long they land at roughly half each.
+
+    The cap is skipped when the contents are the only panel, so a page
+    nothing links to still uses the whole column. Specificity is kept
+    below Quartz's own `.toc:has(button.toc-header.collapsed)` rule, so
+    collapsing the contents still works.
+
+    Carries its own marker so existing course folders pick it up.
+    """
+    if not base_scss_path.exists():
+        print(f"⚠️ base.scss not found at {base_scss_path}")
+        return
+    try:
+        marker = "/* The right sidebar's two panels share the column */"
+        block = (
+            "\n\n"
+            f"{marker}\n"
+            "/* Not shrinkable: the contents keep the height they need,\n"
+            "   and the cap below is what stops them taking over. */\n"
+            ".right.sidebar > .toc {\n"
+            "  flex: 0 0 auto;\n"
+            "  min-height: 0;\n"
+            "  max-height: 100%;\n"
+            "}\n\n"
+            ".right.sidebar > .toc:not(:only-child) {\n"
+            "  max-height: 50%;\n"
+            "}\n\n"
+            ".right.sidebar > *:not(.toc) {\n"
+            "  flex: 1 1 auto;\n"
+            "  min-height: 0;\n"
+            "}\n\n"
+            ".right.sidebar .toc-content,\n"
+            ".right.sidebar .backlinks {\n"
+            "  flex: 1 1 auto;\n"
+            "  min-height: 0;\n"
+            "  max-height: 100%;\n"
+            "  overflow-y: auto;\n"
+            "}\n\n"
+            "/* The lists are the real scrollers: their parents are row\n"
+            "   flex containers, so the overflow happens one level in. */\n"
+            ".right.sidebar .toc-content > ul,\n"
+            ".right.sidebar .backlinks > ul {\n"
+            "  min-height: 0;\n"
+            "  max-height: 100%;\n"
+            "  overflow-y: auto;\n"
+            "}\n"
+        )
+
+        with open(base_scss_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        if marker in content:
+            print("ℹ️ Sidebar sharing styles already present in base.scss (no change).")
+            return
+
+        with open(base_scss_path, "w", encoding="utf-8") as f:
+            f.write(content + block)
+        print("✅ Appended sidebar sharing styles to base.scss")
+    except Exception as e:
+        print(f"⚠️ Error appending sidebar sharing styles: {e}")
+# --- END ADD ---
+
 # --- ADD: Patch ContentMeta.tsx date format ---
 def patch_date_format(date_tsx_file_path: Path):
     """Update formatDate in Date.tsx to show full weekday, month, and day."""
@@ -2520,6 +2598,7 @@ def build_section_site(
     # full rebuild, so a course folder created before these existed heals
     # itself the next time it is previewed. Both are idempotent and cheap.
     append_mermaid_styles(base_scss)
+    append_sidebar_sharing_styles(base_scss)
     mermaid_ts = output_dir / "quartz" / "components" / "scripts" / "mermaid.inline.ts"
     patch_mermaid_font_wait(mermaid_ts)
     patch_mermaid_pie_title_fit(mermaid_ts)
