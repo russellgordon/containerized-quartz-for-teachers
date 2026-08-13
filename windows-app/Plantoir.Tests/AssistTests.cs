@@ -226,6 +226,120 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Equal(3, plan.Pages.Count);
     }
 
+    // ---- A session locked to one course ----------------------------------
+
+    [Fact]
+    public void ALockedSessionCannotReachAnotherCourse()
+    {
+        // The request was about one course, so reaching another is never
+        // right. A lock holds however the conversation wanders; an
+        // instruction in a prompt does not.
+        AddCourse("SNC1W", "Science", 1);
+        var workspace = new AssistWorkspace(_folder, _launcher, lockedCourse: "ICS3U");
+
+        var refusal = Assert.Throws<AssistRefusal>(() => workspace.Course("SNC1W"));
+
+        Assert.Equal("This session is working on ICS3U only, so SNC1W can’t be reached from here. " +
+                     "Start again from SNC1W in Plantoir to work on that course.", refusal.Message);
+    }
+
+    [Fact]
+    public void ALockedSessionDoesNotEvenListTheOtherCourses()
+    {
+        AddCourse("SNC1W", "Science", 1);
+        var workspace = new AssistWorkspace(_folder, _launcher, lockedCourse: "ICS3U");
+        Assert.Equal("ICS3U", Assert.Single(workspace.Courses()).Code);
+    }
+
+    [Fact]
+    public void ALockedSessionStillWorksOnItsOwnCourse()
+    {
+        var workspace = new AssistWorkspace(_folder, _launcher, lockedCourse: "ics3u");
+        Assert.Equal("ICS3U", workspace.Course("ICS3U").Code);
+    }
+
+    [Fact]
+    public void LockingToACourseThatIsNotThereFailsAtStartupNotMidConversation()
+    {
+        var refusal = Assert.Throws<AssistRefusal>(
+            () => new AssistWorkspace(_folder, _launcher, lockedCourse: "NOPE1"));
+        Assert.Contains("There’s no course called “NOPE1”", refusal.Message);
+    }
+
+    // ---- Telling the app an assistant is at work --------------------------
+
+    [Fact]
+    public void ALeaseHeldByThisProcessIsNotAConflictWithItself()
+    {
+        using var lease = AssistLease.Take(_folder, "ICS3U");
+        Assert.False(AssistLease.IsAssisting(_folder, "ICS3U"));
+    }
+
+    [Fact]
+    public void ALeaseWhoseOwnerIsGoneIsNotALease()
+    {
+        // A killed session must not lock a course forever, and this needs no
+        // cleanup pass and no timeout to tune. Uses a real process that has
+        // really exited, so the test cannot pass by accident.
+        // The name is written from what it WAS, since a process that has
+        // exited will not tell you its name any more.
+        var child = StartAndStopAChild();
+        WriteLease("ICS3U", child.Id, "cmd");
+
+        Assert.False(AssistLease.IsAssisting(_folder, "ICS3U"));
+    }
+
+    [Fact]
+    public void AnAliveOwnerWithADifferentNameIsARecycledProcessIdNotASession()
+    {
+        // Process ids get reused. Comparing the name too stops whatever the
+        // operating system handed the number to next from holding a course.
+        // A live process is used, so only the name can decide it.
+        using var child = StartALongRunningChild();
+        try
+        {
+            WriteLease("ICS3U", child.Id, "definitely-not-that-program");
+            Assert.False(AssistLease.IsAssisting(_folder, "ICS3U"));
+
+            // …and the same live process WITH its real name does hold it.
+            WriteLease("ICS3U", child.Id, child.ProcessName);
+            Assert.True(AssistLease.IsAssisting(_folder, "ICS3U"));
+        }
+        finally { try { child.Kill(entireProcessTree: true); } catch { } }
+    }
+
+    private void WriteLease(string course, int pid, string name)
+    {
+        string directory = Path.Combine(_folder, "courses", ".internal", "assist");
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(Path.Combine(directory, course + ".lease"),
+            $"{pid}\n{name}\n2026-08-13T00:00:00Z\n");
+    }
+
+    private static System.Diagnostics.Process StartAndStopAChild()
+    {
+        var child = System.Diagnostics.Process.Start(
+            new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c exit")
+            { CreateNoWindow = true, UseShellExecute = false })!;
+        child.WaitForExit();
+        return child;
+    }
+
+    private static System.Diagnostics.Process StartALongRunningChild() =>
+        System.Diagnostics.Process.Start(
+            new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c pause")
+            { CreateNoWindow = true, UseShellExecute = false, RedirectStandardInput = true })!;
+
+    [Fact]
+    public void ReleasingALeaseRemovesIt()
+    {
+        var lease = AssistLease.Take(_folder, "ICS3U");
+        string path = Path.Combine(_folder, "courses", ".internal", "assist", "ICS3U.lease");
+        Assert.True(File.Exists(path));
+        lease.Dispose();
+        Assert.False(File.Exists(path));
+    }
+
     // ---- Pages that are never hidden -------------------------------------
 
     [Fact]

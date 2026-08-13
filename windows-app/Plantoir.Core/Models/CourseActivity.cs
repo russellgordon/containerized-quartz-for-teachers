@@ -49,6 +49,14 @@ public static class CourseActivity
     }
 
     /// <summary>
+    /// True when an assistant is working on this course in another process.
+    /// Unlike previews and publishes this is read from disk, because the MCP
+    /// server has its own memory and neither side can see the other's.
+    /// </summary>
+    public static bool IsAssisting(string folderPath, string courseCode) =>
+        Assist.AssistLease.IsAssisting(folderPath, courseCode);
+
+    /// <summary>
     /// The short line naming what stands in the way of structural work on
     /// this course, or null when it is free.
     /// </summary>
@@ -59,6 +67,9 @@ public static class CourseActivity
         if (previewing && publishing) return "Available once preview and publish complete";
         if (previewing) return "Available once preview completed";
         if (publishing) return "Available once publish completed";
+        // Said in the app's voice, naming the thing the teacher started rather
+        // than the process that holds the lease.
+        if (IsAssisting(folderPath, courseCode)) return "Available once you finish revising with Claude";
         return null;
     }
 

@@ -13,13 +13,17 @@ using Plantoir.Mcp;
 // could be pointed anywhere mid-session would make every path check meaningless.
 
 string? folder = null;
+string? course = null;
 for (int i = 0; i < args.Length; i++)
 {
     if ((args[i] == "--folder" || args[i] == "-f") && i + 1 < args.Length) folder = args[++i];
     else if (args[i].StartsWith("--folder=", StringComparison.Ordinal)) folder = args[i]["--folder=".Length..];
+    else if ((args[i] == "--course" || args[i] == "-c") && i + 1 < args.Length) course = args[++i];
+    else if (args[i].StartsWith("--course=", StringComparison.Ordinal)) course = args[i]["--course=".Length..];
 }
 
 folder ??= Environment.GetEnvironmentVariable("PLANTOIR_FOLDER");
+course ??= Environment.GetEnvironmentVariable("PLANTOIR_COURSE");
 
 if (string.IsNullOrWhiteSpace(folder))
 {
@@ -34,13 +38,26 @@ if (string.IsNullOrWhiteSpace(folder))
 AssistWorkspace workspace;
 try
 {
-    workspace = new AssistWorkspace(folder, new LauncherRunner());
+    // --course locks the session to one course. Plantoir passes it when a
+    // teacher starts an assistant from that course's menu: the request was
+    // about that course, so a lock is a stronger guarantee than an
+    // instruction in a prompt the model might drift from.
+    workspace = new AssistWorkspace(folder, new LauncherRunner(), course);
 }
 catch (Exception error)
 {
     await Console.Error.WriteLineAsync(error.Message);
     return 2;
 }
+
+// Tell the app this course is being worked on, so Preview, Publish and Add
+// Section decline while the session is open — otherwise both would build into
+// the same output folder. Only when locked to a course: an unrestricted
+// session has no single course to claim.
+IDisposable? lease = workspace.LockedCourse is { } locked
+    ? Plantoir.Core.Assist.AssistLease.Take(workspace.FolderPath, locked)
+    : null;
+AppDomain.CurrentDomain.ProcessExit += (_, _) => lease?.Dispose();
 
 var builder = Host.CreateApplicationBuilder();
 
@@ -54,5 +71,6 @@ builder.Services.AddMcpServer(options =>
     .WithStdioServerTransport()
     .WithToolsFromAssembly();
 
-await builder.Build().RunAsync();
+try { await builder.Build().RunAsync(); }
+finally { lease?.Dispose(); }
 return 0;

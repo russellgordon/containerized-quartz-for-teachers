@@ -33,22 +33,46 @@ public sealed class AssistWorkspace
 {
     private readonly string _folder;
     private readonly ILauncherRunner _launcher;
+    private readonly string? _lockedCourse;
 
-    public AssistWorkspace(string workspacePath, ILauncherRunner launcher)
+    /// <param name="lockedCourse">
+    /// When given, the session can see and touch this course and nothing else.
+    /// Plantoir uses it when a teacher starts an assistant from a particular
+    /// course's menu: the request was about that course, so reaching another
+    /// one is never right, and a lock is a stronger guarantee than an
+    /// instruction the model might drift from.
+    /// </param>
+    public AssistWorkspace(string workspacePath, ILauncherRunner launcher, string? lockedCourse = null)
     {
         _folder = Path.GetFullPath(workspacePath);
         _launcher = launcher;
+        _lockedCourse = string.IsNullOrWhiteSpace(lockedCourse) ? null : lockedCourse.Trim();
         if (Workspace.Classify(_folder) != WorkspaceState.Ready)
             throw new AssistRefusal(
                 $"“{_folder}” isn’t a Plantoir working folder — it has no {Workspace.MarkerLauncher}. " +
                 "Open the folder in Plantoir once to set it up.");
+
+        if (_lockedCourse is not null &&
+            !Workspace.DiscoverCourses(_folder).Any(
+                c => string.Equals(c.Code, _lockedCourse, StringComparison.OrdinalIgnoreCase)))
+            throw new AssistRefusal($"There’s no course called “{_lockedCourse}” in “{_folder}”.");
     }
 
     public string FolderPath => _folder;
 
+    /// <summary>The one course this session may touch, or null when unrestricted.</summary>
+    public string? LockedCourse => _lockedCourse;
+
     // ---- Looking things up ----------------------------------------------
 
-    public List<Course> Courses() => Workspace.DiscoverCourses(_folder);
+    public List<Course> Courses()
+    {
+        var courses = Workspace.DiscoverCourses(_folder);
+        if (_lockedCourse is null) return courses;
+        return courses
+            .Where(c => string.Equals(c.Code, _lockedCourse, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
 
     /// <summary>
     /// The course with this code, or a refusal naming the codes that do exist.
@@ -60,6 +84,14 @@ public sealed class AssistWorkspace
         var courses = Courses();
         var found = courses.FirstOrDefault(c => string.Equals(c.Code, wanted, StringComparison.OrdinalIgnoreCase));
         if (found is not null) return found;
+
+        // A locked session says WHY, rather than claiming the course does not
+        // exist. "There's no course called MCV4U" would be a lie the assistant
+        // would repeat to a teacher looking straight at it in the sidebar.
+        if (_lockedCourse is not null)
+            throw new AssistRefusal(
+                $"This session is working on {_lockedCourse} only, so {wanted} can’t be reached from here. " +
+                $"Start again from {wanted} in Plantoir to work on that course.");
 
         string known = courses.Count == 0
             ? "This working folder has no courses yet."

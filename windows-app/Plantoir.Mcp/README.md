@@ -56,6 +56,39 @@ Claude Code still has connected fails with "the process cannot access the file
 has to be restarted to pick up a new build anyway — servers are connected at
 startup.
 
+### From inside Plantoir
+
+Right-click a course → **Revise with Claude…**. Plantoir writes a session
+config to its own app-data folder and launches a terminal in the working
+folder with:
+
+```
+claude --mcp-config "<appdata>\Plantoir\assist\mcp-ICS3U.json" --strict-mcp-config "<greeting>"
+```
+
+Nothing global is touched: `--strict-mcp-config` loads only this server, so a
+teacher's own MCP servers are neither used nor disturbed, and nothing is left
+behind when the session ends. No `.mcp.json` lands in the vault Obsidian is
+watching.
+
+Three things make that safe to offer:
+
+- **The session is locked to the course it was started from** (`--course`).
+  Every other course becomes invisible — `list_courses` shows one — and naming
+  one is refused with the reason rather than "no such course", which would be a
+  lie about something the teacher can see in the sidebar. A lock holds however
+  the conversation wanders; an instruction in a prompt does not.
+- **The course is marked busy for the life of the session**, so Preview,
+  Publish and Add Section decline while it is open. Without that, an assistant
+  publishing a section and a teacher previewing it would both be building into
+  `.merged_output/section<N>/`, which the build clears before writing.
+- **The menu item only appears when Claude Code and the server are both
+  present.** A teacher who has neither is not offered a door onto an error.
+
+**Packaging note:** the item looks for `plantoir-mcp.exe` beside the app.
+`publish.ps1` builds `Plantoir.csproj` alone, so a release would need the
+server published into the same output for the menu item to appear.
+
 ### Pointing a client at it
 
 Claude Desktop (`claude_desktop_config.json`):

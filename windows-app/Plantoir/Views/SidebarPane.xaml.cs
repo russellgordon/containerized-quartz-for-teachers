@@ -394,6 +394,17 @@ public sealed partial class SidebarPane : UserControl
         menu.Items.Add(new MenuFlyoutSeparator());
         // Backing up stays available mid-preview — it only reads (row 106).
         menu.Items.Add(MenuItem("Back Up Now", RestoreGlyph, () => _ = BackUpCourse(course)));
+
+        // Only offered when Claude Code AND the tools it would use are both
+        // present. A teacher who has neither should not be shown a door that
+        // opens onto an error message about something they have never heard of.
+        MenuFlyoutItem? reviseItem = null;
+        if (ClaudeCodeLauncher.IsAvailable)
+        {
+            menu.Items.Add(new MenuFlyoutSeparator());
+            reviseItem = MenuItem("Revise with Claude…", AddSectionGlyph, () => ReviseWithClaude(course));
+            menu.Items.Add(reviseItem);
+        }
         // The staleness lesson from the mac (row 104): menu content is built
         // when the ROW renders, not when the teacher opens it — so the busy
         // state is read the moment the menu opens, never captured earlier.
@@ -404,11 +415,29 @@ public sealed partial class SidebarPane : UserControl
             addItem.IsEnabled = reason is null;
             busyNote.Text = reason ?? "";
             busyNote.Visibility = reason is null ? Visibility.Collapsed : Visibility.Visible;
+            // A second assistant on the same course would have both of them
+            // building into the one output folder.
+            if (reviseItem is not null) reviseItem.IsEnabled = reason is null;
         };
         menu.Items.Add(new MenuFlyoutSeparator());
         menu.Items.Add(MenuItem("Show in File Explorer", ExplorerGlyph, () => FolderActions.ShowInFileExplorer(course.DirectoryPath)));
         menu.Items.Add(MenuItem("Open in Terminal", TerminalGlyph, () => FolderActions.OpenTerminal(course.DirectoryPath)));
         return menu;
+    }
+
+    /// <summary>
+    /// Open a Claude Code session already connected to this course's Plantoir
+    /// tools. The teacher never sees a command line — everything the
+    /// connection needs is written for them and thrown away with the session.
+    /// </summary>
+    private void ReviseWithClaude(Course course)
+    {
+        if (Workspace.WorkspacePath is not { } folder) return;
+        if (ClaudeCodeLauncher.Open(folder, course.Code, course.Configuration.CourseName)) return;
+
+        _ = ShowError("Claude didn’t open",
+            $"Plantoir couldn’t start a Claude session for {course.Code}. " +
+            "If Claude Code was updated or moved recently, restarting Plantoir may be enough.");
     }
 
     private MenuFlyout BackupMenu(BackupItem item)
