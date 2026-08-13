@@ -207,6 +207,60 @@ skill `.claude/skills/example-content/` and checked by its
 - **Social cards** (entry 88): nothing to do — `scripts/social_card.py`
   runs inside the container on every build. Only caveat: the colour-emoji
   font path probed is Debian's; it is inside the image, not on Windows.
+- **The recipe hash is on the hot path** (entry 118) — and it was slow
+  on BOTH platforms, for the same reason in two dialects. The image tag
+  is a SHA-256 over every file in `.toolchain/`, and the recipe now
+  carries eighteen example-content payloads: **3,536 files**. The `.sh`
+  launchers spawned one `shasum` process per file (36s of a 36.75s
+  preview startup on an M4 Pro); they now pipe
+  `find -print0 | sort -z | xargs -0 shasum` and take 0.16s.
+  `Get-ToolchainHash` in the three `.ps1` launchers had the quadratic
+  version of the same bug: `$combined += (Get-FileHash …).Hash` inside
+  the loop, and PowerShell strings are immutable, so every one of 3,500
+  appends reallocated a string heading for 226 KB. They now collect into
+  `$hashes` and `-join` once.
+  **This change is committed but never executed — there is no PowerShell
+  on the Mac it was written on.** Please run it early and confirm two
+  things: that a preview still starts promptly, and that the tag it
+  prints is UNCHANGED from before the edit. The characters and their
+  order are meant to be identical, so the tag should be too; if it is
+  not, every Windows teacher takes one needless image rebuild.
+  Whatever else changes here, keep any per-file work out of a
+  per-invocation loop — this cost half a minute before every preview and
+  publish, and it grows with each payload added.
+
+## Fixed in shared code — nothing to port (entries 111–117)
+
+A run of rendering and content defects was found and fixed on the macOS
+side. All of it lives in shared Python or in the payloads, so Windows
+inherits it by rebuilding the image. Listed so you are not surprised by
+diffs, and so nobody re-fixes them:
+
+- **Mermaid diagram labels were hyphenated mid-word** ("Ca-reers"). Not
+  an engine bug: Quartz hyphenates body text and it leaked into diagram
+  labels. WebKit acts on it, Chromium ignores it — which is why the same
+  site looked right in Chrome and wrong in a preview.
+- **Mermaid measured labels before the code font loaded**, sizing every
+  box for the fallback so long labels were clipped. It now waits for
+  `document.fonts.ready` first. Google Fonts serves the code font with
+  `display=swap`, so this is a real race on any platform.
+- **Pie chart titles were clipped** — mermaid centres the title on the
+  pie, which the legend pushes leftward, and never widens the chart. The
+  viewBox is now re-fitted to what was drawn.
+- **A pie chart's first slice was drawn in the page background colour**
+  and vanished, legend swatch and all: mermaid takes `pie1` from
+  `primaryColor`, which Quartz sets to `--light`. The palette is now
+  solved per colour scheme at render time, and it must stay that way —
+  fractions tuned against one scheme failed 74 of the 86
+  scheme-and-mode combinations.
+- **The right sidebar's backlinks crowded out the table of contents** on
+  much-linked pages. They now share the column, each with its own
+  scrollbar.
+- **Payload rules now enforced by `lint_payload.py`**: class pages carry
+  no curriculum connection (those codes belong on the pages the agenda
+  links to), and no page stands on its own — every page must be reachable
+  from a class page within two hops, with Key Links not counting. Both
+  are in the example-content skill.
 
 ## Testing
 
