@@ -43,6 +43,7 @@ public sealed class PublishingChoiceView
     private readonly TextBlock _caption;
     private readonly TextBlock _cloudflareProblemText;
     private readonly TextBlock _cloudflareCaption;
+    private readonly TextBlock _cloudflareSizeNote;
     private readonly Window _pickerOwner;
     private bool _updatingFromModel;
 
@@ -111,8 +112,22 @@ public sealed class PublishingChoiceView
         _cloudflareProblemText = CautionLine("cloudflareAccountProblem");
         _cloudflareArea.Children.Add(_cloudflareProblemText);
         _cloudflareCaption = FormBuilders.ExampleCaption(
-            "Each section gets its own free site at yourproject.pages.dev. Sign in at dash.cloudflare.com and open Workers and Pages — the Account ID is shown on the right, and it’s also the long code in the address bar. You only enter it once. The first publish asks for an API token with the Cloudflare Pages permission. Individual files must stay under 25 MB, so a long video may need shortening.");
+            "Each section gets its own free site at yourproject.pages.dev. Sign in at dash.cloudflare.com and open Workers and Pages — the Account ID is shown on the right, and it’s also the long code in the address bar. You only enter it once. The first publish asks for an API token with the Cloudflare Pages permission.");
         _cloudflareArea.Children.Add(_cloudflareCaption);
+
+        // Stays on screen the whole time Cloudflare is chosen — it is a
+        // standing fact about the destination, not a mistake to correct, so
+        // it is worded as a heads-up and never hides the way the problem
+        // line does.
+        _cloudflareSizeNote = CautionLine("cloudflareSizeNote");
+        // The area's own visibility already hides this with everything else
+        // when another destination is chosen.
+        _cloudflareSizeNote.Visibility = Visibility.Visible;
+        _cloudflareSizeNote.Text =
+            "One thing to know: Cloudflare won’t accept any single file larger than 25 MB. " +
+            "Documents, images, and slide decks are almost always comfortably under that — a long video usually isn’t. " +
+            "Most teachers embed video from YouTube or Vimeo rather than uploading it, which avoids the limit entirely.";
+        _cloudflareArea.Children.Add(_cloudflareSizeNote);
         Root.Children.Add(_cloudflareArea);
 
         targetBox.SelectionChanged += (_, _) =>
