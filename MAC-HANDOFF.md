@@ -63,6 +63,21 @@ references are the durable pointers.)
   runner's `/bin/sh` invocation of `deploy.sh` inherits the environment
   Colima needs.
 
+  **A shared-launcher change rode along with this, and it is worth taking
+  even if the mac passes on everything else.** `preview.sh` and `deploy.sh`
+  used `docker exec -it` unconditionally. `-t` **refuses to start** when
+  stdin is not a terminal, so any non-interactive run — a script, CI, an
+  MCP server — died at that line, *after* several minutes of Docker build,
+  saying only "the input device is not a TTY". (`verify.sh:69-75` has
+  refused up front for this reason for ages; that guard is now
+  unnecessary.) Both scripts now ask for a terminal only when there is one
+  and run Python unbuffered when there is not, so progress still arrives
+  line by line instead of in one lump. **The interactive path is
+  byte-identical in behaviour**, so the mac GUI — which supplies a terminal
+  through `PseudoTerminal.swift` — is unaffected. Verified on Windows end
+  to end; the shell edit is the same two-line shape and wants a quick
+  confirmation on macOS.
+
   **Known gap, shared design needed.** The server cannot see the GUI's
   in-flight previews or publishes and vice versa — `CourseActivity` and
   `PreviewLeases` are in-process on both platforms. Overnight this is moot;

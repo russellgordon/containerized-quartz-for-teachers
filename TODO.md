@@ -146,3 +146,29 @@ an item when it ships (finished behaviour is recorded in
   daytime overlap could corrupt a build. A lease file under the working
   folder that both apps and the server honour — a shared-design item, so
   agree the file shape with the mac side first.
+
+- **A "prepare for start of year" operation, and the audit behind it** —
+  deferred 2026-08-13, from a real session on the `ai-assist` branch.
+
+  A teacher asked for "every class past Unit 1, Day 1, and everything those
+  link to, into draft". Applied exactly, that rule left **32 course-level
+  pages still published** that no class page links to at all — a whole
+  unit's concepts, plus unassigned tasks and portfolio pages. The teacher
+  spotted one (`Concepts/Astronomical Phenomena`, reachable only from an
+  investigation that is itself unreferenced) and the rest fell out of an
+  audit script.
+
+  **The lesson: link-reachability is a weak proxy for "not yet taught."** A
+  link-following rule cannot see a page no class links to, and those are
+  precisely the pages a teacher has written ahead. If Plantoir grows a bulk
+  start-of-year operation, base it on unit number, date, or an explicit
+  teacher-facing "not yet taught" flag — not on what is reachable.
+
+  The other half is worth building on its own: an **audit** that
+  cross-references every course-level page against every wikilink in every
+  class page and reports three groups — deliberately protected, unreachable
+  from any class, and linked-but-missed. The third group being empty is what
+  proved the job complete; the second is what proved the *rule* incomplete.
+  That is a read-only check the MCP server could offer directly, and it is
+  the sort of thing a teacher would want before a term starts regardless of
+  whether any AI is involved.
