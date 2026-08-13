@@ -1,0 +1,24 @@
+---
+title: Unit 2, Day 1
+draft: false
+created: __CREATED_CLASS_8__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. Warm-up: [[Predict the Output]]
+2. The problem of the day: [[The Hundred-Line Problem]] — no shortcuts
+   allowed, at first
+3. Compare and name it: [[Repetition]]
+4. Read and change: [[Looping Programs]]
+5. Log it in your [[Code Journal]]
+
+## Things to do before our next class
+
+- [ ] Rewrite this morning's hundred lines so they fit on three.
+- [ ] Journal: the exact moment copying and pasting stopped feeling
+      acceptable to you.
