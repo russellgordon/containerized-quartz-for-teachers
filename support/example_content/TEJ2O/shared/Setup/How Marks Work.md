@@ -14,7 +14,7 @@ and communication**, all inside your control.
 ## Where evidence comes from
 
 ```mermaid
-pie title Where evidence of your learning comes from
+pie title Where evidence comes from
     "Labs, projects, and tasks" : 45
     "Quizzes and check-ins" : 20
     "Dev Journal and reflection" : 20

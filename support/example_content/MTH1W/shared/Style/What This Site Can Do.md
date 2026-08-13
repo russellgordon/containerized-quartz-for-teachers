@@ -181,7 +181,7 @@ graph LR
 Proportions draw themselves too:
 
 ```mermaid
-pie title One month of a student budget
+pie title A student's monthly budget
     "Food" : 40
     "Transit" : 15
     "Saving" : 25

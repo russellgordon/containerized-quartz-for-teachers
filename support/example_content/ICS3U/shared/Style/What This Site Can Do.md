@@ -157,7 +157,7 @@ graph LR
 Proportions draw themselves too:
 
 ```mermaid
-pie title Where a working programmer's hours actually go
+pie title Where the hours actually go
     "Reading code" : 45
     "Debugging and testing" : 35
     "Writing new code" : 20

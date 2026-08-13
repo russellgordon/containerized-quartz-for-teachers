@@ -16,7 +16,7 @@ can follow is not a result. It is a number.
 ## Where evidence comes from
 
 ```mermaid
-pie title Where evidence of your learning comes from
+pie title Where evidence comes from
     "The Culminating Investigation" : 25
     "Tasks and performances" : 25
     "Quizzes and check-ins" : 20

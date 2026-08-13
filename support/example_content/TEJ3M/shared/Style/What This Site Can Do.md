@@ -184,7 +184,7 @@ graph LR
 Proportions draw themselves too:
 
 ```mermaid
-pie title Where a first build's bench time actually goes
+pie title Where bench time goes
     "Wiring it" : 25
     "Finding the one wrong wire" : 40
     "Measuring and checking" : 20

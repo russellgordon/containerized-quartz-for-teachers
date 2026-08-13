@@ -23,7 +23,7 @@ differently between cost, emissions, land, and reliability.
 | Natural gas | Substantial | Yes, and fast to start | Emits $\mathrm{CO_2}$ and methane leaks |
 
 ```mermaid
-pie title A typical Ontario generation mix
+pie title Ontario's generation mix
     "Nuclear" : 55
     "Hydro" : 24
     "Wind" : 9

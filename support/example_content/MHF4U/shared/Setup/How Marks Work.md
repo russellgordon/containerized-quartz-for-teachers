@@ -14,7 +14,7 @@ change in Grade 12, and it will not change in the course after this one.
 ## Where evidence comes from
 
 ```mermaid
-pie title Where evidence of your learning comes from
+pie title Where evidence comes from
     "Tasks and performances" : 40
     "Quizzes and check-ins" : 25
     "Math Journal and reflection" : 20

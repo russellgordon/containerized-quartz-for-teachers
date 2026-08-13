@@ -13,7 +13,7 @@ leaves a record.
 ## Where the evidence comes from
 
 ```mermaid
-pie title Where evidence of your learning comes from
+pie title Where evidence comes from
     "The Software Project" : 30
     "Code Journal and reflection" : 14
     "Quizzes and check-ins" : 12

@@ -248,7 +248,7 @@ boxes, which is roughly the point of drawing it.
 ### Proportions
 
 ```mermaid
-pie title How the term mark is put together
+pie title How the term mark is built
     "Thinking and investigation" : 30
     "Knowledge and understanding" : 25
     "Application" : 25

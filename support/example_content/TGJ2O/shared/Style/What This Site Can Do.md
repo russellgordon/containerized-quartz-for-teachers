@@ -170,7 +170,7 @@ graphics program, and the change shows up in a diff.
 ### Proportions
 
 ```mermaid
-pie title Where a story's time actually goes
+pie title Where a story's time goes
     "Reporting and interviews" : 35
     "Writing the draft" : 25
     "Editing and verification" : 25

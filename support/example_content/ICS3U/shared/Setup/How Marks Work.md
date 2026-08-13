@@ -15,7 +15,7 @@ your control.
 ## Where the evidence comes from
 
 ```mermaid
-pie title Where evidence of your learning comes from
+pie title Where evidence comes from
     "The Community App" : 30
     "The Toolbox" : 12
     "The Data Digest" : 10

@@ -12,7 +12,7 @@ and growth** — things entirely inside your control.
 ## Where evidence comes from
 
 ```mermaid
-pie title Where evidence of your learning comes from
+pie title Where evidence comes from
     "Performance tasks" : 40
     "Process in rehearsal" : 25
     "Drama Journal and written reflection" : 25

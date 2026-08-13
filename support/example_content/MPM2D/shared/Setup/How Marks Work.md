@@ -13,7 +13,7 @@ communication** — things entirely inside your control.
 ## Where evidence comes from
 
 ```mermaid
-pie title Where evidence of your learning comes from
+pie title Where evidence comes from
     "Tasks and performances" : 40
     "Quizzes and check-ins" : 25
     "Math Journal and reflection" : 20

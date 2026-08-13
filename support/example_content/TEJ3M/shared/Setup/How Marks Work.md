@@ -15,7 +15,7 @@ of which are inside your control.
 ## Where evidence comes from
 
 ```mermaid
-pie title Where evidence of your learning comes from
+pie title Where evidence comes from
     "Labs, tasks, and the capstone" : 45
     "Measurement and calculation checks" : 20
     "Tech Journal and reflection" : 20

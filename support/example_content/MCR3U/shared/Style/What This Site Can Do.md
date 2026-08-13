@@ -182,7 +182,7 @@ graph LR
 Proportions draw themselves too:
 
 ```mermaid
-pie title One month of a first paycheque
+pie title A first paycheque
     "Spending" : 55
     "Saving" : 20
     "Transit" : 15

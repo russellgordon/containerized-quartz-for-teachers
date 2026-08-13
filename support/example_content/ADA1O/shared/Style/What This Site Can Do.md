@@ -169,7 +169,7 @@ graphics program, and the change shows up in a diff.
 ### Proportions
 
 ```mermaid
-pie title Where rehearsal time actually goes
+pie title Where rehearsal time goes
     "Blocking and stage picture" : 30
     "Running lines and cues" : 30
     "Trying alternatives" : 25

@@ -16,7 +16,7 @@ communication** — all three of which are inside your control.
 ## Where evidence comes from
 
 ```mermaid
-pie title Where evidence of your learning comes from
+pie title Where evidence comes from
     "The capstone: design project and review" : 35
     "Unit tasks" : 25
     "Labs and design reviews" : 15

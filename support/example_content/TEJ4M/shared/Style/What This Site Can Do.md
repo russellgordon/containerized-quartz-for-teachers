@@ -214,7 +214,7 @@ graph LR
 Proportions draw themselves too:
 
 ```mermaid
-pie title Where capstone time actually goes
+pie title Where capstone time goes
     "Specifying and choosing parts" : 20
     "Building" : 20
     "Finding the one thing that is wrong" : 30

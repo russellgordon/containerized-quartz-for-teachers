@@ -240,7 +240,7 @@ roughly the point of drawing it.
 ### Proportions
 
 ```mermaid
-pie title Composition of dry air by volume
+pie title Dry air, by volume
     "Nitrogen" : 78
     "Oxygen" : 21
     "Argon" : 0.9

@@ -57,6 +57,15 @@ def lint(course_code: str) -> int:
                     f"move those codes to the pages its agenda links to"
                 )
 
+        # A mermaid pie title wider than ~450px is silently clipped on the
+        # left by mermaid's own layout. 28 characters is the safe budget.
+        for pie_title in re.findall(r"^pie(?: showData)? title (.+)$", text, re.M):
+            if len(pie_title.strip()) > 28:
+                problems.append(
+                    f"{rel}: pie title is {len(pie_title.strip())} characters — "
+                    f"mermaid clips past ~28: {pie_title.strip()!r}"
+                )
+
         if text.count("%%curriculum-start%%") != text.count("%%curriculum-end%%"):
             problems.append(f"{rel}: unbalanced curriculum markers")
 

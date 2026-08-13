@@ -162,7 +162,7 @@ graph LR
 Proportions draw themselves too:
 
 ```mermaid
-pie title Where the world's web traffic comes from
+pie title Where web traffic comes from
     "Phones" : 62
     "Laptops and desktops" : 36
     "Everything else" : 2
