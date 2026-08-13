@@ -1,8 +1,25 @@
 # Proposal: AI Automation for Plantoir via an MCP Server
 
-*From the Windows side, for consideration by the macOS side. Nothing here is
-built yet — this is a design to agree on (or push back on) before either side
-writes code.*
+*From the Windows side, for consideration by the macOS side.*
+
+> **Status, 2026-08-13.** Phase 1 **is now built**, on the `ai-assist` branch:
+> `windows-app/Plantoir.Mcp/` ([README](windows-app/Plantoir.Mcp/README.md)).
+> Not on `main`, not in 1.0.
+>
+> Two things changed from the design below, both because of measurements in
+> [`AI-ASSIST.md`](AI-ASSIST.md) taken after this was written:
+>
+> - **The tool surface is coarser.** `resolve_links` and `set_draft` are no
+>   longer separate tools. Given fine-grained tools, a small model skipped the
+>   link resolution 8 times out of 8; given one `publish_class` that resolves
+>   links itself, it was right 8 out of 8. Link resolution, the backup, the
+>   rebuild and the publish are now one operation.
+> - **Publishing and hiding are separate tools**, not one call with a flag,
+>   because the model inverted the polarity of a hide request. Every write also
+>   gained a `plan_` twin that changes nothing, so the teacher confirms first.
+>
+> The Phase 0 question below is still open and still the one that needs both
+> sides.
 
 ## The idea
 

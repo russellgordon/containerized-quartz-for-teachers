@@ -52,6 +52,11 @@ dotnet test  Plantoir.Tests/Plantoir.Tests.csproj
 Release packaging is separate — see
 [`windows-app/RELEASING.md`](windows-app/RELEASING.md).
 
+The solution also holds `PtyDriver` (the ConPTY host the app shells launchers
+through) and, **on the `ai-assist` branch only**, `Plantoir.Mcp` — a
+standalone MCP server that is not part of 1.0 and not built by the release.
+See [`windows-app/Plantoir.Mcp/README.md`](windows-app/Plantoir.Mcp/README.md).
+
 Two things that otherwise cost an afternoon:
 
 - **Stop any running copy before building.** A running app holds
@@ -241,6 +246,14 @@ before running UI tests — the test runner can't terminate it.
   (signing, bundling, the frozen asset names both platforms depend on).
 - [`TODO.md`](TODO.md) — deferred work and ideas, with the research
   already done so picking one up is cheap.
-- [`MCP-PROPOSAL.md`](MCP-PROPOSAL.md) — a design (nothing built) for
-  driving Plantoir from an AI assistant over MCP, awaiting a mac-side
-  opinion on whether one shared binary can serve both platforms.
+- [`MCP-PROPOSAL.md`](MCP-PROPOSAL.md) — the original design for driving
+  Plantoir from an AI assistant over MCP. Phase 1 of it is now built on the
+  `ai-assist` branch; the Phase 0 question (one shared .NET binary, or a
+  Swift implementation of the same contract?) still awaits a mac-side
+  opinion.
+- [`AI-ASSIST.md`](AI-ASSIST.md) — **on the `ai-assist` branch.** Whether a
+  small offline model embedded in the toolchain image could drive Plantoir
+  for a teacher with no AI account: measured memory, speed and reliability,
+  the failures that shape the design, and what was not tested.
+  [`windows-app/Plantoir.Mcp/README.md`](windows-app/Plantoir.Mcp/README.md)
+  is the server that came out of it. Neither is on `main` or in 1.0.

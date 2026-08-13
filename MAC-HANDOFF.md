@@ -12,6 +12,65 @@ references are the durable pointers.)
 
 ## To implement
 
+- **AI Assist — an MCP server, on the `ai-assist` branch** (Windows +
+  shared, 2026-08-13). Commits `c6b1381` (the feasibility investigation
+  and its evidence) and `b3b7fc0` (the server). **Nothing here is on
+  `main`, and none of it is in 1.0** — the branch exists so this can be
+  folded into a later release or dropped without touching the impending
+  release. Read [`AI-ASSIST.md`](AI-ASSIST.md) first for the measurements,
+  then [`windows-app/Plantoir.Mcp/README.md`](windows-app/Plantoir.Mcp/README.md)
+  for the tool surface and the reasoning behind its shape.
+
+  **What exists.** `plantoir-mcp`, a stdio MCP server over one working
+  folder, built on the official `ModelContextProtocol` 2.2.0 C# SDK. Eight
+  tools: four read-only, two planning tools that change nothing, and two
+  writes that back up first. Verified end to end over real JSON-RPC against
+  the sample course — including a publish that flipped `draftSection1`
+  while leaving `draftSection2` untouched, with the backup written first.
+  Plan logic is unit-tested against a fake launcher; the suite is at 200.
+
+  **The mac side inherits most of it.** The platform-neutral logic lives in
+  `Plantoir.Core` (`Assist/AssistWorkspace.cs`, `Assist/PublishPlan.cs`,
+  `Models/PageFrontmatter.cs`, `Models/PagePaths.cs`, `Models/WikiLinks.cs`)
+  and the launcher call is abstracted behind `ILauncherRunner`, which picks
+  `deploy.ps1` or `deploy.sh` by platform. The csproj already lists
+  `osx-arm64` and `osx-x64`. **In principle `dotnet publish -r osx-arm64`
+  is the entire mac port.**
+
+  **The Phase 0 question is still open, and it is yours.** Is the mac side
+  willing to ship a .NET-published binary beside (or inside) the app? If
+  yes, one implementation serves both platforms and every behaviour is
+  written and tested once. If no, `Plantoir.Mcp/README.md` is the spec a
+  Swift implementation should follow — but please keep the four safety
+  rules exactly, because each one is a measured failure and not a
+  preference:
+
+  1. *No destructive tool exists.* The model declined "delete the Unit 1
+     folder" because it had **no tool for it**, not from judgement.
+  2. *Publish and hide are separate tools, never one tool with a boolean.*
+     Asked to hide a page, the model called publish with "include linked"
+     set — on some runs and not others.
+  3. *Every named entity is validated against disk*, and a miss is a
+     refusal naming what does exist. Asked to "clean up my course", naming
+     no course, it invented `MCV4U`.
+  4. *Every write backs the course up first and has a `plan_` twin that
+     changes nothing.* Row 106 closing its own loop.
+
+  **Two things the mac side should sanity-check**, because they were
+  reasoned from shared code rather than tested on macOS: that
+  `Path.GetRelativePath`-based containment behaves as expected on a
+  case-insensitive-but-case-preserving APFS volume, and that the launcher
+  runner's `/bin/sh` invocation of `deploy.sh` inherits the environment
+  Colima needs.
+
+  **Known gap, shared design needed.** The server cannot see the GUI's
+  in-flight previews or publishes and vice versa — `CourseActivity` and
+  `PreviewLeases` are in-process on both platforms. Overnight this is moot;
+  daytime overlap could corrupt a build. The v2 answer is a lease file
+  under the working folder that both apps and the server honour, which
+  **both sides would have to adopt**. Worth agreeing on the file shape
+  before either side writes it.
+
 - **Cloudflare Pages as a third publishing destination** (Windows +
   shared, 2026-08-12). Commits `0306c98` (container side), `4575647`
   (account fallback), `e6611cc` (Windows UI). **The shared half is

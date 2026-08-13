@@ -1,9 +1,21 @@
 # AI Assist — feasibility investigation
 
-*Windows side, 2026-08-13, branch `ai-assist`. Nothing here is built. This is
-an evidence-gathering exercise into one question: can a **small offline model,
-embedded in Plantoir's own Docker image**, reliably drive Plantoir on behalf of
-a teacher who has no AI account, no API key, and no internet requirement?*
+*Windows side, 2026-08-13, branch `ai-assist`. An evidence-gathering exercise
+into one question: can a **small offline model, embedded in Plantoir's own
+Docker image**, reliably drive Plantoir on behalf of a teacher who has no AI
+account, no API key, and no internet requirement?*
+
+> **Status.** Step 1 of §6 — the MCP server, with no model in it — **is
+> built**, on this branch, in `windows-app/Plantoir.Mcp/` (see its
+> [README](windows-app/Plantoir.Mcp/README.md)). Steps 2–4 are not. None of
+> this is on `main` or in the 1.0 release; the branch exists so it can be
+> folded into a later release, or dropped, without disturbing that.
+>
+> Building it confirmed the §3 finding in a way worth recording: the tool
+> surface that fell out of "the model must not plan" is also *simpler* than
+> the fine-grained one it replaced, and the code that resolves links and
+> picks the right frontmatter key is ordinary, testable, boring code. The
+> reliability was not bought with complexity.
 
 **Short answer: yes — but only if the model is never allowed to think.** Every
 measurement below points the same way: a ~1.5B model is a reliable *router*
@@ -210,10 +222,13 @@ it — but that is their choice and their privacy trade, made explicitly.
 
 **Suggested shape, in order:**
 
-1. **Build the MCP server first, with no model at all.** It is useful
-   immediately for the bring-your-own-assistant path, it is testable with
-   ordinary code, and it forces the tool surface to be right. Coarse tools,
-   nothing destructive, everything validated.
+1. ~~**Build the MCP server first, with no model at all.**~~ **Done** —
+   `windows-app/Plantoir.Mcp/`, commit `b3b7fc0`. Useful immediately for the
+   bring-your-own-assistant path, testable with ordinary code, and it forced
+   the tool surface to be right. Coarse tools, nothing destructive,
+   everything validated. Publishing and hiding ended up as *separate tools*
+   rather than one tool with a polarity flag — the §4 inversion made that
+   choice for us.
 2. **Add confirm-before-write in the app** — the proposal panel, in Plantoir's
    plain-words voice, with a backup taken first.
 3. **Only then embed the model**, opt-in, downloaded on first use.
