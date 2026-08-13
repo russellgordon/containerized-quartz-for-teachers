@@ -269,6 +269,21 @@ public class ReDateTests : IDisposable
     }
 
     [Fact]
+    public void TheResultCountsClassesAndTheirMaterialsSeparately()
+    {
+        // "Moved 91 classes" when 26 classes and 65 materials moved is a
+        // sentence a teacher would rightly query.
+        Class("Unit 1, Day 1", "2026-09-08", "Concept: [[Variables]]");
+        Material("Concepts/Variables.md", "2026-09-08");
+        var workspace = Open();
+
+        var result = workspace.ApplyReDate(
+            workspace.PlanReDate("ICS3U", 1, Block(), new[] { "Unit 1, Day 1" }, new[] { 1 }));
+
+        Assert.StartsWith("Moved 1 class and 1 linked page onto block F", result.Message);
+    }
+
+    [Fact]
     public void ApplyingLeavesEveryOtherFrontmatterLineAlone()
     {
         Class("Unit 1, Day 1", "2026-09-08");

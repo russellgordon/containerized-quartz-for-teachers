@@ -778,7 +778,10 @@ public sealed class AssistWorkspace
         }
 
         string tail = SiblingTimeAndOffset(course, section, ClassPages(course, section));
-        int moved = 0;
+        var classPaths = new HashSet<string>(
+            plan.Dates.Select(d => d.RelativePath), StringComparer.OrdinalIgnoreCase);
+        int classes = 0, materials = 0;
+
         foreach (var date in plan.Changing)
         {
             string full = PagePaths.ResolveInside(_folder, date.RelativePath);
@@ -786,12 +789,18 @@ public sealed class AssistWorkspace
                 File.ReadAllText(full), date.FrontmatterKey, date.New, tail);
             if (!changed) continue;
             File.WriteAllText(full, updated);
-            moved++;
+            if (classPaths.Contains(date.RelativePath)) classes++; else materials++;
         }
 
+        // Counted apart, because "moved 91 classes" when 26 classes and 65
+        // materials moved is a sentence a teacher would rightly query.
+        string what = $"Moved {classes} class{(classes == 1 ? "" : "es")}";
+        if (materials > 0)
+            what += $" and {materials} linked page{(materials == 1 ? "" : "s")}";
+
         return new AssistResult(true,
-            $"Moved {moved} class{(moved == 1 ? "" : "es")} onto block {plan.Block} in " +
-            $"{course.Code} Section {section}. Nothing was published — preview or publish the section when ready.",
+            $"{what} onto block {plan.Block} in {course.Code} Section {section}. " +
+            "Nothing was published — preview or publish the section when ready.",
             backup);
     }
 
