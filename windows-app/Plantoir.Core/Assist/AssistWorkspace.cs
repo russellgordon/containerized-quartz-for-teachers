@@ -995,7 +995,11 @@ public sealed class AssistWorkspace
             Reference = reference,
             NonTeachingDays = timetable.NonTeachingDays,
             UnusedMeetings = Math.Max(0, timetable.Meetings.Count - chosen.Count),
-            Problems = ProblemsAfter(course, section, dates.Concat(materials).ToList(), tail),
+            // Every date this plan would set, including the year-round pages —
+            // auditing without them warns about pages the same plan is about
+            // to fix, which reads as a fault in the plan itself.
+            Problems = ProblemsAfter(course, section,
+                dates.Concat(materials).Concat(reference).ToList(), tail),
         };
     }
 
