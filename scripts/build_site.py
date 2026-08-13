@@ -1598,7 +1598,7 @@ def patch_mermaid_font_wait(mermaid_ts_path: Path):
         print(f"⚠️ mermaid.inline.ts not found at {mermaid_ts_path}")
         return
     try:
-        marker = "await document.fonts.ready"
+        marker = "document.fonts.load"
         with open(mermaid_ts_path, "r", encoding="utf-8") as f:
             content = f.read()
 
@@ -1618,8 +1618,24 @@ def patch_mermaid_font_wait(mermaid_ts_path: Path):
             "    // narrower fallback and size every box too small for the\n"
             "    // text that finally renders in it.\n"
             "    if (document.fonts) {\n"
+            "      // document.fonts.ready only settles the loads already PENDING.\n"
+            "      // If nothing on the page has demanded the code font yet, it\n"
+            "      // resolves at once and mermaid measures the fallback anyway —\n"
+            "      // so ask for the font first, in the weights a diagram uses.\n"
+            "      const codeFamily = (computedStyleMap[\"--codeFont\"] || \"\").split(\",\")[0].trim()\n"
+            "      if (codeFamily) {\n"
+            "        try {\n"
+            "          await Promise.all([\n"
+            "            document.fonts.load(`400 16px ${codeFamily}`),\n"
+            "            document.fonts.load(`700 16px ${codeFamily}`),\n"
+            "          ])\n"
+            "        } catch (error) {\n"
+            "          // A font that will not load is not worth failing over.\n"
+            "        }\n"
+            "      }\n"
             "      await document.fonts.ready\n"
-            "    }\n\n"
+            "    }\n"
+            "\n"
             + target
         )
         content = content.replace(target, replacement, 1)
