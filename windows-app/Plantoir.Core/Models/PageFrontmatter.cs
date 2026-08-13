@@ -61,6 +61,33 @@ public static class PageFrontmatter
         Block.Parse(pageText)?.BoolValue(key);
 
     /// <summary>
+    /// The key carrying this page's date, following the same rule as the draft
+    /// key: one section's page has a plain <c>created:</c>, a page shared
+    /// across sections has one <c>createdSection&lt;N&gt;:</c> per section.
+    /// </summary>
+    public static string CreatedKeyFor(int sectionNumber, bool isSectionLocal) =>
+        isSectionLocal ? "created" : "createdSection" + sectionNumber;
+
+    /// <summary>
+    /// The calendar date this page is scheduled for in this section, or null
+    /// when it has none.
+    ///
+    /// The stored value carries a time and a UTC offset
+    /// (<c>2026-09-08T07:00:00.000-0400</c>), but a teacher asking for
+    /// "classes from September 15th" means the calendar date as written, so
+    /// the date is taken in the page's OWN offset. Converting to local time
+    /// first would move an early-morning class onto the previous day for
+    /// anyone east of the school.
+    /// </summary>
+    public static DateOnly? CreatedOn(string pageText, int sectionNumber, bool isSectionLocal)
+    {
+        var block = Block.Parse(pageText);
+        if (block is null) return null;
+        return block.DateValue(CreatedKeyFor(sectionNumber, isSectionLocal))
+            ?? block.DateValue("created");   // fall back to a plain date if the page carries one
+    }
+
+    /// <summary>
     /// The page text with <paramref name="key"/> set to
     /// <paramref name="draft"/>, and a note of what that changed.
     ///
@@ -192,6 +219,26 @@ public static class PageFrontmatter
             if (value.Equals("true", StringComparison.OrdinalIgnoreCase)) return true;
             if (value.Equals("false", StringComparison.OrdinalIgnoreCase)) return false;
             return null;   // a non-boolean draft value is not ours to interpret
+        }
+
+        /// <summary>
+        /// A date value, read in the offset the page itself states. Quoting is
+        /// tolerated because YAML writers vary; anything unparseable is null
+        /// rather than a guess.
+        /// </summary>
+        public DateOnly? DateValue(string key)
+        {
+            if (IndexOf(key) is not { } at) return null;
+            string line = Strip(Lines[at]);
+            string value = line[(line.IndexOf(':') + 1)..].Trim().Trim('"', '\'');
+            if (value.Length == 0) return null;
+            if (DateTimeOffset.TryParse(value, System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out var stamp))
+                return DateOnly.FromDateTime(stamp.Date);
+            if (DateOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out var plain))
+                return plain;
+            return null;
         }
 
         public string Rebuild(List<string> lines, string newline)

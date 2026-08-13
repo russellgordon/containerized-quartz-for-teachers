@@ -117,33 +117,63 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     // ---- Planning (changes nothing) --------------------------------------
 
+    /// <summary>
+    /// Dates arrive as plain strings and are parsed here, once, so a bad date
+    /// is a sentence rather than a schema error — and so the comparison itself
+    /// is never something the assistant does.
+    /// </summary>
+    private const string DateHelp =
+        "A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.";
+
     [McpServerTool(Name = "plan_publish_pages", Title = "Plan publishing pages", ReadOnly = true, Destructive = false)]
-    [Description("Work out exactly what publishing these pages would do, WITHOUT changing anything. " +
+    [Description("Work out exactly what publishing pages would do, WITHOUT changing anything. " +
                  "Always call this before publish_pages and show the teacher the result. " +
-                 "Accepts any pages — class pages, concepts, exercises, anything — and can follow their links for you, " +
-                 "so you never need to work out which pages are linked.")]
+                 "Choose pages by name, or by date with onOrAfter/before — \"every class from September 15th\" is one " +
+                 "call, and the dates are compared for you. Accepts any page, not just class pages, and can follow " +
+                 "their links, so you never need to work out which pages are linked.")]
     public string PlanPublishPages(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
-        [Description("The page titles, for example [\"Unit 2, Day 3\"]. Pass several to plan them as one change.")]
-        string[] pages,
         [Description("True to also publish every page these pages link to. Choose deliberately; there is no default.")]
-        bool includeLinked)
-        => Guarded(() => Render(workspace.PlanPublish(course, section, pages, includeLinked, draft: false)));
+        bool includeLinked,
+        [Description("The page titles, for example [\"Unit 2, Day 3\"]. May be empty if you give dates instead.")]
+        string[]? pages = null,
+        [Description("Only classes on or after this date. " + DateHelp)] string onOrAfter = "",
+        [Description("Only classes strictly before this date. " + DateHelp)] string before = "")
+        => Plan(course, section, pages, includeLinked, draft: false, onOrAfter, before);
 
     [McpServerTool(Name = "plan_hide_pages", Title = "Plan hiding pages", ReadOnly = true, Destructive = false)]
-    [Description("Work out exactly what hiding these pages from students would do, WITHOUT changing anything. " +
+    [Description("Work out exactly what hiding pages from students would do, WITHOUT changing anything. " +
                  "Always call this before hide_pages and show the teacher the result. " +
-                 "Note that a page linked from a class you are hiding may also be linked from one that must stay up — " +
-                 "check the list before agreeing to it.")]
+                 "Choose pages by name, or by date with onOrAfter/before — \"hide everything from next Monday on\" is " +
+                 "one call. Note that a page linked from a class you are hiding may also be linked from one that must " +
+                 "stay up; the plan lists every page, so check it before agreeing.")]
     public string PlanHidePages(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
-        [Description("The page titles, for example [\"Unit 2, Day 3\"]. Pass several to plan them as one change.")]
-        string[] pages,
         [Description("True to also hide every page these pages link to. Choose deliberately; there is no default.")]
-        bool includeLinked)
-        => Guarded(() => Render(workspace.PlanPublish(course, section, pages, includeLinked, draft: true)));
+        bool includeLinked,
+        [Description("The page titles, for example [\"Unit 2, Day 3\"]. May be empty if you give dates instead.")]
+        string[]? pages = null,
+        [Description("Only classes on or after this date. " + DateHelp)] string onOrAfter = "",
+        [Description("Only classes strictly before this date. " + DateHelp)] string before = "")
+        => Plan(course, section, pages, includeLinked, draft: true, onOrAfter, before);
+
+    private string Plan(string course, int section, string[]? pages, bool includeLinked,
+                        bool draft, string onOrAfter, string before)
+        => Guarded(() => Render(workspace.PlanPublish(
+            course, section, pages ?? Array.Empty<string>(), includeLinked, draft,
+            publishes: true, onOrAfter: ParseDate(onOrAfter, "onOrAfter"), before: ParseDate(before, "before"))));
+
+    private static DateOnly? ParseDate(string raw, string which)
+    {
+        string value = raw.Trim();
+        if (value.Length == 0) return null;
+        if (DateOnly.TryParse(value, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var date))
+            return date;
+        throw new AssistRefusal($"“{raw}” isn’t a date {which} can use. Give it as YYYY-MM-DD, for example 2026-09-15.");
+    }
 
     // ---- Acting ----------------------------------------------------------
 
@@ -156,12 +186,16 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     public Task<string> PublishPages(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
-        [Description("The page titles to publish.")] string[] pages,
         [Description("True to also publish every page these pages link to.")] bool includeLinked,
         IProgress<ProgressNotificationValue> progress,
         CancellationToken cancellation,
+        [Description("The page titles to publish. May be empty if you give dates instead.")]
+        string[]? pages = null,
+        [Description("Only classes on or after this date. " + DateHelp)] string onOrAfter = "",
+        [Description("Only classes strictly before this date. " + DateHelp)] string before = "",
         [Description("False to change the pages but not republish the website yet.")] bool republish = true)
-        => Act(course, section, pages, includeLinked, draft: false, republish, progress, cancellation);
+        => Act(course, section, pages, includeLinked, draft: false, republish, onOrAfter, before,
+               progress, cancellation);
 
     [McpServerTool(Name = "hide_pages", Title = "Hide pages", Destructive = false, Idempotent = true)]
     [Description("Hide pages from students, optionally along with every page they link to, then republish the " +
@@ -172,12 +206,16 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     public Task<string> HidePages(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
-        [Description("The page titles to hide.")] string[] pages,
         [Description("True to also hide every page these pages link to.")] bool includeLinked,
         IProgress<ProgressNotificationValue> progress,
         CancellationToken cancellation,
+        [Description("The page titles to hide. May be empty if you give dates instead.")]
+        string[]? pages = null,
+        [Description("Only classes on or after this date. " + DateHelp)] string onOrAfter = "",
+        [Description("Only classes strictly before this date. " + DateHelp)] string before = "",
         [Description("False to change the pages but not republish the website yet.")] bool republish = true)
-        => Act(course, section, pages, includeLinked, draft: true, republish, progress, cancellation);
+        => Act(course, section, pages, includeLinked, draft: true, republish, onOrAfter, before,
+               progress, cancellation);
 
     [McpServerTool(Name = "republish_section", Title = "Republish a section", Destructive = false, Idempotent = true)]
     [Description("Rebuild and republish a section's website without changing any page. " +
@@ -209,14 +247,16 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     // ---- Shared ----------------------------------------------------------
 
-    private async Task<string> Act(string course, int section, string[] pages, bool includeLinked,
-                                   bool draft, bool republish,
+    private async Task<string> Act(string course, int section, string[]? pages, bool includeLinked,
+                                   bool draft, bool republish, string onOrAfter, string before,
                                    IProgress<ProgressNotificationValue> progress,
                                    CancellationToken cancellation)
     {
         try
         {
-            var plan = workspace.PlanPublish(course, section, pages, includeLinked, draft, republish);
+            var plan = workspace.PlanPublish(
+                course, section, pages ?? Array.Empty<string>(), includeLinked, draft, republish,
+                ParseDate(onOrAfter, "onOrAfter"), ParseDate(before, "before"));
             if (plan.ChangesNothing && !republish) return plan.Describe();
 
             var result = await workspace.Apply(plan, Relay(progress), cancellation);

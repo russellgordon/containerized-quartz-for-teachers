@@ -85,6 +85,53 @@ public sealed class AssistWorkspace
             .Select(Relative).ToList();
 
     /// <summary>
+    /// The section's CLASS pages — the ones that are days of teaching, in date
+    /// order.
+    ///
+    /// "Class page" is read from the course's own configuration rather than
+    /// guessed: it is a page inside one of the course's
+    /// <c>per_section_folders</c> (typically "All Classes"), and never an
+    /// <c>index.md</c>.
+    ///
+    /// Both exclusions matter, and the second is the dangerous one. A section's
+    /// <c>index.md</c>, its folder indexes and its Key Links page all carry the
+    /// SAME date as the first class — so "every class from September 8th"
+    /// filtered naively on dates alone would hide the site's own front page.
+    /// </summary>
+    public List<string> ClassPages(Course course, int sectionNumber)
+    {
+        var folders = course.Configuration.PerSectionFolders;
+        var pages = new List<(DateOnly? Date, string Path)>();
+
+        foreach (string folder in folders)
+        {
+            string root = Path.Combine(course.SectionDirectory(sectionNumber), folder);
+            if (!Directory.Exists(root)) continue;
+            foreach (string page in PagePaths.MarkdownPages(root, sectionNumber))
+            {
+                if (string.Equals(Path.GetFileName(page), "index.md", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                pages.Add((DateOf(course, sectionNumber, page), page));
+            }
+        }
+
+        // Dated pages first, in date order; undated ones keep name order after.
+        return pages
+            .OrderBy(p => p.Date is null)
+            .ThenBy(p => p.Date ?? default)
+            .ThenBy(p => p.Path, StringComparer.OrdinalIgnoreCase)
+            .Select(p => p.Path)
+            .ToList();
+    }
+
+    private static DateOnly? DateOf(Course course, int sectionNumber, string pagePath)
+    {
+        bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, pagePath);
+        try { return PageFrontmatter.CreatedOn(File.ReadAllText(pagePath), sectionNumber, sectionLocal); }
+        catch { return null; }
+    }
+
+    /// <summary>
     /// The single page with this title, or a refusal. A title matching several
     /// files is never resolved by picking one — publishing the wrong page is
     /// exactly the failure this whole design is built to avoid.
@@ -141,12 +188,17 @@ public sealed class AssistWorkspace
     /// </summary>
     public PublishPlan PlanPublish(
         string courseCode, int sectionNumber, IReadOnlyList<string> pageTitles,
-        bool includeLinked, bool draft = false, bool publishes = true)
+        bool includeLinked, bool draft = false, bool publishes = true,
+        DateOnly? onOrAfter = null, DateOnly? before = null)
     {
         var course = Course(courseCode);
         int section = Section(course, sectionNumber);
 
-        if (pageTitles.Count == 0) throw new AssistRefusal("No page was named.");
+        if (pageTitles.Count == 0 && onOrAfter is null && before is null)
+            throw new AssistRefusal("No page was named, and no dates were given to choose classes by.");
+        if (onOrAfter is { } from && before is { } until && until <= from)
+            throw new AssistRefusal(
+                $"No class can be on or after {from:yyyy-MM-dd} and also before {until:yyyy-MM-dd}.");
 
         var problems = new List<string>();
         var pages = new List<PlannedPage>();
@@ -163,6 +215,28 @@ public sealed class AssistWorkspace
             if (!seen.Add(Path.GetFullPath(path))) continue;   // the same page named twice
             namedPaths.Add(path);
             pages.Add(Plan(course, section, path, draft, viaLink: false));
+        }
+
+        // Dates choose classes IN CODE. A teacher's "every class from the 15th
+        // onwards" is a comparison, and comparisons are exactly what a model
+        // should never be doing on a teacher's behalf — the whole design moves
+        // that work here.
+        if (onOrAfter is not null || before is not null)
+        {
+            var matched = 0;
+            foreach (string path in ClassPages(course, section))
+            {
+                var date = DateOf(course, section, path);
+                if (date is null) continue;                     // undated: never swept up by a date rule
+                if (onOrAfter is { } start && date < start) continue;
+                if (before is { } end && date >= end) continue;
+                matched++;
+                if (!seen.Add(Path.GetFullPath(path))) continue;
+                namedPaths.Add(path);
+                pages.Add(Plan(course, section, path, draft, viaLink: false));
+            }
+            if (matched == 0)
+                problems.Add($"No class in {course.Code} Section {section} falls in that date range.");
         }
 
         if (includeLinked)
@@ -209,7 +283,8 @@ public sealed class AssistWorkspace
             FrontmatterKey: key,
             CurrentValue: PageFrontmatter.StoredValue(text, key),
             Draft: draft,
-            ViaLink: viaLink);
+            ViaLink: viaLink,
+            Date: PageFrontmatter.CreatedOn(text, section, sectionLocal));
     }
 
     /// <summary>

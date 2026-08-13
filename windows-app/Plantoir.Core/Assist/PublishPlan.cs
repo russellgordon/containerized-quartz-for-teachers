@@ -74,6 +74,16 @@ public sealed class PublishPlan
         var named = Named.ToList();
         var linked = Linked.ToList();
 
+        // A date range that matched nothing selects no pages at all. Saying
+        // "hide 0 pages ... all 0 pages are already hidden" is arithmetic
+        // pretending to be a sentence; the problem line says what happened.
+        if (Pages.Count == 0)
+        {
+            lines.Add($"No pages were selected in {CourseCode} Section {SectionNumber}, so there is nothing to do.");
+            foreach (string problem in Problems) lines.Add("• " + problem);
+            return string.Join("\n", lines);
+        }
+
         string subject = named.Count == 1
             ? $"“{named[0].Title}”"
             : $"{named.Count} pages";
@@ -125,7 +135,8 @@ public sealed record PlannedPage(
     string FrontmatterKey,
     bool? CurrentValue,
     bool Draft,
-    bool ViaLink)
+    bool ViaLink,
+    DateOnly? Date = null)
 {
     /// <summary>False when the page already carries the wanted value.</summary>
     public bool WillChange => CurrentValue != Draft;
@@ -141,7 +152,14 @@ public sealed record PlannedPage(
     /// it. Showing the key makes the two schemas impossible to miss.
     /// </summary>
     public string Transition =>
-        $"{RelativePath}  ({FrontmatterKey}: {Show(CurrentValue)} → {Show(Draft)})";
+        $"{RelativePath}  ({When}{FrontmatterKey}: {Show(CurrentValue)} → {Show(Draft)})";
+
+    /// <summary>
+    /// The class's date, when it has one. A batch chosen BY date has to be
+    /// checkable by date — a list of paths alone gives the teacher no way to
+    /// see that the range caught what they meant.
+    /// </summary>
+    private string When => Date is { } date ? $"{date:yyyy-MM-dd}, " : "";
 
     private static string Show(bool? value) =>
         value is null ? "not set" : value.Value ? "true" : "false";

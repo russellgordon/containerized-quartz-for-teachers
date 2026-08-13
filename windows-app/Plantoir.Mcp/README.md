@@ -113,6 +113,45 @@ the earlier one-class-page-at-a-time surface could not serve:
 default to `true` for publishing and `false` for hiding, which is defensible
 but was nowhere written down; a caller has to decide.
 
+### Choosing classes by date
+
+The plan and write tools take `onOrAfter` and `before` (`YYYY-MM-DD`) instead
+of, or as well as, a list of page titles. So
+
+> Hide every class from September 9th onwards, and everything they link to.
+
+is **one call**, and the whole start-of-year task collapses into it:
+
+```
+plan_hide_pages(course="EXC2O", section=1, includeLinked=true, onOrAfter="2026-09-09")
+→ Hide 25 pages in EXC2O Section 1, and the 60 pages they link to.
+```
+
+This is the same principle as coarse tools generally: a date comparison is
+deterministic, so it belongs in code. Asking an assistant to read 27 class
+pages and work out which fall after a date is precisely the "planning" the
+measurements say it gets wrong.
+
+**Two rules keep it safe, and both matter:**
+
+- **"Class page" is read from the course's own `per_section_folders`**, and
+  never an `index.md`. It is *not* "any page with a date". A section's
+  `index.md`, its folder indexes and its `Key Links.md` all carry the **same
+  date as the first class** — a naive date filter would hide the site's front
+  door for a request that only mentioned classes.
+- **An undated page is never swept up by a date rule.** If a rule cannot see
+  a page, it must not act on it.
+
+`before` is exclusive, so `onOrAfter="2026-09-01", before="2026-10-01"` is
+September. A range that can match nothing (`before` on or earlier than
+`onOrAfter`) is refused rather than silently returning an empty plan, and a
+range that simply matches no class says so.
+
+Note that date selection picks **classes**. Concepts, exercises and the rest
+come along through `includeLinked`, or by being named — they have their own
+`createdSection<N>` dates, but those are set by the build from the first class
+that links to them, so filtering on them would be filtering on a shadow.
+
 ---
 
 ## Why the surface looks like this

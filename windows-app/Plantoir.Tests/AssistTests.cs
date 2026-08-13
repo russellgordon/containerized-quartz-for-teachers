@@ -226,6 +226,112 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Equal(3, plan.Pages.Count);
     }
 
+    // ---- Choosing classes by date ----------------------------------------
+
+    [Fact]
+    public void ClassesCanBeChosenByDateRatherThanNamed()
+    {
+        // "Every class from the 15th onwards" is a comparison, and comparisons
+        // are what the model must never be doing on a teacher's behalf.
+        Class("ICS3U", "Unit 1, Day 1", "2026-09-08");
+        Class("ICS3U", "Unit 1, Day 2", "2026-09-09");
+        Class("ICS3U", "Unit 1, Day 3", "2026-09-15");
+        Class("ICS3U", "Unit 1, Day 4", "2026-09-16");
+
+        var plan = Open().PlanPublish("ICS3U", 1, Array.Empty<string>(),
+            includeLinked: false, draft: true, onOrAfter: new DateOnly(2026, 9, 15));
+
+        Assert.Equal(new[] { "Unit 1, Day 3", "Unit 1, Day 4" },
+            plan.Named.Select(p => p.Title));
+    }
+
+    [Fact]
+    public void ADateRangeExcludesItsEndDate()
+    {
+        Class("ICS3U", "Unit 1, Day 1", "2026-09-08");
+        Class("ICS3U", "Unit 1, Day 2", "2026-09-15");
+
+        var plan = Open().PlanPublish("ICS3U", 1, Array.Empty<string>(),
+            includeLinked: false, draft: true, before: new DateOnly(2026, 9, 15));
+
+        Assert.Equal("Unit 1, Day 1", Assert.Single(plan.Named).Title);
+    }
+
+    [Fact]
+    public void ADateRuleNeverSweepsUpTheSectionsOwnIndexPages()
+    {
+        // The dangerous case, and the reason "class page" is read from
+        // per_section_folders rather than from dates alone: a section's
+        // index.md, its folder index and its Key Links page all carry the SAME
+        // date as the first class. Hiding them takes down the site's front
+        // door for a request that only mentioned classes.
+        Class("ICS3U", "Unit 1, Day 1", "2026-09-08");
+        Dated("ICS3U", "section1/index.md", "2026-09-08");
+        Dated("ICS3U", "section1/All Classes/index.md", "2026-09-08");
+        Dated("ICS3U", "section1/Key Links.md", "2026-09-08");
+
+        var plan = Open().PlanPublish("ICS3U", 1, Array.Empty<string>(),
+            includeLinked: false, draft: true, onOrAfter: new DateOnly(2026, 9, 1));
+
+        Assert.Equal("Unit 1, Day 1", Assert.Single(plan.Named).Title);
+        Assert.DoesNotContain(plan.Pages, p => p.RelativePath.EndsWith("index.md", StringComparison.Ordinal));
+        Assert.DoesNotContain(plan.Pages, p => p.RelativePath.EndsWith("Key Links.md", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void AnUndatedClassIsNeverSweptUpByADateRule()
+    {
+        Class("ICS3U", "Unit 1, Day 1", "2026-09-08");
+        Page("ICS3U", "section1/All Classes/Scratch.md", draft: false);   // no date at all
+
+        var plan = Open().PlanPublish("ICS3U", 1, Array.Empty<string>(),
+            includeLinked: false, draft: true, onOrAfter: new DateOnly(2026, 1, 1));
+
+        Assert.Equal("Unit 1, Day 1", Assert.Single(plan.Named).Title);
+    }
+
+    [Fact]
+    public void ADateRangeMatchingNothingSaysSoRatherThanPlanningAnEmptyChange()
+    {
+        Class("ICS3U", "Unit 1, Day 1", "2026-09-08");
+
+        var plan = Open().PlanPublish("ICS3U", 1, Array.Empty<string>(),
+            includeLinked: false, draft: true, onOrAfter: new DateOnly(2027, 1, 1));
+
+        Assert.Contains("No class in ICS3U Section 1 falls in that date range.", plan.Problems);
+        // And it says that rather than "hide 0 pages … all 0 are already hidden".
+        Assert.StartsWith("No pages were selected in ICS3U Section 1, so there is nothing to do.",
+            plan.Describe());
+        Assert.True(plan.ChangesNothing);
+    }
+
+    [Fact]
+    public void AnImpossibleDateRangeIsRefusedRatherThanSilentlyEmpty()
+    {
+        Class("ICS3U", "Unit 1, Day 1", "2026-09-08");
+        var refusal = Assert.Throws<AssistRefusal>(() => Open().PlanPublish("ICS3U", 1,
+            Array.Empty<string>(), includeLinked: false, draft: true,
+            onOrAfter: new DateOnly(2026, 10, 1), before: new DateOnly(2026, 9, 1)));
+        Assert.Equal("No class can be on or after 2026-10-01 and also before 2026-09-01.", refusal.Message);
+    }
+
+    [Fact]
+    public void NamingNothingAndGivingNoDatesIsRefused()
+    {
+        var refusal = Assert.Throws<AssistRefusal>(() => Open().PlanPublish("ICS3U", 1,
+            Array.Empty<string>(), includeLinked: false));
+        Assert.Equal("No page was named, and no dates were given to choose classes by.", refusal.Message);
+    }
+
+    [Fact]
+    public void ThePlanShowsEachClassesDateSoADateRangeCanBeChecked()
+    {
+        Class("ICS3U", "Unit 1, Day 2", "2026-09-09");
+        var plan = Open().PlanPublish("ICS3U", 1, Array.Empty<string>(),
+            includeLinked: false, draft: true, onOrAfter: new DateOnly(2026, 9, 1));
+        Assert.Contains("(2026-09-09, draft: false → true)", plan.Describe());
+    }
+
     [Fact]
     public async Task RepublishingRunsTheLaunchersAndChangesNoContent()
     {
@@ -378,9 +484,24 @@ public class AssistWorkspaceTests : IDisposable
               "course_name": "{{name}}",
               "deploy_target": "{{deployTarget}}",
               "num_sections": {{sections.Length}},
+              "per_section_folders": ["All Classes"],
+              "per_section_files": ["Key Links.md"],
               "section_numbers": [{{string.Join(", ", sections)}}]
             }
             """);
+    }
+
+    /// <summary>A class page: inside the per-section folder, with a date.</summary>
+    private void Class(string course, string title, string date) =>
+        Dated(course, $"section1/All Classes/{title}.md", date);
+
+    private void Dated(string course, string relative, string date)
+    {
+        string full = Path.Combine(_folder, "courses", course,
+            relative.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+        File.WriteAllText(full,
+            $"---\ndraft: false\ncreated: {date}T07:00:00.000-0400\n---\nBody.\n");
     }
 
     private void Page(string course, string relative, bool? draft = null,
