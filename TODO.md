@@ -106,3 +106,43 @@ an item when it ships (finished behaviour is recorded in
   are all in flight at once, so stopping and handing off needs a real
   design pass rather than a stop-and-wait bolted onto `startDeploy`. Not
   urgent.
+
+- **AI Assist — the rest of it**, deferred 2026-08-13, all on the
+  `ai-assist` branch, none of it in 1.0. Step 1 (the MCP server) **is
+  built** — see [`AI-ASSIST.md`](AI-ASSIST.md) for the measurements and
+  [`windows-app/Plantoir.Mcp/README.md`](windows-app/Plantoir.Mcp/README.md)
+  for what shipped. What remains, in the order the evidence suggests:
+
+  **(a) A confirmation panel in the app.** The server already produces the
+  proposal — `plan_publish_class` returns a plain-words sentence naming
+  every file that would change. Nothing renders it yet. This is the piece
+  that makes the whole feature safe, because the one dangerous failure
+  measured was polarity inversion (a *hide* request answered with a
+  publish), and a teacher reading one sentence catches it where no test
+  can. Needed before any in-app assistant, not before the
+  bring-your-own-assistant path, which already confirms in the client.
+
+  **(b) The embedded model, opt-in.** Qwen2.5-1.5B-Instruct Q4_K_M on
+  llama.cpp with `--no-mmap` — 1.08 GB resident, 2–6 s a warm request,
+  100% routing across 27 trials. Roughly 1 GB downloaded on first use plus
+  a CPU-only llama.cpp build; nothing ships in the base image. The budget
+  is tight and fixed: macOS pins Colima at `--memory 4` regardless of host
+  RAM, so both platforms have about 4 GB, and AI Assist and a site build
+  must take turns. Offline-only is the recommendation, and not as a
+  compromise — course material can name students, which makes sending it
+  to a third-party API an MFIPPA question no feature is worth.
+
+  **(c) The CSV reschedule.** Deliberately last. The routing works; the
+  tool does not exist. The hard part is parsing a teacher's real CSV and
+  rewriting links without breaking the schedule invariant in
+  `DEVELOPERS.md` (class pages' links *are* the schedule). Design it to
+  accept a *well-formed* CSV and show a diff table before it writes — if
+  the CSV is messy enough that the model has to interpret it, that is
+  planning, and the measurements say planning is where it fails.
+
+  **(d) The shared activity lease.** The server cannot see the GUI's
+  in-flight previews or publishes and vice versa; `CourseActivity` and
+  `PreviewLeases` are in-process on both platforms. Overnight this is moot,
+  daytime overlap could corrupt a build. A lease file under the working
+  folder that both apps and the server honour — a shared-design item, so
+  agree the file shape with the mac side first.

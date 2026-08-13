@@ -12,8 +12,9 @@ otherwise.
 |---|---|
 | `Plantoir/` | The WinUI 3 app (unpackaged, self-contained Windows App SDK, PerMonitorV2 DPI). Bundles the full toolchain recipe under `Toolchain/` and mirrors it into each working folder's `.toolchain/`. |
 | `Plantoir.Core/` | All logic, UI-free: config round-trip, container naming, port leases, build freshness, archiver/restorer, section adder, ConPTY process, transcript builder, script runner, milestones, question parsing, failure explainer, catalogs, workspace/toolchain services. |
-| `Plantoir.Tests/` | xUnit suite (154 tests) that runs **without Docker**: `dotnet test`. Classes touching process-wide state (preview leases, the publish registry) share a serialized collection — see `SharedActivityState`. |
+| `Plantoir.Tests/` | xUnit suite (200 tests) that runs **without Docker**: `dotnet test`. Classes touching process-wide state (preview leases, the publish registry) share a serialized collection — see `SharedActivityState`. |
 | `PtyDriver/` | Console harness that drives the launchers under a ConPTY with scripted prompt replies — how the E2E runs below were performed. |
+| `Plantoir.Mcp/` | **`ai-assist` branch only, not in 1.0.** A standalone MCP server exposing one working folder to an AI assistant. Not built by `publish.ps1`, which targets `Plantoir.csproj` alone. See [its README](Plantoir.Mcp/README.md). |
 
 ## Proven end to end
 
