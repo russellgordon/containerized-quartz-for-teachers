@@ -1,0 +1,204 @@
+---
+title: The Reaction Prediction
+draft: false
+created: __CREATED__
+enableToc: true
+tags:
+  - chemistry
+  - task
+---
+Somewhere within a few hours of here, a reaction you can now write down
+is running at a scale of tonnes per hour. It is making something people
+need. It is also producing something nobody asked for, and somebody
+whose house is nearby has an opinion about that.
+
+Your job is to take one such process apart into equations, work out what
+the chemistry actually predicts, and then say — with the equations in
+front of you — how well the industry's answer to the unwanted product
+works.
+
+## The situation
+
+Industrial chemistry is not school chemistry made bigger. The reactions
+are the same and the constraints are completely different: cost,
+continuous operation, what to do with a by-product you produce a
+thousand tonnes of, and a community that lives with the result.
+
+You are writing for **people who are not chemists but are affected**. A
+community newsletter, a public meeting, a briefing for a municipal
+council considering a permit, a submission from a student group. Name
+your audience on the first line, because who is reading changes what
+belongs in the piece.
+
+Processes that work well for this task, all of them real and all of them
+documented by the companies and the agencies that regulate them:
+
+- **Pulp and paper.** The chemical recovery cycle, and what leaves in
+  the effluent and the stack.
+- **Smelting and roasting sulfide ores.** Sulfur dioxide, what it does
+  when it meets water, and what a smelter does with it.
+- **Drinking water treatment.** Coagulation, disinfection, and the
+  trade-off between killing pathogens and forming by-products.
+- **Lime and cement production.** A decomposition reaction that releases
+  carbon dioxide from the rock itself, before any fuel is burned.
+- **Fertiliser manufacture**, and what happens to nitrogen compounds
+  that leave a field.
+- **Mine drainage neutralisation**, where an acid is treated with a base
+  at enormous scale.
+- **Flue gas treatment**, where a gas is removed from a stack by
+  reacting it with something cheap.
+- **Metal recycling or electroplating**, and the solutions left over.
+
+You may propose a different process. Bring it early — some come back for
+a redesign, because a process with no accessible documentation makes for
+a task you cannot complete honestly.
+
+## What you have to work out
+
+**The chemistry, written properly.** At least **four balanced
+equations** covering the main reaction and the treatment of a
+by-product. States included. Every formula correct — a briefing note
+with a wrong formula in it loses the reader who knows and misleads the
+one who does not.
+
+**A prediction section, which is the assessed thinking.** I will give
+each of you two reactions related to your process, with the reactants
+and **no products**. You predict the products, justify the prediction
+from the type of reaction, and say **what test would confirm it**. This
+is the part that cannot be researched, and it is worth the most.
+
+> [!example]- The prediction patterns you should be able to apply
+> These are the ones that come up constantly in industrial contexts,
+> and each is a **synthesis** or a **decomposition** whose products
+> follow from the pattern rather than from memory.
+>
+> **A metal oxide plus water gives a base.**
+> $\text{CaO} + \text{H}_2\text{O} \rightarrow \text{Ca(OH)}_2$ — the
+> solution turns an indicator toward the basic end, which is the result
+> you got from magnesium oxide in [[Oxides and Neutralisation]].
+>
+> **A non-metal oxide plus water gives an acid.**
+> $\text{SO}_2 + \text{H}_2\text{O} \rightarrow \text{H}_2\text{SO}_3$,
+> and with further oxidation
+> $2\text{SO}_2 + \text{O}_2 \rightarrow 2\text{SO}_3$ followed by
+> $\text{SO}_3 + \text{H}_2\text{O} \rightarrow \text{H}_2\text{SO}_4$.
+> This chain is why a sulfur-bearing stack gas is an acidification
+> problem downwind and not merely a smell.
+>
+> **A metal carbonate decomposes on strong heating to the oxide and
+> carbon dioxide.**
+> $\text{CaCO}_3 \rightarrow \text{CaO} + \text{CO}_2$ — worth noticing
+> that this carbon dioxide comes out of the **rock**, so it is emitted
+> even if the kiln is heated by something carbon-free.
+>
+> **Acid plus base gives a salt and water.**
+> $\text{Ca(OH)}_2 + \text{H}_2\text{SO}_4 \rightarrow \text{CaSO}_4 + 2\text{H}_2\text{O}$
+> — this is how acidic drainage is treated at scale, and the reason the
+> base chosen is usually a cheap calcium compound.
+>
+> **A gas can be removed by reacting it with a cheap solid.**
+> $\text{CaCO}_3 + \text{SO}_2 \rightarrow \text{CaSO}_3 + \text{CO}_2$,
+> and then $2\text{CaSO}_3 + \text{O}_2 \rightarrow 2\text{CaSO}_4$.
+> One unwanted gas has been turned into a solid — and into a different
+> gas. Whether that is a good trade is exactly the kind of judgement
+> this task is asking for.
+>
+> Apply the pattern, then check the formula you have written is a real
+> compound with sensible charges. A prediction that produces
+> $\text{Ca}_2\text{OH}$ has gone wrong at the charge-balance step, not
+> at the pattern step.
+
+**An assessment of how well the solution works.** Not whether the
+process is good or bad. Whether the **chemical answer to the by-product
+problem** actually addresses it, and what it costs:
+
+- What does the treatment remove, and how completely?
+- What does it produce instead, and where does that go?
+- What does it cost — in energy, in reagent, in a solid that now has to
+  be stored somewhere?
+- What would happen if it were not done at all?
+
+A treatment that converts a gas into a solid has not made the material
+disappear. It has moved the problem into a different form, and often a
+much better one. Say which, and say why you think so.
+
+## What to hand in
+
+**A briefing note of two to three pages**, addressed to your named
+audience, containing:
+
+1. **What the process makes and why anybody wants it.** Start here.
+   Writing about an industry as though its product were unnecessary is
+   the fastest way to lose a reader who works there.
+2. **The chemistry**, in plain language, with the equations in an
+   appendix rather than in the middle of a sentence.
+3. **The by-product problem**, quantified where you can find a
+   traceable figure and described qualitatively where you cannot.
+4. **The treatment**, and your assessment of how effective it is.
+5. **What you would want to know that you could not find out.** This
+   section is short and it is marked.
+
+**An equations appendix**, one page: every equation balanced, with
+states, and one line each on what it is doing in the process.
+
+**Your prediction section**, one page: the two reactions I gave you,
+your predicted products, the reaction type that justifies each
+prediction, and the test that would confirm it.
+
+**Sources**, cited in the format in [[Writing About Chemistry]]. Three
+at minimum, of the right kinds: a government or regulatory agency, a
+company's own published environmental or technical documentation, a
+professional or standards body, a peer-reviewed article. Every figure
+traceable to something a reader can open.
+
+> [!warning] On numbers you cannot verify
+> Industrial emission and production figures are published, and they are
+> also widely repeated at second hand with the units mangled. If you
+> cannot find the figure at its source, **write that you could not**.
+> That sentence is worth more than a number you cannot defend, and it
+> is the only version of this task that is honest. Never invent a
+> figure, a study, or an organisation to fill a gap in a paragraph.
+> See [[What Counts as Evidence]].
+
+## How it will be judged
+
+| What I am looking for | Level 3 sounds like | Level 4 sounds like |
+| --- | --- | --- |
+| The equations | Balanced, correct formulas, states included | Balanced, and each one is placed where it explains something the reader needed |
+| Predicting products | Correct products for the given reactions | Correct, justified by reaction type, **and** a specific confirming test named |
+| Understanding the process | Describes what happens accurately | Explains **why** the process is arranged that way, including the constraints |
+| The by-product problem | Identified, with a source | Quantified where possible, and the limits of the figure stated |
+| Assessing the treatment | Says whether it works | Says how completely, what it produces instead, and what it costs |
+| Audience | Written clearly | Written so that the named audience could act on it, without talking down |
+| Sources | Three appropriate sources | Sources matched to the claims they support, with their limits noted |
+| Honesty | Notes an uncertainty | Names what could not be found out and how that weakens the conclusion |
+
+## What sinks an otherwise good briefing
+
+- **An unbalanced equation.** It undermines everything else on the page,
+  because a reader who spots it has no way to know what else is wrong.
+- **Treating the industry as the villain or the hero.** Both are
+  positions taken before the evidence, and both read as such.
+- **A by-product figure with no unit or no time base.** "Emits 4000" is
+  not a quantity. Tonnes per year? Kilograms per tonne of product?
+- **Confusing removal with elimination.** Scrubbing a gas produces a
+  solid that has to go somewhere, and a briefing that stops at "the gas
+  is removed" has told half the story.
+- **A prediction copied from the research rather than derived.** The
+  prediction section exists precisely because it cannot be looked up.
+  Show the reaction type and let the products follow.
+- **A recommendation with no cost in it.** Everything costs somebody
+  something, and naming it is what separates advice from opinion.
+
+Wider context and the discussion this connects to:
+[[Chemistry at Industrial Scale]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[C1.1]]
+
+![[C1.2]]
+
+![[C2.4]]
+%%curriculum-end%%

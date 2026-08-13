@@ -1,0 +1,26 @@
+---
+title: Unit 3, Day 1
+draft: false
+created: __CREATED_CLASS_11__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-3
+---
+A paperclip, a balance, and a question nobody can finish today: how many
+atoms is that? We leave it unsolved on purpose.
+
+## Agenda
+
+1. Estimate the atoms in one paperclip — any method, defended out loud
+2. Post the estimates; they will span several orders of magnitude
+3. What every method needed and none had — a bridge from mass to count
+4. Weigh a stack of paper to get the mass of one sheet — same trick, smaller
+5. Name it: [[Significant Figures and Units]] — how much of a number you keep
+6. Practise: [[Significant Figures in Practice]] on your own measurements
+
+## Things to do before our next class
+
+- [ ] [[Significant Figures in Practice]] — the first two sets.
+- [ ] Journal: your paperclip estimate, and what you would need to do better.

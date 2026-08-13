@@ -101,6 +101,15 @@ concentration of a solution — each one is a mass or a volume converted
 into a count, put through a balanced equation, and converted back.
 
 Get comfortable with the conversions in [[Mole Conversions Practice]]
-until they stop being a procedure you look up. Then [[Molar Mass]]
-handles compounds rather than elements, and [[Stoichiometry]] puts the
+until they stop being a procedure you look up. Then
+[[Molar Mass and Composition]] handles compounds rather than elements,
+and [[Stoichiometry]] puts the
 count through the equation, which is where this is all going.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D3.1]]
+
+![[D3.2]]
+%%curriculum-end%%
