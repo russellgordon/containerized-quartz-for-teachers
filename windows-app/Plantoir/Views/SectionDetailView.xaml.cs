@@ -69,14 +69,26 @@ public sealed partial class SectionDetailView : UserControl
         ForwardButton.IsEnabled = previewShown && Preview.CanGoForward;
         ReloadButton.IsEnabled = previewShown;
         BrowserButton.IsEnabled = previewShown;
-        DeployButton.IsEnabled = !IsBusy;
+
+        // An assistant working on this course holds the build output, so
+        // neither building nor publishing can go ahead. This is the courtesy
+        // half — the click itself is checked too, because a session can start
+        // while these buttons are already on screen.
+        bool assisted = _window.Workspace.WorkspacePath is { } folder &&
+                        CourseActivity.IsAssisting(folder, _course.Code);
+        DeployButton.IsEnabled = !IsBusy && !assisted;
+        if (assisted)
+            ToolTipService.SetToolTip(DeployButton, $"Available once you finish revising {_course.Code} with Claude");
 
         bool running = _previewRunner.IsRunning;
         PreviewLabel.Text = running ? "Stop Preview" : "Preview";
         PreviewIcon.Glyph = running ? Glyphs.Stop : Glyphs.Play;
         ToolTipService.SetToolTip(PreviewButton,
-            running ? "Stop previewing this section" : "Preview this section's website");
-        PreviewButton.IsEnabled = running || !IsBusy;
+            running ? "Stop previewing this section"
+            : assisted ? $"Available once you finish revising {_course.Code} with Claude"
+            : "Preview this section's website");
+        // Stopping a preview already under way is always allowed.
+        PreviewButton.IsEnabled = running || (!IsBusy && !assisted);
 
         // Which task owns the console: the running one, else the most recent.
         // Bind ONCE per runner (in the constructor) and only swap which is
@@ -112,9 +124,42 @@ public sealed partial class SectionDetailView : UserControl
     /// <summary>Smoke-test entry: the same path the Deploy button takes.</summary>
     public void StartDeployForAutomation() => Deploy_Click(this, new RoutedEventArgs());
 
+    /// <summary>
+    /// Refuse to start a build while an assistant is working on this course.
+    ///
+    /// Checked at the CLICK, not just when the buttons were last drawn: a
+    /// session can start at any moment from the sidebar, and the chrome only
+    /// redraws when a runner or the browser says something. The disabled
+    /// button is the courtesy; this is the guarantee.
+    ///
+    /// Both would otherwise build into
+    /// <c>.merged_output/section&lt;N&gt;/</c>, which the build clears before
+    /// writing — so the loser serves a half-written site, or publishes files
+    /// the other just deleted.
+    /// </summary>
+    private async Task<bool> AnAssistantHasThisCourse()
+    {
+        if (_window.Workspace.WorkspacePath is not { } folder) return false;
+        if (!CourseActivity.IsAssisting(folder, _course.Code)) return false;
+
+        var dialog = new ContentDialog
+        {
+            Title = $"{_course.Code} is being revised with Claude",
+            Content = "Building this section now would clash with what Claude is doing — " +
+                      "both write to the same place. Finish in the Claude window, close it, " +
+                      "then try again.",
+            CloseButtonText = "OK",
+            XamlRoot = XamlRoot,
+        };
+        await dialog.ShowAsync();
+        RefreshChrome();
+        return true;
+    }
+
     private async void PreviewOrStop_Click(object sender, RoutedEventArgs e)
     {
         if (_previewRunner.IsRunning) { StopPreview(); return; }
+        if (await AnAssistantHasThisCourse()) return;
         if (_window.Workspace.WorkspacePath is not { } workspacePath) return;
 
         try
@@ -252,7 +297,9 @@ public sealed partial class SectionDetailView : UserControl
 
     private async void Deploy_Click(object sender, RoutedEventArgs e)
     {
-        if (IsBusy || _window.Workspace.WorkspacePath is not { } workspacePath) return;
+        if (IsBusy) return;
+        if (await AnAssistantHasThisCourse()) return;
+        if (_window.Workspace.WorkspacePath is not { } workspacePath) return;
 
         // Folder publishing (rows 101–102): the save gate keeps the folder
         // valid, but a hand-edited config could still slip a bad one in —

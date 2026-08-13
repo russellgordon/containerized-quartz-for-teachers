@@ -331,6 +331,25 @@ public class AssistWorkspaceTests : IDisposable
             { CreateNoWindow = true, UseShellExecute = false, RedirectStandardInput = true })!;
 
     [Fact]
+    public void AnAssistantOnOneCourseLeavesEveryOtherCourseFree()
+    {
+        // The whole point of a per-course lease: a teacher revising ICS3U with
+        // Claude can still preview and publish everything else.
+        AddCourse("SNC1W", "Science", 1);
+        using var child = StartALongRunningChild();
+        try
+        {
+            WriteLease("ICS3U", child.Id, child.ProcessName);
+
+            Assert.Equal("Available once you finish revising with Claude",
+                Plantoir.Core.Models.CourseActivity.BusyReason(_folder, "ICS3U"));
+            Assert.Null(Plantoir.Core.Models.CourseActivity.BusyReason(_folder, "SNC1W"));
+            Assert.Null(Plantoir.Core.Models.CourseActivity.BusyReason(_folder, "EXC2O"));
+        }
+        finally { try { child.Kill(entireProcessTree: true); } catch { } }
+    }
+
+    [Fact]
     public void ReleasingALeaseRemovesIt()
     {
         var lease = AssistLease.Take(_folder, "ICS3U");
