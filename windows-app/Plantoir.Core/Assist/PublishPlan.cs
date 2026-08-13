@@ -45,12 +45,8 @@ public sealed class PublishPlan
     public IReadOnlyList<DanglingLink> Dangling { get; init; } = Array.Empty<DanglingLink>();
 
     /// <summary>
-    /// Pages taking the date of the class that publishes them.
-    ///
-    /// Only pages NO OTHER class links to. A page used by several classes
-    /// belongs to the lesson that introduced it, and re-dating it every time
-    /// another class happens to mention it would shuffle the category
-    /// listings on the site for no reason a teacher asked for.
+    /// Pages taking the date of the class that INTRODUCED them — the earliest
+    /// one linking to them, which is often not the class being published.
     /// </summary>
     public IReadOnlyList<PlannedDate> InheritedDates { get; init; } = Array.Empty<PlannedDate>();
 
@@ -149,8 +145,9 @@ public sealed class PublishPlan
         if (InheritedDates.Count > 0)
         {
             lines.Add("");
-            lines.Add($"{InheritedDates.Count} page{(InheritedDates.Count == 1 ? "" : "s")} " +
-                      "no other class links to would take that class's date:");
+            lines.Add($"{InheritedDates.Count} page{(InheritedDates.Count == 1 ? "" : "s")} would take " +
+                      "the date of the class that first uses " +
+                      (InheritedDates.Count == 1 ? "it" : "them") + ":");
             foreach (var date in InheritedDates.Take(MostDanglingShown)) lines.Add("  " + date.Describe());
             if (InheritedDates.Count > MostDanglingShown)
                 lines.Add($"  …and {InheritedDates.Count - MostDanglingShown} more.");

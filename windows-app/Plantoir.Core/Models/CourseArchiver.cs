@@ -69,7 +69,16 @@ public static class CourseArchiver
     {
         string backupsDir = BackupsDirectory(coursesDirectory, courseCode);
         Directory.CreateDirectory(backupsDir);
+
+        // Names are stamped to the second, and two operations can easily land
+        // in the same one — an assistant publishing two classes in a row does
+        // it every time. Without this the second backup throws, which (because
+        // no backup means no edits) turns a routine sequence into a refusal.
         string archivePath = Path.Combine(backupsDir, TimestampedName(prefix, DateTime.Now));
+        for (int attempt = 2; File.Exists(archivePath) && attempt < 100; attempt++)
+            archivePath = Path.Combine(backupsDir,
+                TimestampedName(prefix, DateTime.Now).Replace(".zip", $"-{attempt}.zip"));
+
         ZipFolder(folderPath, archivePath);
         return archivePath;
     }

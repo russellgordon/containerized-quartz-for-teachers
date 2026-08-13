@@ -388,14 +388,19 @@ public sealed class AssistWorkspace
     }
 
     /// <summary>
-    /// Pages that should take the date of the class publishing them.
+    /// Pages taking the date of the class that INTRODUCED them.
     ///
-    /// The rule is the teacher's: a page gets the class's date only when NO
-    /// OTHER class page links to it. A page several classes use belongs to the
-    /// lesson that introduced it, so re-dating it whenever another class
-    /// mentions it would shuffle the site's category listings for no reason
-    /// anybody asked for. Note "any other class links to it", not "an earlier
-    /// one does" — an unpublished later class still counts as an owner.
+    /// The rule is the build's own, and the teacher's: a shared page carries
+    /// the date of the earliest class that links to it. So a concept first
+    /// used in Unit 2, Day 3 and used again in Unit 2, Day 4 keeps Day 3's
+    /// date — publishing Day 4 finds Day 3 is still the earliest linker and
+    /// leaves it where it is.
+    ///
+    /// Taking the EARLIEST linker rather than skipping anything with more than
+    /// one is what makes that hold in every case. Skipping would leave a page
+    /// that two classes share on whatever date it happened to have — right
+    /// only if some earlier publish had already set it, and silently wrong for
+    /// a page that was never dated, or whose date came from a copy-paste.
     /// </summary>
     private List<PlannedDate> InheritedDates(
         Course course, int section, IReadOnlyList<PlannedPage> pages, bool draft)
@@ -416,16 +421,23 @@ public sealed class AssistWorkspace
             try { classPath = PagePaths.ResolveInside(_folder, named.RelativePath); }
             catch { continue; }
             if (!classPaths.Contains(Path.GetFullPath(classPath))) continue;   // only classes anchor dates
-            if (DateOf(course, section, classPath) is not { } classDate) continue;
 
             foreach (string target in graph.TargetsOf(classPath))
             {
                 if (classPaths.Contains(Path.GetFullPath(target))) continue;   // a class is not material
-                int classesLinking = graph.SourcesOf(target)
-                    .Count(s => classPaths.Contains(Path.GetFullPath(s)));
-                if (classesLinking != 1) continue;                             // shared: leave it alone
-                if (DateOf(course, section, target) == classDate) continue;    // already right
                 if (inherited.Any(d => d.RelativePath == Relative(target))) continue;
+
+                // The earliest class in this section that links to it — which
+                // may well be a different class from the one being published.
+                DateOnly? introduced = null;
+                foreach (string linker in graph.SourcesOf(target))
+                {
+                    if (!classPaths.Contains(Path.GetFullPath(linker))) continue;
+                    if (DateOf(course, section, linker) is not { } when) continue;
+                    if (introduced is null || when < introduced) introduced = when;
+                }
+                if (introduced is not { } owner) continue;                     // no dated class owns it
+                if (DateOf(course, section, target) == owner) continue;         // already right
 
                 bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, target);
                 inherited.Add(new PlannedDate(
@@ -433,7 +445,7 @@ public sealed class AssistWorkspace
                     RelativePath: Relative(target),
                     FrontmatterKey: PageFrontmatter.CreatedKeyFor(section, sectionLocal),
                     Current: DateOf(course, section, target),
-                    New: classDate,
+                    New: owner,
                     MeetingNumber: 0));
             }
         }

@@ -253,6 +253,67 @@ public class AssistWorkspaceTests : IDisposable
     }
 
     [Fact]
+    public void APageUsedByTwoClassesKeepsTheDateOfTheOneThatIntroducedIt()
+    {
+        // The teacher's case: Unit 2, Day 3 uses a concept first; Unit 2,
+        // Day 4 uses it again. It keeps Day 3's date, whichever is published.
+        DatedClass("ICS3U", "Unit 2, Day 3", "2026-10-05", draft: true, body: "[[Recursion]]");
+        DatedClass("ICS3U", "Unit 2, Day 4", "2026-10-06", draft: true, body: "Again: [[Recursion]]");
+        Page("ICS3U", "Concepts/Recursion.md", draftSection1: true);
+        Index("ICS3U", 1, "", "2026-10-01");
+        var workspace = Open();
+
+        // Publishing the FIRST class dates it to that class.
+        var first = workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true);
+        Assert.Equal(new DateOnly(2026, 10, 5), Assert.Single(first.InheritedDates).New);
+
+        // Publishing the SECOND leaves it on the first class's date.
+        var second = workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 4" }, includeLinked: true);
+        Assert.Equal(new DateOnly(2026, 10, 5), Assert.Single(second.InheritedDates).New);
+    }
+
+    [Fact]
+    public async Task PublishingTheSecondClassLeavesTheSharedPagesDateAlone()
+    {
+        // End to end, in the order a teacher would do it: publish Day 3, then
+        // Day 4, and check the concept never moved off Day 3's date.
+        DatedClass("ICS3U", "Unit 2, Day 3", "2026-10-05", draft: true, body: "[[Recursion]]");
+        DatedClass("ICS3U", "Unit 2, Day 4", "2026-10-06", draft: true, body: "Again: [[Recursion]]");
+        Page("ICS3U", "Concepts/Recursion.md", draftSection1: true);
+        Index("ICS3U", 1, "", "2026-10-01");
+        var workspace = Open();
+
+        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" },
+            includeLinked: true, publishes: false));
+        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 4" },
+            includeLinked: true, publishes: false));
+
+        string concept = File.ReadAllText(
+            Path.Combine(_folder, "courses", "ICS3U", "Concepts", "Recursion.md"));
+        Assert.Contains("createdSection1: 2026-10-05", concept);   // Day 3's date, not Day 4's
+        Assert.Contains("draftSection1: false", concept);
+    }
+
+    [Fact]
+    public void ASharedPageThatWasNeverDatedIsStillGivenTheIntroducingClassesDate()
+    {
+        // The case the old rule got wrong: skipping anything more than one
+        // class links to left a never-dated page on whatever it happened to
+        // have. Publishing either class now dates it from Day 3.
+        DatedClass("ICS3U", "Unit 2, Day 3", "2026-10-05", draft: true, body: "[[Recursion]]");
+        DatedClass("ICS3U", "Unit 2, Day 4", "2026-10-06", draft: true, body: "Again: [[Recursion]]");
+        Page("ICS3U", "Concepts/Recursion.md", draftSection1: true);   // no date at all
+        Index("ICS3U", 1, "", "2026-10-01");
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 4" }, includeLinked: true);
+
+        var dated = Assert.Single(plan.InheritedDates);
+        Assert.Equal("Recursion", dated.Title);
+        Assert.Null(dated.Current);
+        Assert.Equal(new DateOnly(2026, 10, 5), dated.New);
+    }
+
+    [Fact]
     public void PublishingTheDaysClassMovesTheFrontPageAndTheDatesWithIt()
     {
         // The whole of "publish tomorrow's class", in one plan.
@@ -266,14 +327,16 @@ public class AssistWorkspaceTests : IDisposable
         var workspace = Open();
         var plan = workspace.PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" }, includeLinked: true);
 
-        // Only Mine is used by this class alone, so it takes the class's date.
-        var inherited = Assert.Single(plan.InheritedDates);
-        Assert.Equal("Only Mine", inherited.Title);
-        Assert.Equal(new DateOnly(2026, 9, 9), inherited.New);
+        // Only Mine is used by this class alone, so it takes this class's date.
+        Assert.Equal(new DateOnly(2026, 9, 9),
+            Assert.Single(plan.InheritedDates, d => d.Title == "Only Mine").New);
 
-        // Shared Page is used by Day 1 as well, so its date is left alone.
-        Assert.DoesNotContain(plan.InheritedDates, d => d.Title == "Shared Page");
-        // …but it is still published.
+        // Shared Page is used by Day 1 too, so it takes DAY 1's date — the
+        // class that introduced it — not the one being published.
+        Assert.Equal(new DateOnly(2026, 9, 8),
+            Assert.Single(plan.InheritedDates, d => d.Title == "Shared Page").New);
+
+        // …and it is published either way.
         Assert.Contains(plan.Pages, p => p.Title == "Shared Page" && !p.Draft);
 
         Assert.Equal("Unit 1, Day 2", plan.Index!.ToClass);
