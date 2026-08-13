@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plantoir.Tests", "Plantoir.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plantoir", "Plantoir\Plantoir.csproj", "{CD54ADEB-1F9D-4871-864D-0D2A34B3C029}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plantoir.Mcp", "Plantoir.Mcp\Plantoir.Mcp.csproj", "{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{CD54ADEB-1F9D-4871-864D-0D2A34B3C029}.Release|x64.Build.0 = Release|x64
 		{CD54ADEB-1F9D-4871-864D-0D2A34B3C029}.Release|x86.ActiveCfg = Release|x64
 		{CD54ADEB-1F9D-4871-864D-0D2A34B3C029}.Release|x86.Build.0 = Release|x64
+		{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}.Debug|x64.Build.0 = Debug|Any CPU
+		{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}.Debug|x86.Build.0 = Debug|Any CPU
+		{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}.Release|x64.ActiveCfg = Release|Any CPU
+		{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}.Release|x64.Build.0 = Release|Any CPU
+		{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}.Release|x86.ActiveCfg = Release|Any CPU
+		{6CEDFB52-7D6D-41FE-87F1-08DDE0038BDD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
