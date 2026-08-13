@@ -89,14 +89,34 @@ references are the durable pointers.)
   `Plantoir.Core/Scripting/TaskMilestones.cs`,
   `CourseConfiguration.CloudflareAccountProblem`.
 
-  **Status: not yet published end to end.** Everything is built, builds
-  clean and is unit-tested (154 tests), and the UI is verified in the
-  running app, but no site has actually been pushed to Cloudflare yet —
-  that was blocked on a correctly-scoped token. Treat the first live
-  publish as the remaining acceptance test on both platforms, and check
-  while doing it whether Direct Uploads move the dashboard's build
-  counter (they should not; the 500/month limit is documented as applying
-  to git-triggered builds, which this path never uses).
+  **Status: PUBLISHED END TO END and working** (Windows, 2026-08-12).
+  MCV4U Section 1 from a real workspace went live at
+  `mcv4u-s1-2026-gordon.pages.dev` (HTTP 200, correct Quartz title),
+  driven from the app's Publish button, not a script. Observed:
+
+  - First publish ~140 s including the one-off toolchain image rebuild;
+    a second publish ~23 s, reusing the project rather than creating a
+    second one (exactly one project in the account afterwards).
+  - The progress bar tracked "Step 8 of 8" through the
+    `BuildAndDeployToCloudflare` list, and the completion panel showed
+    "Your website is live" with the clickable pages.dev link — the
+    Netlify live-link panel works unchanged, because `deploy.py` prints
+    the `Live URL:` label the parser already reads.
+  - The marker file came out as intended:
+    `{name, id, subdomain, account_id}`.
+
+  **The build-counter question is settled, empirically.** The deployment
+  record for a Direct Upload reports `deployment_trigger.type: ad_hoc`
+  and its stages come back `clone_repo=idle, build=idle, deploy=success`
+  — **no Cloudflare build runs**, so the free plan's 500-builds-per-month
+  limit does not apply to how Plantoir publishes. A teacher republishing
+  many times a day across several classes is in no danger of it. (The
+  limit is documented as applying to builds triggered by a git push,
+  which this path never does.) Worth not re-investigating on the mac.
+
+  Remaining unknown: behaviour at the 25 MB per-file cap has still only
+  been checked by the pre-flight guard in `deploy.py`, not by actually
+  pushing an oversized file.
 
 - **`sanitize_last_name` folds accents instead of dropping them**
   (shared, 2026-08-12, commit `0306c98`). Pre-existing bug in
