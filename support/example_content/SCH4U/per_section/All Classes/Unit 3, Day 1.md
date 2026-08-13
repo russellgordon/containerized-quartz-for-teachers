@@ -1,0 +1,28 @@
+---
+title: Unit 3, Day 1
+draft: false
+created: __CREATED_CLASS_11__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-3
+---
+Mix two cold solutions and the thermometer climbs. Nothing was heated.
+That energy came from somewhere, and today you go looking for it.
+
+## Agenda
+
+1. Investigation: [[Calorimetry of a Neutralisation]] — dilute acid into
+   dilute sodium hydroxide, eye protection on before anything is poured
+2. Sodium hydroxide does not sting at first and burns deeper than dilute
+   acid does — rinse any splash long past the point it feels finished
+3. Record temperature against time and decide where the peak really is
+4. Compare the room's peaks — same reaction, different numbers, why?
+5. [[Measuring Well]] — the thermometer is not the only source of spread
+
+## Things to do before our next class
+
+- [ ] Bring your temperature-time graph; we build directly on it.
+- [ ] Journal: where you think the energy went that your thermometer
+      never saw.

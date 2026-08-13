@@ -86,3 +86,11 @@ Practise setting up expressions and reading constants in
 [[Equilibrium Practice]], and keep [[Reading an Equilibrium Table]]
 beside you — the tables in the data booklet are only useful once you
 know what the number in them is a statement about.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[E3.1]]
+
+![[E3.2]]
+%%curriculum-end%%
