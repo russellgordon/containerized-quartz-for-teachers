@@ -118,6 +118,21 @@ references are the durable pointers.)
   been checked by the pre-flight guard in `deploy.py`, not by actually
   pushing an oversized file.
 
+  **Mirror the standing size note too** (`8883ad9`). Whenever Cloudflare
+  is the chosen destination, the Publishing section shows a permanent
+  orange line — not the validation warning, which comes and goes, but a
+  fact about the destination that never hides:
+
+  > One thing to know: Cloudflare won't accept any single file larger
+  > than 25 MB. Documents, images, and slide decks are almost always
+  > comfortably under that — a long video usually isn't. Most teachers
+  > embed video from YouTube or Vimeo rather than uploading it, which
+  > avoids the limit entirely.
+
+  This is the one real functional difference between the destinations, so
+  a teacher should meet it while choosing rather than when a publish
+  fails. The grey caption deliberately no longer repeats it.
+
 - **`sanitize_last_name` folds accents instead of dropping them**
   (shared, 2026-08-12, commit `0306c98`). Pre-existing bug in
   `scripts/deploy.py`, found while testing Cloudflare project naming: the
@@ -192,6 +207,27 @@ references are the durable pointers.)
   in `windows-app/Plantoir/Views/NewCourseDialog.cs`.
 
 ## Already shared — no mac code needed, just awareness
+
+- **Worth checking: the same test race may exist on the mac**
+  (`3bbb1a7`, 2026-08-13). A Windows test failed about one run in three
+  with a baffling null. The cause was not the production code: preview
+  leases and the publish registry are **process-wide statics**, the test
+  runner runs test classes in parallel, and the lease-tests class reset
+  that shared state around every one of its methods — wiping the lease
+  another class was mid-assertion on. Fixed by putting both classes in a
+  serialized collection. If the mac's tests around `CourseActivity` /
+  preview leases share process-wide state and run in parallel, the same
+  intermittent failure is possible there; it is the kind that gets
+  written off as "flaky CI" for months. Worth ten minutes to check.
+
+- **`MCP-PROPOSAL.md` is waiting on a mac-side opinion** (2026-08-12).
+  A design (nothing built) for letting AI assistants drive Plantoir over
+  MCP — "publish the Science courses overnight and un-draft tomorrow's
+  class plus everything it links to". The proposal's central question is
+  for the mac side: whether to ship **one** self-contained .NET binary
+  serving both platforms, or reimplement the tool contract in Swift. It
+  ends with four explicit questions. Nothing blocks on it, but it should
+  not get lost between syncs.
 
 - **The Windows icon derives from `mac-app/Plantoir.icon`** (2026-08-11).
   `windows-app/Plantoir/Assets/make-icon.ps1` turns a full-bleed 1024px

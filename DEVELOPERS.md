@@ -34,6 +34,36 @@ that team's certificate, point `DEVELOPMENT_TEAM` at your own (Xcode →
 Settings → Accounts shows the ID) or set `CODE_SIGN_IDENTITY: "-"` and
 live with the permission prompts.
 
+### The Windows app
+
+The Windows app is the opposite story: nothing is generated, the solution
+is committed, and the only prerequisite is the **.NET 9 SDK**. It targets
+`net9.0-windows10.0.19041.0` / `win-x64` and ships **self-contained**,
+Windows App SDK included, so a teacher installs no runtime; the SDK itself
+arrives as the `Microsoft.WindowsAppSDK` NuGet package rather than a
+machine-wide install.
+
+```powershell
+cd windows-app
+dotnet build Plantoir/Plantoir.csproj -c Debug
+dotnet test  Plantoir.Tests/Plantoir.Tests.csproj
+```
+
+Release packaging is separate — see
+[`windows-app/RELEASING.md`](windows-app/RELEASING.md).
+
+Two things that otherwise cost an afternoon:
+
+- **Stop any running copy before building.** A running app holds
+  `Plantoir.Core.dll` open and the build fails with `MSB3027 … file is
+  locked by: "Plantoir"`, which reads like a corrupt build rather than the
+  app simply being open.
+- **Launchers reach working folders through the app**, exactly as on the
+  mac: the app mirrors its bundled toolchain into each folder's
+  `.toolchain/`. After changing a launcher or anything under `scripts/`,
+  **rebuild the app** before testing end to end, or the working folder
+  quietly keeps running the old copy.
+
 ## App name vs. module name
 
 The app's user-facing name is **Plantoir** (bundle, binary, Dock, window
@@ -64,6 +94,17 @@ into each working folder's `.toolchain/`. The launchers:
   fixed container ports 8081–8084 for sites plus 9081–9084 for Quartz's
   live-reload websockets (`--wsPort` = port + 1000 — without it, concurrent
   previews collide on the websocket even with distinct site ports).
+
+The image also carries **wrangler**, Cloudflare's own deploy CLI, which
+`scripts/deploy.py` uses for the Cloudflare Pages destination (Cloudflare's
+upload protocol — BLAKE3 asset hashing, a short-lived upload JWT, batched
+uploads — is undocumented enough that reimplementing it would break
+teachers' publishing whenever Cloudflare changed it). It is pinned, and
+pinned *below* 4.100 deliberately: from that version wrangler requires Node
+22, while the image ships Node 20 because that is what Quartz v4.5.0 is
+known-good against. **If you raise Node, revalidate Quartz before chasing a
+newer CLI.** Building the image now also needs npm registry access
+alongside the Debian and GitHub sources.
 
 First-run bootstrap: if Docker isn't available, the launchers download
 pinned static binaries (Colima, Lima, the Docker CLI, buildx) into
@@ -123,7 +164,30 @@ TTY (`docker exec -it`); from a non-interactive shell wrap it:
 script -q /dev/null ./verify.sh
 ```
 
-**App changes**: the unit suite is fast and needs no Docker:
+> ⚠️ **`verify.sh` does not run on a Windows development machine.** It is
+> bash and expects `docker` on `PATH`; in the normal Windows setup Docker
+> Engine lives inside WSL2 and neither holds. Toolchain changes made on
+> Windows therefore have **no automated gate** — verify them by driving a
+> real publish (or preview) through the app end to end, and re-run
+> `verify.sh` from the mac after the next sync. Worth knowing before
+> assuming a green Windows test run means the toolchain is covered: the
+> xUnit suite deliberately never touches Docker.
+
+**App changes (Windows)**: the xUnit suite is fast and needs no Docker:
+
+```powershell
+cd windows-app
+dotnet test Plantoir.Tests/Plantoir.Tests.csproj
+```
+
+**Tests touching process-wide state must not run in parallel.** Preview
+leases and the publish registry are statics, and xUnit runs test *classes*
+in parallel by default — so any class touching them belongs in the shared
+serialized collection (`SharedActivityState` in `ModelTests.cs`). Skipping
+that produces an intermittent failure that looks exactly like a production
+bug and is not one; it cost a real debugging session to trace.
+
+**App changes (macOS)**: the unit suite is fast and needs no Docker:
 
 ```bash
 cd mac-app
@@ -161,7 +225,21 @@ before running UI tests — the test runner can't terminate it.
   Windows-porting spec.
 - [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) — start here to build the
   Windows app: architecture, config contract, and platform notes.
+- [`MAC-HANDOFF.md`](MAC-HANDOFF.md) — the mirror image: work that
+  originated on Windows (or in shared `scripts/`) and needs the mac's
+  attention. **Read it when syncing the two sides**; entries are removed
+  once the mac has picked them up.
 - [`WINDOWS-TESTING.md`](WINDOWS-TESTING.md) — status of the (untested)
   PowerShell launchers.
 - [`mac-app/README.md`](mac-app/README.md) — building and testing the app,
   design notes.
+- [`windows-app/PROGRESS.md`](windows-app/PROGRESS.md) — the Windows app's
+  layout and current state;
+  [`windows-app/RELEASING.md`](windows-app/RELEASING.md) and
+  [`RELEASE-CHEATSHEET.md`](RELEASE-CHEATSHEET.md) — cutting a release
+  (signing, bundling, the frozen asset names both platforms depend on).
+- [`TODO.md`](TODO.md) — deferred work and ideas, with the research
+  already done so picking one up is cheap.
+- [`MCP-PROPOSAL.md`](MCP-PROPOSAL.md) — a design (nothing built) for
+  driving Plantoir from an AI assistant over MCP, awaiting a mac-side
+  opinion on whether one shared binary can serve both platforms.
