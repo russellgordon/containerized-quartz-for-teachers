@@ -1501,6 +1501,58 @@ def patch_content_meta_options(date_tsx_file_path: Path, show_reading_time: bool
 # --- END ADD ---
 
 # --- ADD: Patch renderPage.tsx to allow transcludeTitleSize frontmatter ---
+def patch_mermaid_font_wait(mermaid_ts_path: Path):
+    """
+    Make mermaid wait for the code font before it measures anything.
+
+    Mermaid sizes every box by measuring its label, and Quartz tells it to
+    measure in the course's code font (`--codeFont`). That font comes from
+    Google Fonts with `display=swap`, which means the browser paints with
+    a fallback first and swaps the real font in when it arrives. If the
+    swap lands after mermaid has measured, every box was sized for the
+    narrower fallback and the real text overflows it — labels come out
+    clipped mid-word.
+
+    Waiting for `document.fonts.ready` costs nothing when the font is
+    already cached, and removes the race when it is not. Idempotent.
+    """
+    if not mermaid_ts_path.exists():
+        print(f"⚠️ mermaid.inline.ts not found at {mermaid_ts_path}")
+        return
+    try:
+        marker = "await document.fonts.ready"
+        with open(mermaid_ts_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        if marker in content:
+            print("ℹ️ Mermaid already waits for fonts (no change).")
+            return
+
+        target = "    await mermaid.run({ nodes })"
+        if target not in content:
+            print("⚠️ Could not find mermaid.run call to patch; left unchanged.")
+            return
+
+        replacement = (
+            "    // Mermaid measures label text to size each box, and it is\n"
+            "    // told to measure in the code font. That font is served with\n"
+            "    // display=swap, so without this wait it can measure the\n"
+            "    // narrower fallback and size every box too small for the\n"
+            "    // text that finally renders in it.\n"
+            "    if (document.fonts) {\n"
+            "      await document.fonts.ready\n"
+            "    }\n\n"
+            + target
+        )
+        content = content.replace(target, replacement, 1)
+
+        with open(mermaid_ts_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        print("✅ Patched mermaid.inline.ts to wait for fonts before measuring")
+    except Exception as e:
+        print(f"⚠️ Error patching mermaid font wait: {e}")
+
+
 def patch_render_page_transclude_title(render_page_tsx_path: Path):
     """
     Change tagName: "h1" to tagName: page.frontmatter?.transcludeTitleSize ?? "h1"
@@ -2169,7 +2221,6 @@ def build_section_site(
         base_scss = output_dir / "quartz" / "styles" / "base.scss"
         patch_internal_link_highlight(base_scss)
         append_transclusion_styles(base_scss)
-        append_mermaid_styles(base_scss)
 
         # Patch renderPage.tsx for transcludeTitleSize
         render_page_tsx = output_dir / "quartz" / "components" / "renderPage.tsx"
@@ -2204,6 +2255,13 @@ def build_section_site(
     # Apply teacher preference to ContentMeta on each build
     content_meta_tsx = output_dir / "quartz" / "components" / "ContentMeta.tsx"
     patch_content_meta_options(content_meta_tsx, show_reading_time)
+
+    # Mermaid diagram fixes, applied on EVERY build rather than only on a
+    # full rebuild, so a course folder created before these existed heals
+    # itself the next time it is previewed. Both are idempotent and cheap.
+    append_mermaid_styles(base_scss)
+    mermaid_ts = output_dir / "quartz" / "components" / "scripts" / "mermaid.inline.ts"
+    patch_mermaid_font_wait(mermaid_ts)
 
     # Patch Explorer expansion behaviour (idempotent)
     explorer_tsx = output_dir / "quartz" / "components" / "Explorer.tsx"
