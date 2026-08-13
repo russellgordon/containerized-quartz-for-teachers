@@ -70,6 +70,73 @@ pinned static binaries (Colima, Lima, the Docker CLI, buildx) into
 `~/Library/Application Support/Plantoir/tools` — no Homebrew, no admin
 rights. The image itself lives inside the Colima VM's disk (`~/.colima`).
 
+### Editing the toolchain: two traps that cost real time
+
+A change to `scripts/`, `support/`, `patches/`, or a launcher does **not**
+reach a working folder until it has travelled through the app bundle. The
+app mirrors its bundled copy into `.toolchain/` whenever it touches a
+folder, and the launchers hash that folder to name the image. So the chain
+is: edit → **rebuild the app** → relaunch → next preview refreshes
+`.toolchain/`, changes the image tag, recreates the container, and finally
+runs your change. Skip the rebuild and everything downstream keeps running
+the old toolchain while looking perfectly healthy.
+
+**Trap 1 — Xcode may not copy your edit.** These are declared in
+`project.yml` as folder references (`type: folder`), and Xcode tracks a
+folder reference by the **directory**. On macOS, editing a file *inside* a
+directory does not change that directory's modification time; only adding,
+removing, or renaming an entry does. An incremental build therefore
+decides the folder is unchanged and skips the copy — the build succeeds
+and the app still carries the previous script. Force the copy:
+
+```bash
+cd mac-app
+xcodegen generate     # rewrites the project, so resources are re-copied
+xcodebuild -project Plantoir.xcodeproj -scheme Plantoir -configuration Debug build
+```
+
+In Xcode, Product ▸ Clean Build Folder (⇧⌘K) before ⌘R does the same job.
+
+**Trap 2 — quit the running app first.** Xcode's Run only terminates an
+instance *it* launched. If Plantoir is already running (opened from Finder,
+or left over from an earlier session), ⌘R gives you a **second** instance
+beside the first. That matters more here than in most apps: both instances
+rewrite `.toolchain/` whenever they touch a folder, so a stale instance can
+overwrite the good scripts the new one just wrote, and it still owns that
+folder's container. Quit, then launch:
+
+```bash
+osascript -e 'quit app "Plantoir"'; sleep 2
+open ~/Library/Developer/Xcode/DerivedData/Plantoir-*/Build/Products/Debug/Plantoir.app
+```
+
+(The `Plantoir-*` suffix is a hash of the project's path, so the glob
+matches one folder — unless the repository has lived in more than one
+place, in which case stale folders linger and the glob is ambiguous. Get
+the exact path with
+`xcodebuild -project Plantoir.xcodeproj -scheme Plantoir -showBuildSettings | grep -m1 ' BUILT_PRODUCTS_DIR'`.)
+
+**Ask the app what it is actually carrying** rather than assuming — this
+settles both traps in one line:
+
+```bash
+grep -c <something-from-your-edit> \
+  ~/Library/Developer/Xcode/DerivedData/Plantoir-*/Build/Products/Debug/Plantoir.app/Contents/Resources/scripts/build_site.py
+```
+
+`0` means the resource copy was skipped and you are testing the old
+toolchain. The same check works against a working folder's
+`.toolchain/scripts/build_site.py` to confirm the change reached *there*.
+
+**A related rule for the build scripts themselves.** Patches applied in
+`build_site.py` fall into two groups: those inside the
+`if full_rebuild or not output_dir.exists():` branch run only when the
+Quartz scaffold is first copied, and those in the ALWAYS section below it
+run on every build. A fix that existing course folders must pick up has to
+go in the ALWAYS section and be idempotent — otherwise it reaches new
+courses only, and every folder built before the fix stays broken until
+someone passes `--full-rebuild`.
+
 ## Example content payloads
 
 `support/example_content/<CODE>/` holds ready-made course content, one
