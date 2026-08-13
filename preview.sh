@@ -70,14 +70,19 @@ toolchain_hash() {
   # this walked (and checksummed) courses/, node_modules, and the app
   # sources: many minutes of hashing, and a tag that changed on every
   # build because build outputs were part of it.
+  # One shasum per file meant one PROCESS per file. With eighteen
+  # example-content payloads inside the recipe that is ~3,500 files, and
+  # the spawning alone took 35 seconds before anything appeared on screen.
+  # xargs batches them into a handful of invocations: same lines, same
+  # order, byte-identical hash, under a fifth of a second.
   local context="$1"
   (cd "$context" && find . \
       \( -path './.git' -o -path './courses' -o -path './mac-app' \
          -o -name node_modules -o -name '.merged_output' \
          -o -name '.verify-export.*' \) -prune \
-      -o -type f -not -name '.DS_Store' -print \
-    | LC_ALL=C sort \
-    | while IFS= read -r file; do shasum -a 256 "$file"; done \
+      -o -type f -not -name '.DS_Store' -print0 \
+    | LC_ALL=C sort -z \
+    | xargs -0 shasum -a 256 \
     | shasum -a 256 | cut -c1-8)
 }
 
@@ -91,6 +96,7 @@ else
     echo "   copy of the repository."
     exit 1
   }
+  echo "🔎 Checking whether your website builder is up to date…"
   IMAGE="teaching-quartz:src-$(toolchain_hash "$BUILD_CONTEXT")"
 fi
 

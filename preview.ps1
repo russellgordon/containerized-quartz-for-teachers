@@ -381,15 +381,19 @@ function Get-BuildContext {
 
 function Get-ToolchainHash([string]$context) {
   $sha = [System.Security.Cryptography.SHA256]::Create()
-  $combined = ""
   # Hash only what the recipe is made of (parity with the .sh launchers):
   # in the repository the context is the repo root, and build outputs or
   # app sources must not steer the tag.
-  Get-ChildItem -Path $context -Recurse -File | Where-Object {
+  $hashes = Get-ChildItem -Path $context -Recurse -File | Where-Object {
     $_.FullName -notmatch '[\\/](\.git|courses|mac-app|windows-app|node_modules|\.merged_output|bin|obj)[\\/]' -and $_.Name -ne '.DS_Store'
   } | Sort-Object FullName | ForEach-Object {
-    $combined += (Get-FileHash -Algorithm SHA256 -Path $_.FullName).Hash
+    (Get-FileHash -Algorithm SHA256 -Path $_.FullName).Hash
   }
+  # -join rather than += inside the loop: PowerShell strings are
+  # immutable, so appending one hash at a time reallocates the whole
+  # string on every file. Same characters in the same order, so the
+  # same tag — just not quadratic.
+  $combined = -join $hashes
   $bytes = [Text.Encoding]::UTF8.GetBytes($combined)
   return ([BitConverter]::ToString($sha.ComputeHash($bytes)) -replace '-','').Substring(0,8).ToLower()
 }
