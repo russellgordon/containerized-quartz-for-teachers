@@ -201,6 +201,56 @@ Being straight about the gaps, because they are where the risk now sits:
 
 ---
 
+## 5a. The built surface, re-measured against the same model
+
+Everything above tested *hand-written* tool definitions. Once the server
+existed, its real `tools/list` output was fed to the same Qwen2.5-1.5B in the
+same capped container (4 GB, 2 CPUs, `--no-mmap`) — eight tools, ~1,580 prompt
+tokens, 15 teacher-voice cases, 3 trials each.
+
+**The two design changes did what they were meant to do.**
+
+| | Before (hand-written tools) | After (the shipped surface) |
+|---|---|---|
+| Polarity inversions on *hide* | **1** (`publish_class`, `include_linked=true`) | **0 / 9** |
+| Invented a course code | **3/3** on "clean up my course" | **0 / 3** |
+| Malformed calls | 0 | **0 / 45** |
+| Arguments needing type coercion | 0 | **0 / 45** |
+| Wrong *write* proposed | — | **0 / 45** |
+
+Splitting `publish`/`hide` into separate verbs removed the inversion entirely:
+across nine hide trials in three phrasings, it never once reached for a publish
+tool. And the invention failure was cured by something duller than expected —
+*giving it a `list_courses` tool*. Asked to "clean up my course", it now looks
+the courses up instead of making one up, 3 times out of 3.
+
+**Raw routing "accuracy" fell to 31/45 (69%), and that number is misleading.**
+All fourteen misses are the model calling a **read-only** tool: `list_pages` to
+find the page it was asked about, or `list_courses`. Not one miss proposed a
+write, a wrong page, or a destructive action. The failure mode moved from
+*guessing* to *looking things up*, which is the direction you want it to move.
+
+Two honest caveats about that 69%:
+
+- **Every test is single-turn.** In a real client, `list_pages` would be turn
+  one of two and the right call would follow. The harness scores turn one and
+  stops, so it counts a sensible first step as a failure. The true multi-turn
+  number is somewhere above 69% and was not measured.
+- **"Decline" got rarer, and that is a real loss.** Asked to delete a folder,
+  the model used to say it could not; now it calls `list_courses` instead.
+  Nothing destructive happens either way — there is still no delete tool — but
+  the teacher gets a course list rather than "I can't do that", which is worse
+  manners. Steering for it belongs in the system prompt of whatever drives the
+  server, not in the tool surface.
+
+**Speed got worse, and the tool surface is why.** Warm requests ran 3–9 s
+typical (a few at 18 s while the machine was also compiling), against 2–6 s
+for the smaller hand-written set. Eight tools with prose descriptions cost
+~1,580 prompt tokens versus ~600. Prompt caching still absorbs it after the
+first call — the cold first request was 87 s — but **tool descriptions are not
+free, and every tool added slows every request**. Worth remembering before
+adding a ninth.
+
 ## 6. Recommendation
 
 **Feasible, at about 1 GB and 2–6 seconds a request, with Qwen2.5-1.5B-Instruct

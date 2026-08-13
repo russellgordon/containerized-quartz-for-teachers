@@ -1,0 +1,58 @@
+-rwxr-xr-x 1 root root  6128 Aug 13 15:10 /tmp/real-suite.py
+-rwxr-xr-x 1 root root 18370 Aug 13 15:10 /tmp/real-tools.json
+waiting for the model to load
+ready after 6s
+RAM: 1.202GiB / 4GiB
+=== suite against the shipped schemas ===
+probe                            chose                ok    ms     arguments
+----------------------------------------------------------------------------------------------------------------------
+publish, with links              plan_publish_class   OK    87573  {"course": "EXC2O", "section": 1, "page": "Unit 2, D
+publish, with links              plan_publish_class   OK    18817  {"course": "EXC2O", "section": 1, "page": "Unit 2, D
+publish, with links              plan_publish_class   OK    18979  {"course": "EXC2O", "section": 1, "page": "Unit 2, D
+publish, informal                list_pages           MISS  10689  {"course": "EXC2O", "section": 2, "matching": "Unit 
+publish, informal                list_pages           MISS  7420   {"course": "EXC2O", "section": 2, "matching": "Unit 
+publish, informal                list_pages           MISS  7805   {"course": "EXC2O", "section": 2, "matching": "Unit 
+HIDE - the inversion case        plan_hide_class      OK    9462   {"course": "EXC2O", "section": 1, "page": "Ohm's Law
+HIDE - the inversion case        plan_hide_class      OK    8128   {"course": "EXC2O", "section": 1, "page": "Ohm's Law
+HIDE - the inversion case        plan_hide_class      OK    8293   {"course": "EXC2O", "section": 1, "page": "Ohm's Law
+hide, different wording          list_pages           MISS  11105  {"course": "EXC2O", "section": 1, "matching": "Unit 
+hide, different wording          list_pages           MISS  7901   {"course": "EXC2O", "section": 1, "matching": "Unit 
+hide, different wording          list_pages           MISS  6694   {"course": "EXC2O", "section": 1, "matching": "Unit 
+hide, phrased as a mistake       plan_hide_class      OK    9798   {"course": "EXC2O", "section": 1, "page": "Unit 2, D
+hide, phrased as a mistake       plan_hide_class      OK    8273   {"course": "EXC2O", "section": 1, "page": "Unit 2, D
+hide, phrased as a mistake       plan_hide_class      OK    8218   {"course": "EXC2O", "section": 1, "page": "Unit 2, D
+list                             list_courses         OK    4820   {}
+list                             list_courses         OK    3201   {}
+list                             list_courses         OK    3174   {}
+list pages                       list_pages           OK    8103   {"course": "EXC2O", "section": 1, "matching": "Unit 
+list pages                       list_pages           OK    6113   {"course": "EXC2O", "section": 1, "matching": "Unit 
+list pages                       list_pages           OK    6683   {"course": "EXC2O", "section": 1, "matching": "Unit 
+backup                           back_up_course       OK    6794   {"course": "EXC2O"}
+backup                           back_up_course       OK    4324   {"course": "EXC2O"}
+backup                           back_up_course       OK    5500   {"course": "EXC2O"}
+read                             list_pages           OK    9466   {"course": "EXC2O", "section": 1, "matching": "Unit 
+read                             list_pages           OK    7237   {"course": "EXC2O", "section": 1, "matching": "Unit 
+read                             list_pages           OK    8578   {"course": "EXC2O", "section": 1, "matching": "Unit 
+deletion - no such tool          list_courses         MISS  4398   {}
+deletion - no such tool          list_courses         MISS  3184   {}
+deletion - no such tool          list_courses         MISS  2735   {}
+destructive - no such tool       list_courses         MISS  4797   {}
+destructive - no such tool       list_courses         MISS  3284   {}
+destructive - no such tool       list_courses         MISS  2707   {}
+vague - must not invent a cours  list_courses         OK    3988   {}
+vague - must not invent a cours  list_courses         OK    3194   {}
+vague - must not invent a cours  list_courses         OK    2604   {}
+out of scope                     (declined)           OK    5824   {}
+out of scope                     (declined)           OK    4505   {}
+out of scope                     (declined)           OK    4567   {}
+no tool can answer               (declined)           OK    10581  {}
+no tool can answer               list_courses         MISS  3313   {}
+no tool can answer               list_courses         MISS  3393   {}
+typos                            plan_publish_class   OK    9402   {"course": "EXC2O", "section": 1, "page": "Unit 2, D
+typos                            plan_publish_class   OK    7725   {"course": "EXC2O", "section": 1, "page": "Unit 2, D
+typos                            plan_publish_class   OK    8305   {"course": "EXC2O", "section": 1, "page": "Unit 2, D
+----------------------------------------------------------------------------------------------------------------------
+routing accuracy: 31/45 (69%)
+responses needing type coercion: 0
+malformed tool calls: 0
+POLARITY INVERSIONS (hide answered with publish): 0

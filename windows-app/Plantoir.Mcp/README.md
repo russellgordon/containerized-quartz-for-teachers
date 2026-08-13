@@ -165,6 +165,22 @@ leaves every other byte alone, CRLF included.
 
 ---
 
+## A naming trap, written down so nobody rediscovers it
+
+**Never call `Path.GetFileNameWithoutExtension` on a wikilink target.**
+
+Curriculum expectation pages are genuinely named `A1.1`, `B2.4`, `E2.6`, and
+concept pages link to them (`- [[E2.6]] — ![[E2.6#^text]]`). Asking for the
+"extension" of `E2.6` gives `.6`, and the name without it is `E2` — so every
+curriculum link resolves to nothing, silently, and a concept page's
+expectations vanish from every plan. Strip a trailing `.md` and nothing else.
+
+The same trap is why attachments (`![[diagram.png]]`) are detected against a
+**fixed list** of extensions rather than by taking whatever follows the last
+dot. Attachments resolve to `LinkOutcome.Attachment`: they ride along with the
+page that embeds them and have no draft flag of their own, so they are not
+reported as missing pages.
+
 ## Known limits
 
 - **The GUI cannot see this server, and it cannot see the GUI.** Busy-tracking
