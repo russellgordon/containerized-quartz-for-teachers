@@ -1553,6 +1553,72 @@ def patch_mermaid_font_wait(mermaid_ts_path: Path):
         print(f"⚠️ Error patching mermaid font wait: {e}")
 
 
+def patch_mermaid_pie_title_fit(mermaid_ts_path: Path):
+    """
+    Stop mermaid clipping the title off a pie chart.
+
+    Mermaid sizes a pie chart's viewBox from the pie and its legend, then
+    centres the title on the PIE — which the legend has pushed leftward.
+    A title wider than the pie therefore spills past the left edge of the
+    viewBox and is silently cut off, while empty space sits on the right.
+    It is mermaid's own bug: both WebKit and Chromium show it.
+
+    Nothing in CSS can fix it, because the viewBox is an attribute. So
+    after mermaid has drawn, re-fit each pie chart's viewBox to what was
+    actually drawn (`getBBox()` covers the title even when it lies outside
+    the viewBox). Long titles then widen the chart instead of losing their
+    first few words, and short ones lose the wasted margin.
+
+    Only pie charts are touched — they are the ones mermaid mis-measures,
+    and re-fitting every diagram would change layouts that are correct.
+    Idempotent.
+    """
+    if not mermaid_ts_path.exists():
+        print(f"⚠️ mermaid.inline.ts not found at {mermaid_ts_path}")
+        return
+    try:
+        marker = 'aria-roledescription="pie"'
+        with open(mermaid_ts_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        if marker in content:
+            print("ℹ️ Mermaid pie titles already re-fitted (no change).")
+            return
+
+        target = "    await mermaid.run({ nodes })"
+        if target not in content:
+            print("⚠️ Could not find mermaid.run call to patch; left unchanged.")
+            return
+
+        replacement = target + "\n" + (
+            "\n"
+            "    // Mermaid sizes a pie chart from its pie and legend, then\n"
+            "    // centres the title on the pie — so a title wider than the pie\n"
+            "    // spills outside the viewBox and is silently clipped, with room\n"
+            "    // to spare on the right. Re-fit the box to what was drawn.\n"
+            "    for (const node of nodes) {\n"
+            "      const chart = node.querySelector('svg[aria-roledescription=\"pie\"]')\n"
+            "      if (!chart) {\n"
+            "        continue\n"
+            "      }\n"
+            "      const drawn = (chart as SVGGraphicsElement).getBBox()\n"
+            "      const pad = 8\n"
+            "      chart.setAttribute(\n"
+            "        \"viewBox\",\n"
+            "        `${drawn.x - pad} ${drawn.y - pad} ${drawn.width + pad * 2} ${drawn.height + pad * 2}`,\n"
+            "      )\n"
+            "      ;(chart as SVGElement).style.maxWidth = `${drawn.width + pad * 2}px`\n"
+            "    }\n"
+        )
+        content = content.replace(target, replacement, 1)
+
+        with open(mermaid_ts_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        print("✅ Patched mermaid.inline.ts to re-fit pie chart titles")
+    except Exception as e:
+        print(f"⚠️ Error patching mermaid pie title fit: {e}")
+
+
 def patch_render_page_transclude_title(render_page_tsx_path: Path):
     """
     Change tagName: "h1" to tagName: page.frontmatter?.transcludeTitleSize ?? "h1"
@@ -2262,6 +2328,7 @@ def build_section_site(
     append_mermaid_styles(base_scss)
     mermaid_ts = output_dir / "quartz" / "components" / "scripts" / "mermaid.inline.ts"
     patch_mermaid_font_wait(mermaid_ts)
+    patch_mermaid_pie_title_fit(mermaid_ts)
 
     # Patch Explorer expansion behaviour (idempotent)
     explorer_tsx = output_dir / "quartz" / "components" / "Explorer.tsx"

@@ -175,15 +175,16 @@ from Phase 5 apply here too.
   span shatters): a pure amount is escaped prose (`\$14`), an amount
   inside an expression is `\textdollar 14`. The container render gate
   (Phase 7) catches violations.
-- **A mermaid `pie` title must render under 450px — about 28 characters.**
-  Longer titles are SILENTLY CLIPPED on the left: "Where a working
-  programmer's hours actually go" renders as "vorking programmer's hours
-  actually go". This is mermaid's own bug, reproduced with mermaid alone
-  and no Quartz involved — it centres the title on the PIE, which the
-  legend pushes leftward, and never widens the chart to fit the title, so
-  the overflow falls outside the viewBox and `overflow: hidden` eats it.
-  The 450px budget is a constant: legend width does not change it. Keep
-  pie titles short and the problem never arises.
+- **Mermaid `pie` titles**: mermaid centres a pie title on the PIE, which
+  the legend pushes leftward, and never widens the chart to fit — so a
+  long title used to be SILENTLY CLIPPED ("Where a working programmer's
+  hours actually go" rendered as "vorking programmer's hours actually
+  go"). The toolchain now re-fits every pie chart's viewBox to what was
+  actually drawn (`patch_mermaid_pie_title_fit` in `build_site.py`), so
+  any length renders in full. Still prefer a SHORT title: past about 28
+  characters the chart widens and the pie itself shrinks to fit the
+  column. "Dry air, by volume" beats "Composition of dry air by volume"
+  on its own merits anyway.
 - **CHEMISTRY: mhchem (`\ce{...}`) IS NOT AVAILABLE**, and the failure
   is SILENT — a `\ce{}` span produces no `katex-error`, it just renders
   as garbage (`\ce2H2+O2−>2H2O`), so the render gate will not catch it.
