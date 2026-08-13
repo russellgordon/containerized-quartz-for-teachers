@@ -445,6 +445,53 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Contains("Say which one you mean.", refusal.Message);
     }
 
+    // ---- The first publish, and cutting loose from last year --------------
+
+    [Fact]
+    public async Task TheFirstPublishOfASectionIsSentBackToPlantoir()
+    {
+        // deploy.py asks what to call the site, and the server closes stdin on
+        // purpose — so the prompt would hit EOF and the launcher would die
+        // minutes into a build with an unhandled EOFError. Say it up front.
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
+        File.Delete(Path.Combine(_folder, "courses", "ICS3U", ".netlify_sites", "section1.json"));
+        var workspace = Open();
+        var plan = workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false);
+
+        var refusal = await Assert.ThrowsAsync<AssistRefusal>(() => workspace.Apply(plan));
+
+        Assert.Contains("has never been published", refusal.Message);
+        Assert.Contains("can only be answered in Plantoir", refusal.Message);
+        Assert.Empty(_launcher.Runs);
+    }
+
+    [Fact]
+    public void RollingOverCutsTheSectionLooseButKeepsTheOldSitesDetails()
+    {
+        // The marker names a site with the year in it. Rolling over without
+        // removing it would republish over last year's URL, which last year's
+        // students may still be reading. Renamed rather than deleted: it holds
+        // the site id, and there is no other way back to it.
+        var workspace = Open();
+        var course = workspace.Course("ICS3U");
+
+        string? kept = workspace.ReleaseSite(course, 1);
+
+        Assert.NotNull(kept);
+        Assert.False(File.Exists(Path.Combine(_folder, "courses", "ICS3U", ".netlify_sites", "section1.json")));
+        string keptFull = Path.Combine(_folder, kept!.Replace('/', Path.DirectorySeparatorChar));
+        Assert.True(File.Exists(keptFull));
+        Assert.Contains("ics3u-s1-2026-gordon", File.ReadAllText(keptFull));
+    }
+
+    [Fact]
+    public void CuttingLooseASectionThatNeverHadASiteSaysNothingHappened()
+    {
+        File.Delete(Path.Combine(_folder, "courses", "ICS3U", ".netlify_sites", "section2.json"));
+        var workspace = Open();
+        Assert.Null(workspace.ReleaseSite(workspace.Course("ICS3U"), 2));
+    }
+
     // ---- A session locked to one course ----------------------------------
 
     [Fact]
@@ -1038,6 +1085,19 @@ public class AssistWorkspaceTests : IDisposable
               "section_numbers": [{{string.Join(", ", sections)}}]
             }
             """);
+
+        // A course that has been published before. Without a site marker the
+        // server refuses to publish, because the first publish asks the
+        // teacher what to call the site and that can only happen in Plantoir.
+        if (deployTarget == "netlify") foreach (int section in sections) MarkPublished(code, section);
+    }
+
+    private void MarkPublished(string code, int section)
+    {
+        string directory = Path.Combine(_folder, "courses", code, ".netlify_sites");
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(Path.Combine(directory, $"section{section}.json"),
+            $$"""{"name": "{{code.ToLowerInvariant()}}-s{{section}}-2026-gordon"}""");
     }
 
     /// <summary>A class page: inside the per-section folder, with a date.</summary>

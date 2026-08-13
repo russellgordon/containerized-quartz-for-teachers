@@ -39,6 +39,14 @@ public sealed class ReDatePlan
     /// </summary>
     public required IReadOnlyList<PlannedDate> Materials { get; init; }
 
+    /// <summary>
+    /// Year-round reference pages moved to the first day of class: everything
+    /// Key Links points at, and every curriculum page. They belong to the
+    /// start of the year rather than to any one lesson, and a rollover would
+    /// otherwise leave them stranded on last year's dates.
+    /// </summary>
+    public IReadOnlyList<PlannedDate> Reference { get; init; } = Array.Empty<PlannedDate>();
+
     /// <summary>Date problems this change would leave behind, in plain words.</summary>
     public required IReadOnlyList<string> Problems { get; init; }
 
@@ -48,7 +56,8 @@ public sealed class ReDatePlan
     /// <summary>Meetings the spread did not use.</summary>
     public required int UnusedMeetings { get; init; }
 
-    public IEnumerable<PlannedDate> Changing => Dates.Concat(Materials).Where(d => d.WillChange);
+    public IEnumerable<PlannedDate> Changing =>
+        Dates.Concat(Materials).Concat(Reference).Where(d => d.WillChange);
 
     public bool ChangesNothing => !Changing.Any();
 
@@ -81,6 +90,11 @@ public sealed class ReDatePlan
         if (movingMaterials > 0)
             lines.Add($"{movingMaterials} concept, exercise and tutorial page{(movingMaterials == 1 ? "" : "s")} " +
                       "move by the same amount, keeping their spacing from the lessons that use them.");
+
+        int movingReference = Reference.Count(r => r.WillChange);
+        if (movingReference > 0)
+            lines.Add($"{movingReference} year-round page{(movingReference == 1 ? "" : "s")} — " +
+                      "what Key Links points at, and the curriculum — move to the first day of class.");
 
         if (changing.Count > 0)
         {

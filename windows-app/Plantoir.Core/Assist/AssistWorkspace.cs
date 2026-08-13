@@ -208,6 +208,74 @@ public sealed class AssistWorkspace
     /// <summary>The per-section page whose links are the year-round signposts.</summary>
     private const string KeyLinksFileName = "Key Links.md";
 
+    /// <summary>
+    /// True when a page is curriculum reference material.
+    ///
+    /// Matches build_site.py's own rule exactly — any FOLDER segment
+    /// containing "curriculum", case-insensitively, with the filename ignored.
+    /// That is what makes it work for a course whose folders are called
+    /// "Ontario Curriculum" and "College Board Curriculum" rather than plain
+    /// "Curriculum", which is the normal case outside the example content.
+    /// </summary>
+    public static bool IsCurriculum(string courseDirectory, string pagePath)
+    {
+        string relative;
+        try { relative = Path.GetRelativePath(Path.GetFullPath(courseDirectory), Path.GetFullPath(pagePath)); }
+        catch { return false; }
+
+        var segments = relative.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        for (int i = 0; i < segments.Length - 1; i++)          // folders only, never the file name
+            if (segments[i].Contains("curriculum", StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
+    }
+
+    /// <summary>
+    /// Year-round reference pages, which belong to the start of the year
+    /// rather than to any one lesson: everything Key Links points at, and
+    /// every curriculum page.
+    ///
+    /// A rollover moves the classes but leaves these behind on last year's
+    /// dates, where they sort oddly and show up as stragglers in the date
+    /// audit. Dating them to the first day of class puts them at the
+    /// beginning of the year, which is what they are.
+    /// </summary>
+    private List<PlannedDate> ReferenceDates(Course course, int section, DateOnly firstDay)
+    {
+        var reference = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        string keyLinks = Path.Combine(course.SectionDirectory(section), KeyLinksFileName);
+        if (File.Exists(keyLinks))
+        {
+            reference.Add(Path.GetFullPath(keyLinks));
+            try
+            {
+                foreach (var resolution in WikiLinks.Resolve(
+                             WikiLinks.Parse(File.ReadAllText(keyLinks)), course.DirectoryPath, section, keyLinks))
+                    if (resolution.Outcome == LinkOutcome.Resolved)
+                        reference.Add(Path.GetFullPath(resolution.Path!));
+            }
+            catch { }
+        }
+
+        foreach (string page in PagePaths.MarkdownPages(course.DirectoryPath, section))
+            if (IsCurriculum(course.DirectoryPath, page)) reference.Add(Path.GetFullPath(page));
+
+        var dates = new List<PlannedDate>();
+        foreach (string page in reference.OrderBy(p => p, StringComparer.OrdinalIgnoreCase))
+        {
+            if (DateOf(course, section, page) == firstDay) continue;
+            bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, page);
+            dates.Add(new PlannedDate(
+                Title: Path.GetFileNameWithoutExtension(page),
+                RelativePath: Relative(page),
+                FrontmatterKey: PageFrontmatter.CreatedKeyFor(section, sectionLocal),
+                Current: DateOf(course, section, page),
+                New: firstDay,
+                MeetingNumber: 0));
+        }
+        return dates;
+    }
+
     private static DateOnly? DateOf(Course course, int sectionNumber, string pagePath)
     {
         bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, pagePath);
@@ -617,6 +685,7 @@ public sealed class AssistWorkspace
         int section = Section(course, sectionNumber);
         DeployArguments(course, section);   // refuse now if this course can't publish from here
         RefuseIfPlantoirIsBuilding(course);
+        RefuseFirstPublish(course, section);
 
         progress?.Report($"Building Section {section} of {course.Code}…");
         var build = await _launcher.Run("preview", new[] { course.Code, section.ToString(), "--build-only" },
@@ -664,6 +733,7 @@ public sealed class AssistWorkspace
         {
             DeployArguments(course, section);
             RefuseIfPlantoirIsBuilding(course);
+            RefuseFirstPublish(course, section);
         }
 
         string backup;
@@ -797,6 +867,35 @@ public sealed class AssistWorkspace
     }
 
     /// <summary>
+    /// Refuse the FIRST publish of a section, which has to happen in Plantoir.
+    ///
+    /// When a section has no site marker yet — a new course, or one just
+    /// rolled over — deploy.py asks the teacher what to call the site. That is
+    /// a prompt on stdin, and the server closes stdin deliberately so a
+    /// missing token cannot hang a tool call forever. The prompt would
+    /// therefore hit EOF and the launcher would die with an unhandled
+    /// EOFError, minutes into a build, saying nothing a teacher could act on.
+    ///
+    /// So it is named up front instead. Once the section has been published
+    /// once, the marker exists and every later publish works from here.
+    /// </summary>
+    private void RefuseFirstPublish(Course course, int section)
+    {
+        var configuration = course.Configuration;
+        if (configuration.DeploysToLocalFolder) return;   // a folder needs no site and no name
+
+        string marker = Path.Combine(course.DirectoryPath,
+            configuration.DeploysToCloudflare ? ".cloudflare_sites" : ".netlify_sites",
+            $"section{section}.json");
+        if (File.Exists(marker)) return;
+
+        throw new AssistRefusal(
+            $"{course.Code} Section {section} has never been published, so publishing it asks what to call the " +
+            "website — and that question can only be answered in Plantoir. Publish this section once from there, " +
+            "and everything after that can be done from here.");
+    }
+
+    /// <summary>
     /// Why this course cannot be published from here, or null when it can.
     /// A Pages-scoped Cloudflare token cannot list its own account — verified
     /// against a real token — so the account ID lives in Plantoir's settings
@@ -880,6 +979,12 @@ public sealed class AssistWorkspace
 
         var materials = ShiftMaterials(course, section, dates);
 
+        // The first day of class is whatever the earliest re-dated class lands
+        // on — a section does not span semesters, so there is exactly one.
+        var reference = dates.Count > 0
+            ? ReferenceDates(course, section, dates.Min(d => d.New))
+            : new List<PlannedDate>();
+
         return new ReDatePlan
         {
             CourseCode = course.Code,
@@ -887,6 +992,7 @@ public sealed class AssistWorkspace
             Block = timetable.Block,
             Dates = dates,
             Materials = materials,
+            Reference = reference,
             NonTeachingDays = timetable.NonTeachingDays,
             UnusedMeetings = Math.Max(0, timetable.Meetings.Count - chosen.Count),
             Problems = ProblemsAfter(course, section, dates.Concat(materials).ToList(), tail),
@@ -1013,6 +1119,34 @@ public sealed class AssistWorkspace
             catch { }
         }
         return "T07:00:00.000-0400";
+    }
+
+    /// <summary>
+    /// Cut a section loose from last year's website, so the next publish makes
+    /// a new one instead of overwriting it.
+    ///
+    /// The marker under <c>.netlify_sites/</c> (or <c>.cloudflare_sites/</c>)
+    /// pins the section to a site whose name has the year in it —
+    /// <c>exc2o-s1-2026-gordon</c>. Roll the course over without removing it
+    /// and the first publish of the new year lands on last year's URL, which
+    /// last year's students may still be reading.
+    ///
+    /// The marker is renamed rather than deleted: it holds the site id and
+    /// admin URL, and a teacher who decides they wanted the old site after all
+    /// has no other way back to it.
+    /// </summary>
+    public string? ReleaseSite(Course course, int sectionNumber)
+    {
+        foreach (string folder in new[] { ".netlify_sites", ".cloudflare_sites" })
+        {
+            string marker = Path.Combine(course.DirectoryPath, folder, $"section{sectionNumber}.json");
+            if (!File.Exists(marker)) continue;
+            string kept = Path.Combine(course.DirectoryPath, folder,
+                $"section{sectionNumber}.previous-{DateTime.Now:yyyy-MM-dd_HHmmss}.json");
+            try { File.Move(marker, kept); return Relative(kept); }
+            catch { return null; }
+        }
+        return null;
     }
 
     /// <summary>Carry out a re-date the teacher has agreed to, after backing the course up.</summary>

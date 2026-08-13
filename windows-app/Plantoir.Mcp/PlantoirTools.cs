@@ -190,12 +190,14 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         [Description(TimetableHelp)] string timetable,
         [Description(BlockHelp)] string block,
         CancellationToken cancellation,
+        [Description("The first day of class, as YYYY-MM-DD. Meetings before it are ignored — a block runs all year, a section does not. Leave empty to use the whole block.")]
+        string firstDay = "",
         [Description("The calendar year the school year starts in. Leave empty to work it out from today's date.")]
         int startYear = 0)
     {
         try
         {
-            var parsed = await Load(timetable, block, startYear, cancellation);
+            var parsed = await Load(timetable, block, startYear, cancellation, firstDay);
             var text = new StringBuilder();
             text.AppendLine($"Block {parsed.Block}: {parsed.Meetings.Count} class meetings, " +
                             $"{parsed.Meetings[0].Date:yyyy-MM-dd} to {parsed.Meetings[^1].Date:yyyy-MM-dd}.");
@@ -234,9 +236,68 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         string[]? pages = null,
         [Description("Meeting numbers, one for each entry in `pages`, in the same order.")]
         int[]? meetings = null,
+        [Description("The first day of class, as YYYY-MM-DD. Meetings before it are ignored — a block runs all year, a section does not. Leave empty to use the whole block.")]
+        string firstDay = "",
         [Description("The calendar year the school year starts in. Leave empty to work it out from today's date.")]
         int startYear = 0)
-        => ReDate(course, section, timetable, block, pages, meetings, startYear, apply: false, cancellation);
+        => ReDate(course, section, timetable, block, pages, meetings, startYear, apply: false, firstDay, cancellation);
+
+    [McpServerTool(Name = "roll_over_section", Title = "Roll a section over to a new year",
+                   Destructive = false, Idempotent = false)]
+    [Description("Start a section again for a new year, after the teacher has copied the course from a prior one. " +
+                 "Re-dates every class onto the new timetable, moves each lesson's materials with it, and moves the " +
+                 "year-round pages — what Key Links points at, and the curriculum — to the first day of class. " +
+                 "Also cuts the section loose from last year's website so the next publish makes a new one rather " +
+                 "than overwriting it. The course is backed up first, automatically. " +
+                 "\n\nAsk the teacher two things before calling this: what the first day of class is, and where their " +
+                 "timetable spreadsheet is. Call plan_re_date_classes first and show them the dates. " +
+                 "\n\nThis deliberately does NOT hide anything: the teacher should preview the site and check the " +
+                 "dates and structure before deciding what students see. Afterwards the section has to be published " +
+                 "once from Plantoir, where the teacher chooses what the new site is called.")]
+    public async Task<string> RollOverSection(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description(TimetableHelp)] string timetable,
+        [Description(BlockHelp)] string block,
+        CancellationToken cancellation,
+        [Description("Class page titles, in the order they are taught. Leave empty for an even spread.")]
+        string[]? pages = null,
+        [Description("Meeting numbers, one for each entry in `pages`, in the same order.")]
+        int[]? meetings = null,
+        [Description("The first day of class, as YYYY-MM-DD. Meetings before it are ignored — a block runs all year, a section does not. Leave empty to use the whole block.")]
+        string firstDay = "",
+        [Description("The calendar year the school year starts in. Leave empty to work it out from today's date.")]
+        int startYear = 0)
+    {
+        try
+        {
+            var parsed = await Load(timetable, block, startYear, cancellation, firstDay);
+            var plan = workspace.PlanReDate(course, section, parsed,
+                pages ?? Array.Empty<string>(), meetings ?? Array.Empty<int>());
+            var result = workspace.ApplyReDate(plan);
+
+            var found = workspace.Course(course);
+            string? released = workspace.ReleaseSite(found, section);
+
+            var text = new StringBuilder(result.Message);
+            text.Append(released is null
+                ? "\nThis section had no website yet, so there was nothing to cut it loose from."
+                : $"\nCut loose from last year's website — the old details are kept at {released}. " +
+                  "Publishing this section from Plantoir will ask what to call the new site.");
+            text.Append("\n\nNothing was hidden. Preview the section and check the dates and structure look right, " +
+                        "then decide what students should see.");
+            if (plan.Problems.Count > 0)
+            {
+                text.AppendLine().AppendLine();
+                text.AppendLine("Worth looking at:");
+                foreach (string problem in plan.Problems) text.AppendLine("  • " + problem);
+            }
+            if (result.BackupPath is not null)
+                text.Append("\nA backup was made first, so this can be undone from Plantoir’s Backups list.");
+            return text.ToString();
+        }
+        catch (AssistRefusal refusal) { return refusal.Message; }
+    }
 
     [McpServerTool(Name = "re_date_classes", Title = "Re-date classes", Destructive = false, Idempotent = true)]
     [Description("Move a section's classes onto a timetable's dates. The course is backed up first, automatically. " +
@@ -252,17 +313,19 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         string[]? pages = null,
         [Description("Meeting numbers, one for each entry in `pages`, in the same order.")]
         int[]? meetings = null,
+        [Description("The first day of class, as YYYY-MM-DD. Meetings before it are ignored — a block runs all year, a section does not. Leave empty to use the whole block.")]
+        string firstDay = "",
         [Description("The calendar year the school year starts in. Leave empty to work it out from today's date.")]
         int startYear = 0)
-        => ReDate(course, section, timetable, block, pages, meetings, startYear, apply: true, cancellation);
+        => ReDate(course, section, timetable, block, pages, meetings, startYear, apply: true, firstDay, cancellation);
 
     private async Task<string> ReDate(string course, int section, string timetable, string block,
                                       string[]? pages, int[]? meetings, int startYear, bool apply,
-                                      CancellationToken cancellation)
+                                      string firstDay, CancellationToken cancellation)
     {
         try
         {
-            var parsed = await Load(timetable, block, startYear, cancellation);
+            var parsed = await Load(timetable, block, startYear, cancellation, firstDay);
             var plan = workspace.PlanReDate(course, section, parsed,
                 pages ?? Array.Empty<string>(), meetings ?? Array.Empty<int>());
 
@@ -287,13 +350,16 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     }
 
     private static async Task<Timetable> Load(string timetable, string block, int startYear,
-                                              CancellationToken cancellation)
+                                              CancellationToken cancellation, string firstDay = "")
     {
         string csv = await TimetableSource.Read(timetable, cancellation);
         int year = startYear > 0
             ? startYear
             : Timetable.AcademicYearStarting(DateOnly.FromDateTime(DateTime.Now));
-        return Timetable.Parse(csv, block, year);
+        var parsed = Timetable.Parse(csv, block, year);
+        // The teacher's first day of class, when they gave one: a block runs
+        // all year but a section does not span semesters.
+        return ParseDate(firstDay, "firstDay") is { } from ? parsed.From(from) : parsed;
     }
 
     [McpServerTool(Name = "plan_sync_page_dates", Title = "Plan bringing materials into date",

@@ -216,6 +216,35 @@ public class TimetableTests
     }
 
     [Fact]
+    public void AFirstDayOfClassTrimsTheMeetingsBeforeIt()
+    {
+        // A block runs the whole year; a section of a course does not span
+        // semesters, so one starting in February uses the back half of it.
+        var timetable = Parse().From(new DateOnly(2027, 2, 1));
+
+        Assert.Equal(2, timetable.Meetings.Count);
+        Assert.Equal(new DateOnly(2027, 2, 8), timetable.Meetings[0].Date);
+        // Numbers stay as the sheet has them, so a teacher reading the
+        // timetable and a plan saying "meeting 5" mean the same day.
+        Assert.Equal(5, timetable.Meetings[0].Number);
+    }
+
+    [Fact]
+    public void AFirstDayAfterEveryMeetingIsRefusedWithTheRangeThatExists()
+    {
+        var refusal = Assert.Throws<AssistRefusal>(() => Parse().From(new DateOnly(2030, 1, 1)));
+        Assert.Contains("has no class meetings on or after 2030-01-01", refusal.Message);
+        Assert.Contains("It runs 2026-10-13 to 2027-06-11.", refusal.Message);
+    }
+
+    [Fact]
+    public void TrimmingAlsoDropsTheNonTeachingDaysBeforeTheFirstDay()
+    {
+        var timetable = Parse().From(new DateOnly(2027, 2, 1));
+        Assert.DoesNotContain(timetable.NonTeachingDays, d => d.Date < new DateOnly(2027, 2, 1));
+    }
+
+    [Fact]
     public void AskingForMoreClassesThanMeetingsGivesEveryMeetingOnce()
     {
         var spread = Parse().EvenSpread(99);

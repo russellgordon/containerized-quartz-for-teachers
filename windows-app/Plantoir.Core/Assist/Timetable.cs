@@ -279,6 +279,33 @@ public sealed class Timetable
         return chosen;
     }
 
+    /// <summary>
+    /// The same block, from a given first day of class onwards.
+    ///
+    /// A block runs the whole year, but a section of a course does not span
+    /// semesters — so a course starting in February uses the back half of it
+    /// and nothing before. Meeting numbers are left as the sheet has them, so
+    /// a teacher reading the timetable and a plan referring to "meeting 31"
+    /// are talking about the same day.
+    /// </summary>
+    public Timetable From(DateOnly firstDay)
+    {
+        var kept = Meetings.Where(m => m.Date >= firstDay).ToList();
+        if (kept.Count == 0)
+            throw new AssistRefusal(
+                $"Block {Block} has no class meetings on or after {firstDay:yyyy-MM-dd}. " +
+                $"It runs {Meetings[0].Date:yyyy-MM-dd} to {Meetings[^1].Date:yyyy-MM-dd}.");
+
+        return new Timetable
+        {
+            Block = Block,
+            Meetings = kept,
+            NonTeachingDays = NonTeachingDays.Where(d => d.Date >= firstDay).ToList(),
+            AvailableBlocks = AvailableBlocks,
+            DateFormat = DateFormat,
+        };
+    }
+
     public Meeting? ByNumber(int number) =>
         Meetings.FirstOrDefault(m => m.Number == number) is { Number: > 0 } found ? found : null;
 
