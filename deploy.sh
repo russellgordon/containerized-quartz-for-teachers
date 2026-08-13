@@ -653,8 +653,13 @@ echo "🚀 Deploying ${COURSE_CODE} S${SECTION_NUM} from: ${SECTION_DIR_IN_CONTA
 # --- Securely inject token into container without exposing on host CLI ---
 printf %s "$TOKEN" | docker exec -i "$CONTAINER_NAME" sh -lc 'umask 077; cat > /tmp/netlify_pat'
 
+# Ask for a terminal only when there is one: `docker exec -t` refuses to start
+# without a terminal on stdin, which is how this runs from a script or from
+# Plantoir's MCP server. See the same note in preview.sh.
+if [[ -t 0 ]]; then _EXEC_TTY="-it"; else _EXEC_TTY="-i"; fi
+
 # Pass options via env to avoid fragile mixed quoting in sh -lc
-docker exec -it \
+docker exec $_EXEC_TTY \
   -e HOST_TZ_OFFSET="${HOST_TZ_OFFSET}" \
   -e DIAGNOSE="${DIAGNOSE}" \
   -e TEAM_SLUG="${TEAM_SLUG}" \

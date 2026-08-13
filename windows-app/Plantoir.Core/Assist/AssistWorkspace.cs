@@ -122,33 +122,67 @@ public sealed class AssistWorkspace
     // ---- Planning --------------------------------------------------------
 
     /// <summary>
-    /// Work out what publishing (or hiding) this class page would do, without
+    /// Work out what publishing (or hiding) these pages would do, without
     /// touching anything. This is what the teacher confirms.
+    ///
+    /// Takes a LIST, and takes any page — not just a class page. Both of those
+    /// came out of a real session that the single-class-page version could not
+    /// express:
+    ///
+    /// * Hiding 25 classes meant 25 calls, each one republishing the site: 26
+    ///   deploys for what is logically one change. Batching is not a
+    ///   convenience here, it is the difference between usable and not.
+    /// * A safety contract linked from BOTH the first class (which must stay
+    ///   up) and a later one (which must come down) made the task
+    ///   unsatisfiable: <c>includeLinked</c> took it down, and nothing could
+    ///   put just that page back. Being able to name any page directly
+    ///   dissolves it. That shape — a shared page reachable from several
+    ///   classes — is the normal shape of a course, not an edge case.
     /// </summary>
     public PublishPlan PlanPublish(
-        string courseCode, int sectionNumber, string pageTitle,
+        string courseCode, int sectionNumber, IReadOnlyList<string> pageTitles,
         bool includeLinked, bool draft = false, bool publishes = true)
     {
         var course = Course(courseCode);
         int section = Section(course, sectionNumber);
-        string pagePath = Page(course, section, pageTitle);
+
+        if (pageTitles.Count == 0) throw new AssistRefusal("No page was named.");
 
         var problems = new List<string>();
-        var linked = new List<PlannedPage>();
+        var pages = new List<PlannedPage>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         // Surface it in the PLAN, so the teacher learns the publish can't
         // happen before agreeing to it rather than after.
         if (publishes && PublishProblem(course) is { } blocked) problems.Add(blocked);
 
+        var namedPaths = new List<string>();
+        foreach (string title in pageTitles)
+        {
+            string path = Page(course, section, title);
+            if (!seen.Add(Path.GetFullPath(path))) continue;   // the same page named twice
+            namedPaths.Add(path);
+            pages.Add(Plan(course, section, path, draft, viaLink: false));
+        }
+
         if (includeLinked)
         {
-            var resolutions = WikiLinks.Resolve(
-                WikiLinks.Parse(File.ReadAllText(pagePath)), course.DirectoryPath, section, pagePath);
-            foreach (var resolution in resolutions)
+            foreach (string path in namedPaths)
             {
-                if (resolution.Problem is { } problem) { problems.Add(problem); continue; }
-                if (resolution.Outcome != LinkOutcome.Resolved) continue;
-                linked.Add(Plan(course, section, resolution.Path!, draft));
+                var resolutions = WikiLinks.Resolve(
+                    WikiLinks.Parse(File.ReadAllText(path)), course.DirectoryPath, section, path);
+                foreach (var resolution in resolutions)
+                {
+                    if (resolution.Problem is { } problem)
+                    {
+                        if (!problems.Contains(problem)) problems.Add(problem);
+                        continue;
+                    }
+                    if (resolution.Outcome != LinkOutcome.Resolved) continue;
+                    // A page reached from two different classes is one page.
+                    if (!seen.Add(Path.GetFullPath(resolution.Path!))) continue;
+                    pages.Add(Plan(course, section, resolution.Path!, draft, viaLink: true));
+                }
             }
         }
 
@@ -156,25 +190,54 @@ public sealed class AssistWorkspace
         {
             CourseCode = course.Code,
             SectionNumber = section,
-            Page = Plan(course, section, pagePath, draft),
-            Linked = linked,
+            Pages = pages,
             Problems = problems,
             Publishes = publishes,
             Destination = DestinationOf(course),
+            Hiding = draft,
         };
     }
 
-    private PlannedPage Plan(Course course, int section, string pagePath, bool draft)
+    private PlannedPage Plan(Course course, int section, string pagePath, bool draft, bool viaLink)
     {
         bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, pagePath);
         string key = PageFrontmatter.DraftKeyFor(section, sectionLocal);
         string text = File.ReadAllText(pagePath);
         return new PlannedPage(
-            Title: System.IO.Path.GetFileNameWithoutExtension(pagePath),
+            Title: Path.GetFileNameWithoutExtension(pagePath),
             RelativePath: Relative(pagePath),
             FrontmatterKey: key,
             CurrentValue: PageFrontmatter.StoredValue(text, key),
-            Draft: draft);
+            Draft: draft,
+            ViaLink: viaLink);
+    }
+
+    /// <summary>
+    /// Rebuild and republish a section, changing no content at all.
+    ///
+    /// Without this there was no way to ask for a deploy on its own, so a real
+    /// session ended up calling publish on a page that happened to need no
+    /// changes, purely to trigger a rebuild. That only worked by luck.
+    /// </summary>
+    public async Task<AssistResult> Republish(string courseCode, int sectionNumber,
+                                              IProgress<string>? progress = null,
+                                              CancellationToken cancellation = default)
+    {
+        var course = Course(courseCode);
+        int section = Section(course, sectionNumber);
+        DeployArguments(course, section);   // refuse now if this course can't publish from here
+
+        progress?.Report($"Building Section {section} of {course.Code}…");
+        var build = await _launcher.Run("preview", new[] { course.Code, section.ToString(), "--build-only" },
+                                        _folder, progress, cancellation);
+        if (!build.Succeeded)
+            return new AssistResult(false, $"Nothing was changed, and the build failed. {build.Message}", null);
+
+        progress?.Report($"Publishing to {DestinationOf(course)}…");
+        var publish = await _launcher.Run("deploy", DeployArguments(course, section), _folder, progress, cancellation);
+        return publish.Succeeded
+            ? new AssistResult(true, $"Republished {course.Code} Section {section} to {DestinationOf(course)}. No content was changed.", null)
+            : new AssistResult(false, $"Nothing was changed, and publishing failed. {publish.Message}", null);
     }
 
     private static string DestinationOf(Course course) =>
@@ -239,17 +302,30 @@ public sealed class AssistWorkspace
                                         _folder, progress, cancellation);
         if (!build.Succeeded)
             return new AssistResult(false,
-                $"The pages were changed and backed up, but the build failed, so nothing was published. {build.Message}",
+                $"{WhatSurvived(changed)}, but the build failed, so nothing was published. {build.Message}",
                 backup);
 
         progress?.Report($"Publishing to {DestinationOf(course)}…");
         var publish = await _launcher.Run("deploy", DeployArguments(course, section), _folder, progress, cancellation);
         if (!publish.Succeeded)
             return new AssistResult(false,
-                $"The pages were changed and backed up, but publishing failed. {publish.Message}", backup);
+                $"{WhatSurvived(changed)}, but publishing failed. {publish.Message}", backup);
 
         return new AssistResult(true, Summary(changed, published: true, course.Code, section), backup);
     }
+
+    /// <summary>
+    /// What is actually true after a failure, said accurately.
+    ///
+    /// This used to read "The pages were changed and backed up" whatever
+    /// happened — including when the plan had just established that no page
+    /// needed changing. A teacher reading that reasonably concludes their
+    /// content was modified and goes looking for damage that isn't there.
+    /// </summary>
+    private static string WhatSurvived(IReadOnlyList<string> changed) =>
+        changed.Count == 0
+            ? "No page needed changing, and the course was backed up"
+            : $"{changed.Count} page{(changed.Count == 1 ? " was" : "s were")} changed and the course was backed up";
 
     private static string Summary(IReadOnlyList<string> changed, bool published, string code, int section)
     {

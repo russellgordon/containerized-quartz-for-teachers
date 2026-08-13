@@ -636,8 +636,21 @@ if (-not $BUILD_ONLY) {
 
 # ---- Run build inside the container ----
 Write-Host "Running build_site.py inside the Docker container ..."
-# Use -it for interactive prompts; pass array to avoid quoting issues
-docker exec -it "$CONTAINER_NAME" python3 /opt/scripts/build_site.py $argList
+# A terminal is what makes the container's prompts and live progress work, so
+# ask for one when there IS one. But `docker exec -t` refuses to start at all
+# when stdin is not a terminal, which is how this runs from a script, a CI
+# job, or Plantoir's MCP server — and it fails at this line, minutes into the
+# build, with nothing more useful than "the input device is not a TTY".
+# Without a terminal, run python unbuffered instead, so progress still arrives
+# line by line rather than in one lump when the build finishes.
+$interactive = -not [Console]::IsInputRedirected
+$execArgs = @("exec")
+$execArgs += if ($interactive) { "-it" } else { "-i" }
+$execArgs += @("$CONTAINER_NAME", "python3")
+if (-not $interactive) { $execArgs += "-u" }
+$execArgs += "/opt/scripts/build_site.py"
+$execArgs += $argList
+& docker @execArgs
 # Propagate the build's exit code — without this the script reports
 # success even when the run inside the container failed.
 exit $LASTEXITCODE

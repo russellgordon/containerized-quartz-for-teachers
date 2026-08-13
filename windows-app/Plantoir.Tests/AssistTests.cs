@@ -90,9 +90,9 @@ public class AssistWorkspaceTests : IDisposable
         Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true,
              body: "Concept: [[Ohm's Law]]");
 
-        var plan = Open().PlanPublish("ICS3U", 1, "Unit 2, Day 3", includeLinked: true);
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true);
 
-        Assert.Equal("draft", plan.Page.FrontmatterKey);
+        Assert.Equal("draft", Assert.Single(plan.Named).FrontmatterKey);
         Assert.Equal("draftSection1", Assert.Single(plan.Linked).FrontmatterKey);
     }
 
@@ -103,10 +103,19 @@ public class AssistWorkspaceTests : IDisposable
         Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true,
              body: "Concept: [[Ohm's Law]]");
 
-        var plan = Open().PlanPublish("ICS3U", 1, "Unit 2, Day 3", includeLinked: true);
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true);
 
+        // Every changing page names its key and its transition. A reader who
+        // has only seen class pages would otherwise generalise `draft:` to
+        // course-level pages and be wrong — which is exactly what happened.
         Assert.Equal(
-            "Publish “Unit 2, Day 3” in ICS3U Section 1, and publish the 1 page it links to.\n" +
+            "Publish “Unit 2, Day 3” in ICS3U Section 1, and the 1 page they link to.\n" +
+            "All 2 pages would change.\n" +
+            "\n" +
+            "Would change:\n" +
+            "  courses/ICS3U/section1/All Classes/Unit 2, Day 3.md  (draft: true → false)\n" +
+            "  courses/ICS3U/Concepts/Ohm's Law.md  (draftSection1: true → false)\n" +
+            "\n" +
             "Then republish Section 1 to Netlify.",
             plan.Describe());
     }
@@ -120,10 +129,32 @@ public class AssistWorkspaceTests : IDisposable
         Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: false,
              body: "Concept: [[Ohm's Law]]");
 
-        var plan = Open().PlanPublish("ICS3U", 1, "Unit 2, Day 3", includeLinked: true);
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true);
 
         Assert.True(plan.ChangesNothing);
-        Assert.Contains("and so is the 1 page it links to", plan.Describe());
+        Assert.Contains("and the 1 page they link to", plan.Describe());
+        Assert.Contains("all 2 pages are already published", plan.Describe());
+    }
+
+    [Fact]
+    public void TheLinkCountAndTheChangeCountAreNeverTheSamePhrase()
+    {
+        // A real session ran the same call twice with a file edited between,
+        // got "the 2 pages it links to" and then "the 1 page it links to", and
+        // concluded the tool was unreliable. Both answers were right; the
+        // phrase was doing two jobs. Now the number of links followed and the
+        // number of pages changing are separate sentences.
+        Page("ICS3U", "Concepts/Ohm's Law.md", draftSection1: true);
+        Page("ICS3U", "Exercises/Ohm's Law Practice.md", draftSection1: false);
+        Page("ICS3U", "section1/All Classes/Unit 4, Day 5.md", draft: false,
+             body: "[[Ohm's Law]] and [[Ohm's Law Practice]]");
+
+        string description = Open()
+            .PlanPublish("ICS3U", 1, new[] { "Unit 4, Day 5" }, includeLinked: true).Describe();
+
+        Assert.Contains("and the 2 pages they link to", description);      // links followed
+        Assert.Contains("1 of 3 pages would change", description);          // pages changing
+        Assert.Contains("(draftSection1: true → false)", description);      // and the state it saw
     }
 
     [Fact]
@@ -132,7 +163,7 @@ public class AssistWorkspaceTests : IDisposable
         Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true,
              body: "Concept: [[A Page That Does Not Exist]]");
 
-        var plan = Open().PlanPublish("ICS3U", 1, "Unit 2, Day 3", includeLinked: true);
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true);
 
         Assert.Equal("“A Page That Does Not Exist” doesn’t match any page in this section.",
             Assert.Single(plan.Problems));
@@ -143,9 +174,71 @@ public class AssistWorkspaceTests : IDisposable
     public void HidingIsPlannedWithTheOppositePolarity()
     {
         Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: false);
-        var plan = Open().PlanPublish("ICS3U", 1, "Unit 2, Day 3", includeLinked: false, draft: true);
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false, draft: true);
         Assert.StartsWith("Hide “Unit 2, Day 3” in ICS3U Section 1.", plan.Describe());
-        Assert.True(plan.Page.WillChange);
+        Assert.True(Assert.Single(plan.Named).WillChange);
+    }
+
+    // ---- What the single-page surface could not express -------------------
+
+    [Fact]
+    public void SeveralPagesArePlannedAsOneChange()
+    {
+        // 25 classes used to mean 25 calls and 25 deploys.
+        for (int day = 2; day <= 5; day++)
+            Page("ICS3U", $"section1/All Classes/Unit 1, Day {day}.md", draft: false);
+
+        var plan = Open().PlanPublish("ICS3U", 1,
+            new[] { "Unit 1, Day 2", "Unit 1, Day 3", "Unit 1, Day 4", "Unit 1, Day 5" },
+            includeLinked: false, draft: true);
+
+        Assert.Equal(4, plan.Named.Count());
+        Assert.StartsWith("Hide 4 pages in ICS3U Section 1.", plan.Describe());
+    }
+
+    [Fact]
+    public void ACourseLevelPageCanBeNamedDirectly()
+    {
+        // The Safety Contract case: a page linked from a class that must stay
+        // up AND one that must come down. Naming it directly is the only way
+        // to express "leave this one alone" — with class-page-only tools the
+        // constraint was unsatisfiable.
+        Page("ICS3U", "Setup/Safety Contract.md", draftSection1: true);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Safety Contract" }, includeLinked: false);
+
+        var page = Assert.Single(plan.Named);
+        Assert.Equal("draftSection1", page.FrontmatterKey);
+        Assert.True(page.WillChange);
+    }
+
+    [Fact]
+    public void APageReachedFromTwoClassesIsCountedOnce()
+    {
+        Page("ICS3U", "Setup/Safety Contract.md", draftSection1: false);
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 2.md", draft: false, body: "[[Safety Contract]]");
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 3.md", draft: false, body: "[[Safety Contract]]");
+
+        var plan = Open().PlanPublish("ICS3U", 1,
+            new[] { "Unit 1, Day 2", "Unit 1, Day 3" }, includeLinked: true, draft: true);
+
+        Assert.Single(plan.Linked);
+        Assert.Equal(3, plan.Pages.Count);
+    }
+
+    [Fact]
+    public async Task RepublishingRunsTheLaunchersAndChangesNoContent()
+    {
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
+        var workspace = Open();
+
+        var result = await workspace.Republish("ICS3U", 1);
+
+        Assert.True(result.Succeeded);
+        Assert.Contains("No content was changed.", result.Message);
+        Assert.Equal(new[] { "preview", "deploy" }, _launcher.Runs.Select(r => r.Launcher));
+        Assert.Contains("draft: true",
+            File.ReadAllText(Path.Combine(_folder, "courses", "ICS3U", "section1", "All Classes", "Unit 2, Day 3.md")));
     }
 
     // ---- Applying --------------------------------------------------------
@@ -157,7 +250,7 @@ public class AssistWorkspaceTests : IDisposable
         // undo is a real button rather than advice.
         Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
         var workspace = Open();
-        var plan = workspace.PlanPublish("ICS3U", 1, "Unit 2, Day 3", includeLinked: false, publishes: false);
+        var plan = workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false, publishes: false);
 
         var result = await workspace.Apply(plan);
 
@@ -173,7 +266,7 @@ public class AssistWorkspaceTests : IDisposable
         Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true, body: "Concept: [[Ohm's Law]]");
 
         var workspace = Open();
-        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, "Unit 2, Day 3", includeLinked: true, publishes: false));
+        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true, publishes: false));
 
         string text = File.ReadAllText(Path.Combine(_folder, "courses", "ICS3U", "Concepts", "Ohm's Law.md"));
         Assert.Contains("draftSection1: false", text);
@@ -186,7 +279,7 @@ public class AssistWorkspaceTests : IDisposable
         Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
         var workspace = Open();
 
-        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, "Unit 2, Day 3", includeLinked: false));
+        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false));
 
         Assert.Equal(2, _launcher.Runs.Count);
         Assert.Equal("preview", _launcher.Runs[0].Launcher);
@@ -202,12 +295,31 @@ public class AssistWorkspaceTests : IDisposable
         _launcher.FailOn = "preview";
         var workspace = Open();
 
-        var result = await workspace.Apply(workspace.PlanPublish("ICS3U", 1, "Unit 2, Day 3", includeLinked: false));
+        var result = await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false));
 
         Assert.False(result.Succeeded);
         Assert.Contains("nothing was published", result.Message);
         Assert.Single(_launcher.Runs);                       // deploy never ran
         Assert.NotNull(result.BackupPath);                   // and the backup is still there
+    }
+
+    [Fact]
+    public async Task AFailureDoesNotClaimPagesChangedWhenNoneDid()
+    {
+        // This message used to read "The pages were changed and backed up"
+        // whatever happened — including when the plan had just established
+        // that nothing needed changing. A teacher reading that goes looking
+        // for damage that was never done.
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: false);
+        _launcher.FailOn = "preview";
+        var workspace = Open();
+
+        var result = await workspace.Apply(
+            workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false));
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("No page needed changing, and the course was backed up", result.Message);
+        Assert.DoesNotContain("pages were changed", result.Message);
     }
 
     [Fact]
@@ -218,7 +330,7 @@ public class AssistWorkspaceTests : IDisposable
         AddCourse("SNC1W", "Science", 1, deployTarget: "cloudflare_pages");
         Page("SNC1W", "section1/All Classes/Unit 1, Day 1.md", draft: true);
         var workspace = Open();
-        var plan = workspace.PlanPublish("SNC1W", 1, "Unit 1, Day 1", includeLinked: false);
+        var plan = workspace.PlanPublish("SNC1W", 1, new[] { "Unit 1, Day 1" }, includeLinked: false);
 
         var refusal = await Assert.ThrowsAsync<AssistRefusal>(() => workspace.Apply(plan));
 
@@ -241,7 +353,7 @@ public class AssistWorkspaceTests : IDisposable
         AddCourse("SNC1W", "Science", 1, deployTarget: "cloudflare_pages");
         Page("SNC1W", "section1/All Classes/Unit 1, Day 1.md", draft: true);
 
-        var plan = Open().PlanPublish("SNC1W", 1, "Unit 1, Day 1", includeLinked: false);
+        var plan = Open().PlanPublish("SNC1W", 1, new[] { "Unit 1, Day 1" }, includeLinked: false);
 
         Assert.Contains(plan.Problems, p => p.Contains("Cloudflare Pages"));
         Assert.Contains("Publish this section from Plantoir instead.", plan.Describe());

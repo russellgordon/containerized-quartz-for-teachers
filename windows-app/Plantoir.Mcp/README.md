@@ -80,14 +80,29 @@ Plantoir writing this snippet itself from an "AI Automation" settings pane.
 | `list_courses` | no | Codes, names, sections, publish destination |
 | `list_pages` | no | Pages in a section; `matching` filters, output is capped |
 | `read_page` | no | One page's Markdown including frontmatter |
-| `plan_publish_class` | **no** | What publishing would do — resolves links, names every file |
-| `plan_hide_class` | **no** | The same for hiding |
-| `publish_class` | yes | Backs up, un-drafts, rebuilds, publishes |
-| `hide_class` | yes | Backs up, drafts, rebuilds, publishes |
+| `plan_publish_pages` | **no** | What publishing would do — resolves links, names every file and key |
+| `plan_hide_pages` | **no** | The same for hiding |
+| `publish_pages` | yes | Backs up, un-drafts, rebuilds, publishes |
+| `hide_pages` | yes | Backs up, drafts, rebuilds, publishes |
+| `republish_section` | yes (site only) | Rebuild and deploy without touching any page |
 | `back_up_course` | yes (additive) | A whole-course backup, restorable from Plantoir |
 
-`publish_class` and `hide_class` take `republish: false` to change the pages
-without rebuilding — useful when several changes are being made in a row.
+The write tools take a **list** of pages and accept **any** page — a class
+page, a concept, an exercise, anything. Both of those came from a real session
+the earlier one-class-page-at-a-time surface could not serve:
+
+- Hiding 25 classes meant 25 calls, each republishing the site: **26 deploys
+  for one logical change.** Pass them in one call instead, or use
+  `republish: false` on each and finish with `republish_section`.
+- A safety contract linked from *both* the first class (staying up) and a later
+  one (coming down) made the task **unsatisfiable**: `includeLinked` took it
+  down and nothing could put just that page back. Naming any page directly
+  dissolves it. That shape — a shared page reachable from several classes — is
+  the normal shape of a course, not an edge case.
+
+`includeLinked` has **no default on any of the four**, deliberately. It used to
+default to `true` for publishing and `false` for hiding, which is defensible
+but was nowhere written down; a caller has to decide.
 
 ---
 
@@ -181,6 +196,38 @@ dot. Attachments resolve to `LinkOutcome.Attachment`: they ride along with the
 page that embeds them and have no draft flag of their own, so they are not
 reported as missing pages.
 
+## Why the plan output is shaped the way it is
+
+A real session ran `plan_publish_class` twice on the same page, with the file
+edited in between, and got:
+
+```
+Nothing would change — “Unit 4, Day 5” is already published, and so are the 2 pages it links to.
+```
+
+then
+
+```
+Publish “Unit 4, Day 5” … and publish the 1 page it links to.
+```
+
+**Both answers were correct** — there is no cache anywhere in the plan path,
+every call re-reads from disk, and a page had genuinely been drafted between
+them. But they read as a contradiction, and the reader reasonably concluded
+the plan tool could not be trusted. Which is the worst possible thing to
+conclude about the one output the whole workflow says to show the teacher.
+
+The cause was wording, and it is fixed by two rules:
+
+1. **One count never means two things.** "the N pages they link to" is always
+   the number of links followed. How many would *change* is a separate
+   sentence with its own number. The old phrasing used the same shape for
+   both, so a state change looked like an arithmetic error.
+2. **State is stated.** Every changing page prints its key and its transition
+   (`draftSection1: true → false`). A plan that says what it saw can differ
+   from an earlier plan without either looking wrong — and it makes the dual
+   frontmatter schema impossible to miss.
+
 ## Known limits
 
 - **The GUI cannot see this server, and it cannot see the GUI.** Busy-tracking
@@ -196,8 +243,29 @@ reported as missing pages.
   indefinitely while the assistant reports "still working". With stdin at EOF
   it fails immediately and the server can say the useful thing: publish once
   from Plantoir so the token gets stored.
-- **Not tested against a real MCP client yet** — only against real JSON-RPC
-  over stdio, driven the way a client drives it.
+- **`courses/` is not in version control** — it is line 1 of the repo's
+  `.gitignore`. `git status` stays clean no matter how many course files
+  change, and there is no `git checkout` undo. `back_up_course` is the only
+  undo, which is why every write tool calls it first. Anything scripting bulk
+  edits against a course should do the same, and verify by reading files
+  rather than by `git diff`.
+- **A publish needs Docker and takes minutes**, and there is no way to ask how
+  far along it is beyond the progress notifications.
+
+### The TTY problem, and why it is no longer one
+
+`docker exec -t` **refuses to start** when stdin is not a terminal. The
+launchers used `-it` unconditionally, so a publish driven from this server —
+or from any script, or CI — failed at the last step with "the input device is
+not a TTY", *after* several minutes of Docker build. `verify.sh` had long
+refused up front for exactly this reason.
+
+The launchers now ask for a terminal only when there is one, and run Python
+unbuffered when there isn't, so progress still arrives line by line. Verified:
+`preview.ps1 EXC2O 1 --build-only < /dev/null` runs to completion. The
+interactive path is unchanged, so the GUI (which supplies a terminal through
+ConPTY) behaves exactly as before. The same fix is in `preview.sh` and
+`deploy.sh` for the mac side.
 
 ---
 

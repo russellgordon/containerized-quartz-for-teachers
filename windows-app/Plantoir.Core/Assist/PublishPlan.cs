@@ -1,7 +1,7 @@
 namespace Plantoir.Core.Assist;
 
 /// <summary>
-/// What a publish would do, worked out before anything is written.
+/// What a change would do, worked out before anything is written.
 ///
 /// This type is the whole safety argument of AI Assist in one object. The
 /// investigation on the <c>ai-assist</c> branch found that a small model
@@ -12,20 +12,19 @@ namespace Plantoir.Core.Assist;
 ///
 /// So no assistant, local or remote, is ever allowed to write directly. It
 /// builds one of these, Plantoir renders it in plain words, and the teacher
-/// says yes. Every field here exists to make that sentence honest —
-/// including <see cref="Problems"/>, which names the links that could not be
-/// resolved rather than quietly leaving them out.
+/// says yes.
 /// </summary>
 public sealed class PublishPlan
 {
     public required string CourseCode { get; init; }
     public required int SectionNumber { get; init; }
 
-    /// <summary>The class page this is all about.</summary>
-    public required PlannedPage Page { get; init; }
-
-    /// <summary>Pages reached from the class page's wikilinks, in page order.</summary>
-    public required IReadOnlyList<PlannedPage> Linked { get; init; }
+    /// <summary>
+    /// Every page the plan would touch — the ones named, then the ones reached
+    /// through their links. One flat list so no count can disagree with
+    /// another; <see cref="PlannedPage.ViaLink"/> separates them.
+    /// </summary>
+    public required IReadOnlyList<PlannedPage> Pages { get; init; }
 
     /// <summary>Links that named nothing, or named too many things.</summary>
     public required IReadOnlyList<string> Problems { get; init; }
@@ -36,47 +35,85 @@ public sealed class PublishPlan
     /// <summary>Where a publish would land — "Netlify", "Cloudflare Pages", or a folder.</summary>
     public required string Destination { get; init; }
 
-    /// <summary>Pages whose flag actually changes; the rest are already in the wanted state.</summary>
-    public IEnumerable<PlannedPage> Changing =>
-        Linked.Prepend(Page).Where(p => p.WillChange);
+    /// <summary>True when the plan hides rather than publishes.</summary>
+    public required bool Hiding { get; init; }
+
+    public IEnumerable<PlannedPage> Named => Pages.Where(p => !p.ViaLink);
+    public IEnumerable<PlannedPage> Linked => Pages.Where(p => p.ViaLink);
+
+    /// <summary>Pages whose flag actually changes; the rest are already right.</summary>
+    public IEnumerable<PlannedPage> Changing => Pages.Where(p => p.WillChange);
 
     public bool ChangesNothing => !Changing.Any();
 
     /// <summary>
-    /// The proposal as a teacher would read it. Deliberately one short
-    /// paragraph: a wall of paths is not something anyone checks carefully,
-    /// and this sentence is the last line of defence before a write.
+    /// The proposal as a teacher would read it.
+    ///
+    /// The shape of this is the direct result of a real session going wrong.
+    /// The same call, made twice with a file edited in between, produced
+    /// "nothing would change — and so are the 2 pages it links to" and then
+    /// "publish the 1 page it links to". Both were correct for the state at
+    /// the time, but they read as a contradiction, and the reader reasonably
+    /// concluded the tool was unreliable — the plan being the one thing the
+    /// whole workflow says to trust.
+    ///
+    /// Two rules follow, and they are why this is longer than a sentence:
+    ///
+    /// 1. **One count never means two things.** The number of pages involved
+    ///    and the number that would CHANGE are separate sentences with
+    ///    separate numbers. They used to share a phrase.
+    /// 2. **State is stated.** Every changing page shows its key and its
+    ///    transition, so a plan that describes a different world than an
+    ///    earlier plan reads as a state change rather than a contradiction.
     /// </summary>
     public string Describe()
     {
-        string verb = Page.Draft ? "Hide" : "Publish";
+        string verb = Hiding ? "Hide" : "Publish";
         var lines = new List<string>();
 
-        int changingLinked = Linked.Count(p => p.WillChange);
-        string headline = $"{verb} “{Page.Title}” in {CourseCode} Section {SectionNumber}";
-        if (changingLinked > 0)
-            headline += $", and {(Page.Draft ? "hide" : "publish")} the "
-                      + $"{changingLinked} page{(changingLinked == 1 ? "" : "s")} it links to";
-        lines.Add(headline + ".");
+        var named = Named.ToList();
+        var linked = Linked.ToList();
 
-        if (!Page.WillChange && changingLinked == 0)
+        string subject = named.Count == 1
+            ? $"“{named[0].Title}”"
+            : $"{named.Count} pages";
+        string linkNote = linked.Count switch
         {
-            // Say how many links were actually followed. "Everything it links
-            // to" with no number reads the same whether resolution worked or
-            // silently found nothing, and those are very different answers.
-            string state = Page.Draft ? "hidden" : "published";
-            string linked = Linked.Count switch
-            {
-                0 => "",
-                1 => ", and so is the 1 page it links to",
-                _ => $", and so are the {Linked.Count} pages it links to",
-            };
-            lines.Add($"Nothing would change — “{Page.Title}” is already {state}{linked}.");
-        }
+            0 => "",
+            1 => ", and the 1 page they link to",
+            _ => $", and the {linked.Count} pages they link to",
+        };
+        lines.Add($"{verb} {subject} in {CourseCode} Section {SectionNumber}{linkNote}.");
+
+        var changing = Changing.ToList();
+        int total = Pages.Count;
+        string already = Hiding ? "hidden" : "published";
+
+        int unchanged = total - changing.Count;
+        if (changing.Count == 0)
+            lines.Add(total == 1
+                ? $"Nothing would change — it is already {already}."
+                : $"Nothing would change — all {total} pages are already {already}.");
+        else if (unchanged == 0)
+            lines.Add($"{(total == 1 ? "It" : $"All {total} pages")} would change.");
+        else
+            lines.Add($"{changing.Count} of {total} pages would change; " +
+                      $"the other {unchanged} {(unchanged == 1 ? "is" : "are")} already {already}.");
 
         foreach (string problem in Problems) lines.Add("• " + problem);
 
-        if (Publishes) lines.Add($"Then republish Section {SectionNumber} to {Destination}.");
+        if (changing.Count > 0)
+        {
+            lines.Add("");
+            lines.Add("Would change:");
+            foreach (var page in changing) lines.Add("  " + page.Transition);
+        }
+
+        if (Publishes)
+        {
+            lines.Add("");
+            lines.Add($"Then republish Section {SectionNumber} to {Destination}.");
+        }
         return string.Join("\n", lines);
     }
 }
@@ -87,8 +124,25 @@ public sealed record PlannedPage(
     string RelativePath,
     string FrontmatterKey,
     bool? CurrentValue,
-    bool Draft)
+    bool Draft,
+    bool ViaLink)
 {
     /// <summary>False when the page already carries the wanted value.</summary>
     public bool WillChange => CurrentValue != Draft;
+
+    /// <summary>
+    /// The edit in full: which file, which key, and what it goes from and to.
+    ///
+    /// Naming the key matters more than it looks. A page under
+    /// <c>section&lt;N&gt;/</c> is governed by <c>draft:</c> and a course-level
+    /// page by <c>draftSection&lt;N&gt;:</c>, and a reader who has only seen
+    /// class pages will generalise from them and be wrong — that happened in
+    /// a real session, and a plan listing bare paths did nothing to prevent
+    /// it. Showing the key makes the two schemas impossible to miss.
+    /// </summary>
+    public string Transition =>
+        $"{RelativePath}  ({FrontmatterKey}: {Show(CurrentValue)} → {Show(Draft)})";
+
+    private static string Show(bool? value) =>
+        value is null ? "not set" : value.Value ? "true" : "false";
 }

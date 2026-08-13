@@ -9,24 +9,27 @@ namespace Plantoir.Mcp;
 /// <summary>
 /// The tools an assistant may call.
 ///
-/// Three rules shape this surface, each of them measured rather than assumed
-/// (AI-ASSIST.md has the numbers):
+/// Four rules shape this surface. The first three are measured (AI-ASSIST.md
+/// has the numbers); the fourth came from watching a real teacher use it.
 ///
-/// 1. **Nothing destructive exists.** There is no delete, no archive, no
-///    rename. In testing, the model reliably declined "delete the Unit 1
-///    folder" — not because it judged the request unwise, but because it had
-///    no tool for it. Absence is the strongest guardrail available, so it is
-///    the one relied on.
+/// 1. **Nothing destructive exists.** No delete, no archive, no rename. In
+///    testing the model reliably declined "delete the Unit 1 folder" — not
+///    from judgement, but because it had no tool for it. Absence is the
+///    strongest guardrail available, so it is the one relied on.
 ///
 /// 2. **Publishing and hiding are separate tools, not a flag.** The one
 ///    genuinely dangerous failure observed was polarity inversion: asked to
 ///    HIDE a page, the model called publish with "include everything it links
-///    to" set. A boolean is a coin flip under pressure; a verb in the tool
-///    name is not.
+///    to" set. A boolean is a coin flip under pressure; a verb is not.
 ///
-/// 3. **Every write has a matching plan_ tool that changes nothing.** The
-///    assistant is expected to plan, show the teacher, and only then act. The
-///    descriptions say so, and the plan output is written to be read aloud.
+/// 3. **Every write has a matching plan_ tool that changes nothing**, and the
+///    plan is written to be read aloud to the teacher.
+///
+/// 4. **The write tools take a LIST, and take any page.** Single-page tools
+///    turned one logical change into 26 deploys, and could not express "hide
+///    these classes but leave the safety contract up" at all — a shared page
+///    linked from both a protected class and a hidden one is the normal shape
+///    of a course.
 ///
 /// Instance methods get a fresh instance per call, so the workspace comes from
 /// the injected singleton rather than any state kept here.
@@ -59,10 +62,9 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     /// <summary>
     /// A course runs to a couple of hundred pages — the sample course alone
-    /// has 190, most of them curriculum expectations nobody is asking about.
+    /// has 198, most of them curriculum expectations nobody is asking about.
     /// Returning all of them buries the answer and, for a small local model,
-    /// fills the context before the question is even considered. So the list
-    /// is filterable and capped, and says plainly when it has been cut.
+    /// fills the context before the question is even considered.
     /// </summary>
     private const int MostPagesListed = 60;
 
@@ -100,8 +102,9 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         });
 
     [McpServerTool(Name = "read_page", Title = "Read a page", ReadOnly = true, Destructive = false)]
-    [Description("Read one page's Markdown, including its frontmatter. Use this to see what a class page's agenda links to " +
-                 "before proposing anything.")]
+    [Description("Read one page's Markdown, including its frontmatter. Use this to see what a class page's agenda links to, " +
+                 "and to see which draft key governs the page: a page under section1/ carries `draft:`, while a course-level " +
+                 "page such as a Concept carries `draftSection1:` and `draftSection2:` — one flag per section.")]
     public string ReadPage(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
@@ -114,88 +117,109 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     // ---- Planning (changes nothing) --------------------------------------
 
-    [McpServerTool(Name = "plan_publish_class", Title = "Plan publishing a class", ReadOnly = true, Destructive = false)]
-    [Description("Work out exactly what publishing a class page would do, WITHOUT changing anything. " +
-                 "Always call this before publish_class and show the teacher the result. " +
-                 "It resolves the class page's links for you, so you never need to work out which pages are linked.")]
-    public string PlanPublishClass(
+    [McpServerTool(Name = "plan_publish_pages", Title = "Plan publishing pages", ReadOnly = true, Destructive = false)]
+    [Description("Work out exactly what publishing these pages would do, WITHOUT changing anything. " +
+                 "Always call this before publish_pages and show the teacher the result. " +
+                 "Accepts any pages — class pages, concepts, exercises, anything — and can follow their links for you, " +
+                 "so you never need to work out which pages are linked.")]
+    public string PlanPublishPages(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
-        [Description("The class page title, for example \"Unit 2, Day 3\".")] string page,
-        [Description("True to also publish every page this class page links to.")] bool includeLinked = true)
-        => Guarded(() => Render(workspace.PlanPublish(course, section, page, includeLinked, draft: false)));
+        [Description("The page titles, for example [\"Unit 2, Day 3\"]. Pass several to plan them as one change.")]
+        string[] pages,
+        [Description("True to also publish every page these pages link to. Choose deliberately; there is no default.")]
+        bool includeLinked)
+        => Guarded(() => Render(workspace.PlanPublish(course, section, pages, includeLinked, draft: false)));
 
-    [McpServerTool(Name = "plan_hide_class", Title = "Plan hiding a class", ReadOnly = true, Destructive = false)]
-    [Description("Work out exactly what hiding a class page from students would do, WITHOUT changing anything. " +
-                 "Always call this before hide_class and show the teacher the result.")]
-    public string PlanHideClass(
+    [McpServerTool(Name = "plan_hide_pages", Title = "Plan hiding pages", ReadOnly = true, Destructive = false)]
+    [Description("Work out exactly what hiding these pages from students would do, WITHOUT changing anything. " +
+                 "Always call this before hide_pages and show the teacher the result. " +
+                 "Note that a page linked from a class you are hiding may also be linked from one that must stay up — " +
+                 "check the list before agreeing to it.")]
+    public string PlanHidePages(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
-        [Description("The class page title, for example \"Unit 2, Day 3\".")] string page,
-        [Description("True to also hide every page this class page links to.")] bool includeLinked = false)
-        => Guarded(() => Render(workspace.PlanPublish(course, section, page, includeLinked, draft: true)));
+        [Description("The page titles, for example [\"Unit 2, Day 3\"]. Pass several to plan them as one change.")]
+        string[] pages,
+        [Description("True to also hide every page these pages link to. Choose deliberately; there is no default.")]
+        bool includeLinked)
+        => Guarded(() => Render(workspace.PlanPublish(course, section, pages, includeLinked, draft: true)));
 
     // ---- Acting ----------------------------------------------------------
 
-    [McpServerTool(Name = "publish_class", Title = "Publish a class", Destructive = false, Idempotent = true)]
-    [Description("Make a class page visible to students, optionally along with every page it links to, then republish the " +
+    [McpServerTool(Name = "publish_pages", Title = "Publish pages", Destructive = false, Idempotent = true)]
+    [Description("Make pages visible to students, optionally along with every page they link to, then republish the " +
                  "section's website. The course is backed up first, automatically. " +
-                 "Only call this after plan_publish_class and after the teacher has agreed to what it said. " +
+                 "Only call this after plan_publish_pages and after the teacher has agreed to what it said. " +
+                 "Pass every page you intend to change in ONE call: each call with republish=true is a separate deploy. " +
                  "This takes several minutes.")]
-    public Task<string> PublishClass(
+    public Task<string> PublishPages(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
-        [Description("The class page title, for example \"Unit 2, Day 3\".")] string page,
-        [Description("True to also publish every page this class page links to.")] bool includeLinked,
+        [Description("The page titles to publish.")] string[] pages,
+        [Description("True to also publish every page these pages link to.")] bool includeLinked,
         IProgress<ProgressNotificationValue> progress,
         CancellationToken cancellation,
         [Description("False to change the pages but not republish the website yet.")] bool republish = true)
-        => Act(course, section, page, includeLinked, draft: false, republish, progress, cancellation);
+        => Act(course, section, pages, includeLinked, draft: false, republish, progress, cancellation);
 
-    [McpServerTool(Name = "hide_class", Title = "Hide a class", Destructive = false, Idempotent = true)]
-    [Description("Hide a class page from students, optionally along with every page it links to, then republish the " +
-                 "section's website so it disappears from the live site. The course is backed up first, automatically. " +
-                 "Only call this after plan_hide_class and after the teacher has agreed to what it said. " +
+    [McpServerTool(Name = "hide_pages", Title = "Hide pages", Destructive = false, Idempotent = true)]
+    [Description("Hide pages from students, optionally along with every page they link to, then republish the " +
+                 "section's website so they disappear from the live site. The course is backed up first, automatically. " +
+                 "Only call this after plan_hide_pages and after the teacher has agreed to what it said. " +
+                 "Pass every page you intend to change in ONE call: each call with republish=true is a separate deploy. " +
                  "This takes several minutes.")]
-    public Task<string> HideClass(
+    public Task<string> HidePages(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
-        [Description("The class page title, for example \"Unit 2, Day 3\".")] string page,
-        [Description("True to also hide every page this class page links to.")] bool includeLinked,
+        [Description("The page titles to hide.")] string[] pages,
+        [Description("True to also hide every page these pages link to.")] bool includeLinked,
         IProgress<ProgressNotificationValue> progress,
         CancellationToken cancellation,
         [Description("False to change the pages but not republish the website yet.")] bool republish = true)
-        => Act(course, section, page, includeLinked, draft: true, republish, progress, cancellation);
+        => Act(course, section, pages, includeLinked, draft: true, republish, progress, cancellation);
+
+    [McpServerTool(Name = "republish_section", Title = "Republish a section", Destructive = false, Idempotent = true)]
+    [Description("Rebuild and republish a section's website without changing any page. " +
+                 "Use this after a batch of publish_pages or hide_pages calls made with republish=false. " +
+                 "This takes several minutes.")]
+    public async Task<string> RepublishSection(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        IProgress<ProgressNotificationValue> progress,
+        CancellationToken cancellation)
+    {
+        try
+        {
+            var result = await workspace.Republish(course, section, Relay(progress), cancellation);
+            progress.Report(new ProgressNotificationValue { Progress = 100, Total = 100, Message = "Finished" });
+            return result.Message;
+        }
+        catch (AssistRefusal refusal) { return refusal.Message; }
+        catch (OperationCanceledException) { return "The publish was stopped before it finished."; }
+    }
 
     [McpServerTool(Name = "back_up_course", Title = "Back up a course", Destructive = false, Idempotent = false)]
     [Description("Make a full backup of one course, which the teacher can restore from inside Plantoir. " +
-                 "Do this before any bulk editing of a course's files.")]
+                 "Do this before any bulk editing of a course's files — including edits you make directly rather than " +
+                 "through these tools. Course folders are not in version control, so a backup is the only undo.")]
     public string BackUpCourse(
         [Description("The course code, for example ICS3U.")] string course)
         => Guarded(() => $"Backed up to {workspace.BackUp(course)}");
 
     // ---- Shared ----------------------------------------------------------
 
-    private async Task<string> Act(string course, int section, string page, bool includeLinked,
+    private async Task<string> Act(string course, int section, string[] pages, bool includeLinked,
                                    bool draft, bool republish,
                                    IProgress<ProgressNotificationValue> progress,
                                    CancellationToken cancellation)
     {
         try
         {
-            var plan = workspace.PlanPublish(course, section, page, includeLinked, draft, republish);
+            var plan = workspace.PlanPublish(course, section, pages, includeLinked, draft, republish);
             if (plan.ChangesNothing && !republish) return plan.Describe();
 
-            int step = 0;
-            var relay = new Progress<string>(message =>
-                progress.Report(new ProgressNotificationValue
-                {
-                    Progress = Math.Min(++step, 99),
-                    Total = 100,
-                    Message = message,
-                }));
-
-            var result = await workspace.Apply(plan, relay, cancellation);
+            var result = await workspace.Apply(plan, Relay(progress), cancellation);
             progress.Report(new ProgressNotificationValue { Progress = 100, Total = 100, Message = "Finished" });
 
             var text = new StringBuilder(result.Message);
@@ -209,9 +233,25 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     }
 
     /// <summary>
+    /// Forwards the launchers' own milestone lines as MCP progress. The
+    /// toolchain already narrates in plain words, so the assistant reports the
+    /// toolchain's wording rather than a paraphrase of it.
+    /// </summary>
+    private static IProgress<string> Relay(IProgress<ProgressNotificationValue> progress)
+    {
+        int step = 0;
+        return new Progress<string>(message =>
+            progress.Report(new ProgressNotificationValue
+            {
+                Progress = Math.Min(++step, 99),
+                Total = 100,
+                Message = message,
+            }));
+    }
+
+    /// <summary>
     /// A refusal is an answer, not a crash: it comes back as ordinary text so
     /// the assistant reads the reason to the teacher and can correct itself.
-    /// Anything unexpected is reported honestly rather than dressed up.
     /// </summary>
     private static string Guarded(Func<string> work)
     {
@@ -222,16 +262,13 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         catch (UnauthorizedAccessException) { return "Plantoir doesn’t have permission to read that."; }
     }
 
-    private static string Render(PublishPlan plan)
-    {
-        var text = new StringBuilder(plan.Describe());
-        var changing = plan.Changing.ToList();
-        if (changing.Count > 0)
-        {
-            text.AppendLine().AppendLine().AppendLine("Pages that would change:");
-            foreach (var page in changing) text.AppendLine($"  {page.RelativePath}");
-        }
-        text.AppendLine().Append("Nothing has been changed. Show this to the teacher and ask before going ahead.");
-        return text.ToString();
-    }
+    /// <summary>
+    /// The plan itself lists every page it would touch, with the key and the
+    /// transition; this only adds the standing instruction. Rendering the list
+    /// here as well is how two counts drifted apart in the first place — one
+    /// description of the plan, in one place.
+    /// </summary>
+    private static string Render(PublishPlan plan) =>
+        plan.Describe() +
+        "\n\nNothing has been changed. Show this to the teacher and ask before going ahead.";
 }

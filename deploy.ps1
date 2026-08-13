@@ -973,7 +973,11 @@ if ($DIAGNOSE)  { $envList += @("-e","DIAGNOSE=$DIAGNOSE") }
 if ($TEAM_SLUG) { $envList += @("-e","TEAM_SLUG=$TEAM_SLUG") }
 $envList += @("-e","TARGET=$TARGET")
 if ($CF_ACCOUNT) { $envList += @("-e","CF_ACCOUNT=$CF_ACCOUNT") }
-$execArgs = @("exec","-it") + $envList + @("$CONTAINER_NAME","sh","-lc","/bin/sh /tmp/deploy_inner.sh")
+# Ask for a terminal only when there is one: `docker exec -t` refuses to start
+# without a terminal on stdin, which is how this runs from a script or from
+# Plantoir's MCP server. See the same note in preview.ps1.
+$ttyFlag = if ([Console]::IsInputRedirected) { "-i" } else { "-it" }
+$execArgs = @("exec",$ttyFlag) + $envList + @("$CONTAINER_NAME","sh","-lc","/bin/sh /tmp/deploy_inner.sh")
 & docker @execArgs
 # Propagate the deploy's exit code — without this the script reports
 # success even when the run inside the container failed.
