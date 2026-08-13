@@ -1,0 +1,27 @@
+---
+title: Unit 1, Day 1
+draft: false
+created: __CREATED_CLASS_1__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Welcome, and how a room that builds software together works:
+   [[How This Class Works]] and [[Our Classroom Norms]]
+2. The founding problem: [[The Inherited Program]] — a working program
+   nobody here wrote, and a change request you must make safely
+3. Compare and name it: [[Reading Somebody Else's Code]]
+4. Tour of the site, so nothing here is hidden from you:
+   [[Using This Site]]
+5. Post your group's one-sentence answer to "what does it actually
+   do?" — we keep every sentence on the wall all semester
+
+## Things to do before our next class
+
+- [ ] Check [[What to Bring]] — every class this semester needs a
+      machine that runs Python 3.
+- [ ] Skim [[Code Journal]]; you write your first entry next class.
