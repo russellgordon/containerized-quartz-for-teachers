@@ -124,6 +124,58 @@ public sealed class AssistWorkspace
             .ToList();
     }
 
+    /// <summary>
+    /// Pages that must never be hidden from students, whatever is asked.
+    ///
+    /// Two rules, both from the teacher, and both about navigation rather than
+    /// content:
+    ///
+    /// * **Anything Key Links points at.** That page is the section's list of
+    ///   things a student needs all year — the curriculum expectations, how
+    ///   marks work, where to get help. Hiding one because some class happened
+    ///   to link to it takes away the signpost, not the lesson. (In a real
+    ///   session a teacher had to protect exactly this set by hand, then
+    ///   accept a window where a safety document was hidden, because nothing
+    ///   expressed the rule.)
+    /// * **Index pages.** <c>All Classes/index.md</c> is where a student who
+    ///   missed a class is told to start; a section's own <c>index.md</c> is
+    ///   the front door. An index is a way in, not a lesson, and an empty
+    ///   folder page is far better than a broken one.
+    ///
+    /// This constrains the DRAFT FLAG only. Nothing here stops a page's
+    /// <c>created</c> date being changed — rolling a course over to a new year
+    /// has to be able to move these dates like any others.
+    /// </summary>
+    public HashSet<string> ProtectedFromHiding(Course course, int sectionNumber)
+    {
+        var protectedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (string page in PagePaths.MarkdownPages(course.DirectoryPath, sectionNumber))
+        {
+            if (string.Equals(Path.GetFileName(page), "index.md", StringComparison.OrdinalIgnoreCase))
+                protectedPaths.Add(Path.GetFullPath(page));
+        }
+
+        string keyLinks = Path.Combine(course.SectionDirectory(sectionNumber), KeyLinksFileName);
+        if (!File.Exists(keyLinks)) return protectedPaths;
+
+        protectedPaths.Add(Path.GetFullPath(keyLinks));
+        try
+        {
+            var resolutions = WikiLinks.Resolve(
+                WikiLinks.Parse(File.ReadAllText(keyLinks)), course.DirectoryPath, sectionNumber, keyLinks);
+            foreach (var resolution in resolutions)
+                if (resolution.Outcome == LinkOutcome.Resolved)
+                    protectedPaths.Add(Path.GetFullPath(resolution.Path!));
+        }
+        catch { /* an unreadable Key Links protects what it already listed */ }
+
+        return protectedPaths;
+    }
+
+    /// <summary>The per-section page whose links are the year-round signposts.</summary>
+    private const string KeyLinksFileName = "Key Links.md";
+
     private static DateOnly? DateOf(Course course, int sectionNumber, string pagePath)
     {
         bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, pagePath);
@@ -208,11 +260,26 @@ public sealed class AssistWorkspace
         // happen before agreeing to it rather than after.
         if (publishes && PublishProblem(course) is { } blocked) problems.Add(blocked);
 
+        // Hiding, and only hiding, is subject to the never-hide rules.
+        var protectedPaths = draft
+            ? ProtectedFromHiding(course, section)
+            : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        int protectedLinked = 0;
+
         var namedPaths = new List<string>();
         foreach (string title in pageTitles)
         {
             string path = Page(course, section, title);
-            if (!seen.Add(Path.GetFullPath(path))) continue;   // the same page named twice
+            string full = Path.GetFullPath(path);
+            if (!seen.Add(full)) continue;                     // the same page named twice
+            if (protectedPaths.Contains(full))
+            {
+                // Named outright, so say so by name — silently dropping a page
+                // somebody explicitly asked for is worse than refusing it.
+                problems.Add($"“{Path.GetFileNameWithoutExtension(path)}” is never hidden — " +
+                             "it is an index page or something Key Links points at. Left published.");
+                continue;
+            }
             namedPaths.Add(path);
             pages.Add(Plan(course, section, path, draft, viaLink: false));
         }
@@ -254,11 +321,21 @@ public sealed class AssistWorkspace
                     }
                     if (resolution.Outcome != LinkOutcome.Resolved) continue;
                     // A page reached from two different classes is one page.
-                    if (!seen.Add(Path.GetFullPath(resolution.Path!))) continue;
+                    string full = Path.GetFullPath(resolution.Path!);
+                    if (!seen.Add(full)) continue;
+                    // Reached only incidentally, so a count is enough; naming
+                    // each one would bury the change the teacher is checking.
+                    if (protectedPaths.Contains(full)) { protectedLinked++; continue; }
                     pages.Add(Plan(course, section, resolution.Path!, draft, viaLink: true));
                 }
             }
         }
+
+        // Counted while following links above, so it has to be reported after
+        // that loop rather than before it.
+        if (protectedLinked > 0)
+            problems.Add($"{protectedLinked} linked page{(protectedLinked == 1 ? " was" : "s were")} left published: " +
+                         "index pages, and the pages Key Links points at, are never hidden.");
 
         return new PublishPlan
         {
@@ -269,8 +346,63 @@ public sealed class AssistWorkspace
             Publishes = publishes,
             Destination = DestinationOf(course),
             Hiding = draft,
+            Dangling = DanglingAfter(course, section, pages),
         };
     }
+
+    /// <summary>
+    /// Links a student would meet that lead nowhere, if this plan went ahead.
+    ///
+    /// Following links one hop is not the same as leaving the site coherent:
+    /// publish a class and its concepts, and the curriculum expectations those
+    /// concepts point at are still hidden. Rather than expanding the change to
+    /// cover them — safe when publishing, dangerous when hiding, since each
+    /// extra hop can swallow a page some published class still needs — the
+    /// plan reports the consequence and lets the teacher decide.
+    /// </summary>
+    private List<DanglingLink> DanglingAfter(Course course, int section, IReadOnlyList<PlannedPage> pages)
+    {
+        LinkGraph graph;
+        try { graph = LinkGraph.Build(course.DirectoryPath, section); }
+        catch { return new List<DanglingLink>(); }
+
+        var planned = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        foreach (var page in pages)
+        {
+            try { planned[PagePaths.ResolveInside(_folder, page.RelativePath)] = page.Draft; }
+            catch { }
+        }
+
+        return graph.DanglingLinks(path =>
+        {
+            if (planned.TryGetValue(path, out bool willBeDraft)) return willBeDraft;
+            bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, path);
+            try
+            {
+                string key = PageFrontmatter.DraftKeyFor(section, sectionLocal);
+                return PageFrontmatter.StoredValue(File.ReadAllText(path), key) ?? false;
+            }
+            catch { return false; }
+        });
+    }
+
+    /// <summary>The section's link graph, for the standalone consistency check.</summary>
+    public (LinkGraph Graph, Func<string, bool> IsHidden) Inspect(Course course, int section)
+    {
+        var graph = LinkGraph.Build(course.DirectoryPath, section);
+        return (graph, path =>
+        {
+            bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, path);
+            try
+            {
+                string key = PageFrontmatter.DraftKeyFor(section, sectionLocal);
+                return PageFrontmatter.StoredValue(File.ReadAllText(path), key) ?? false;
+            }
+            catch { return false; }
+        }
+        );
+    }
+
 
     private PlannedPage Plan(Course course, int section, string pagePath, bool draft, bool viaLink)
     {
@@ -431,6 +563,238 @@ public sealed class AssistWorkspace
         return new[] { course.Code, section.ToString() };
     }
 
+    // ---- Rolling a course onto a real timetable --------------------------
+
+    /// <summary>
+    /// Work out what re-dating this section's classes onto a timetable would
+    /// do, without touching anything.
+    ///
+    /// <paramref name="assignedPages"/> and <paramref name="assignedMeetings"/>
+    /// are parallel: the page at each position takes the meeting number at the
+    /// same position. Give neither and the classes are spread evenly across
+    /// the block — a starting point, not an answer, because which lesson
+    /// belongs on which day depends on what is IN the lesson.
+    /// </summary>
+    public ReDatePlan PlanReDate(
+        string courseCode, int sectionNumber, Timetable timetable,
+        IReadOnlyList<string> assignedPages, IReadOnlyList<int> assignedMeetings)
+    {
+        var course = Course(courseCode);
+        int section = Section(course, sectionNumber);
+        var classPages = ClassPages(course, section);
+
+        if (classPages.Count == 0)
+            throw new AssistRefusal($"{course.Code} Section {section} has no class pages to re-date.");
+        if (assignedPages.Count != assignedMeetings.Count)
+            throw new AssistRefusal(
+                $"{assignedPages.Count} pages were given but {assignedMeetings.Count} meeting numbers — " +
+                "they have to line up one for one.");
+
+        var chosen = new List<(string Page, Meeting Meeting)>();
+        if (assignedPages.Count > 0)
+        {
+            foreach (var pair in assignedPages.Zip(assignedMeetings))
+            {
+                string path = Page(course, section, pair.First);
+                if (timetable.ByNumber(pair.Second) is not { } meeting)
+                    throw new AssistRefusal(
+                        $"Block {timetable.Block} has no meeting {pair.Second}. " +
+                        $"It runs 1 to {timetable.Meetings.Count}.");
+                chosen.Add((path, meeting));
+            }
+        }
+        else
+        {
+            var spread = timetable.EvenSpread(classPages.Count);
+            for (int i = 0; i < classPages.Count && i < spread.Count; i++)
+                chosen.Add((classPages[i], spread[i]));
+        }
+
+        string tail = SiblingTimeAndOffset(course, section, classPages);
+        var dates = new List<PlannedDate>();
+        foreach (var (path, meeting) in chosen)
+        {
+            bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, path);
+            dates.Add(new PlannedDate(
+                Title: Path.GetFileNameWithoutExtension(path),
+                RelativePath: Relative(path),
+                FrontmatterKey: PageFrontmatter.CreatedKeyFor(section, sectionLocal),
+                Current: DateOf(course, section, path),
+                New: meeting.Date,
+                MeetingNumber: meeting.Number));
+        }
+
+        var materials = ShiftMaterials(course, section, dates);
+
+        return new ReDatePlan
+        {
+            CourseCode = course.Code,
+            SectionNumber = section,
+            Block = timetable.Block,
+            Dates = dates,
+            Materials = materials,
+            NonTeachingDays = timetable.NonTeachingDays,
+            UnusedMeetings = Math.Max(0, timetable.Meetings.Count - chosen.Count),
+            Problems = ProblemsAfter(course, section, dates.Concat(materials).ToList(), tail),
+        };
+    }
+
+    /// <summary>
+    /// Concepts, exercises and tutorials moved by the same number of days as
+    /// the lesson that anchors them.
+    ///
+    /// A material's date was derived from a class in the first place — the
+    /// build gives every shared page the date of the first class that links to
+    /// it — so moving classes and leaving materials behind breaks a
+    /// relationship rather than preserving one. Shifting by a DELTA rather
+    /// than assigning the class's date keeps any spacing the teacher set on
+    /// purpose.
+    ///
+    /// The anchor is the linking class whose CURRENT date sits nearest the
+    /// material's current date, which is the class the material was dated from
+    /// however many terms ago. A page used by several classes therefore
+    /// travels with the one that introduced it, not with whichever happens to
+    /// come first alphabetically.
+    /// </summary>
+    private List<PlannedDate> ShiftMaterials(Course course, int section, IReadOnlyList<PlannedDate> classes)
+    {
+        var shifted = new List<PlannedDate>();
+        LinkGraph graph;
+        try { graph = LinkGraph.Build(course.DirectoryPath, section); }
+        catch { return shifted; }
+
+        var moves = new Dictionary<string, (DateOnly From, DateOnly To)>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in classes)
+        {
+            if (entry.Current is not { } from) continue;
+            try { moves[PagePaths.ResolveInside(_folder, entry.RelativePath)] = (from, entry.New); }
+            catch { }
+        }
+
+        var classPaths = new HashSet<string>(
+            ClassPages(course, section).Select(Path.GetFullPath), StringComparer.OrdinalIgnoreCase);
+
+        foreach (string page in graph.Pages)
+        {
+            if (classPaths.Contains(page)) continue;                       // classes are handled above
+            if (DateOf(course, section, page) is not { } pageDate) continue;
+
+            (DateOnly From, DateOnly To)? anchor = null;
+            int nearest = int.MaxValue;
+            foreach (string linker in graph.SourcesOf(page))
+            {
+                if (!moves.TryGetValue(Path.GetFullPath(linker), out var move)) continue;
+                int gap = Math.Abs(move.From.DayNumber - pageDate.DayNumber);
+                if (gap < nearest) { nearest = gap; anchor = move; }
+            }
+            if (anchor is not { } chosen) continue;                        // no class moved that uses this page
+
+            int delta = chosen.To.DayNumber - chosen.From.DayNumber;
+            if (delta == 0) continue;
+
+            bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, page);
+            shifted.Add(new PlannedDate(
+                Title: Path.GetFileNameWithoutExtension(page),
+                RelativePath: Relative(page),
+                FrontmatterKey: PageFrontmatter.CreatedKeyFor(section, sectionLocal),
+                Current: pageDate,
+                New: pageDate.AddDays(delta),
+                MeetingNumber: 0));
+        }
+        return shifted;
+    }
+
+    /// <summary>
+    /// The date problems this re-date would LEAVE — audited against the new
+    /// dates, not the current ones, so the teacher sees the world the change
+    /// would create rather than the one it replaces.
+    /// </summary>
+    private List<string> ProblemsAfter(Course course, int section, IReadOnlyList<PlannedDate> dates, string tail)
+    {
+        var planned = new Dictionary<string, DateOnly>(StringComparer.OrdinalIgnoreCase);
+        foreach (var date in dates)
+        {
+            try { planned[PagePaths.ResolveInside(_folder, date.RelativePath)] = date.New; }
+            catch { }
+        }
+
+        DateOnly? Resolve(string path) =>
+            planned.TryGetValue(Path.GetFullPath(path), out var moved)
+                ? moved
+                : DateOf(course, section, path);
+
+        LinkGraph graph;
+        try { graph = LinkGraph.Build(course.DirectoryPath, section); }
+        catch { return new List<string>(); }
+
+        var classPages = ClassPages(course, section);
+        var problems = DateAudit.Run(classPages, graph, Resolve, Relative);
+
+        var newDates = dates.Select(d => d.New).ToList();
+        if (newDates.Count > 0)
+        {
+            var others = graph.Pages.Where(p => !classPages.Contains(p)).ToList();
+            problems.AddRange(DateAudit.Stragglers(
+                others, newDates.Min(), newDates.Max(), Resolve, Relative));
+        }
+        return problems;
+    }
+
+    /// <summary>
+    /// The time-of-day and offset a course already uses, so a class that never
+    /// had a date joins the convention its siblings follow instead of
+    /// inventing one.
+    /// </summary>
+    private string SiblingTimeAndOffset(Course course, int section, IReadOnlyList<string> classPages)
+    {
+        foreach (string path in classPages)
+        {
+            bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, path);
+            string key = PageFrontmatter.CreatedKeyFor(section, sectionLocal);
+            try
+            {
+                string? raw = PageFrontmatter.StoredText(File.ReadAllText(path), key);
+                if (raw is { Length: > 10 }) return raw[10..];
+            }
+            catch { }
+        }
+        return "T07:00:00.000-0400";
+    }
+
+    /// <summary>Carry out a re-date the teacher has agreed to, after backing the course up.</summary>
+    public AssistResult ApplyReDate(ReDatePlan plan, IProgress<string>? progress = null)
+    {
+        var course = Course(plan.CourseCode);
+        int section = Section(course, plan.SectionNumber);
+        if (plan.ChangesNothing) return new AssistResult(true, "Every class already carries that date.", null);
+
+        string backup;
+        progress?.Report($"Backing up {course.Code} first…");
+        try { backup = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory(_folder)); }
+        catch (Exception error)
+        {
+            throw new AssistRefusal(
+                $"{course.Code} couldn’t be backed up, so no dates were changed: {error.Message}");
+        }
+
+        string tail = SiblingTimeAndOffset(course, section, ClassPages(course, section));
+        int moved = 0;
+        foreach (var date in plan.Changing)
+        {
+            string full = PagePaths.ResolveInside(_folder, date.RelativePath);
+            var (updated, changed) = PageFrontmatter.SetCreated(
+                File.ReadAllText(full), date.FrontmatterKey, date.New, tail);
+            if (!changed) continue;
+            File.WriteAllText(full, updated);
+            moved++;
+        }
+
+        return new AssistResult(true,
+            $"Moved {moved} class{(moved == 1 ? "" : "es")} onto block {plan.Block} in " +
+            $"{course.Code} Section {section}. Nothing was published — preview or publish the section when ready.",
+            backup);
+    }
+
     /// <summary>A whole-course backup, on its own.</summary>
     public string BackUp(string courseCode)
     {
@@ -440,8 +804,9 @@ public sealed class AssistWorkspace
 
     // ---- Helpers ---------------------------------------------------------
 
-    private string Relative(string fullPath) =>
-        System.IO.Path.GetRelativePath(_folder, fullPath).Replace('\\', '/');
+    /// <summary>A path as the teacher sees it: relative to the working folder, forward slashes.</summary>
+    public string Relative(string fullPath) =>
+        Path.GetRelativePath(_folder, fullPath).Replace('\\', '/');
 
     private static string Humanize(IEnumerable<string> items)
     {

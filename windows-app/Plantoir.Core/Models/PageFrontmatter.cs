@@ -60,6 +60,10 @@ public static class PageFrontmatter
     public static bool? StoredValue(string pageText, string key) =>
         Block.Parse(pageText)?.BoolValue(key);
 
+    /// <summary>One key's value exactly as written, or null when absent.</summary>
+    public static string? StoredText(string pageText, string key) =>
+        Block.Parse(pageText)?.RawValue(key);
+
     /// <summary>
     /// The key carrying this page's date, following the same rule as the draft
     /// key: one section's page has a plain <c>created:</c>, a page shared
@@ -85,6 +89,63 @@ public static class PageFrontmatter
         if (block is null) return null;
         return block.DateValue(CreatedKeyFor(sectionNumber, isSectionLocal))
             ?? block.DateValue("created");   // fall back to a plain date if the page carries one
+    }
+
+    /// <summary>
+    /// The page text with its date moved to <paramref name="date"/>, keeping
+    /// the time of day and UTC offset the page already carried.
+    ///
+    /// Only the calendar part is rewritten. A course's class times are the
+    /// teacher's, and a re-date is about which DAY a lesson falls on — moving
+    /// 07:00 to midnight because the code found it easier would change how the
+    /// site sorts pages that share a day.
+    /// </summary>
+    /// <param name="fallbackTail">
+    /// The time-and-offset to use when the page has no date yet — taken from a
+    /// sibling class page, so a course keeps one convention.
+    /// </param>
+    public static (string Text, bool Changed) SetCreated(
+        string pageText, string key, DateOnly date, string fallbackTail = "T07:00:00.000-0400")
+    {
+        var block = Block.Parse(pageText);
+        string stamp = date.ToString("yyyy-MM-dd");
+        string existing = block?.RawValue(key) ?? "";
+        string tail = TimeAndOffset(existing) ?? fallbackTail;
+        string value = stamp + tail;
+
+        if (string.Equals(existing.Trim(), value, StringComparison.Ordinal)) return (pageText, false);
+
+        string newline = DominantNewline(pageText);
+        string line = key + ": " + value;
+
+        if (block is null)
+            return ("---" + newline + line + newline + "---" + newline + pageText, true);
+
+        var lines = new List<string>(block.Lines);
+        if (block.IndexOf(key) is { } at)
+            lines[at] = ReplaceRawValue(lines[at], value);
+        else
+            lines.Insert(block.FirstBodyLine, line);
+        return (block.Rebuild(lines, newline), true);
+    }
+
+    /// <summary>Everything after the calendar date in an ISO timestamp, or null.</summary>
+    private static string? TimeAndOffset(string raw)
+    {
+        string value = raw.Trim().Trim('"', '\'');
+        if (value.Length < 10) return null;
+        for (int i = 0; i < 10; i++)
+            if (i is 4 or 7 ? value[i] != '-' : !char.IsDigit(value[i])) return null;
+        return value[10..];
+    }
+
+    private static string ReplaceRawValue(string line, string value)
+    {
+        string carriageReturn = line.EndsWith('\r') ? "\r" : "";
+        string body = line.TrimEnd('\r');
+        int colon = body.IndexOf(':');
+        if (colon < 0) return line;
+        return body[..(colon + 1)] + " " + value + carriageReturn;
     }
 
     /// <summary>
@@ -219,6 +280,14 @@ public static class PageFrontmatter
             if (value.Equals("true", StringComparison.OrdinalIgnoreCase)) return true;
             if (value.Equals("false", StringComparison.OrdinalIgnoreCase)) return false;
             return null;   // a non-boolean draft value is not ours to interpret
+        }
+
+        /// <summary>The text after the first colon, exactly as written.</summary>
+        public string? RawValue(string key)
+        {
+            if (IndexOf(key) is not { } at) return null;
+            string line = Strip(Lines[at]);
+            return line[(line.IndexOf(':') + 1)..].Trim();
         }
 
         /// <summary>

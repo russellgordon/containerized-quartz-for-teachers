@@ -38,6 +38,12 @@ public sealed class PublishPlan
     /// <summary>True when the plan hides rather than publishes.</summary>
     public required bool Hiding { get; init; }
 
+    /// <summary>
+    /// Links a student would meet, after this change, that lead to a hidden
+    /// page. Empty is the good answer.
+    /// </summary>
+    public IReadOnlyList<DanglingLink> Dangling { get; init; } = Array.Empty<DanglingLink>();
+
     public IEnumerable<PlannedPage> Named => Pages.Where(p => !p.ViaLink);
     public IEnumerable<PlannedPage> Linked => Pages.Where(p => p.ViaLink);
 
@@ -119,6 +125,8 @@ public sealed class PublishPlan
             foreach (var page in changing) lines.Add("  " + page.Transition);
         }
 
+        AppendDangling(lines);
+
         if (Publishes)
         {
             lines.Add("");
@@ -126,6 +134,30 @@ public sealed class PublishPlan
         }
         return string.Join("\n", lines);
     }
+
+    /// <summary>How many dangling links to name before summarising.</summary>
+    private const int MostDanglingShown = 8;
+
+    /// <summary>
+    /// The consequence check, in the teacher's terms: not "the graph is
+    /// inconsistent" but "students would click this and find nothing".
+    /// </summary>
+    private void AppendDangling(List<string> lines)
+    {
+        if (Dangling.Count == 0) return;
+
+        lines.Add("");
+        lines.Add($"Afterwards, {Dangling.Count} link{(Dangling.Count == 1 ? "" : "s")} " +
+                  $"on {(Hiding ? "pages students can still see" : "visible pages")} " +
+                  "would point at a hidden page:");
+
+        foreach (var link in Dangling.Take(MostDanglingShown))
+            lines.Add($"  {Name(link.From)} → {Name(link.To)}");
+        if (Dangling.Count > MostDanglingShown)
+            lines.Add($"  …and {Dangling.Count - MostDanglingShown} more.");
+    }
+
+    private static string Name(string path) => Path.GetFileNameWithoutExtension(path);
 }
 
 /// <summary>One page a plan would touch, and what would happen to it.</summary>

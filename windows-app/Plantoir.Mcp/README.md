@@ -228,6 +228,63 @@ leaves every other byte alone, CRLF included.
 
 ---
 
+## Rolling a course onto a real timetable
+
+Example content ships with invented dates — it has to, since nobody knows when
+a given teacher's block meets. Putting it on a real timetable is therefore the
+first thing most teachers will want, and it touches every class at once.
+
+```
+read_timetable(timetable: "<sheets link or CSV path>", block: "F")
+plan_re_date_classes(course: "ICS3U", section: 1, timetable: "…", block: "F")
+re_date_classes(...)
+```
+
+The sheet's real shape: a header row of block letters, and under each letter a
+**pair** of columns — the date, then either the meeting number or a label for a
+day nobody teaches on (`MB`, `INT`, `Exam`, `Closing`). Numbered rows are
+classes; the rest are kept and reported, because a teacher planning a year
+wants to see where the exam sits.
+
+**Dates in these sheets carry no year** (`Oct-13` … `Jun-11`) and run across a
+year boundary. The academic year is taken from today — a school year is named
+for the calendar year it starts in and starts in late summer, so August 2026
+means 2026/2027 and March 2027 still does — and the year rolls forward the
+moment the month goes backwards. `startYear` overrides it.
+
+**The tool does not choose which lesson lands on which day.** Pass `pages` and
+`meetings` as matching lists to say. That choice depends on what is *in* each
+lesson — whether it can be split, what must follow an investigation, which day
+would be left holding nothing but a warm-up — and the tool can see none of
+that. Omit both and it spreads the classes evenly across the block, anchoring
+the first and last; treat that as a starting point, not an answer.
+
+**Materials move with their lessons, by a delta.** Concepts, exercises and
+tutorials shift by the same number of days as the class that anchors them
+(the linking class whose current date sits nearest theirs). A delta rather
+than an assignment, so a handout deliberately dated a week ahead of its lesson
+is still a week ahead afterwards.
+
+This is not a nicety. Moving classes and leaving materials behind breaks the
+relationship the build depends on — every shared page inherits the date of the
+first class linking to it — and makes every material look like an unfinished
+copy-paste. Measured on the sample course: re-dating 26 classes *without*
+their materials produced **140 warnings, every one of them the re-date's own
+doing**. With the shift, the same operation reports one finding, and it is
+true.
+
+### What gets flagged
+
+- Two classes on one day, and classes filed out of teaching order (checked only
+  when every class names its unit and day, so the intended order isn't guessed).
+- Classes with no date, which will not sort with the others.
+- **Material dated nowhere near any class that uses it** — the copy-paste case:
+  a page duplicated for a new lesson whose date was never changed. Checked
+  against *every* linking class, not just the first, because a concept
+  introduced in October and revisited in May is correctly dated for October.
+- Pages left outside the taught range entirely, summarised as one finding with
+  the reason: nothing links to them, so nothing moved them.
+
 ## A naming trap, written down so nobody rediscovers it
 
 **Never call `Path.GetFileNameWithoutExtension` on a wikilink target.**

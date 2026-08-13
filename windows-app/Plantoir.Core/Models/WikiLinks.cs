@@ -126,18 +126,33 @@ public static class WikiLinks
     /// teachers use.
     /// </summary>
     /// <param name="pagePath">The page whose links these are; excluded from its own results.</param>
-    public static List<LinkResolution> Resolve(
-        IEnumerable<WikiLink> links, string courseDirectory, int sectionNumber, string? pagePath = null)
+    /// <summary>
+    /// Every page of a section, indexed by name for link resolution.
+    ///
+    /// Built separately from <see cref="Resolve"/> because resolving a whole
+    /// course one page at a time would rebuild this for every page — fine for
+    /// one class's agenda, quadratic across two hundred pages.
+    /// </summary>
+    public static Dictionary<string, List<string>> IndexPages(string courseDirectory, int sectionNumber)
     {
-        List<string> candidates = PagePaths.MarkdownPages(courseDirectory, sectionNumber);
         var byName = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-        foreach (string candidate in candidates)
+        foreach (string candidate in PagePaths.MarkdownPages(courseDirectory, sectionNumber))
         {
             string name = Path.GetFileNameWithoutExtension(candidate);
             if (!byName.TryGetValue(name, out var list)) byName[name] = list = new List<string>();
             list.Add(candidate);
         }
+        return byName;
+    }
 
+    public static List<LinkResolution> Resolve(
+        IEnumerable<WikiLink> links, string courseDirectory, int sectionNumber, string? pagePath = null) =>
+        Resolve(links, IndexPages(courseDirectory, sectionNumber), courseDirectory, pagePath);
+
+    public static List<LinkResolution> Resolve(
+        IEnumerable<WikiLink> links, Dictionary<string, List<string>> byName,
+        string courseDirectory, string? pagePath = null)
+    {
         string? self = pagePath is null ? null : Path.GetFullPath(pagePath);
         var results = new List<LinkResolution>();
         var alreadySeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

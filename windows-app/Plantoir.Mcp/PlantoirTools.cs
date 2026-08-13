@@ -115,6 +115,187 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
             return workspace.ReadPage(found, workspace.Section(found, section), page);
         });
 
+    /// <summary>How many of each kind to name before summarising.</summary>
+    private const int MostListed = 15;
+
+    [McpServerTool(Name = "check_section", Title = "Check what students would see",
+                   ReadOnly = true, Destructive = false)]
+    [Description("Check a section's website as students would meet it, changing nothing. Reports two things that " +
+                 "publishing and hiding tools cannot see for themselves: links on visible pages that lead to a hidden " +
+                 "page (students click and find nothing), and pages nothing links to — which are still published and " +
+                 "still listed in the site's explorer, so students can see them even though no class points there. " +
+                 "Use this before a term starts, and after any bulk change.")]
+    public string CheckSection(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section)
+        => Guarded(() =>
+        {
+            var found = workspace.Course(course);
+            int number = workspace.Section(found, section);
+            var (graph, isHidden) = workspace.Inspect(found, number);
+
+            var dangling = graph.DanglingLinks(isHidden);
+            var orphans = graph.Unreferenced().Where(p => !isHidden(p)).ToList();
+
+            var text = new StringBuilder();
+            text.AppendLine($"{found.Code} Section {number}: {graph.Pages.Count} pages, " +
+                            $"{graph.Pages.Count(p => !isHidden(p))} visible to students.");
+            text.AppendLine();
+
+            if (dangling.Count == 0)
+                text.AppendLine("No visible page links to a hidden one.");
+            else
+            {
+                text.AppendLine($"{dangling.Count} link{(dangling.Count == 1 ? "" : "s")} " +
+                                "would take a student to a page that isn’t there:");
+                foreach (var link in dangling.Take(MostListed))
+                    text.AppendLine($"  {workspace.Relative(link.From)}  →  " +
+                                    $"{Path.GetFileNameWithoutExtension(link.To)}  (hidden)");
+                if (dangling.Count > MostListed)
+                    text.AppendLine($"  …and {dangling.Count - MostListed} more.");
+            }
+            text.AppendLine();
+
+            if (orphans.Count == 0)
+                text.AppendLine("Every visible page is linked from somewhere.");
+            else
+            {
+                text.AppendLine($"{orphans.Count} visible page{(orphans.Count == 1 ? " is" : "s are")} " +
+                                "linked from nowhere. Students can still reach these through the site’s " +
+                                "explorer, and no publish or hide rule that follows links will ever touch them:");
+                foreach (string page in orphans.Take(MostListed))
+                    text.AppendLine("  " + workspace.Relative(page));
+                if (orphans.Count > MostListed)
+                    text.AppendLine($"  …and {orphans.Count - MostListed} more.");
+            }
+            return text.ToString().TrimEnd();
+        });
+
+    // ---- Rolling a course onto a real timetable --------------------------
+
+    private const string TimetableHelp =
+        "A link to the timetable spreadsheet, or the path to a CSV of it on this computer. " +
+        "A Google Sheets link works if the sheet is shared so anyone with the link can view it.";
+
+    private const string BlockHelp =
+        "The block or section letter the teacher is timetabled in, for example F.";
+
+    [McpServerTool(Name = "read_timetable", Title = "Read a timetable", ReadOnly = true, Destructive = false)]
+    [Description("Read one block's class meetings out of a school timetable, changing nothing. Returns each meeting's " +
+                 "number and date, plus the days that are NOT teaching days (mod breaks, intersessions, exams, " +
+                 "closing). Call this before planning a re-date so you can see the shape of the year and decide " +
+                 "which lesson belongs on which day — that choice depends on what is in each lesson, and the tools " +
+                 "cannot see that.")]
+    public async Task<string> ReadTimetable(
+        [Description(TimetableHelp)] string timetable,
+        [Description(BlockHelp)] string block,
+        CancellationToken cancellation,
+        [Description("The calendar year the school year starts in. Leave empty to work it out from today's date.")]
+        int startYear = 0)
+    {
+        try
+        {
+            var parsed = await Load(timetable, block, startYear, cancellation);
+            var text = new StringBuilder();
+            text.AppendLine($"Block {parsed.Block}: {parsed.Meetings.Count} class meetings, " +
+                            $"{parsed.Meetings[0].Date:yyyy-MM-dd} to {parsed.Meetings[^1].Date:yyyy-MM-dd}.");
+            text.AppendLine();
+            foreach (var meeting in parsed.Meetings)
+                text.AppendLine($"  {meeting.Number,3}  {meeting.Date:yyyy-MM-dd}  {meeting.Date:ddd}");
+
+            if (parsed.NonTeachingDays.Count > 0)
+            {
+                text.AppendLine();
+                text.AppendLine("Not teaching days — no unit content belongs on these:");
+                foreach (var day in parsed.NonTeachingDays)
+                    text.AppendLine($"       {day.Date:yyyy-MM-dd}  {day.Label}");
+            }
+            return text.ToString().TrimEnd();
+        }
+        catch (AssistRefusal refusal) { return refusal.Message; }
+    }
+
+    [McpServerTool(Name = "plan_re_date_classes", Title = "Plan re-dating classes",
+                   ReadOnly = true, Destructive = false)]
+    [Description("Work out what moving a section's classes onto a timetable would do, WITHOUT changing anything. " +
+                 "Always call this first and show the teacher the result. " +
+                 "Give `pages` and `meetings` as matching lists to say which lesson lands on which meeting — that " +
+                 "choice is yours to make from the lesson content, because a naive spread can leave a class holding " +
+                 "nothing but a warm-up, or split a lesson that has to stay whole. Leave both empty for an even " +
+                 "spread across the block, which is a starting point rather than an answer. " +
+                 "The plan also reports date problems the change would leave behind.")]
+    public Task<string> PlanReDateClasses(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description(TimetableHelp)] string timetable,
+        [Description(BlockHelp)] string block,
+        CancellationToken cancellation,
+        [Description("Class page titles, in the order they are taught. Leave empty for an even spread.")]
+        string[]? pages = null,
+        [Description("Meeting numbers, one for each entry in `pages`, in the same order.")]
+        int[]? meetings = null,
+        [Description("The calendar year the school year starts in. Leave empty to work it out from today's date.")]
+        int startYear = 0)
+        => ReDate(course, section, timetable, block, pages, meetings, startYear, apply: false, cancellation);
+
+    [McpServerTool(Name = "re_date_classes", Title = "Re-date classes", Destructive = false, Idempotent = true)]
+    [Description("Move a section's classes onto a timetable's dates. The course is backed up first, automatically. " +
+                 "Only call this after plan_re_date_classes and after the teacher has agreed to what it said. " +
+                 "This changes dates only — nothing is published, and no page's visibility changes.")]
+    public Task<string> ReDateClasses(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description(TimetableHelp)] string timetable,
+        [Description(BlockHelp)] string block,
+        CancellationToken cancellation,
+        [Description("Class page titles, in the order they are taught. Leave empty for an even spread.")]
+        string[]? pages = null,
+        [Description("Meeting numbers, one for each entry in `pages`, in the same order.")]
+        int[]? meetings = null,
+        [Description("The calendar year the school year starts in. Leave empty to work it out from today's date.")]
+        int startYear = 0)
+        => ReDate(course, section, timetable, block, pages, meetings, startYear, apply: true, cancellation);
+
+    private async Task<string> ReDate(string course, int section, string timetable, string block,
+                                      string[]? pages, int[]? meetings, int startYear, bool apply,
+                                      CancellationToken cancellation)
+    {
+        try
+        {
+            var parsed = await Load(timetable, block, startYear, cancellation);
+            var plan = workspace.PlanReDate(course, section, parsed,
+                pages ?? Array.Empty<string>(), meetings ?? Array.Empty<int>());
+
+            if (!apply)
+                return plan.Describe() +
+                       "\n\nNothing has been changed. Show this to the teacher and ask before going ahead.";
+
+            var result = workspace.ApplyReDate(plan);
+            var text = new StringBuilder(result.Message);
+            if (plan.Problems.Count > 0)
+            {
+                text.AppendLine().AppendLine();
+                text.AppendLine($"{plan.Problems.Count} thing{(plan.Problems.Count == 1 ? "" : "s")} worth looking at:");
+                foreach (string problem in plan.Problems) text.AppendLine("  • " + problem);
+            }
+            if (result.BackupPath is not null)
+                text.Append("\nA backup was made first, so this can be undone from Plantoir’s Backups list.");
+            return text.ToString();
+        }
+        catch (AssistRefusal refusal) { return refusal.Message; }
+        catch (Plantoir.Core.Models.OutsideWorkspaceException refusal) { return refusal.Message; }
+    }
+
+    private static async Task<Timetable> Load(string timetable, string block, int startYear,
+                                              CancellationToken cancellation)
+    {
+        string csv = await TimetableSource.Read(timetable, cancellation);
+        int year = startYear > 0
+            ? startYear
+            : Timetable.AcademicYearStarting(DateOnly.FromDateTime(DateTime.Now));
+        return Timetable.Parse(csv, block, year);
+    }
+
     // ---- Planning (changes nothing) --------------------------------------
 
     /// <summary>

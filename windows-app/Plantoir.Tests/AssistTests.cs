@@ -226,6 +226,133 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Equal(3, plan.Pages.Count);
     }
 
+    // ---- Pages that are never hidden -------------------------------------
+
+    [Fact]
+    public void APageKeyLinksPointsAtIsNeverHiddenByALinkSweep()
+    {
+        // Key Links is the section's year-round signposts. Hiding one because
+        // some class happened to link to it takes away the signpost, not the
+        // lesson — a teacher had to protect exactly this set by hand.
+        Page("ICS3U", "section1/Key Links.md", draft: false, body: "- [[How Marks Work]]");
+        Page("ICS3U", "Setup/How Marks Work.md", draftSection1: false);
+        Class("ICS3U", "Unit 1, Day 2", "2026-09-09");
+        File.AppendAllText(Path.Combine(_folder, "courses", "ICS3U",
+            "section1", "All Classes", "Unit 1, Day 2.md"), "See [[How Marks Work]].\n");
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" },
+            includeLinked: true, draft: true);
+
+        Assert.DoesNotContain(plan.Pages, p => p.Title == "How Marks Work");
+        Assert.Contains(plan.Problems, p => p.Contains("left published"));
+    }
+
+    [Fact]
+    public void NamingAProtectedPageOutrightSaysSoByName()
+    {
+        // Silently dropping a page somebody explicitly asked for is worse
+        // than telling them it will not happen.
+        Page("ICS3U", "section1/Key Links.md", draft: false, body: "- [[How Marks Work]]");
+        Page("ICS3U", "Setup/How Marks Work.md", draftSection1: false);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "How Marks Work" },
+            includeLinked: false, draft: true);
+
+        Assert.Contains(plan.Problems, p => p.Contains("“How Marks Work” is never hidden"));
+        Assert.Empty(plan.Pages);
+    }
+
+    [Fact]
+    public void AnIndexPageIsNeverHidden()
+    {
+        // All Classes/index.md is where a student who missed a class is told
+        // to start. (Only one index here: two would be an ambiguous title,
+        // which is a different refusal and would hide what this is testing.)
+        Page("ICS3U", "section1/All Classes/index.md", draft: false);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "index" }, includeLinked: false, draft: true);
+
+        Assert.Contains(plan.Problems, p => p.Contains("is never hidden"));
+        Assert.Empty(plan.Pages);
+    }
+
+    [Fact]
+    public void ProtectionAppliesToHidingOnlyNotPublishing()
+    {
+        Page("ICS3U", "section1/Key Links.md", draft: false, body: "- [[How Marks Work]]");
+        Page("ICS3U", "Setup/How Marks Work.md", draftSection1: true);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "How Marks Work" },
+            includeLinked: false, draft: false);
+
+        Assert.True(Assert.Single(plan.Named).WillChange);   // publishing it is fine
+        Assert.Empty(plan.Problems);
+    }
+
+    // ---- What students would actually meet -------------------------------
+
+    [Fact]
+    public void ThePlanWarnsWhenAVisiblePageWouldPointAtAHiddenOne()
+    {
+        // The depth problem: a class links to a Concept, the Concept links to
+        // a curriculum expectation. Publishing one hop leaves the second hop
+        // hidden, so a published page points at a page that is not there.
+        Class("ICS3U", "Unit 1, Day 2", "2026-09-09");
+        File.AppendAllText(Path.Combine(_folder, "courses", "ICS3U",
+            "section1", "All Classes", "Unit 1, Day 2.md"), "Concept: [[Ohm's Law]]\n");
+        Page("ICS3U", "Concepts/Ohm's Law.md", draftSection1: true, body: "See [[E2.6]].");
+        Page("ICS3U", "Curriculum/E2.6.md", draftSection1: true);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" }, includeLinked: true);
+
+        var dangling = Assert.Single(plan.Dangling);
+        Assert.EndsWith("Ohm's Law.md", dangling.From, StringComparison.Ordinal);
+        Assert.EndsWith("E2.6.md", dangling.To, StringComparison.Ordinal);
+        Assert.Contains("would point at a hidden page", plan.Describe());
+    }
+
+    [Fact]
+    public void ThePlanWarnsWhenHidingBreaksAPageThatStaysVisible()
+    {
+        // The same defect from the other end, and the reason hiding must not
+        // silently follow links to the end: a page some published class still
+        // needs would be swallowed.
+        Class("ICS3U", "Unit 1, Day 1", "2026-09-08");
+        File.AppendAllText(Path.Combine(_folder, "courses", "ICS3U",
+            "section1", "All Classes", "Unit 1, Day 1.md"), "Concept: [[Photosynthesis]]\n");
+        Page("ICS3U", "Concepts/Photosynthesis.md", draftSection1: false);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Photosynthesis" },
+            includeLinked: false, draft: true);
+
+        var dangling = Assert.Single(plan.Dangling);
+        Assert.EndsWith("Unit 1, Day 1.md", dangling.From, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AConsistentPlanWarnsAboutNothing()
+    {
+        Class("ICS3U", "Unit 1, Day 2", "2026-09-09");
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" }, includeLinked: true, draft: true);
+        Assert.Empty(plan.Dangling);
+        Assert.DoesNotContain("point at a hidden page", plan.Describe());
+    }
+
+    [Fact]
+    public void UnreferencedPagesAreFoundBecauseNoLinkRuleEverWill()
+    {
+        // Quartz publishes every non-draft page and lists it in the explorer,
+        // so a page nothing links to is still visible to students.
+        Class("ICS3U", "Unit 1, Day 1", "2026-09-08");
+        Page("ICS3U", "Concepts/Astronomical Phenomena.md", draftSection1: false);
+
+        var workspace = Open();
+        var (graph, _) = workspace.Inspect(workspace.Course("ICS3U"), 1);
+
+        Assert.Contains(graph.Unreferenced(),
+            p => p.EndsWith("Astronomical Phenomena.md", StringComparison.Ordinal));
+    }
+
     // ---- Choosing classes by date ----------------------------------------
 
     [Fact]
