@@ -44,13 +44,34 @@ public sealed class PublishPlan
     /// </summary>
     public IReadOnlyList<DanglingLink> Dangling { get; init; } = Array.Empty<DanglingLink>();
 
+    /// <summary>
+    /// Pages taking the date of the class that publishes them.
+    ///
+    /// Only pages NO OTHER class links to. A page used by several classes
+    /// belongs to the lesson that introduced it, and re-dating it every time
+    /// another class happens to mention it would shuffle the category
+    /// listings on the site for no reason a teacher asked for.
+    /// </summary>
+    public IReadOnlyList<PlannedDate> InheritedDates { get; init; } = Array.Empty<PlannedDate>();
+
+    /// <summary>The section's front page catching up, or null when it is already right.</summary>
+    public IndexChange? Index { get; init; }
+
     public IEnumerable<PlannedPage> Named => Pages.Where(p => !p.ViaLink);
     public IEnumerable<PlannedPage> Linked => Pages.Where(p => p.ViaLink);
 
     /// <summary>Pages whose flag actually changes; the rest are already right.</summary>
     public IEnumerable<PlannedPage> Changing => Pages.Where(p => p.WillChange);
 
-    public bool ChangesNothing => !Changing.Any();
+    /// <summary>
+    /// Includes the dates and the front page, not just the draft flags —
+    /// otherwise a publish whose only remaining work is catching the index up
+    /// would report that there was nothing to do, and leave it behind.
+    /// </summary>
+    public bool ChangesNothing =>
+        !Changing.Any() &&
+        !InheritedDates.Any(d => d.WillChange) &&
+        Index is not { WillChange: true };
 
     /// <summary>
     /// The proposal as a teacher would read it.
@@ -125,6 +146,22 @@ public sealed class PublishPlan
             foreach (var page in changing) lines.Add("  " + page.Transition);
         }
 
+        if (InheritedDates.Count > 0)
+        {
+            lines.Add("");
+            lines.Add($"{InheritedDates.Count} page{(InheritedDates.Count == 1 ? "" : "s")} " +
+                      "no other class links to would take that class's date:");
+            foreach (var date in InheritedDates.Take(MostDanglingShown)) lines.Add("  " + date.Describe());
+            if (InheritedDates.Count > MostDanglingShown)
+                lines.Add($"  …and {InheritedDates.Count - MostDanglingShown} more.");
+        }
+
+        if (Index is { } index)
+        {
+            lines.Add("");
+            lines.Add(index.Describe());
+        }
+
         AppendDangling(lines);
 
         if (Publishes)
@@ -158,6 +195,29 @@ public sealed class PublishPlan
     }
 
     private static string Name(string path) => Path.GetFileNameWithoutExtension(path);
+}
+
+/// <summary>
+/// The section's front page catching up with what is published: which class
+/// its "Most Recent Class" embed shows, and the date it carries.
+/// </summary>
+public sealed record IndexChange(
+    string RelativePath,
+    string? FromClass,
+    string ToClass,
+    DateOnly? FromDate,
+    DateOnly ToDate,
+    bool HeadingMissing)
+{
+    public bool WillChange => !HeadingMissing && (FromClass != ToClass || FromDate != ToDate);
+
+    public string Describe() => HeadingMissing
+        ? $"{RelativePath} has no “{SectionIndex.Heading}” heading, so its front page can’t be updated. " +
+          "Nothing else is affected."
+        : WillChange
+            ? $"The section's front page would show “{ToClass}” ({ToDate:yyyy-MM-dd}) as the most recent class" +
+              (FromClass is null ? "." : $", instead of “{FromClass}”.")
+            : $"The section's front page already shows “{ToClass}”.";
 }
 
 /// <summary>One page a plan would touch, and what would happen to it.</summary>

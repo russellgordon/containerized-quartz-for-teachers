@@ -363,6 +363,9 @@ public sealed class AssistWorkspace
             }
         }
 
+        var inherited = InheritedDates(course, section, pages, draft);
+        var index = IndexChangeFor(course, section, pages, inherited);
+
         // Counted while following links above, so it has to be reported after
         // that loop rather than before it.
         if (protectedLinked > 0)
@@ -379,7 +382,111 @@ public sealed class AssistWorkspace
             Destination = DestinationOf(course),
             Hiding = draft,
             Dangling = DanglingAfter(course, section, pages),
+            InheritedDates = inherited,
+            Index = index,
         };
+    }
+
+    /// <summary>
+    /// Pages that should take the date of the class publishing them.
+    ///
+    /// The rule is the teacher's: a page gets the class's date only when NO
+    /// OTHER class page links to it. A page several classes use belongs to the
+    /// lesson that introduced it, so re-dating it whenever another class
+    /// mentions it would shuffle the site's category listings for no reason
+    /// anybody asked for. Note "any other class links to it", not "an earlier
+    /// one does" — an unpublished later class still counts as an owner.
+    /// </summary>
+    private List<PlannedDate> InheritedDates(
+        Course course, int section, IReadOnlyList<PlannedPage> pages, bool draft)
+    {
+        var inherited = new List<PlannedDate>();
+        if (draft) return inherited;   // hiding a class never re-dates anything
+
+        LinkGraph graph;
+        try { graph = LinkGraph.Build(course.DirectoryPath, section); }
+        catch { return inherited; }
+
+        var classPaths = new HashSet<string>(
+            ClassPages(course, section).Select(Path.GetFullPath), StringComparer.OrdinalIgnoreCase);
+
+        foreach (var named in pages.Where(p => !p.ViaLink))
+        {
+            string classPath;
+            try { classPath = PagePaths.ResolveInside(_folder, named.RelativePath); }
+            catch { continue; }
+            if (!classPaths.Contains(Path.GetFullPath(classPath))) continue;   // only classes anchor dates
+            if (DateOf(course, section, classPath) is not { } classDate) continue;
+
+            foreach (string target in graph.TargetsOf(classPath))
+            {
+                if (classPaths.Contains(Path.GetFullPath(target))) continue;   // a class is not material
+                int classesLinking = graph.SourcesOf(target)
+                    .Count(s => classPaths.Contains(Path.GetFullPath(s)));
+                if (classesLinking != 1) continue;                             // shared: leave it alone
+                if (DateOf(course, section, target) == classDate) continue;    // already right
+                if (inherited.Any(d => d.RelativePath == Relative(target))) continue;
+
+                bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, target);
+                inherited.Add(new PlannedDate(
+                    Title: Path.GetFileNameWithoutExtension(target),
+                    RelativePath: Relative(target),
+                    FrontmatterKey: PageFrontmatter.CreatedKeyFor(section, sectionLocal),
+                    Current: DateOf(course, section, target),
+                    New: classDate,
+                    MeetingNumber: 0));
+            }
+        }
+        return inherited;
+    }
+
+    /// <summary>
+    /// What the section's front page should say once this plan is applied.
+    ///
+    /// Computed from the resulting state rather than "whatever we just
+    /// published", which is what makes it right in both directions:
+    /// publishing an older missed class does not drag the front page
+    /// backwards, and hiding the newest one falls back to the previous
+    /// without a line of code for the case.
+    /// </summary>
+    private IndexChange? IndexChangeFor(
+        Course course, int section, IReadOnlyList<PlannedPage> pages, IReadOnlyList<PlannedDate> inherited)
+    {
+        var classPages = ClassPages(course, section);
+        if (classPages.Count == 0) return null;
+
+        var drafts = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        foreach (var page in pages)
+        {
+            try { drafts[PagePaths.ResolveInside(_folder, page.RelativePath)] = page.Draft; }
+            catch { }
+        }
+        var dates = new Dictionary<string, DateOnly>(StringComparer.OrdinalIgnoreCase);
+        foreach (var date in inherited)
+        {
+            try { dates[PagePaths.ResolveInside(_folder, date.RelativePath)] = date.New; }
+            catch { }
+        }
+
+        string? newest = SectionIndex.MostRecentPublished(course, section, classPages, drafts, dates);
+        if (newest is null) return null;   // nothing published: leave the front page alone
+
+        string indexPath = SectionIndex.PathFor(course, section);
+        string indexText;
+        try { indexText = File.ReadAllText(indexPath); }
+        catch { return null; }
+
+        string toClass = Path.GetFileNameWithoutExtension(newest);
+        DateOnly toDate = DateOf(course, section, newest) ?? default;
+        bool headingMissing = SectionIndex.WithMostRecent(indexText, toClass) is null;
+
+        return new IndexChange(
+            RelativePath: Relative(indexPath),
+            FromClass: SectionIndex.CurrentlyShowing(indexText),
+            ToClass: toClass,
+            FromDate: PageFrontmatter.CreatedOn(indexText, section, isSectionLocal: true),
+            ToDate: toDate,
+            HeadingMissing: headingMissing);
     }
 
     /// <summary>
@@ -449,6 +556,38 @@ public sealed class AssistWorkspace
             Draft: draft,
             ViaLink: viaLink,
             Date: PageFrontmatter.CreatedOn(text, section, sectionLocal));
+    }
+
+    /// <summary>
+    /// The one class taught on a given day, or a refusal that says what is
+    /// there instead.
+    ///
+    /// "Publish tomorrow's class" is the commonest thing a teacher will ask
+    /// for, and it turns on finding exactly one page — so an empty day and a
+    /// double-booked day both have to be said plainly rather than guessed
+    /// through.
+    /// </summary>
+    public string ClassOn(Course course, int sectionNumber, DateOnly date)
+    {
+        var matches = ClassPages(course, sectionNumber)
+            .Where(p => DateOf(course, sectionNumber, p) == date)
+            .ToList();
+
+        if (matches.Count == 1) return matches[0];
+        if (matches.Count > 1)
+            throw new AssistRefusal(
+                $"{course.Code} Section {sectionNumber} has {matches.Count} classes on {date:yyyy-MM-dd} — " +
+                Humanize(matches.Select(m => "“" + Path.GetFileNameWithoutExtension(m) + "”")) +
+                ". Say which one you mean.");
+
+        var dated = ClassPages(course, sectionNumber)
+            .Select(p => DateOf(course, sectionNumber, p))
+            .Where(d => d is not null).Select(d => d!.Value).OrderBy(d => d).ToList();
+        string nearby = dated.Count == 0
+            ? "None of its classes have dates."
+            : $"Its classes run {dated[0]:yyyy-MM-dd} to {dated[^1]:yyyy-MM-dd}.";
+        throw new AssistRefusal(
+            $"{course.Code} Section {sectionNumber} has no class on {date:yyyy-MM-dd}. {nearby}");
     }
 
     /// <summary>
@@ -538,6 +677,23 @@ public sealed class AssistWorkspace
         if (changed.Count > 0)
             progress?.Report($"Changed {changed.Count} page{(changed.Count == 1 ? "" : "s")}.");
 
+        // Pages only this class uses take its date.
+        string tail = SiblingTimeAndOffset(course, section, ClassPages(course, section));
+        foreach (var date in plan.InheritedDates.Where(d => d.WillChange))
+        {
+            try
+            {
+                string full = PagePaths.ResolveInside(_folder, date.RelativePath);
+                var (updated, moved) = PageFrontmatter.SetCreated(
+                    File.ReadAllText(full), date.FrontmatterKey, date.New, tail);
+                if (moved) File.WriteAllText(full, updated);
+            }
+            catch { }
+        }
+
+        // And the front page catches up with what is now published.
+        if (plan.Index is { WillChange: true } index) ApplyIndexChange(index, tail);
+
         if (!plan.Publishes)
             return new AssistResult(true, Summary(changed, published: false, course.Code, section), backup);
 
@@ -556,6 +712,27 @@ public sealed class AssistWorkspace
                 $"{WhatSurvived(changed)}, but publishing failed. {publish.Message}", backup);
 
         return new AssistResult(true, Summary(changed, published: true, course.Code, section), backup);
+    }
+
+    /// <summary>
+    /// Point the section's front page at its most recent published class, and
+    /// give it that class's date.
+    ///
+    /// The only body edit anything here makes, so it keeps the same discipline
+    /// as the frontmatter ones: change the one line, leave every other byte
+    /// alone. The teacher may have this file open in Obsidian.
+    /// </summary>
+    private void ApplyIndexChange(IndexChange index, string tail)
+    {
+        try
+        {
+            string path = PagePaths.ResolveInside(_folder, index.RelativePath);
+            string text = File.ReadAllText(path);
+            if (SectionIndex.WithMostRecent(text, index.ToClass) is not { } withEmbed) return;
+            var (withDate, _) = PageFrontmatter.SetCreated(withEmbed, "created", index.ToDate, tail);
+            File.WriteAllText(path, withDate);
+        }
+        catch { /* the front page falling behind must not fail the publish */ }
     }
 
     /// <summary>

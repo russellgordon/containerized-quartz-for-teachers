@@ -226,6 +226,162 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Equal(3, plan.Pages.Count);
     }
 
+    // ---- Publishing the day's class, end to end ---------------------------
+
+    /// <summary>A section index shaped like the example content's.</summary>
+    private void Index(string course, int section, string showing, string created)
+    {
+        string body = showing.Length == 0
+            ? "# Most Recent Class\n\n![[Key Links]]\n"
+            : $"# Most Recent Class\n![[{showing}]]\n\n![[Key Links]]\n";
+        string full = Path.Combine(_folder, "courses", course, $"section{section}", "index.md");
+        Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+        File.WriteAllText(full,
+            $"---\ntitle: Section {section}\ncreated: {created}T07:00:00.000-0400\ndraft: false\n---\n{body}");
+    }
+
+    private void DatedClass(string course, string title, string date, bool draft, string body = "Body.") =>
+        File.WriteAllText(EnsurePath(course, $"section1/All Classes/{title}.md"),
+            $"---\ndraft: {(draft ? "true" : "false")}\ncreated: {date}T07:00:00.000-0400\n---\n{body}\n");
+
+    private string EnsurePath(string course, string relative)
+    {
+        string full = Path.Combine(_folder, "courses", course,
+            relative.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+        return full;
+    }
+
+    [Fact]
+    public void PublishingTheDaysClassMovesTheFrontPageAndTheDatesWithIt()
+    {
+        // The whole of "publish tomorrow's class", in one plan.
+        DatedClass("ICS3U", "Unit 1, Day 1", "2026-09-08", draft: false, body: "[[Shared Page]]");
+        DatedClass("ICS3U", "Unit 1, Day 2", "2026-09-09", draft: true,
+                   body: "Concept: [[Only Mine]] and [[Shared Page]]");
+        Page("ICS3U", "Concepts/Only Mine.md", draftSection1: true);
+        Page("ICS3U", "Concepts/Shared Page.md", draftSection1: true);
+        Index("ICS3U", 1, "Unit 1, Day 1", "2026-09-08");
+
+        var workspace = Open();
+        var plan = workspace.PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" }, includeLinked: true);
+
+        // Only Mine is used by this class alone, so it takes the class's date.
+        var inherited = Assert.Single(plan.InheritedDates);
+        Assert.Equal("Only Mine", inherited.Title);
+        Assert.Equal(new DateOnly(2026, 9, 9), inherited.New);
+
+        // Shared Page is used by Day 1 as well, so its date is left alone.
+        Assert.DoesNotContain(plan.InheritedDates, d => d.Title == "Shared Page");
+        // …but it is still published.
+        Assert.Contains(plan.Pages, p => p.Title == "Shared Page" && !p.Draft);
+
+        Assert.Equal("Unit 1, Day 2", plan.Index!.ToClass);
+        Assert.Equal(new DateOnly(2026, 9, 9), plan.Index.ToDate);
+    }
+
+    [Fact]
+    public async Task ApplyingItRewritesTheIndexEmbedAndNothingElse()
+    {
+        DatedClass("ICS3U", "Unit 1, Day 1", "2026-09-08", draft: false);
+        DatedClass("ICS3U", "Unit 1, Day 2", "2026-09-09", draft: true);
+        Index("ICS3U", 1, "Unit 1, Day 1", "2026-09-08");
+
+        var workspace = Open();
+        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" },
+            includeLinked: false, publishes: false));
+
+        string index = File.ReadAllText(Path.Combine(_folder, "courses", "ICS3U", "section1", "index.md"));
+        Assert.Contains("# Most Recent Class\n![[Unit 1, Day 2]]", index);
+        Assert.Contains("created: 2026-09-09T07:00:00.000-0400", index);
+        Assert.Contains("![[Key Links]]", index);      // the rest of the body untouched
+        Assert.Contains("title: Section 1", index);
+        Assert.DoesNotContain("Unit 1, Day 1", index);
+    }
+
+    [Fact]
+    public void PublishingAnOlderMissedClassDoesNotDragTheFrontPageBackwards()
+    {
+        // "Most Recent Class" is computed, not remembered — so catching up on
+        // a class from last week leaves the front page where it belongs.
+        DatedClass("ICS3U", "Unit 1, Day 1", "2026-09-08", draft: true);
+        DatedClass("ICS3U", "Unit 1, Day 5", "2026-09-14", draft: false);
+        Index("ICS3U", 1, "Unit 1, Day 5", "2026-09-14");
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 1" }, includeLinked: false);
+
+        Assert.Equal("Unit 1, Day 5", plan.Index!.ToClass);
+        Assert.False(plan.Index.WillChange);
+    }
+
+    [Fact]
+    public void HidingTheNewestClassFallsBackToThePreviousOne()
+    {
+        // The same computed rule, in the other direction, with no code for it.
+        DatedClass("ICS3U", "Unit 1, Day 1", "2026-09-08", draft: false);
+        DatedClass("ICS3U", "Unit 1, Day 2", "2026-09-09", draft: false);
+        Index("ICS3U", 1, "Unit 1, Day 2", "2026-09-09");
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" },
+            includeLinked: false, draft: true);
+
+        Assert.Equal("Unit 1, Day 1", plan.Index!.ToClass);
+        Assert.Equal(new DateOnly(2026, 9, 8), plan.Index.ToDate);
+    }
+
+    [Fact]
+    public void AnIndexWithNoMostRecentClassHeadingIsReportedNotInvented()
+    {
+        DatedClass("ICS3U", "Unit 1, Day 2", "2026-09-09", draft: true);
+        File.WriteAllText(EnsurePath("ICS3U", "section1/index.md"),
+            "---\ntitle: Section 1\ncreated: 2026-09-08T07:00:00.000-0400\ndraft: false\n---\n");
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" }, includeLinked: false);
+
+        Assert.True(plan.Index!.HeadingMissing);
+        Assert.False(plan.Index.WillChange);
+        Assert.Contains("has no “# Most Recent Class” heading", plan.Describe());
+    }
+
+    [Fact]
+    public void TheClassOnADayIsFoundByItsOwnDate()
+    {
+        DatedClass("ICS3U", "Unit 1, Day 1", "2026-09-08", draft: false);
+        DatedClass("ICS3U", "Unit 1, Day 2", "2026-09-09", draft: true);
+        var workspace = Open();
+
+        string found = workspace.ClassOn(workspace.Course("ICS3U"), 1, new DateOnly(2026, 9, 9));
+
+        Assert.EndsWith("Unit 1, Day 2.md", found, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ADayWithNoClassSaysWhenTheClassesActuallyRun()
+    {
+        DatedClass("ICS3U", "Unit 1, Day 1", "2026-09-08", draft: false);
+        var workspace = Open();
+
+        var refusal = Assert.Throws<AssistRefusal>(
+            () => workspace.ClassOn(workspace.Course("ICS3U"), 1, new DateOnly(2026, 12, 25)));
+
+        Assert.Equal("ICS3U Section 1 has no class on 2026-12-25. " +
+                     "Its classes run 2026-09-08 to 2026-09-08.", refusal.Message);
+    }
+
+    [Fact]
+    public void TwoClassesOnOneDayAreRefusedRatherThanPicked()
+    {
+        DatedClass("ICS3U", "Unit 1, Day 1", "2026-09-08", draft: false);
+        DatedClass("ICS3U", "Unit 1, Day 2", "2026-09-08", draft: true);
+        var workspace = Open();
+
+        var refusal = Assert.Throws<AssistRefusal>(
+            () => workspace.ClassOn(workspace.Course("ICS3U"), 1, new DateOnly(2026, 9, 8)));
+
+        Assert.Contains("has 2 classes on 2026-09-08", refusal.Message);
+        Assert.Contains("Say which one you mean.", refusal.Message);
+    }
+
     // ---- A session locked to one course ----------------------------------
 
     [Fact]

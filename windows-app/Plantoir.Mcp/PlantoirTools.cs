@@ -390,6 +390,69 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         throw new AssistRefusal($"“{raw}” isn’t a date {which} can use. Give it as YYYY-MM-DD, for example 2026-09-15.");
     }
 
+    // ---- The commonest request of all ------------------------------------
+
+    private const string ClassDateHelp =
+        "The day the class is taught, as YYYY-MM-DD. For \"tomorrow\" or \"today\", work out the date first — " +
+        "the tool matches it exactly against each class's own date.";
+
+    [McpServerTool(Name = "plan_publish_class_on", Title = "Plan publishing a day's class",
+                   ReadOnly = true, Destructive = false)]
+    [Description("Work out what publishing the class taught on a given day would do, WITHOUT changing anything. " +
+                 "This is the tool for \"publish tomorrow's class\" or \"publish today's class\": it finds the class " +
+                 "by date, follows its links, gives pages no other class uses that class's date, and points the " +
+                 "section's front page at it. Always show the teacher the result before using publish_class_on.")]
+    public string PlanPublishClassOn(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description(ClassDateHelp)] string date)
+        => Guarded(() => Render(PlanForDay(course, section, date, publishes: true)));
+
+    [McpServerTool(Name = "publish_class_on", Title = "Publish a day's class",
+                   Destructive = false, Idempotent = true)]
+    [Description("Publish the class taught on a given day, along with the pages it links to, then republish the " +
+                 "section's website. Pages that no other class links to take the class's date, and the section's " +
+                 "front page is pointed at the most recent published class. The course is backed up first, " +
+                 "automatically. Only call this after plan_publish_class_on and after the teacher has agreed. " +
+                 "This takes several minutes.")]
+    public async Task<string> PublishClassOn(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description(ClassDateHelp)] string date,
+        IProgress<ProgressNotificationValue> progress,
+        CancellationToken cancellation,
+        [Description("False to change the pages but not republish the website yet.")] bool republish = true)
+    {
+        try
+        {
+            var plan = PlanForDay(course, section, date, republish);
+            var result = await workspace.Apply(plan, Relay(progress), cancellation);
+            progress.Report(new ProgressNotificationValue { Progress = 100, Total = 100, Message = "Finished" });
+
+            var text = new StringBuilder(result.Message);
+            if (plan.Index is { WillChange: true } index)
+                text.Append($"\nThe section's front page now shows “{index.ToClass}”.");
+            if (result.BackupPath is not null)
+                text.Append("\n\nA backup was made first, so this can be undone from Plantoir’s Backups list.");
+            return text.ToString();
+        }
+        catch (AssistRefusal refusal) { return refusal.Message; }
+        catch (OperationCanceledException) { return "The publish was stopped before it finished."; }
+    }
+
+    private PublishPlan PlanForDay(string course, int section, string date, bool publishes)
+    {
+        var found = workspace.Course(course);
+        int number = workspace.Section(found, section);
+        var when = ParseDate(date, "date")
+            ?? throw new AssistRefusal("No date was given for the class to publish.");
+        string page = workspace.ClassOn(found, number, when);
+
+        return workspace.PlanPublish(course, number,
+            new[] { Path.GetFileNameWithoutExtension(page) },
+            includeLinked: true, draft: false, publishes: publishes);
+    }
+
     // ---- Acting ----------------------------------------------------------
 
     [McpServerTool(Name = "publish_pages", Title = "Publish pages", Destructive = false, Idempotent = true)]

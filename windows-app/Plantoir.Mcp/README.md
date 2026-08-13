@@ -145,6 +145,37 @@ the earlier one-class-page-at-a-time surface could not serve:
 default to `true` for publishing and `false` for hiding, which is defensible
 but was nowhere written down; a caller has to decide.
 
+### "Publish tomorrow's class"
+
+The commonest request there is, and one tool rather than a sequence:
+
+```
+plan_publish_class_on(course: "ICS3U", section: 1, date: "2026-09-09")
+publish_class_on(...)
+```
+
+It finds the class by its own date, publishes it and the pages it links to,
+and then does the two things a teacher expects without asking for:
+
+- **Pages no other class links to take the class's date.** A page several
+  classes use belongs to the lesson that introduced it, so re-dating it every
+  time another class mentions it would shuffle the site's category listings
+  for no reason. Note the rule is "any other class links to it", not "an
+  earlier one does" — an unpublished later class still counts as an owner.
+- **The section's front page catches up**: the `# Most Recent Class` embed
+  points at the newest published class, and the index takes that class's date.
+
+**"Most recent" is computed, never remembered**, and that one decision makes it
+right in both directions with no code for either case: publishing an older
+class the teacher had missed does not drag the front page backwards, and
+hiding the newest class falls back to the previous one. Every publish and hide
+recomputes it.
+
+This is the only place anything here edits a page **body** rather than
+frontmatter, so it holds the same line: change the one line, leave every other
+byte alone. An index with no `# Most Recent Class` heading is reported rather
+than given a layout it never had.
+
 ### Choosing classes by date
 
 The plan and write tools take `onOrAfter` and `before` (`YYYY-MM-DD`) instead
