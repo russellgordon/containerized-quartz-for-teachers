@@ -205,7 +205,8 @@ more than it sounds.
 - [ ] Comments explain the why, not the what
 - [ ] Someone else could run this from your instructions
 
-They are clickable in the browser. Nothing is saved — but they are how
+On the site they are read-only — the boxes show what the page says, and
+clicking one does nothing. Copied into your own notes, they are how
 [[Writing Good Comments]] turns from advice into habit.
 
 ---

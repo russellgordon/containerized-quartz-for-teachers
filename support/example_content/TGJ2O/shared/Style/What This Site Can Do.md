@@ -229,8 +229,9 @@ for one already done.
 - [ ] Consent noted for every recognisable face
 - [ ] Caption, credit, and byline in place
 
-They are clickable in the browser. Nothing is saved — but students find them
-useful for keeping their place while setting up a performance.
+On the site they are read-only — the boxes show what the page says, and
+clicking one does nothing. Copied into a notebook, they are useful for
+keeping your place while setting up a shoot.
 
 ---
 

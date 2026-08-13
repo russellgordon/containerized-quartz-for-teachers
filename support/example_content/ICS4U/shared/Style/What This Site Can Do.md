@@ -205,8 +205,9 @@ sentence; double ones give it a line to itself.
 - [ ] Every new test failed at least once before it passed
 - [ ] Somebody who is not on my team could run this from my README
 
-They are clickable in the browser. Nothing is saved — but they are
-how [[Journal Checklist]] turns advice into a habit.
+On the site they are read-only — the boxes show what the page says, and
+clicking one does nothing. Copied into your own notes, they are how
+[[Journal Checklist]] turns from advice into habit.
 
 ---
 

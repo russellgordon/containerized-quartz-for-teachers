@@ -201,8 +201,9 @@ sentence; double ones give it a line to itself.
 - [ ] Comments explain the why, not the what
 - [ ] Somebody who is not me could run this from my instructions
 
-They are clickable in the browser. Nothing is saved — but they are how
-[[Journal Checklist]] turns advice into a habit.
+On the site they are read-only — the boxes show what the page says, and
+clicking one does nothing. Copied into your own notes, they are how
+[[Journal Checklist]] turns from advice into habit.
 
 ---
 

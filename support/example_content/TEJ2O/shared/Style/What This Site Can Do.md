@@ -205,7 +205,8 @@ more than it sounds.
 - [ ] Screws bagged and labelled by step
 - [ ] Someone else could service this build from your notes
 
-They are clickable in the browser. Nothing is saved — but they are how
+On the site they are read-only — the boxes show what the page says, and
+clicking one does nothing. Copied into your own notes, they are how
 [[Reading a Spec Sheet]] turns from advice into habit.
 
 ---

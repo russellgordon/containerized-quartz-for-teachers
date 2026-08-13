@@ -274,8 +274,9 @@ for one already done.
 - [x] Data table drawn before starting
 - [ ] Station cleaned
 
-They are clickable in the browser. Nothing is saved — but students find them
-useful for keeping their place during a lab.
+On the site they are read-only — the boxes show what the page says, and
+clicking one does nothing. Copied into a notebook, they are useful for
+keeping your place during a lab.
 
 ---
 

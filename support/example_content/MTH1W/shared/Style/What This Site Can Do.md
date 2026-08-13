@@ -225,7 +225,8 @@ more than it sounds.
 - [ ] Answer sentence written
 - [ ] Someone else could follow this page
 
-They are clickable in the browser. Nothing is saved — but they are how
+On the site they are read-only — the boxes show what the page says, and
+clicking one does nothing. Copied into your own notes, they are how
 [[Showing Your Thinking]] turns from advice into habit.
 
 ---

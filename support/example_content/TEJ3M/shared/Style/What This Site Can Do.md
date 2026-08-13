@@ -230,9 +230,10 @@ matters more here than it sounds.
 - [ ] Eye protection on before any lead is clipped
 - [ ] Somebody else could service this build from your notes
 
-They are clickable in the browser and nothing is saved — but they are
-how [[Soldering Safely]] and [[Documenting Your Build]] turn from
-advice into habit.
+On the site they are read-only — the boxes show what the page says, and
+clicking one does nothing. Copied into your own notes, they are how
+[[Soldering Safely]] and [[Documenting Your Build]] turn from advice into
+habit.
 
 ---
 

@@ -267,10 +267,10 @@ matters more here than it sounds.
 - [ ] Probe compensated, ground spring fitted
 - [ ] Somebody else could build this from your documentation
 
-They are clickable in the browser and nothing is saved — but they are
-how [[Bench Power Supply Habits]] and
-[[Writing Documentation Somebody Can Build From]] turn from advice into
-habit.
+On the site they are read-only — the boxes show what the page says, and
+clicking one does nothing. Copied into your own notes, they are how [[Bench
+Power Supply Habits]] and [[Writing Documentation Somebody Can Build From]]
+turn from advice into habit.
 
 ---
 

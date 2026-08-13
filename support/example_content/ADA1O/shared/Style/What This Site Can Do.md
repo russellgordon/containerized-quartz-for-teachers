@@ -228,8 +228,9 @@ for one already done.
 - [x] Group knows its running order
 - [ ] Props set on the prop table
 
-They are clickable in the browser. Nothing is saved — but students find them
-useful for keeping their place while setting up a performance.
+On the site they are read-only — the boxes show what the page says, and
+clicking one does nothing. Copied into a notebook, they are useful for
+keeping your place while setting up a performance.
 
 ---
 

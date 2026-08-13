@@ -243,8 +243,9 @@ matters more than it sounds.
 - [ ] Uncertainty reported, not implied
 - [ ] Someone else could check this page
 
-They are clickable in the browser. Nothing is saved — but they are
-how [[Writing About Data]] turns from advice into habit.
+On the site they are read-only — the boxes show what the page says, and
+clicking one does nothing. Copied into your own notes, they are how
+[[Writing About Data]] turns from advice into habit.
 
 ---
 
