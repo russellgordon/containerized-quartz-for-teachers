@@ -16,12 +16,6 @@ tags:
 4. Launch our Unit 2 task: [[Improvisation Showcase]]
 5. Troupes form; build your first playlist of games
 
-%%curriculum-start%%
-Today's work points here:
-
-![[A3.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Improvisation Showcase]] — note the success criteria.

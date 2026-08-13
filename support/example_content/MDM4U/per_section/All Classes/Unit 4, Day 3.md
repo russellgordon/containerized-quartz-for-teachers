@@ -20,14 +20,6 @@ tags:
 5. Assessed per [[How Marks Work]] — an honest "not proven" is a
    verdict, and it earns as much as "true" does
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[D3.1]]
-
-![[D3.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Bring the claim you will investigate *and* the original source

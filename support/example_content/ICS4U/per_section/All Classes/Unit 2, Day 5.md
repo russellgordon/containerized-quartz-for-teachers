@@ -18,14 +18,6 @@ tags:
    containers, and a justification you can defend out loud
 5. Practise: [[Recursion Practice]]
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A3.6]]
-
-![[C2.4]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Finish [[Recursion Practice]], including the one that never stops

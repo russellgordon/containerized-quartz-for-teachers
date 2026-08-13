@@ -19,12 +19,6 @@ tags:
 5. Launch our first task: [[Break-Even]] — pick a small venture worth
    modelling
 
-%%curriculum-start%%
-Today's work points here:
-
-![[B1.1]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Break-Even]] and bring one venture idea with rough numbers.

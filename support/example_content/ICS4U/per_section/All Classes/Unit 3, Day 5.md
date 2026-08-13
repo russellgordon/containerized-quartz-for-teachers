@@ -17,14 +17,6 @@ tags:
    partner, their problem in their words, and a team that builds it
 4. Practise: [[Efficiency Practice]]
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[C2.2]]
-
-![[C2.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Milestone: bring two possible community partners and the problem

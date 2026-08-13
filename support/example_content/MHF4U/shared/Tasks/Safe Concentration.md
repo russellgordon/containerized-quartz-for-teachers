@@ -69,6 +69,10 @@ mass, the second dose itself — completes the evidence.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[A2.4]]
+
+![[A3.4]]
+
 ![[C2.1]]
 
 ![[C3.6]]

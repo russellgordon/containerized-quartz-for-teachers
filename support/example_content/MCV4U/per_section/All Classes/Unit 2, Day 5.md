@@ -20,14 +20,6 @@ tags:
    [[What Makes a Model Good]] frames the judging
 5. Practise: [[Exponential and Sinusoidal Derivatives Practice]], the rest
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A3.5]]
-
-![[B2.1]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Smooth Landing]] with your partner; translate each demand

@@ -59,6 +59,8 @@ handed four mystery vertices and asked what the figure truly is.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[B3.1]]
+
 ![[B3.2]]
 
 ![[B3.3]]

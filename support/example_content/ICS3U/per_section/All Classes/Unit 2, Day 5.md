@@ -18,14 +18,6 @@ tags:
 4. Launch our next task: [[The Data Digest]] — a pile of data, and one
    person who has to decide something with it
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A1.6]]
-
-![[A2.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Data Digest]] and name both your data and your person.

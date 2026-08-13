@@ -18,14 +18,6 @@ tags:
 4. Method: [[Writing Code Others Can Read]] — a docstring on every
    class and every method, starting today
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[C1.1]]
-
-![[C1.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Model]] and bring the real thing you are modelling.

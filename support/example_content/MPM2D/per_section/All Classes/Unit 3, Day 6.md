@@ -18,12 +18,6 @@ tags:
    [[Transformations of Parabolas]]
 4. Launch: [[The Perfect Arc]] — find a real arc, photograph it, model it
 
-%%curriculum-start%%
-Today's work points here:
-
-![[A4.1]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Perfect Arc]] and photograph a candidate arc — a

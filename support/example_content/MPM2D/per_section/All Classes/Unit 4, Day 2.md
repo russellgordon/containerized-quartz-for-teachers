@@ -18,12 +18,6 @@ tags:
 4. Launch: [[Inaccessible Heights]] — choose something unmeasurable
 5. Check your understanding: [[Trig Ratios and Laws Practice]], block one
 
-%%curriculum-start%%
-Today's work points here:
-
-![[C2.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Inaccessible Heights]] and shortlist two targets with your

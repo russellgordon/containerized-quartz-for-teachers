@@ -20,14 +20,6 @@ tags:
 5. How the task is assessed: [[How Marks Work]] — the reasoning is
    the product
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[C1.7]]
-
-![[C3.4]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Rollercoaster]] with your partner and sketch two

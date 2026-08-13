@@ -21,14 +21,6 @@ tags:
 5. Log the first transaction that worked and the thing you changed to
    get it
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A2.4]]
-
-![[B3.4]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Commit today's working code with a message a stranger could use.

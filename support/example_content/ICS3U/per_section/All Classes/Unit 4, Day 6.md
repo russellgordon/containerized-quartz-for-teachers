@@ -19,14 +19,6 @@ tags:
 4. Hand in [[The Community App]]; begin [[Final Reflection]] in class
 5. Rehearse for [[Launch Day]] and check [[Journal Checklist]]
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A4.2]]
-
-![[B4.6]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Confirm your client is coming, and tell them the time.

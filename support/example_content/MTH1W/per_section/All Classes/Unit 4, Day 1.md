@@ -17,12 +17,6 @@ tags:
 4. Notes to your future self — naming [[Geometric Relationships]]
 5. Launch our task: [[Design Under Constraints]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[E1.4]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Design Under Constraints]] and pick your design brief.

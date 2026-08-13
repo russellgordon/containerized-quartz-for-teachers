@@ -17,12 +17,6 @@ tags:
 4. Launch our final task: [[Culminating Performance]] — and assign the
    [[Production Roles Interview]], presented on Day 3
 
-%%curriculum-start%%
-Today's work points here:
-
-![[A3.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Culminating Performance]] with your group in mind.

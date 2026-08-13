@@ -18,14 +18,6 @@ tags:
 5. Launch our first task: [[The Helper Script]] — one real person, one
    repeated chore. [[How Marks Work]] says what is being judged.
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A2.1]]
-
-![[A2.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Helper Script]] and write down your person's name.

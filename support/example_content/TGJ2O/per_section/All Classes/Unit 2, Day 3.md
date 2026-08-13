@@ -16,12 +16,6 @@ tags:
 4. Compare cuts, then name it: [[Shooting Video]]
 5. Launch the beat's big assignment: [[The Athletics Package]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[B3.1]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Athletics Package]] and choose your crew role.

@@ -16,12 +16,6 @@ tags:
 4. Launch our next task: [[The Remix Project]]
 5. Log it in your [[Dev Journal]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[C3.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Remix Project]] and pick the program you will remix.

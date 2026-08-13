@@ -20,14 +20,6 @@ tags:
    must show the tuning evidence that got it there
 5. Log your loop period and your worst-case jitter, in microseconds
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A3.2]]
-
-![[B5.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Name your setpoint, your tolerance around it, and how you will

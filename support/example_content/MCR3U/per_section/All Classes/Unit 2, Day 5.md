@@ -18,14 +18,6 @@ tags:
 4. Launch: [[Double or Nothing]] — read the criteria together
 5. Check your understanding: [[Exponential Models Practice]]
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[B3.2]]
-
-![[B3.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Double or Nothing]] and shortlist two phenomena you could

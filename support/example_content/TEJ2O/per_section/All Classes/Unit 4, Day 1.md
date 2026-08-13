@@ -18,12 +18,6 @@ tags:
    will assess, revive, and pass on
 5. Log it in your [[Tech Journal]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[C1.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Refurb Report]] and note what your machine will need.

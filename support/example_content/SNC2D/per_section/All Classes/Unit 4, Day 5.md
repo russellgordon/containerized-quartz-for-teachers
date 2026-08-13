@@ -21,11 +21,3 @@ A camera, a magnifier, and a length of fibre, opened up on the bench.
 
 - [ ] Bring a need, a first sketch, and the focal lengths it would require.
 - [ ] Journal: one device from today whose mechanism you can now explain.
-
-%%curriculum-start%%
-## Curriculum connection
-
-![[E1.2]]
-
-![[E2.5]]
-%%curriculum-end%%

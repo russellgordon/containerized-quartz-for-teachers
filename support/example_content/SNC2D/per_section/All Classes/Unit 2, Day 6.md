@@ -21,11 +21,3 @@ Eight household liquids and a jug of red cabbage juice. Build the scale yourself
 
 - [ ] Bring a question and your controlled variables for the investigation.
 - [ ] Bring a chemistry claim from the news for [[Science in the News]].
-
-%%curriculum-start%%
-## Curriculum connection
-
-![[C1.1]]
-
-![[C2.5]]
-%%curriculum-end%%

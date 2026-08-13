@@ -16,12 +16,6 @@ tags:
 4. Launch our first task: [[Tableau Story Sequence]]
 5. Groups form; shortlist two stories each
 
-%%curriculum-start%%
-Today's work points here:
-
-![[A2.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Tableau Story Sequence]] — your group chooses its story next

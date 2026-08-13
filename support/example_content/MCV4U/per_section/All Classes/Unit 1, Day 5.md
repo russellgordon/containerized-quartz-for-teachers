@@ -20,14 +20,6 @@ tags:
    defended
 5. How it is assessed: [[How Marks Work]] — reasoning is the product
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A1.3]]
-
-![[A1.5]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Speed Camera]] with your partner and compute one

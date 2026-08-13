@@ -20,14 +20,6 @@ tags:
    identity, and you will prove it before you use it
 5. Practise: [[Identities and Equations Practice]]
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[B3.2]]
-
-![[B3.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Sound of Two Waves]] and choose two frequencies a

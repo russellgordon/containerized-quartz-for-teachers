@@ -20,14 +20,6 @@ tags:
    of the course; [[Choosing a Data Set]] makes a question answerable
 5. Practise: [[Normal Distribution Practice]], first set
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[E1.1]]
-
-![[E1.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Investigation milestone: bring two candidate questions, with the

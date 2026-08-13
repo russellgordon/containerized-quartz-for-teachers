@@ -17,14 +17,6 @@ tags:
 4. Method: [[Interviewing Your Client]] — consent, questions, and the
    things you must never write down
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[B4.1]]
-
-![[B4.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Milestone: bring two possible clients and the chore each of them

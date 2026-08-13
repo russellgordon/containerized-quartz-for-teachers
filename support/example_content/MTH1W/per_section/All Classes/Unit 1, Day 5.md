@@ -18,12 +18,6 @@ tags:
    and [[Scientific Notation]]
 5. Launch our first task: [[Fermi Festival]] — pick a question that bugs you
 
-%%curriculum-start%%
-Today's work points here:
-
-![[B3.5]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Fermi Festival]] and bring two candidate questions.

@@ -16,12 +16,6 @@ tags:
 4. Random groups — brainstorm questions of interest at the boards
 5. Consolidate: what makes a question answerable with data?
 
-%%curriculum-start%%
-Today's work points here:
-
-![[D2.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[A Data Story]] and bring your short-listed question.

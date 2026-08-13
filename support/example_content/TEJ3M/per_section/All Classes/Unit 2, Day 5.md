@@ -20,14 +20,6 @@ tags:
    requires remembering something
 5. Tools away, log it in your [[Tech Journal]]
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A5.3]]
-
-![[B3.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Logic Machine]] and draft your truth table.

@@ -20,14 +20,6 @@ tags:
    one job, and a claim that survives measurement
 5. Tools away, log it in your [[Tech Journal]]
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[B5.3]]
-
-![[A3.5]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Embedded Device]] and write its one-sentence job.

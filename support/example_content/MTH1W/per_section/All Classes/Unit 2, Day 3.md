@@ -16,12 +16,6 @@ tags:
 4. Launch our task: [[Pattern Machines]] — code a pattern, predict term 100
 5. Reference for the road: [[Variables and Formulas in Code]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[C2.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Pattern Machines]] and choose the pattern your machine will grow.

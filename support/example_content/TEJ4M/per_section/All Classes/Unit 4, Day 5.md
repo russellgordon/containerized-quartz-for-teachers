@@ -20,14 +20,6 @@ tags:
 5. Proposals started before you leave. A device you cannot describe in
    one sentence is not scoped yet
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A3.5]]
-
-![[D3.5]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Proposal draft: the problem, the person who has it, and the

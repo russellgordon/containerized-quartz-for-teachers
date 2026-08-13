@@ -16,12 +16,6 @@ tags:
 4. Notes to your future self, then log it in your [[Dev Journal]]
 5. Launch our first task: [[The Algorithm Field Guide]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[C1.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Algorithm Field Guide]] and shortlist three algorithms.

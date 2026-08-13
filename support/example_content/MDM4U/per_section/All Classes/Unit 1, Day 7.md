@@ -20,14 +20,6 @@ tags:
    game of chance, and defend the verdict with numbers
 5. How it is assessed: [[How Marks Work]] — the argument is the product
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A1.3]]
-
-![[A2.5]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Fair Game Audit]] with your partner and bring one

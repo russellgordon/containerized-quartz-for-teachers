@@ -17,12 +17,6 @@ tags:
 5. Launch our culminating task: [[Launch Day]]
 6. Log it in your [[Dev Journal]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[A1.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Launch Day]] and name the real user your artifact serves.

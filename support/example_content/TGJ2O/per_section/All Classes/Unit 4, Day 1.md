@@ -16,12 +16,6 @@ tags:
 4. Compare layouts, then name it: [[Design Principles]]
 5. Launch the culminating task: [[Publication Day]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[B1.1]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Publication Day]] and start your production schedule.

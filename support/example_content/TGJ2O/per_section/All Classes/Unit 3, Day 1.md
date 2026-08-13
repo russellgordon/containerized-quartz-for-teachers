@@ -18,12 +18,6 @@ tags:
    real question
 5. File and log: your pitch, sharpened, into your [[Newsroom Journal]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[B2.1]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Investigation]] and refine your pitch to one sentence.

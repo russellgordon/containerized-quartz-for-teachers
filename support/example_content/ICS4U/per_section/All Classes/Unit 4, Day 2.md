@@ -19,14 +19,6 @@ tags:
 4. Sprint work period; every fix gets a commit message a stranger could
    act on a year from now
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A2.3]]
-
-![[B2.1]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Milestone: the inherited program runs on your machine, and you

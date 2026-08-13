@@ -18,12 +18,6 @@ tags:
 4. Launch: [[The Gadget]] — a circuit of your own, run by your code
 5. Tools away, log it in your [[Tech Journal]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[B2.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Gadget]] and sketch your idea, circuit and code.

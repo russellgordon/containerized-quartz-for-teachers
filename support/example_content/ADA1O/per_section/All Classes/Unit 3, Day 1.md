@@ -16,12 +16,6 @@ tags:
 4. Launch our Unit 3 task: [[Scene Study from a Story]] — groups form and
    shortlist stories
 
-%%curriculum-start%%
-Today's work points here:
-
-![[B1.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Scene Study from a Story]]; bring one story your group should

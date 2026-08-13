@@ -21,11 +21,3 @@ Every decision you brought either reduces the cause or lives with the effect.
 
 - [ ] Choose the audience and the decision your brief will address.
 - [ ] Journal: whose interests your brief will not serve. Say it plainly.
-
-%%curriculum-start%%
-## Curriculum connection
-
-![[D1.2]]
-
-![[D2.9]]
-%%curriculum-end%%

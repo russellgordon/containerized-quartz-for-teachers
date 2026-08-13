@@ -47,6 +47,15 @@ def lint(course_code: str) -> int:
             class_ordinals.append(int(class_match.group(1)))
             for link in link_pattern.finditer(text):
                 linked_from_classes.add(link.group(1).strip().split("/")[-1])
+            # A class page is a schedule, not a destination. Expectations
+            # belong on the pages the agenda links to — the investigation,
+            # the exercise set, the task — because those are what a
+            # student is actually doing when the expectation is met.
+            if "%%curriculum-start%%" in text:
+                problems.append(
+                    f"{rel}: class pages carry no curriculum connection — "
+                    f"move those codes to the pages its agenda links to"
+                )
 
         if text.count("%%curriculum-start%%") != text.count("%%curriculum-end%%"):
             problems.append(f"{rel}: unbalanced curriculum markers")

@@ -19,12 +19,6 @@ tags:
    is not evidence
 5. Launch: [[The Quadrilateral Case File]] — four vertices, one verdict
 
-%%curriculum-start%%
-Today's work points here:
-
-![[B3.1]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Quadrilateral Case File]] and plot your four vertices.

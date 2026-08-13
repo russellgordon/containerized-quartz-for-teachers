@@ -19,14 +19,6 @@ tags:
 4. Launch: [[The Packaging Brief]] — a real package, honestly costed;
    the thread that ends at [[The Math Symposium]] starts here
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[B2.4]]
-
-![[B2.5]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Packaging Brief]]; bring a real package from home —

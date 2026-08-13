@@ -20,14 +20,6 @@ tags:
 5. Launch the capstone: [[The Engineering Project]], demonstrated next
    class at [[The Engineering Showcase]]
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[C1.1]]
-
-![[D3.1]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Submit your project proposal and begin [[Final Reflection]].

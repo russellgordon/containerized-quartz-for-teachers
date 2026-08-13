@@ -17,12 +17,6 @@ tags:
 4. Launch our first task: [[The Build Sheet]]
 5. Tools away, log it in your [[Tech Journal]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[A1.2]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Build Sheet]] and start thinking about your client.

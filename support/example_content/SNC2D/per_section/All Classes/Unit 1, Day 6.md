@@ -21,11 +21,3 @@ Four case cards, each one a body system in trouble. Diagnose first, read after.
 
 - [ ] Choose your case and write the question your study will answer.
 - [ ] Stuck at any point? [[Getting Unstuck]] is the page to read first.
-
-%%curriculum-start%%
-## Curriculum connection
-
-![[B1.1]]
-
-![[B2.7]]
-%%curriculum-end%%

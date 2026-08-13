@@ -151,6 +151,18 @@ from Phase 5 apply here too.
   (`[[C3.1|safe practice]]`) so they degrade to readable words when the
   teacher declines curriculum pages. Never let a curriculum reference sit
   outside these two forms.
+- **Curriculum blocks go on DESTINATION pages, never on `Unit N, Day M`
+  class pages.** A class page is a schedule — a numbered agenda of links
+  to the concept, investigation, exercise set, discussion, and task that
+  the period actually consists of. The expectation is met by doing those
+  things, so the codes belong on those pages, where a student who follows
+  the link finds the expectation attached to the work itself. Repeating
+  them on the agenda puts Ministry wording between the agenda and the
+  homework list, which is exactly where nobody is looking for it, and it
+  makes the same expectation appear in two places with different
+  authority. The linter fails any class page containing
+  `%%curriculum-start%%`. When a unit's task launches, link the task from
+  the class page and let the TASK page carry the codes.
 - Piped wikilinks inside table cells escape the pipe: `[[Page\|words]]`.
 - **Mathematics that must render** (KaTeX is strict about markdown's
   seams): display math is a SINGLE physical line, or an unindented
@@ -167,7 +179,7 @@ from Phase 5 apply here too.
   is SILENT — a `\ce{}` span produces no `katex-error`, it just renders
   as garbage (`\ce2H2+O2−>2H2O`), so the render gate will not catch it.
   Write chemistry in plain LaTeX with UPRIGHT element symbols:
-  `$2\text{H}_2 + \text{O}_2 \rightarrow 2\text{H}_2\text{O}$`, ions as
+  `$\text{H}_2 + \text{Cl}_2 \rightarrow 2\text{HCl}$`, ions as
   `$\text{SO}_4^{2-}$`, states as `$\text{CaO(s)}$`. Verified against
   the build's own KaTeX: `\text{}` forms render; `\ce{}` throws
   `Undefined control sequence`.
@@ -206,8 +218,8 @@ verbatim wording and stay.
 **Class pages** (18–30 lines): frontmatter adds `transcludeTitleSize: h2`,
 `enableToc: false`, `excludeBacklinks: true`, `tags: [unit-N]`; body is a
 numbered Agenda of links + a "Things to do before our next class" checkbox
-list (journal prompts often); one curriculum transclusion per unit, on the
-day its task launches; exactly ONE page in the whole payload is
+list (journal prompts often); **NEVER a curriculum connection block** (see
+below); exactly ONE page in the whole payload is
 `draft: true` — the final class page, carrying a `%%` comment explaining
 drafts. No absolute dates anywhere in prose.
 

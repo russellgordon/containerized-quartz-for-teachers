@@ -17,14 +17,6 @@ tags:
    shift, and axis, each by name
 4. Launch: [[The Tide Problem]] — real water, real clock
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[D2.8]]
-
-![[D3.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Tide Problem]] and bring one question about the data.

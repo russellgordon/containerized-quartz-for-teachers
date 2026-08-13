@@ -19,14 +19,6 @@ tags:
 4. Launch: [[The Signature Function]] — the culminating task,
    defended live at [[The Functions Symposium]]
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A2.4]]
-
-![[A3.4]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Bring your phenomenon: something you genuinely care about that

@@ -19,14 +19,6 @@ tags:
 4. Launch our first task: [[The Transformation Gallery]] — how it is
    assessed lives in [[How Marks Work]]
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A1.4]]
-
-![[A1.9]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Transformation Gallery]] and choose a parent function.

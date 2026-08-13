@@ -20,14 +20,6 @@ tags:
    asked, who was missed, and what the wording pushed people toward
 5. Journal check: [[Journal Checklist]] — entries collected midway
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[C2.3]]
-
-![[C2.4]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Bring the survey you intend to dissect: the real questions, in

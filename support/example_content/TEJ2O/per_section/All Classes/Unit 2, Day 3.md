@@ -17,12 +17,6 @@ tags:
 4. Launch: [[The Network Job]] — a client brief for this very lab
 5. Tools away, log it in your [[Tech Journal]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[B3.1]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Network Job]] and mark anything unclear in the brief.

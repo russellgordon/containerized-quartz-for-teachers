@@ -19,14 +19,6 @@ tags:
 4. Launch: [[The Flight Path]] — wind, heading, and a runway to hit
 5. Practise: [[Lines and Planes Practice]] — lines first
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[C2.3]]
-
-![[C4.7]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Flight Path]] with your partner; sketch the wind

@@ -19,14 +19,6 @@ tags:
 4. Launch: [[Safe Concentration]] — a dose curve is a rational
    function with lives attached
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[C2.1]]
-
-![[C3.6]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Safe Concentration]] with your partner and write down

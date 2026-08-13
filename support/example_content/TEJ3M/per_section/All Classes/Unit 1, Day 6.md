@@ -20,14 +20,6 @@ tags:
    measured after; the bench periods count, per [[How Marks Work]]
 5. Photograph every stage as you go: [[Documenting Your Build]]
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[B3.1]]
-
-![[A3.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[The Working Circuit]] and draft your schematic with values.

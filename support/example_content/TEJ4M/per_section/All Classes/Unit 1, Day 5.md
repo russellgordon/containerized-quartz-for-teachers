@@ -22,14 +22,6 @@ tags:
 5. Launch: [[The Specification]], criteria read beside
    [[How Marks Work]]
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[A3.1]]
-
-![[B3.1]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Draft the one-sentence job your specified device does.

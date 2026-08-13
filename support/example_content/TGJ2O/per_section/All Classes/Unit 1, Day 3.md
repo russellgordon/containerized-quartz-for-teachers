@@ -16,12 +16,6 @@ tags:
 4. Edit and compare, then name it: [[Interviewing]]
 5. Launch our first beat assignment: [[Your First Byline]]
 
-%%curriculum-start%%
-Today's work points here:
-
-![[A1.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Your First Byline]] and shortlist three school stories.

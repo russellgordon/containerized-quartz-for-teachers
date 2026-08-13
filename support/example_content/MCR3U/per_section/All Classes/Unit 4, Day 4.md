@@ -19,14 +19,6 @@ tags:
 4. Launch the culminating task: [[Your Financial Future]]
 5. Discuss: [[When Will I Use This]] — this unit answers it directly
 
-%%curriculum-start%%
-## Curriculum connection
-
-![[C3.2]]
-
-![[C3.3]]
-%%curriculum-end%%
-
 ## Things to do before our next class
 
 - [ ] Read [[Your Financial Future]] and bring one savings goal and one
