@@ -1,6 +1,6 @@
 ---
 title: Build the Front Page
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - studio

@@ -1,6 +1,6 @@
 ---
 title: Yes, Let's
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - warm-ups

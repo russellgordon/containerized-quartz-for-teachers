@@ -1,6 +1,6 @@
 ---
 title: Spot the Edit
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - warm-ups

@@ -1,6 +1,6 @@
 ---
 title: Why Trust Comes First
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

@@ -1,6 +1,6 @@
 ---
 title: Who Does Data Serve
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

@@ -1,6 +1,6 @@
 ---
 title: All Classes
-draft: false
+publish: true
 created: 2026-09-08T07:00:00.000-0400
 ---
 Every class we have had, most recent at the top of the section page.

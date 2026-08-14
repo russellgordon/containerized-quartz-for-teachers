@@ -1,6 +1,6 @@
 ---
 title: How Tall Is the Flagpole
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

@@ -1,6 +1,6 @@
 ---
 title: Labs
-draft: false
+publish: true
 created: __CREATED__
 ---
 Bench time is the heart of this course. Concepts pages explain and

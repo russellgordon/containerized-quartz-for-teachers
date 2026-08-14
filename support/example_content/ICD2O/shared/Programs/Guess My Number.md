@@ -1,6 +1,6 @@
 ---
 title: Guess My Number
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - programs

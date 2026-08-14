@@ -1,6 +1,6 @@
 ---
 title: Our Ensemble Agreement
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - setup

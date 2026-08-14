@@ -144,34 +144,42 @@ list.
 ### 7. Scaffolding written to disk
 
 For each **shared folder**: the folder plus an `index.md` whose frontmatter
-contains *per-section* draft and creation keys:
+contains *per-section* publication and creation keys:
 
 ```yaml
 ---
 title: Examples
 createdSection1: 2025-09-02T08:30:00.000-0400
-draftSection1: false
+publishForSection1: true
 createdSection3: 2025-09-02T08:30:00.000-0400
-draftSection3: false
+publishForSection3: true
 ---
 ```
 
-This `<key>Section<N>` convention is the heart of multi-section publishing:
-one physical file carries independent publication state for every section,
-and the build for section N collapses `draftSectionN`/`createdSectionN` into
-the plain `draft`/`created` keys Quartz understands
+This per-section convention is the heart of multi-section publishing: one
+physical file carries independent publication state for every section, and
+the build for section N collapses `publishForSectionN`/`createdSectionN` into
+the plain `publish`/`created` keys Quartz reads
 ([details](05-build-pipeline.md#frontmatter-processing)). Timestamps use the
 host's timezone offset (passed in as `HOST_TZ_OFFSET`).
+
+> **A note on `publish:` versus `draft:`.** Courses created before this
+> convention carry `draft:` and `draftSection<N>:`, which mean the *opposite*
+> — `draft: true` is a page students cannot see. Those still work: the build
+> reads them, inverted, and Plantoir rewrites a page's key only when something
+> edits that page. You never have to convert a course by hand. A page with
+> **no** publication key at all is visible, so forgetting the key leaves work
+> showing rather than making it disappear unnoticed.
 
 For each **section**: `section<N>/` with an `index.md` (site home page —
 its stored title is only a starting value: the build recomputes the
 landing title from the current settings every time, so renames and the
 grade/marker toggles always reach the site) and the per-section
-folders/files, each with plain `created`/`draft` frontmatter (no
-`SectionN` suffix needed — the file already belongs to exactly one
+folders/files, each with plain `created`/`publish` frontmatter (no
+per-section suffix needed — the file already belongs to exactly one
 section). Two of the default per-section files, `Private Notes.md` and
-`Scratch Page.md`, are created with `draft: true` — the teacher's own
-pages, never published until deliberately flipped.
+`Scratch Page.md`, are created with `publish: false` — the teacher's own
+pages, kept out of the built site until deliberately flipped.
 
 ### 8. Patch the in-container Quartz scaffold
 

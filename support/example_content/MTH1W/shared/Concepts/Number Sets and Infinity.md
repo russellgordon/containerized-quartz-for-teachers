@@ -1,6 +1,6 @@
 ---
 title: Number Sets and Infinity
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

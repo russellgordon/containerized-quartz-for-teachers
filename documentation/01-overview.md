@@ -16,7 +16,7 @@ This toolchain lets a teacher:
    searchable, portable, version-controllable.
 2. **Share most content across sections** while keeping per-section lesson
    sequences (`section1/`, `section2/`, …) and per-section publication state
-   (a page can be published to Section 1 but still be a draft for Section 2).
+   (a page can be published to Section 1 and still hidden for Section 2).
 3. **Publish a polished website per section** with one command, with search,
    code highlighting, LaTeX math, callouts, backlinks, and light/dark mode —
    all provided by Quartz.

@@ -1,5 +1,5 @@
 ---
-draft: false
+publish: true
 created: __CREATED_CLASS_24__
 transcludeTitleSize: h2
 enableToc: false

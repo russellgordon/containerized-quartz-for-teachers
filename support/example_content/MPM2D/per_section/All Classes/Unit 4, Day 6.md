@@ -1,6 +1,6 @@
 ---
 title: Unit 4, Day 6
-draft: true
+publish: false
 created: __CREATED_CLASS_26__
 transcludeTitleSize: h2
 enableToc: false
@@ -8,10 +8,10 @@ excludeBacklinks: true
 tags:
   - unit-4
 ---
-%% This page is an example of a DRAFT: `draft: true` in the frontmatter
-means it is never published to the site. Plan tomorrow's class today and
-flip draft to false when the day arrives. Delete this comment when you
-reuse the page — comments never appear on the site either. %%
+%% This page is HELD BACK: `publish: false` in the frontmatter keeps it
+off the site. Plan tomorrow's class today and flip publish to true when
+the day arrives. Delete this comment when you reuse the page — comments
+never appear on the site either. %%
 
 ## Agenda
 

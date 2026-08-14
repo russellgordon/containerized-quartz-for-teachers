@@ -1,6 +1,6 @@
 ---
 title: Build a Small Network
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

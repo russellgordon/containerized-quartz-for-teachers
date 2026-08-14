@@ -1,6 +1,6 @@
 ---
 title: Install an Operating System
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

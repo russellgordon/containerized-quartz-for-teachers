@@ -1,6 +1,6 @@
 ---
 title: What Are You Doing
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - warm-ups

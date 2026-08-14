@@ -1,6 +1,6 @@
 ---
 title: Newsroom Journal
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolio

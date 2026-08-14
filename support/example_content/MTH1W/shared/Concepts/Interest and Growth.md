@@ -1,6 +1,6 @@
 ---
 title: Interest and Growth
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

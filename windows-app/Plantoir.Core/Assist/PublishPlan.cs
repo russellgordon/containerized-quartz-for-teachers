@@ -238,8 +238,8 @@ public sealed record PlannedPage(
     /// The edit in full: which file, which key, and what it goes from and to.
     ///
     /// Naming the key matters more than it looks. A page under
-    /// <c>section&lt;N&gt;/</c> is governed by <c>draft:</c> and a course-level
-    /// page by <c>draftSection&lt;N&gt;:</c>, and a reader who has only seen
+    /// <c>section&lt;N&gt;/</c> is governed by <c>publish:</c> and a course-level
+    /// page by <c>publishForSection&lt;N&gt;:</c>, and a reader who has only seen
     /// class pages will generalise from them and be wrong — that happened in
     /// a real session, and a plan listing bare paths did nothing to prevent
     /// it. Showing the key makes the two schemas impossible to miss.

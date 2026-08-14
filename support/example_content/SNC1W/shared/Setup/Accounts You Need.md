@@ -1,9 +1,9 @@
 ---
 created: __CREATED__
 createdSection1: 2026-09-08T08:00:00.000-0400
-draftSection1: false
+publishForSection1: true
 createdSection2: 2026-09-09T08:00:00.000-0400
-draftSection2: false
+publishForSection2: true
 enableToc: true
 tags:
   - setup

@@ -1,6 +1,6 @@
 ---
 title: Quadratic Relations
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

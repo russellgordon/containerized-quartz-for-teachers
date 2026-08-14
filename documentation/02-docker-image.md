@@ -29,7 +29,7 @@ The image is layered as follows (in order):
 2. **`pip install python-frontmatter Pillow`** — the two Python
    dependencies. `python-frontmatter` parses and rewrites the YAML
    frontmatter block at the top of each Markdown file (used heavily for the
-   per-section `draft`/`created` machinery); Pillow draws each section's
+   per-section `publish`/`created` machinery); Pillow draws each section's
    social sharing card.
 3. **Node.js 20 + tools** — installed from NodeSource. Quartz is a Node
    program (`npx quartz build`). Also installed: `curl`, `git` (needed to

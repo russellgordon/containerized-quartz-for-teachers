@@ -1,6 +1,6 @@
 ---
 title: Breadboard a Circuit
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

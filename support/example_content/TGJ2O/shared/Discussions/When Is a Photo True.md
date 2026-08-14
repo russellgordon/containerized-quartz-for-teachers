@@ -1,6 +1,6 @@
 ---
 title: When Is a Photo True
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

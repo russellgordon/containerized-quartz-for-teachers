@@ -191,8 +191,9 @@ Not Quartz-code patches, but part of the same customization story — they
 adapt *Obsidian conventions* to *Quartz expectations* and are detailed in
 [the build pipeline](05-build-pipeline.md#stage-3-content-assembly):
 
-- `draftSectionN`/`createdSectionN` → `draft`/`created` collapse (per-section
-  publishing from shared files).
+- `publishForSectionN`/`createdSectionN` → `publish`/`created` collapse
+  (per-section publishing from shared files), with the legacy `draftSectionN`
+  read inverted.
 - Aliased wikilinks containing `section<N>/` paths rewritten to alias-only
   form.
 - Curriculum folders' `created` timestamps synced to the section's newest

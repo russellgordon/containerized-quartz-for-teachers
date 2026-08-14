@@ -1,6 +1,6 @@
 ---
 title: Algorithms in Everyday Life
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -21,7 +21,7 @@ namespace Plantoir.Core.Assist;
 /// chose the publish tool and silently skipped the link resolution, eight
 /// times out of eight. Given one coarse tool that resolves links itself, it
 /// got it right eight times out of eight. So link resolution, the choice
-/// between <c>draft:</c> and <c>draftSection&lt;N&gt;:</c>, the backup, the
+/// between <c>publish:</c> and <c>publishForSection&lt;N&gt;:</c>, the backup, the
 /// rebuild and the publish are one operation here — not steps somebody else
 /// sequences.
 ///

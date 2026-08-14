@@ -1,6 +1,6 @@
 ---
 title: Predict the Output
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - warm-ups

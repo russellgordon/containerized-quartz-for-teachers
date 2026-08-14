@@ -1,6 +1,6 @@
 ---
 title: The Handshake Problem
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

@@ -1,6 +1,6 @@
 ---
 title: Gates in Hardware
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

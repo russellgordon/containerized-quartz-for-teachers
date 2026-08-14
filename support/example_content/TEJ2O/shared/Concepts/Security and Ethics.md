@@ -1,6 +1,6 @@
 ---
 title: Security and Ethics
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

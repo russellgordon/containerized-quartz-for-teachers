@@ -1,6 +1,6 @@
 ---
 title: Slope and Graphing Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - exercises

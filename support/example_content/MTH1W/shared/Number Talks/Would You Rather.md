@@ -1,6 +1,6 @@
 ---
 title: Would You Rather
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - number-talks

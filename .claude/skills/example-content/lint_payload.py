@@ -123,7 +123,7 @@ def lint(course_code: str) -> int:
         for page in (root / "per_section").rglob("*.md"):
             text = page.read_text(encoding="utf-8")
             match = class_sentinel.search(text)
-            if match and "draft: true" not in text:
+            if match and "publish: false" not in text:
                 ordinal = int(match.group(1))
                 if newest_published is None or ordinal > newest_published[0]:
                     newest_published = (ordinal, page.stem)

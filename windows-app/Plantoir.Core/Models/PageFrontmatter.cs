@@ -3,7 +3,7 @@ using System.Text;
 namespace Plantoir.Core.Models;
 
 /// <summary>
-/// Reading and editing the <c>draft:</c> flag in a page's YAML frontmatter,
+/// Reading and editing the <c>publish:</c> flag in a page's YAML frontmatter,
 /// without reserializing the YAML.
 ///
 /// The teacher's frontmatter is theirs. Round-tripping it through a YAML
@@ -16,16 +16,21 @@ namespace Plantoir.Core.Models;
 /// page lives rather than by anything the caller says:
 ///
 /// * A page inside <c>section&lt;N&gt;/</c> belongs to exactly one section, so
-///   it carries a plain <c>draft:</c>.
+///   it carries a plain <c>publish:</c>.
 /// * A page at course level is copied into EVERY section at build time, so it
-///   carries <c>draftSection&lt;N&gt;:</c> — one flag per section, which is
-///   what lets "Ohm's Law" be published in section 1 and still drafted in
+///   carries <c>publishForSection&lt;N&gt;:</c> — one flag per section, which
+///   is what lets "Ohm's Law" be published in section 1 and still hidden in
 ///   section 2.
 ///
 /// This mirrors <c>process_frontmatter</c> in build_site.py, which copies
-/// <c>draftSection&lt;N&gt;</c> over <c>draft</c> for the section being built
-/// and then strips every <c>draftSection*</c> key from the built copy. The
-/// source files keep both; only the build output is flattened.
+/// <c>publishForSection&lt;N&gt;</c> over <c>publish</c> for the section being
+/// built and then strips every per-section key from the built copy. The source
+/// files keep them all; only the build output is flattened.
+///
+/// Both keys have a legacy spelling — <c>draft:</c> and
+/// <c>draftSection&lt;N&gt;:</c> — with the opposite polarity. Those are still
+/// READ, so a course nobody has touched behaves exactly as it did, but they
+/// are never written: the first edit to a page migrates it.
 /// </summary>
 public static class PageFrontmatter
 {
@@ -52,10 +57,11 @@ public static class PageFrontmatter
         isSectionLocal ? "draft" : "draftSection" + sectionNumber;
 
     /// <summary>
-    /// Whether this page is a draft in the given section, resolved the way the
-    /// build resolves it: the per-section key wins, a plain <c>draft:</c> is
-    /// the fallback, and a page with neither is published — matching Quartz's
-    /// own default.
+    /// Whether this page is hidden in the given section, resolved the way the
+    /// build resolves it: the per-section key wins, a plain <c>publish:</c> is
+    /// the fallback, the legacy draft keys are read after that, and a page with
+    /// none of them is published — the kinder default, since a forgotten flag
+    /// leaves a page visible rather than silently removing it.
     /// </summary>
     public static bool IsDraft(string pageText, int sectionNumber)
     {

@@ -1,6 +1,6 @@
 ---
 title: The Equation of a Circle
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

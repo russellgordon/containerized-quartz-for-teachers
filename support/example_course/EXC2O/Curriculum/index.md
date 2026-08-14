@@ -1,6 +1,6 @@
 ---
 title: Curriculum
-draft: false
+publish: true
 created: 2026-09-08T08:00:00.000-0400
 enableToc: true
 ---

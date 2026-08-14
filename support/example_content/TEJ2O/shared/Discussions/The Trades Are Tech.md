@@ -1,6 +1,6 @@
 ---
 title: The Trades Are Tech
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

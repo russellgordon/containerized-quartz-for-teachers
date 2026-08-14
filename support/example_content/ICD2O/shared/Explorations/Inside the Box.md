@@ -1,6 +1,6 @@
 ---
 title: Inside the Box
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

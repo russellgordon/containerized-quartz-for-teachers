@@ -1,6 +1,6 @@
 ---
 title: Headline Help Desk
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - warm-ups

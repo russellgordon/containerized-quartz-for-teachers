@@ -1,6 +1,6 @@
 ---
 title: Studio
-draft: false
+publish: true
 created: __CREATED__
 ---
 Studio time is the heart of this newsroom. Concepts pages explain and

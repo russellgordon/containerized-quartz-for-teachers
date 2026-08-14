@@ -1,6 +1,6 @@
 ---
 title: Staying Secure Online
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

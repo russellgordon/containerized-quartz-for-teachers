@@ -1,6 +1,6 @@
 ---
 title: Debugging Is the Job
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

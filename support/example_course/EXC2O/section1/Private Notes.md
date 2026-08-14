@@ -1,10 +1,10 @@
 ---
 title: Private Notes
-draft: true
+publish: false
 created: 2026-09-08T07:00:00.000-0400
 ---
-This page is marked `draft: true`, so it is **never published**. It is
-here to show that a teacher can keep planning notes in the same folder
+This page is marked `publish: false`, so it **never reaches the site**. It
+is here to show that a teacher can keep planning notes in the same folder
 as the course without any risk of them reaching students.
 
 Seating plan, running notes on who needs a check-in, ideas for next

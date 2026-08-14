@@ -1214,7 +1214,7 @@ def _sync_curriculum_created(content_root: Path, latest_dt: datetime) -> tuple[i
 # Track curriculum folders we've already logged this build (legacy; no longer used directly)
 _logged_curriculum_folders = set()
 
-# UPDATED: process frontmatter for draft/created fields (no unconditional curriculum bump)
+# UPDATED: process frontmatter for publish/created fields (no unconditional curriculum bump)
 def use_publish_filter(quartz_config_path: Path):
     """
     Point Quartz at the `publish:` filter instead of the stock draft one.

@@ -1,6 +1,6 @@
 ---
 title: Writing in Role
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - conventions

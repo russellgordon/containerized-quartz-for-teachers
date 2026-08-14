@@ -1,6 +1,6 @@
 ---
 title: Getting Started with Python
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - coding

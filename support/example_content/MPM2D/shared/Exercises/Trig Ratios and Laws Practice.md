@@ -1,6 +1,6 @@
 ---
 title: Trig Ratios and Laws Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - exercises

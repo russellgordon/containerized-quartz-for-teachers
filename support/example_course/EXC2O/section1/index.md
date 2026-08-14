@@ -3,7 +3,7 @@ title: Grade 9 Science, Section 1
 created: 2026-09-08T07:00:00.000-0400
 enableToc: false
 excludeBacklinks: true
-draft: false
+publish: true
 ---
 # Most Recent Class
 ![[Unit 4, Day 5]]

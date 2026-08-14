@@ -1,6 +1,6 @@
 ---
 title: A Budget Calculator in Code
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - coding

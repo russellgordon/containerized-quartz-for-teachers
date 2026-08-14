@@ -1,6 +1,6 @@
 ---
 title: The Elements of Drama
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

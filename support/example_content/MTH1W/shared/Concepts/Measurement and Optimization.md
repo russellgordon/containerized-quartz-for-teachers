@@ -1,6 +1,6 @@
 ---
 title: Measurement and Optimization
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts
