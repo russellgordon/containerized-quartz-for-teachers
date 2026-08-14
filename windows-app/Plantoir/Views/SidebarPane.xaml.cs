@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Plantoir.Core.Assist;
 using Plantoir.Core.Models;
 using Plantoir.Services;
 using Plantoir.ViewModels;
@@ -25,6 +26,24 @@ public sealed class SidebarRow
     public MenuFlyout? Menu { get; set; }
     public SidebarSelection? Selection { get; init; }
     public ArchivedItem? Archived { get; init; }
+
+    /// <summary>
+    /// When a deploy is waiting to fire for this section, null otherwise.
+    ///
+    /// A scheduled deploy is the one thing Plantoir does while nobody is
+    /// looking, and until now nothing said so — a teacher who set one on
+    /// Friday had no way to be reminded on Monday except by remembering. The
+    /// row it belongs to is the row that says it.
+    /// </summary>
+    public DateTime? ScheduledDeploy { get; init; }
+
+    public string BadgeGlyph => Glyphs.Clock;
+    public Visibility BadgeVisibility =>
+        ScheduledDeploy is null ? Visibility.Collapsed : Visibility.Visible;
+    public string BadgeTooltip => ScheduledDeploy is { } when
+        ? $"Deploying automatically at {when:h:mm tt} on {when:dddd d MMMM}. " +
+          "Right-click to cancel. This computer must be on and awake."
+        : "";
 }
 
 public sealed partial class SidebarPane : UserControl
@@ -257,6 +276,10 @@ public sealed partial class SidebarPane : UserControl
                     Glyph = DocumentGlyph,
                     Selection = new SidebarSelection.SectionItem(course.Code, number),
                     AutomationId = $"sidebar-{course.Code}-section{number}",
+                    // Windows is asked, not a note of our own: the teacher can
+                    // delete the task themselves, and a badge promising a
+                    // deploy that will not happen is worse than no badge.
+                    ScheduledDeploy = TaskScheduling.NextRun(course.Code, number),
                 };
             row.Menu = SectionMenu(course, number);
             desired.Add(row);
@@ -463,6 +486,15 @@ public sealed partial class SidebarPane : UserControl
         // preview can stay on screen beside the conversation changing it.
         var reviseItems = ReviseItems(course, number);
         foreach (var item in reviseItems) menu.Items.Add(item);
+
+        // Only shown when there is one to cancel. A permanently greyed-out
+        // "Cancel Scheduled Deploy…" on every section would teach teachers to
+        // ignore the line, which is the opposite of what it is for.
+        var scheduled = TaskScheduling.NextRun(course.Code, number);
+        if (scheduled is { } when)
+            menu.Items.Add(MenuItem($"Cancel Deploy at {when:h:mm tt}…", Glyphs.Clock,
+                                    () => ConfirmCancelScheduledDeploy(course, number, when)));
+
         menu.Items.Add(new MenuFlyoutSeparator());
 
         // The vault is the COURSE folder even for a section — the section is
@@ -480,6 +512,39 @@ public sealed partial class SidebarPane : UserControl
             foreach (var item in reviseItems) item.IsEnabled = canRevise;
         };
         return menu;
+    }
+
+    /// <summary>
+    /// Call off a scheduled deploy, after saying plainly what that means.
+    ///
+    /// Cancelling is safe and reversible — the teacher can schedule another —
+    /// but it is still worth confirming, because the failure it prevents is
+    /// silent: a teacher who cancels by accident finds out by walking into
+    /// class to a site that never went up.
+    /// </summary>
+    private async void ConfirmCancelScheduledDeploy(Course course, int number, DateTime when)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = "Cancel this scheduled deploy?",
+            Content = $"{course.Code} Section {number} is set to deploy automatically at " +
+                      $"{when:h:mm tt} on {when:dddd d MMMM}. Cancelling means it will not go out then, " +
+                      "and the site stays as it is until you deploy it yourself.",
+            PrimaryButtonText = "Cancel It",
+            CloseButtonText = "Leave It Scheduled",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = XamlRoot,
+        };
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+
+        if (TaskScheduling.Cancel(TaskScheduling.NameFor(course.Code, number)) is { } problem)
+        {
+            await ShowError("That couldn't be cancelled",
+                $"Windows would not remove the scheduled task: {problem}");
+            return;
+        }
+        // Redraw so the clock goes with it.
+        Refresh();
     }
 
     /// <summary>

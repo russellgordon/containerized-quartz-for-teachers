@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Plantoir.Mcp;
+namespace Plantoir.Core.Assist;
 
 /// <summary>
 /// Handing a deploy to Windows Task Scheduler, via schtasks.
@@ -78,6 +78,39 @@ public static class TaskScheduling
 
     /// <summary>Whether a task by this name is already scheduled.</summary>
     public static bool Exists(string taskName) => Run(["/Query", "/TN", taskName]).ExitCode == 0;
+
+    /// <summary>The name a section's scheduled deploy carries. One per section, by construction.</summary>
+    public static string NameFor(string courseCode, int sectionNumber) =>
+        $"Plantoir deploy {courseCode.ToUpperInvariant()} section {sectionNumber}";
+
+    /// <summary>
+    /// When a section's scheduled deploy will run, or null if none is set.
+    ///
+    /// Windows is asked rather than anything of ours being written down,
+    /// because Windows is where the truth lives: a teacher can delete the task
+    /// in Task Scheduler, and a note kept beside it would then promise a
+    /// deploy that will never happen. There is at most one per section — the
+    /// name is fixed per section and scheduling replaces — so this answers
+    /// with a time, not a list.
+    /// </summary>
+    public static DateTime? NextRun(string courseCode, int sectionNumber)
+    {
+        var (exitCode, output) = Run(["/Query", "/TN", NameFor(courseCode, sectionNumber), "/FO", "LIST"]);
+        if (exitCode != 0) return null;
+
+        foreach (string line in output.Split('\n'))
+        {
+            int colon = line.IndexOf(':');
+            if (colon < 0) continue;
+            // The label is localised on non-English Windows, so this leans on
+            // the shape — a "Next Run Time:" row whose value parses as one.
+            if (!line[..colon].Contains("Next Run", StringComparison.OrdinalIgnoreCase)) continue;
+
+            string value = line[(colon + 1)..].Trim();
+            if (DateTime.TryParse(value, out var when)) return when;
+        }
+        return null;
+    }
 
     private static (int ExitCode, string Output) Run(IEnumerable<string> arguments)
     {

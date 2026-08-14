@@ -64,6 +64,16 @@ public sealed class AssistAgent
         "plan_unpublish_pages", "unpublish_pages",
         // Seeing the result, and taking it back.
         "rebuild_preview", "undo_last_change",
+        // Putting it in front of students, now or at half six tomorrow.
+        //
+        // Kept deliberately, against the pressure to trim. Deploying is the
+        // act a teacher most wants help with at the moment they want it —
+        // "the class starts in ten minutes" — and it was asked for by name.
+        // The safety is not in withholding the tool: the approval gate stops
+        // every one of these until a button is pressed, and the tool's own
+        // description tells the assistant to send the teacher to the preview
+        // first.
+        "deploy_section", "plan_scheduled_deploy", "schedule_deploy", "cancel_scheduled_deploy",
     };
 
     /// <summary>

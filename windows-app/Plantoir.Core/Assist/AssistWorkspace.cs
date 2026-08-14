@@ -1540,6 +1540,24 @@ public sealed class AssistWorkspace
             throw new AssistRefusal(
                 $"{when:dddd d MMMM, h:mm tt} has already passed. Give a time still to come.");
 
+        // The same two refusals a deploy-now makes, and they matter MORE here.
+        // A deploy that needs an answer fails immediately when a teacher is
+        // watching; scheduled, it fails at half six with nobody there, and the
+        // first they know of it is walking into class to find yesterday's site
+        // still up. Better to decline now, while they can do something.
+        if (course.Configuration.DeploysToCloudflare)
+            throw new AssistRefusal(
+                $"{course.Code} deploys to Cloudflare Pages, which needs the account ID only Plantoir has. " +
+                "A scheduled deploy runs on its own and cannot ask for it, so this can't be scheduled — " +
+                "deploy this section from Plantoir instead.");
+
+        if (!course.Configuration.DeploysToLocalFolder &&
+            !File.Exists(Path.Combine(course.DirectoryPath, ".netlify_sites", $"section{section}.json")))
+            throw new AssistRefusal(
+                $"{course.Code} Section {section} has never been deployed, so deploying it asks what to call " +
+                "the website. Nobody would be there to answer that at the scheduled time, and it would simply " +
+                "wait. Deploy it once from Plantoir, and after that I can schedule it.");
+
         var unpublished = new List<string>();
         foreach (string title in classesToCheck ?? Array.Empty<string>())
         {

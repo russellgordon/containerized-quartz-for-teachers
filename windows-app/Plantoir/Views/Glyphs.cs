@@ -45,4 +45,7 @@ public static class Glyphs
 
     /// <summary>The font <see cref="Sparkle"/> must be drawn in.</summary>
     public const string EmojiFont = "Segoe UI Emoji";
+
+    /// <summary>A clock — a section with a deploy waiting to fire. Checked present in SegoeIcons.ttf.</summary>
+    public const string Clock = "";
 }

@@ -298,6 +298,12 @@ public sealed partial class AssistWindow : Window
         "**Afterwards**\n" +
         "  • Rebuild the preview\n" +
         "  • Undo that\n\n" +
+        "**Putting it in front of students**\n" +
+        "  • Deploy this section now\n" +
+        "  • Deploy tomorrow's class at 6:30 AM\n" +
+        "  • Cancel that scheduled deploy\n\n" +
+        "Deploying is the one that students actually notice, so I'll always ask you to look at the " +
+        "preview first — and you press the button, not me.\n\n" +
         "Name the page if you can — “Unit 2, Day 3” rather than “tomorrow's one” — and I'll be quicker " +
         "and more certain. Bigger jobs (re-dating a term, rolling a course over, adding a unit's worth " +
         "of pages) are best done with Claude, from the same menu.";

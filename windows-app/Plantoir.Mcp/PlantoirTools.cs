@@ -119,7 +119,9 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     [McpServerTool(Name = "deploy_section", Title = "Deploy a section's website",
                    Destructive = false, Idempotent = true)]
-    [Description("Put a section's website where students can actually reach it. This is the one thing that changes " +
+    [Description("TEACHERS SAY: \"deploy the site\", \"put it online\", \"push it live\", \"send it to the website\", " +
+                 "\"make it live for students\", \"upload the site\". " +
+                 "Put a section's website where students can actually reach it. This is the one thing that changes " +
                  "what students see, so treat it as a big step. " +
                  "\n\nBEFORE calling this, tell the teacher plainly to look over the preview in Plantoir first, and " +
                  "wait for them to say they have. Publishing a page only rebuilds their preview; this is what makes " +
@@ -237,7 +239,8 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     [McpServerTool(Name = "plan_scheduled_deploy", Title = "Plan a deploy for later",
                    ReadOnly = true, Destructive = false)]
-    [Description("Work out what scheduling a deploy would mean, scheduling nothing. Use this for \"deploy " +
+    [Description("TEACHERS SAY: \"what happens if I schedule it for 6:30?\", \"check before you set that up\". " +
+                 "Work out what scheduling a deploy would mean, scheduling nothing. Use this for \"deploy " +
                  "tomorrow's class at 6:30 AM\". Pass the class pages the teacher has in mind as `classes` and " +
                  "it will check whether they are actually PUBLISHED — a deploy that runs perfectly and ships a " +
                  "site without tomorrow's class is the failure worth catching while somebody is awake. " +
@@ -259,7 +262,9 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     [McpServerTool(Name = "schedule_deploy", Title = "Deploy at a set time",
                    Destructive = false, Idempotent = true)]
-    [Description("Ask this computer to deploy a section at a set time. Call plan_scheduled_deploy FIRST and " +
+    [Description("TEACHERS SAY: \"deploy tomorrow's class at 6:30 AM\", \"put it live before school\", " +
+                 "\"send it out at 7am\", \"schedule the deploy for Monday morning\". " +
+                 "Ask this computer to deploy a section at a set time. Call plan_scheduled_deploy FIRST and " +
                  "read it out — especially that the computer must be ON and AWAKE at that moment, plugged in " +
                  "if it is a laptop, with the lid open. Plantoir does not wake it. Replaces any deploy already " +
                  "scheduled for the same section. Use cancel_scheduled_deploy to call it off.")]
@@ -285,7 +290,9 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     [McpServerTool(Name = "cancel_scheduled_deploy", Title = "Call off a scheduled deploy",
                    Destructive = false, Idempotent = true)]
-    [Description("Call off a deploy that was scheduled for a section. Safe to call when nothing is scheduled.")]
+    [Description("TEACHERS SAY: \"cancel that scheduled deploy\", \"don't send it in the morning after all\", " +
+                 "\"call it off\". " +
+                 "Call off a deploy that was scheduled for a section. Safe to call when nothing is scheduled.")]
     public string CancelScheduledDeploy(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section)
