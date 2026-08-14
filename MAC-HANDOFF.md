@@ -12,6 +12,133 @@ references are the durable pointers.)
 
 ## To implement
 
+- **⚠️ Add Section was creating pages in the OLD schema — check yours**
+  (Windows, 2026-08-14, `7a66200`). The publish/draft entry below was landed
+  and then found INCOMPLETE: `SectionAdder`'s fallback template — the path
+  taken when there is no sibling section to copy — was still writing
+  `draft: true`. A section added through the app was therefore born in the
+  schema everything else had moved off.
+
+  It was missed because the TEST agreed with the code: it asserted
+  `draft: true` and passed. Worth ten minutes on the mac's own section
+  scaffolding for exactly that reason. Two rules: write `publish:` inverted
+  (a teacher-eyes-only page is `publish: false`), and only in the FALLBACK —
+  when a sibling section exists its frontmatter is copied verbatim, which is
+  right, because a course still using `draft:` should get a new section that
+  matches its siblings rather than one page speaking a different language.
+
+- **A section remembers when its classes meet** (shared, 2026-08-14,
+  `9fa510c`). `courses/<CODE>/.internal/timetable/section<N>.json` holds the
+  dates, where they came from in the teacher's words, and when recorded.
+  Written when a re-date is applied, and by a new `remember_timetable` tool.
+
+  **Format first, as with `WorkLease`** — the mac should read and write the
+  same file rather than the same code:
+
+  ```json
+  { "section": 1,
+    "dates": ["2026-09-08", "2026-09-10"],
+    "source": "timetable.xlsx, block H",
+    "recorded": "2026-08-14" }
+  ```
+
+  Inside the course, under `.internal/`, so it travels through backup,
+  archive and restore — all of which are already careful about that folder. A
+  file kept beside the app would come adrift the first time a teacher moved
+  their work and be silently WRONG rather than missing. A partial list is
+  refused rather than half-stored: a half-remembered timetable gets trusted
+  and then dates the wrong classes.
+
+- **Four new operations, all shared C# in `Plantoir.Core`** (Windows +
+  shared, 2026-08-14). Nothing mac-specific except the UI that reaches them;
+  the mac inherits the logic if it ports `AssistWorkspace`.
+
+  - **Placeholder class pages** (`638d5d7`) — "add seven days to the next
+    unit". Lands on the section's own meeting dates, skipping days an
+    existing class already sits on, so a reshuffled course still gets the
+    right answer. Pages start `publish: false`. Never overwrites, checked
+    twice: at plan time and again at write time, because Obsidian is open in
+    the other window.
+  - **Insert a class and push the rest back** (`b913f85`) — the one a teacher
+    called "a huge hassle". Later days of the SAME unit are renamed; every
+    class after the insertion point, later units included, moves to a later
+    meeting day and keeps its name. Renames run **highest day first** or they
+    overwrite a real lesson. Titles inside the files follow the file names.
+    **Links are rewritten by us, not by Obsidian** — Obsidian only does that
+    when Obsidian performs the rename; a rename on disk from another process
+    reads to it as a delete plus a create. All wikilink forms are handled
+    (`[[P]]`, `[[P|alias]]`, `![[P]]`, `[[P#Heading]]`, `[[P#^block]]`);
+    Markdown-style links are NOT, and that is written down rather than
+    discovered.
+  - **Curriculum expectations for a page** (`e5a01ed`) — the tools find the
+    expectations and read out their full wording; the MODEL decides which fit,
+    because that is a judgement about meaning. Transclusions go inside the
+    `%%curriculum-start%%` markers, or a course installed without curriculum
+    would keep a dangling reference on a live site.
+  - **Scheduled deploys** (`935ad9f`, `ad020d3`, `4400f80`) — see the next
+    entry; the Windows half is `schtasks`.
+
+- **Scheduled deploys — the mac needs launchd** (Windows, 2026-08-14). "Deploy
+  tomorrow's class at 6:30 AM." Windows uses `schtasks` to run
+  `deploy.ps1 <CODE> <N>` at a set time; the mac equivalent is a launchd
+  agent running `deploy.sh`. The decision of *whether* to schedule, and every
+  word the teacher reads, is already in `Plantoir.Core`
+  (`ScheduledDeploy.Problem`) — only the last step is platform-specific.
+
+  Points that cost something to learn:
+
+  - **It must fire with nothing of ours running.** Verified: a task fired
+    unattended, started WSL from cold, reached Docker, with Plantoir closed.
+    The teacher's *Go ahead* consents to setting the alarm, not to the deploy.
+  - **No wake timer, deliberately.** Waking depends on hardware and power
+    settings and fails SILENTLY; the plan states the conditions instead (on,
+    awake, plugged in, lid open). A warning a teacher can act on beats a
+    promise that might not be kept.
+  - **Refuse what would ASK a question.** A Cloudflare course (needs the
+    account ID only the app has) and a section never deployed (`deploy.py`
+    asks what to name the site) are both declined AT SCHEDULING TIME.
+    Attended, those fail in front of the teacher; scheduled, they wait on a
+    prompt at half six with nobody there.
+  - **One per section, by construction** — the task name is fixed per section,
+    so scheduling replaces. Verified: scheduled twice, still one task.
+  - **Visible, or it may as well not exist.** A clock sits beside the section
+    in the sidebar with the time in its tooltip, and the context menu offers
+    "Schedule Deploy…" or "Cancel Deploy at 6:30 AM…" — one or the other,
+    never a greyed-out line teaching teachers to stop reading the menu.
+    **Ask the OS, do not keep a note**: the teacher can delete the task
+    themselves, and a badge promising a deploy that will never happen is worse
+    than no badge.
+
+- **The built-in assistant, and what it cost** (Windows, 2026-08-14). A local
+  model in a window of its own, reached from "Revise with AI…" on both the
+  course and every section menu. **Read
+  [`AI-ASSIST-HANDOFF.md`](AI-ASSIST-HANDOFF.md) before building the mac
+  equivalent** — it is the full account of what worked and what did not, with
+  the measurements. The headlines that will bite whoever ports it:
+
+  - **Fewer tools is better routing AND a shorter prompt.** 34 tools is 9,032
+    tokens; at ~21 tokens/second on two cores that is 430 seconds of reading
+    before a first answer. The local model sees 15.
+  - **A warm-up must prime the SAME prefix a real turn uses**, system message
+    included, or it caches something no conversation asks for. Measured: 1.8s
+    versus 29.6s for the identical turn.
+  - **Colima may or may not idle out the way WSL2 does.** On Windows a
+    detached container dies ~25 seconds after nothing holds the distro open,
+    and the app now holds a session open for the conversation's life. Whether
+    Colima behaves the same is **unknown and worth checking early** — the
+    symptom is an HTTP error that looks like a network fault and is not.
+  - **Withholding a tool is not a safety mechanism.** Deploy was trimmed out
+    for speed and silently removed a capability the teacher had asked for by
+    name. The approval gate — every non-read-only tool waits for a button,
+    decided from the server's own `readOnlyHint` — is the safety mechanism.
+
+- **The MCP server must SHIP with the app** (Windows, 2026-08-14, `b211b13`).
+  `publish.ps1` never built `Plantoir.Mcp`, so the bundle contained no
+  `plantoir-mcp.exe` and the whole feature would have shipped dead — on a
+  teacher's machine only. It is now built, copied beside the app and signed
+  with it. Keep them separate binaries: Claude Code launches the server
+  itself as a stdio subprocess, so it has to stay a plain console app.
+
 - **The publication flag is `publish:`, not `draft:`** (Windows +
   shared, 2026-08-13, `ai-assist` branch). Commits `2d6c59a` (the
   toolchain and the app) and `7347d2b` (the example content and the
@@ -366,6 +493,17 @@ references are the durable pointers.)
   in `windows-app/Plantoir/Views/NewCourseDialog.cs`.
 
 ## Already shared — no mac code needed, just awareness
+
+- **Cleanup that fails must not fail a test that passed** (Windows,
+  2026-08-14, `0479d44`). An intermittent failure that never reproduced turned
+  out to be 23 tests ending with a bare
+  `finally { Directory.Delete(root, recursive: true); }`. On Windows that
+  throws whenever anything still holds a handle in the folder — Defender
+  scanning the files the test just wrote, or the Search Indexer. Every
+  assertion had passed; the test failed on housekeeping. If the mac's tests
+  do the same on a machine with Spotlight indexing, the same shape is
+  available. Deleting a temp folder is housekeeping: when it does not work,
+  the OS will get to it.
 
 - **Worth checking: the same test race may exist on the mac**
   (`3bbb1a7`, 2026-08-13). A Windows test failed about one run in three
