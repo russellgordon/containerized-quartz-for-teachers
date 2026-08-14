@@ -1,0 +1,19 @@
+---
+title: Unit 2, Day 22
+draft: false
+created: __CREATED_CLASS_42__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. Bench prepared: media mixed, containers ready, labels made
+2. Sanitation, and why it matters more than you think
+3. Setting up the propagation bench
+
+## Things to do before our next class
+
+- [ ] Nothing tonight.

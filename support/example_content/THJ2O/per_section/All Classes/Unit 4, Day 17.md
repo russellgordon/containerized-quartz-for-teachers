@@ -1,0 +1,19 @@
+---
+title: Unit 4, Day 17
+draft: false
+created: __CREATED_CLASS_83__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. Portfolio conferences, one by one
+2. Others: practical practice and site maintenance
+3. Shop tidy
+
+## Things to do before our next class
+
+- [ ] Portfolio ready for submission.

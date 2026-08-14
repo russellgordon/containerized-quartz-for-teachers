@@ -1,0 +1,19 @@
+---
+title: Unit 4, Day 15
+draft: false
+created: __CREATED_CLASS_81__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. Skills and work habits assessed honestly
+2. [[Your Skills Record]] completed with evidence
+3. Conferences
+
+## Things to do before our next class
+
+- [ ] Finish the skills record.

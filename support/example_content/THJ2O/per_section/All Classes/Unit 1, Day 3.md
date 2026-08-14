@@ -1,0 +1,19 @@
+---
+title: Unit 1, Day 3
+draft: false
+created: __CREATED_CLASS_3__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. What makes a plant a plant: [[What Makes a Plant a Plant]]
+2. Sorting real material into groups on the bench
+3. Starting the file: [[The Plant Identification File]]
+
+## Things to do before our next class
+
+- [ ] Five plants identified from the school grounds, photographed.
