@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Osmosis results: the intercept that tells you the tissue's own concentration
-2. Active transport, and the pump that runs your nerves
-3. Launch: [[Enzyme Investigation]] — you design it
-4. Procedure drafting, approved before anything is opened
+1. Liver, peroxide, and a foam column that will not stop
+2. [[Enzyme Activity]] — temperature, pH, and substrate
+3. Name it: [[Proteins and Enzymes]], four levels of structure
+4. Write [[Your First Entry]]
 
 ## Things to do before our next class
 
-- [ ] Submit your investigation question and procedure.
-- [ ] [[Enzyme Investigation]] report due at the end of the unit.
+- [ ] Plot all three graphs.
+- [ ] Journal entry due next class.

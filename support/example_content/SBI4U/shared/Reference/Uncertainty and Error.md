@@ -39,3 +39,9 @@ and which way it would push the result.
 > "Our value was $9.4\ \text{m/s}^2$ against the accepted
 > $9.8\ \text{m/s}^2$, a difference of 4%, which is about what the timing
 > uncertainty alone would produce."
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.13]]
+%%curriculum-end%%

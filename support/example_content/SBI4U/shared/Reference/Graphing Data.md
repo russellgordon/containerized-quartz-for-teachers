@@ -39,3 +39,11 @@ that is not linear. Plotting against $x^2$, or $1/x$, and getting a
 straight line tells you what the relationship IS. Plotting the log of a
 population against time is exactly that trick — exponential growth becomes
 a straight line whose slope is the growth rate.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.12]]
+
+![[A1.8]]
+%%curriculum-end%%

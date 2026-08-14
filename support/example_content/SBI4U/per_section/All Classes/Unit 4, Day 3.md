@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 3
 draft: false
-created: __CREATED_CLASS_18__
+created: __CREATED_CLASS_54__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Synapses, and why almost every drug acts there
-2. [[The Endocrine System]]: slow control, broadcast widely
-3. Steroid versus protein hormones, decided by chemistry
-4. Practise: [[Homeostasis Practice]], questions 1 and 3
+1. The resting potential, and the pump that maintains it
+2. [[The Nervous System]]: the action potential, step by step
+3. All-or-none, and how intensity is encoded instead
+4. [[Reaction Time and the Nervous System]]
 
 ## Things to do before our next class
 
-- [ ] Finish the practice questions.
-- [ ] Read [[Kidneys and Water Balance]].
+- [ ] Convert your ten catches to times and find the spread.
+- [ ] Practise: [[Homeostasis Practice]], question 2.

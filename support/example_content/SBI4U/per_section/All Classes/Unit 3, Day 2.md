@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 2
 draft: false
-created: __CREATED_CLASS_12__
+created: __CREATED_CLASS_35__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. [[Modelling Molecular Genetics]] — transcribe, translate, then break it
-2. Four mutations, ranked by damage
-3. [[Mutations]]: silent, missense, nonsense, frameshift
-4. Why redundancy in the code matters
+1. Warm-up: leading and lagging, drawn from memory
+2. Random groups — three repair mechanisms, matched to three kinds of
+   damage; then what happens when repair itself fails
+3. Consolidate: back to [[DNA Replication in Detail]] — the error rate,
+   and why it is that low
+4. Clinic: [[Molecular Genetics Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Finish the four re-translations.
-- [ ] Practise: [[Molecular Genetics Practice]], questions 1 and 3.
+- [ ] Finish the first section.

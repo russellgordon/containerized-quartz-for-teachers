@@ -1,7 +1,7 @@
 ---
 title: Unit 5, Day 5
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_73__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Model fitting workshop: residuals, not impressions
-2. Management recommendations, with costs and uncertainty
-3. Work time: [[Population Study]]
-4. Consolidate the strand
+1. [[Sampling a Population]] — quadrats outside, mark and recapture inside
+2. Every assumption of mark and recapture, listed and tested
+3. Which direction is your estimate wrong, and why?
+4. Practise: [[Population Practice]]
 
 ## Things to do before our next class
 
-- [ ] Draft your management recommendation.
-- [ ] [[Population Study]] due next class.
+- [ ] Finish the estimates by both methods.
+- [ ] Choose your data set for [[Population Study]].

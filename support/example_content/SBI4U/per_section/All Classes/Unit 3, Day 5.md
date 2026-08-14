@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_15__
+created: __CREATED_CLASS_38__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Discussion: [[Who Gets the Cure?]]
-2. Consent and genetic data, revisited from Grade 11
-3. Work time: [[Biotechnology Brief]] — brief and appendix
-4. Consolidate the strand
+1. Warm-up: why is the code redundant?
+2. Compare and name it: [[Transcription and Translation]] — the two
+   steps, their locations, and the processing between them
+3. Clinic: the rest of [[Molecular Genetics Practice]]
 
 ## Things to do before our next class
 
-- [ ] Hand in [[Biotechnology Brief]] next class.
-- [ ] Read [[Homeostasis and Feedback]].
+- [ ] Finish the practice set.

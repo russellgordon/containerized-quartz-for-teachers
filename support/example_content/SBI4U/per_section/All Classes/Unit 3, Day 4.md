@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_14__
+created: __CREATED_CLASS_37__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. [[Gel Electrophoresis]]: cast, load, run, photograph
-2. Building a standard curve from the ladder
-3. [[Biotechnology]]: the toolkit, tool by tool
-4. The forensic scenario, judged from your own gel
+1. Warm-up: transcribe and translate a short sequence, cold
+2. Random groups — four mutations ranked by damage, with the reading
+   frame explaining the ranking
+3. Consolidate: back to [[Mutations]] — silent, missense, nonsense,
+   frameshift
 
 ## Things to do before our next class
 
-- [ ] Finish the standard curve and size the unknowns.
-- [ ] Choose your topic for [[Biotechnology Brief]].
+- [ ] One sequence mutated four ways, with consequences.

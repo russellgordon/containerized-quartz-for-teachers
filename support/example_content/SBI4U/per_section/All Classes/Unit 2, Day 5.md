@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 5
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_21__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Case study workshop: pathway diagrams checked in class
-2. Consolidate the strand: energy, captured in steps
-3. Hand in [[Metabolism Case Study]]
-4. Preview: the molecule that specifies all of it
+1. [[Chromatography of Plant Pigments]] — four pigments, four Rf values
+2. Absorption spectra and why leaves are green
+3. [[Photosynthesis in Detail]]: the light reactions
+4. Chemiosmosis again, in a different membrane
 
 ## Things to do before our next class
 
-- [ ] Read [[DNA Replication in Detail]].
-- [ ] Journal: the three things you would tell someone starting Unit 2.
+- [ ] Calculate every Rf.
+- [ ] Journal: what do respiration and photosynthesis share, mechanically?

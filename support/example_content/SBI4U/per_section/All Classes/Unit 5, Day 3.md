@@ -1,7 +1,7 @@
 ---
 title: Unit 5, Day 3
 draft: false
-created: __CREATED_CLASS_23__
+created: __CREATED_CLASS_71__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. [[Sampling a Population]] — quadrats outside, mark and recapture inside
-2. Every assumption of mark and recapture, listed and tested
-3. Which direction is your estimate wrong, and why?
-4. Practise: [[Population Practice]]
+1. Warm-up: which model, and what would tell you?
+2. Random groups — fit exponential and logistic curves to a real series,
+   and compare the residuals
+3. Consolidate: r and K as claims about a population, not as constants
+4. Clinic: [[Population Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Finish the estimates by both methods.
-- [ ] Choose your data set for [[Population Study]].
+- [ ] Finish the first section.

@@ -29,6 +29,13 @@ disorder · brown fat in a hibernating mammal.
    do.
 4. **The evidence**: one measurement, from a source you cite, that shows
    the effect is real.
+5. **Your own measurement.** Run a bench investigation into respiration
+   — [[Fermentation Rate]] is the standard one — and report the products
+   you detected and the rate you measured, with its uncertainty. Use the
+   proper terminology throughout: energy carrier, substrate-level
+   phosphorylation, electron transport chain, aerobic and anaerobic,
+   ATP yield. A case study written entirely from sources is a literature
+   review, not an investigation.
 
 ## Not accepted
 
@@ -43,4 +50,10 @@ not.
 ![[C3.1]]
 
 ![[C3.2]]
+
+![[C2.1]]
+
+![[C2.2]]
+
+![[A1.13]]
 %%curriculum-end%%

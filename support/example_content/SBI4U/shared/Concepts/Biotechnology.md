@@ -33,8 +33,34 @@ Yellowstone hot spring. A whole industry rests on an organism collected
 because someone was curious about extremophiles, which is worth
 remembering in arguments about funding basic research.
 
+
+## What has actually changed, and how fast
+
+Three advances in cellular and molecular biology have moved from
+laboratory to clinic within a single working career, and each is worth
+judging rather than admiring:
+
+- **Sequencing.** The first human genome took over a decade and about
+  three billion dollars. A clinical genome today is a matter of days and
+  a few thousand. That change is why genetic testing is a routine
+  conversation rather than a research project.
+- **Targeted gene editing.** CRISPR-based tools made precise edits cheap
+  and quick enough for ordinary laboratories, which is exactly why the
+  argument in [[Who Gets the Cure?]] became urgent rather than
+  theoretical.
+- **Cell culture and stem-cell work.** Growing tissue outside a body
+  supports drug testing, transplantable tissue, and disease models that
+  need no animal — the argument [[Testing on Animals]] turns on.
+
+For each, the question is the same: what does it genuinely do now, what
+is promised rather than delivered, who benefits first, and what does it
+cost? An advance evaluated only by its own press release has not been
+evaluated. [[Asking and Researching Well]] is how you check.
+
 %%curriculum-start%%
 ## Curriculum connection
+
+![[B1.2]]
 
 ![[D1.1]]
 

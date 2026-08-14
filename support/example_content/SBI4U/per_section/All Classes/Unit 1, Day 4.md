@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Consolidate: why does the temperature curve fall but the substrate curve level off?
-2. Inhibitors, competitive and not
-3. [[Osmosis in Plant Tissue]] set up — 24 hours from now
-4. [[Membranes and Transport]]: the fluid mosaic
+1. Warm-up: why water, of all molecules
+2. Compare and name it: [[Water and Life]] — polarity, hydrogen bonding,
+   and the properties that follow
+3. Random groups — predict three consequences for a cell if water were
+   non-polar
 
 ## Things to do before our next class
 
-- [ ] Read [[Membranes and Transport]] before the results.
-- [ ] Practise: the rest of [[Biochemistry Practice]].
+- [ ] Journal: the property of water you had never thought about.

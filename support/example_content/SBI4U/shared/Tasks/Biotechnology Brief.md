@@ -29,6 +29,13 @@ testing · synthetic insulin production.
 4. The risks, honestly weighted — not a list, an assessment.
 5. Your recommendation, and the evidence that would change it.
 
+## Who does this work
+
+Half a page: one career that exists because of this technology — in
+research, industry, the clinic, or regulation — what the work actually
+involves day to day, and the route somebody takes into it.
+[[Where This Biology Leads]] is the starting point, not the finish.
+
 ## The appendix (one page, technical)
 
 The molecular mechanism, with the vocabulary of
@@ -45,4 +52,12 @@ where — is the skill this task is testing.
 ![[D1.2]]
 
 ![[D2.4]]
+
+![[A2.1]]
+
+![[D3.1]]
+
+![[B3.1]]
+
+![[A1.9]]
 %%curriculum-end%%

@@ -1,7 +1,7 @@
 ---
 title: Unit 5, Day 4
 draft: false
-created: __CREATED_CLASS_24__
+created: __CREATED_CLASS_72__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. [[Human Population and Sustainability]]: the demographic transition
-2. Ecological footprint, and what 'overpopulation' hides
-3. Discussion: [[What Can This Planet Support?]]
-4. Work time: [[Population Study]]
+1. Warm-up: predict the shape before the data
+2. Bench: [[Modelling Population Growth]] — run it, then fit both models
+   to your own output
+3. Where the model departs from the organism it claims to describe
 
 ## Things to do before our next class
 
-- [ ] Source and plot your data set.
-- [ ] Finish [[Population Practice]].
+- [ ] Both fits drawn; departure explained.

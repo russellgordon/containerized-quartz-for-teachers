@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_8__
+created: __CREATED_CLASS_19__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. [[Chromatography of Plant Pigments]] — four pigments, four Rf values
-2. Absorption spectra and why leaves are green
-3. [[Photosynthesis in Detail]]: the light reactions
-4. Chemiosmosis again, in a different membrane
+1. Yeast, sugar, and gas you can count: [[Fermentation Rate]]
+2. Anaerobic pathways, and the collapse in yield
+3. Why sprinting is short
+4. Practise: [[Metabolism Practice]], first two
 
 ## Things to do before our next class
 
-- [ ] Calculate every Rf.
-- [ ] Journal: what do respiration and photosynthesis share, mechanically?
+- [ ] Finish the sugar comparison table.
+- [ ] Read [[Photosynthesis in Detail]].

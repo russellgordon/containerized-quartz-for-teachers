@@ -35,8 +35,31 @@ water become turgid and are fine; animal cells burst. That difference is
 the cell wall, and it is why plant and animal tissues need different
 saline solutions in the lab.
 
+
+## Why this is worth your time
+
+Cell biology sounds furthest from ordinary life and is closest to it.
+Every one of these is membrane transport, and every one of them is
+somebody's week:
+
+- **Rehydration after illness.** Oral rehydration solution works because
+  glucose and sodium are carried across the gut lining together — a
+  co-transport mechanism that has saved more lives than most drugs.
+- **Dialysis.** A machine substituting for a kidney is doing selective
+  transport across a membrane, which is why [[Kidneys and Water Balance]]
+  reads like a plumbing problem with a chemistry answer.
+- **Sports drinks and cramp.** Concentration gradients, and the
+  difference between what marketing claims and what osmosis permits.
+- **Medication.** Whether a drug can cross a membrane — the gut lining,
+  the blood-brain barrier — decides whether it can be a pill at all.
+
+If any of those matter to you or to somebody you care for, cell biology
+has already been relevant to your life for years without asking.
+
 %%curriculum-start%%
 ## Curriculum connection
+
+![[C1.2]]
 
 ![[B3.6]]
 

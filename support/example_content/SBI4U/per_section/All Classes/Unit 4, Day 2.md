@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 2
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_53__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. The resting potential, and the pump that maintains it
-2. [[The Nervous System]]: the action potential, step by step
-3. All-or-none, and how intensity is encoded instead
-4. [[Reaction Time and the Nervous System]]
+1. Warm-up: stimulus, receptor, control centre, effector, response —
+   labelled on a loop you have not seen
+2. Random groups — three loops, and which component fails in three
+   disorders
+3. Clinic: [[Homeostasis Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Convert your ten catches to times and find the spread.
-- [ ] Practise: [[Homeostasis Practice]], question 2.
+- [ ] Finish the first section.

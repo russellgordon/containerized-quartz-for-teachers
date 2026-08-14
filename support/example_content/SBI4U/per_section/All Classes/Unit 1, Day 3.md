@@ -10,12 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. Liver, peroxide, and a foam column that will not stop
-2. [[Enzyme Activity]] — temperature, pH, and substrate
-3. Name it: [[Proteins and Enzymes]], four levels of structure
-4. Write [[Your First Entry]]
+1. Warm-up: four structures on the board — which class, and how do you
+   know?
+2. Random groups — match each macromolecule's structure to the job it
+   does, and predict what a change would cost
+3. Consolidate: back to [[Carbohydrates and Lipids]] and
+   [[Nucleic Acids]] — structure suits function, at molecular scale
+4. Clinic: [[Biochemistry Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Plot all three graphs.
-- [ ] Journal entry due next class.
+- [ ] Finish the first section.
