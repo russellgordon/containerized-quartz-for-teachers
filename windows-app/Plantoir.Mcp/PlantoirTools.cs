@@ -171,7 +171,8 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     [McpServerTool(Name = "check_section", Title = "Check what students would see",
                    ReadOnly = true, Destructive = false)]
-    [Description("Check a section's website as students would meet it, changing nothing. Reports two things that " +
+    [Description("TEACHERS SAY: \"what do students see right now?\", \"is anything broken?\", \"what's live?\". " +
+                 "Check a section's website as students would meet it, changing nothing. Reports two things that " +
                  "publishing and unpublishing tools cannot see for themselves: links on visible pages that lead to a hidden " +
                  "page (students click and find nothing), and pages nothing links to — which are still published and " +
                  "still listed in the site's explorer, so students can see them even though no class points there. " +
@@ -768,7 +769,8 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         => Plan(course, section, pages, includeLinked, draft: false, onOrAfter, before);
 
     [McpServerTool(Name = "plan_unpublish_pages", Title = "Plan unpublishing pages", ReadOnly = true, Destructive = false)]
-    [Description("Work out exactly what unpublishing pages from students would do, WITHOUT changing anything. " +
+    [Description("TEACHERS SAY: \"what happens if I take that down?\", \"check before you hide Unit 3, Day 2\". " +
+                 "Work out exactly what unpublishing pages from students would do, WITHOUT changing anything. " +
                  "Always call this before unpublish_pages and show the teacher the result. " +
                  "Choose pages by name, or by date with onOrAfter/before — \"hide everything from next Monday on\" is " +
                  "one call. Note that a page linked from a class you are unpublishing may also be linked from one that must " +
@@ -827,7 +829,8 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     [McpServerTool(Name = "undo_last_change", Title = "Undo the last change",
                    Destructive = false, Idempotent = false)]
-    [Description("Take back the most recent change this conversation made — the fix for publishing the wrong " +
+    [Description("TEACHERS SAY: \"undo that\", \"put it back\", \"that was wrong, revert it\", \"never mind, undo\". " +
+                 "Take back the most recent change this conversation made — the fix for publishing the wrong " +
                  "class in a hurry. Puts exactly those pages back the way they were, without disturbing anything " +
                  "else. Can be called more than once to step further back. " +
                  "\n\nOnly changes made in THIS conversation can be undone this way; the history is not kept " +
@@ -869,7 +872,8 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     [McpServerTool(Name = "plan_publish_class_on", Title = "Plan publishing a day's class",
                    ReadOnly = true, Destructive = false)]
-    [Description("Work out what publishing the class taught on a given day would do, WITHOUT changing anything. " +
+    [Description("TEACHERS SAY: \"what would publishing tomorrow's class do?\", \"show me before you put Monday up\". " +
+                 "Work out what publishing the class taught on a given day would do, WITHOUT changing anything. " +
                  "This is the tool for \"publish tomorrow's class\" or \"publish today's class\": it finds the class " +
                  "by date, follows its links, gives pages no other class uses that class's date, and points the " +
                  "section's front page at it. Always show the teacher the result before using publish_class_on.")]
@@ -881,7 +885,9 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     [McpServerTool(Name = "publish_class_on", Title = "Publish a day's class",
                    Destructive = false, Idempotent = true)]
-    [Description("Publish the class taught on a given day, along with the pages it links to, then rebuild the " +
+    [Description("TEACHERS SAY: \"publish tomorrow's class\", \"put up Monday's lesson\", \"put Unit 2, Day 3 up\", " +
+                 "\"make Friday's class visible\", \"post next class\", \"put the class live for students\". " +
+                 "Publish the class taught on a given day, along with the pages it links to, then rebuild the " +
                  "section's preview. Pages that no other class links to take the class's date, and the section's " +
                  "front page is pointed at the most recent published class. The course is backed up first, " +
                  "automatically. Only call this after plan_publish_class_on and after the teacher has agreed. " +
@@ -950,7 +956,9 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
                progress, cancellation);
 
     [McpServerTool(Name = "unpublish_pages", Title = "Unpublish pages", Destructive = false, Idempotent = true)]
-    [Description("Unpublish pages, so students no longer see them, optionally along with every page they link to, then rebuild the section preview. " +
+    [Description("TEACHERS SAY: \"take Unit 4, Day 5 back down\", \"students shouldn't see it yet\", \"hide that page\", " +
+                 "\"I posted it by mistake\", \"make it a draft again\", \"pull that lesson\", \"un-publish it\". " +
+                 "Unpublish pages, so students no longer see them, optionally along with every page they link to, then rebuild the section preview. " +
                  "section's website so they disappear from the live site. The course is backed up first, automatically. " +
                  "Only call this after plan_unpublish_pages and after the teacher has agreed to what it said. " +
                  "Pass every page you intend to change in ONE call: each call with preview=true rebuilds the preview again. " +
@@ -970,7 +978,9 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
                progress, cancellation);
 
     [McpServerTool(Name = "rebuild_preview", Title = "Rebuild the preview", Destructive = false, Idempotent = true)]
-    [Description("Rebuild a section preview without changing any page. " +
+    [Description("TEACHERS SAY: \"rebuild the preview\", \"refresh what I'm looking at\", \"update the preview\", " +
+                 "\"build it again\". " +
+                 "Rebuild a section preview without changing any page. " +
                  "Use this after a batch of publish_pages or unpublish_pages calls made with preview=false. " +
                  "This takes several minutes.")]
     public async Task<string> RebuildPreview(

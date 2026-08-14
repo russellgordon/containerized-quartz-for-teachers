@@ -148,7 +148,10 @@ public sealed partial class AssistWindow : Window
             return;
         }
 
-        var schemas = await _tools.Tools(_closing.Token);
+        // Narrowed before the model ever sees them — see AssistAgent for the
+        // measurements. Fewer tools is both better routing and a shorter
+        // prompt, and the prompt is what makes the first answer slow.
+        var schemas = AssistAgent.NarrowToLocal(await _tools.Tools(_closing.Token));
         _agent = new AssistAgent(_model, _tools, schemas, _course.Code, _section);
         starting.Text = "Ready.";
 
@@ -165,6 +168,16 @@ public sealed partial class AssistWindow : Window
             ["section"] = _section,
         }, _closing.Token);
         if (briefing.Trim().Length > 0) Say("Plantoir", briefing.Trim());
+
+        // What to say, in the words that work.
+        //
+        // A small model matches text; it does not infer intent. So rather than
+        // leaving a teacher to discover which phrasings land — and the first
+        // real use of this window opened with "Hello, what is your name?",
+        // which is the one question it can only answer slowly and unhelpfully
+        // — the examples are put in front of them before they type. These are
+        // the shapes the routing was measured on.
+        Say("Plantoir", ExampleRequests);
 
         // Typing is available from here. The teacher reads the briefing while
         // the model quietly evaluates that same 6,200-token prefix in the
@@ -201,6 +214,32 @@ public sealed partial class AssistWindow : Window
         }
         catch { /* a cold cache is slow, not broken */ }
     }
+
+    /// <summary>
+    /// The opening menu, in the teacher's own words.
+    ///
+    /// Deliberately phrased as things to SAY rather than features to have.
+    /// Each line is a shape the local model routes reliably, and naming the
+    /// page ("Unit 2, Day 3") is what keeps it from having to guess — so the
+    /// examples all show it.
+    /// </summary>
+    private const string ExampleRequests =
+        "Here's what I'm good at. These wordings work well — copy one and change the details:\n\n" +
+        "**Publishing a class**\n" +
+        "  • Publish Unit 2, Day 3, and everything it links to\n" +
+        "  • Publish tomorrow's class\n\n" +
+        "**Taking something back down**\n" +
+        "  • Unpublish Unit 2, Day 3\n" +
+        "  • I published Unit 4, Day 1 by mistake — unpublish it\n\n" +
+        "**Looking before you leap**\n" +
+        "  • What would publishing Unit 3, Day 1 change?\n" +
+        "  • What would students see in this section right now?\n\n" +
+        "**Afterwards**\n" +
+        "  • Rebuild the preview\n" +
+        "  • Undo that\n\n" +
+        "Name the page if you can — “Unit 2, Day 3” rather than “tomorrow's one” — and I'll be quicker " +
+        "and more certain. Bigger jobs (re-dating a term, rolling a course over, adding a unit's worth " +
+        "of pages) are best done with Claude, from the same menu.";
 
     // ---- One turn --------------------------------------------------------
 
@@ -334,9 +373,23 @@ public sealed partial class AssistWindow : Window
         }
     }
 
-    /// <summary>The one place a turn is built, so every card is the same card.</summary>
+    /// <summary>
+    /// The one place a turn is built, so every bubble is the same bubble.
+    ///
+    /// Laid out the way every messaging app a teacher already uses lays it
+    /// out: what they said on the right, what the assistant said on the left.
+    /// Nobody has to learn that, and at a glance down the transcript the two
+    /// voices separate without reading a word of it.
+    ///
+    /// Bubbles stop well short of the full width. A line of text running the
+    /// whole way across a maximised window is hard to read and, worse here,
+    /// makes the two sides indistinguishable — which is the one thing this
+    /// layout exists to prevent.
+    /// </summary>
     private void AddCard(string speaker, params UIElement[] contents)
     {
+        bool fromTeacher = speaker == "You";
+
         var panel = new StackPanel { Spacing = 4 };
         panel.Children.Add(new TextBlock
         {
@@ -346,12 +399,29 @@ public sealed partial class AssistWindow : Window
         });
         foreach (var element in contents) panel.Children.Add(element);
 
+        // The teacher's bubble is filled with the accent colour, so its text
+        // has to be the ON-accent one. Left as the default it is dark ink on a
+        // dark blue ground in the light theme — unreadable, and only in the
+        // half of the conversation they wrote themselves.
+        if (fromTeacher)
+        {
+            var onAccent = (Brush)Application.Current.Resources["TextOnAccentFillColorPrimaryBrush"];
+            foreach (var child in panel.Children)
+                if (child is TextBlock block) block.Foreground = onAccent;
+        }
+
         Transcript.Children.Add(new Border
         {
             Padding = new Thickness(12),
-            CornerRadius = new CornerRadius(6),
+            // The tail corner is squared off on the side the bubble comes
+            // from, which is what gives a chat its direction.
+            CornerRadius = fromTeacher
+                ? new CornerRadius(12, 12, 4, 12)
+                : new CornerRadius(12, 12, 12, 4),
+            HorizontalAlignment = fromTeacher ? HorizontalAlignment.Right : HorizontalAlignment.Left,
+            MaxWidth = 620,
             Background = (Brush)Application.Current.Resources[
-                speaker == "You" ? "SystemFillColorAttentionBackgroundBrush" : "CardBackgroundFillColorDefaultBrush"],
+                fromTeacher ? "AccentFillColorDefaultBrush" : "CardBackgroundFillColorDefaultBrush"],
             Child = panel,
         });
         TranscriptScroller.UpdateLayout();
@@ -392,10 +462,14 @@ public sealed partial class AssistWindow : Window
         row.Children.Add(dots);
         row.Children.Add(elapsed);
 
+        // Left, like everything else the assistant says — it IS the assistant
+        // speaking, and a centred or full-width indicator would break the line
+        // the eye follows down the conversation.
         _thinking = new Border
         {
             Padding = new Thickness(12),
-            CornerRadius = new CornerRadius(6),
+            CornerRadius = new CornerRadius(12, 12, 12, 4),
+            HorizontalAlignment = HorizontalAlignment.Left,
             Background = (Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
             Child = row,
         };

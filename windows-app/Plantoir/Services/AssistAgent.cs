@@ -33,6 +33,101 @@ public sealed class AssistAgent
     private readonly JsonArray _messages = new();
 
     /// <summary>
+    /// The tools the LOCAL model is shown, and only those.
+    ///
+    /// Measured, not guessed. On five tools the routing was 27/27; on the
+    /// shipped surface it fell to 31/45, and the failures were exactly the
+    /// phrasings a teacher uses — "put up Unit 3, Day 2", "take Unit 4, Day 5
+    /// back down" both fell through to list_pages. There are 26 tools now, so
+    /// it would be worse again, and the definitions come to some 6,200 tokens
+    /// that must be re-read at 21 tokens a second whenever the cache is cold.
+    ///
+    /// Both problems have the same cause and the same fix. Fewer tools is
+    /// better routing AND a shorter prompt: accuracy and speed are not a
+    /// trade-off here, they are the same dial.
+    ///
+    /// So the local model gets the handful of things teachers actually ask for
+    /// day to day. Everything else — rolling a course over, re-dating a term,
+    /// making room in a unit, scheduling a deploy, curriculum matching — stays
+    /// available to Claude Code, which drives the same server and has no
+    /// trouble with 26 tools. Nothing is removed; this narrows one client's
+    /// view.
+    /// </summary>
+    private static readonly HashSet<string> ForTheLocalModel = new(StringComparer.OrdinalIgnoreCase)
+    {
+        // Finding your way about.
+        "list_pages", "read_page", "check_section",
+        // Publishing a class, which is the commonest request by a wide margin.
+        "plan_publish_class_on", "publish_class_on",
+        // Publishing and unpublishing pages by name.
+        "plan_publish_pages", "publish_pages",
+        "plan_unpublish_pages", "unpublish_pages",
+        // Seeing the result, and taking it back.
+        "rebuild_preview", "undo_last_change",
+    };
+
+    /// <summary>
+    /// Narrow a tool list to what the local model should see.
+    ///
+    /// A tool NOT in the set is not hidden from the teacher — they can ask for
+    /// it, and the assistant will say it cannot do that here rather than
+    /// silently doing something else. That is the better failure: the tools it
+    /// does have are the ones it routes to reliably.
+    /// </summary>
+    public static JsonArray NarrowToLocal(JsonArray tools)
+    {
+        var kept = new JsonArray();
+        foreach (var tool in tools)
+        {
+            if (tool?["function"]?["name"]?.GetValue<string>() is not { } name) continue;
+            if (!ForTheLocalModel.Contains(name)) continue;
+
+            var copy = tool.DeepClone();
+            if (copy["function"]?["description"]?.GetValue<string>() is { } description)
+                copy["function"]!["description"] = Briefly(description);
+            kept.Add(copy);
+        }
+        return kept;
+    }
+
+    /// <summary>
+    /// The part of a tool description a ROUTER needs, and no more.
+    ///
+    /// The descriptions are written for Claude Code, and most of their length
+    /// is instruction: plan before you write, tell the teacher what it said,
+    /// wait for them to agree, this takes several minutes. None of that is
+    /// guidance the local model has to be trusted to follow, because none of
+    /// it is enforced by the model — the approval gate in this class holds
+    /// every write until the teacher presses a button, whatever the model
+    /// believes it is doing.
+    ///
+    /// What a router does need is WHEN to pick this tool. So: the phrasings
+    /// teachers use, and the first sentence saying what it does. Measured, the
+    /// full surface was some 9,000 tokens of definitions; this and the tool
+    /// list together bring what the local model reads down to a fraction of
+    /// that, and the prompt is what makes a cold first answer slow.
+    /// </summary>
+    private static string Briefly(string description)
+    {
+        var kept = new List<string>();
+
+        // The trigger phrasings, which are the most useful line for routing
+        // and are deliberately written first.
+        int endOfPhrasings = description.IndexOf("\". ", StringComparison.Ordinal);
+        if (description.StartsWith("TEACHERS SAY:", StringComparison.Ordinal) && endOfPhrasings > 0)
+        {
+            kept.Add(description[..(endOfPhrasings + 2)]);
+            description = description[(endOfPhrasings + 3)..];
+        }
+
+        // Then one sentence of what it actually does.
+        int firstStop = description.IndexOf(". ", StringComparison.Ordinal);
+        kept.Add(firstStop > 0 ? description[..(firstStop + 1)] : description);
+
+        return string.Join(" ", kept).Trim();
+    }
+
+    /// <summary>
     /// The one tool that changes something and still needs no permission:
     /// explaining what publishing means. All it writes is Plantoir's own note
     /// that this section has been briefed — nothing of the teacher's — and
