@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 2
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_65__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[True or False]] — a steeper angle means a longer
-   opposite side
-2. Random groups — same angle, any size: what never changes?
-3. Consolidate + notes to your future self —
-   [[The Primary Trigonometric Ratios]]
-4. Launch: [[Inaccessible Heights]] — choose something unmeasurable
-5. Check your understanding: [[Trig Ratios and Laws Practice]], block one
+1. Number talk: [[True or False]] — 'these triangles are similar'
+2. Random groups — same angles, three different sizes, and the ratios
+   that stay put
+3. Consolidate: back to [[Similar Triangles]] — similarity is WHY a
+   ratio can depend only on the angle
+4. Practise: [[Similar Triangles Practice]]
 
 ## Things to do before our next class
 
-- [ ] Read [[Inaccessible Heights]] and shortlist two targets with your
-      team.
-- [ ] Journal: why your target defies direct measurement — and your
-      plan to measure it anyway.
+- [ ] Finish the practice set.

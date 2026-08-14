@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_9__
+created: __CREATED_CLASS_19__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,15 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Which One Doesn't Belong]] — four equations, one
-   impostor
-2. Random groups — every point exactly five units from the origin: what
-   shape are you standing on?
-3. Consolidate + notes to your future self — [[The Equation of a Circle]]
-4. Discussion: [[When Will I Use This]] — GPS, wireless range, radar
-5. Check your understanding: [[Circle and Coordinate Practice]],
-   first block
+1. Number talk: [[Number Strings]] — halfway between two numbers, then
+   halfway between two points
+2. Random groups — meeting exactly in the middle: where should two
+   friends meet, and how far does each one walk?
+3. Consolidate: the midpoint is an average; the length is Pythagoras
+4. Notes to your future self — naming [[Midpoint and Length]]
+5. Check your understanding: [[Midpoint and Length Practice]], first block
 
 ## Things to do before our next class
 
-- [ ] Finish the first block of [[Circle and Coordinate Practice]].
-- [ ] Journal: one place outside school where a circle's equation is
-      quietly doing its job.
+- [ ] Finish the first block of [[Midpoint and Length Practice]].
+- [ ] Read [[How Marks Work]] — check-in conversations start this unit.

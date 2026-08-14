@@ -1,27 +1,27 @@
 ---
 title: Unit 4, Day 6
-draft: true
-created: __CREATED_CLASS_26__
+draft: false
+created: __CREATED_CLASS_69__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-4
 ---
-%% This page is an example of a DRAFT: `draft: true` in the frontmatter
-means it is never published to the site. Plan tomorrow's class today and
-flip draft to false when the day arrives. Delete this comment when you
-reuse the page — comments never appear on the site either. %%
-
 ## Agenda
 
-1. Celebrate: the semester's greatest board moments, nominated by you
-2. Launch: [[Final Reflection]] — begin it in class while the symposium
-   is fresh
-3. Journal collection — [[Journal Checklist]] and [[Showing Growth]] are
-   your last look before handing it in
-4. Circle up one final time
+1. Number talk: [[Which One Doesn't Belong]] — four triangles, only some
+   with a right angle
+2. Random groups — a triangle with no right angle at the boards: can our
+   ratios still reach it?
+3. Consolidate + notes to your future self — [[The Sine Law]] and
+   [[The Cosine Law]]
+4. Sorting round: given what you know about a triangle, which tool opens
+   it?
+5. Check your understanding: [[Trig Ratios and Laws Practice]], next block
 
 ## Things to do before our next class
 
-- [ ] Finish [[Final Reflection]] and hand in your [[Math Journal]].
+- [ ] Finish the next block of [[Trig Ratios and Laws Practice]].
+- [ ] Check [[Learning Goals]] — mark off what you can already do in
+      the trigonometry rows.

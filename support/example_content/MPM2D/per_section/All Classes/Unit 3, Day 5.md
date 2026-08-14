@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_41__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,17 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Estimation Duels]] — the biggest rectangle you can
-   fence with 40 m
-2. Random groups — [[Maximum Enclosure]] at the boards
-3. Consolidate: the turning point is the answer — where is it in the
-   equation?
-4. Notes to your future self — naming [[The Vertex Form]]
-5. Check your understanding: [[Quadratic Graphing Practice]], first block
+1. Number talk: [[Which One Doesn't Belong]] — four expressions, one
+   impostor
+2. Random groups — [[The Border Problem]] at the boards
+3. Consolidate: many expressions, one border — so the expressions must
+   be equal
+4. Notes to your future self — naming [[Expanding and Factoring]]
+5. Check your understanding: [[Expanding and Factoring Practice]],
+   first block
 
 ## Things to do before our next class
 
-- [ ] Finish the first block of [[Quadratic Graphing Practice]].
-- [ ] Journal: your group's route to the maximum — table, graph, or
-      hunch — and when you trusted it.
+- [ ] Finish the first block of [[Expanding and Factoring Practice]].
+- [ ] Journal: two different expressions your class found for the same
+      border, and why both are right.

@@ -1,0 +1,20 @@
+---
+title: Unit 4, Day 11
+draft: false
+created: __CREATED_CLASS_74__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. Number talk: [[Graph Talks]]
+2. [[Inaccessible Heights]], day 4 — working period: the calculation, twice,
+   by two different routes if you can
+3. Compare the two answers; the gap is your uncertainty
+
+## Things to do before our next class
+
+- [ ] Height calculated; uncertainty stated.

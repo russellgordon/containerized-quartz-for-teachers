@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 8
 draft: false
-created: __CREATED_CLASS_20__
+created: __CREATED_CLASS_44__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Gallery walk: [[The Perfect Arc]] — photographs, equations, and how
-   well the model hugs the curve
-2. Two questions per visitor — where does your vertex sit, and how do
-   you know?
-3. Journal collection — run [[Journal Checklist]] before handing it in
-4. Look ahead: last unit — we measure what we cannot reach
+1. Number talk: [[True or False]] — factoring claims
+2. Random groups — trinomials where $a \neq 1$, by decomposition
+3. Clinic: [[Expanding and Factoring Practice]] to the end
 
 ## Things to do before our next class
 
-- [ ] Hand in your [[Math Journal]] if you have not already.
-- [ ] Skim [[How to Study for Math]] — the final stretch starts now.
+- [ ] Finish the practice set.

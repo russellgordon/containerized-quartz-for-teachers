@@ -10,16 +10,17 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[True or False]] — you may add two equations together
-2. Random groups — a system where substitution gets ugly: is there
-   another door in?
-3. Consolidate + notes to your future self — elimination, the other half
-   of [[Solving Systems Algebraically]]
-4. Read: [[Checking Your Own Work]] — substitute back, every time
-5. Workday: [[Break-Even]] — build your two equations
+1. Number talk: [[Number Strings]] — solving little equations in your head
+2. Random groups — a system where graphing lets you down: the crossing
+   point is nowhere near a grid line
+3. Consolidate: swapping an expression in for a variable
+4. Notes to your future self — [[Solving Systems Algebraically]],
+   the substitution half
+5. Launch our first task: [[Break-Even]] — pick a small venture worth
+   modelling
 
 ## Things to do before our next class
 
-- [ ] Bring your [[Break-Even]] model, ready to pitch.
-- [ ] Journal: substitution or elimination — which do you reach for
-      first, and why?
+- [ ] Read [[Break-Even]] and bring one venture idea with rough numbers.
+- [ ] Check your understanding: [[Linear Systems Practice]], next block.
+- [ ] Journal: your gut prediction — will your venture ever break even?

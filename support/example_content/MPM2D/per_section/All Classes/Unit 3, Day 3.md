@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 3
 draft: false
-created: __CREATED_CLASS_15__
+created: __CREATED_CLASS_39__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Which One Doesn't Belong]] — four expressions, one
-   impostor
-2. Random groups — [[The Border Problem]] at the boards
-3. Consolidate: many expressions, one border — so the expressions must
-   be equal
-4. Notes to your future self — naming [[Expanding and Factoring]]
-5. Check your understanding: [[Expanding and Factoring Practice]],
-   first block
+1. Number talk: [[Visual Patterns]]
+2. Random groups — four tables: linear, quadratic, or neither? Decided
+   by differences before any graphing
+3. Consolidate: what a constant second difference guarantees
+4. Practise: [[Quadratic Graphing Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Finish the first block of [[Expanding and Factoring Practice]].
-- [ ] Journal: two different expressions your class found for the same
-      border, and why both are right.
+- [ ] Finish the first section.

@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_12__
+created: __CREATED_CLASS_22__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Verdicts: [[The Quadrilateral Case File]] — present your proof, name
-   your shape beyond reasonable doubt
-2. The jury asks questions — one per group, per [[Our Classroom Norms]]
-3. Journal collection — run [[Journal Checklist]] before handing it in
-4. Look ahead: next unit, a curve at last
+1. Number talk: [[Number Strings]] — negative reciprocals, fast
+2. Random groups — the right bisector as a four-step checklist:
+   midpoint, slope, negative reciprocal, equation
+3. Consolidate: why every point on it is equidistant from both ends
 
 ## Things to do before our next class
 
-- [ ] Hand in your [[Math Journal]] if you have not already.
-- [ ] Skim [[Why Struggle Is the Point]] — Unit 3 opens with a problem
-      nobody has shown you how to do.
+- [ ] Two right bisectors, built from the checklist.

@@ -10,17 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Number Strings]] — solving little equations in your head
-2. Random groups — a system where graphing lets you down: the crossing
-   point is nowhere near a grid line
-3. Consolidate: swapping an expression in for a variable
-4. Notes to your future self — [[Solving Systems Algebraically]],
-   the substitution half
-5. Launch our first task: [[Break-Even]] — pick a small venture worth
-   modelling
+1. Number talk: [[Graph Talks]] — two lines, one crossing point
+2. Random groups — the same system solved by graph and by substitution;
+   compare the answers and decide which you would submit
+3. Consolidate: a graph shows you roughly where; algebra tells you
+   exactly
+4. Practise: [[Linear Systems Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Read [[Break-Even]] and bring one venture idea with rough numbers.
-- [ ] Check your understanding: [[Linear Systems Practice]], next block.
-- [ ] Journal: your gut prediction — will your venture ever break even?
+- [ ] Finish the first section.

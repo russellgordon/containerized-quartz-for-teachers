@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 2
 draft: false
-created: __CREATED_CLASS_8__
+created: __CREATED_CLASS_18__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Number Strings]] — halfway between two numbers, then
-   halfway between two points
-2. Random groups — meeting exactly in the middle: where should two
-   friends meet, and how far does each one walk?
-3. Consolidate: the midpoint is an average; the length is Pythagoras
-4. Notes to your future self — naming [[Midpoint and Length]]
-5. Check your understanding: [[Midpoint and Length Practice]], first block
+1. Number talk: [[Number Strings]]
+2. Random groups — where the distance formula comes from: a right
+   triangle drawn on the grid, and Pythagoras
+3. Consolidate: the formula is Pythagoras with coordinates substituted
+4. Practise: [[Midpoint and Length Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Finish the first block of [[Midpoint and Length Practice]].
-- [ ] Read [[How Marks Work]] — check-in conversations start this unit.
+- [ ] Finish the first section.
