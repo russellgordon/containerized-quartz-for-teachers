@@ -454,13 +454,56 @@ public sealed partial class SidebarPane : UserControl
     {
         string sectionDir = course.SectionDirectory(number);
         var menu = new MenuFlyout();
+
+        // "Revise with AI" belongs on the SECTION, not the course: a class is
+        // published for one section at a time, and every question a teacher
+        // brings here ("publish tomorrow's class") is a question about one.
+        // It opens a window of its own so the section's preview can stay on
+        // screen beside the conversation that is changing it.
+        var reviseItem = MenuItem("Revise with AI…", AddSectionGlyph, () => ReviseWithAi(course, number));
+        menu.Items.Add(reviseItem);
+        menu.Items.Add(new MenuFlyoutSeparator());
+
         // The vault is the COURSE folder even for a section — the section is
         // a subfolder within it, and Obsidian lands at its landing page.
         menu.Items.Add(ObsidianItem(sectionDir, course.DirectoryPath));
         menu.Items.Add(new MenuFlyoutSeparator());
         menu.Items.Add(MenuItem("Show in File Explorer", ExplorerGlyph, () => FolderActions.ShowInFileExplorer(sectionDir)));
         menu.Items.Add(MenuItem("Open in Terminal", TerminalGlyph, () => FolderActions.OpenTerminal(sectionDir)));
+
+        // Read when the menu OPENS, never captured at render — the staleness
+        // lesson from row 104, which cost a live debugging session.
+        menu.Opening += (_, _) =>
+        {
+            string? reason = Workspace.WorkspacePath is { } folder
+                ? CourseActivity.BusyReason(folder, course.Code) : null;
+            reviseItem.IsEnabled = reason is null;
+        };
         return menu;
+    }
+
+    /// <summary>
+    /// Open the built-in assistant on one section, in its own window.
+    ///
+    /// Separate from <see cref="ReviseWithClaude"/>, which hands the same
+    /// tools to Claude Code in a terminal. Both drive <c>plantoir-mcp</c>, so
+    /// they behave alike; this one asks nothing of the teacher beyond
+    /// Plantoir itself, and runs on their own computer.
+    /// </summary>
+    private void ReviseWithAi(Course course, int number)
+    {
+        if (Workspace.WorkspacePath is not { } folder) return;
+
+        // A second session on the same course would have both of them writing
+        // into one output folder. The menu says so too; this is the guarantee,
+        // since a session can start between the menu opening and the click.
+        if (CourseActivity.BusyReason(folder, course.Code) is { } reason)
+        {
+            _ = ShowError($"{course.Code} is busy right now", reason + ".");
+            return;
+        }
+
+        new AssistWindow(folder, course, number).Activate();
     }
 
     private MenuFlyout ArchivedMenu(ArchivedItem item)
