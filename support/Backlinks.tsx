@@ -24,7 +24,31 @@ export default ((opts?: Partial<BacklinksOptions>) => {
     cfg,
   }: QuartzComponentProps) => {
     const slug = simplifySlug(fileData.slug!)
-    const backlinkFiles = allFiles.filter((file) => file.links?.includes(slug))
+
+    // "When did we do this?" answers which LESSONS touched this page. Two
+    // kinds of page reference every curriculum expectation by
+    // construction — the Curriculum index, which transcludes all of them,
+    // and the generated Curriculum Coverage map, which links all of them.
+    // Listed as backlinks they appear on every expectation page, so they
+    // carry no information and push the real answer down the list.
+    //
+    // The rule is structural rather than a list of titles: anything
+    // inside the curriculum folder, plus the generated map. Both are
+    // written in by the build (CQ4T-STRUCTURAL-ANCHOR), which knows the
+    // folder's real name — teachers rename it.
+    // CQ4T-STRUCTURAL-ANCHOR: do not remove; build_site.py rewrites this line
+    const structural = new Set<string>([""])
+    const isStructural = (fileSlug: string): boolean => {
+      if (structural.has(fileSlug)) {
+        return true
+      }
+      const folder = fileSlug.split("/")[0]
+      return structural.has(folder)
+    }
+
+    const backlinkFiles = allFiles.filter(
+      (file) => file.links?.includes(slug) && !isStructural(simplifySlug(file.slug!)),
+    )
     const excludeBacklinks = fileData.frontmatter?.excludeBacklinks
     if (options.hideWhenEmpty && backlinkFiles.length == 0) {
       return null

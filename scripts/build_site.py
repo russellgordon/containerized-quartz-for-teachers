@@ -3117,6 +3117,47 @@ where they genuinely apply rather than leaving the record silent.
     return True
 
 
+def set_backlinks_structural_pages(backlinks_tsx_path: Path, content_root: Path):
+    """
+    Tell the backlinks panel which pages reference everything by design.
+
+    "When did we do this?" is meant to answer which lessons touched a
+    page. The curriculum folder's index transcludes every expectation and
+    the generated coverage map links every expectation, so both appear as
+    a backlink on every single expectation page — noise that hides the
+    lessons underneath. This writes their names into Backlinks.tsx, the
+    same way the Explorer's omit set is written, so the component filters
+    them out without hard-coding a folder name that teachers rename.
+    """
+    if not backlinks_tsx_path.exists():
+        return
+    curriculum_dir = _find_curriculum_folder(content_root)
+    # Both forms: the folder is matched by name, but a page is matched by
+    # its SLUG, and Quartz slugs replace spaces with hyphens. Writing only
+    # the title left the coverage map in the panel it was meant to leave.
+    names = [COVERAGE_PAGE_TITLE, COVERAGE_PAGE_TITLE.replace(" ", "-")]
+    if curriculum_dir:
+        names.append(curriculum_dir.name)
+        names.append(curriculum_dir.name.replace(" ", "-"))
+    formatted = ", ".join(f'"{name}"' for name in names)
+    text = backlinks_tsx_path.read_text(encoding="utf-8")
+    pattern = re.compile(
+        r'(?P<anchor>^[ \t]*//[ \t]*CQ4T-STRUCTURAL-ANCHOR:.*?\n)?'
+        r'[ \t]*const[ \t]+structural[ \t]*=[ \t]*new[ \t]+Set'
+        r'(?:<[^>]*>)?[ \t]*\([ \t]*\[[\s\S]*?\][ \t]*\)[ \t]*;?',
+        re.MULTILINE)
+
+    def replace(match):
+        anchor = match.group("anchor") or ""
+        indent = "    "
+        return f'{anchor}{indent}const structural = new Set<string>([{formatted}])'
+
+    updated, count = pattern.subn(replace, text)
+    if count:
+        backlinks_tsx_path.write_text(updated, encoding="utf-8")
+        print(f"✅ Backlinks panel will skip: {', '.join(names)}")
+
+
 def link_coverage_from_key_links(content_root: Path):
     """
     Put the coverage page in Key Links, directly under the curriculum entry.
@@ -3438,6 +3479,8 @@ def build_section_site(
             link_coverage_from_key_links(content_root)
     else:
         print("ℹ️ Curriculum Coverage page is switched off for this course.")
+    set_backlinks_structural_pages(
+        output_dir / "quartz" / "components" / "Backlinks.tsx", content_root)
     # ==========================================================================
 
     # Copy course config into output root (back-compat)
