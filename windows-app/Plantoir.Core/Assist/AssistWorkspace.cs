@@ -818,6 +818,60 @@ public sealed class AssistWorkspace
     /// session ended up calling publish on a page that happened to need no
     /// changes, purely to trigger a rebuild. That only worked by luck.
     /// </summary>
+    /// <summary>
+    /// Put a section's built site where students can reach it.
+    ///
+    /// Deliberately its own operation, never a step inside publishing. The
+    /// teacher asked for two things that sound contradictory — that they stay
+    /// in control of what students see, and that the assistant be able to
+    /// deploy — and the reconciliation is that deploying is never a SIDE
+    /// EFFECT. Changing pages rebuilds the preview and stops there; putting it
+    /// in front of students takes a separate, deliberate ask.
+    /// </summary>
+    public async Task<AssistResult> Deploy(string courseCode, int sectionNumber,
+                                           IProgress<string>? progress = null,
+                                           CancellationToken cancellation = default)
+    {
+        var course = Course(courseCode);
+        int section = Section(course, sectionNumber);
+        RefuseIfPlantoirIsBuilding(course);
+
+        // A Pages-scoped Cloudflare token cannot list its own account, so the
+        // account id lives in Plantoir's settings and only the app can pass it.
+        if (course.Configuration.DeploysToCloudflare)
+            throw new AssistRefusal(
+                $"{course.Code} deploys to Cloudflare Pages, which needs the account ID Plantoir stores. " +
+                "Deploy this section from Plantoir instead.");
+
+        // With no site marker, deploy.py asks what to call the website — a
+        // prompt on stdin, which is closed here, so the launcher would die
+        // with an unhandled EOFError minutes into a build.
+        if (!course.Configuration.DeploysToLocalFolder &&
+            !File.Exists(Path.Combine(course.DirectoryPath, ".netlify_sites", $"section{section}.json")))
+            throw new AssistRefusal(
+                $"{course.Code} Section {section} has never been deployed, so deploying it asks what to call " +
+                "the website — and that can only be answered in Plantoir. Deploy it once from there, and I can " +
+                "do it after that.");
+
+        progress?.Report($"Building Section {section} of {course.Code}…");
+        var build = await _launcher.Run("preview", new[] { course.Code, section.ToString(), "--build-only" },
+                                        _folder, progress, cancellation);
+        if (!build.Succeeded)
+            return new AssistResult(false, $"The build failed, so nothing was deployed. {build.Message}", null);
+
+        var arguments = course.Configuration.DeploysToLocalFolder
+            ? new[] { course.Code, section.ToString(), "--to-folder", course.Configuration.DeployFolderPath }
+            : new[] { course.Code, section.ToString() };
+
+        progress?.Report($"Deploying to {DestinationOf(course)}…");
+        var deployed = await _launcher.Run("deploy", arguments, _folder, progress, cancellation);
+        return deployed.Succeeded
+            ? new AssistResult(true,
+                $"Deployed {course.Code} Section {section} to {DestinationOf(course)}. Students can see it now.",
+                null)
+            : new AssistResult(false, $"Deploying failed. {deployed.Message}", null);
+    }
+
     public async Task<AssistResult> RebuildPreview(string courseCode, int sectionNumber,
                                                    IProgress<string>? progress = null,
                                                    CancellationToken cancellation = default)

@@ -115,6 +115,30 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
             return workspace.ReadPage(found, workspace.Section(found, section), page);
         });
 
+    [McpServerTool(Name = "deploy_section", Title = "Deploy a section's website",
+                   Destructive = false, Idempotent = true)]
+    [Description("Put a section's website where students can actually reach it. This is the one thing that changes " +
+                 "what students see, so treat it as a big step. " +
+                 "\n\nBEFORE calling this, tell the teacher plainly to look over the preview in Plantoir first, and " +
+                 "wait for them to say they have. Publishing a page only rebuilds their preview; this is what makes " +
+                 "it real. If they have not looked, say so and offer to wait rather than going ahead. " +
+                 "\n\nThis takes several minutes.")]
+    public async Task<string> DeploySection(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        IProgress<ProgressNotificationValue> progress,
+        CancellationToken cancellation)
+    {
+        try
+        {
+            var result = await workspace.Deploy(course, section, Relay(progress), cancellation);
+            progress.Report(new ProgressNotificationValue { Progress = 100, Total = 100, Message = "Finished" });
+            return result.Message;
+        }
+        catch (AssistRefusal refusal) { return refusal.Message; }
+        catch (OperationCanceledException) { return "The deploy was stopped before it finished."; }
+    }
+
     [McpServerTool(Name = "explain_publishing", Title = "Explain what publishing means here",
                    Destructive = false, Idempotent = true)]
     [Description("Call this FIRST, before doing anything else with a section. It returns a short explanation of " +

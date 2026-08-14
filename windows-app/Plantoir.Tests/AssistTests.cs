@@ -1203,6 +1203,51 @@ public class AssistWorkspaceTests : IDisposable
     }
 
     [Fact]
+    public async Task DeployingIsItsOwnAskAndNeverASideEffect()
+    {
+        // The reconciliation of two things that sound contradictory: the
+        // teacher stays in control of what students see, AND the assistant can
+        // deploy. Deploying is never a side effect of changing pages.
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
+        var workspace = Open();
+
+        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false));
+        Assert.Equal(new[] { "preview" }, _launcher.Runs.Select(r => r.Launcher));   // publishing: preview only
+
+        var result = await workspace.Deploy("ICS3U", 1);
+
+        Assert.True(result.Succeeded);
+        Assert.Contains("Students can see it now.", result.Message);
+        Assert.Equal(new[] { "preview", "preview", "deploy" }, _launcher.Runs.Select(r => r.Launcher));
+    }
+
+    [Fact]
+    public async Task AFirstEverDeployIsSentBackToPlantoirForTheSiteName()
+    {
+        // deploy.py asks what to call the website, and stdin is closed here,
+        // so the launcher would die with an unhandled EOFError minutes in.
+        File.Delete(Path.Combine(_folder, "courses", "ICS3U", ".netlify_sites", "section1.json"));
+        var workspace = Open();
+
+        var refusal = await Assert.ThrowsAsync<AssistRefusal>(() => workspace.Deploy("ICS3U", 1));
+
+        Assert.Contains("has never been deployed", refusal.Message);
+        Assert.Empty(_launcher.Runs);
+    }
+
+    [Fact]
+    public async Task ACloudflareSectionIsSentBackToPlantoirToDeploy()
+    {
+        AddCourse("SNC1W", "Science", 1, deployTarget: "cloudflare_pages");
+        var workspace = Open();
+
+        var refusal = await Assert.ThrowsAsync<AssistRefusal>(() => workspace.Deploy("SNC1W", 1));
+
+        Assert.Contains("needs the account ID Plantoir stores", refusal.Message);
+        Assert.Empty(_launcher.Runs);
+    }
+
+    [Fact]
     public async Task PublishingBuildsAPreviewAndStopsThere()
     {
         Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
