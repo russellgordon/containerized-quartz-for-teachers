@@ -1,0 +1,19 @@
+---
+title: Unit 1, Day 3
+draft: false
+created: __CREATED_CLASS_3__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Warm-up: three landscapes, three provinces — sort them
+2. Naming it: [[Canada's Physical Regions]]
+3. First map work: [[Reading a Topographic Map]]
+
+## Things to do before our next class
+
+- [ ] Finish the topographic map exercise.
