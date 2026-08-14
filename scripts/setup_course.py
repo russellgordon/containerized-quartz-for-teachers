@@ -1209,34 +1209,64 @@ EXAMPLE_CONTENT_CREATED_SENTINEL = "__CREATED__"
 EXAMPLE_CONTENT_CLASS_SENTINEL = re.compile(r"__CREATED_CLASS_(\d+)__")
 
 
-def semester_class_timestamp(class_ordinal: int, reference) -> str:
+# How many school days pass between one class page and the next. A payload
+# sets this in its manifest as `class_weekday_step`: 1 for a course that
+# meets every school day — the shape of a 110-hour semestered credit, about
+# 86 periods from September to January — and 2 for one that meets every
+# other day. Payloads that say nothing keep the every-other-day spacing
+# their arcs were written for.
+DEFAULT_CLASS_WEEKDAY_STEP = 2
+
+
+def is_school_day(date) -> bool:
     """
-    The `created:` timestamp for the K-th class of the semester: every
-    other weekday at 07:00, anchored at September 8 of the current school
-    year (the year whose September has most recently begun, or is about
-    to). Matches the semestered September-to-January shape of the example
-    content, and the 07:00 convention real courses here use.
+    Weekends and the two fixed holidays a September-to-January course runs
+    into: the winter break, and Thanksgiving Monday. A daily arc of about
+    86 periods crosses both, and a class page dated December 25 would be
+    the first thing a teacher noticed. PA days and board-specific closures
+    are NOT modelled — they differ by board, and a date that is a day or
+    two out reads as a timetable difference rather than an error.
+    """
+    if date.weekday() >= 5:
+        return False
+    if (date.month, date.day) >= (12, 22) or (date.month, date.day) <= (1, 2):
+        return False
+    if date.month == 10 and date.weekday() == 0 and 8 <= date.day <= 14:
+        return False                          # Thanksgiving Monday
+    return True
+
+
+def semester_class_timestamp(class_ordinal: int, reference,
+                             weekday_step: int = DEFAULT_CLASS_WEEKDAY_STEP) -> str:
+    """
+    The `created:` timestamp for the K-th class of the semester: at 07:00,
+    `weekday_step` school days apart, anchored at September 8 of the current
+    school year (the year whose September has most recently begun, or is
+    about to). Matches the semestered September-to-January shape of the
+    example content, and the 07:00 convention real courses here use.
     """
     year = reference.year if reference.month >= 8 else reference.year - 1
     date = reference.replace(year=year, month=9, day=8,
                              hour=7, minute=0, second=0, microsecond=0)
-    while date.weekday() >= 5:
+    while not is_school_day(date):
         date += timedelta(days=1)
-    remaining_weekday_steps = (class_ordinal - 1) * 2
-    while remaining_weekday_steps > 0:
+    remaining_steps = (class_ordinal - 1) * max(1, weekday_step)
+    while remaining_steps > 0:
         date += timedelta(days=1)
-        if date.weekday() < 5:
-            remaining_weekday_steps -= 1
+        if is_school_day(date):
+            remaining_steps -= 1
     return date.strftime("%Y-%m-%dT%H:%M:%S.000%z")
 
 
-def replacing_class_sentinels(text: str, reference) -> str:
+def replacing_class_sentinels(text: str, reference,
+                              weekday_step: int = DEFAULT_CLASS_WEEKDAY_STEP) -> str:
     def replace(match):
-        return semester_class_timestamp(int(match.group(1)), reference)
+        return semester_class_timestamp(int(match.group(1)), reference, weekday_step)
     return EXAMPLE_CONTENT_CLASS_SENTINEL.sub(replace, text)
 
 
-def first_use_dates(payload_dir: Path, reference) -> dict:
+def first_use_dates(payload_dir: Path, reference,
+                    weekday_step: int = DEFAULT_CLASS_WEEKDAY_STEP) -> dict:
     """
     Page name -> the date of the FIRST class that links to it. A concept
     taught on Unit 3, Day 5 should carry Unit 3, Day 5's date — that is
@@ -1260,7 +1290,7 @@ def first_use_dates(payload_dir: Path, reference) -> dict:
     link_target_pattern = re.compile(r"!?\[\[([^\]#|]+)")
     dates = {}
     for ordinal, text in class_pages:
-        class_date = semester_class_timestamp(ordinal, reference)
+        class_date = semester_class_timestamp(ordinal, reference, weekday_step)
         for match in link_target_pattern.finditer(text):
             target = match.group(1).strip().split("/")[-1]
             if target and target != "index" and target not in dates:
@@ -1454,7 +1484,8 @@ def install_payload_file(source: Path, destination: Path, now_str: str,
                          first_use_date: str | None = None,
                          shared_sections: list | None = None,
                          course_code: str | None = None,
-                         course_name: str | None = None) -> bool:
+                         course_name: str | None = None,
+                         weekday_step: int = DEFAULT_CLASS_WEEKDAY_STEP) -> bool:
     """
     One file from payload to course. Markdown is adjusted on the way
     through; everything else is copied as-is. Existing files are never
@@ -1469,7 +1500,7 @@ def install_payload_file(source: Path, destination: Path, now_str: str,
     with open(source, "r", encoding="utf-8") as handle:
         text = handle.read()
     if reference is not None:
-        text = replacing_class_sentinels(text, reference)
+        text = replacing_class_sentinels(text, reference, weekday_step)
     if first_use_date is not None:
         text = text.replace(
             f"created: {EXAMPLE_CONTENT_CREATED_SENTINEL}",
@@ -1507,7 +1538,9 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
     """
     page_names = curriculum_page_names(payload_dir, manifest)
     curriculum_folder = manifest.get("curriculum_folder")
-    class_use_dates = first_use_dates(payload_dir, reference) if reference is not None else {}
+    weekday_step = int(manifest.get("class_weekday_step", DEFAULT_CLASS_WEEKDAY_STEP))
+    class_use_dates = (first_use_dates(payload_dir, reference, weekday_step)
+                       if reference is not None else {})
     written = 0
 
     def top_level_allowed(entry: Path, allowed_folders: list, allowed_files: list) -> bool:
@@ -1556,7 +1589,8 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
                                             section_number=sec,
                                             reference=reference,
                                             course_code=course_code,
-                                            course_name=course_name):
+                                            course_name=course_name,
+                                            weekday_step=weekday_step):
                         written += 1
 
     return written

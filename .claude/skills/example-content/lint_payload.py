@@ -13,6 +13,17 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
+# An Ontario credit is 110 hours of scheduled time. A semestered day school
+# runs 75-minute periods, so the arc is about 86 periods plus a three-hour
+# final evaluation — the tolerance either side is one week of classes,
+# because timetables really do differ.
+CREDIT_HOURS = 110
+PERIOD_MINUTES = 75
+EXAM_HOURS = 3
+MINIMUM_HOURS = 104
+MAXIMUM_HOURS = 116
+MINIMUM_REVIEW_CLASSES = 3
+
 
 def lint(course_code: str) -> int:
     root = REPO_ROOT / "support" / "example_content" / course_code
@@ -265,7 +276,93 @@ def lint(course_code: str) -> int:
             f"or from a page a class page links to (Key Links does not count)"
         )
 
+    # ---- Curriculum coverage, and the hours the arc actually accounts for.
+    #
+    # The built site draws a Curriculum Coverage heat map from exactly these
+    # numbers, so a payload can be checked here without building anything.
+    # A red cell on a shipped example course teaches the wrong lesson: it
+    # says a course may leave an expectation untaught.
+    if curriculum_folder:
+        curriculum_dir = root / "shared" / curriculum_folder
+        specific = set()
+        overall = set()
+        for page in curriculum_dir.glob("*.md"):
+            if re.fullmatch(r"[A-F]\d+\.\d+", page.stem):
+                specific.add(page.stem)
+            elif re.match(r"^[A-F]\d+\.\s", page.stem):
+                overall.add(page.stem.split(".")[0])
+
+        addressed_by = {code: set() for code in specific}
+        assessed_by = {code: set() for code in specific}
+        for page in pages:
+            rel = str(page.relative_to(root))
+            if curriculum_folder and rel.startswith(f"shared/{curriculum_folder}/"):
+                continue
+            text = page.read_text(encoding="utf-8")
+            if "draft: true" in text:
+                continue          # not on the site, so it addresses nothing
+            is_assessed = "/Tasks/" in rel.replace("\\", "/")
+            # The same pattern build_site.py counts with, block anchor and
+            # all: SNC1W transcludes as `![[A1.2#^text]]`, which the site
+            # counts and an anchor-blind regex here would silently miss.
+            for match in re.finditer(r"!\[\[([^\]|#]+?)(?:\\?\|[^\]]*)?(?:#[^\]|]*)?\]\]", text):
+                code = match.group(1).strip().split("/")[-1]
+                if code in addressed_by:
+                    addressed_by[code].add(rel)
+                    if is_assessed:
+                        assessed_by[code].add(rel)
+
+        uncovered = sorted(code for code in specific if not addressed_by[code])
+        thin = sorted(code for code in specific if len(addressed_by[code]) == 1)
+        if uncovered:
+            problems.append(
+                f"{len(uncovered)} expectation(s) addressed by NO published page — "
+                f"every specific expectation must be transcluded at least once: "
+                f"{' '.join(uncovered)}"
+            )
+        for overall_code in sorted(overall):
+            related = [code for code in specific if code.startswith(overall_code + ".")]
+            if related and not any(assessed_by[code] for code in related):
+                problems.append(
+                    f"overall expectation {overall_code} is never reached by assessed work — "
+                    f"a page in Tasks must transclude one of its specific expectations"
+                )
+
+    # ---- Hours: an Ontario credit is 110 hours of scheduled time.
+    #
+    # One class page is one period. The exam is not a class page, so its
+    # hours are added separately; several review periods belong inside the
+    # arc, before it.
+    if class_ordinals:
+        hours = len(class_ordinals) * PERIOD_MINUTES / 60 + EXAM_HOURS
+        if not MINIMUM_HOURS <= hours <= MAXIMUM_HOURS:
+            problems.append(
+                f"the arc accounts for {hours:.1f} hours "
+                f"({len(class_ordinals)} periods x {PERIOD_MINUTES} min + {EXAM_HOURS} h exam) — "
+                f"an Ontario credit is {CREDIT_HOURS} hours, so this arc needs about "
+                f"{round((CREDIT_HOURS - EXAM_HOURS) * 60 / PERIOD_MINUTES)} class pages"
+            )
+        review = [page for page in pages if "\n  - review\n" in page.read_text(encoding="utf-8")]
+        if len(review) < MINIMUM_REVIEW_CLASSES:
+            problems.append(
+                f"{len(review)} review class(es) — a course ends with at least "
+                f"{MINIMUM_REVIEW_CLASSES}, tagged `review`, before the final evaluation"
+            )
+        final = [page for page in pages
+                 if "\n  - final-evaluation\n" in page.read_text(encoding="utf-8")]
+        if not final:
+            problems.append(
+                "no final evaluation — the last thing in the course is a page in Tasks "
+                "tagged `final-evaluation`, carrying the exam or culminating task"
+            )
+
     print(f"{len(pages)} pages checked; {len(class_ordinals)} class pages")
+    if curriculum_folder and specific:
+        covered = len(specific) - len(uncovered)
+        print(f"coverage: {covered}/{len(specific)} expectations addressed; "
+              f"{len(thin)} addressed exactly once")
+        if thin:
+            print(f"note     addressed only once (aim for two or more): {' '.join(thin)}")
     for problem in problems:
         print(f"PROBLEM  {problem}")
     for rel in unlinked:
