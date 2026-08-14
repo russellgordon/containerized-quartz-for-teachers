@@ -9,6 +9,11 @@ tags:
   - unit-4
   - review
 ---
+%% This page is an example of a DRAFT: `draft: true` in the frontmatter
+means it is never published to the site. Plan tomorrow today, publish it
+when class ends — just flip draft to false. Delete this comment when you
+reuse the page; comments never appear on the site either. %%
+
 ## Agenda
 
 1. Review, part three: the thinking tasks that gave the most trouble,
