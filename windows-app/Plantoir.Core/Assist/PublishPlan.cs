@@ -164,7 +164,11 @@ public sealed class PublishPlan
         if (Publishes)
         {
             lines.Add("");
-            lines.Add($"Then republish Section {SectionNumber} to {Destination}.");
+            // An assistant rebuilds the PREVIEW and stops there. Making
+            // something visible to students is the teacher's own action, taken
+            // in front of the site they are about to change.
+            lines.Add($"Then rebuild the preview of Section {SectionNumber}, so you can look it over. " +
+                      $"Nothing goes live on {Destination} until you publish it yourself in Plantoir.");
         }
         return string.Join("\n", lines);
     }

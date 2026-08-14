@@ -17,7 +17,7 @@ namespace Plantoir.Mcp;
 ///    from judgement, but because it had no tool for it. Absence is the
 ///    strongest guardrail available, so it is the one relied on.
 ///
-/// 2. **Publishing and hiding are separate tools, not a flag.** The one
+/// 2. **Publishing and unpublishing are separate tools, not a flag.** The one
 ///    genuinely dangerous failure observed was polarity inversion: asked to
 ///    HIDE a page, the model called publish with "include everything it links
 ///    to" set. A boolean is a coin flip under pressure; a verb is not.
@@ -28,7 +28,7 @@ namespace Plantoir.Mcp;
 /// 4. **The write tools take a LIST, and take any page.** Single-page tools
 ///    turned one logical change into 26 deploys, and could not express "hide
 ///    these classes but leave the safety contract up" at all — a shared page
-///    linked from both a protected class and a hidden one is the normal shape
+///    linked from both a protected class and a unpublished one is the normal shape
 ///    of a course.
 ///
 /// Instance methods get a fresh instance per call, so the workspace comes from
@@ -115,13 +115,38 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
             return workspace.ReadPage(found, workspace.Section(found, section), page);
         });
 
+    [McpServerTool(Name = "explain_publishing", Title = "Explain what publishing means here",
+                   Destructive = false, Idempotent = true)]
+    [Description("Call this FIRST, before doing anything else with a section. It returns a short explanation of " +
+                 "what publishing and deploying mean in Plantoir — say it to the teacher word for word. " +
+                 "It only returns the explanation the first time for a given section; after that it says so and " +
+                 "you should get straight on with what they asked. Never re-explain a section you have been told " +
+                 "is already covered.")]
+    public string ExplainPublishing(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section)
+        => Guarded(() =>
+        {
+            var found = workspace.Course(course);
+            int number = workspace.Section(found, section);
+            if (Briefing.AlreadyExplained(workspace.FolderPath, found.Code, number))
+                return $"{found.Code} Section {number} has had this explained already. " +
+                       "Don’t repeat it — carry on with what the teacher asked.";
+
+            var configuration = found.Configuration;
+            string destination = configuration.DeploysToLocalFolder ? "the folder you publish into"
+                : configuration.DeploysToCloudflare ? "Cloudflare Pages" : "Netlify";
+            Briefing.MarkExplained(workspace.FolderPath, found.Code, number);
+            return Briefing.Words(found.Code, number, destination);
+        });
+
     /// <summary>How many of each kind to name before summarising.</summary>
     private const int MostListed = 15;
 
     [McpServerTool(Name = "check_section", Title = "Check what students would see",
                    ReadOnly = true, Destructive = false)]
     [Description("Check a section's website as students would meet it, changing nothing. Reports two things that " +
-                 "publishing and hiding tools cannot see for themselves: links on visible pages that lead to a hidden " +
+                 "publishing and unpublishing tools cannot see for themselves: links on visible pages that lead to a hidden " +
                  "page (students click and find nothing), and pages nothing links to — which are still published and " +
                  "still listed in the site's explorer, so students can see them even though no class points there. " +
                  "Use this before a term starts, and after any bulk change.")]
@@ -143,7 +168,7 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
             text.AppendLine();
 
             if (dangling.Count == 0)
-                text.AppendLine("No visible page links to a hidden one.");
+                text.AppendLine("No visible page links to a unpublished one.");
             else
             {
                 text.AppendLine($"{dangling.Count} link{(dangling.Count == 1 ? "" : "s")} " +
@@ -423,16 +448,16 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         [Description("Only classes strictly before this date. " + DateHelp)] string before = "")
         => Plan(course, section, pages, includeLinked, draft: false, onOrAfter, before);
 
-    [McpServerTool(Name = "plan_hide_pages", Title = "Plan hiding pages", ReadOnly = true, Destructive = false)]
-    [Description("Work out exactly what hiding pages from students would do, WITHOUT changing anything. " +
-                 "Always call this before hide_pages and show the teacher the result. " +
+    [McpServerTool(Name = "plan_unpublish_pages", Title = "Plan unpublishing pages", ReadOnly = true, Destructive = false)]
+    [Description("Work out exactly what unpublishing pages from students would do, WITHOUT changing anything. " +
+                 "Always call this before unpublish_pages and show the teacher the result. " +
                  "Choose pages by name, or by date with onOrAfter/before — \"hide everything from next Monday on\" is " +
-                 "one call. Note that a page linked from a class you are hiding may also be linked from one that must " +
+                 "one call. Note that a page linked from a class you are unpublishing may also be linked from one that must " +
                  "stay up; the plan lists every page, so check it before agreeing.")]
-    public string PlanHidePages(
+    public string PlanUnpublishPages(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
-        [Description("True to also hide every page these pages link to. Choose deliberately; there is no default.")]
+        [Description("True to also unpublish every page these pages link to. Choose deliberately; there is no default.")]
         bool includeLinked,
         [Description("The page titles, for example [\"Unit 2, Day 3\"]. May be empty if you give dates instead.")]
         string[]? pages = null,
@@ -489,8 +514,8 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
                  "\n\nOnly changes made in THIS conversation can be undone this way; the history is not kept " +
                  "afterwards. For anything older, Plantoir's Backups list has a full copy of the course taken " +
                  "before each change. " +
-                 "\n\nIf the website was already republished, undoing the pages does not un-publish the site — " +
-                 "republish the section afterwards to put the live site back in step.")]
+                 "\n\nIf the teacher had already published the section themselves, undoing the pages does not " +
+                 "un-publish the live site — they need to publish again in Plantoir to bring it back in step.")]
     public string UndoLastChange()
     {
         if (workspace.History is not { } history)
@@ -537,22 +562,25 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     [McpServerTool(Name = "publish_class_on", Title = "Publish a day's class",
                    Destructive = false, Idempotent = true)]
-    [Description("Publish the class taught on a given day, along with the pages it links to, then republish the " +
-                 "section's website. Pages that no other class links to take the class's date, and the section's " +
+    [Description("Publish the class taught on a given day, along with the pages it links to, then rebuild the " +
+                 "section's preview. Pages that no other class links to take the class's date, and the section's " +
                  "front page is pointed at the most recent published class. The course is backed up first, " +
                  "automatically. Only call this after plan_publish_class_on and after the teacher has agreed. " +
-                 "This takes several minutes.")]
+                 "\n\nThis changes the teacher's files and rebuilds their PREVIEW. It does not put anything in " +
+                 "front of students: only the teacher can do that, from Plantoir. Tell them to look the preview " +
+                 "over and publish it there when they are happy. " +
+                 "This takes a few minutes.")]
     public async Task<string> PublishClassOn(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
         [Description(ClassDateHelp)] string date,
         IProgress<ProgressNotificationValue> progress,
         CancellationToken cancellation,
-        [Description("False to change the pages but not republish the website yet.")] bool republish = true)
+        [Description("False to change the pages without rebuilding the preview.")] bool preview = true)
     {
         try
         {
-            var plan = PlanForDay(course, section, date, republish);
+            var plan = PlanForDay(course, section, date, preview);
             var result = await workspace.Apply(plan, Relay(progress), cancellation);
             progress.Report(new ProgressNotificationValue { Progress = 100, Total = 100, Message = "Finished" });
 
@@ -583,10 +611,10 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     // ---- Acting ----------------------------------------------------------
 
     [McpServerTool(Name = "publish_pages", Title = "Publish pages", Destructive = false, Idempotent = true)]
-    [Description("Make pages visible to students, optionally along with every page they link to, then republish the " +
+    [Description("Make pages visible to students, optionally along with every page they link to, then rebuild the section preview. " +
                  "section's website. The course is backed up first, automatically. " +
                  "Only call this after plan_publish_pages and after the teacher has agreed to what it said. " +
-                 "Pass every page you intend to change in ONE call: each call with republish=true is a separate deploy. " +
+                 "Pass every page you intend to change in ONE call: each call with preview=true rebuilds the preview again. " +
                  "This takes several minutes.")]
     public Task<string> PublishPages(
         [Description("The course code, for example ICS3U.")] string course,
@@ -598,35 +626,35 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         string[]? pages = null,
         [Description("Only classes on or after this date. " + DateHelp)] string onOrAfter = "",
         [Description("Only classes strictly before this date. " + DateHelp)] string before = "",
-        [Description("False to change the pages but not republish the website yet.")] bool republish = true)
-        => Act(course, section, pages, includeLinked, draft: false, republish, onOrAfter, before,
+        [Description("False to change the pages without rebuilding the preview.")] bool preview = true)
+        => Act(course, section, pages, includeLinked, draft: false, preview, onOrAfter, before,
                progress, cancellation);
 
-    [McpServerTool(Name = "hide_pages", Title = "Hide pages", Destructive = false, Idempotent = true)]
-    [Description("Hide pages from students, optionally along with every page they link to, then republish the " +
+    [McpServerTool(Name = "unpublish_pages", Title = "Unpublish pages", Destructive = false, Idempotent = true)]
+    [Description("Unpublish pages, so students no longer see them, optionally along with every page they link to, then rebuild the section preview. " +
                  "section's website so they disappear from the live site. The course is backed up first, automatically. " +
-                 "Only call this after plan_hide_pages and after the teacher has agreed to what it said. " +
-                 "Pass every page you intend to change in ONE call: each call with republish=true is a separate deploy. " +
+                 "Only call this after plan_unpublish_pages and after the teacher has agreed to what it said. " +
+                 "Pass every page you intend to change in ONE call: each call with preview=true rebuilds the preview again. " +
                  "This takes several minutes.")]
-    public Task<string> HidePages(
+    public Task<string> UnpublishPages(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
-        [Description("True to also hide every page these pages link to.")] bool includeLinked,
+        [Description("True to also unpublish every page these pages link to.")] bool includeLinked,
         IProgress<ProgressNotificationValue> progress,
         CancellationToken cancellation,
-        [Description("The page titles to hide. May be empty if you give dates instead.")]
+        [Description("The page titles to unpublish. May be empty if you give dates instead.")]
         string[]? pages = null,
         [Description("Only classes on or after this date. " + DateHelp)] string onOrAfter = "",
         [Description("Only classes strictly before this date. " + DateHelp)] string before = "",
-        [Description("False to change the pages but not republish the website yet.")] bool republish = true)
-        => Act(course, section, pages, includeLinked, draft: true, republish, onOrAfter, before,
+        [Description("False to change the pages without rebuilding the preview.")] bool preview = true)
+        => Act(course, section, pages, includeLinked, draft: true, preview, onOrAfter, before,
                progress, cancellation);
 
-    [McpServerTool(Name = "republish_section", Title = "Republish a section", Destructive = false, Idempotent = true)]
-    [Description("Rebuild and republish a section's website without changing any page. " +
-                 "Use this after a batch of publish_pages or hide_pages calls made with republish=false. " +
+    [McpServerTool(Name = "rebuild_preview", Title = "Rebuild the preview", Destructive = false, Idempotent = true)]
+    [Description("Rebuild a section preview without changing any page. " +
+                 "Use this after a batch of publish_pages or unpublish_pages calls made with preview=false. " +
                  "This takes several minutes.")]
-    public async Task<string> RepublishSection(
+    public async Task<string> RebuildPreview(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
         IProgress<ProgressNotificationValue> progress,
@@ -634,7 +662,7 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     {
         try
         {
-            var result = await workspace.Republish(course, section, Relay(progress), cancellation);
+            var result = await workspace.RebuildPreview(course, section, Relay(progress), cancellation);
             progress.Report(new ProgressNotificationValue { Progress = 100, Total = 100, Message = "Finished" });
             return result.Message;
         }
@@ -653,16 +681,16 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     // ---- Shared ----------------------------------------------------------
 
     private async Task<string> Act(string course, int section, string[]? pages, bool includeLinked,
-                                   bool draft, bool republish, string onOrAfter, string before,
+                                   bool draft, bool preview, string onOrAfter, string before,
                                    IProgress<ProgressNotificationValue> progress,
                                    CancellationToken cancellation)
     {
         try
         {
             var plan = workspace.PlanPublish(
-                course, section, pages ?? Array.Empty<string>(), includeLinked, draft, republish,
+                course, section, pages ?? Array.Empty<string>(), includeLinked, draft, preview,
                 ParseDate(onOrAfter, "onOrAfter"), ParseDate(before, "before"));
-            if (plan.ChangesNothing && !republish) return plan.Describe();
+            if (plan.ChangesNothing && !preview) return plan.Describe();
 
             var result = await workspace.Apply(plan, Relay(progress), cancellation);
             progress.Report(new ProgressNotificationValue { Progress = 100, Total = 100, Message = "Finished" });

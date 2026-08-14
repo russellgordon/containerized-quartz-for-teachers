@@ -380,7 +380,6 @@ public sealed class AssistWorkspace
 
         // Surface it in the PLAN, so the teacher learns the publish can't
         // happen before agreeing to it rather than after.
-        if (publishes && PublishProblem(course) is { } blocked) problems.Add(blocked);
 
         // Hiding, and only hiding, is subject to the never-hide rules.
         var protectedPaths = draft
@@ -819,27 +818,22 @@ public sealed class AssistWorkspace
     /// session ended up calling publish on a page that happened to need no
     /// changes, purely to trigger a rebuild. That only worked by luck.
     /// </summary>
-    public async Task<AssistResult> Republish(string courseCode, int sectionNumber,
-                                              IProgress<string>? progress = null,
-                                              CancellationToken cancellation = default)
+    public async Task<AssistResult> RebuildPreview(string courseCode, int sectionNumber,
+                                                   IProgress<string>? progress = null,
+                                                   CancellationToken cancellation = default)
     {
         var course = Course(courseCode);
         int section = Section(course, sectionNumber);
-        DeployArguments(course, section);   // refuse now if this course can't publish from here
         RefuseIfPlantoirIsBuilding(course);
-        RefuseFirstPublish(course, section);
 
-        progress?.Report($"Building Section {section} of {course.Code}…");
+        progress?.Report($"Building a preview of Section {section} of {course.Code}…");
         var build = await _launcher.Run("preview", new[] { course.Code, section.ToString(), "--build-only" },
                                         _folder, progress, cancellation);
-        if (!build.Succeeded)
-            return new AssistResult(false, $"Nothing was changed, and the build failed. {build.Message}", null);
-
-        progress?.Report($"Publishing to {DestinationOf(course)}…");
-        var publish = await _launcher.Run("deploy", DeployArguments(course, section), _folder, progress, cancellation);
-        return publish.Succeeded
-            ? new AssistResult(true, $"Republished {course.Code} Section {section} to {DestinationOf(course)}. No content was changed.", null)
-            : new AssistResult(false, $"Nothing was changed, and publishing failed. {publish.Message}", null);
+        return build.Succeeded
+            ? new AssistResult(true,
+                $"Rebuilt the preview of {course.Code} Section {section}. No content was changed. " +
+                "Look it over in Plantoir, and publish it there when you're happy.", null)
+            : new AssistResult(false, $"Nothing was changed, and the preview couldn’t be built. {build.Message}", null);
     }
 
     private static string DestinationOf(Course course) =>
@@ -867,16 +861,10 @@ public sealed class AssistWorkspace
         if (plan.ChangesNothing && !plan.Publishes)
             return new AssistResult(true, "Nothing needed changing.", null);
 
-        // Anything that would make the publish impossible has to be found NOW,
-        // before the backup, the edits and a build that takes minutes. Failing
-        // at the last step would leave the teacher with changed files, a
-        // rebuilt site and a refusal — the worst of all the orders.
-        if (plan.Publishes)
-        {
-            DeployArguments(course, section);
-            RefuseIfPlantoirIsBuilding(course);
-            RefuseFirstPublish(course, section);
-        }
+        // Anything that would stop the build has to be found NOW, before the
+        // backup and the edits. Failing at the last step would leave the
+        // teacher with changed files and a refusal — the worst of the orders.
+        if (plan.Publishes) RefuseIfPlantoirIsBuilding(course);
 
         string backup;
         progress?.Report($"Backing up {course.Code} first…");
@@ -925,23 +913,24 @@ public sealed class AssistWorkspace
         _undo?.End();
 
         if (!plan.Publishes)
-            return new AssistResult(true, Summary(changed, published: false, course.Code, section), backup);
+            return new AssistResult(true, Summary(changed, previewed: false, course.Code, section), backup);
 
-        progress?.Report($"Building Section {section} of {course.Code}…");
+        // An assistant builds a PREVIEW. It never deploys.
+        //
+        // Making something visible to students is the one action a teacher
+        // should always take themselves, in front of the site they are about
+        // to change. Every remaining sharp edge lived on the far side of that
+        // line too — the site-name prompt, the Cloudflare account, the first
+        // publish, the multi-minute deploy — so the safety valve and the
+        // simplification are the same decision.
+        progress?.Report($"Building a preview of Section {section} of {course.Code}…");
         var build = await _launcher.Run("preview", new[] { course.Code, section.ToString(), "--build-only" },
                                         _folder, progress, cancellation);
         if (!build.Succeeded)
             return new AssistResult(false,
-                $"{WhatSurvived(changed)}, but the build failed, so nothing was published. {build.Message}",
-                backup);
+                $"{WhatSurvived(changed)}, but the preview couldn’t be built. {build.Message}", backup);
 
-        progress?.Report($"Publishing to {DestinationOf(course)}…");
-        var publish = await _launcher.Run("deploy", DeployArguments(course, section), _folder, progress, cancellation);
-        if (!publish.Succeeded)
-            return new AssistResult(false,
-                $"{WhatSurvived(changed)}, but publishing failed. {publish.Message}", backup);
-
-        return new AssistResult(true, Summary(changed, published: true, course.Code, section), backup);
+        return new AssistResult(true, Summary(changed, previewed: true, course.Code, section), backup);
     }
 
     /// <summary>
@@ -978,12 +967,15 @@ public sealed class AssistWorkspace
             ? "No page needed changing, and the course was backed up"
             : $"{changed.Count} page{(changed.Count == 1 ? " was" : "s were")} changed and the course was backed up";
 
-    private static string Summary(IReadOnlyList<string> changed, bool published, string code, int section)
+    private static string Summary(IReadOnlyList<string> changed, bool previewed, string code, int section)
     {
         string what = changed.Count == 0
             ? "No page needed changing"
             : $"Changed {changed.Count} page{(changed.Count == 1 ? "" : "s")} ({string.Join(", ", changed)})";
-        return published ? $"{what}, and republished {code} Section {section}." : what + ".";
+        return previewed
+            ? $"{what}, and rebuilt the preview of {code} Section {section}. " +
+              "Look it over in Plantoir, and publish it there when you're happy."
+            : what + ".";
     }
 
     /// <summary>
@@ -1014,55 +1006,7 @@ public sealed class AssistWorkspace
             "Reading and planning are fine meanwhile.");
     }
 
-    /// <summary>
-    /// Refuse the FIRST publish of a section, which has to happen in Plantoir.
-    ///
-    /// When a section has no site marker yet — a new course, or one just
-    /// rolled over — deploy.py asks the teacher what to call the site. That is
-    /// a prompt on stdin, and the server closes stdin deliberately so a
-    /// missing token cannot hang a tool call forever. The prompt would
-    /// therefore hit EOF and the launcher would die with an unhandled
-    /// EOFError, minutes into a build, saying nothing a teacher could act on.
-    ///
-    /// So it is named up front instead. Once the section has been published
-    /// once, the marker exists and every later publish works from here.
-    /// </summary>
-    private void RefuseFirstPublish(Course course, int section)
-    {
-        var configuration = course.Configuration;
-        if (configuration.DeploysToLocalFolder) return;   // a folder needs no site and no name
 
-        string marker = Path.Combine(course.DirectoryPath,
-            configuration.DeploysToCloudflare ? ".cloudflare_sites" : ".netlify_sites",
-            $"section{section}.json");
-        if (File.Exists(marker)) return;
-
-        throw new AssistRefusal(
-            $"{course.Code} Section {section} has never been published, so publishing it asks what to call the " +
-            "website — and that question can only be answered in Plantoir. Publish this section once from there, " +
-            "and everything after that can be done from here.");
-    }
-
-    /// <summary>
-    /// Why this course cannot be published from here, or null when it can.
-    /// A Pages-scoped Cloudflare token cannot list its own account — verified
-    /// against a real token — so the account ID lives in Plantoir's settings
-    /// and only the app can supply it.
-    /// </summary>
-    private static string? PublishProblem(Course course) =>
-        course.Configuration.DeploysToCloudflare
-            ? $"{course.Code} publishes to Cloudflare Pages, which needs the account ID Plantoir stores. " +
-              "Publish this section from Plantoir instead."
-            : null;
-
-    private string[] DeployArguments(Course course, int section)
-    {
-        if (PublishProblem(course) is { } problem) throw new AssistRefusal(problem);
-        var configuration = course.Configuration;
-        if (configuration.DeploysToLocalFolder)
-            return new[] { course.Code, section.ToString(), "--to-folder", configuration.DeployFolderPath };
-        return new[] { course.Code, section.ToString() };
-    }
 
     // ---- Rolling a course onto a real timetable --------------------------
 

@@ -116,7 +116,8 @@ public class AssistWorkspaceTests : IDisposable
             "  courses/ICS3U/section1/All Classes/Unit 2, Day 3.md  (draft: true → false)\n" +
             "  courses/ICS3U/Concepts/Ohm's Law.md  (draftSection1: true → false)\n" +
             "\n" +
-            "Then republish Section 1 to Netlify.",
+            "Then rebuild the preview of Section 1, so you can look it over. " +
+            "Nothing goes live on Netlify until you publish it yourself in Plantoir.",
             plan.Describe());
     }
 
@@ -714,23 +715,6 @@ public class AssistWorkspaceTests : IDisposable
 
     // ---- The first publish, and cutting loose from last year --------------
 
-    [Fact]
-    public async Task TheFirstPublishOfASectionIsSentBackToPlantoir()
-    {
-        // deploy.py asks what to call the site, and the server closes stdin on
-        // purpose — so the prompt would hit EOF and the launcher would die
-        // minutes into a build with an unhandled EOFError. Say it up front.
-        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
-        File.Delete(Path.Combine(_folder, "courses", "ICS3U", ".netlify_sites", "section1.json"));
-        var workspace = Open();
-        var plan = workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false);
-
-        var refusal = await Assert.ThrowsAsync<AssistRefusal>(() => workspace.Apply(plan));
-
-        Assert.Contains("has never been published", refusal.Message);
-        Assert.Contains("can only be answered in Plantoir", refusal.Message);
-        Assert.Empty(_launcher.Runs);
-    }
 
     [Fact]
     public void RollingOverCutsTheSectionLooseButKeepsTheOldSitesDetails()
@@ -1200,18 +1184,58 @@ public class AssistWorkspaceTests : IDisposable
     }
 
     [Fact]
-    public async Task RepublishingRunsTheLaunchersAndChangesNoContent()
+    public async Task RebuildingThePreviewNeverDeploys()
+    {
+        // The safety valve: an assistant builds a preview and stops. Making
+        // something visible to students is the teacher's own action, taken in
+        // Plantoir in front of the site they are about to change.
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
+        var workspace = Open();
+
+        var result = await workspace.RebuildPreview("ICS3U", 1);
+
+        Assert.True(result.Succeeded);
+        Assert.Contains("No content was changed.", result.Message);
+        Assert.Contains("publish it there when you're happy", result.Message);
+        Assert.Equal(new[] { "preview" }, _launcher.Runs.Select(r => r.Launcher));   // never "deploy"
+        Assert.Contains("draft: true",
+            File.ReadAllText(Path.Combine(_folder, "courses", "ICS3U", "section1", "All Classes", "Unit 2, Day 3.md")));
+    }
+
+    [Fact]
+    public async Task PublishingBuildsAPreviewAndStopsThere()
     {
         Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
         var workspace = Open();
 
-        var result = await workspace.Republish("ICS3U", 1);
+        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false));
 
-        Assert.True(result.Succeeded);
-        Assert.Contains("No content was changed.", result.Message);
-        Assert.Equal(new[] { "preview", "deploy" }, _launcher.Runs.Select(r => r.Launcher));
-        Assert.Contains("draft: true",
-            File.ReadAllText(Path.Combine(_folder, "courses", "ICS3U", "section1", "All Classes", "Unit 2, Day 3.md")));
+        Assert.Equal(new[] { "preview" }, _launcher.Runs.Select(r => r.Launcher));
+        Assert.Equal(new[] { "ICS3U", "1", "--build-only" }, _launcher.Runs[0].Arguments);
+    }
+
+    [Fact]
+    public void TheTermsAreExplainedOncePerSectionAndThenRemembered()
+    {
+        // A teacher told "I've published tomorrow's class" will reasonably
+        // hear "students can see it now". Said plainly the first time, and
+        // never again — a tool that re-explains itself gets skimmed.
+        Assert.False(Briefing.AlreadyExplained(_folder, "ICS3U", 1));
+
+        Briefing.MarkExplained(_folder, "ICS3U", 1);
+
+        Assert.True(Briefing.AlreadyExplained(_folder, "ICS3U", 1));
+        Assert.False(Briefing.AlreadyExplained(_folder, "ICS3U", 2));   // per section, not per course
+    }
+
+    [Fact]
+    public void TheBriefingSeparatesPublishingFromDeploying()
+    {
+        string words = Briefing.Words("ICS3U", 1, "Netlify");
+        Assert.Contains("Unpublished pages stay in your folder", words);
+        Assert.Contains("Deploying", words);
+        Assert.Contains("that button is yours, in Plantoir", words);
+        Assert.Contains("Netlify", words);
     }
 
     // ---- Applying --------------------------------------------------------
@@ -1246,20 +1270,6 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Contains("draftSection2: true", text);   // section 2 is none of this operation's business
     }
 
-    [Fact]
-    public async Task PublishingRunsTheBuildAndThenTheDeployLauncher()
-    {
-        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
-        var workspace = Open();
-
-        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false));
-
-        Assert.Equal(2, _launcher.Runs.Count);
-        Assert.Equal("preview", _launcher.Runs[0].Launcher);
-        Assert.Equal(new[] { "ICS3U", "1", "--build-only" }, _launcher.Runs[0].Arguments);
-        Assert.Equal("deploy", _launcher.Runs[1].Launcher);
-        Assert.Equal(new[] { "ICS3U", "1" }, _launcher.Runs[1].Arguments);
-    }
 
     [Fact]
     public async Task AFailedBuildStopsBeforePublishingAndSaysWhatSurvived()
@@ -1271,7 +1281,7 @@ public class AssistWorkspaceTests : IDisposable
         var result = await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false));
 
         Assert.False(result.Succeeded);
-        Assert.Contains("nothing was published", result.Message);
+        Assert.Contains("the preview couldn’t be built", result.Message);
         Assert.Single(_launcher.Runs);                       // deploy never ran
         Assert.NotNull(result.BackupPath);                   // and the backup is still there
     }
@@ -1295,42 +1305,7 @@ public class AssistWorkspaceTests : IDisposable
         Assert.DoesNotContain("pages were changed", result.Message);
     }
 
-    [Fact]
-    public async Task ACloudflareCourseIsRefusedWithTheReasonAndWhereToGo()
-    {
-        // A Pages-scoped token cannot list its own account, so the account ID
-        // lives in Plantoir's settings and only the app can supply it.
-        AddCourse("SNC1W", "Science", 1, deployTarget: "cloudflare_pages");
-        Page("SNC1W", "section1/All Classes/Unit 1, Day 1.md", draft: true);
-        var workspace = Open();
-        var plan = workspace.PlanPublish("SNC1W", 1, new[] { "Unit 1, Day 1" }, includeLinked: false);
 
-        var refusal = await Assert.ThrowsAsync<AssistRefusal>(() => workspace.Apply(plan));
-
-        Assert.Contains("publishes to Cloudflare Pages", refusal.Message);
-        Assert.Contains("Publish this section from Plantoir instead.", refusal.Message);
-
-        // And it refused BEFORE doing anything. Discovering this at the deploy
-        // step would leave the teacher with edited pages, a rebuilt site and a
-        // refusal — the worst possible order.
-        string page = File.ReadAllText(Path.Combine(
-            _folder, "courses", "SNC1W", "section1", "All Classes", "Unit 1, Day 1.md"));
-        Assert.Contains("draft: true", page);              // never edited
-        Assert.Empty(_launcher.Runs);                      // never built
-        Assert.False(Directory.Exists(Path.Combine(_folder, "courses", "_backups")));   // never backed up
-    }
-
-    [Fact]
-    public void ThePlanSaysUpFrontThatACloudflareCourseCannotBePublishedFromHere()
-    {
-        AddCourse("SNC1W", "Science", 1, deployTarget: "cloudflare_pages");
-        Page("SNC1W", "section1/All Classes/Unit 1, Day 1.md", draft: true);
-
-        var plan = Open().PlanPublish("SNC1W", 1, new[] { "Unit 1, Day 1" }, includeLinked: false);
-
-        Assert.Contains(plan.Problems, p => p.Contains("Cloudflare Pages"));
-        Assert.Contains("Publish this section from Plantoir instead.", plan.Describe());
-    }
 
     // ---- Fixtures --------------------------------------------------------
 
