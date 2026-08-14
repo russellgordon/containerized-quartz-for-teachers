@@ -52,9 +52,29 @@ dotnet publish Plantoir\Plantoir.csproj -c Release -r win-x64
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed" }
 $publishDir = "Plantoir\bin\Release\net9.0-windows10.0.19041.0\win-x64\publish"
 
+# ---- The MCP server, into the same folder -----------------------------------
+# A second binary, deliberately: Claude Code launches plantoir-mcp.exe itself,
+# as a stdio subprocess, so it has to stay a plain console app with a path of
+# its own. Folding it into Plantoir.exe would boot the whole WinUI runtime to
+# speak JSON-RPC, and would break the Claude Code integration outright.
+#
+# Shipping it in the SAME folder is what keeps distribution one zip: the app
+# looks beside itself first, and teachers never learn there are two files.
+# Without this step the assistant reports that Plantoir's own tools cannot be
+# found -- on a teacher's machine only, which is the worst place to find out.
+dotnet publish Plantoir.Mcp\Plantoir.Mcp.csproj -c Release -r win-x64
+if ($LASTEXITCODE -ne 0) { throw "dotnet publish (Plantoir.Mcp) failed" }
+$mcpExe = "Plantoir.Mcp\bin\Release\net9.0\win-x64\publish\plantoir-mcp.exe"
+if (-not (Test-Path $mcpExe)) { throw "plantoir-mcp.exe not found at $mcpExe" }
+Copy-Item $mcpExe $publishDir -Force
+Write-Host "Bundled plantoir-mcp.exe ($('{0:N1} MB' -f ((Get-Item $mcpExe).Length / 1MB)))" -ForegroundColor Green
+
 # ---- Sign (our own binaries; third-party DLLs carry their makers' signatures)
 if ($Sign) {
-    $targets = @("$publishDir\Plantoir.exe", "$publishDir\Plantoir.dll", "$publishDir\Plantoir.Core.dll")
+    # plantoir-mcp.exe is ours too, and an unsigned executable sitting beside
+    # signed ones is exactly what SmartScreen complains about.
+    $targets = @("$publishDir\Plantoir.exe", "$publishDir\Plantoir.dll", "$publishDir\Plantoir.Core.dll",
+                 "$publishDir\plantoir-mcp.exe")
     Write-Host "Signing $($targets.Count) binaries via $SigningAccount/$SigningProfile" -ForegroundColor Green
     sign code trusted-signing `
         --trusted-signing-endpoint $SigningEndpoint `

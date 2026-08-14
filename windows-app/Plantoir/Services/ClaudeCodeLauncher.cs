@@ -53,19 +53,38 @@ public static class ClaudeCodeLauncher
         return null;
     }
 
-    /// <summary>The MCP server, which ships beside the app.</summary>
+    /// <summary>
+    /// The MCP server, which ships beside the app.
+    ///
+    /// The shipping case is the first line and the only one that matters to a
+    /// teacher. Everything after it is for running from a dev build, where the
+    /// two projects have separate output trees — and it SEARCHES rather than
+    /// counting directories, because counting is what broke it: the fallback
+    /// used to be a fixed number of "..", which was wrong for every layout
+    /// after MSBuild started inserting a platform folder (<c>bin/x64/Debug</c>
+    /// alongside <c>bin/Debug</c>). It resolved to a path that had never
+    /// existed, so the assistant reported that Plantoir's own tools could not
+    /// be found — the one message that reads as "this feature is broken"
+    /// rather than "this build is arranged differently".
+    /// </summary>
     public static string? FindServer()
     {
         string? beside = Path.GetDirectoryName(Environment.ProcessPath);
         if (beside is null) return null;
-        foreach (string candidate in new[]
-                 {
-                     Path.Combine(beside, "plantoir-mcp.exe"),
-                     // Running from a dev build, where each project has its own output.
-                     Path.GetFullPath(Path.Combine(beside, "..", "..", "..", "..",
-                         "Plantoir.Mcp", "bin", "Debug", "net9.0", "win-x64", "plantoir-mcp.exe")),
-                 })
-            if (File.Exists(candidate)) return candidate;
+
+        string shipped = Path.Combine(beside, "plantoir-mcp.exe");
+        if (File.Exists(shipped)) return shipped;
+
+        // Walk up looking for the sibling project's output, whatever the tree
+        // between here and it happens to look like.
+        var directory = new DirectoryInfo(beside);
+        for (int up = 0; up < 8 && directory is not null; up++, directory = directory.Parent)
+            foreach (string configuration in new[] { "Debug", "Release" })
+            {
+                string candidate = Path.Combine(directory.FullName, "Plantoir.Mcp",
+                    "bin", configuration, "net9.0", "win-x64", "plantoir-mcp.exe");
+                if (File.Exists(candidate)) return candidate;
+            }
         return null;
     }
 
