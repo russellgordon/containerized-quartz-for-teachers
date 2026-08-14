@@ -1520,6 +1520,50 @@ public sealed class AssistWorkspace
     /// The one place anything here writes a page, so the session's undo
     /// history sees every change without each caller having to remember.
     /// </summary>
+    // ---- Deploying later ---------------------------------------------------
+
+    /// <summary>
+    /// Work out what scheduling a deploy would mean, without scheduling one.
+    ///
+    /// The check that matters is the last one: whether the classes the teacher
+    /// is thinking of are actually PUBLISHED. A scheduled deploy that runs
+    /// perfectly at half six and ships a site without tomorrow's class is the
+    /// exact failure worth catching here, while somebody is awake to fix it.
+    /// </summary>
+    public ScheduledDeploy PlanScheduledDeploy(string courseCode, int sectionNumber, DateTime when,
+                                               IReadOnlyList<string>? classesToCheck = null)
+    {
+        var course = Course(courseCode);
+        int section = Section(course, sectionNumber);
+
+        if (when <= DateTime.Now)
+            throw new AssistRefusal(
+                $"{when:dddd d MMMM, h:mm tt} has already passed. Give a time still to come.");
+
+        var unpublished = new List<string>();
+        foreach (string title in classesToCheck ?? Array.Empty<string>())
+        {
+            try
+            {
+                string path = Page(course, section, title);
+                if (PageFrontmatter.IsDraft(File.ReadAllText(path), section))
+                    unpublished.Add(Path.GetFileNameWithoutExtension(path));
+            }
+            // A page that cannot be found is reported by the caller's own
+            // lookup; it is not this check's job to refuse over it.
+            catch (AssistRefusal) { }
+        }
+
+        return new ScheduledDeploy
+        {
+            CourseCode = course.Code,
+            SectionNumber = section,
+            When = when,
+            UnpublishedClasses = unpublished,
+            Destination = DestinationOf(course),
+        };
+    }
+
     // ---- Curriculum expectations on a page ---------------------------------
 
     /// <summary>One curriculum expectation: its code, and what it actually says.</summary>

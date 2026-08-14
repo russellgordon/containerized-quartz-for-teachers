@@ -231,6 +231,77 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     private const string BlockHelp =
         "The block or section letter the teacher is timetabled in, for example F.";
 
+    private const string WhenHelp =
+        "When to deploy, as YYYY-MM-DD HH:MM in 24-hour time — for example \"2026-09-09 06:30\".";
+
+    [McpServerTool(Name = "plan_scheduled_deploy", Title = "Plan a deploy for later",
+                   ReadOnly = true, Destructive = false)]
+    [Description("Work out what scheduling a deploy would mean, scheduling nothing. Use this for \"deploy " +
+                 "tomorrow's class at 6:30 AM\". Pass the class pages the teacher has in mind as `classes` and " +
+                 "it will check whether they are actually PUBLISHED — a deploy that runs perfectly and ships a " +
+                 "site without tomorrow's class is the failure worth catching while somebody is awake. " +
+                 "Read the whole thing to the teacher, including what has to be true of their computer.")]
+    public string PlanScheduledDeploy(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description(WhenHelp)] string when,
+        [Description("The class pages this deploy is meant to publish, separated by commas. Checked for whether they are published yet.")]
+        string classes = "")
+        => Guarded(() =>
+        {
+            if (!DateTime.TryParse(when, out var moment))
+                throw new AssistRefusal($"“{when}” isn't a time I can read. Use YYYY-MM-DD HH:MM.");
+            return workspace.PlanScheduledDeploy(course, section, moment,
+                classes.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                .Describe();
+        });
+
+    [McpServerTool(Name = "schedule_deploy", Title = "Deploy at a set time",
+                   Destructive = false, Idempotent = true)]
+    [Description("Ask this computer to deploy a section at a set time. Call plan_scheduled_deploy FIRST and " +
+                 "read it out — especially that the computer must be ON and AWAKE at that moment, plugged in " +
+                 "if it is a laptop, with the lid open. Plantoir does not wake it. Replaces any deploy already " +
+                 "scheduled for the same section. Use cancel_scheduled_deploy to call it off.")]
+    public string ScheduleDeploy(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description(WhenHelp)] string when)
+        => Guarded(() =>
+        {
+            if (!DateTime.TryParse(when, out var moment))
+                throw new AssistRefusal($"“{when}” isn't a time I can read. Use YYYY-MM-DD HH:MM.");
+
+            var plan = workspace.PlanScheduledDeploy(course, section, moment);
+            if (TaskScheduling.Schedule(plan.TaskName, workspace.FolderPath,
+                                        plan.CourseCode, plan.SectionNumber, moment) is { } problem)
+                throw new AssistRefusal($"Nothing was scheduled. {problem}");
+
+            return $"Scheduled: {plan.CourseCode} Section {plan.SectionNumber} deploys to " +
+                   $"{plan.Destination} at {moment:dddd d MMMM, h:mm tt}.\n\n" +
+                   "Remember this computer has to be on and awake then — plugged in if it is a laptop, " +
+                   "lid open. Plantoir cannot wake it up. Say the word and I'll cancel it.";
+        });
+
+    [McpServerTool(Name = "cancel_scheduled_deploy", Title = "Call off a scheduled deploy",
+                   Destructive = false, Idempotent = true)]
+    [Description("Call off a deploy that was scheduled for a section. Safe to call when nothing is scheduled.")]
+    public string CancelScheduledDeploy(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section)
+        => Guarded(() =>
+        {
+            var found = workspace.Course(course);
+            int number = workspace.Section(found, section);
+            string name = $"Plantoir deploy {found.Code} section {number}";
+
+            if (!TaskScheduling.Exists(name))
+                return $"There is no deploy scheduled for {found.Code} Section {number}.";
+
+            return TaskScheduling.Cancel(name) is { } problem
+                ? $"That could not be cancelled: {problem}"
+                : $"Cancelled the scheduled deploy for {found.Code} Section {number}.";
+        });
+
     [McpServerTool(Name = "list_curriculum_expectations", Title = "List curriculum expectations",
                    ReadOnly = true, Destructive = false)]
     [Description("List this course's curriculum expectations with their FULL WORDING, changing nothing. " +
