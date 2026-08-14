@@ -11,9 +11,9 @@ tags:
 Everything on this page rests on one equilibrium, and it is the
 equilibrium of water with itself:
 
-$$2\text{H}_2\text{O(l)} \rightleftharpoons \text{H}_3\text{O}^+\text{(aq)} + \text{OH}^-\text{(aq)}$$
+$$\ce{2H2O(l) <=> H3O+(aq) + OH-(aq)}$$
 
-$$K_w = [\text{H}_3\text{O}^+][\text{OH}^-] = 1.0 \times 10^{-14}\ \text{at 25}\ ^\circ\text{C}$$
+$$K_w = [\ce{H3O+}][\ce{OH-}] = 1.0 \times 10^{-14}\ \text{at 25}\ ^\circ\text{C}$$
 
 **The temperature matters and is not a formality.** $K_w$ is an
 equilibrium constant like any other, so it changes with temperature —
@@ -23,7 +23,7 @@ tell you.
 
 The four relationships you will use constantly:
 
-$$\text{pH} = -\log[\text{H}_3\text{O}^+] \qquad \text{pOH} = -\log[\text{OH}^-] \qquad \text{pH} + \text{pOH} = 14.00 \qquad [\text{H}_3\text{O}^+] = 10^{-\text{pH}}$$
+$$\text{pH} = -\log[\ce{H3O+}] \qquad \text{pOH} = -\log[\ce{OH-}] \qquad \text{pH} + \text{pOH} = 14.00 \qquad [\ce{H3O+}] = 10^{-\text{pH}}$$
 
 **Significant figures in a logarithm work differently, and this catches
 everybody once.** Only the digits **after** the decimal point in a pH
@@ -33,17 +33,17 @@ The "2" in pH 2.60 is not a significant figure at all — it is telling
 you the power of ten. See
 [[Working with Logarithms in Chemistry]].
 
-**1.** A solution has $[\text{H}_3\text{O}^+] = 2.5 \times 10^{-3}$
-mol/L at 25 °C. Find its pH, its pOH, and $[\text{OH}^-]$.
+**1.** A solution has $[\ce{H3O+}] = 2.5 \times 10^{-3}$
+mol/L at 25 °C. Find its pH, its pOH, and $[\ce{OH-}]$.
 
 > [!success]- Answer 1
 > $\text{pH} = -\log(2.5 \times 10^{-3}) = 2.60$
 >
 > $\text{pOH} = 14.00 - 2.60 = 11.40$
 >
-> $[\text{OH}^-] = \frac{K_w}{[\text{H}_3\text{O}^+]} = \frac{1.0 \times 10^{-14}}{2.5 \times 10^{-3}} = 4.0 \times 10^{-12}\ \text{mol/L}$
+> $[\ce{OH-}] = \frac{K_w}{[\ce{H3O+}]} = \frac{1.0 \times 10^{-14}}{2.5 \times 10^{-3}} = 4.0 \times 10^{-12}\ \text{mol/L}$
 >
-> **pH 2.60, pOH 11.40, $[\text{OH}^-] = 4.0 \times 10^{-12}$ mol/L.**
+> **pH 2.60, pOH 11.40, $[\ce{OH-}] = 4.0 \times 10^{-12}$ mol/L.**
 >
 > **Two decimal places on the pH**, because $2.5 \times 10^{-3}$ has two
 > significant figures. Writing 2.60206 would claim a precision the data
@@ -65,19 +65,19 @@ and the concentration of hydronium ion in it.
 > Sodium hydroxide is a **strong base** — it dissociates completely, so
 > there is no equilibrium to solve and no ICE table needed:
 >
-> $[\text{OH}^-] = 0.0250\ \text{mol/L}$
+> $[\ce{OH-}] = 0.0250\ \text{mol/L}$
 >
 > $\text{pOH} = -\log(0.0250) = 1.602$
 >
 > $\text{pH} = 14.000 - 1.602 = 12.398$
 >
-> $[\text{H}_3\text{O}^+] = \frac{1.0 \times 10^{-14}}{0.0250} = 4.0 \times 10^{-13}\ \text{mol/L}$
+> $[\ce{H3O+}] = \frac{1.0 \times 10^{-14}}{0.0250} = 4.0 \times 10^{-13}\ \text{mol/L}$
 >
 > **pH 12.398**, three decimals for three significant figures in the
 > concentration.
 >
 > **Route check.** Two routes exist — via pOH as above, or via
-> $[\text{H}_3\text{O}^+]$ and then straight to pH. They must agree:
+> $[\ce{H3O+}]$ and then straight to pH. They must agree:
 > $-\log(4.0 \times 10^{-13}) = 12.40$, which matches to the precision
 > that a two-figure $K_w$ allows. Getting the same answer two ways is
 > worth more than getting it once carefully.
@@ -91,14 +91,14 @@ and the concentration of hydronium ion in it.
 2.88 at 25 °C. Calculate $K_a$ and the percentage ionisation.
 
 > [!success]- Answer 3
-> $$\text{HA(aq)} + \text{H}_2\text{O(l)} \rightleftharpoons \text{A}^-\text{(aq)} + \text{H}_3\text{O}^+\text{(aq)}$$
+> $$\ce{HA(aq) + H2O(l) <=> A-(aq) + H3O+(aq)}$$
 >
 > From the pH:
-> $[\text{H}_3\text{O}^+] = 10^{-2.88} = 1.32 \times 10^{-3}\ \text{mol/L}$
+> $[\ce{H3O+}] = 10^{-2.88} = 1.32 \times 10^{-3}\ \text{mol/L}$
 >
 > **The ICE table**, with $x$ the amount that ionised:
 >
-> | | $\text{HA}$ | $\text{A}^-$ | $\text{H}_3\text{O}^+$ |
+> | | $\ce{HA}$ | $\ce{A-}$ | $\ce{H3O+}$ |
 > | --- | --- | --- | --- |
 > | Initial | 0.100 | 0 | ~0 |
 > | Change | $-x$ | $+x$ | $+x$ |
@@ -108,9 +108,9 @@ and the concentration of hydronium ion in it.
 > $x = 1.32 \times 10^{-3}$ mol/L, and every other equilibrium
 > concentration follows:
 >
-> $\begin{aligned} [\text{A}^-] &= 1.32 \times 10^{-3}\ \text{mol/L} \\ [\text{HA}] &= 0.100 - 0.00132 = 0.0987\ \text{mol/L} \end{aligned}$
+> $\begin{aligned} [\ce{A-}] &= 1.32 \times 10^{-3}\ \text{mol/L} \\ [\ce{HA}] &= 0.100 - 0.00132 = 0.0987\ \text{mol/L} \end{aligned}$
 >
-> $K_a = \frac{[\text{A}^-][\text{H}_3\text{O}^+]}{[\text{HA}]} = \frac{(1.32 \times 10^{-3})^2}{0.0987} = \frac{1.74 \times 10^{-6}}{0.0987} = 1.8 \times 10^{-5}$
+> $K_a = \frac{[\ce{A-}][\ce{H3O+}]}{[\ce{HA}]} = \frac{(1.32 \times 10^{-3})^2}{0.0987} = \frac{1.74 \times 10^{-6}}{0.0987} = 1.8 \times 10^{-5}$
 >
 > **$K_a = 1.8 \times 10^{-5}$**, two significant figures, because the
 > pH was given to two decimal places.
@@ -136,7 +136,7 @@ and the concentration of hydronium ion in it.
 > This is question 3 run backwards, and it needs the small-$x$
 > approximation and the check that goes with it.
 >
-> | | $\text{HA}$ | $\text{A}^-$ | $\text{H}_3\text{O}^+$ |
+> | | $\ce{HA}$ | $\ce{A-}$ | $\ce{H3O+}$ |
 > | --- | --- | --- | --- |
 > | Initial | 0.250 | 0 | ~0 |
 > | Change | $-x$ | $+x$ | $+x$ |
@@ -180,7 +180,7 @@ dynamic equilibrium to explain why those two answers are not the same.
 > [!success]- Answer 5
 > **Hydrochloric acid** is strong, so it ionises completely:
 >
-> $[\text{H}_3\text{O}^+] = 0.100\ \text{mol/L} \quad \Rightarrow \quad \text{pH} = 1.000$
+> $[\ce{H3O+}] = 0.100\ \text{mol/L} \quad \Rightarrow \quad \text{pH} = 1.000$
 >
 > **Ethanoic acid** is weak. With the approximation, tested as in
 > question 4:
@@ -207,7 +207,7 @@ dynamic equilibrium to explain why those two answers are not the same.
 > of the protons are still attached to their molecules at any instant —
 > but as hydroxide removes the free hydronium, the equilibrium
 >
-> $$\text{CH}_3\text{COOH(aq)} + \text{H}_2\text{O(l)} \rightleftharpoons \text{CH}_3\text{COO}^-\text{(aq)} + \text{H}_3\text{O}^+\text{(aq)}$$
+> $$\ce{CH3COOH(aq) + H2O(l) <=> CH3COO-(aq) + H3O+(aq)}$$
 >
 > responds by shifting right and releasing more. The reservoir empties
 > completely, one small portion at a time.
@@ -235,12 +235,12 @@ why is methyl orange not?
 > ethanoic acid has been converted to ethanoate ion, and ethanoate is
 > the **conjugate base of a weak acid**, so it reacts with water:
 >
-> $$\text{CH}_3\text{COO}^-\text{(aq)} + \text{H}_2\text{O(l)} \rightleftharpoons \text{CH}_3\text{COOH(aq)} + \text{OH}^-\text{(aq)}$$
+> $$\ce{CH3COO-(aq) + H2O(l) <=> CH3COOH(aq) + OH-(aq)}$$
 >
 > Concentration of ethanoate: $2.50 \times 10^{-3}$ mol in a total
 > volume of $25.00 + 25.00 = 50.00$ mL:
 >
-> $[\text{CH}_3\text{COO}^-] = \frac{2.50 \times 10^{-3}\ \text{mol}}{0.05000\ \text{L}} = 0.0500\ \text{mol/L}$
+> $[\ce{CH3COO-}] = \frac{2.50 \times 10^{-3}\ \text{mol}}{0.05000\ \text{L}} = 0.0500\ \text{mol/L}$
 >
 > $K_b = \frac{K_w}{K_a} = \frac{1.0 \times 10^{-14}}{1.8 \times 10^{-5}} = 5.6 \times 10^{-10}$
 >
@@ -279,9 +279,9 @@ sodium hydroxide has been added, and what is special about that point?
 > Both are in the same solution, so whatever the total volume is, their
 > **concentrations are equal**.
 >
-> $K_a = \frac{[\text{A}^-][\text{H}_3\text{O}^+]}{[\text{HA}]}$, and
-> with $[\text{A}^-] = [\text{HA}]$ those two cancel, leaving
-> $[\text{H}_3\text{O}^+] = K_a$ exactly.
+> $K_a = \frac{[\ce{A-}][\ce{H3O+}]}{[\ce{HA}]}$, and
+> with $[\ce{A-}] = [\ce{HA}]$ those two cancel, leaving
+> $[\ce{H3O+}] = K_a$ exactly.
 >
 > $\text{pH} = -\log(1.8 \times 10^{-5}) = 4.74$
 >
@@ -300,7 +300,7 @@ sodium hydroxide has been added, and what is special about that point?
 >
 > The same idea, written as the Henderson–Hasselbalch equation:
 >
-> $$\text{pH} = \text{p}K_a + \log\frac{[\text{A}^-]}{[\text{HA}]}$$
+> $$\text{pH} = \text{p}K_a + \log\frac{[\ce{A-}]}{[\ce{HA}]}$$
 >
 > When the ratio is 1 the logarithm is 0 and the pH is $\text{p}K_a$,
 > which is the result above. This equation is the design tool for
@@ -316,7 +316,7 @@ of it ionises."*
 > [!success]- Answer 8
 > **(a) The scale is logarithmic, so the factor is a thousand.**
 >
-> $\begin{aligned} \text{pH } 3: \quad [\text{H}_3\text{O}^+] &= 1 \times 10^{-3}\ \text{mol/L} \\ \text{pH } 6: \quad [\text{H}_3\text{O}^+] &= 1 \times 10^{-6}\ \text{mol/L} \end{aligned}$
+> $\begin{aligned} \text{pH } 3: \quad [\ce{H3O+}] &= 1 \times 10^{-3}\ \text{mol/L} \\ \text{pH } 6: \quad [\ce{H3O+}] &= 1 \times 10^{-6}\ \text{mol/L} \end{aligned}$
 >
 > The ratio is $10^{3}$, so the pH 3 solution has **one thousand
 > times** the hydronium concentration, not twice it. Each whole pH unit

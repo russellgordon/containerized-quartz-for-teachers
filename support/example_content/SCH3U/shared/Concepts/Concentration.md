@@ -26,7 +26,7 @@ solution in litres.
 $$c = \frac{n}{V}$$
 
 Its units are mol/L, and it is written in square brackets when you are
-naming a species — $[\text{Cl}^-] = 0.20$ mol/L means the chloride ion
+naming a species — $[\ce{Cl-}] = 0.20$ mol/L means the chloride ion
 concentration is 0.20 mol/L.
 
 Two traps live in that one small equation.

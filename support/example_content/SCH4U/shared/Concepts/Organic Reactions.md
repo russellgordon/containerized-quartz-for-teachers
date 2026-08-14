@@ -47,7 +47,7 @@ and by Unit 4 you will have the language for that — see
 opens, and something attaches to each of the two carbons. **No atoms are
 lost.**
 
-$$\text{CH}_2\text{=CH}_2 + \text{Br}_2 \rightarrow \text{CH}_2\text{BrCH}_2\text{Br}$$
+$$\ce{CH2=CH2 + Br2 -> CH2BrCH2Br}$$
 
 That specific reaction is the bromine water test. Orange-brown bromine
 water added to an alkene loses its colour immediately, because the
@@ -55,7 +55,7 @@ bromine is consumed. Added to an alkane in the dark, nothing happens.
 The alkene is **unsaturated** — it has room to take more atoms on — and
 the alkane is **saturated** and does not.
 
-Addition also covers hydrogenation (adding $\text{H}_2$ over a metal
+Addition also covers hydrogenation (adding $\ce{H2}$ over a metal
 catalyst, which is how liquid oils are hardened into solid fats),
 adding a hydrogen halide, and adding water across a double bond with an
 acid catalyst to make an alcohol.
@@ -63,11 +63,11 @@ acid catalyst to make an alcohol.
 **Substitution** replaces one atom or group with another. Alkanes are
 unreactive, and it takes ultraviolet light to start one:
 
-$$\text{CH}_4 + \text{Cl}_2 \rightarrow \text{CH}_3\text{Cl} + \text{HCl}$$
+$$\ce{CH4 + Cl2 -> CH3Cl + HCl}$$
 
 The contrast with addition is the thing to hold on to. In an addition,
 the product contains everything that went in. In a substitution,
-something leaves — here, as $\text{HCl}$.
+something leaves — here, as $\ce{HCl}$.
 
 **Elimination** is addition reversed: a small molecule is pulled out and
 a multiple bond forms in the gap. Heating an alcohol with concentrated
@@ -90,10 +90,10 @@ structure:
 | --- | --- | --- | --- |
 | Primary | aldehyde | carboxylic acid | two hydrogens on that carbon, so two rungs available |
 | Secondary | ketone | — | only one hydrogen there; the ketone has none left |
-| Tertiary | no reaction | — | no hydrogen on the carbon bearing the $-\text{OH}$ at all |
+| Tertiary | no reaction | — | no hydrogen on the carbon bearing the $-\ce{OH}$ at all |
 
 That table is not three separate facts. It is one fact — *oxidation
-removes a hydrogen from the carbon carrying the $-\text{OH}$* — applied
+removes a hydrogen from the carbon carrying the $-\ce{OH}$* — applied
 to three structures. Count the hydrogens on that carbon and the table
 writes itself.
 
@@ -115,7 +115,7 @@ lethal in an unventilated room.
 Warm a carboxylic acid with an alcohol and a trace of acid catalyst, and
 you get an ester and water:
 
-$$\text{CH}_3\text{COOH} + \text{C}_2\text{H}_5\text{OH} \rightleftharpoons \text{CH}_3\text{COOC}_2\text{H}_5 + \text{H}_2\text{O}$$
+$$\ce{CH3COOH + C2H5OH <=> CH3COOC2H5 + H2O}$$
 
 This is a **condensation** reaction: two molecules join and a small
 molecule — here water — is expelled from the join. That mechanism is

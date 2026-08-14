@@ -42,14 +42,14 @@ compound, and the charges tell you the formula — that part is just
 [[Naming and Formulas]] run forwards. Two non-metals make a molecular
 compound, and here the ratio is genuinely not predictable from
 first principles, which is why sulfur and oxygen can give you either
-$\text{SO}_2$ or $\text{SO}_3$ depending on conditions.
+$\ce{SO2}$ or $\ce{SO3}$ depending on conditions.
 
 The synthesis reactions worth memorising are the **oxides with water**,
 because they explain something you can taste and measure:
 
-$$\text{CaO(s)} + \text{H}_2\text{O(l)} \rightarrow \text{Ca(OH)}_2\text{(aq)}$$
+$$\ce{CaO(s) + H2O(l) -> Ca(OH)2(aq)}$$
 
-$$\text{CO}_2\text{(g)} + \text{H}_2\text{O(l)} \rightarrow \text{H}_2\text{CO}_3\text{(aq)}$$
+$$\ce{CO2(g) + H2O(l) -> H2CO3(aq)}$$
 
 A **metal** oxide plus water gives a hydroxide — a base. A **non-metal**
 oxide plus water gives an acid. That single pair of rules is most of
@@ -61,11 +61,11 @@ oxide plus water gives an acid. That single pair of rules is most of
 will be asked:
 
 - A binary compound splits into its elements:
-  $2\text{H}_2\text{O(l)} \rightarrow 2\text{H}_2\text{(g)} + \text{O}_2\text{(g)}$
+  $\ce{2H2O(l) -> 2H2(g) + O2(g)}$
 - A metal carbonate gives the metal oxide and carbon dioxide:
-  $\text{CaCO}_3\text{(s)} \rightarrow \text{CaO(s)} + \text{CO}_2\text{(g)}$
+  $\ce{CaCO3(s) -> CaO(s) + CO2(g)}$
 - A metal hydroxide gives the metal oxide and water:
-  $\text{Ca(OH)}_2\text{(s)} \rightarrow \text{CaO(s)} + \text{H}_2\text{O(g)}$
+  $\ce{Ca(OH)2(s) -> CaO(s) + H2O(g)}$
 - A hydrate gives the anhydrous compound and water, which is the
   reaction you will exploit in [[Molar Mass and Composition]].
 
@@ -85,7 +85,7 @@ that ordering is the **activity series** you built by experiment in
 The rule: **a more reactive element displaces a less reactive one from
 its compound. A less reactive element does nothing at all.**
 
-$$\text{Mg(s)} + 2\text{HCl(aq)} \rightarrow \text{MgCl}_2\text{(aq)} + \text{H}_2\text{(g)}$$
+$$\ce{Mg(s) + 2HCl(aq) -> MgCl2(aq) + H2(g)}$$
 
 Magnesium sits above hydrogen, so it pushes hydrogen out of the acid and
 the tube fizzes. Copper sits below hydrogen, so copper in hydrochloric
@@ -96,7 +96,7 @@ Halogens have their own series, in plain periodic-table order:
 fluorine, chlorine, bromine, iodine, most reactive first. A halogen
 displaces any halide below it:
 
-$$\text{Cl}_2\text{(aq)} + 2\text{NaBr(aq)} \rightarrow 2\text{NaCl(aq)} + \text{Br}_2\text{(aq)}$$
+$$\ce{Cl2(aq) + 2NaBr(aq) -> 2NaCl(aq) + Br2(aq)}$$
 
 and bromine in sodium chloride solution does nothing. Both series are
 laid out in [[The Activity Series]].
@@ -114,19 +114,19 @@ There are exactly three ways for something to leave.
 [[Solubility Rules]]. If either one is insoluble, it falls out as a solid
 and the reaction goes.
 
-$$\text{AgNO}_3\text{(aq)} + \text{NaCl(aq)} \rightarrow \text{AgCl(s)} + \text{NaNO}_3\text{(aq)}$$
+$$\ce{AgNO3(aq) + NaCl(aq) -> AgCl(s) + NaNO3(aq)}$$
 
 **A gas escapes.** A carbonate with an acid is the usual case. The
 carbonic acid you would predict is unstable and decomposes as fast as it
 forms, which is why the products look like three things instead of two.
 
-$$\text{Na}_2\text{CO}_3\text{(aq)} + 2\text{HCl(aq)} \rightarrow 2\text{NaCl(aq)} + \text{H}_2\text{O(l)} + \text{CO}_2\text{(g)}$$
+$$\ce{Na2CO3(aq) + 2HCl(aq) -> 2NaCl(aq) + H2O(l) + CO2(g)}$$
 
 **Water forms.** This is neutralisation, and the water molecule locks up
-an $\text{H}^+$ and an $\text{OH}^-$ where neither can act as an ion any
+an $\ce{H+}$ and an $\ce{OH-}$ where neither can act as an ion any
 longer.
 
-$$\text{HCl(aq)} + \text{NaOH(aq)} \rightarrow \text{NaCl(aq)} + \text{H}_2\text{O(l)}$$
+$$\ce{HCl(aq) + NaOH(aq) -> NaCl(aq) + H2O(l)}$$
 
 Naming which of the three is happening is the difference between
 explaining a reaction and labelling it. The full machinery for writing

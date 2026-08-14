@@ -22,8 +22,8 @@ The **empirical formula** is the simplest whole-number ratio of atoms in
 the compound. The **molecular formula** is the actual number of each
 kind of atom in one molecule.
 
-Glucose is $\text{C}_6\text{H}_{12}\text{O}_6$. Its atoms are in the
-ratio 1 : 2 : 1, so its empirical formula is $\text{CH}_2\text{O}$ —
+Glucose is $\ce{C6H12O6}$. Its atoms are in the
+ratio 1 : 2 : 1, so its empirical formula is $\ce{CH2O}$ —
 which is also the empirical formula of methanal, of ethanoic acid, and
 of several sugars that are not glucose. An empirical formula alone does
 not identify a compound, and that is not a flaw in the idea; it is the
@@ -32,11 +32,11 @@ honest limit of what a mass measurement can tell you.
 Two cases where the distinction disappears:
 
 - **Ionic compounds have no molecular formula at all**, because they
-  have no molecules. $\text{NaCl}$ and $\text{CaCl}_2$ are empirical
+  have no molecules. $\ce{NaCl}$ and $\ce{CaCl2}$ are empirical
   formulas describing a lattice ratio, as
   [[Ionic and Covalent Bonding]] set out. There is nothing more to find.
 - **Some molecules are already at their simplest ratio.** Water is
-  $\text{H}_2\text{O}$ both ways; there is no $\text{HO}$ to reduce to.
+  $\ce{H2O}$ both ways; there is no $\ce{HO}$ to reduce to.
 
 ## The procedure
 
@@ -66,11 +66,11 @@ Your magnesium result runs through it in four lines. Suppose 0.243 g of
 magnesium gave 0.403 g of oxide. The oxygen was not weighed directly —
 it came out of the air — so you get it by subtraction: 0.160 g.
 
-$$n(\text{Mg}) = \frac{0.243}{24.31} = 0.0100 \text{ mol} \qquad n(\text{O}) = \frac{0.160}{16.00} = 0.0100 \text{ mol}$$
+$$n(\ce{Mg}) = \frac{0.243}{24.31} = 0.0100 \text{ mol} \qquad n(\ce{O}) = \frac{0.160}{16.00} = 0.0100 \text{ mol}$$
 
 Divide both by the smaller and you get 1 : 1. The formula is
-$\text{MgO}$ — which is also what the charges predict, $\text{Mg}^{2+}$
-with $\text{O}^{2-}$, so two completely independent methods agree. When
+$\ce{MgO}$ — which is also what the charges predict, $\ce{Mg^2+}$
+with $\ce{O^2-}$, so two completely independent methods agree. When
 that happens, believe the result.
 
 A percentage example, for the more usual case. A compound is 40.0%
@@ -79,7 +79,7 @@ carbon, 6.7% hydrogen, and 53.3% oxygen by mass. Take 100 g:
 $$\frac{40.0}{12.01} = 3.33 \qquad \frac{6.7}{1.01} = 6.63 \qquad \frac{53.3}{16.00} = 3.33$$
 
 Divide by 3.33 and you get 1 : 1.99 : 1, which is 1 : 2 : 1, so the
-empirical formula is $\text{CH}_2\text{O}$.
+empirical formula is $\ce{CH2O}$.
 
 ## From empirical to molecular
 
@@ -90,13 +90,13 @@ measurement.
 
 $$\text{multiplier} = \frac{\text{molar mass of the compound}}{\text{molar mass of the empirical formula}}$$
 
-For the compound above, $\text{CH}_2\text{O}$ has a molar mass of
+For the compound above, $\ce{CH2O}$ has a molar mass of
 30.03 g/mol. If a separate experiment says the compound's molar mass is
 180.16 g/mol, then
 
 $$\frac{180.16}{30.03} = 6.00$$
 
-and the molecular formula is $\text{C}_6\text{H}_{12}\text{O}_6$ —
+and the molecular formula is $\ce{C6H12O6}$ —
 glucose. Had the measured molar mass been 60.05, the multiplier would
 be 2 and the compound would be ethanoic acid instead. Same empirical
 formula, same percentage composition, different substance.
@@ -114,7 +114,7 @@ call, so here is how to make it defensibly.
 
 **Round when you are within about 0.02.** A ratio of 1.99 is 2. A ratio
 of 3.01 is 3. Measurement noise of that size is expected, and pretending
-otherwise produces absurd formulas like $\text{C}_{199}\text{H}_{398}$.
+otherwise produces absurd formulas like $\ce{C199H398}$.
 
 **Multiply when you are near a familiar fraction.** 1.50 is not 2 and
 must never be rounded to 2 — it is $\frac{3}{2}$, so multiply
@@ -126,14 +126,14 @@ just the awkward one.
 anything simple. That is the number telling you something went wrong
 upstream: a mass recorded incorrectly, an incomplete reaction, a product
 that absorbed water before it was weighed, or a sample that was not
-pure. Chasing it with a multiplier of 5 to force $\text{C}_5$ is how you
+pure. Chasing it with a multiplier of 5 to force $\ce{C5}$ is how you
 end up defending a formula that does not exist.
 
 > [!note] Say what the data cannot support
-> If your magnesium oxide comes out at $\text{Mg}_{1}\text{O}_{1.3}$,
-> the useful sentence is not "so the formula is $\text{MgO}$" and it is
-> certainly not "$\text{Mg}_{10}\text{O}_{13}$". It is: "the ratio came
-> out at 1 : 1.3, higher in oxygen than $\text{MgO}$ requires, which is
+> If your magnesium oxide comes out at $\ce{Mg1O_{1.3}}$,
+> the useful sentence is not "so the formula is $\ce{MgO}$" and it is
+> certainly not "$\ce{Mg10O13}$". It is: "the ratio came
+> out at 1 : 1.3, higher in oxygen than $\ce{MgO}$ requires, which is
 > consistent with some magnesium nitride forming as well since the
 > crucible was open to the air." That sentence gets full marks. The
 > other two do not.

@@ -68,7 +68,7 @@ that are simply not decodable.
 | **Amount** and **mass** | In chemistry, *amount* means a number of moles. A mass is in grams. "A large amount" and "a large mass" are different claims |
 | **Concentrated** and **strong** | Concentrated is how much solute per litre. Strong is how completely a substance ionises in water. A dilute solution of a strong acid is perfectly ordinary, and so is a concentrated solution of a weak one |
 | **Dilute** and **weak** | The same distinction, from the other end. These two are the most commonly swapped words in the whole course |
-| **Molecule** and **formula unit** | Sodium chloride has no molecules — it is a lattice, and $\text{NaCl}$ names the ratio. Water does have molecules |
+| **Molecule** and **formula unit** | Sodium chloride has no molecules — it is a lattice, and $\ce{NaCl}$ names the ratio. Water does have molecules |
 | **Solution**, **solvent**, **solute** | The solute dissolves, the solvent does the dissolving, and the solution is both together |
 | **Reactant** and **reagent** | A reactant is consumed in the equation. A reagent is anything you add — which may be a catalyst, an indicator, or a solvent |
 
@@ -80,17 +80,17 @@ say which you meant. Write it out. See [[The Mole]].
 ## Write chemistry so it can be read
 
 Formulas need their subscripts and charges to mean anything.
-$\text{H}_2\text{O}$ is water; H2O is a typing accident that happens to
+$\ce{H2O}$ is water; H2O is a typing accident that happens to
 be readable. Reactions get a proper arrow, states get their brackets,
 and ions get their charges:
 
-$$2\text{H}_2\text{(g)} + \text{O}_2\text{(g)} \rightarrow 2\text{H}_2\text{O(l)}$$
+$$\ce{2H2(g) + O2(g) -> 2H2O(l)}$$
 
-$$\text{CaCO}_3\text{(s)} \rightarrow \text{CaO(s)} + \text{CO}_2\text{(g)}$$
+$$\ce{CaCO3(s) -> CaO(s) + CO2(g)}$$
 
-Sulfate is $\text{SO}_4^{2-}$, not SO4-2. The charge sits after the
+Sulfate is $\ce{SO4^2-}$, not SO4-2. The charge sits after the
 subscript, and the number comes before the sign. Getting this right is
-not fussiness — $\text{SO}_4^{2-}$ and $\text{SO}_3^{2-}$ are different
+not fussiness — $\ce{SO4^2-}$ and $\ce{SO3^2-}$ are different
 substances and the difference is one character. The full list is in
 [[Polyatomic Ions]].
 
@@ -99,8 +99,8 @@ Three more conventions that carry meaning:
 - **States are not optional** in this course. `(aq)` and `(s)` are the
   whole content of a precipitation equation — without them,
   [[Precipitation and Net Ionic Equations]] says nothing.
-- **Coefficients go in front, subscripts stay put.** $2\text{H}_2\text{O}$
-  is two water molecules; $\text{H}_4\text{O}_2$ is not a substance.
+- **Coefficients go in front, subscripts stay put.** $\ce{2H2O}$
+  is two water molecules; $\ce{H4O2}$ is not a substance.
   Changing a subscript to balance an equation changes what reacted.
 - **Capitals matter.** Co is cobalt; CO is carbon monoxide.
 

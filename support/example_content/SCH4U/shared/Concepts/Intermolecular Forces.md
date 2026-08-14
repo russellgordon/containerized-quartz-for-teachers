@@ -21,7 +21,7 @@ gave you [[Polarity]], and polarity gives you this.
 The single most useful sentence in this topic:
 ==boiling a molecular substance breaks no chemical bonds at all.==
 
-Steam is still $\text{H}_2\text{O}$. Every O–H bond that existed in the
+Steam is still $\ce{H2O}$. Every O–H bond that existed in the
 liquid exists in the vapour. What boiling does is separate whole
 molecules from each other, and the attractions holding molecules
 *together* — **intermolecular** forces — are far weaker than the bonds
@@ -44,8 +44,8 @@ Their strength grows with **polarisability**: how easily the cloud
 distorts. More electrons, and electrons held further out, mean a squashier
 cloud and a stronger force. That is why the halogens go from gas to
 liquid to solid down the group with nothing else changing:
-$\text{F}_2$ and $\text{Cl}_2$ are gases, $\text{Br}_2$ is a liquid, and
-$\text{I}_2$ is a solid at room temperature, and every one of them is
+$\ce{F2}$ and $\ce{Cl2}$ are gases, $\ce{Br2}$ is a liquid, and
+$\ce{I2}$ is a solid at room temperature, and every one of them is
 non-polar.
 
 Shape matters too, because dispersion needs contact. Pentane, a straight
@@ -90,9 +90,9 @@ that the ranking is useless applied blindly.
 
 | Comparison | Which is stronger, and why |
 | --- | --- |
-| $\text{H}_2\text{O}$ against $\text{H}_2\text{S}$ | water, hugely — hydrogen bonding against dipole–dipole |
+| $\ce{H2O}$ against $\ce{H2S}$ | water, hugely — hydrogen bonding against dipole–dipole |
 | Hexane against methanol | almost a tie — hexane's dispersion nearly matches methanol's hydrogen bonding |
-| $\text{I}_2$ against $\text{HCl}$ | iodine — dispersion in a big polarisable molecule beats a small permanent dipole |
+| $\ce{I2}$ against $\ce{HCl}$ | iodine — dispersion in a big polarisable molecule beats a small permanent dipole |
 | Pentane against 2,2-dimethylpropane | pentane — same force, more contact area |
 
 The second row is the one that should unsettle you. Hexane is
@@ -103,11 +103,11 @@ argue from the type of force alone.
 
 The cleanest evidence for hydrogen bonding is a graph you can construct
 from a data table. Boiling points of the group 16 hydrides climb steadily
-with mass — $\text{H}_2\text{S}$, then $\text{H}_2\text{Se}$, then
-$\text{H}_2\text{Te}$ — exactly as dispersion predicts. Extend that line
+with mass — $\ce{H2S}$, then $\ce{H2Se}$, then
+$\ce{H2Te}$ — exactly as dispersion predicts. Extend that line
 backwards and water should boil far below zero. It boils at 100 °C. The
 gap between the line and the measurement is what hydrogen bonding is
-worth, and the same gap appears for $\text{NH}_3$ and $\text{HF}$ and
+worth, and the same gap appears for $\ce{NH3}$ and $\ce{HF}$ and
 for nothing else in those rows.
 
 Water pays for that in ways that matter: a high heat capacity that makes

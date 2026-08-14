@@ -34,10 +34,10 @@ temperature. Is that a disagreement, or is that agreement?
 
 Before you answer, notice what the question is hiding. For
 
-$$\text{H}_2\text{(g)} + \text{I}_2\text{(g)} \rightleftharpoons 2\text{HI(g)}$$
+$$\ce{H2(g) + I2(g) <=> 2HI(g)}$$
 
-the constant is $K_c = \frac{[\text{HI}]^2}{[\text{H}_2][\text{I}_2]}$,
-and the numerator is **squared**. A 5% error in the measured $[\text{HI}]$
+the constant is $K_c = \frac{[\ce{HI}]^2}{[\ce{H2}][\ce{I2}]}$,
+and the numerator is **squared**. A 5% error in the measured $[\ce{HI}]$
 lands as roughly 10% in $K_c$ before anything else has gone wrong. The
 gap between 48 and 54 is about 12%. Now answer.
 

@@ -64,17 +64,17 @@ pattern can only be repeated.
 ## Write chemistry so it can be read
 
 Formulas need their subscripts and charges to mean anything.
-$\text{H}_2\text{O}$ is water; H2O is a typing accident that happens to
+$\ce{H2O}$ is water; H2O is a typing accident that happens to
 be readable. Reactions get a proper arrow, states get their brackets,
 and ions get their charges:
 
-$$2\text{H}_2 + \text{O}_2 \rightarrow 2\text{H}_2\text{O}$$
+$$\ce{2H2 + O2 -> 2H2O}$$
 
-$$\text{CaCO}_3\text{(s)} \rightarrow \text{CaO(s)} + \text{CO}_2\text{(g)}$$
+$$\ce{CaCO3(s) -> CaO(s) + CO2(g)}$$
 
-Sulfate is $\text{SO}_4^{2-}$, not SO4-2. The charge sits after the
+Sulfate is $\ce{SO4^2-}$, not SO4-2. The charge sits after the
 subscript and the number comes before the sign. Getting this right is
-not fussiness — $\text{SO}_4^{2-}$ and $\text{SO}_3^{2-}$ are different
+not fussiness — $\ce{SO4^2-}$ and $\ce{SO3^2-}$ are different
 substances and the difference is one character.
 
 ## Units, always

@@ -30,9 +30,9 @@ Keep [[Functional Groups at a Glance]] open beside you.
 
 **1.** Define *saturated hydrocarbon*, *unsaturated hydrocarbon*,
 *structural isomer*, and *stereoisomer*. Then classify each of these as
-saturated or unsaturated: ethane $\text{C}_2\text{H}_6$, ethene
-$\text{C}_2\text{H}_4$, propane $\text{C}_3\text{H}_8$, cyclohexane
-$\text{C}_6\text{H}_{12}$.
+saturated or unsaturated: ethane $\ce{C2H6}$, ethene
+$\ce{C2H4}$, propane $\ce{C3H8}$, cyclohexane
+$\ce{C6H12}$.
 
 > [!success]- Answer 1
 > **Saturated hydrocarbon**: a compound of carbon and hydrogen only, in
@@ -54,14 +54,14 @@ $\text{C}_6\text{H}_{12}$.
 >
 > | Compound | Formula | Classification |
 > | --- | --- | --- |
-> | Ethane | $\text{C}_2\text{H}_6$ | Saturated |
-> | Ethene | $\text{C}_2\text{H}_4$ | Unsaturated — one C=C |
-> | Propane | $\text{C}_3\text{H}_8$ | Saturated |
-> | Cyclohexane | $\text{C}_6\text{H}_{12}$ | **Saturated** |
+> | Ethane | $\ce{C2H6}$ | Saturated |
+> | Ethene | $\ce{C2H4}$ | Unsaturated — one C=C |
+> | Propane | $\ce{C3H8}$ | Saturated |
+> | Cyclohexane | $\ce{C6H12}$ | **Saturated** |
 >
 > **The last one is the trap and it is worth the whole question.** A
 > quick test people learn is that an acyclic alkane fits
-> $\text{C}_n\text{H}_{2n+2}$, so a compound with fewer hydrogens than
+> $\ce{C_{n}H_{2n+2}}$, so a compound with fewer hydrogens than
 > that must be unsaturated. Cyclohexane has 12 hydrogens where
 > $2(6) + 2 = 14$ would be expected, so the test flags it — and the
 > test is wrong here.
@@ -74,20 +74,20 @@ $\text{C}_6\text{H}_{12}$.
 > double bond in ethene will add bromine across itself and the ring in
 > cyclohexane will not.
 
-**2.** Name $\text{CH}_3\text{CH}_2\text{CH}(\text{CH}_3)\text{CH}_2\text{CH}_3$.
+**2.** Name $\ce{CH3CH2CH}(\ce{CH3})\ce{CH2CH3}$.
 Then draw and name all five structural isomers of
-$\text{C}_6\text{H}_{14}$.
+$\ce{C6H14}$.
 
 > [!success]- Answer 2
 > The longest continuous chain is **five** carbons — walk along the
 > written formula and count the carbons in the backbone, ignoring the
-> $(\text{CH}_3)$ in brackets, which hangs off. Five is pentane. The
+> $\ce{(CH3)}$ in brackets, which hangs off. Five is pentane. The
 > methyl group sits on the middle carbon, and the middle carbon is C3
 > whichever end you start from.
 >
-> **3-methylpentane**, molecular formula $\text{C}_6\text{H}_{14}$.
+> **3-methylpentane**, molecular formula $\ce{C6H14}$.
 >
-> The five isomers of $\text{C}_6\text{H}_{14}$:
+> The five isomers of $\ce{C6H14}$:
 >
 > | Name | Longest chain | Substituents |
 > | --- | --- | --- |
@@ -102,7 +102,7 @@ $\text{C}_6\text{H}_{14}$.
 > **Every isomer must have the formula you started with.** Count
 > 2,3-dimethylbutane: four carbons in the chain plus two in the methyls
 > is six; the hydrogens come to fourteen.
-> $\text{C}_6\text{H}_{14}$, correct.
+> $\ce{C6H14}$, correct.
 >
 > **No two entries may be the same molecule under different names.** It
 > is easy to "find" a sixth isomer by writing 4-methylpentane, but
@@ -110,7 +110,7 @@ $\text{C}_6\text{H}_{14}$.
 > is already on the list. Whenever you think you have found an extra
 > one, renumber it from both ends before you get attached to it.
 
-**3.** Name $\text{CH}_3\text{CH}_2\text{CH}=\text{CHCH}_3$. Why is the
+**3.** Name $\ce{CH3CH2CH=CHCH3}$. Why is the
 locant part of the name at all?
 
 > [!success]- Answer 3
@@ -121,7 +121,7 @@ locant part of the name at all?
 > From the left the double bond starts at carbon 3; from the right it
 > starts at carbon 2. Two is lower.
 >
-> **Pent-2-ene**, molecular formula $\text{C}_5\text{H}_{10}$.
+> **Pent-2-ene**, molecular formula $\ce{C5H10}$.
 >
 > The locant is there because **"pentene" names three different
 > substances.** Pent-1-ene and pent-2-ene have the same formula, are
@@ -143,21 +143,21 @@ locant part of the name at all?
 > **2,3-dimethylbutane**: a four-carbon chain, with a methyl on C2 and a
 > methyl on C3.
 >
-> $\text{CH}_3\text{CH}(\text{CH}_3)\text{CH}(\text{CH}_3)\text{CH}_3$
+> $\ce{CH3CH}(\ce{CH3})\ce{CH}(\ce{CH3})\ce{CH3}$
 >
 > Carbons: 4 in the chain plus 2 in the methyls, so 6.
 > Hydrogens: $3 + 1 + 3 + 1 + 3 + 3 = 14$.
-> **$\text{C}_6\text{H}_{14}$** — and it is on the list in question 2,
+> **$\ce{C6H14}$** — and it is on the list in question 2,
 > as it should be.
 >
 > **3-ethyl-2-methylhexane**: a six-carbon chain, ethyl on C3, methyl on
 > C2.
 >
-> $\text{CH}_3\text{CH}(\text{CH}_3)\text{CH}(\text{CH}_2\text{CH}_3)\text{CH}_2\text{CH}_2\text{CH}_3$
+> $\ce{CH3CH}(\ce{CH3})\ce{CH}(\ce{CH2CH3})\ce{CH2CH2CH3}$
 >
 > Carbons: 6 in the chain, 2 in the ethyl, 1 in the methyl, so 9.
-> Hydrogens: 20. **$\text{C}_9\text{H}_{20}$**, which fits
-> $\text{C}_n\text{H}_{2n+2}$ for $n = 9$, so it is a saturated acyclic
+> Hydrogens: 20. **$\ce{C9H20}$**, which fits
+> $\ce{C_{n}H_{2n+2}}$ for $n = 9$, so it is a saturated acyclic
 > alkane and the count is self-consistent.
 >
 > **Two things this name is quietly telling you.** *Ethyl* comes before
@@ -170,26 +170,26 @@ locant part of the name at all?
 
 **5.** Name each of these, and say which class of compound it belongs
 to.
-*(a)* $\text{CH}_3\text{CH}_2\text{CH}_2\text{OH}$
-*(b)* $\text{CH}_3\text{CH}(\text{OH})\text{CH}_3$
-*(c)* $\text{CH}_3\text{CH}_2\text{CHO}$
-*(d)* $\text{CH}_3\text{COCH}_3$
-*(e)* $\text{CH}_3\text{CH}_2\text{COOH}$
-*(f)* $\text{CH}_3\text{CH}_2\text{OCH}_2\text{CH}_3$
-*(g)* $\text{CH}_3\text{CH}_2\text{NH}_2$
-*(h)* $\text{CH}_3\text{CONH}_2$
+*(a)* $\ce{CH3CH2CH2OH}$
+*(b)* $\ce{CH3CH}(\ce{OH})\ce{CH3}$
+*(c)* $\ce{CH3CH2CHO}$
+*(d)* $\ce{CH3COCH3}$
+*(e)* $\ce{CH3CH2COOH}$
+*(f)* $\ce{CH3CH2OCH2CH3}$
+*(g)* $\ce{CH3CH2NH2}$
+*(h)* $\ce{CH3CONH2}$
 
 > [!success]- Answer 5
 > | | Structure | Name | Class |
 > | --- | --- | --- | --- |
-> | (a) | $\text{CH}_3\text{CH}_2\text{CH}_2\text{OH}$ | Propan-1-ol | Alcohol |
-> | (b) | $\text{CH}_3\text{CH}(\text{OH})\text{CH}_3$ | Propan-2-ol | Alcohol |
-> | (c) | $\text{CH}_3\text{CH}_2\text{CHO}$ | Propanal | Aldehyde |
-> | (d) | $\text{CH}_3\text{COCH}_3$ | Propanone | Ketone |
-> | (e) | $\text{CH}_3\text{CH}_2\text{COOH}$ | Propanoic acid | Carboxylic acid |
-> | (f) | $\text{CH}_3\text{CH}_2\text{OCH}_2\text{CH}_3$ | Ethoxyethane | Ether |
-> | (g) | $\text{CH}_3\text{CH}_2\text{NH}_2$ | Ethanamine | Amine |
-> | (h) | $\text{CH}_3\text{CONH}_2$ | Ethanamide | Amide |
+> | (a) | $\ce{CH3CH2CH2OH}$ | Propan-1-ol | Alcohol |
+> | (b) | $\ce{CH3CH}(\ce{OH})\ce{CH3}$ | Propan-2-ol | Alcohol |
+> | (c) | $\ce{CH3CH2CHO}$ | Propanal | Aldehyde |
+> | (d) | $\ce{CH3COCH3}$ | Propanone | Ketone |
+> | (e) | $\ce{CH3CH2COOH}$ | Propanoic acid | Carboxylic acid |
+> | (f) | $\ce{CH3CH2OCH2CH3}$ | Ethoxyethane | Ether |
+> | (g) | $\ce{CH3CH2NH2}$ | Ethanamine | Amine |
+> | (h) | $\ce{CH3CONH2}$ | Ethanamide | Amide |
 >
 > **(a) and (b) need their locants** because propan-1-ol and propan-2-ol
 > are different substances with different boiling points and different
@@ -201,7 +201,7 @@ to.
 > starts needing a number again.
 >
 > **(c) and (d) are structural isomers** — both are
-> $\text{C}_3\text{H}_6\text{O}$, joined up differently, and they behave
+> $\ce{C3H6O}$, joined up differently, and they behave
 > completely differently. That pair is exactly the one
 > [[Identifying an Unknown Organic Compound]] asks you to separate at
 > the bench.
@@ -212,14 +212,14 @@ to.
 > "diethyl ether", and both are understood.
 
 **6.** How many structural isomers have the molecular formula
-$\text{C}_4\text{H}_{10}\text{O}$? Name them, and sort them by class.
+$\ce{C4H10O}$? Name them, and sort them by class.
 
 > [!success]- Answer 6
 > **Seven** — four alcohols and three ethers.
 >
 > The alcohols, from the two carbon skeletons available to four carbons:
 >
-> | Skeleton | Position of $-\text{OH}$ | Name |
+> | Skeleton | Position of $-\ce{OH}$ | Name |
 > | --- | --- | --- |
 > | Straight chain | C1 | Butan-1-ol |
 > | Straight chain | C2 | Butan-2-ol |
@@ -238,7 +238,7 @@ $\text{C}_4\text{H}_{10}\text{O}$? Name them, and sort them by class.
 > by inspiration: first list the carbon skeletons — for four carbons
 > there are two, straight and branched — then place the oxygen in every
 > distinct position on each. Distinct is the operative word: putting the
-> $-\text{OH}$ on C3 of butane gives butan-2-ol renumbered, not a new
+> $-\ce{OH}$ on C3 of butane gives butan-2-ol renumbered, not a new
 > compound.
 >
 > **The chemistry across that list is not uniform**, which is the reason
@@ -264,18 +264,18 @@ and compare the two molecular formulas.
 > supplies a four-carbon *butyl* group; ethanoic acid supplies the
 > two-carbon *ethanoate* part.
 >
-> $\text{CH}_3\text{COOH} + \text{C}_4\text{H}_9\text{OH} \rightleftharpoons \text{CH}_3\text{COOC}_4\text{H}_9 + \text{H}_2\text{O}$
+> $\ce{CH3COOH + C4H9OH <=> CH3COOC4H9 + H2O}$
 >
 > **Ethyl butanoate** is the other way round: *ethyl* comes from
 > **ethanol**, and *butanoate* comes from **butanoic acid**.
 >
-> Both esters are $\text{C}_6\text{H}_{12}\text{O}_2$. They contain the
+> Both esters are $\ce{C6H12O2}$. They contain the
 > same atoms in the same numbers, they are made from different starting
 > materials, and they are **different substances** — which you can
 > confirm without any equipment at all, because they do not smell the
 > same.
 >
-> The reaction arrow is drawn as $\rightleftharpoons$ on purpose.
+> The reaction arrow is a double one — `<=>` — on purpose.
 > Esterification does not run to completion; it settles at an
 > equilibrium with water and the starting materials still present, which
 > is why the industrial version removes the water as it forms. That
@@ -303,7 +303,7 @@ give the correct name.
 >
 > **(b) 1-methylpropane — a substituent at the end of a chain is not a
 > substituent.** Draw it:
-> $\text{CH}_3-\text{CH}_2-\text{CH}_2$ with a methyl on the first
+> $\ce{CH3-CH2-CH2}$ with a methyl on the first
 > carbon. Now count the longest continuous chain in what you have drawn.
 > It is four carbons, in a straight line.
 >
@@ -327,7 +327,7 @@ give the correct name.
 > end of the ethyl group, go through the middle carbon, and out along
 > the propane chain: that is **four** carbons, not three.
 >
-> Correct: **2-methylbutane**, $\text{C}_5\text{H}_{12}$ — which is the
+> Correct: **2-methylbutane**, $\ce{C5H12}$ — which is the
 > same compound as the corrected version of (a), by a different wrong
 > route.
 >

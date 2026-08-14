@@ -113,8 +113,8 @@ the model stops, and this course marks you on knowing where models stop.
 
 **A base with no hydroxide in it.** The Arrhenius picture of acids and
 bases, which served chemistry well for decades, required a base to
-supply $[\text{OH}^-]$. Ammonia has no oxygen and no hydroxide anywhere
-in $\text{NH}_3$, and a solution of it is unmistakably basic. For years
+supply $[\ce{OH-}]$. Ammonia has no oxygen and no hydroxide anywhere
+in $\ce{NH3}$, and a solution of it is unmistakably basic. For years
 this sat in textbooks as an exception to be memorised. Then Brønsted and
 Lowry, independently and within months of each other, proposed that an
 acid donates a proton and a base accepts one — at which point ammonia
@@ -127,7 +127,7 @@ anybody treated it as a fault in the model rather than a quirk of one
 compound.
 
 **A molecule that refused to behave like its formula.** Benzene,
-$\text{C}_6\text{H}_6$, has far too few hydrogens for six carbons, which
+$\ce{C6H6}$, has far too few hydrogens for six carbons, which
 by every rule of the time meant it should react like a highly
 unsaturated compound and add things eagerly across its bonds. It does
 not. It substitutes instead, and stubbornly. Kekulé's ring structure

@@ -15,33 +15,33 @@ Balance by changing **coefficients only**. Changing a subscript changes
 the substance, which is not balancing — it is inventing.
 
 **1.** Balance each equation and name its type.
-(a) $\text{Mg} + \text{O}_2 \rightarrow \text{MgO}$
-(b) $\text{H}_2\text{O}_2 \rightarrow \text{H}_2\text{O} + \text{O}_2$
-(c) $\text{Zn} + \text{HCl} \rightarrow \text{ZnCl}_2 + \text{H}_2$
-(d) $\text{AgNO}_3 + \text{NaCl} \rightarrow \text{AgCl} + \text{NaNO}_3$
+(a) $\ce{Mg + O2 -> MgO}$
+(b) $\ce{H2O2 -> H2O + O2}$
+(c) $\ce{Zn + HCl -> ZnCl2 + H2}$
+(d) $\ce{AgNO3 + NaCl -> AgCl + NaNO3}$
 
 > [!success]- Answer 1
-> **(a)** $2\text{Mg} + \text{O}_2 \rightarrow 2\text{MgO}$
+> **(a)** $\ce{2Mg + O2 -> 2MgO}$
 >
 > Oxygen arrives as a diatomic molecule, so there are two oxygen atoms
 > on the left and the right side must have an even number too. Two
 > magnesium oxides need two magnesiums. Count to check: Mg 2 and 2, O 2
 > and 2. **Synthesis** — two substances in, one out.
 >
-> **(b)** $2\text{H}_2\text{O}_2 \rightarrow 2\text{H}_2\text{O} + \text{O}_2$
+> **(b)** $\ce{2H2O2 -> 2H2O + O2}$
 >
 > Count: H 4 and 4, O 4 and $2 + 2 = 4$. **Decomposition** — one
 > substance in, more than one out. This is the reaction you ran at
 > station B in [[Sorting Five Reactions]].
 >
-> **(c)** $\text{Zn} + 2\text{HCl} \rightarrow \text{ZnCl}_2 + \text{H}_2$
+> **(c)** $\ce{Zn + 2HCl -> ZnCl2 + H2}$
 >
 > Count: Zn 1 and 1, H 2 and 2, Cl 2 and 2. **Single displacement** — an
 > element and a compound in, a different element and a different
 > compound out. Zinc has taken chlorine's partner away from hydrogen.
 >
 > **(d)** Already balanced as written:
-> $\text{AgNO}_3 + \text{NaCl} \rightarrow \text{AgCl} + \text{NaNO}_3$
+> $\ce{AgNO3 + NaCl -> AgCl + NaNO3}$
 >
 > Count: Ag 1 and 1, Na 1 and 1, Cl 1 and 1, and the nitrate travels
 > intact so you can count it as one unit on each side. **Double
@@ -53,37 +53,37 @@ the substance, which is not balancing — it is inventing.
 > usually does.
 
 **2.** Balance these combustion equations.
-(a) $\text{C}_3\text{H}_8 + \text{O}_2 \rightarrow \text{CO}_2 + \text{H}_2\text{O}$
-(b) $\text{C}_2\text{H}_6 + \text{O}_2 \rightarrow \text{CO}_2 + \text{H}_2\text{O}$
-(c) $\text{C}_2\text{H}_5\text{OH} + \text{O}_2 \rightarrow \text{CO}_2 + \text{H}_2\text{O}$
+(a) $\ce{C3H8 + O2 -> CO2 + H2O}$
+(b) $\ce{C2H6 + O2 -> CO2 + H2O}$
+(c) $\ce{C2H5OH + O2 -> CO2 + H2O}$
 
 > [!success]- Answer 2
 > The reliable order for a hydrocarbon: **carbon first, hydrogen second,
 > oxygen last**, because oxygen appears in two products and is the one
 > you want free to adjust at the end.
 >
-> **(a)** Three carbons, so 3 $\text{CO}_2$. Eight hydrogens, so
-> 4 $\text{H}_2\text{O}$. Now count the oxygen on the right:
-> $(3 \times 2) + (4 \times 1) = 10$, which needs 5 $\text{O}_2$.
+> **(a)** Three carbons, so 3 $\ce{CO2}$. Eight hydrogens, so
+> 4 $\ce{H2O}$. Now count the oxygen on the right:
+> $(3 \times 2) + (4 \times 1) = 10$, which needs 5 $\ce{O2}$.
 >
-> $$\text{C}_3\text{H}_8 + 5\text{O}_2 \rightarrow 3\text{CO}_2 + 4\text{H}_2\text{O}$$
+> $$\ce{C3H8 + 5O2 -> 3CO2 + 4H2O}$$
 >
-> **(b)** Two carbons, so 2 $\text{CO}_2$. Six hydrogens, so
-> 3 $\text{H}_2\text{O}$. Oxygen on the right: $4 + 3 = 7$, which needs
-> 3.5 $\text{O}_2$. Fractions are legitimate chemistry and untidy
+> **(b)** Two carbons, so 2 $\ce{CO2}$. Six hydrogens, so
+> 3 $\ce{H2O}$. Oxygen on the right: $4 + 3 = 7$, which needs
+> 3.5 $\ce{O2}$. Fractions are legitimate chemistry and untidy
 > convention, so double everything:
 >
-> $$2\text{C}_2\text{H}_6 + 7\text{O}_2 \rightarrow 4\text{CO}_2 + 6\text{H}_2\text{O}$$
+> $$\ce{2C2H6 + 7O2 -> 4CO2 + 6H2O}$$
 >
 > Check: C 4 and 4, H 12 and 12, O 14 and $8 + 6 = 14$.
 >
 > **(c)** Ethanol has an oxygen of its own, which is the whole point of
-> this one. Two carbons give 2 $\text{CO}_2$; six hydrogens give
-> 3 $\text{H}_2\text{O}$. Right-hand oxygen: $4 + 3 = 7$. But one of
+> this one. Two carbons give 2 $\ce{CO2}$; six hydrogens give
+> 3 $\ce{H2O}$. Right-hand oxygen: $4 + 3 = 7$. But one of
 > those seven came in with the ethanol, so only six have to be supplied
-> by $\text{O}_2$:
+> by $\ce{O2}$:
 >
-> $$\text{C}_2\text{H}_5\text{OH} + 3\text{O}_2 \rightarrow 2\text{CO}_2 + 3\text{H}_2\text{O}$$
+> $$\ce{C2H5OH + 3O2 -> 2CO2 + 3H2O}$$
 >
 > Check: C 2 and 2, H 6 and 6, O $1 + 6 = 7$ and $4 + 3 = 7$.
 >
@@ -92,15 +92,15 @@ the substance, which is not balancing — it is inventing.
 > exactly a half.
 
 **3.** Predict the products, then balance.
-(a) $\text{CaO} + \text{H}_2\text{O} \rightarrow$
-(b) $\text{SO}_3 + \text{H}_2\text{O} \rightarrow$
-(c) $\text{CaCO}_3 \rightarrow$ (strongly heated)
-(d) $\text{H}_2\text{O} \rightarrow$ (electrical decomposition)
+(a) $\ce{CaO + H2O} \rightarrow$
+(b) $\ce{SO3 + H2O} \rightarrow$
+(c) $\ce{CaCO3} \rightarrow$ (strongly heated)
+(d) $\ce{H2O} \rightarrow$ (electrical decomposition)
 
 > [!success]- Answer 3
 > **(a)** A metal oxide plus water gives the metal hydroxide.
 >
-> $$\text{CaO} + \text{H}_2\text{O} \rightarrow \text{Ca(OH)}_2$$
+> $$\ce{CaO + H2O -> Ca(OH)2}$$
 >
 > Already balanced, and the solution is **basic** — which is what you
 > saw with magnesium oxide in [[Oxides and Neutralisation]].
@@ -108,14 +108,14 @@ the substance, which is not balancing — it is inventing.
 > **(b)** A non-metal oxide plus water gives an acid. Sulfur is in its
 > higher combining state here, so the acid is sulfuric:
 >
-> $$\text{SO}_3 + \text{H}_2\text{O} \rightarrow \text{H}_2\text{SO}_4$$
+> $$\ce{SO3 + H2O -> H2SO4}$$
 >
 > Balanced as written: H 2 and 2, S 1 and 1, O $3 + 1 = 4$ and 4.
 >
 > **(c)** A metal carbonate decomposes on strong heating to the metal
 > oxide and carbon dioxide:
 >
-> $$\text{CaCO}_3 \rightarrow \text{CaO} + \text{CO}_2$$
+> $$\ce{CaCO3 -> CaO + CO2}$$
 >
 > This is the reaction in a lime kiln and it is one of the largest
 > deliberate sources of carbon dioxide in industry.
@@ -123,7 +123,7 @@ the substance, which is not balancing — it is inventing.
 > **(d)** A binary compound decomposes into its elements, remembering
 > that both are diatomic:
 >
-> $$2\text{H}_2\text{O} \rightarrow 2\text{H}_2 + \text{O}_2$$
+> $$\ce{2H2O -> 2H2 + O2}$$
 >
 > Check: H 4 and 4, O 2 and 2. Note that the products come out in a
 > volume ratio of two to one, which is a result you can see directly in
@@ -131,18 +131,18 @@ the substance, which is not balancing — it is inventing.
 
 **4.** For each pair, say whether a reaction occurs. If it does, write
 the balanced equation; if it does not, say what rules it out.
-(a) $\text{Zn} + \text{CuSO}_4$
-(b) $\text{Cu} + \text{ZnSO}_4$
-(c) $\text{Mg} + \text{HCl}$
-(d) $\text{Cu} + \text{HCl}$
-(e) $\text{Cl}_2 + \text{NaBr}$
+(a) $\ce{Zn + CuSO4}$
+(b) $\ce{Cu + ZnSO4}$
+(c) $\ce{Mg + HCl}$
+(d) $\ce{Cu + HCl}$
+(e) $\ce{Cl2 + NaBr}$
 
 > [!success]- Answer 4
 > Single displacement is decided by position in [[The Activity Series]]:
 > a metal displaces one **below** it and cannot displace one above it.
 >
 > **(a) Yes.** Zinc is above copper, so it takes the sulfate.
-> $$\text{Zn} + \text{CuSO}_4 \rightarrow \text{ZnSO}_4 + \text{Cu}$$
+> $$\ce{Zn + CuSO4 -> ZnSO4 + Cu}$$
 > This is the darkening strip you saw in
 > [[Building the Activity Series]].
 >
@@ -151,7 +151,7 @@ the balanced equation; if it does not, say what rules it out.
 >
 > **(c) Yes.** Magnesium is above hydrogen, so it displaces hydrogen
 > from the acid.
-> $$\text{Mg} + 2\text{HCl} \rightarrow \text{MgCl}_2 + \text{H}_2$$
+> $$\ce{Mg + 2HCl -> MgCl2 + H2}$$
 >
 > **(d) No reaction.** Copper sits **below** hydrogen in the series, so
 > it will not displace hydrogen from a dilute acid. This is why copper
@@ -161,16 +161,16 @@ the balanced equation; if it does not, say what rules it out.
 > **(e) Yes**, and it uses the halogen series rather than the metal one.
 > A more reactive halogen displaces a less reactive one, and chlorine
 > outranks bromine.
-> $$\text{Cl}_2 + 2\text{NaBr} \rightarrow 2\text{NaCl} + \text{Br}_2$$
+> $$\ce{Cl2 + 2NaBr -> 2NaCl + Br2}$$
 > This is the demonstration you watched in the fume hood, and the orange
 > colour that appeared was the bromine being set free.
 
 **5.** Balance these and name the type.
-(a) $\text{Na}_2\text{CO}_3 + \text{CaCl}_2 \rightarrow \text{CaCO}_3 + \text{NaCl}$
-(b) $\text{H}_2\text{SO}_4 + \text{NaOH} \rightarrow \text{Na}_2\text{SO}_4 + \text{H}_2\text{O}$
+(a) $\ce{Na2CO3 + CaCl2 -> CaCO3 + NaCl}$
+(b) $\ce{H2SO4 + NaOH -> Na2SO4 + H2O}$
 
 > [!success]- Answer 5
-> **(a)** $\text{Na}_2\text{CO}_3 + \text{CaCl}_2 \rightarrow \text{CaCO}_3 + 2\text{NaCl}$
+> **(a)** $\ce{Na2CO3 + CaCl2 -> CaCO3 + 2NaCl}$
 >
 > Count: Na 2 and 2, C 1 and 1, O 3 and 3, Ca 1 and 1, Cl 2 and 2.
 > **Double displacement**, and specifically a **precipitation** —
@@ -178,7 +178,7 @@ the balanced equation; if it does not, say what rules it out.
 > a solid and why the reaction goes anywhere at all. This is the
 > reaction behind [[Percentage Yield of a Precipitate]].
 >
-> **(b)** $\text{H}_2\text{SO}_4 + 2\text{NaOH} \rightarrow \text{Na}_2\text{SO}_4 + 2\text{H}_2\text{O}$
+> **(b)** $\ce{H2SO4 + 2NaOH -> Na2SO4 + 2H2O}$
 >
 > Count: H $2 + 2 = 4$ and 4, S 1 and 1, Na 2 and 2, O $4 + 2 = 6$ and
 > $4 + 2 = 6$. **Double displacement**, and specifically a
@@ -194,11 +194,11 @@ the balanced equation; if it does not, say what rules it out.
 (a) Write the balanced equation.
 (b) This reaction fits **two** of the five categories at once. Name
 them, and say whether that is a problem for the classification scheme.
-(c) Now classify $2\text{Mg} + \text{CO}_2 \rightarrow 2\text{MgO} + \text{C}$
+(c) Now classify $\ce{2Mg + CO2 -> 2MgO + C}$
 and defend your answer.
 
 > [!success]- Answer 6
-> **(a)** $$2\text{H}_2 + \text{O}_2 \rightarrow 2\text{H}_2\text{O}$$
+> **(a)** $$\ce{2H2 + O2 -> 2H2O}$$
 >
 > **(b)** It is a **synthesis** — two substances in, one out — and it is
 > also a **combustion**, because a substance is reacting rapidly with
@@ -219,7 +219,7 @@ and defend your answer.
 > what comes out of a chimney, "combustion" is the word that matters.
 >
 > **(c)** Magnesium burning in carbon dioxide is a **single
-> displacement**: an element (Mg) and a compound ($\text{CO}_2$) go in,
+> displacement**: an element (Mg) and a compound ($\ce{CO2}$) go in,
 > and a different element (C) and a different compound (MgO) come out.
 > Magnesium has displaced carbon from its oxide.
 >
@@ -231,21 +231,21 @@ and defend your answer.
 
 **7.** Three claims from a class discussion. Correct each one, and say
 what the student was probably thinking.
-*(a) "I balanced $\text{Mg} + \text{O}_2 \rightarrow \text{MgO}$ by
-writing $\text{Mg} + \text{O}_2 \rightarrow \text{MgO}_2$."*
-*(b) "$\text{Fe} + \text{CuSO}_4 \rightarrow \text{FeSO}_4 + \text{Cu}$
+*(a) "I balanced $\ce{Mg + O2 -> MgO}$ by
+writing $\ce{Mg + O2 -> MgO2}$."*
+*(b) "$\ce{Fe + CuSO4 -> FeSO4 + Cu}$
 is a double displacement, because two things swapped."*
-*(c) "$\text{NaCl} + \text{KNO}_3 \rightarrow \text{NaNO}_3 + \text{KCl}$
+*(c) "$\ce{NaCl + KNO3 -> NaNO3 + KCl}$
 — I mixed them and the equation balances, so a double displacement
 happened."*
 
 > [!success]- Answer 7
 > **(a) The equation now balances and describes a different
-> substance.** $\text{MgO}_2$ is not magnesium oxide; magnesium is
-> $\text{Mg}^{2+}$ and oxide is $\text{O}^{2-}$, so the compound that
-> exists is $\text{MgO}$. Balancing is done with **coefficients**, which
+> substance.** $\ce{MgO2}$ is not magnesium oxide; magnesium is
+> $\ce{Mg^2+}$ and oxide is $\ce{O^2-}$, so the compound that
+> exists is $\ce{MgO}$. Balancing is done with **coefficients**, which
 > say *how many*, never with subscripts, which say *what*. The correct
-> answer is $2\text{Mg} + \text{O}_2 \rightarrow 2\text{MgO}$.
+> answer is $\ce{2Mg + O2 -> 2MgO}$.
 >
 > The student was doing something reasonable — looking for the fastest
 > route to equal counts — and the fastest route is not always a legal
@@ -253,7 +253,7 @@ happened."*
 >
 > **(b) It is a single displacement.** The test is not "did things
 > swap"; it is **what kinds of things** went in. Here an **element**
-> (Fe) and a **compound** ($\text{CuSO}_4$) went in, and an element and
+> (Fe) and a **compound** ($\ce{CuSO4}$) went in, and an element and
 > a compound came out. A double displacement needs **two compounds** in
 > and two compounds out, with no free element anywhere. Iron on the left
 > and copper on the right are both elements, and that settles it.

@@ -32,9 +32,9 @@ Values given inside a question are given so that everyone works from the
 same ones. Anything else comes from the data booklet.
 
 **1.** State Hess's law, and explain why it is true. Then: given that
-$\text{H}_2\text{O(l)} \rightarrow \text{H}_2\text{O(g)}$ has
+$\ce{H2O(l) -> H2O(g)}$ has
 $\Delta H = +44.0$ kJ, what is $\Delta H$ for
-$2\text{H}_2\text{O(g)} \rightarrow 2\text{H}_2\text{O(l)}$?
+$\ce{2H2O(g) -> 2H2O(l)}$?
 
 > [!success]- Answer 1
 > **Hess's law:** the enthalpy change for a reaction is the same
@@ -54,7 +54,7 @@ $2\text{H}_2\text{O(g)} \rightarrow 2\text{H}_2\text{O(l)}$?
 >
 > **For the water:** two operations, applied in either order.
 >
-> $\begin{aligned} \text{Reverse:}\quad \text{H}_2\text{O(g)} &\rightarrow \text{H}_2\text{O(l)} & \Delta H &= -44.0\ \text{kJ} \\ \text{Multiply by 2:}\quad 2\text{H}_2\text{O(g)} &\rightarrow 2\text{H}_2\text{O(l)} & \Delta H &= -88.0\ \text{kJ} \end{aligned}$
+> $\begin{aligned} \text{Reverse:}\quad \ce{H2O(g)} &\rightarrow \ce{H2O(l)} & \Delta H &= -44.0\ \text{kJ} \\ \text{Multiply by 2:}\quad \ce{2H2O(g)} &\rightarrow \ce{2H2O(l)} & \Delta H &= -88.0\ \text{kJ} \end{aligned}$
 >
 > **$\Delta H = -88.0$ kJ.**
 >
@@ -70,12 +70,12 @@ $2\text{H}_2\text{O(g)} \rightarrow 2\text{H}_2\text{O(l)}$?
 > which is which is worth several marks a year.
 
 **2.** Find $\Delta H$ for
-$\text{C(s)} + \tfrac{1}{2}\text{O}_2\text{(g)} \rightarrow \text{CO(g)}$
+$\ce{C(s)} + \tfrac{1}{2}\ce{O2(g) -> CO(g)}$
 from:
 
-$\text{(1)}\ \text{C(s)} + \text{O}_2\text{(g)} \rightarrow \text{CO}_2\text{(g)} \qquad \Delta H_1 = -393.5\ \text{kJ}$
+$\text{(1)}\ \ce{C(s) + O2(g) -> CO2(g)} \qquad \Delta H_1 = -393.5\ \text{kJ}$
 
-$\text{(2)}\ \text{CO(g)} + \tfrac{1}{2}\text{O}_2\text{(g)} \rightarrow \text{CO}_2\text{(g)} \qquad \Delta H_2 = -283.0\ \text{kJ}$
+$\text{(2)}\ \ce{CO(g)} + \tfrac{1}{2}\ce{O2(g) -> CO2(g)} \qquad \Delta H_2 = -283.0\ \text{kJ}$
 
 > [!success]- Answer 2
 > Target: carbon on the left, carbon monoxide on the right.
@@ -84,14 +84,14 @@ $\text{(2)}\ \text{CO(g)} + \tfrac{1}{2}\text{O}_2\text{(g)} \rightarrow \text{C
 > Equation (2) has carbon monoxide on the **left** and the target needs
 > it on the right, so **reverse** (2) and flip its sign.
 >
-> $\begin{aligned} \text{C(s)} + \text{O}_2\text{(g)} &\rightarrow \text{CO}_2\text{(g)} & \Delta H &= -393.5\ \text{kJ} \\ \text{CO}_2\text{(g)} &\rightarrow \text{CO(g)} + \tfrac{1}{2}\text{O}_2\text{(g)} & \Delta H &= +283.0\ \text{kJ} \end{aligned}$
+> $\begin{aligned} \ce{C(s) + O2(g)} &\rightarrow \ce{CO2(g)} & \Delta H &= -393.5\ \text{kJ} \\ \ce{CO2(g)} &\rightarrow \ce{CO(g)} + \tfrac{1}{2}\ce{O2(g)} & \Delta H &= +283.0\ \text{kJ} \end{aligned}$
 >
-> Add them. $\text{CO}_2$ appears on the right of the first and the left
+> Add them. $\ce{CO2}$ appears on the right of the first and the left
 > of the second, so it cancels completely. On the oxygen: one whole
-> $\text{O}_2$ goes in on the left and half comes back out on the right,
-> leaving $\tfrac{1}{2}\text{O}_2$ on the left.
+> $\ce{O2}$ goes in on the left and half comes back out on the right,
+> leaving $\tfrac{1}{2}\ce{O2}$ on the left.
 >
-> $$\text{C(s)} + \tfrac{1}{2}\text{O}_2\text{(g)} \rightarrow \text{CO(g)}$$
+> $$\ce{C(s)} + \tfrac{1}{2}\ce{O2(g) -> CO(g)}$$
 >
 > $\Delta H = -393.5 + 283.0 = -110.5\ \text{kJ}$
 >
@@ -110,25 +110,25 @@ $\text{(2)}\ \text{CO(g)} + \tfrac{1}{2}\text{O}_2\text{(g)} \rightarrow \text{C
 > release more energy than stopping halfway.
 
 **3.** Find $\Delta H$ for
-$2\text{NO(g)} + \text{O}_2\text{(g)} \rightarrow 2\text{NO}_2\text{(g)}$
+$\ce{2NO(g) + O2(g) -> 2NO2(g)}$
 from:
 
-$\text{(1)}\ \tfrac{1}{2}\text{N}_2\text{(g)} + \tfrac{1}{2}\text{O}_2\text{(g)} \rightarrow \text{NO(g)} \qquad \Delta H_1 = +90.3\ \text{kJ}$
+$\text{(1)}\ \tfrac{1}{2}\ce{N2(g)} + \tfrac{1}{2}\ce{O2(g) -> NO(g)} \qquad \Delta H_1 = +90.3\ \text{kJ}$
 
-$\text{(2)}\ \tfrac{1}{2}\text{N}_2\text{(g)} + \text{O}_2\text{(g)} \rightarrow \text{NO}_2\text{(g)} \qquad \Delta H_2 = +33.2\ \text{kJ}$
+$\text{(2)}\ \tfrac{1}{2}\ce{N2(g) + O2(g) -> NO2(g)} \qquad \Delta H_2 = +33.2\ \text{kJ}$
 
 > [!success]- Answer 3
-> The target has **two** $\text{NO}_2$ on the right, so (2) is
-> multiplied by 2. It has **two** $\text{NO}$ on the left, and (1) makes
-> $\text{NO}$ on the right, so (1) is reversed **and** multiplied by 2.
+> The target has **two** $\ce{NO2}$ on the right, so (2) is
+> multiplied by 2. It has **two** $\ce{NO}$ on the left, and (1) makes
+> $\ce{NO}$ on the right, so (1) is reversed **and** multiplied by 2.
 >
-> $\begin{aligned} 2 \times \text{(2)}:\quad \text{N}_2\text{(g)} + 2\text{O}_2\text{(g)} &\rightarrow 2\text{NO}_2\text{(g)} & \Delta H &= 2(+33.2) = +66.4\ \text{kJ} \\ 2 \times \text{reverse (1)}:\quad 2\text{NO(g)} &\rightarrow \text{N}_2\text{(g)} + \text{O}_2\text{(g)} & \Delta H &= 2(-90.3) = -180.6\ \text{kJ} \end{aligned}$
+> $\begin{aligned} 2 \times \text{(2)}:\quad \ce{N2(g) + 2O2(g)} &\rightarrow \ce{2NO2(g)} & \Delta H &= 2(+33.2) = +66.4\ \text{kJ} \\ 2 \times \text{reverse (1)}:\quad \ce{2NO(g)} &\rightarrow \ce{N2(g) + O2(g)} & \Delta H &= 2(-90.3) = -180.6\ \text{kJ} \end{aligned}$
 >
-> Add. $\text{N}_2$ cancels completely. Oxygen: $2\text{O}_2$ in on the
-> left, $\text{O}_2$ out on the right, leaving one $\text{O}_2$ on the
+> Add. $\ce{N2}$ cancels completely. Oxygen: $\ce{2O2}$ in on the
+> left, $\ce{O2}$ out on the right, leaving one $\ce{O2}$ on the
 > left.
 >
-> $$2\text{NO(g)} + \text{O}_2\text{(g)} \rightarrow 2\text{NO}_2\text{(g)}$$
+> $$\ce{2NO(g) + O2(g) -> 2NO2(g)}$$
 >
 > $\Delta H = +66.4 - 180.6 = -114.2\ \text{kJ}$
 >
@@ -148,14 +148,14 @@ $\text{(2)}\ \tfrac{1}{2}\text{N}_2\text{(g)} + \text{O}_2\text{(g)} \rightarrow
 
 **4.** Using the standard enthalpies of formation below, calculate
 $\Delta H$ for the complete combustion of methane:
-$\text{CH}_4\text{(g)} + 2\text{O}_2\text{(g)} \rightarrow \text{CO}_2\text{(g)} + 2\text{H}_2\text{O(l)}$
+$\ce{CH4(g) + 2O2(g) -> CO2(g) + 2H2O(l)}$
 
 | Substance | $\Delta H_f$ (kJ/mol) |
 | --- | --- |
-| $\text{CH}_4\text{(g)}$ | $-74.6$ |
-| $\text{CO}_2\text{(g)}$ | $-393.5$ |
-| $\text{H}_2\text{O(l)}$ | $-285.8$ |
-| $\text{O}_2\text{(g)}$ | $0$ |
+| $\ce{CH4(g)}$ | $-74.6$ |
+| $\ce{CO2(g)}$ | $-393.5$ |
+| $\ce{H2O(l)}$ | $-285.8$ |
+| $\ce{O2(g)}$ | $0$ |
 
 > [!success]- Answer 4
 > The shortcut form of Hess's law, which is what a formation table is
@@ -173,9 +173,9 @@ $\text{CH}_4\text{(g)} + 2\text{O}_2\text{(g)} \rightarrow \text{CO}_2\text{(g)}
 > **Oxygen is zero, and it is zero for a reason rather than by
 > convention-for-convenience.** The enthalpy of formation of an element
 > in its standard state is defined as zero, because "forming
-> $\text{O}_2$ from $\text{O}_2$" involves no change at all. So elements
+> $\ce{O2}$ from $\ce{O2}$" involves no change at all. So elements
 > in their standard states drop out of every calculation — but only in
-> their standard states. $\text{O}_3$ is not zero, and neither is
+> their standard states. $\ce{O3}$ is not zero, and neither is
 > monatomic oxygen.
 >
 > **Products minus reactants, in that order.** Reversing it gives
@@ -185,7 +185,7 @@ $\text{CH}_4\text{(g)} + 2\text{O}_2\text{(g)} \rightarrow \text{CO}_2\text{(g)}
 
 **5.** Define *formation reaction*, and write the formation equation for
 liquid ethanol. Then, given
-$\Delta H_f[\text{C}_2\text{H}_5\text{OH(l)}] = -277.6$ kJ/mol along
+$\Delta H_f[\ce{C2H5OH(l)}] = -277.6$ kJ/mol along
 with the values in question 4, find the enthalpy of combustion of
 ethanol.
 
@@ -196,14 +196,14 @@ ethanol.
 > normal and correct in these equations.
 >
 > For liquid ethanol, the elements are carbon as graphite, hydrogen as
-> $\text{H}_2$ gas, and oxygen as $\text{O}_2$ gas:
+> $\ce{H2}$ gas, and oxygen as $\ce{O2}$ gas:
 >
-> $$2\text{C(s)} + 3\text{H}_2\text{(g)} + \tfrac{1}{2}\text{O}_2\text{(g)} \rightarrow \text{C}_2\text{H}_5\text{OH(l)}$$
+> $$\ce{2C(s) + 3H2(g)} + \tfrac{1}{2}\ce{O2(g) -> C2H5OH(l)}$$
 >
 > Balance-check it: 2 carbons, 6 hydrogens, 1 oxygen on each side.
 >
 > **The combustion:**
-> $\text{C}_2\text{H}_5\text{OH(l)} + 3\text{O}_2\text{(g)} \rightarrow 2\text{CO}_2\text{(g)} + 3\text{H}_2\text{O(l)}$
+> $\ce{C2H5OH(l) + 3O2(g) -> 2CO2(g) + 3H2O(l)}$
 >
 > $\begin{aligned} \Delta H &= \left[ 2(-393.5) + 3(-285.8) \right] - \left[ (-277.6) + 3(0) \right] \\ &= \left[ -787.0 - 857.4 \right] + 277.6 \\ &= -1644.4 + 277.6 \\ &= -1366.8\ \text{kJ} \end{aligned}$
 >
@@ -222,34 +222,34 @@ ethanol.
 > your apparatus's.
 
 **6.** Find $\Delta H$ for
-$\text{C}_2\text{H}_4\text{(g)} + \text{H}_2\text{(g)} \rightarrow \text{C}_2\text{H}_6\text{(g)}$
+$\ce{C2H4(g) + H2(g) -> C2H6(g)}$
 from these combustion data:
 
-$\text{(1)}\ \text{C}_2\text{H}_4\text{(g)} + 3\text{O}_2\text{(g)} \rightarrow 2\text{CO}_2\text{(g)} + 2\text{H}_2\text{O(l)} \qquad \Delta H = -1411\ \text{kJ}$
+$\text{(1)}\ \ce{C2H4(g) + 3O2(g) -> 2CO2(g) + 2H2O(l)} \qquad \Delta H = -1411\ \text{kJ}$
 
-$\text{(2)}\ \text{C}_2\text{H}_6\text{(g)} + \tfrac{7}{2}\text{O}_2\text{(g)} \rightarrow 2\text{CO}_2\text{(g)} + 3\text{H}_2\text{O(l)} \qquad \Delta H = -1560\ \text{kJ}$
+$\text{(2)}\ \ce{C2H6(g)} + \tfrac{7}{2}\ce{O2(g) -> 2CO2(g) + 3H2O(l)} \qquad \Delta H = -1560\ \text{kJ}$
 
-$\text{(3)}\ \text{H}_2\text{(g)} + \tfrac{1}{2}\text{O}_2\text{(g)} \rightarrow \text{H}_2\text{O(l)} \qquad \Delta H = -285.8\ \text{kJ}$
+$\text{(3)}\ \ce{H2(g)} + \tfrac{1}{2}\ce{O2(g) -> H2O(l)} \qquad \Delta H = -285.8\ \text{kJ}$
 
 > [!success]- Answer 6
 > Work from the target, substance by substance.
 >
-> - $\text{C}_2\text{H}_4$ is needed on the **left**, and (1) has it on
+> - $\ce{C2H4}$ is needed on the **left**, and (1) has it on
 >   the left. **Keep (1).**
-> - $\text{H}_2$ is needed on the **left**, and (3) has it on the left.
+> - $\ce{H2}$ is needed on the **left**, and (3) has it on the left.
 >   **Keep (3).**
-> - $\text{C}_2\text{H}_6$ is needed on the **right**, and (2) has it on
+> - $\ce{C2H6}$ is needed on the **right**, and (2) has it on
 >   the left. **Reverse (2).**
 >
-> $\begin{aligned} \text{C}_2\text{H}_4 + 3\text{O}_2 &\rightarrow 2\text{CO}_2 + 2\text{H}_2\text{O} & \Delta H &= -1411\ \text{kJ} \\ \text{H}_2 + \tfrac{1}{2}\text{O}_2 &\rightarrow \text{H}_2\text{O} & \Delta H &= -285.8\ \text{kJ} \\ 2\text{CO}_2 + 3\text{H}_2\text{O} &\rightarrow \text{C}_2\text{H}_6 + \tfrac{7}{2}\text{O}_2 & \Delta H &= +1560\ \text{kJ} \end{aligned}$
+> $\begin{aligned} \ce{C2H4 + 3O2} &\rightarrow \ce{2CO2 + 2H2O} & \Delta H &= -1411\ \text{kJ} \\ \ce{H2} + \tfrac{1}{2}\ce{O2} &\rightarrow \ce{H2O} & \Delta H &= -285.8\ \text{kJ} \\ \ce{2CO2 + 3H2O} &\rightarrow \ce{C2H6} + \tfrac{7}{2}\ce{O2} & \Delta H &= +1560\ \text{kJ} \end{aligned}$
 >
-> Cancel across the sum. $2\text{CO}_2$ appears on the right of the
+> Cancel across the sum. $\ce{2CO2}$ appears on the right of the
 > first and the left of the third — gone. Water: 2 plus 1 is 3 on the
 > right, and 3 on the left — gone. Oxygen: on the left
 > $3 + \tfrac{1}{2} = \tfrac{7}{2}$, and $\tfrac{7}{2}$ on the right —
 > gone.
 >
-> $$\text{C}_2\text{H}_4\text{(g)} + \text{H}_2\text{(g)} \rightarrow \text{C}_2\text{H}_6\text{(g)}$$
+> $$\ce{C2H4(g) + H2(g) -> C2H6(g)}$$
 >
 > $\Delta H = -1411 - 285.8 + 1560 = -136.8\ \text{kJ}$
 >

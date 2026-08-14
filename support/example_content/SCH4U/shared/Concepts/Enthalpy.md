@@ -76,7 +76,7 @@ particles.
 > **costs** energy. Nothing is released by breaking anything.
 >
 > Burning methane is exothermic not because the C–H bonds "contained"
-> energy, but because the $\text{C=O}$ and $\text{O--H}$ bonds in the
+> energy, but because the $\ce{C=O}$ and $\ce{O-H}$ bonds in the
 > products are stronger than the bonds that were broken to make them. If
 > you find yourself explaining an exothermic reaction by saying bonds
 > broke, stop and count both sides.
@@ -89,12 +89,12 @@ convert between them.
 
 With $\Delta H$ written beside the equation:
 
-$$\text{CH}_4\text{(g)} + 2\text{O}_2\text{(g)} \rightarrow \text{CO}_2\text{(g)} + 2\text{H}_2\text{O(l)} \qquad \Delta H = -890 \text{ kJ}$$
+$$\ce{CH4(g) + 2O2(g) -> CO2(g) + 2H2O(l)} \qquad \Delta H = -890 \text{ kJ}$$
 
 Or with the energy as a term in the equation itself, on the side it
 comes out of:
 
-$$\text{CH}_4\text{(g)} + 2\text{O}_2\text{(g)} \rightarrow \text{CO}_2\text{(g)} + 2\text{H}_2\text{O(l)} + 890 \text{ kJ}$$
+$$\ce{CH4(g) + 2O2(g) -> CO2(g) + 2H2O(l)} + 890 \text{ kJ}$$
 
 Both say the same thing. Note that the sign disappears in the second
 form, because the *position* of the term is carrying the information —
@@ -135,7 +135,7 @@ same size.
 
 The middle row is the whole of this unit. The first row is why boiling a
 kettle takes real energy without changing what is in it — the
-$\text{O--H}$ bonds survive, and only the hydrogen bonding between
+$\ce{O-H}$ bonds survive, and only the hydrogen bonding between
 molecules is overcome. The third is why a nuclear plant and a coal plant
 of the same output consume such wildly different masses of fuel.
 

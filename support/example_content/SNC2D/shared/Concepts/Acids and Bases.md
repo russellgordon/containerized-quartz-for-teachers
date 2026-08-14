@@ -20,15 +20,15 @@ to both ends of the scale.
 
 The definition used in this course is the one that works for the substances
 you will handle: an **acid** is a substance that releases hydrogen ions,
-$\text{H}^+$, when dissolved in water, and a **base** is one that releases
-hydroxide ions, $\text{OH}^-$. That is why $\text{HCl(aq)}$ is an acid and
-$\text{NaOH(aq)}$ is a base, and why the $\text{(aq)}$ matters so much — dry
+$\ce{H+}$, when dissolved in water, and a **base** is one that releases
+hydroxide ions, $\ce{OH-}$. That is why $\ce{HCl(aq)}$ is an acid and
+$\ce{NaOH(aq)}$ is a base, and why the $\text{(aq)}$ matters so much — dry
 hydrogen chloride gas releases nothing.
 
 A lone hydrogen ion is a bare proton and does not drift around by itself; it
 attaches to a water molecule to form the hydronium ion,
-$\text{H}_3\text{O}^+$. You will see both written, and they mean the same
-thing about the solution. Using $\text{H}^+$ is a shorthand, not a
+$\ce{H3O+}$. You will see both written, and they mean the same
+thing about the solution. Using $\ce{H+}$ is a shorthand, not a
 disagreement.
 
 Two words that are constantly mixed up and are not synonyms:
@@ -54,7 +54,7 @@ number is a factor of ten.**
 A solution at pH 3 has ten times the hydrogen ion concentration of one at
 pH 4, and a hundred times that of one at pH 5. Lemon juice near pH 2 is not
 "about twice as acidic" as black coffee near pH 5 — it is roughly a thousand
-times as concentrated in hydrogen ions. Lower pH means more $\text{H}^+$; pH 7
+times as concentrated in hydrogen ions. Lower pH means more $\ce{H+}$; pH 7
 is neutral at room temperature; above 7 the hydroxide ions are in the
 majority and the solution is basic.
 
@@ -74,13 +74,13 @@ through completely different chemistry.
 
 An acid reacts with a base to produce a **salt** and, usually, **water**:
 
-$$\text{HCl(aq)} + \text{NaOH(aq)} \rightarrow \text{NaCl(aq)} + \text{H}_2\text{O(l)}$$
+$$\ce{HCl(aq) + NaOH(aq) -> NaCl(aq) + H2O(l)}$$
 
 Swap the partners and you can see the double displacement. The interesting
 part is what drives it. Sodium and chloride ions were dissolved before and are
 dissolved after — they change nothing. The real reaction is
 
-$$\text{H}^+\text{(aq)} + \text{OH}^-\text{(aq)} \rightarrow \text{H}_2\text{O(l)}$$
+$$\ce{H+(aq) + OH-(aq) -> H2O(l)}$$
 
 and it goes because it takes ions out of the solution and locks them into a
 molecule that stays intact. The energy released as those bonds form is the

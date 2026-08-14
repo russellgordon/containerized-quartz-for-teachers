@@ -28,7 +28,7 @@ since all these concentrations are less than one, every one of those
 powers is negative, so the definition carries a minus sign to hand you
 back a number you can say out loud:
 
-$$\text{pH} = -\log[\text{H}_3\text{O}^+]$$
+$$\text{pH} = -\log[\ce{H3O+}]$$
 
 A concentration of $1 \times 10^{-3}$ mol/L is ten to the minus three,
 so the pH is 3. That is the whole idea. Everything else on this page is
@@ -37,13 +37,13 @@ a consequence of it.
 The same trick gets used on anything that spans orders of magnitude, and
 you will meet all of these:
 
-$$\text{pOH} = -\log[\text{OH}^-] \qquad \text{p}K_a = -\log K_a \qquad \text{p}K_w = -\log K_w$$
+$$\text{pOH} = -\log[\ce{OH-}] \qquad \text{p}K_a = -\log K_a \qquad \text{p}K_w = -\log K_w$$
 
 ## The relationships worth knowing cold
 
 In water at 25 °C, the two ion concentrations are tied together:
 
-$$K_w = [\text{H}_3\text{O}^+][\text{OH}^-] = 1.0 \times 10^{-14}$$
+$$K_w = [\ce{H3O+}][\ce{OH-}] = 1.0 \times 10^{-14}$$
 
 Take the negative logarithm of both sides — a product becomes a sum —
 and you get the relationship you will use constantly:
@@ -66,7 +66,7 @@ $$\text{pH} + \text{pOH} = 14.00$$
 This is the single most useful sentence on the page and the one most
 often nodded at without being absorbed.
 
-| pH | $[\text{H}_3\text{O}^+]$ in mol/L | Compared with pH 5 |
+| pH | $[\ce{H3O+}]$ in mol/L | Compared with pH 5 |
 | --- | --- | --- |
 | 2 | $1 \times 10^{-2}$ | 1000 times more concentrated |
 | 3 | $1 \times 10^{-3}$ | 100 times more concentrated |
@@ -131,7 +131,7 @@ Two consequences worth sitting with:
 
 Half the questions in Unit 4 run the other way. Undo the definition:
 
-$$[\text{H}_3\text{O}^+] = 10^{-\text{pH}}$$
+$$[\ce{H3O+}] = 10^{-\text{pH}}$$
 
 On your calculator the $10^x$ function is almost always the second
 function of the `log` key, which makes sense once you see that they undo
@@ -145,13 +145,13 @@ and will save you an hour:
 
 > [!example]- Three worked conversions, in full
 > **A strong acid.** Hydrochloric acid at 0.025 mol/L ionises
-> completely, so $[\text{H}_3\text{O}^+] = 0.025$ mol/L.
+> completely, so $[\ce{H3O+}] = 0.025$ mol/L.
 >
 > $$\text{pH} = -\log(2.5 \times 10^{-2}) = 1.60$$
 >
 > Two significant figures in, two decimal places out.
 >
-> **Through pOH.** A solution has $[\text{OH}^-] = 2.5 \times 10^{-4}$
+> **Through pOH.** A solution has $[\ce{OH-}] = 2.5 \times 10^{-4}$
 > mol/L. Then $\text{pOH} = -\log(2.5 \times 10^{-4}) = 3.60$, and
 > since the pair must add to 14.00 at 25 °C, $\text{pH} = 10.40$. You
 > could also have divided into $K_w$ first and taken the logarithm at
@@ -159,7 +159,7 @@ and will save you an hour:
 > chances to lose an exponent.
 >
 > **Backwards.** A meter reads 4.75. Then
-> $[\text{H}_3\text{O}^+] = 10^{-4.75} = 1.8 \times 10^{-5}$ mol/L —
+> $[\ce{H3O+}] = 10^{-4.75} = 1.8 \times 10^{-5}$ mol/L —
 > two decimal places in the pH, so two significant figures out, and
 > writing $1.7783 \times 10^{-5}$ would be inventing three of them.
 
@@ -167,7 +167,7 @@ and will save you an hour:
 > Ethanoic acid at 0.10 mol/L. Take $K_a$ from your data booklet — for
 > this one it is about $1.8 \times 10^{-5}$ at 25 °C.
 >
-> $$\text{CH}_3\text{COOH(aq)} + \text{H}_2\text{O(l)} \rightleftharpoons \text{CH}_3\text{COO}^-\text{(aq)} + \text{H}_3\text{O}^+\text{(aq)}$$
+> $$\ce{CH3COOH(aq) + H2O(l) <=> CH3COO-(aq) + H3O+(aq)}$$
 >
 > With $x$ for the hydronium concentration at equilibrium,
 >
@@ -253,10 +253,10 @@ average.
 
 Work these with a calculator and the rules above, then open the answers.
 
-1. A solution has $[\text{H}_3\text{O}^+] = 4.7 \times 10^{-9}$ mol/L.
+1. A solution has $[\ce{H3O+}] = 4.7 \times 10^{-9}$ mol/L.
    What is its pH?
-2. A calibrated meter reads 12.15. Find $[\text{H}_3\text{O}^+]$ and
-   $[\text{OH}^-]$ at 25 °C.
+2. A calibrated meter reads 12.15. Find $[\ce{H3O+}]$ and
+   $[\ce{OH-}]$ at 25 °C.
 3. Equal volumes of two strong acid solutions, pH 2.00 and pH 4.00, are
    mixed. Find the pH of the mixture.
 4. A weak acid has $K_a = 6.3 \times 10^{-5}$. Find its
@@ -267,10 +267,10 @@ Work these with a calculator and the rules above, then open the answers.
 > **1.** $-\log(4.7 \times 10^{-9}) = 8.33$. Two significant figures in
 > the concentration, so two decimal places in the pH.
 >
-> **2.** $[\text{H}_3\text{O}^+] = 10^{-12.15} = 7.1 \times 10^{-13}$
+> **2.** $[\ce{H3O+}] = 10^{-12.15} = 7.1 \times 10^{-13}$
 > mol/L. Then either divide into $K_w$, or use
 > $\text{pOH} = 14.00 - 12.15 = 1.85$, giving
-> $[\text{OH}^-] = 10^{-1.85} = 1.4 \times 10^{-2}$ mol/L. Two decimal
+> $[\ce{OH-}] = 10^{-1.85} = 1.4 \times 10^{-2}$ mol/L. Two decimal
 > places in, two significant figures out, both times.
 >
 > **3.** Convert first: $1.00 \times 10^{-2}$ mol/L and

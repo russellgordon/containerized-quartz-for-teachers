@@ -21,11 +21,11 @@ that lets you predict a reaction you have never run — which is what
 
 | Type | General form | What is happening | Balanced example |
 | --- | --- | --- | --- |
-| Synthesis | $\text{A} + \text{B} \rightarrow \text{AB}$ | two substances combine into one | $2\text{Mg(s)} + \text{O}_2\text{(g)} \rightarrow 2\text{MgO(s)}$ |
-| Decomposition | $\text{AB} \rightarrow \text{A} + \text{B}$ | one substance breaks into two or more | $2\text{H}_2\text{O}_2\text{(aq)} \rightarrow 2\text{H}_2\text{O(l)} + \text{O}_2\text{(g)}$ |
-| Single displacement | $\text{A} + \text{BC} \rightarrow \text{AC} + \text{B}$ | an element takes another element's place | $\text{Zn(s)} + \text{CuSO}_4\text{(aq)} \rightarrow \text{ZnSO}_4\text{(aq)} + \text{Cu(s)}$ |
-| Double displacement | $\text{AB} + \text{CD} \rightarrow \text{AD} + \text{CB}$ | two compounds exchange partners | $\text{Pb(NO}_3\text{)}_2\text{(aq)} + 2\text{KI(aq)} \rightarrow \text{PbI}_2\text{(s)} + 2\text{KNO}_3\text{(aq)}$ |
-| Combustion | fuel plus oxygen | a fuel burns, releasing energy | $\text{C}_3\text{H}_8\text{(g)} + 5\text{O}_2\text{(g)} \rightarrow 3\text{CO}_2\text{(g)} + 4\text{H}_2\text{O(g)}$ |
+| Synthesis | $\ce{A + B -> AB}$ | two substances combine into one | $\ce{2Mg(s) + O2(g) -> 2MgO(s)}$ |
+| Decomposition | $\ce{AB -> A + B}$ | one substance breaks into two or more | $\ce{2H2O2(aq) -> 2H2O(l) + O2(g)}$ |
+| Single displacement | $\ce{A + BC -> AC + B}$ | an element takes another element's place | $\ce{Zn(s) + CuSO4(aq) -> ZnSO4(aq) + Cu(s)}$ |
+| Double displacement | $\ce{AB + CD -> AD + CB}$ | two compounds exchange partners | $\ce{Pb(NO3)2(aq) + 2KI(aq) -> PbI2(s) + 2KNO3(aq)}$ |
+| Combustion | fuel plus oxygen | a fuel burns, releasing energy | $\ce{C3H8(g) + 5O2(g) -> 3CO2(g) + 4H2O(g)}$ |
 
 Read the general forms as shapes rather than as formulas. What makes
 something a single displacement is that a lone element went in and a
@@ -39,7 +39,7 @@ false statement — it says atoms appeared or vanished, and they did not.
 
 The only thing you may change is the **coefficients**, the numbers in
 front. Subscripts are part of the identity of a substance:
-$\text{H}_2\text{O}$ and $\text{H}_2\text{O}_2$ are water and hydrogen
+$\ce{H2O}$ and $\ce{H2O2}$ are water and hydrogen
 peroxide, and turning one into the other to make the arithmetic work is
 not balancing an equation, it is changing what reacted. This is the
 single most common way a balancing attempt goes wrong.
@@ -58,7 +58,7 @@ Here is what changed since Grade 10. Then, balancing meant *mass is
 conserved*, and that was the whole of it. Now the coefficients carry a
 second meaning: they are the **ratio in which the particles react**, and
 therefore the ratio in which moles react. Reading
-$\text{C}_3\text{H}_8 + 5\text{O}_2 \rightarrow 3\text{CO}_2 + 4\text{H}_2\text{O}$,
+$\ce{C3H8 + 5O2 -> 3CO2 + 4H2O}$,
 the 3 in front of the carbon dioxide says that burning one mole of
 propane produces three moles of carbon dioxide — a number you can weigh
 out. Everything in [[Stoichiometry]] rests on that reading, and none of

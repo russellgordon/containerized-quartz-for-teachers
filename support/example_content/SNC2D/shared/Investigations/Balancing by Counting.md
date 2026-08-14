@@ -100,7 +100,7 @@ built.
 Do it for hydrogen burning in oxygen. Write what you built as an
 equation, and then look at what your models force you to write:
 
-$$2\text{H}_2 + \text{O}_2 \rightarrow 2\text{H}_2\text{O}$$
+$$\ce{2H2 + O2 -> 2H2O}$$
 
 You cannot build one water molecule from one hydrogen molecule and one
 oxygen molecule without an oxygen atom left over in your hand. The

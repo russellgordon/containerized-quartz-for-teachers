@@ -78,7 +78,7 @@ Your design decisions, written and justified before the lab:
 > There is a shorthand for a cell and it is worth learning today,
 > because it stops you having to draw a diagram every time.
 >
-> $$\text{Zn(s)}\ |\ \text{Zn}^{2+}\text{(aq)}\ ||\ \text{Cu}^{2+}\text{(aq)}\ |\ \text{Cu(s)}$$
+> $$\ce{Zn(s)}\ |\ \ce{Zn^2+(aq)}\ ||\ \ce{Cu^2+(aq)}\ |\ \ce{Cu(s)}$$
 >
 > Read it left to right as a journey the electrons take. A single bar is
 > a boundary between two phases — solid metal meeting its solution. The

@@ -23,8 +23,8 @@ kind of cell, under any conditions:
 
 The oxidation number rules, in the order they are applied:
 
-1. An element on its own is 0. $\text{Zn(s)}$, $\text{O}_2$,
-   $\text{Cl}_2$ — all zero.
+1. An element on its own is 0. $\ce{Zn(s)}$, $\ce{O2}$,
+   $\ce{Cl2}$ — all zero.
 2. A monatomic ion takes the charge of the ion.
 3. Oxygen is $-2$, except in peroxides, where it is $-1$.
 4. Hydrogen is $+1$ with non-metals, and $-1$ with metals.
@@ -39,8 +39,8 @@ it catches nearly everyone once.
 
 **1.** Define *half-reaction*, *oxidising agent*, *reducing agent*, and
 *oxidation number*. Then assign oxidation numbers to the underlined
-element in $\text{MnO}_4^-$, $\text{Cr}_2\text{O}_7^{2-}$,
-$\text{H}_2\text{O}_2$, $\text{SO}_4^{2-}$, and $\text{NaH}$.
+element in $\ce{MnO4-}$, $\ce{Cr2O7^2-}$,
+$\ce{H2O2}$, $\ce{SO4^2-}$, and $\ce{NaH}$.
 
 > [!success]- Answer 1
 > **Half-reaction**: one half of a redox process written on its own,
@@ -64,11 +64,11 @@ $\text{H}_2\text{O}_2$, $\text{SO}_4^{2-}$, and $\text{NaH}$.
 >
 > | Species | Working | Oxidation number |
 > | --- | --- | --- |
-> | $\text{MnO}_4^-$ | $\text{Mn} + 4(-2) = -1$ | Mn is $+7$ |
-> | $\text{Cr}_2\text{O}_7^{2-}$ | $2\text{Cr} + 7(-2) = -2$ | Cr is $+6$ |
-> | $\text{H}_2\text{O}_2$ | $2(+1) + 2\text{O} = 0$ | O is $-1$ |
-> | $\text{SO}_4^{2-}$ | $\text{S} + 4(-2) = -2$ | S is $+6$ |
-> | $\text{NaH}$ | $(+1) + \text{H} = 0$ | H is $-1$ |
+> | $\ce{MnO4-}$ | $\ce{Mn} + 4(-2) = -1$ | Mn is $+7$ |
+> | $\ce{Cr2O7^2-}$ | $\ce{2Cr} + 7(-2) = -2$ | Cr is $+6$ |
+> | $\ce{H2O2}$ | $2(+1) + 2\ce{O} = 0$ | O is $-1$ |
+> | $\ce{SO4^2-}$ | $\ce{S} + 4(-2) = -2$ | S is $+6$ |
+> | $\ce{NaH}$ | $(+1) + \ce{H} = 0$ | H is $-1$ |
 >
 > **The last two are the exceptions in the rule list, and they are there
 > deliberately.** In hydrogen peroxide the two oxygens are bonded to
@@ -83,7 +83,7 @@ $\text{H}_2\text{O}_2$, $\text{SO}_4^{2-}$, and $\text{NaH}$.
 > disbelieving the method.
 
 **2.** For
-$\text{Zn(s)} + \text{Cu}^{2+}\text{(aq)} \rightarrow \text{Zn}^{2+}\text{(aq)} + \text{Cu(s)}$,
+$\ce{Zn(s) + Cu^2+(aq) -> Zn^2+(aq) + Cu(s)}$,
 identify what is oxidised, what is reduced, the oxidising agent, and the
 reducing agent. Write both half-reactions.
 
@@ -96,10 +96,10 @@ reducing agent. Write both half-reactions.
 > | Cu | $+2$ | 0 | Decreased — **reduced** |
 >
 > **Oxidation, at the anode:**
-> $\text{Zn(s)} \rightarrow \text{Zn}^{2+}\text{(aq)} + 2e^-$
+> $\ce{Zn(s) -> Zn^2+(aq) + 2e-}$
 >
 > **Reduction, at the cathode:**
-> $\text{Cu}^{2+}\text{(aq)} + 2e^- \rightarrow \text{Cu(s)}$
+> $\ce{Cu^2+(aq) + 2e- -> Cu(s)}$
 >
 > - **Zinc is oxidised**, so zinc is the **reducing agent** — it gave
 >   the electrons that reduced the copper.
@@ -117,23 +117,23 @@ reducing agent. Write both half-reactions.
 > "the thing that did it to the other one".
 
 **3.** Balance in acidic solution, using the half-reaction method:
-$\text{MnO}_4^-\text{(aq)} + \text{Fe}^{2+}\text{(aq)} \rightarrow \text{Mn}^{2+}\text{(aq)} + \text{Fe}^{3+}\text{(aq)}$
+$\ce{MnO4-(aq) + Fe^2+(aq) -> Mn^2+(aq) + Fe^3+(aq)}$
 
 > [!success]- Answer 3
 > **Split into half-reactions.**
 >
-> $\text{MnO}_4^- \rightarrow \text{Mn}^{2+}$ and
-> $\text{Fe}^{2+} \rightarrow \text{Fe}^{3+}$
+> $\ce{MnO4- -> Mn^2+}$ and
+> $\ce{Fe^2+ -> Fe^3+}$
 >
 > **Balance the iron half**, which needs only electrons:
 >
-> $\text{Fe}^{2+} \rightarrow \text{Fe}^{3+} + e^-$
+> $\ce{Fe^2+ -> Fe^3+} + e^-$
 >
 > **Balance the manganese half**, in the standard order — element first,
-> then oxygen with water, then hydrogen with $\text{H}^+$, then charge
+> then oxygen with water, then hydrogen with $\ce{H+}$, then charge
 > with electrons:
 >
-> $\begin{aligned} \text{MnO}_4^- &\rightarrow \text{Mn}^{2+} + 4\text{H}_2\text{O} \\ \text{MnO}_4^- + 8\text{H}^+ &\rightarrow \text{Mn}^{2+} + 4\text{H}_2\text{O} \\ \text{MnO}_4^- + 8\text{H}^+ + 5e^- &\rightarrow \text{Mn}^{2+} + 4\text{H}_2\text{O} \end{aligned}$
+> $\begin{aligned} \ce{MnO4-} &\rightarrow \ce{Mn^2+ + 4H2O} \\ \ce{MnO4- + 8H+} &\rightarrow \ce{Mn^2+ + 4H2O} \\ \ce{MnO4- + 8H+ + 5e-} &\rightarrow \ce{Mn^2+ + 4H2O} \end{aligned}$
 >
 > Check the electron count on that last line: the left is
 > $-1 + 8 - 5 = +2$ and the right is $+2$. ✓
@@ -141,11 +141,11 @@ $\text{MnO}_4^-\text{(aq)} + \text{Fe}^{2+}\text{(aq)} \rightarrow \text{Mn}^{2+
 > **Equalise the electrons.** One half gives up 1 electron, the other
 > takes 5, so multiply the iron half by 5:
 >
-> $5\text{Fe}^{2+} \rightarrow 5\text{Fe}^{3+} + 5e^-$
+> $\ce{5Fe^2+ -> 5Fe^3+ + 5e-}$
 >
 > **Add and cancel the electrons:**
 >
-> $$\text{MnO}_4^-\text{(aq)} + 8\text{H}^+\text{(aq)} + 5\text{Fe}^{2+}\text{(aq)} \rightarrow \text{Mn}^{2+}\text{(aq)} + 4\text{H}_2\text{O(l)} + 5\text{Fe}^{3+}\text{(aq)}$$
+> $$\ce{MnO4-(aq) + 8H+(aq) + 5Fe^2+(aq) -> Mn^2+(aq) + 4H2O(l) + 5Fe^3+(aq)}$$
 >
 > **The two checks that catch every error in this method:**
 >
@@ -158,22 +158,22 @@ $\text{MnO}_4^-\text{(aq)} + \text{Fe}^{2+}\text{(aq)} \rightarrow \text{Mn}^{2+
 > is still wrong, and charge is the check people skip. Do both.
 >
 > This reaction is the basis of a common titration, and it needs no
-> indicator — permanganate is intensely purple and $\text{Mn}^{2+}$ is
+> indicator — permanganate is intensely purple and $\ce{Mn^2+}$ is
 > nearly colourless, so the first drop of excess titrant colours the
 > flask permanently.
 
 **4.** Balance in **basic** solution:
-$\text{MnO}_4^-\text{(aq)} + \text{I}^-\text{(aq)} \rightarrow \text{MnO}_2\text{(s)} + \text{I}_2\text{(s)}$
+$\ce{MnO4-(aq) + I-(aq) -> MnO2(s) + I2(s)}$
 
 > [!success]- Answer 4
 > **The iodide half:**
 >
-> $2\text{I}^- \rightarrow \text{I}_2 + 2e^-$
+> $\ce{2I- -> I2 + 2e-}$
 >
 > **The manganese half, balanced for basic conditions.** Oxygen is
 > balanced with water on the side needing it and hydroxide on the other:
 >
-> $\text{MnO}_4^- + 2\text{H}_2\text{O} + 3e^- \rightarrow \text{MnO}_2 + 4\text{OH}^-$
+> $\ce{MnO4- + 2H2O + 3e- -> MnO2 + 4OH-}$
 >
 > Check that half before continuing. Mn: 1 and 1. O: $4 + 2 = 6$ on the
 > left, $2 + 4 = 6$ on the right. H: 4 and 4. Charge:
@@ -182,11 +182,11 @@ $\text{MnO}_4^-\text{(aq)} + \text{I}^-\text{(aq)} \rightarrow \text{MnO}_2\text
 > **Equalise the electrons.** Three and two, so multiply by 2 and 3
 > respectively to reach six:
 >
-> $\begin{aligned} 2\text{MnO}_4^- + 4\text{H}_2\text{O} + 6e^- &\rightarrow 2\text{MnO}_2 + 8\text{OH}^- \\ 6\text{I}^- &\rightarrow 3\text{I}_2 + 6e^- \end{aligned}$
+> $\begin{aligned} \ce{2MnO4- + 4H2O + 6e-} &\rightarrow \ce{2MnO2 + 8OH-} \\ \ce{6I-} &\rightarrow \ce{3I2 + 6e-} \end{aligned}$
 >
 > **Add:**
 >
-> $$2\text{MnO}_4^-\text{(aq)} + 4\text{H}_2\text{O(l)} + 6\text{I}^-\text{(aq)} \rightarrow 2\text{MnO}_2\text{(s)} + 8\text{OH}^-\text{(aq)} + 3\text{I}_2\text{(s)}$$
+> $$\ce{2MnO4-(aq) + 4H2O(l) + 6I-(aq) -> 2MnO2(s) + 8OH-(aq) + 3I2(s)}$$
 >
 > **Atoms.** Mn: 2 and 2. O: $8 + 4 = 12$ and $4 + 8 = 12$. H: 8 and 8.
 > I: 6 and 6. ✓
@@ -195,14 +195,14 @@ $\text{MnO}_4^-\text{(aq)} + \text{I}^-\text{(aq)} \rightarrow \text{MnO}_2\text
 > ✓
 >
 > **Why basic conditions are handled differently.** In a basic solution
-> there is essentially no $\text{H}^+$ available, so an equation
+> there is essentially no $\ce{H+}$ available, so an equation
 > containing it would be describing a species that is not there. Water
 > and hydroxide are both abundant, and they do the same job.
 >
 > An alternative route that some find easier: balance the whole thing as
-> though it were acidic, then add enough $\text{OH}^-$ to **both** sides
-> to neutralise every $\text{H}^+$, and combine each
-> $\text{H}^+ + \text{OH}^-$ into water. Either route gives the same
+> though it were acidic, then add enough $\ce{OH-}$ to **both** sides
+> to neutralise every $\ce{H+}$, and combine each
+> $\ce{H+ + OH-}$ into water. Either route gives the same
 > equation; use whichever you can do without looking it up.
 
 **5.** Suppose your booklet gives
@@ -217,9 +217,9 @@ and the cathode, and write the cell notation.
 > reduced and zinc is oxidised.
 >
 > - **Anode (oxidation):**
->   $\text{Zn(s)} \rightarrow \text{Zn}^{2+}\text{(aq)} + 2e^-$
+>   $\ce{Zn(s) -> Zn^2+(aq) + 2e-}$
 > - **Cathode (reduction):**
->   $\text{Cu}^{2+}\text{(aq)} + 2e^- \rightarrow \text{Cu(s)}$
+>   $\ce{Cu^2+(aq) + 2e- -> Cu(s)}$
 >
 > $E^\circ_{\text{cell}} = E^\circ_{\text{cathode}} - E^\circ_{\text{anode}} = (+0.34) - (-0.76) = +1.10\ \text{V}$
 >
@@ -228,7 +228,7 @@ and the cathode, and write the cell notation.
 > **Cell notation**, anode on the left, cathode on the right, double bar
 > for the salt bridge:
 >
-> $$\text{Zn(s)}\ |\ \text{Zn}^{2+}\text{(aq)}\ ||\ \text{Cu}^{2+}\text{(aq)}\ |\ \text{Cu(s)}$$
+> $$\ce{Zn(s)}\ |\ \ce{Zn^2+(aq)}\ ||\ \ce{Cu^2+(aq)}\ |\ \ce{Cu(s)}$$
 >
 > **Note what was subtracted and what was not.** Both values in the
 > booklet are written as **reduction** potentials, including zinc's,
@@ -248,7 +248,7 @@ and the cathode, and write the cell notation.
 > reasons are on that page.
 
 **6.** For
-$2\text{Al(s)} + 3\text{Cu}^{2+}\text{(aq)} \rightarrow 2\text{Al}^{3+}\text{(aq)} + 3\text{Cu(s)}$,
+$\ce{2Al(s) + 3Cu^2+(aq) -> 2Al^3+(aq) + 3Cu(s)}$,
 with $E^\circ = -1.66$ V for the aluminium(III)/aluminium couple and
 $E^\circ = +0.34$ V for copper(II)/copper, find
 $E^\circ_{\text{cell}}$. A classmate multiplies the aluminium value by 2
@@ -305,9 +305,9 @@ happens spontaneously. Give $E^\circ_{\text{cell}}$ for each.
 >
 > **Positive, so spontaneous.** The copper strip dissolves, silver metal
 > deposits on it as a grey fuzz, and the solution turns blue as
-> $\text{Cu}^{2+}$ builds up.
+> $\ce{Cu^2+}$ builds up.
 >
-> $2\text{Ag}^+\text{(aq)} + \text{Cu(s)} \rightarrow 2\text{Ag(s)} + \text{Cu}^{2+}\text{(aq)}$
+> $\ce{2Ag+(aq) + Cu(s) -> 2Ag(s) + Cu^2+(aq)}$
 >
 > Note the 2 on the silver — one copper atom supplies two electrons, and
 > each silver ion needs one. It does not affect

@@ -40,7 +40,7 @@ Two distinctions matter:
   have accumulated and nothing is running backwards yet.
 
 One more subtlety. In a reaction such as
-$2\text{A} \rightarrow 3\text{B}$, B appears faster than A disappears —
+$\ce{2A} \rightarrow 3\ce{B}$, B appears faster than A disappears —
 by a factor of $\tfrac{3}{2}$. To get a single rate for the reaction
 rather than a rate per species, divide each by its coefficient. Quoting
 "the rate" without saying which substance you measured is incomplete.
@@ -50,7 +50,7 @@ rather than a rate per species, divide each by its coefficient. Quoting
 For most reactions the rate depends on the concentrations of the
 reactants in a form like this:
 
-$$\text{rate} = k[\text{A}]^m[\text{B}]^n$$
+$$\text{rate} = k[\ce{A}]^m[\ce{B}]^n$$
 
 $k$ is the **rate constant**, fixed for a given reaction at a given
 temperature. The exponents $m$ and $n$ are the **orders** with respect
@@ -75,24 +75,24 @@ The standard way to measure the orders is the **method of initial
 rates**: run the reaction several times, changing one concentration at a
 time, and see what each change does to the starting rate.
 
-Suppose a set of trials for $\text{A} + \text{B} \rightarrow$ products
+Suppose a set of trials for $\ce{A + B} \rightarrow$ products
 came out like this.
 
-| Trial | $[\text{A}]$, mol/L | $[\text{B}]$, mol/L | Initial rate, mol/(L·s) |
+| Trial | $[\ce{A}]$, mol/L | $[\ce{B}]$, mol/L | Initial rate, mol/(L·s) |
 | --- | --- | --- | --- |
 | 1 | 0.10 | 0.10 | $2.0 \times 10^{-3}$ |
 | 2 | 0.20 | 0.10 | $4.0 \times 10^{-3}$ |
 | 3 | 0.10 | 0.20 | $8.0 \times 10^{-3}$ |
 
-Compare trials 1 and 2. $[\text{A}]$ doubles, $[\text{B}]$ is held
+Compare trials 1 and 2. $[\ce{A}]$ doubles, $[\ce{B}]$ is held
 still, and the rate doubles. Doubling produced a factor of $2^1$, so the
 reaction is **first order in A**.
 
-Compare trials 1 and 3. $[\text{B}]$ doubles and the rate quadruples.
+Compare trials 1 and 3. $[\ce{B}]$ doubles and the rate quadruples.
 Doubling produced a factor of $2^2$, so the reaction is **second order
 in B**.
 
-$$\text{rate} = k[\text{A}][\text{B}]^2$$
+$$\text{rate} = k[\ce{A}][\ce{B}]^2$$
 
 Substituting trial 1 gives the rate constant:
 
@@ -130,7 +130,7 @@ experimentally measured rate law is a window onto the slow step, and
 reading it is how chemists find out what the mechanism is.
 
 If the measured rate law for a reaction whose overall equation contains
-$2\text{NO}_2$ turns out to be second order in $\text{NO}_2$, that is
+$\ce{2NO2}$ turns out to be second order in $\ce{NO2}$, that is
 consistent with two of those molecules colliding in the slow step. If it
 turned out to be first order, they could not both be in it.
 

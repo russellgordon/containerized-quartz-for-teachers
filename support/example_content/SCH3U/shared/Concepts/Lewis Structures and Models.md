@@ -7,10 +7,10 @@ tags:
   - concepts
   - matter-and-bonding
 ---
-Once the kits came out, the room got quieter. Building $\text{H}_2\text{O}$
+Once the kits came out, the room got quieter. Building $\ce{H2O}$
 from a red ball with two holes drilled at an angle is easy. Working out
 *why* the holes are at an angle, and why the carbon in
-$\text{CO}_2$ needed two sticks to each oxygen, is the part the kit
+$\ce{CO2}$ needed two sticks to each oxygen, is the part the kit
 cannot do for you. A Lewis structure is the piece of paper that decides
 what the model should look like before you build it.
 
@@ -37,7 +37,7 @@ the point rather than a convention:
 
 - **Ionic.** Draw the electron leaving. Sodium's single dot moves to
   chlorine, and you write the result as two separate species in square
-  brackets with their charges: $\text{Na}^+$ beside
+  brackets with their charges: $\ce{Na+}$ beside
   $\text{[Cl]}^-$ carrying eight dots. Nothing is shared, so nothing is
   drawn between them.
 - **Covalent.** Draw the shared pairs *between* the atoms, usually as a
@@ -69,7 +69,7 @@ is the least electronegative, so it is central. Two single bonds use
 four electrons, leaving twelve, which complete the octets on both
 oxygens. Carbon now has only four electrons around it, so pull one lone
 pair from each oxygen into the bonding region — and you have
-$\text{O=C=O}$, with two lone pairs left on each oxygen. Sixteen
+$\ce{O=C=O}$, with two lone pairs left on each oxygen. Sixteen
 electrons, all accounted for.
 
 Ethene works the same way: $2(4) + 4(1) = 12$ valence electrons, and the
@@ -85,21 +85,21 @@ that you will meet them this year.
 
 - **Hydrogen wants two, not eight.** Its outer shell is the first shell
   and the first shell holds two. Helium is full at two as well.
-- **Beryllium is stable with four.** In $\text{BeCl}_2$ the beryllium
+- **Beryllium is stable with four.** In $\ce{BeCl2}$ the beryllium
   has two bonding pairs and nothing else.
-- **Boron is stable with six.** $\text{BF}_3$ has three bonds around
+- **Boron is stable with six.** $\ce{BF3}$ has three bonds around
   boron and no lone pair. This is why boron compounds are so reactive
   towards anything with a lone pair to offer — the shell has room.
 - **Period 3 and beyond can exceed eight.** Phosphorus in
-  $\text{PCl}_5$ has ten electrons around it, and sulfur in
-  $\text{SF}_6$ has twelve. These atoms are larger, so more neighbours
+  $\ce{PCl5}$ has ten electrons around it, and sulfur in
+  $\ce{SF6}$ has twelve. These atoms are larger, so more neighbours
   physically fit, and they have energy levels available that period 2
   atoms do not. You will often see this explained as "d orbitals"; that
   is a simplification, and the honest version is that the reason is
   more subtle than Grade 11 needs. What matters here is that nitrogen
   can never do it and phosphorus can, and that is a size argument.
 - **Some molecules have an odd number of electrons**, so somebody has to
-  be short. Nitrogen monoxide, $\text{NO}$, has eleven valence
+  be short. Nitrogen monoxide, $\ce{NO}$, has eleven valence
   electrons. No arrangement gives everyone eight, and the molecule
   exists anyway.
 
@@ -108,7 +108,7 @@ students meet are arithmetic.
 
 ## What a model shows, and what it lies about
 
-Build $\text{H}_2\text{O}$ and $\text{CO}_2$ from the same kit and the
+Build $\ce{H2O}$ and $\ce{CO2}$ from the same kit and the
 difference is immediately physical: one is bent, one is straight. That
 difference is the whole reason water dissolves salt and carbon dioxide
 does not dissolve much of anything, which is where
@@ -125,7 +125,7 @@ lying about three things, and it is worth knowing which:
 - **Particles that are not there.** Build sodium chloride and you must
   build a *lattice* — a repeating block of alternating ions with each
   ion surrounded by six of the other kind. A student who builds one
-  $\text{Na}^+$ stuck to one $\text{Cl}^-$ has built something that does
+  $\ce{Na+}$ stuck to one $\ce{Cl-}$ has built something that does
   not exist. This is the single most useful thing a model kit can teach
   about ionic compounds, and it only works if you refuse to stop at two
   balls.

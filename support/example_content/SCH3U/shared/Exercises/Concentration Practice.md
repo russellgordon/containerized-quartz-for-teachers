@@ -23,7 +23,7 @@ Molar masses to two decimal places; round once, at the end.
 solution. Find the concentration in mol/L.
 
 > [!success]- Answer 1
-> $M(\text{NaCl}) = 22.99 + 35.45 = 58.44 \text{ g/mol}$
+> $M(\ce{NaCl}) = 22.99 + 35.45 = 58.44 \text{ g/mol}$
 >
 > $\begin{aligned} n &= \frac{5.85 \text{ g}}{58.44 \text{ g/mol}} = 0.10010 \text{ mol} \\ c &= \frac{n}{V} = \frac{0.10010 \text{ mol}}{0.2500 \text{ L}} = 0.4004 \text{ mol/L} \end{aligned}$
 >
@@ -39,7 +39,7 @@ solution. Find the concentration in mol/L.
 > the first one is the one in the formula — which is the whole reason
 > [[Preparing a Standard Solution]] insists on a volumetric flask.
 
-**2.** What mass of glucose, $\text{C}_6\text{H}_{12}\text{O}_6$, is
+**2.** What mass of glucose, $\ce{C6H12O6}$, is
 needed to prepare 500.0 mL of a 0.200 mol/L solution?
 
 > [!success]- Answer 2
@@ -120,9 +120,9 @@ neutralise 25.0 mL of 0.200 mol/L sulfuric acid?
 > Balanced equation first, because the ratio here is **not** 1 to 1 and
 > that is the entire question:
 >
-> $$\text{H}_2\text{SO}_4 + 2\text{NaOH} \rightarrow \text{Na}_2\text{SO}_4 + 2\text{H}_2\text{O}$$
+> $$\ce{H2SO4 + 2NaOH -> Na2SO4 + 2H2O}$$
 >
-> $\begin{aligned} n(\text{H}_2\text{SO}_4) &= (0.200)(0.0250) = 5.00 \times 10^{-3} \text{ mol} \\ n(\text{NaOH}) &= 2 \times 5.00 \times 10^{-3} = 1.00 \times 10^{-2} \text{ mol} \\ V &= \frac{n}{c} = \frac{1.00 \times 10^{-2}}{0.250} = 0.0400 \text{ L} \end{aligned}$
+> $\begin{aligned} n(\ce{H2SO4}) &= (0.200)(0.0250) = 5.00 \times 10^{-3} \text{ mol} \\ n(\ce{NaOH}) &= 2 \times 5.00 \times 10^{-3} = 1.00 \times 10^{-2} \text{ mol} \\ V &= \frac{n}{c} = \frac{1.00 \times 10^{-2}}{0.250} = 0.0400 \text{ L} \end{aligned}$
 >
 > **40.0 mL of sodium hydroxide.**
 >
@@ -140,17 +140,17 @@ neutralise 25.0 mL of 0.200 mol/L sulfuric acid?
 sodium sulfate solution. What mass of barium sulfate precipitates?
 
 > [!success]- Answer 6
-> $$\text{BaCl}_2 + \text{Na}_2\text{SO}_4 \rightarrow \text{BaSO}_4\text{(s)} + 2\text{NaCl}$$
+> $$\ce{BaCl2 + Na2SO4 -> BaSO4(s) + 2NaCl}$$
 >
 > "An excess" tells you the barium chloride is limiting, so you never
 > need the other solution's numbers.
 >
-> $n(\text{BaCl}_2) = (0.100 \text{ mol/L})(0.0500 \text{ L}) = 5.00 \times 10^{-3} \text{ mol}$
+> $n(\ce{BaCl2}) = (0.100 \text{ mol/L})(0.0500 \text{ L}) = 5.00 \times 10^{-3} \text{ mol}$
 >
 > The ratio to the precipitate is 1 to 1, so
-> $n(\text{BaSO}_4) = 5.00 \times 10^{-3}$ mol.
+> $n(\ce{BaSO4}) = 5.00 \times 10^{-3}$ mol.
 >
-> $M(\text{BaSO}_4) = 137.33 + 32.07 + 4(16.00) = 233.40 \text{ g/mol}$
+> $M(\ce{BaSO4}) = 137.33 + 32.07 + 4(16.00) = 233.40 \text{ g/mol}$
 >
 > $m = (5.00 \times 10^{-3})(233.40) = 1.167 \text{ g}$
 >

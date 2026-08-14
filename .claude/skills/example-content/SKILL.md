@@ -185,17 +185,17 @@ from Phase 5 apply here too.
   characters the chart widens and the pie itself shrinks to fit the
   column. "Dry air, by volume" beats "Composition of dry air by volume"
   on its own merits anyway.
-- **CHEMISTRY: use mhchem (`\ce{...}`)**. The build enables it
-  (`build_site.py` adds `import "katex/contrib/mhchem"` to `latex.ts`),
-  so a whole equation fits in one macro and comes out correctly
-  typeset: `$\ce{CaCO3(s) <=> CaO(s) + CO2(g)}$`, ions as `$\ce{SO4^2-}$`.
-  It gives upright symbols, real subscripts, and true reaction arrows
-  without hand-building any of them. Longhand (`$\text{SO}_4^{2-}$`)
-  still renders and older payloads use it — leave those alone unless you
-  are rewriting the page anyway, but write new chemistry with `\ce{}`.
-  What has NOT changed: with neither `\ce{}` nor `\text{}`, `H_2O` comes
-  out in maths italic, the convention for variables, which is wrong for
-  elements.
+- **CHEMISTRY: write it with mhchem (`\ce{...}`), never by hand.** The
+  build enables the extension (`build_site.py` adds
+  `import "katex/contrib/mhchem"` to `latex.ts`), so a whole equation
+  fits in one macro, typed roughly as it is said aloud:
+  `$\ce{CaCO3(s) <=> CaO(s) + CO2(g)}$`, ions as `$\ce{SO4^2-}$`, bonds
+  as `$\ce{C=C}$`. `->` and `<=>` draw the arrows; `(aq)`, `(g)`, `(s)`,
+  `(l)` set states. Do NOT build formulae out of `\text{}` and
+  `\rightarrow` — the payloads were converted away from that and it must
+  not come back, including in prose that names the arrow command.
+  Outside `\ce{}`, a bare `H_2O` renders in maths italic, the convention
+  for variables, which is wrong for elements.
 - **No page stands on its own.** Every page must be reachable from a
   class page (`Unit N, Day M`) either directly, or through ONE page that
   a class page links to — two hops, and no further. Being listed in

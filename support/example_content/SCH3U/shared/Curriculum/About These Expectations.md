@@ -74,8 +74,8 @@ rather than expectation wording, so they are not reproduced here. If you want
 them, they are in the source document at the page range given above.
 
 **Chemical formulas are typeset.** The document sets its handful of formulas
-with real subscripts, and so do these pages: $\text{CO}_2$,
-$\text{H}_2\text{O}$, $\text{C}_2\text{H}_4$, $\text{CH}_4$. There are only six
+with real subscripts, and so do these pages: $\ce{CO2}$,
+$\ce{H2O}$, $\ce{C2H4}$, $\ce{CH4}$. There are only six
 such formulas in the entire course — this document describes chemistry in
 words far more than it writes it in symbols, which is worth knowing before you
 go looking for equations that are not there.

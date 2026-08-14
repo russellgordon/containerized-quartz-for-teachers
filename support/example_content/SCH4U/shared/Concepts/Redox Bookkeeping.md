@@ -50,7 +50,7 @@ the act. Say that sentence a few times; it comes up in every question in
 ## Oxidation numbers are a fiction that works
 
 Loss of electrons is easy to see when a neutral zinc atom becomes a
-$\text{Zn}^{2+}$ ion. It is much harder to see in a reaction between two
+$\ce{Zn^2+}$ ion. It is much harder to see in a reaction between two
 covalent molecules, where nothing is fully gained or lost by anybody.
 
 So chemistry invented a convention. Pretend, for the purposes of
@@ -61,7 +61,7 @@ is the **oxidation number**.
 
 > [!important] An oxidation number is not a charge
 > The carbon in methane has an oxidation number of $-4$. There is no
-> $\text{C}^{4-}$ ion in methane and there never was. The bonding
+> $\ce{C^4-}$ ion in methane and there never was. The bonding
 > electrons are shared, merely shared unequally, and the $-4$ is the
 > result of a deliberate over-simplification applied consistently.
 >
@@ -85,7 +85,7 @@ The rules, in the order you apply them:
 | Sum over a polyatomic ion | the charge on the ion |
 
 The last two rows are how you find the awkward one. In the permanganate
-ion, $\text{MnO}_4^-$, the four oxygens contribute $4 \times (-2) = -8$,
+ion, $\ce{MnO4-}$, the four oxygens contribute $4 \times (-2) = -8$,
 and the total must be $-1$, so manganese is $+7$. Nobody measured that;
 it was deduced from a rule about oxygen and a rule about sums.
 
@@ -100,38 +100,38 @@ For a reaction in **acidic** solution:
 
 1. Split the reaction into an oxidation half and a reduction half.
 2. Balance every element **except oxygen and hydrogen**.
-3. Balance oxygen by adding $\text{H}_2\text{O}$.
-4. Balance hydrogen by adding $\text{H}^+$.
+3. Balance oxygen by adding $\ce{H2O}$.
+4. Balance hydrogen by adding $\ce{H+}$.
 5. Balance the **charge** by adding electrons to the more positive side.
 6. Multiply one or both halves so that the electrons cancel exactly.
 7. Add the halves together and cancel anything appearing on both sides.
 
-In **basic** solution, do all of that, then add as many $\text{OH}^-$ to
-both sides as there are $\text{H}^+$, combine each pair into water, and
+In **basic** solution, do all of that, then add as many $\ce{OH-}$ to
+both sides as there are $\ce{H+}$, combine each pair into water, and
 cancel the water that appears twice.
 
 > [!success]- Permanganate and iron(II), worked through
-> **Skeleton:** $\text{MnO}_4^- + \text{Fe}^{2+} \rightarrow \text{Mn}^{2+} + \text{Fe}^{3+}$, in acidic solution.
+> **Skeleton:** $\ce{MnO4- + Fe^2+ -> Mn^2+ + Fe^3+}$, in acidic solution.
 >
 > Manganese goes from $+7$ to $+2$ — reduced. Iron goes from $+2$ to
 > $+3$ — oxidised.
 >
 > **Reduction half.** Manganese is already balanced. Four oxygens on the
 > left, so add four waters on the right; that puts eight hydrogens on
-> the right, so add eight $\text{H}^+$ on the left. The left now carries
+> the right, so add eight $\ce{H+}$ on the left. The left now carries
 > a charge of $-1 + 8 = +7$ and the right carries $+2$, so five
 > electrons go on the left:
 >
-> $$\text{MnO}_4^- + 8\text{H}^+ + 5e^- \rightarrow \text{Mn}^{2+} + 4\text{H}_2\text{O}$$
+> $$\ce{MnO4- + 8H+ + 5e- -> Mn^2+ + 4H2O}$$
 >
 > **Oxidation half.** One electron leaves:
 >
-> $$\text{Fe}^{2+} \rightarrow \text{Fe}^{3+} + e^-$$
+> $$\ce{Fe^2+ -> Fe^3+} + e^-$$
 >
 > **Combine.** The reduction consumes five electrons and the oxidation
 > supplies one, so multiply the oxidation half by five and add:
 >
-> $$\text{MnO}_4^- + 8\text{H}^+ + 5\text{Fe}^{2+} \rightarrow \text{Mn}^{2+} + 4\text{H}_2\text{O} + 5\text{Fe}^{3+}$$
+> $$\ce{MnO4- + 8H+ + 5Fe^2+ -> Mn^2+ + 4H2O + 5Fe^3+}$$
 >
 > **Check both.** Atoms: one manganese, four oxygens, eight hydrogens,
 > five irons on each side. Charge: $-1 + 8 + 10 = +17$ on the left, and
@@ -140,7 +140,7 @@ cancel the water that appears twice.
 
 One case that looks like a paradox and is not. In
 
-$$\text{Cl}_2 + 2\text{OH}^- \rightarrow \text{Cl}^- + \text{ClO}^- + \text{H}_2\text{O}$$
+$$\ce{Cl2 + 2OH- -> Cl- + ClO- + H2O}$$
 
 chlorine starts at $0$ and ends at both $-1$ and $+1$. The same element
 is oxidised and reduced in one reaction. That is called

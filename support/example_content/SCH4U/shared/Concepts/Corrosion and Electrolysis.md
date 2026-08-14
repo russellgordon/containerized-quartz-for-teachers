@@ -26,17 +26,17 @@ places on the same piece of metal.
 At an **anodic region** — often a scratch, a stressed bend, or a spot
 where the surface is slightly different — iron is oxidised:
 
-$$\text{Fe(s)} \rightarrow \text{Fe}^{2+}\text{(aq)} + 2e^-$$
+$$\ce{Fe(s) -> Fe^2+(aq) + 2e-}$$
 
 The electrons travel through the metal itself, which is an excellent
 conductor and needs no wire, to a **cathodic region** where oxygen is
 reduced in the film of water sitting on the surface:
 
-$$\text{O}_2\text{(g)} + 2\text{H}_2\text{O(l)} + 4e^- \rightarrow 4\text{OH}^-\text{(aq)}$$
+$$\ce{O2(g) + 2H2O(l) + 4e- -> 4OH-(aq)}$$
 
 The iron(II) ions then meet more oxygen, are oxidised further to
 iron(III), and precipitate as a hydrated oxide — which is rust. Its
-formula is written $\text{Fe}_2\text{O}_3 \cdot x\text{H}_2\text{O}$
+formula is written $\ce{Fe2O3} \cdot x\ce{H2O}$
 with a variable $x$, because rust genuinely does not have a fixed water
 content.
 

@@ -67,7 +67,7 @@ arithmetic.
 If your entry says only *"$K_c = 48$"*, and you later discover you used
 the wrong initial concentration, the entry is dead — there is nothing
 left to recompute from. If it says *"absorbance 0.412 on the colorimeter
-at 470 nm; initial $[\text{Fe}^{3+}] = 0.0020$ mol/L; bath at 22.0 °C"*,
+at 470 nm; initial $[\ce{Fe^3+}] = 0.0020$ mol/L; bath at 22.0 °C"*,
 you can fix the error in one line, three weeks later, and the record is
 still honest about what you did at the time.
 

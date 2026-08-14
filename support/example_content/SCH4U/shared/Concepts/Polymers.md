@@ -43,7 +43,7 @@ The monomer must contain a **carbon–carbon double bond**. Under heat,
 pressure, or a catalyst, the second bond of the pair opens and the
 monomers link end to end.
 
-$$n\,\text{CH}_2\text{=CH}_2 \rightarrow [\text{--CH}_2\text{--CH}_2\text{--}]_n$$
+$$\ce{n CH2=CH2 -> [-CH2-CH2-]_n}$$
 
 The defining feature: ==nothing leaves.== Every atom that was in the
 monomers is in the polymer. The repeating unit has exactly the same
@@ -66,7 +66,7 @@ links. A diamine and a dicarboxylic acid give a **polyamide**, joined by
 amide links — that is nylon, and it is why the thread came out of the
 beaker at the boundary where the two layers met.
 
-$$\text{HO--R--OH} + \text{HOOC--R}'\text{--COOH} \rightarrow \text{--O--R--O--CO--R}'\text{--CO--} + \text{H}_2\text{O}$$
+$$\ce{HO-R-OH + HOOC-R'-COOH -> -O-R-O-CO-R'-CO- + H2O}$$
 
 Nature does this constantly. Amino acids joined into proteins lose a
 water molecule at every peptide link. Glucose units joined into starch
@@ -75,8 +75,8 @@ condensation, and it is not a coincidence that digestion — running the
 reaction backwards with water and an enzyme — is a hydrolysis.
 
 > [!example] Telling them apart from the formulas alone
-> You are given a monomer, $\text{C}_2\text{H}_4$, and a repeating unit
-> written $[\text{--CH}_2\text{--CH}_2\text{--}]$. Count the atoms: two
+> You are given a monomer, $\ce{C2H4}$, and a repeating unit
+> written $[\ce{-CH2-CH2-}]$. Count the atoms: two
 > carbons and four hydrogens on each side. Nothing is missing, so it was
 > **addition**, and the monomer must therefore have contained a double
 > bond.

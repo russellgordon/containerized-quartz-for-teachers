@@ -96,12 +96,12 @@ coefficient — so its numerical value depends on how many ions the
 formula produces.
 
 > [!warning] Comparing two $K_{sp}$ values is only valid within a formula type
-> A salt of type $\text{AB}$ and a salt of type $\text{AB}_2$ relate
+> A salt of type $\ce{AB}$ and a salt of type $\ce{AB2}$ relate
 > their $K_{sp}$ to their actual solubility through different powers.
 > The smaller $K_{sp}$ of the two is **not** reliably the less soluble
 > salt.
 >
-> Comparing silver chloride with silver bromide — both $\text{AB}$ — is
+> Comparing silver chloride with silver bromide — both $\ce{AB}$ — is
 > legitimate, and the smaller $K_{sp}$ is the less soluble. Comparing
 > silver chloride with calcium fluoride is not, and to answer that
 > question you must convert each $K_{sp}$ into a molar solubility first
@@ -113,9 +113,9 @@ An ICE table is the standard way of getting from a booklet value to an
 answer. It is a plain table with three rows, and its whole purpose is to
 stop you losing track of what changed.
 
-For a weak acid $\text{HA}$ at initial concentration $c$:
+For a weak acid $\ce{HA}$ at initial concentration $c$:
 
-| | $\text{HA}$ | $\text{H}_3\text{O}^+$ | $\text{A}^-$ |
+| | $\ce{HA}$ | $\ce{H3O+}$ | $\ce{A-}$ |
 | --- | --- | --- | --- |
 | **I**nitial | $c$ | about 0 | 0 |
 | **C**hange | $-x$ | $+x$ | $+x$ |

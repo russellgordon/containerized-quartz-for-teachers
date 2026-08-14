@@ -53,7 +53,7 @@ being depleted.
 
 The whole cell is abbreviated in **cell notation**, anode on the left:
 
-$$\text{Zn(s)} \mid \text{Zn}^{2+}\text{(aq)} \parallel \text{Cu}^{2+}\text{(aq)} \mid \text{Cu(s)}$$
+$$\ce{Zn(s)} \mid \ce{Zn^2+(aq)} \parallel \ce{Cu^2+(aq)} \mid \ce{Cu(s)}$$
 
 A single bar is a boundary between phases; the double bar is the salt
 bridge.
@@ -111,7 +111,7 @@ The solution is a reference point, agreed on by convention: the
 bubbles over an inert platinum surface immersed in a 1 mol/L solution of
 hydrogen ions, at 25 °C, and
 
-$$2\text{H}^+\text{(aq)} + 2e^- \rightleftharpoons \text{H}_2\text{(g)} \qquad E^\circ = 0.00 \text{ V}$$
+$$\ce{2H+(aq) + 2e- <=> H2(g)} \qquad E^\circ = 0.00 \text{ V}$$
 
 That zero is **assigned**, not measured. It is a choice of origin, in
 exactly the sense that the enthalpy of formation of an element is zero

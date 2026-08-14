@@ -89,14 +89,14 @@ Dry air, by volume, near the surface:
 
 | Gas | Formula | Percentage by volume |
 | --- | --- | --- |
-| Nitrogen | $\text{N}_2$ | 78.08 |
-| Oxygen | $\text{O}_2$ | 20.95 |
-| Argon | $\text{Ar}$ | 0.93 |
-| Carbon dioxide | $\text{CO}_2$ | about 0.04, and rising |
-| Neon | $\text{Ne}$ | 0.0018 |
-| Helium | $\text{He}$ | 0.00052 |
-| Methane | $\text{CH}_4$ | about 0.00019 |
-| Krypton | $\text{Kr}$ | 0.00011 |
+| Nitrogen | $\ce{N2}$ | 78.08 |
+| Oxygen | $\ce{O2}$ | 20.95 |
+| Argon | $\ce{Ar}$ | 0.93 |
+| Carbon dioxide | $\ce{CO2}$ | about 0.04, and rising |
+| Neon | $\ce{Ne}$ | 0.0018 |
+| Helium | $\ce{He}$ | 0.00052 |
+| Methane | $\ce{CH4}$ | about 0.00019 |
+| Krypton | $\ce{Kr}$ | 0.00011 |
 
 Three things in that table are worth more than the numbers.
 

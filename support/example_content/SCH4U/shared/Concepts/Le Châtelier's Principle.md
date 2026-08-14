@@ -56,7 +56,7 @@ involved rather than the amounts. The trick for getting the direction
 right is to write the energy into the equation as though it were a
 substance:
 
-$$\text{N}_2\text{(g)} + 3\text{H}_2\text{(g)} \rightleftharpoons 2\text{NH}_3\text{(g)} + \text{energy}$$
+$$\ce{N2(g) + 3H2(g) <=> 2NH3(g)} + \text{energy}$$
 
 Now heating is "adding energy", which the table already covers: add
 something on the right and the system shifts left. Cooling removes it
@@ -81,7 +81,7 @@ $Q$ has exactly the same form as the equilibrium constant, built from
 whatever concentrations the system happens to have right now — not
 necessarily equilibrium ones:
 
-$$Q = \frac{[\text{C}]^c[\text{D}]^d}{[\text{A}]^a[\text{B}]^b}$$
+$$Q = \frac{[\ce{C}]^c[\ce{D}]^d}{[\ce{A}]^a[\ce{B}]^b}$$
 
 | Comparison | What it means | Net direction |
 | --- | --- | --- |

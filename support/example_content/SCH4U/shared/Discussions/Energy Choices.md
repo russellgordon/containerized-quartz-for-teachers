@@ -52,7 +52,7 @@ A data booklet gives you enthalpies of combustion per mole, because
 that is the chemically meaningful quantity. Almost no practical decision
 is made per mole. Fuel is carried by mass and stored by volume.
 
-$$\text{CH}_4\text{(g)} + 2\text{O}_2\text{(g)} \rightarrow \text{CO}_2\text{(g)} + 2\text{H}_2\text{O(l)}$$
+$$\ce{CH4(g) + 2O2(g) -> CO2(g) + 2H2O(l)}$$
 
 > [!example]- The same fuels, ranked three different ways
 > Take the enthalpies of combustion from your own data booklet rather
@@ -80,7 +80,7 @@ The curriculum asks you to look at the conditions that make a reaction
 efficient. The most instructive case in chemistry is one you will be
 able to explain fully in a few weeks, and can already half explain now.
 
-$$\text{N}_2\text{(g)} + 3\text{H}_2\text{(g)} \rightleftharpoons 2\text{NH}_3\text{(g)}$$
+$$\ce{N2(g) + 3H2(g) <=> 2NH3(g)}$$
 
 Ammonia synthesis is exothermic, and it goes from four molecules of gas
 to two. Cold favours the product. High pressure favours the product. And

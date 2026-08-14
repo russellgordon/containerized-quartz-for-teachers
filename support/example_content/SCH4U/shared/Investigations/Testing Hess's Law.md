@@ -30,23 +30,23 @@ sodium chloride solution and water. There are two ways to get there.
 Written as equations, with states, because the states are the entire
 point:
 
-$$\text{NaOH(s)} \rightarrow \text{Na}^+\text{(aq)} + \text{OH}^-\text{(aq)} \qquad \Delta H_1$$
+$$\ce{NaOH(s) -> Na+(aq) + OH-(aq)} \qquad \Delta H_1$$
 
-$$\text{NaOH(s)} + \text{HCl(aq)} \rightarrow \text{NaCl(aq)} + \text{H}_2\text{O(l)} \qquad \Delta H_2$$
+$$\ce{NaOH(s) + HCl(aq) -> NaCl(aq) + H2O(l)} \qquad \Delta H_2$$
 
-$$\text{NaOH(aq)} + \text{HCl(aq)} \rightarrow \text{NaCl(aq)} + \text{H}_2\text{O(l)} \qquad \Delta H_3$$
+$$\ce{NaOH(aq) + HCl(aq) -> NaCl(aq) + H2O(l)} \qquad \Delta H_3$$
 
 The question is whether $\Delta H_1 + \Delta H_3$ comes out equal to
 $\Delta H_2$, within the uncertainty of three cup experiments.
 
 > [!abstract] Why those three equations add up
 > Equations can be added like algebra, and anything appearing on both
-> sides cancels. Notice first that "$\text{NaOH(aq)}$" and
-> "$\text{Na}^+\text{(aq)} + \text{OH}^-\text{(aq)}$" are two names for
+> sides cancels. Notice first that "$\ce{NaOH(aq)}$" and
+> "$\ce{Na+(aq) + OH-(aq)}$" are two names for
 > the same thing — a sodium hydroxide solution *is* those ions in
 > water.
 >
-> $\begin{aligned} \text{NaOH(s)} &\rightarrow \text{Na}^+\text{(aq)} + \text{OH}^-\text{(aq)} \\ \text{Na}^+\text{(aq)} + \text{OH}^-\text{(aq)} + \text{HCl(aq)} &\rightarrow \text{NaCl(aq)} + \text{H}_2\text{O(l)} \\ \hline \text{NaOH(s)} + \text{HCl(aq)} &\rightarrow \text{NaCl(aq)} + \text{H}_2\text{O(l)} \end{aligned}$
+> $\begin{aligned} \ce{NaOH(s)} &\rightarrow \ce{Na+(aq) + OH-(aq)} \\ \ce{Na+(aq) + OH-(aq) + HCl(aq)} &\rightarrow \ce{NaCl(aq) + H2O(l)} \\ \hline \ce{NaOH(s) + HCl(aq)} &\rightarrow \ce{NaCl(aq) + H2O(l)} \end{aligned}$
 >
 > The ions appear on the right of the first line and the left of the
 > second, so they cancel, and what survives is exactly the direct route.
@@ -154,7 +154,7 @@ Before you mass anything:
 
 For each run, work through the same three steps, carrying units:
 
-$$Q = mc\Delta T \qquad n = \frac{m_{\text{NaOH}}}{M_{\text{NaOH}}} \qquad \Delta H = -\frac{Q}{n}$$
+$$Q = mc\Delta T \qquad n = \frac{m_{\ce{NaOH}}}{M_{\ce{NaOH}}} \qquad \Delta H = -\frac{Q}{n}$$
 
 with $c = 4.18\ \text{J/(g}\cdot^\circ\text{C)}$ for these dilute
 solutions. The minus sign is not decoration: $Q$ is the energy the

@@ -91,7 +91,7 @@ Selenium sits in period 4, in the $p$ block, four columns in:
 $$1s^2\,2s^2\,2p^6\,3s^2\,3p^6\,4s^2\,3d^{10}\,4p^4$$
 
 Or, with the previous noble gas standing in for everything up to argon,
-$[\text{Ar}]\,4s^2\,3d^{10}\,4p^4$ — which is the form worth writing,
+$[\ce{Ar}]\,4s^2\,3d^{10}\,4p^4$ — which is the form worth writing,
 because the valence electrons are then the only thing on the page and
 the valence electrons are what react.
 

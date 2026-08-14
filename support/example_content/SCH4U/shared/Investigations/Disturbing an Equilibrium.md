@@ -40,7 +40,7 @@ Three questions, in this order:
 **The carbon dioxide system**, which you have been running inside
 yourself all day:
 
-$$\text{CO}_2\text{(aq)} + \text{H}_2\text{O(l)} \rightleftharpoons \text{H}_2\text{CO}_3\text{(aq)} \rightleftharpoons \text{H}^+\text{(aq)} + \text{HCO}_3^-\text{(aq)}$$
+$$\ce{CO2(aq) + H2O(l) <=> H2CO3(aq) <=> H+(aq) + HCO3-(aq)}$$
 
 Distilled water with a few drops of bromothymol blue, which is green
 near neutral, yellow when acidic, and blue when basic. You have at least
@@ -52,7 +52,7 @@ order.**
 
 **The calcium hydroxide system**, for a disturbance of a different kind:
 
-$$\text{Ca(OH)}_2\text{(s)} \rightleftharpoons \text{Ca}^{2+}\text{(aq)} + 2\text{OH}^-\text{(aq)}$$
+$$\ce{Ca(OH)2(s) <=> Ca^2+(aq) + 2OH-(aq)}$$
 
 Start with a clear, filtered, saturated solution — limewater — and add
 a solution containing one of the ions already in it. Predict what you
@@ -63,7 +63,7 @@ prediction here and it is wrong.
 
 **Iron(III) thiocyanate**, which is the classic and which is mine:
 
-$$\text{Fe}^{3+}\text{(aq)} + \text{SCN}^-\text{(aq)} \rightleftharpoons \text{FeSCN}^{2+}\text{(aq)}$$
+$$\ce{Fe^3+(aq) + SCN-(aq) <=> FeSCN^2+(aq)}$$
 
 Pale yellow and colourless on the left, deep blood-red on the right, so
 the position of the equilibrium is visible from the back of the room. I
@@ -73,7 +73,7 @@ iron(III) from solution, and you will predict each one first.
 **Sealed tubes of dinitrogen tetroxide and nitrogen dioxide**, for
 temperature:
 
-$$\text{N}_2\text{O}_4\text{(g)} \rightleftharpoons 2\text{NO}_2\text{(g)}$$
+$$\ce{N2O4(g) <=> 2NO2(g)}$$
 
 Two identical sealed tubes, one in iced water and one in hot water. This
 is the tube from [[Dynamic Equilibrium]], and today it is going to do
@@ -175,25 +175,25 @@ wants a number.
 
 Ethanoic acid in water is an equilibrium like any other:
 
-$$\text{CH}_3\text{COOH(aq)} + \text{H}_2\text{O(l)} \rightleftharpoons \text{CH}_3\text{COO}^-\text{(aq)} + \text{H}_3\text{O}^+\text{(aq)}$$
+$$\ce{CH3COOH(aq) + H2O(l) <=> CH3COO-(aq) + H3O+(aq)}$$
 
 You know the concentration you started with, because it is on the
-bottle. A pH probe tells you $[\text{H}_3\text{O}^+]$ at equilibrium.
+bottle. A pH probe tells you $[\ce{H3O+}]$ at equilibrium.
 An ICE table gets you from those two facts to everything else, and then
 the expression gets you a constant.
 
-| | $\text{CH}_3\text{COOH}$ | $\text{CH}_3\text{COO}^-$ | $\text{H}_3\text{O}^+$ |
+| | $\ce{CH3COOH}$ | $\ce{CH3COO-}$ | $\ce{H3O+}$ |
 | --- | --- | --- | --- |
 | Initial | your stated concentration | 0 | about 0 |
 | Change | $-x$ | $+x$ | $+x$ |
 | Equilibrium | initial $- x$ | $x$ | $x$ |
 
 Your $x$ comes straight from the pH, because
-$[\text{H}_3\text{O}^+] = 10^{-\text{pH}}$ — and the logarithm work, if
+$[\ce{H3O+}] = 10^{-\text{pH}}$ — and the logarithm work, if
 it is rusty, is in
 [[Working with Logarithms in Chemistry]]. Then
 
-$$K_a = \frac{[\text{CH}_3\text{COO}^-][\text{H}_3\text{O}^+]}{[\text{CH}_3\text{COOH}]}$$
+$$K_a = \frac{[\ce{CH3COO-}][\ce{H3O+}]}{[\ce{CH3COOH}]}$$
 
 Do it at **two different starting concentrations**. If $K_a$ really is a
 constant, the two runs should give the same value even though the pH
@@ -212,14 +212,14 @@ wrong together.
 
 For Part 2:
 
-| Run | Stated concentration (mol/L) | pH | $[\text{H}_3\text{O}^+]$ (mol/L) | $K_a$ |
+| Run | Stated concentration (mol/L) | pH | $[\ce{H3O+}]$ (mol/L) | $K_a$ |
 | --- | --- | --- | --- | --- |
 | 1 | | | | |
 | 2 | | | | |
 
 Carry full precision through the calculation and round once at the end.
 A pH read to 0.01 gives you about two significant figures in
-$[\text{H}_3\text{O}^+]$ — and it is worth understanding why, because it
+$[\ce{H3O+}]$ — and it is worth understanding why, because it
 is the most common place a logarithm quietly destroys precision. See
 [[Significant Figures and Units]].
 
@@ -249,7 +249,7 @@ is the most common place a logarithm quietly destroys precision. See
   backwards is the single most common error in the whole unit.
 - **You did not measure a shift — you observed a colour.** Colour is
   evidence about concentration and it is not a measurement of it. "The
-  red deepened" supports "more $\text{FeSCN}^{2+}$"; it does not support
+  red deepened" supports "more $\ce{FeSCN^2+}$"; it does not support
   a number, a percentage, or a ratio, and it certainly does not support
   a $K_c$.
 - **Your eyes adapt, and the error has a direction.** Stare at a red

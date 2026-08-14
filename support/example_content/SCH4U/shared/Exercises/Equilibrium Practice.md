@@ -30,10 +30,10 @@ first thing [[Reading an Equilibrium Table]] will tell you.
 **1.** Define *homogeneous*, *closed system*, *reversible reaction*, and
 *equilibrium concentration*. Then write the equilibrium expression for
 each of the following, naming the constant in each case.
-*(a)* $\text{N}_2\text{(g)} + 3\text{H}_2\text{(g)} \rightleftharpoons 2\text{NH}_3\text{(g)}$
-*(b)* $\text{CaCO}_3\text{(s)} \rightleftharpoons \text{CaO(s)} + \text{CO}_2\text{(g)}$
-*(c)* $\text{Ca(OH)}_2\text{(s)} \rightleftharpoons \text{Ca}^{2+}\text{(aq)} + 2\text{OH}^-\text{(aq)}$
-*(d)* $\text{CH}_3\text{COOH(aq)} + \text{H}_2\text{O(l)} \rightleftharpoons \text{CH}_3\text{COO}^-\text{(aq)} + \text{H}_3\text{O}^+\text{(aq)}$
+*(a)* $\ce{N2(g) + 3H2(g) <=> 2NH3(g)}$
+*(b)* $\ce{CaCO3(s) <=> CaO(s) + CO2(g)}$
+*(c)* $\ce{Ca(OH)2(s) <=> Ca^2+(aq) + 2OH-(aq)}$
+*(d)* $\ce{CH3COOH(aq) + H2O(l) <=> CH3COO-(aq) + H3O+(aq)}$
 
 > [!success]- Answer 1
 > **Homogeneous**: every substance in the equilibrium is in the same
@@ -53,10 +53,10 @@ each of the following, naming the constant in each case.
 >
 > | | Expression | Constant |
 > | --- | --- | --- |
-> | (a) | $K_c = \frac{[\text{NH}_3]^2}{[\text{N}_2][\text{H}_2]^3}$ | $K_{eq}$, or $K_p$ if written with partial pressures |
-> | (b) | $K_c = [\text{CO}_2]$ | $K_{eq}$ |
-> | (c) | $K_{sp} = [\text{Ca}^{2+}][\text{OH}^-]^2$ | $K_{sp}$, the solubility product |
-> | (d) | $K_a = \frac{[\text{CH}_3\text{COO}^-][\text{H}_3\text{O}^+]}{[\text{CH}_3\text{COOH}]}$ | $K_a$, the acid ionisation constant |
+> | (a) | $K_c = \frac{[\ce{NH3}]^2}{[\ce{N2}][\ce{H2}]^3}$ | $K_{eq}$, or $K_p$ if written with partial pressures |
+> | (b) | $K_c = [\ce{CO2}]$ | $K_{eq}$ |
+> | (c) | $K_{sp} = [\ce{Ca^2+}][\ce{OH-}]^2$ | $K_{sp}$, the solubility product |
+> | (d) | $K_a = \frac{[\ce{CH3COO-}][\ce{H3O+}]}{[\ce{CH3COOH}]}$ | $K_a$, the acid ionisation constant |
 >
 > **Two omissions that are deliberate rather than careless.**
 >
@@ -74,14 +74,14 @@ each of the following, naming the constant in each case.
 > forgetting the exponent on hydroxide is worth a factor of ten or more
 > in a $K_{sp}$ calculation.
 
-**2.** For $\text{H}_2\text{(g)} + \text{I}_2\text{(g)} \rightleftharpoons 2\text{HI(g)}$
+**2.** For $\ce{H2(g) + I2(g) <=> 2HI(g)}$
 at a certain temperature, the equilibrium concentrations are
-$[\text{H}_2] = 0.0400$ mol/L, $[\text{I}_2] = 0.0600$ mol/L, and
-$[\text{HI}] = 0.360$ mol/L. Calculate $K_c$ and say what its size tells
+$[\ce{H2}] = 0.0400$ mol/L, $[\ce{I2}] = 0.0600$ mol/L, and
+$[\ce{HI}] = 0.360$ mol/L. Calculate $K_c$ and say what its size tells
 you.
 
 > [!success]- Answer 2
-> $K_c = \frac{[\text{HI}]^2}{[\text{H}_2][\text{I}_2]} = \frac{(0.360)^2}{(0.0400)(0.0600)} = \frac{0.1296}{0.00240} = 54.0$
+> $K_c = \frac{[\ce{HI}]^2}{[\ce{H2}][\ce{I2}]} = \frac{(0.360)^2}{(0.0400)(0.0600)} = \frac{0.1296}{0.00240} = 54.0$
 >
 > **$K_c = 54.0$** at that temperature.
 >
@@ -96,36 +96,36 @@ you.
 > take a decade, and this is the same separation of "which way" from
 > "how fast" that Unit 3 was built around. Nothing about $K_c$ is a rate.
 >
-> Note that the exponent went on $[\text{HI}]$ and not on the others,
+> Note that the exponent went on $[\ce{HI}]$ and not on the others,
 > because only hydrogen iodide has a coefficient other than 1. Dropping
 > that square gives 6.00 instead of 54.0, which is a ninefold error from
 > one missing exponent.
 
-**3.** 0.200 mol of $\text{H}_2$ and 0.200 mol of $\text{I}_2$ are
+**3.** 0.200 mol of $\ce{H2}$ and 0.200 mol of $\ce{I2}$ are
 placed in a 1.00 L vessel and allowed to reach equilibrium. At
-equilibrium, $[\text{HI}] = 0.320$ mol/L. Calculate $K_c$.
+equilibrium, $[\ce{HI}] = 0.320$ mol/L. Calculate $K_c$.
 
 > [!success]- Answer 3
 > The vessel is 1.00 L, so moles and mol/L are numerically the same
 > here. Do not let that become a habit — check the volume every time.
 >
 > **The ICE table**, for
-> $\text{H}_2\text{(g)} + \text{I}_2\text{(g)} \rightleftharpoons 2\text{HI(g)}$:
+> $\ce{H2(g) + I2(g) <=> 2HI(g)}$:
 >
-> | | $\text{H}_2$ | $\text{I}_2$ | $\text{HI}$ |
+> | | $\ce{H2}$ | $\ce{I2}$ | $\ce{HI}$ |
 > | --- | --- | --- | --- |
 > | Initial | 0.200 | 0.200 | 0 |
 > | Change | $-x$ | $-x$ | $+2x$ |
 > | Equilibrium | $0.200 - x$ | $0.200 - x$ | $2x$ |
 >
-> **The change row carries the coefficients.** Two moles of $\text{HI}$
-> form for every one mole of $\text{H}_2$ consumed, so if $x$ is the
+> **The change row carries the coefficients.** Two moles of $\ce{HI}$
+> form for every one mole of $\ce{H2}$ consumed, so if $x$ is the
 > amount of hydrogen consumed, $2x$ is the amount of hydrogen iodide
 > formed.
 >
 > From the data, $2x = 0.320$, so $x = 0.160$ mol/L.
 >
-> $[\text{H}_2] = [\text{I}_2] = 0.200 - 0.160 = 0.040\ \text{mol/L}$
+> $[\ce{H2}] = [\ce{I2}] = 0.200 - 0.160 = 0.040\ \text{mol/L}$
 >
 > $K_c = \frac{(0.320)^2}{(0.040)(0.040)} = \frac{0.1024}{0.0016} = 64.0$
 >
@@ -141,12 +141,12 @@ equilibrium, $[\text{HI}] = 0.320$ mol/L. Calculate $K_c$.
 > into the expression, as done above. If it does not reproduce $K_c$,
 > the arithmetic is wrong.
 
-**4.** At the temperature of question 3, 0.500 mol/L of $\text{H}_2$ and
-0.500 mol/L of $\text{I}_2$ are mixed. Find all three equilibrium
+**4.** At the temperature of question 3, 0.500 mol/L of $\ce{H2}$ and
+0.500 mol/L of $\ce{I2}$ are mixed. Find all three equilibrium
 concentrations.
 
 > [!success]- Answer 4
-> | | $\text{H}_2$ | $\text{I}_2$ | $\text{HI}$ |
+> | | $\ce{H2}$ | $\ce{I2}$ | $\ce{HI}$ |
 > | --- | --- | --- | --- |
 > | Initial | 0.500 | 0.500 | 0 |
 > | Change | $-x$ | $-x$ | $+2x$ |
@@ -165,7 +165,7 @@ concentrations.
 >
 > $10.00x = 4.00 \quad \Rightarrow \quad x = 0.400\ \text{mol/L}$
 >
-> $\begin{aligned} [\text{H}_2] &= [\text{I}_2] = 0.500 - 0.400 = 0.100\ \text{mol/L} \\ [\text{HI}] &= 2(0.400) = 0.800\ \text{mol/L} \end{aligned}$
+> $\begin{aligned} [\ce{H2}] &= [\ce{I2}] = 0.500 - 0.400 = 0.100\ \text{mol/L} \\ [\ce{HI}] &= 2(0.400) = 0.800\ \text{mol/L} \end{aligned}$
 >
 > **Check:**
 > $\frac{(0.800)^2}{(0.100)(0.100)} = \frac{0.640}{0.0100} = 64.0$ ✓
@@ -182,14 +182,14 @@ concentrations.
 > answer had come out at $x = 0.05$, the small conversion would have
 > contradicted the large constant.
 
-**5.** For $\text{N}_2\text{O}_4\text{(g)} \rightleftharpoons 2\text{NO}_2\text{(g)}$,
+**5.** For $\ce{N2O4(g) <=> 2NO2(g)}$,
 $K_c = 4.66 \times 10^{-3}$ at a certain temperature. A vessel initially
-contains $\text{N}_2\text{O}_4$ at 0.100 mol/L. Find the equilibrium
+contains $\ce{N2O4}$ at 0.100 mol/L. Find the equilibrium
 concentrations. Try the small-$x$ approximation first and check whether
 it is allowed.
 
 > [!success]- Answer 5
-> | | $\text{N}_2\text{O}_4$ | $\text{NO}_2$ |
+> | | $\ce{N2O4}$ | $\ce{NO2}$ |
 > | --- | --- | --- |
 > | Initial | 0.100 | 0 |
 > | Change | $-x$ | $+2x$ |
@@ -219,7 +219,7 @@ it is allowed.
 >
 > $\begin{aligned} x &= \frac{-b + \sqrt{b^2 - 4ac}}{2a} \\ &= \frac{-4.66 \times 10^{-3} + \sqrt{2.1716 \times 10^{-5} + 7.456 \times 10^{-3}}}{8} \\ &= \frac{-4.66 \times 10^{-3} + 8.6474 \times 10^{-2}}{8} = 1.0227 \times 10^{-2} \end{aligned}$
 >
-> $\begin{aligned} [\text{N}_2\text{O}_4] &= 0.100 - 0.010227 = 0.0898\ \text{mol/L} \\ [\text{NO}_2] &= 2(0.010227) = 0.0205\ \text{mol/L} \end{aligned}$
+> $\begin{aligned} [\ce{N2O4}] &= 0.100 - 0.010227 = 0.0898\ \text{mol/L} \\ [\ce{NO2}] &= 2(0.010227) = 0.0205\ \text{mol/L} \end{aligned}$
 >
 > **Check:**
 > $\frac{(0.0205)^2}{0.0898} = \frac{4.20 \times 10^{-4}}{0.0898} = 4.68 \times 10^{-3}$, which
@@ -232,10 +232,10 @@ it is allowed.
 > without checking, is more dangerous than one that fails obviously.
 >
 > **Only the positive root is kept.** The negative root gives a negative
-> concentration of $\text{NO}_2$, which does not exist.
+> concentration of $\ce{NO2}$, which does not exist.
 
 **6.** For the system in question 5, a vessel is found to contain
-$[\text{N}_2\text{O}_4] = 0.050$ mol/L and $[\text{NO}_2] = 0.050$
+$[\ce{N2O4}] = 0.050$ mol/L and $[\ce{NO2}] = 0.050$
 mol/L. Is it at equilibrium? If not, which way will it move?
 
 > [!success]- Answer 6
@@ -243,7 +243,7 @@ mol/L. Is it at equilibrium? If not, which way will it move?
 > $K_c$, evaluated at whatever concentrations the system happens to
 > have:
 >
-> $Q = \frac{[\text{NO}_2]^2}{[\text{N}_2\text{O}_4]} = \frac{(0.050)^2}{0.050} = \frac{0.0025}{0.050} = 0.050$
+> $Q = \frac{[\ce{NO2}]^2}{[\ce{N2O4}]} = \frac{(0.050)^2}{0.050} = \frac{0.0025}{0.050} = 0.050$
 >
 > Compare: $Q = 0.050$ and $K_c = 4.66 \times 10^{-3}$.
 >
@@ -252,8 +252,8 @@ mol/L. Is it at equilibrium? If not, which way will it move?
 > **The system is not at equilibrium.** There is too much product
 > relative to reactant for this constant, so the system moves to reduce
 > the top of the fraction and increase the bottom — it shifts to the
-> **left**, converting $\text{NO}_2$ back into
-> $\text{N}_2\text{O}_4$, until $Q$ falls to $4.66 \times 10^{-3}$.
+> **left**, converting $\ce{NO2}$ back into
+> $\ce{N2O4}$, until $Q$ falls to $4.66 \times 10^{-3}$.
 >
 > **How to reason it without memorising a rule:** $Q$ is where the
 > system is and $K$ is where it is going. If $Q$ is too big, the
@@ -265,21 +265,21 @@ mol/L. Is it at equilibrium? If not, which way will it move?
 > Visibly, the brown colour of this mixture will fade as it settles.
 
 **7.** For
-$\text{N}_2\text{(g)} + 3\text{H}_2\text{(g)} \rightleftharpoons 2\text{NH}_3\text{(g)}$,
+$\ce{N2(g) + 3H2(g) <=> 2NH3(g)}$,
 the forward reaction is exothermic. For each change, state which way the
 system shifts and whether $K_c$ changes.
 
 > [!success]- Answer 7
 > | Change | Shift | Does $K_c$ change? |
 > | --- | --- | --- |
-> | Add $\text{N}_2$ | Right | **No** |
-> | Remove $\text{NH}_3$ as it forms | Right | **No** |
+> | Add $\ce{N2}$ | Right | **No** |
+> | Remove $\ce{NH3}$ as it forms | Right | **No** |
 > | Decrease the volume of the vessel | Right | **No** |
 > | Raise the temperature | **Left** | **Yes — $K_c$ decreases** |
 > | Add a catalyst | **No shift** | **No** |
 > | Pump in argon at constant volume | **No shift** | **No** |
 >
-> **Adding $\text{N}_2$** makes $Q$ smaller than $K_c$ — the denominator
+> **Adding $\ce{N2}$** makes $Q$ smaller than $K_c$ — the denominator
 > grew — so the system moves right until $Q$ climbs back to the same
 > $K_c$. It arrives at different concentrations satisfying the **same**
 > constant.
@@ -333,7 +333,7 @@ reactants and products are equal."*
 >
 > **(b) Equilibrium means the concentrations have stopped changing, not
 > that they are equal.** Question 2 is the counterexample:
-> $[\text{HI}] = 0.360$ mol/L sits beside $[\text{H}_2] = 0.0400$
+> $[\ce{HI}] = 0.360$ mol/L sits beside $[\ce{H2}] = 0.0400$
 > mol/L, a factor of nine apart, at equilibrium. A system with
 > $K_c = 10^{20}$ is at equilibrium with essentially nothing but
 > product, and one with $K_c = 10^{-20}$ with essentially nothing but

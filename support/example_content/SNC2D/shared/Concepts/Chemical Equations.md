@@ -31,9 +31,9 @@ another, which is the subject of [[Balancing Equations]].
 > [!example] Magnesium burning, all three stages
 > **Words:** magnesium + oxygen → magnesium oxide
 >
-> **Skeleton:** $\text{Mg(s)} + \text{O}_2\text{(g)} \rightarrow \text{MgO(s)}$
+> **Skeleton:** $\ce{Mg(s) + O2(g) -> MgO(s)}$
 >
-> **Balanced:** $2\text{Mg(s)} + \text{O}_2\text{(g)} \rightarrow 2\text{MgO(s)}$
+> **Balanced:** $\ce{2Mg(s) + O2(g) -> 2MgO(s)}$
 >
 > Notice that the observation — a brilliant white flame and a white powder
 > left behind — only tells you the first line. Getting from there to the third
@@ -54,7 +54,7 @@ The letter in brackets after each formula is the **state**: $\text{(s)}$
 solid, $\text{(l)}$ liquid, $\text{(g)}$ gas, $\text{(aq)}$ aqueous, meaning
 dissolved in water. States are not optional garnish. In
 
-$$\text{AgNO}_3\text{(aq)} + \text{NaCl(aq)} \rightarrow \text{AgCl(s)} + \text{NaNO}_3\text{(aq)}$$
+$$\ce{AgNO3(aq) + NaCl(aq) -> AgCl(s) + NaNO3(aq)}$$
 
 the entire observable event is in the states: two clear solutions were mixed
 and a solid appeared. Strip the states out and the equation no longer says

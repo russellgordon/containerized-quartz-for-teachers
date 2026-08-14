@@ -12,18 +12,18 @@ polyatomic ion list beside you — that is how a chemist works, and it is
 how you are expected to work here.
 
 **1.** Name each compound, and show the charges you used to check it:
-$\text{NaCl}$, $\text{MgO}$, $\text{CaCl}_2$.
+$\ce{NaCl}$, $\ce{MgO}$, $\ce{CaCl2}$.
 
 > [!success]- Answer 1
-> **$\text{NaCl}$ — sodium chloride.** Sodium forms $\text{Na}^{+}$ and
-> chlorine forms $\text{Cl}^{-}$. One of each balances to zero, so the
+> **$\ce{NaCl}$ — sodium chloride.** Sodium forms $\ce{Na+}$ and
+> chlorine forms $\ce{Cl-}$. One of each balances to zero, so the
 > ratio is 1:1 and no subscripts are needed.
 >
-> **$\text{MgO}$ — magnesium oxide.** $\text{Mg}^{2+}$ with
-> $\text{O}^{2-}$. Again 1:1, because $2 + (-2) = 0$.
+> **$\ce{MgO}$ — magnesium oxide.** $\ce{Mg^2+}$ with
+> $\ce{O^2-}$. Again 1:1, because $2 + (-2) = 0$.
 >
-> **$\text{CaCl}_2$ — calcium chloride.** $\text{Ca}^{2+}$ needs two
-> $\text{Cl}^{-}$ to cancel, so the ratio is 1:2.
+> **$\ce{CaCl2}$ — calcium chloride.** $\ce{Ca^2+}$ needs two
+> $\ce{Cl-}$ to cancel, so the ratio is 1:2.
 >
 > Notice the pattern: the second element's name ends in *-ide*, and the
 > subscripts are whatever makes the total charge zero. The name never
@@ -33,66 +33,66 @@ $\text{NaCl}$, $\text{MgO}$, $\text{CaCl}_2$.
 sulfide, iron(III) oxide.
 
 > [!success]- Answer 2
-> **Magnesium nitride.** $\text{Mg}^{2+}$ and $\text{N}^{3-}$. The
+> **Magnesium nitride.** $\ce{Mg^2+}$ and $\ce{N^3-}$. The
 > smallest whole-number ratio making zero is three magnesium to two
-> nitrogen: $3(+2) + 2(-3) = 0$. So $\text{Mg}_3\text{N}_2$.
+> nitrogen: $3(+2) + 2(-3) = 0$. So $\ce{Mg3N2}$.
 >
-> **Potassium sulfide.** $\text{K}^{+}$ and $\text{S}^{2-}$. Two
-> potassium to one sulfur: $\text{K}_2\text{S}$.
+> **Potassium sulfide.** $\ce{K+}$ and $\ce{S^2-}$. Two
+> potassium to one sulfur: $\ce{K2S}$.
 >
 > **Iron(III) oxide.** The Roman numeral tells you the charge on the
-> iron, so $\text{Fe}^{3+}$ with $\text{O}^{2-}$:
-> $2(+3) + 3(-2) = 0$, giving $\text{Fe}_2\text{O}_3$.
+> iron, so $\ce{Fe^3+}$ with $\ce{O^2-}$:
+> $2(+3) + 3(-2) = 0$, giving $\ce{Fe2O3}$.
 >
 > The shortcut people call "crossing over" is just this arithmetic done
 > quickly. Do it the slow way until it is reliable, because crossing
 > over quietly fails when the numbers share a factor — iron(II) oxide
-> is $\text{FeO}$, not $\text{Fe}_2\text{O}_2$.
+> is $\ce{FeO}$, not $\ce{Fe2O2}$.
 
-**3.** Name $\text{FeCl}_3$ and $\text{CuO}$. Explain how you worked
+**3.** Name $\ce{FeCl3}$ and $\ce{CuO}$. Explain how you worked
 out the Roman numeral.
 
 > [!success]- Answer 3
-> **$\text{FeCl}_3$ — iron(III) chloride.** Chlorine is reliably
-> $\text{Cl}^{-}$, and there are three of them, so the negative total
+> **$\ce{FeCl3}$ — iron(III) chloride.** Chlorine is reliably
+> $\ce{Cl-}$, and there are three of them, so the negative total
 > is $-3$. The compound is neutral overall, so the single iron must be
-> $\text{Fe}^{3+}$.
+> $\ce{Fe^3+}$.
 >
-> **$\text{CuO}$ — copper(II) oxide.** Oxygen is $\text{O}^{2-}$, one
-> of it, so the copper must be $\text{Cu}^{2+}$.
+> **$\ce{CuO}$ — copper(II) oxide.** Oxygen is $\ce{O^2-}$, one
+> of it, so the copper must be $\ce{Cu^2+}$.
 >
 > The Roman numeral is not a count of atoms. It is the **charge on one
 > ion of that metal**, and you get it by working backwards from the
 > part of the formula whose charge you already trust.
 
-**4.** Name $\text{KNO}_3$ and $\text{Ca(OH)}_2$, then write the
+**4.** Name $\ce{KNO3}$ and $\ce{Ca(OH)2}$, then write the
 formulas for sodium sulfate and ammonium chloride.
 
 > [!success]- Answer 4
-> **$\text{KNO}_3$ — potassium nitrate.** $\text{NO}_3^{-}$ is the
+> **$\ce{KNO3}$ — potassium nitrate.** $\ce{NO3-}$ is the
 > nitrate ion, and it travels as one unit.
 >
-> **$\text{Ca(OH)}_2$ — calcium hydroxide.** $\text{Ca}^{2+}$ needs two
-> hydroxide ions, $\text{OH}^{-}$. The brackets are doing real work:
+> **$\ce{Ca(OH)2}$ — calcium hydroxide.** $\ce{Ca^2+}$ needs two
+> hydroxide ions, $\ce{OH-}$. The brackets are doing real work:
 > they say *two of the whole group*, not two oxygens.
 >
-> **Sodium sulfate.** $\text{Na}^{+}$ with $\text{SO}_4^{2-}$ needs two
-> sodium: $\text{Na}_2\text{SO}_4$. No brackets are required, because
+> **Sodium sulfate.** $\ce{Na+}$ with $\ce{SO4^2-}$ needs two
+> sodium: $\ce{Na2SO4}$. No brackets are required, because
 > the multiplier lands on a single sodium atom.
 >
-> **Ammonium chloride.** $\text{NH}_4^{+}$ with $\text{Cl}^{-}$, one
-> each: $\text{NH}_4\text{Cl}$.
+> **Ammonium chloride.** $\ce{NH4+}$ with $\ce{Cl-}$, one
+> each: $\ce{NH4Cl}$.
 >
 > Treat a polyatomic ion as an unbreakable block with one charge. Every
 > mistake in this section comes from taking the block apart.
 
-**5.** Name $\text{CO}_2$, $\text{N}_2\text{O}_4$, and
-$\text{PCl}_5$. Why do these get prefixes when the compounds in
+**5.** Name $\ce{CO2}$, $\ce{N2O4}$, and
+$\ce{PCl5}$. Why do these get prefixes when the compounds in
 question 1 did not?
 
 > [!success]- Answer 5
-> **$\text{CO}_2$ — carbon dioxide.** **$\text{N}_2\text{O}_4$ —
-> dinitrogen tetroxide.** **$\text{PCl}_5$ — phosphorus
+> **$\ce{CO2}$ — carbon dioxide.** **$\ce{N2O4}$ —
+> dinitrogen tetroxide.** **$\ce{PCl5}$ — phosphorus
 > pentachloride.**
 >
 > These are **molecular** compounds — two non-metals — and the same
@@ -106,18 +106,18 @@ question 1 did not?
 > element, and that the "a" at the end of *tetra-* is dropped before
 > the "o" of oxide, because chemists say these out loud.
 
-**6.** Name $\text{HCl(aq)}$, $\text{H}_2\text{SO}_4\text{(aq)}$, and
-$\text{HNO}_3\text{(aq)}$. What does the $\text{(aq)}$ tell you, and
+**6.** Name $\ce{HCl(aq)}$, $\ce{H2SO4(aq)}$, and
+$\ce{HNO3(aq)}$. What does the $\text{(aq)}$ tell you, and
 why does it matter here more than usual?
 
 > [!success]- Answer 6
-> **$\text{HCl(aq)}$ — hydrochloric acid.**
-> **$\text{H}_2\text{SO}_4\text{(aq)}$ — sulfuric acid.**
-> **$\text{HNO}_3\text{(aq)}$ — nitric acid.**
+> **$\ce{HCl(aq)}$ — hydrochloric acid.**
+> **$\ce{H2SO4(aq)}$ — sulfuric acid.**
+> **$\ce{HNO3(aq)}$ — nitric acid.**
 >
 > $\text{(aq)}$ means *aqueous* — dissolved in water. It matters here
 > because acidic behaviour is something these substances do **in
-> solution**. Pure $\text{HCl}$ with no water is a gas, and it is named
+> solution**. Pure $\ce{HCl}$ with no water is a gas, and it is named
 > as a gas rather than as an acid. The state symbol is not decoration;
 > it is part of the claim.
 >
@@ -126,7 +126,7 @@ why does it matter here more than usual?
 > becomes nitric.
 
 **7.** How many atoms in total are in one formula unit of
-$\text{Ca(NO}_3)_2$? List them by element.
+$\ce{Ca(NO3)2}$? List them by element.
 
 > [!success]- Answer 7
 > The subscript 2 multiplies **everything inside the brackets**.
@@ -138,20 +138,20 @@ $\text{Ca(NO}_3)_2$? List them by element.
 > Total: $1 + 2 + 6 = 9$ atoms.
 >
 > The single most common error is reading the oxygen as 3. If you write
-> the group out twice — $\text{NO}_3$ and $\text{NO}_3$ — the count
+> the group out twice — $\ce{NO3}$ and $\ce{NO3}$ — the count
 > stops being a rule you have to remember.
 
 **8.** A student hands in these two claims. Say what is wrong with each
 and give the correct statement.
-> *(a) $\text{MgCl}_2$ should be called magnesium dichloride, in the
-> same way $\text{CO}_2$ is carbon dioxide.*
-> *(b) $\text{H}_2\text{O}$ contains two atoms.*
+> *(a) $\ce{MgCl2}$ should be called magnesium dichloride, in the
+> same way $\ce{CO2}$ is carbon dioxide.*
+> *(b) $\ce{H2O}$ contains two atoms.*
 
 > [!success]- Answer 8
 > **(a)** The prefix system belongs to **molecular** compounds, where
 > the same two elements really can combine in more than one ratio, so
-> the name has to say which. $\text{MgCl}_2$ is **ionic**: magnesium is
-> reliably $\text{Mg}^{2+}$ and chlorine reliably $\text{Cl}^{-}$, so
+> the name has to say which. $\ce{MgCl2}$ is **ionic**: magnesium is
+> reliably $\ce{Mg^2+}$ and chlorine reliably $\ce{Cl-}$, so
 > 1:2 is the only ratio available and stating it adds nothing. The name
 > is **magnesium chloride**.
 >
@@ -164,7 +164,7 @@ and give the correct statement.
 > **(b)** Three atoms: two hydrogen and one oxygen. The student is
 > reading the subscript as a total rather than as a count attached to
 > the symbol in front of it. The same misreading turns
-> $\text{Ca(NO}_3)_2$ into a two-atom compound, which is how question 7
+> $\ce{Ca(NO3)2}$ into a two-atom compound, which is how question 7
 > goes wrong.
 
 Reference: [[Chemical Formulas and Names]]. The formulas you write here

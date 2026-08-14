@@ -7,7 +7,7 @@ tags:
   - chemistry
   - investigation
 ---
-A chemical formula is a list of ingredients. It says $\text{CH}_4$ has
+A chemical formula is a list of ingredients. It says $\ce{CH4}$ has
 one carbon and four hydrogens, and it says nothing whatever about where
 those hydrogens are. They could be in a flat cross. They could be in a
 line. They are neither, and the difference matters enormously for
@@ -69,9 +69,9 @@ it takes up room, and it is invisible in the name.
 
 - **Molecular model kits.** One per pair, shared honestly.
 - **The molecule list**, which is on the board and includes at minimum
-  $\text{CH}_4$, $\text{NH}_3$, $\text{H}_2\text{O}$,
-  $\text{NH}_4^{+}$, $\text{SO}_3$, $\text{CO}_2$, $\text{O}_2$,
-  $\text{BF}_3$, and $\text{CH}_3\text{OH}$.
+  $\ce{CH4}$, $\ce{NH3}$, $\ce{H2O}$,
+  $\ce{NH4+}$, $\ce{SO3}$, $\ce{CO2}$, $\ce{O2}$,
+  $\ce{BF3}$, and $\ce{CH3OH}$.
 - **A protractor**, which is not a joke. You are going to measure angles
   on the models you build.
 - The data booklet, **closed until your predictions are written down**.
@@ -85,7 +85,7 @@ Your design decisions, written before you open the kit:
   you will handle that, and what precision you think you can get. If
   your answer is "to the nearest 5 degrees", that is an honest answer
   and it is better than pretending to 0.1°.
-- **What you will do with $\text{O}_2$.** It has no central atom. Decide
+- **What you will do with $\ce{O2}$.** It has no central atom. Decide
   in advance whether the model even applies to it, and say why. A model
   that is silent on a case is not the same as a model that gets the case
   wrong, and telling those apart is the skill.
@@ -133,14 +133,14 @@ Only then open the kit.
 
 | Molecule | Groups on central atom | Lone pairs | Predicted shape | Predicted angle | Angle measured on model | Booklet angle |
 | --- | --- | --- | --- | --- | --- | --- |
-| $\text{CH}_4$ | | | | | | |
-| $\text{NH}_3$ | | | | | | |
-| $\text{H}_2\text{O}$ | | | | | | |
-| $\text{NH}_4^{+}$ | | | | | | |
-| $\text{SO}_3$ | | | | | | |
-| $\text{CO}_2$ | | | | | | |
-| $\text{BF}_3$ | | | | | | |
-| $\text{CH}_3\text{OH}$ | | | | | | |
+| $\ce{CH4}$ | | | | | | |
+| $\ce{NH3}$ | | | | | | |
+| $\ce{H2O}$ | | | | | | |
+| $\ce{NH4+}$ | | | | | | |
+| $\ce{SO3}$ | | | | | | |
+| $\ce{CO2}$ | | | | | | |
+| $\ce{BF3}$ | | | | | | |
+| $\ce{CH3OH}$ | | | | | | |
 
 Two columns of that table are doing different jobs and you should not
 let them blur. The **model** column tells you what the plastic did,
@@ -151,7 +151,7 @@ reason we bothered with a protractor.[^1]
 
 [^1]: A model kit builds every four-group centre at the same 109.5°,
     because the connector was moulded that way. Real
-    $\text{NH}_3$ and real $\text{H}_2\text{O}$ do not manage 109.5° —
+    $\ce{NH3}$ and real $\ce{H2O}$ do not manage 109.5° —
     the booklet reports roughly 107° and 104.5° respectively, and the
     gap grows with each lone pair added. The kit **cannot** show you
     that, no matter how carefully you measure it, because the
@@ -176,7 +176,7 @@ common way to lose a mark you understood perfectly.
   disagree most**, with the size of the disagreement in degrees, and
   what those two molecules have in common. They have something in
   common. That is the finding.
-- **Your $\text{O}_2$ decision**, and your reason. Groups will have
+- **Your $\ce{O2}$ decision**, and your reason. Groups will have
   split on this and the disagreement is worth five minutes.
 - **One molecule you would like to see the model tried on**, and why you
   think it would be a hard case.

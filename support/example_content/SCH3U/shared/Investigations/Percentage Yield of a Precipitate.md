@@ -53,7 +53,7 @@ able to read it.
 The reaction, which you should balance and check before you calculate
 anything:
 
-$$\text{Na}_2\text{CO}_3\text{(aq)} + \text{CaCl}_2\text{(aq)} \rightarrow \text{CaCO}_3\text{(s)} + 2\text{NaCl(aq)}$$
+$$\ce{Na2CO3(aq) + CaCl2(aq) -> CaCO3(s) + 2NaCl(aq)}$$
 
 Your design decisions, written down and checked before you dispense
 anything:

@@ -73,39 +73,39 @@ is the part that cannot be researched, and it is worth the most.
 > follow from the pattern rather than from memory.
 >
 > **A metal oxide plus water gives a base.**
-> $\text{CaO} + \text{H}_2\text{O} \rightarrow \text{Ca(OH)}_2$ — the
+> $\ce{CaO + H2O -> Ca(OH)2}$ — the
 > solution turns an indicator toward the basic end, which is the result
 > you got from magnesium oxide in [[Oxides and Neutralisation]].
 >
 > **A non-metal oxide plus water gives an acid.**
-> $\text{SO}_2 + \text{H}_2\text{O} \rightarrow \text{H}_2\text{SO}_3$,
+> $\ce{SO2 + H2O -> H2SO3}$,
 > and with further oxidation
-> $2\text{SO}_2 + \text{O}_2 \rightarrow 2\text{SO}_3$ followed by
-> $\text{SO}_3 + \text{H}_2\text{O} \rightarrow \text{H}_2\text{SO}_4$.
+> $\ce{2SO2 + O2 -> 2SO3}$ followed by
+> $\ce{SO3 + H2O -> H2SO4}$.
 > This chain is why a sulfur-bearing stack gas is an acidification
 > problem downwind and not merely a smell.
 >
 > **A metal carbonate decomposes on strong heating to the oxide and
 > carbon dioxide.**
-> $\text{CaCO}_3 \rightarrow \text{CaO} + \text{CO}_2$ — worth noticing
+> $\ce{CaCO3 -> CaO + CO2}$ — worth noticing
 > that this carbon dioxide comes out of the **rock**, so it is emitted
 > even if the kiln is heated by something carbon-free.
 >
 > **Acid plus base gives a salt and water.**
-> $\text{Ca(OH)}_2 + \text{H}_2\text{SO}_4 \rightarrow \text{CaSO}_4 + 2\text{H}_2\text{O}$
+> $\ce{Ca(OH)2 + H2SO4 -> CaSO4 + 2H2O}$
 > — this is how acidic drainage is treated at scale, and the reason the
 > base chosen is usually a cheap calcium compound.
 >
 > **A gas can be removed by reacting it with a cheap solid.**
-> $\text{CaCO}_3 + \text{SO}_2 \rightarrow \text{CaSO}_3 + \text{CO}_2$,
-> and then $2\text{CaSO}_3 + \text{O}_2 \rightarrow 2\text{CaSO}_4$.
+> $\ce{CaCO3 + SO2 -> CaSO3 + CO2}$,
+> and then $\ce{2CaSO3 + O2 -> 2CaSO4}$.
 > One unwanted gas has been turned into a solid — and into a different
 > gas. Whether that is a good trade is exactly the kind of judgement
 > this task is asking for.
 >
 > Apply the pattern, then check the formula you have written is a real
 > compound with sensible charges. A prediction that produces
-> $\text{Ca}_2\text{OH}$ has gone wrong at the charge-balance step, not
+> $\ce{Ca2OH}$ has gone wrong at the charge-balance step, not
 > at the pattern step.
 
 **An assessment of how well the solution works.** Not whether the

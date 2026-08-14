@@ -21,7 +21,7 @@ get?*
 
 Look at
 
-$$2\text{H}_2\text{(g)} + \text{O}_2\text{(g)} \rightarrow 2\text{H}_2\text{O(l)}$$
+$$\ce{2H2(g) + O2(g) -> 2H2O(l)}$$
 
 That equation says two hydrogen molecules react with one oxygen
 molecule. It does **not** say two grams of hydrogen react with one gram
@@ -70,12 +70,12 @@ Two things follow that are worth saying plainly:
 
 Propane burns completely as
 
-$$\text{C}_3\text{H}_8\text{(g)} + 5\text{O}_2\text{(g)} \rightarrow 3\text{CO}_2\text{(g)} + 4\text{H}_2\text{O(g)}$$
+$$\ce{C3H8(g) + 5O2(g) -> 3CO2(g) + 4H2O(g)}$$
 
 The molar mass of propane is $3(12.01) + 8(1.01) = 44.11$ g/mol, and of
 carbon dioxide $12.01 + 2(16.00) = 44.01$ g/mol.
 
-$$\begin{aligned} n(\text{C}_3\text{H}_8) &= \frac{10.0 \text{ g}}{44.11 \text{ g/mol}} = 0.2267 \text{ mol} \\ n(\text{CO}_2) &= 0.2267 \text{ mol} \times \frac{3 \text{ mol CO}_2}{1 \text{ mol C}_3\text{H}_8} = 0.6801 \text{ mol} \\ m(\text{CO}_2) &= 0.6801 \text{ mol} \times 44.01 \text{ g/mol} = 29.9 \text{ g} \end{aligned}$$
+$$\begin{aligned} n(\ce{C3H8}) &= \frac{10.0 \text{ g}}{44.11 \text{ g/mol}} = 0.2267 \text{ mol} \\ n(\ce{CO2}) &= 0.2267 \text{ mol} \times \frac{3 \text{ mol CO}_2}{1 \text{ mol C}_3\ce{H8}} = 0.6801 \text{ mol} \\ m(\ce{CO2}) &= 0.6801 \text{ mol} \times 44.01 \text{ g/mol} = 29.9 \text{ g} \end{aligned}$$
 
 Ten grams of fuel, thirty grams of carbon dioxide. The extra mass is the
 oxygen from the air, which is exactly what the equation said would
@@ -95,7 +95,7 @@ periodic table.
   arithmetic on a false premise. Balance first, count the atoms, and
   only then start converting.
 - **The ratio was used upside down.** Write it as a fraction with units
-  in it — $\frac{3 \text{ mol CO}_2}{1 \text{ mol C}_3\text{H}_8}$ — and
+  in it — $\frac{3 \text{ mol CO}_2}{1 \text{ mol C}_3\ce{H8}}$ — and
   the wrong way up becomes visible immediately, because the units will
   not cancel.
 - **A mass was treated as a mole count.** Especially when the numbers

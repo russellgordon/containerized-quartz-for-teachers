@@ -23,7 +23,7 @@ happened at the bench.
 Take the reaction of aluminium with chlorine, and suppose you have
 10.0 g of aluminium and 30.0 g of chlorine.
 
-$$2\text{Al(s)} + 3\text{Cl}_2\text{(g)} \rightarrow 2\text{AlCl}_3\text{(s)}$$
+$$\ce{2Al(s) + 3Cl2(g) -> 2AlCl3(s)}$$
 
 There is three times as much chlorine by mass. It is tempting to
 conclude that the aluminium must run out first, and that conclusion is
@@ -36,8 +36,8 @@ reactant alone.
 
 | Reactant | Mass | Molar mass | Moles | Coefficient | Moles ÷ coefficient |
 | --- | --- | --- | --- | --- | --- |
-| $\text{Al}$ | 10.0 g | 26.98 g/mol | 0.3706 | 2 | 0.1853 |
-| $\text{Cl}_2$ | 30.0 g | 70.90 g/mol | 0.4231 | 3 | **0.1410** |
+| $\ce{Al}$ | 10.0 g | 26.98 g/mol | 0.3706 | 2 | 0.1853 |
+| $\ce{Cl2}$ | 30.0 g | 70.90 g/mol | 0.4231 | 3 | **0.1410** |
 
 The smaller quotient identifies the **limiting reagent**: chlorine, in
 spite of outweighing the aluminium three to one. Aluminium is the

@@ -17,11 +17,11 @@ which is the thing that lets you predict a reaction you have never seen.
 
 | Type | General form | What is happening | Example |
 | --- | --- | --- | --- |
-| Synthesis | $\text{A} + \text{B} \rightarrow \text{AB}$ | Two substances combine into one | $2\text{Mg(s)} + \text{O}_2\text{(g)} \rightarrow 2\text{MgO(s)}$ |
-| Decomposition | $\text{AB} \rightarrow \text{A} + \text{B}$ | One substance splits into two | $2\text{H}_2\text{O}_2\text{(aq)} \rightarrow 2\text{H}_2\text{O(l)} + \text{O}_2\text{(g)}$ |
-| Single displacement | $\text{A} + \text{BC} \rightarrow \text{AC} + \text{B}$ | One element takes another's place | $\text{Zn(s)} + \text{CuSO}_4\text{(aq)} \rightarrow \text{ZnSO}_4\text{(aq)} + \text{Cu(s)}$ |
-| Double displacement | $\text{AB} + \text{CD} \rightarrow \text{AD} + \text{CB}$ | Two compounds swap partners | $\text{AgNO}_3\text{(aq)} + \text{NaCl(aq)} \rightarrow \text{AgCl(s)} + \text{NaNO}_3\text{(aq)}$ |
-| Combustion | fuel $+\ \text{O}_2 \rightarrow$ oxides | A fuel burns in oxygen, releasing energy | $\text{CH}_4\text{(g)} + 2\text{O}_2\text{(g)} \rightarrow \text{CO}_2\text{(g)} + 2\text{H}_2\text{O(g)}$ |
+| Synthesis | $\ce{A + B -> AB}$ | Two substances combine into one | $\ce{2Mg(s) + O2(g) -> 2MgO(s)}$ |
+| Decomposition | $\ce{AB -> A + B}$ | One substance splits into two | $\ce{2H2O2(aq) -> 2H2O(l) + O2(g)}$ |
+| Single displacement | $\ce{A + BC -> AC + B}$ | One element takes another's place | $\ce{Zn(s) + CuSO4(aq) -> ZnSO4(aq) + Cu(s)}$ |
+| Double displacement | $\ce{AB + CD -> AD + CB}$ | Two compounds swap partners | $\ce{AgNO3(aq) + NaCl(aq) -> AgCl(s) + NaNO3(aq)}$ |
+| Combustion | fuel $+\ \ce{O2} \rightarrow$ oxides | A fuel burns in oxygen, releasing energy | $\ce{CH4(g) + 2O2(g) -> CO2(g) + 2H2O(g)}$ |
 
 Two honest complications, because you will meet both and they confuse people
 who were taught the table as if it were airtight.
@@ -42,7 +42,7 @@ copper-coloured while the blue fades. Put copper into zinc sulfate solution and
 nothing at all happens. That asymmetry is not a quirk of the two metals you
 happened to choose — it is the reason the **activity series** exists. Zinc
 holds its outer electrons less tightly than copper does, so zinc gives them up
-to the copper ions in solution: the zinc dissolves as $\text{Zn}^{2+}$ and the
+to the copper ions in solution: the zinc dissolves as $\ce{Zn^2+}$ and the
 copper ions become copper metal. Run it the other way and there is no reason
 for copper to give electrons to zinc ions, so nothing does.
 
@@ -71,7 +71,7 @@ reaction rather than labelled it.
 Burning a hydrocarbon with plenty of oxygen gives carbon dioxide and water,
 and that is **complete combustion**. Starve it of oxygen and you get
 **incomplete combustion** instead: some of the carbon comes off as soot, and
-some as carbon monoxide, $\text{CO}$, which is colourless, has no smell, and
+some as carbon monoxide, $\ce{CO}$, which is colourless, has no smell, and
 binds to haemoglobin far more tightly than oxygen does. That is the whole
 reason fuel-burning appliances need ventilation and why a yellow, sooty flame
 on a gas burner is a fault rather than a setting.

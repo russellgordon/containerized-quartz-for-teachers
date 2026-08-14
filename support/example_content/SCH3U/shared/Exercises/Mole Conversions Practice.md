@@ -24,7 +24,7 @@ carries units.
 > [!success]- Answer 1
 > Molar mass first, because every one of these starts there.
 >
-> $M(\text{NaCl}) = 22.99 + 35.45 = 58.44 \text{ g/mol}$
+> $M(\ce{NaCl}) = 22.99 + 35.45 = 58.44 \text{ g/mol}$
 >
 > $n = \frac{m}{M} = \frac{25.0 \text{ g}}{58.44 \text{ g/mol}} = 0.4278 \text{ mol}$
 >
@@ -40,7 +40,7 @@ carries units.
 **2.** What is the mass of 2.50 mol of carbon dioxide?
 
 > [!success]- Answer 2
-> $M(\text{CO}_2) = 12.01 + 2(16.00) = 44.01 \text{ g/mol}$
+> $M(\ce{CO2}) = 12.01 + 2(16.00) = 44.01 \text{ g/mol}$
 >
 > Rearranging $n = \frac{m}{M}$ gives $m = nM$:
 >
@@ -56,7 +56,7 @@ carries units.
 **atoms**?
 
 > [!success]- Answer 3
-> $M(\text{H}_2\text{O}) = 2(1.01) + 16.00 = 18.02 \text{ g/mol}$
+> $M(\ce{H2O}) = 2(1.01) + 16.00 = 18.02 \text{ g/mol}$
 >
 > $\begin{aligned} n &= \frac{4.00 \text{ g}}{18.02 \text{ g/mol}} = 0.22198 \text{ mol} \\ N &= (0.22198)(6.022 \times 10^{23}) = 1.3367 \times 10^{23} \end{aligned}$
 >
@@ -71,7 +71,7 @@ carries units.
 > never a complete question until somebody says *particles of what*, and
 > a great many marks are lost in the gap between molecules and atoms.
 
-**4.** A sample of calcium nitrate, $\text{Ca}(\text{NO}_3)_2$, has a
+**4.** A sample of calcium nitrate, $\ce{Ca}(\ce{NO3})_2$, has a
 mass of 50.0 g.
 (a) How many moles is that?
 (b) How many nitrate ions does it contain?
@@ -88,14 +88,14 @@ mass of 50.0 g.
 >
 > **(b)** One formula unit contains **two** nitrate ions, so
 >
-> $\begin{aligned} n(\text{NO}_3^-) &= 2 \times 0.30469 = 0.60938 \text{ mol} \\ N &= (0.60938)(6.022 \times 10^{23}) = 3.6697 \times 10^{23} \end{aligned}$
+> $\begin{aligned} n(\ce{NO3-}) &= 2 \times 0.30469 = 0.60938 \text{ mol} \\ N &= (0.60938)(6.022 \times 10^{23}) = 3.6697 \times 10^{23} \end{aligned}$
 >
 > **$3.67 \times 10^{23}$ nitrate ions.**
 >
 > Sanity check: the answer should be a bit more than half of Avogadro's
 > number times one, and it is. If you had got $1.8 \times 10^{23}$ you
 > would have forgotten the 2 — and multiplying by 2 at the end is
-> easier to remember if you write $n(\text{NO}_3^-) = 2n(\text{compound})$
+> easier to remember if you write $n(\ce{NO3-}) = 2n(\text{compound})$
 > as its own line rather than doing it in your head.
 
 **5.** A copper sample contains $1.505 \times 10^{22}$ atoms. What is
@@ -136,7 +136,7 @@ By what factor?
 > never needed Avogadro's number at all. For equal masses, the ratio of
 > the counts is just the inverse ratio of the molar masses:
 >
-> $$\frac{N_{\text{C}}}{N_{\text{Pb}}} = \frac{M_{\text{Pb}}}{M_{\text{C}}} = \frac{207.2}{12.01} = 17.3$$
+> $$\frac{N_{\ce{C}}}{N_{\ce{Pb}}} = \frac{M_{\ce{Pb}}}{M_{\ce{C}}} = \frac{207.2}{12.01} = 17.3$$
 >
 > Divide the two rounded counts above instead and you get 17.2, not
 > 17.3. Neither is a mistake — it is what rounding twice does to you,
@@ -148,7 +148,7 @@ By what factor?
 > molar mass is.
 
 **7.** A tablet contains 325 mg of acetylsalicylic acid,
-$\text{C}_9\text{H}_8\text{O}_4$.
+$\ce{C9H8O4}$.
 (a) How many moles is that?
 (b) How many molecules?
 
@@ -194,7 +194,7 @@ lead contains more atoms."*
 > this wrong.** If the student meant oxygen **atoms**, then
 > $M = 16.00$ g/mol and $0.5 \times 16.00 = 8.0$ g, which is what they
 > wrote. But "oxygen" in a chemical context ordinarily means the
-> substance $\text{O}_2$, for which $M = 32.00$ g/mol, giving
+> substance $\ce{O2}$, for which $M = 32.00$ g/mol, giving
 > $0.5 \times 32.00 = 16.0$ g. The safe habit is to write the formula
 > rather than the element's name whenever there is any doubt — and there
 > is doubt for every diatomic element.

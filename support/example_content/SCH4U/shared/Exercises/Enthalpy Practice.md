@@ -72,7 +72,7 @@ equation.
 > The solution **lost** 2.889 kJ, so the dissolving process **absorbed**
 > it. This is the sign flip, and here it makes $\Delta H$ positive.
 >
-> Molar mass of $\text{NH}_4\text{NO}_3$:
+> Molar mass of $\ce{NH4NO3}$:
 > $2(14.01) + 4(1.01) + 3(16.00) = 80.06\ \text{g/mol}$
 >
 > $n = \frac{8.00\ \text{g}}{80.06\ \text{g/mol}} = 0.09993\ \text{mol}$
@@ -82,7 +82,7 @@ equation.
 > **$\Delta H = +29\ \text{kJ/mol}$**, to two significant figures,
 > because $\Delta T = 6.4\ ^\circ$C had two.
 >
-> $$\text{NH}_4\text{NO}_3\text{(s)} \rightarrow \text{NH}_4^{+}\text{(aq)} + \text{NO}_3^{-}\text{(aq)} \qquad \Delta H = +29\ \text{kJ/mol}$$
+> $$\ce{NH4NO3(s) -> NH4+(aq) + NO3-(aq)} \qquad \Delta H = +29\ \text{kJ/mol}$$
 >
 > **Sanity check on the sign, which takes two seconds.** The cup got
 > colder. Energy went *into* the dissolving process to make that happen.
@@ -108,7 +108,7 @@ with the value in the data booklet and why.
 >
 > $Q = mc\Delta T = (200.0\ \text{g})(4.18\ \text{J/(g}\cdot^\circ\text{C)})(13.3\ ^\circ\text{C}) = 11119\ \text{J} = 11.12\ \text{kJ}$
 >
-> Molar mass of ethanol, $\text{C}_2\text{H}_5\text{OH}$:
+> Molar mass of ethanol, $\ce{C2H5OH}$:
 > $2(12.01) + 6(1.01) + 16.00 = 46.08\ \text{g/mol}$
 >
 > $n = \frac{0.500\ \text{g}}{46.08\ \text{g/mol}} = 0.010851\ \text{mol}$
@@ -140,7 +140,7 @@ with the value in the data booklet and why.
 
 **4.** A reaction releases 45.0 kJ when 0.250 mol of the reactant is
 consumed. Write the thermochemical equation in both accepted forms, for
-a reaction $\text{A} \rightarrow \text{B}$. Then say how much energy is
+a reaction $\ce{A -> B}$. Then say how much energy is
 released when 1.75 mol reacts.
 
 > [!success]- Answer 4
@@ -150,11 +150,11 @@ released when 1.75 mol reacts.
 >
 > **Form 1 — energy as a separate $\Delta H$ term:**
 >
-> $$\text{A} \rightarrow \text{B} \qquad \Delta H = -180.\ \text{kJ/mol}$$
+> $$\ce{A -> B} \qquad \Delta H = -180.\ \text{kJ/mol}$$
 >
 > **Form 2 — energy written into the equation as a product:**
 >
-> $$\text{A} \rightarrow \text{B} + 180.\ \text{kJ}$$
+> $$\ce{A -> B} + 180.\ \text{kJ}$$
 >
 > Both say the same thing. In the second form an exothermic reaction
 > puts the energy on the **product** side, because energy comes out

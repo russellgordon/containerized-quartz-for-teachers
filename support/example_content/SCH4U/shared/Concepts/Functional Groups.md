@@ -45,17 +45,17 @@ react with.
 | Class | Group | Suffix | Named on | Distinguishing property |
 | --- | --- | --- | --- | --- |
 | Alkane | C–C only | `-ane` | [[Naming Organic Compounds\|the root]] | non-polar, unreactive, insoluble |
-| Alkene | $\text{C=C}$ | `-ene` | [[Isomers\|geometric isomers possible]] | decolourises bromine water |
-| Alkyne | $\text{C}\equiv\text{C}$ | `-yne` | the root | as alkene, more so |
+| Alkene | $\ce{C=C}$ | `-ene` | [[Isomers\|geometric isomers possible]] | decolourises bromine water |
+| Alkyne | $\ce{C#C}$ | `-yne` | the root | as alkene, more so |
 | Aromatic | benzene ring | — | the ring keeps its name | unusually stable for its unsaturation |
-| Alcohol | $-\text{OH}$ | `-ol` | [[Naming Organic Compounds\|position numbered]] | hydrogen bonds; oxidises |
-| Aldehyde | $-\text{CHO}$ at a chain end | `-al` | always carbon 1 | oxidises easily to an acid |
-| Ketone | $\text{C=O}$ within the chain | `-one` | position numbered | resists further oxidation |
-| Carboxylic acid | $-\text{COOH}$ | `-oic acid` | always carbon 1 | weakly acidic; sharp odour |
-| Ester | $-\text{COO}-$ | `-oate` | two parts, two names | fruity odour; hydrolyses |
-| Ether | $\text{R}-\text{O}-\text{R}'$ | `alkoxy-` prefix | named as a substituent | low boiling; very flammable |
-| Amine | $-\text{NH}_2$ | `-amine` | position numbered | weakly basic; fishy odour |
-| Amide | $-\text{CONH}_2$ | `-amide` | always carbon 1 | very high boiling; **not** basic |
+| Alcohol | $-\ce{OH}$ | `-ol` | [[Naming Organic Compounds\|position numbered]] | hydrogen bonds; oxidises |
+| Aldehyde | $-\ce{CHO}$ at a chain end | `-al` | always carbon 1 | oxidises easily to an acid |
+| Ketone | $\ce{C=O}$ within the chain | `-one` | position numbered | resists further oxidation |
+| Carboxylic acid | $-\ce{COOH}$ | `-oic acid` | always carbon 1 | weakly acidic; sharp odour |
+| Ester | $-\ce{COO}-$ | `-oate` | two parts, two names | fruity odour; hydrolyses |
+| Ether | $\text{R}-\ce{O}-\text{R}'$ | `alkoxy-` prefix | named as a substituent | low boiling; very flammable |
+| Amine | $-\ce{NH2}$ | `-amine` | position numbered | weakly basic; fishy odour |
+| Amide | $-\ce{CONH2}$ | `-amide` | always carbon 1 | very high boiling; **not** basic |
 
 The compact version, with structures drawn out, is
 [[Functional Groups at a Glance]] — keep it open while you work rather
@@ -66,7 +66,7 @@ oxidation while the aldehyde does not, and the reason is structural: an
 aldehyde's carbonyl carbon still carries a hydrogen that can be removed,
 and a ketone's, buried mid-chain, does not. And the **amide** is not
 basic although it contains nitrogen, because the nitrogen's lone pair is
-pulled into the neighbouring $\text{C=O}$ and is no longer available to
+pulled into the neighbouring $\ce{C=O}$ and is no longer available to
 accept a proton. In both cases the property is a consequence of the
 arrangement, not an extra fact.
 
@@ -81,18 +81,18 @@ Every step in that sequence is [[Intermolecular Forces]] applied
 directly:
 
 - The **alkane** has dispersion forces only.
-- The **ether** has a bent, polar $\text{C}-\text{O}-\text{C}$ and so
+- The **ether** has a bent, polar $\ce{C}-\ce{O}-\ce{C}$ and so
   has dipole–dipole attraction — but no hydrogen attached to its oxygen,
   so it cannot hydrogen bond to another ether molecule.
-- The **aldehyde and ketone** have a strongly polar $\text{C=O}$,
-  giving a bigger dipole than an ether's, and still no $\text{O}-\text{H}$.
-- The **alcohol** has $\text{O}-\text{H}$ and hydrogen bonds properly,
+- The **aldehyde and ketone** have a strongly polar $\ce{C=O}$,
+  giving a bigger dipole than an ether's, and still no $\ce{O}-\ce{H}$.
+- The **alcohol** has $\ce{O}-\ce{H}$ and hydrogen bonds properly,
   which is a large jump rather than a small one.
-- The **carboxylic acid** has both an $\text{O}-\text{H}$ to donate and
+- The **carboxylic acid** has both an $\ce{O}-\ce{H}$ to donate and
   two oxygens to accept, so a pair of molecules can lock together
   through two hydrogen bonds at once. It behaves in part like a
   molecule of twice the size.
-- The **amide** has $\text{N}-\text{H}$ hydrogen bonding along with the
+- The **amide** has $\ce{N}-\ce{H}$ hydrogen bonding along with the
   strongest carbonyl of the set, and boils highest of all. That the
   amide link makes such tenacious solids is precisely why nylon is
   worth making — see [[Polymers]].

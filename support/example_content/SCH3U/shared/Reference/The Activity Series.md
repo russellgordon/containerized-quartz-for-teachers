@@ -20,35 +20,35 @@ does nothing at all.**
 
 | Metal | Symbol | What it reacts with |
 | --- | --- | --- |
-| Lithium | $\text{Li}$ | cold water, producing hydrogen and a hydroxide |
-| Potassium | $\text{K}$ | cold water |
-| Barium | $\text{Ba}$ | cold water |
-| Strontium | $\text{Sr}$ | cold water |
-| Calcium | $\text{Ca}$ | cold water |
-| Sodium | $\text{Na}$ | cold water |
-| Magnesium | $\text{Mg}$ | hot water and steam; acids readily |
-| Aluminium | $\text{Al}$ | steam; acids |
-| Manganese | $\text{Mn}$ | steam; acids |
-| Zinc | $\text{Zn}$ | steam; acids |
-| Chromium | $\text{Cr}$ | steam; acids |
-| Iron | $\text{Fe}$ | steam; acids |
-| Cadmium | $\text{Cd}$ | acids |
-| Cobalt | $\text{Co}$ | acids, slowly |
-| Nickel | $\text{Ni}$ | acids, slowly |
-| Tin | $\text{Sn}$ | acids, slowly |
-| Lead | $\text{Pb}$ | acids, very slowly |
-| **Hydrogen** | $\text{H}_2$ | **the dividing line** |
-| Copper | $\text{Cu}$ | not water, not dilute acids |
-| Mercury | $\text{Hg}$ | not water, not dilute acids |
-| Silver | $\text{Ag}$ | not water, not dilute acids |
-| Platinum | $\text{Pt}$ | essentially nothing |
-| Gold | $\text{Au}$ | essentially nothing |
+| Lithium | $\ce{Li}$ | cold water, producing hydrogen and a hydroxide |
+| Potassium | $\ce{K}$ | cold water |
+| Barium | $\ce{Ba}$ | cold water |
+| Strontium | $\ce{Sr}$ | cold water |
+| Calcium | $\ce{Ca}$ | cold water |
+| Sodium | $\ce{Na}$ | cold water |
+| Magnesium | $\ce{Mg}$ | hot water and steam; acids readily |
+| Aluminium | $\ce{Al}$ | steam; acids |
+| Manganese | $\ce{Mn}$ | steam; acids |
+| Zinc | $\ce{Zn}$ | steam; acids |
+| Chromium | $\ce{Cr}$ | steam; acids |
+| Iron | $\ce{Fe}$ | steam; acids |
+| Cadmium | $\ce{Cd}$ | acids |
+| Cobalt | $\ce{Co}$ | acids, slowly |
+| Nickel | $\ce{Ni}$ | acids, slowly |
+| Tin | $\ce{Sn}$ | acids, slowly |
+| Lead | $\ce{Pb}$ | acids, very slowly |
+| **Hydrogen** | $\ce{H2}$ | **the dividing line** |
+| Copper | $\ce{Cu}$ | not water, not dilute acids |
+| Mercury | $\ce{Hg}$ | not water, not dilute acids |
+| Silver | $\ce{Ag}$ | not water, not dilute acids |
+| Platinum | $\ce{Pt}$ | essentially nothing |
+| Gold | $\ce{Au}$ | essentially nothing |
 
 Hydrogen is in the list even though it is not a metal, because its
 position is the most useful single fact on the page: **a metal above
 hydrogen displaces hydrogen from an acid; a metal below it does not.**
 
-$$\text{Mg(s)} + 2\text{HCl(aq)} \rightarrow \text{MgCl}_2\text{(aq)} + \text{H}_2\text{(g)}$$
+$$\ce{Mg(s) + 2HCl(aq) -> MgCl2(aq) + H2(g)}$$
 
 Copper in hydrochloric acid gives you copper sitting in hydrochloric
 acid. Not a slow reaction — no reaction.
@@ -57,14 +57,14 @@ acid. Not a slow reaction — no reaction.
 
 | Halogen | Symbol |
 | --- | --- |
-| Fluorine | $\text{F}_2$ |
-| Chlorine | $\text{Cl}_2$ |
-| Bromine | $\text{Br}_2$ |
-| Iodine | $\text{I}_2$ |
+| Fluorine | $\ce{F2}$ |
+| Chlorine | $\ce{Cl2}$ |
+| Bromine | $\ce{Br2}$ |
+| Iodine | $\ce{I2}$ |
 
 Plain periodic-table order, and a halogen displaces any halide below it:
 
-$$\text{Cl}_2\text{(aq)} + 2\text{NaBr(aq)} \rightarrow 2\text{NaCl(aq)} + \text{Br}_2\text{(aq)}$$
+$$\ce{Cl2(aq) + 2NaBr(aq) -> 2NaCl(aq) + Br2(aq)}$$
 
 Bromine added to sodium chloride solution does nothing, because bromine
 is below chlorine. This is the halogen equivalent of the metals rule and
@@ -85,7 +85,7 @@ it works the same way.
 > copper, so zinc displaces it. The blue fades and the strip goes
 > copper-coloured.
 >
-> $\text{Zn(s)} + \text{CuSO}_4\text{(aq)} \rightarrow \text{ZnSO}_4\text{(aq)} + \text{Cu(s)}$
+> $\ce{Zn(s) + CuSO4(aq) -> ZnSO4(aq) + Cu(s)}$
 >
 > **Copper metal placed in zinc sulfate solution.** Copper is below
 > zinc, so there is no reason for copper to hand over electrons. **No

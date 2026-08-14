@@ -33,11 +33,11 @@ them.
 is this not the same as the rate at $t = 0$?
 
 > [!success]- Answer 1
-> $\text{rate} = -\frac{\Delta[\text{A}]}{\Delta t} = \frac{0.500 - 0.380\ \text{mol/L}}{30.0\ \text{s}} = \frac{0.120\ \text{mol/L}}{30.0\ \text{s}}$
+> $\text{rate} = -\frac{\Delta[\ce{A}]}{\Delta t} = \frac{0.500 - 0.380\ \text{mol/L}}{30.0\ \text{s}} = \frac{0.120\ \text{mol/L}}{30.0\ \text{s}}$
 >
 > $\text{rate} = 4.00 \times 10^{-3}\ \text{mol/(L}\cdot\text{s)}$
 >
-> The minus sign in the definition is there because $[\text{A}]$ is
+> The minus sign in the definition is there because $[\ce{A}]$ is
 > falling, and a rate is reported as a positive quantity. Put the sign
 > in the definition, not in the answer.
 >
@@ -58,9 +58,9 @@ is this not the same as the rate at $t = 0$?
 > then belongs to a mixture whose composition you would have to work out
 > before you could use it.
 
-**2.** For $2\text{N}_2\text{O}_5\text{(g)} \rightarrow 4\text{NO}_2\text{(g)} + \text{O}_2\text{(g)}$,
+**2.** For $\ce{2N2O5(g) -> 4NO2(g) + O2(g)}$,
 oxygen is being formed at $2.5 \times 10^{-3}$ mol/(L·s). At what rate
-is $\text{N}_2\text{O}_5$ being consumed, and $\text{NO}_2$ formed?
+is $\ce{N2O5}$ being consumed, and $\ce{NO2}$ formed?
 
 > [!success]- Answer 2
 > The coefficients do not give you the rate *law*, but they absolutely
@@ -68,11 +68,11 @@ is $\text{N}_2\text{O}_5$ being consumed, and $\text{NO}_2$ formed?
 > those come straight from the stoichiometry, which has to hold moment
 > by moment.
 >
-> For every 1 mole of $\text{O}_2$ formed, 2 moles of
-> $\text{N}_2\text{O}_5$ are consumed and 4 moles of $\text{NO}_2$ are
+> For every 1 mole of $\ce{O2}$ formed, 2 moles of
+> $\ce{N2O5}$ are consumed and 4 moles of $\ce{NO2}$ are
 > formed.
 >
-> $\begin{aligned} \text{rate of } \text{N}_2\text{O}_5 \text{ consumption} &= 2 \times (2.5 \times 10^{-3}) = 5.0 \times 10^{-3}\ \text{mol/(L}\cdot\text{s)} \\ \text{rate of } \text{NO}_2 \text{ formation} &= 4 \times (2.5 \times 10^{-3}) = 1.0 \times 10^{-2}\ \text{mol/(L}\cdot\text{s)} \end{aligned}$
+> $\begin{aligned} \text{rate of } \ce{N2O5} \text{ consumption} &= 2 \times (2.5 \times 10^{-3}) = 5.0 \times 10^{-3}\ \text{mol/(L}\cdot\text{s)} \\ \text{rate of } \ce{NO2} \text{ formation} &= 4 \times (2.5 \times 10^{-3}) = 1.0 \times 10^{-2}\ \text{mol/(L}\cdot\text{s)} \end{aligned}$
 >
 > **This is why "the rate of the reaction" is ambiguous** unless you say
 > which substance you mean. Three perfectly correct numbers describe the
@@ -81,14 +81,14 @@ is $\text{N}_2\text{O}_5$ being consumed, and $\text{NO}_2$ formed?
 > Chemists get round it by dividing each rate by its coefficient, which
 > gives one number for the whole reaction:
 >
-> $\text{rate} = -\tfrac{1}{2}\frac{\Delta[\text{N}_2\text{O}_5]}{\Delta t} = \tfrac{1}{4}\frac{\Delta[\text{NO}_2]}{\Delta t} = \frac{\Delta[\text{O}_2]}{\Delta t}$
+> $\text{rate} = -\tfrac{1}{2}\frac{\Delta[\ce{N2O5}]}{\Delta t} = \tfrac{1}{4}\frac{\Delta[\ce{NO2}]}{\Delta t} = \frac{\Delta[\ce{O2}]}{\Delta t}$
 >
 > When you report a rate, say what it is a rate **of**.
 
-**3.** For $\text{A} + \text{B} \rightarrow \text{products}$, initial
+**3.** For $\ce{A + B} \rightarrow \text{products}$, initial
 rates were measured at 25 °C:
 
-| Trial | $[\text{A}]_0$ (mol/L) | $[\text{B}]_0$ (mol/L) | Initial rate (mol/(L·s)) |
+| Trial | $[\ce{A}]_0$ (mol/L) | $[\ce{B}]_0$ (mol/L) | Initial rate (mol/(L·s)) |
 | --- | --- | --- | --- |
 | 1 | 0.100 | 0.100 | $2.00 \times 10^{-3}$ |
 | 2 | 0.200 | 0.100 | $8.00 \times 10^{-3}$ |
@@ -99,17 +99,17 @@ units.
 
 > [!success]- Answer 3
 > **Order in A.** Compare trials 1 and 2, which differ only in
-> $[\text{A}]$. It doubled; the rate went from
+> $[\ce{A}]$. It doubled; the rate went from
 > $2.00 \times 10^{-3}$ to $8.00 \times 10^{-3}$, a factor of **4**.
 >
 > $2^m = 4$, so $m = 2$. **Second order in A.**
 >
 > **Order in B.** Compare trials 1 and 3, which differ only in
-> $[\text{B}]$. It doubled; the rate doubled, a factor of **2**.
+> $[\ce{B}]$. It doubled; the rate doubled, a factor of **2**.
 >
 > $2^n = 2$, so $n = 1$. **First order in B.**
 >
-> $$\text{rate} = k[\text{A}]^2[\text{B}]$$
+> $$\text{rate} = k[\ce{A}]^2[\ce{B}]$$
 >
 > **Overall order** $= 2 + 1 = 3$.
 >
@@ -117,7 +117,7 @@ units.
 > the other two, because a $k$ that only fits one row is not a rate
 > constant:
 >
-> $k = \frac{\text{rate}}{[\text{A}]^2[\text{B}]} = \frac{2.00 \times 10^{-3}}{(0.100)^2(0.100)} = \frac{2.00 \times 10^{-3}}{1.00 \times 10^{-3}} = 2.00$
+> $k = \frac{\text{rate}}{[\ce{A}]^2[\ce{B}]} = \frac{2.00 \times 10^{-3}}{(0.100)^2(0.100)} = \frac{2.00 \times 10^{-3}}{1.00 \times 10^{-3}} = 2.00$
 >
 > **The units, derived rather than recalled:**
 >
@@ -137,16 +137,16 @@ units.
 > [[Factors That Change a Rate]], applied to a table instead of a bench.
 
 **4.** Using the rate law from question 3, predict the initial rate when
-$[\text{A}]_0 = 0.150$ mol/L and $[\text{B}]_0 = 0.250$ mol/L.
+$[\ce{A}]_0 = 0.150$ mol/L and $[\ce{B}]_0 = 0.250$ mol/L.
 
 > [!success]- Answer 4
-> $\begin{aligned} \text{rate} &= k[\text{A}]^2[\text{B}] = (2.00)(0.150)^2(0.250) \\ &= (2.00)(0.0225)(0.250) \\ &= 1.125 \times 10^{-2}\ \text{mol/(L}\cdot\text{s)} \end{aligned}$
+> $\begin{aligned} \text{rate} &= k[\ce{A}]^2[\ce{B}] = (2.00)(0.150)^2(0.250) \\ &= (2.00)(0.0225)(0.250) \\ &= 1.125 \times 10^{-2}\ \text{mol/(L}\cdot\text{s)} \end{aligned}$
 >
 > **$1.13 \times 10^{-2}$ mol/(L·s)**, to three significant figures.
 >
-> **Check the size before you accept it.** Against trial 1, $[\text{A}]$
+> **Check the size before you accept it.** Against trial 1, $[\ce{A}]$
 > is 1.5 times larger, which multiplies the rate by $1.5^2 = 2.25$, and
-> $[\text{B}]$ is 2.5 times larger, which multiplies it by 2.5.
+> $[\ce{B}]$ is 2.5 times larger, which multiplies it by 2.5.
 > Together: $2.25 \times 2.5 = 5.625$, and
 > $(2.00 \times 10^{-3})(5.625) = 1.125 \times 10^{-2}$. Same answer by
 > a different route, which is what a check should be.
@@ -156,32 +156,32 @@ $[\text{A}]_0 = 0.150$ mol/L and $[\text{B}]_0 = 0.250$ mol/L.
 > mol/L, and a rate that is not per unit time is not a rate.
 
 **5.** This mechanism is proposed for
-$\text{NO}_2\text{(g)} + \text{CO(g)} \rightarrow \text{NO(g)} + \text{CO}_2\text{(g)}$:
+$\ce{NO2(g) + CO(g) -> NO(g) + CO2(g)}$:
 
-$\text{Step 1 (slow)}\quad \text{NO}_2\text{(g)} + \text{NO}_2\text{(g)} \rightarrow \text{NO}_3\text{(g)} + \text{NO(g)}$
+$\text{Step 1 (slow)}\quad \ce{NO2(g) + NO2(g) -> NO3(g) + NO(g)}$
 
-$\text{Step 2 (fast)}\quad \text{NO}_3\text{(g)} + \text{CO(g)} \rightarrow \text{NO}_2\text{(g)} + \text{CO}_2\text{(g)}$
+$\text{Step 2 (fast)}\quad \ce{NO3(g) + CO(g) -> NO2(g) + CO2(g)}$
 
 Show that the steps add to the overall equation, identify any
 intermediate, and predict the rate law. What would it mean for this
 mechanism if the measured rate law turned out to be
-$\text{rate} = k[\text{NO}_2][\text{CO}]$?
+$\text{rate} = k[\ce{NO2}][\ce{CO}]$?
 
 > [!success]- Answer 5
 > **Adding the steps:**
 >
-> $2\text{NO}_2 + \text{NO}_3 + \text{CO} \rightarrow \text{NO}_3 + \text{NO} + \text{NO}_2 + \text{CO}_2$
+> $\ce{2NO2 + NO3 + CO -> NO3 + NO + NO2 + CO2}$
 >
-> $\text{NO}_3$ appears once on each side and cancels. One
-> $\text{NO}_2$ appears on each side and cancels, leaving one on the
+> $\ce{NO3}$ appears once on each side and cancels. One
+> $\ce{NO2}$ appears on each side and cancels, leaving one on the
 > left:
 >
-> $$\text{NO}_2\text{(g)} + \text{CO(g)} \rightarrow \text{NO(g)} + \text{CO}_2\text{(g)}$$
+> $$\ce{NO2(g) + CO(g) -> NO(g) + CO2(g)}$$
 >
 > which is the overall equation, so the mechanism is at least
 > **consistent** with it.
 >
-> **The intermediate is $\text{NO}_3$** — produced in one step and
+> **The intermediate is $\ce{NO3}$** — produced in one step and
 > consumed in a later one, so it never appears in the overall equation
 > and would not be found in the bottle at the start or at the end. That
 > is what makes intermediates hard to detect and mechanisms hard to
@@ -193,20 +193,20 @@ $\text{rate} = k[\text{NO}_2][\text{CO}]$?
 > collision — so for **this step alone** the coefficients are the
 > exponents:
 >
-> $$\text{rate} = k[\text{NO}_2]^2$$
+> $$\text{rate} = k[\ce{NO2}]^2$$
 >
 > **Carbon monoxide does not appear**, even though it is a reactant in
 > the overall equation. It is consumed in a fast step that happens
 > after the bottleneck, so how much of it is present makes no
 > difference to how quickly the crowd gets through the door. Doubling
-> $[\text{CO}]$ would not change the rate at all.
+> $[\ce{CO}]$ would not change the rate at all.
 >
-> **If the measured rate law were $k[\text{NO}_2][\text{CO}]$**, this
+> **If the measured rate law were $k[\ce{NO2}][\ce{CO}]$**, this
 > mechanism would be **disproved**. A mechanism has to reproduce the
 > experimental rate law, and this one predicts no dependence on
-> $[\text{CO}]$ whatsoever. You would have to propose a different
+> $[\ce{CO}]$ whatsoever. You would have to propose a different
 > mechanism — most simply, one in which the rate-determining step is a
-> single collision between one $\text{NO}_2$ and one $\text{CO}$.
+> single collision between one $\ce{NO2}$ and one $\ce{CO}$.
 >
 > **What can and cannot be concluded, and this is the whole point of
 > mechanisms.** Agreement between a proposed mechanism and a measured
@@ -270,8 +270,8 @@ as importantly, what it does not do.
 > having; a model whose limits you cannot state is not.
 
 **7.** Four claims from a study group. Correct each.
-*(a) "The equation is $2\text{NO} + \text{O}_2 \rightarrow 2\text{NO}_2$,
-so the rate law is $k[\text{NO}]^2[\text{O}_2]$."*
+*(a) "The equation is $\ce{2NO + O2 -> 2NO2}$,
+so the rate law is $k[\ce{NO}]^2[\ce{O2}]$."*
 *(b) "Increasing the concentration speeds a reaction up because the
 particles have more energy."*
 *(c) "The catalyst made the reaction faster, so we got more product."*
@@ -280,13 +280,13 @@ conditions."*
 
 > [!success]- Answer 7
 > **(a) Coefficients are not exponents unless the step is elementary.**
-> The rate law might turn out to be $k[\text{NO}]^2[\text{O}_2]$, and
+> The rate law might turn out to be $k[\ce{NO}]^2[\ce{O2}]$, and
 > the only way to find out is to measure initial rates while varying one
 > concentration at a time. Writing it down from the equation is a guess
 > dressed as a derivation.
 >
 > Look at question 5 for the counterexample living in the same family of
-> chemistry: the overall equation contains $\text{CO}$ and the rate law
+> chemistry: the overall equation contains $\ce{CO}$ and the rate law
 > does not contain it at all. No amount of staring at a balanced
 > equation would have revealed that.
 >

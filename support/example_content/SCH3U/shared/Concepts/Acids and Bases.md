@@ -21,18 +21,18 @@ The definition this course uses is Svante Arrhenius's, and it is the one
 that works for the aqueous solutions you will handle.
 
 - An **acid** is a substance that produces hydrogen ions,
-  $\text{H}^+$, when dissolved in water.
+  $\ce{H+}$, when dissolved in water.
 - A **base** is a substance that produces hydroxide ions,
-  $\text{OH}^-$, when dissolved in water.
+  $\ce{OH-}$, when dissolved in water.
 
-So $\text{HCl(aq)}$ is an acid and $\text{NaOH(aq)}$ is a base, and the
+So $\ce{HCl(aq)}$ is an acid and $\ce{NaOH(aq)}$ is a base, and the
 $\text{(aq)}$ is not decoration. Dry hydrogen chloride gas produces no
 ions and behaves as no kind of acid at all.
 
 One immediate refinement. A hydrogen ion is a bare proton, and a bare
 proton does not drift about in water — it attaches to a water molecule,
-giving the **hydronium ion**, $\text{H}_3\text{O}^+$. You will see both
-written and they say the same thing about the solution. $\text{H}^+$ is
+giving the **hydronium ion**, $\ce{H3O+}$. You will see both
+written and they say the same thing about the solution. $\ce{H+}$ is
 shorthand, and this page uses it.
 
 Now the limits, which are worth knowing because a definition you cannot
@@ -41,10 +41,10 @@ break is a definition you do not understand.
 - **It only describes water.** Arrhenius's definition is written in
   terms of what happens when something dissolves in water. Outside
   water it says nothing.
-- **It struggles with ammonia.** $\text{NH}_3$ contains no hydroxide and
+- **It struggles with ammonia.** $\ce{NH3}$ contains no hydroxide and
   yet an ammonia solution is unmistakably basic. Arrhenius has to
   explain this indirectly, as ammonia reacting with water to release
-  $\text{OH}^-$, which is true but is stretching a definition written
+  $\ce{OH-}$, which is true but is stretching a definition written
   about *producing* ions to cover a substance that has none to give.
 - **It cannot handle a reaction with no water in it.** Hydrogen chloride
   gas and ammonia gas react on contact to make solid ammonium chloride,
@@ -65,8 +65,8 @@ things.
 **Strong or weak** describes what fraction of the dissolved substance
 actually releases its ions. A strong acid ionises essentially
 completely: put hydrogen chloride in water and, for practical purposes,
-there are no $\text{HCl}$ molecules left, only $\text{H}^+$ and
-$\text{Cl}^-$. A weak acid ionises only slightly: in ethanoic acid
+there are no $\ce{HCl}$ molecules left, only $\ce{H+}$ and
+$\ce{Cl-}$. A weak acid ionises only slightly: in ethanoic acid
 solution, most of the acid is sitting there as intact molecules at any
 given moment, with a small fraction ionised. This is a property of the
 **substance** and you cannot change it.
@@ -79,8 +79,8 @@ The ones worth recognising:
 
 | Family | Strong — essentially fully ionised | Weak — only slightly ionised |
 | --- | --- | --- |
-| Acids | $\text{HCl}$, $\text{HBr}$, $\text{HI}$, $\text{HNO}_3$, $\text{H}_2\text{SO}_4$, $\text{HClO}_4$ | ethanoic (acetic) $\text{CH}_3\text{COOH}$, carbonic $\text{H}_2\text{CO}_3$, citric, $\text{HF}$ |
-| Bases | $\text{NaOH}$, $\text{KOH}$, $\text{LiOH}$, $\text{Ba(OH)}_2$ | ammonia $\text{NH}_3$ |
+| Acids | $\ce{HCl}$, $\ce{HBr}$, $\ce{HI}$, $\ce{HNO3}$, $\ce{H2SO4}$, $\ce{HClO4}$ | ethanoic (acetic) $\ce{CH3COOH}$, carbonic $\ce{H2CO3}$, citric, $\ce{HF}$ |
+| Bases | $\ce{NaOH}$, $\ce{KOH}$, $\ce{LiOH}$, $\ce{Ba(OH)2}$ | ammonia $\ce{NH3}$ |
 
 Two honest notes on that table. Hydrofluoric acid is **weak** despite
 fluorine being the most electronegative element there is, because the
@@ -108,13 +108,13 @@ rule with almost no exceptions at this level:
 - A **metal oxide** dissolved in water gives a **basic** solution.
 - A **non-metal oxide** dissolved in water gives an **acidic** solution.
 
-$$\text{CaO(s)} + \text{H}_2\text{O(l)} \rightarrow \text{Ca(OH)}_2\text{(aq)}$$
+$$\ce{CaO(s) + H2O(l) -> Ca(OH)2(aq)}$$
 
-$$\text{Na}_2\text{O(s)} + \text{H}_2\text{O(l)} \rightarrow 2\text{NaOH(aq)}$$
+$$\ce{Na2O(s) + H2O(l) -> 2NaOH(aq)}$$
 
-$$\text{CO}_2\text{(g)} + \text{H}_2\text{O(l)} \rightarrow \text{H}_2\text{CO}_3\text{(aq)}$$
+$$\ce{CO2(g) + H2O(l) -> H2CO3(aq)}$$
 
-$$\text{SO}_3\text{(g)} + \text{H}_2\text{O(l)} \rightarrow \text{H}_2\text{SO}_4\text{(aq)}$$
+$$\ce{SO3(g) + H2O(l) -> H2SO4(aq)}$$
 
 The pattern follows from bonding. A metal oxide is ionic and contains
 the oxide ion, which takes a proton from water and leaves hydroxide
@@ -135,14 +135,14 @@ do some good.
 An acid and a base in the same beaker give a **salt** and, usually,
 water:
 
-$$\text{HCl(aq)} + \text{NaOH(aq)} \rightarrow \text{NaCl(aq)} + \text{H}_2\text{O(l)}$$
+$$\ce{HCl(aq) + NaOH(aq) -> NaCl(aq) + H2O(l)}$$
 
 Swap the partners and you can see it is a double displacement, exactly
 as in [[Predicting Products]]. What drives it is not the salt — sodium
 and chloride ions were dissolved before and are dissolved after, and
 nothing about them changed. The real reaction is
 
-$$\text{H}^+\text{(aq)} + \text{OH}^-\text{(aq)} \rightarrow \text{H}_2\text{O(l)}$$
+$$\ce{H+(aq) + OH-(aq) -> H2O(l)}$$
 
 and it goes because it removes two reactive ions from solution and locks
 them into a molecule. The energy released as that bond forms is the

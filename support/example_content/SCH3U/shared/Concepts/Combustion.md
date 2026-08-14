@@ -21,9 +21,9 @@ Burn a hydrocarbon with plenty of oxygen and every carbon atom ends up
 in carbon dioxide and every hydrogen atom ends up in water. Nothing else
 is produced, because there is nothing else in the fuel.
 
-$$\text{CH}_4\text{(g)} + 2\text{O}_2\text{(g)} \rightarrow \text{CO}_2\text{(g)} + 2\text{H}_2\text{O(g)}$$
+$$\ce{CH4(g) + 2O2(g) -> CO2(g) + 2H2O(g)}$$
 
-$$\text{C}_3\text{H}_8\text{(g)} + 5\text{O}_2\text{(g)} \rightarrow 3\text{CO}_2\text{(g)} + 4\text{H}_2\text{O(g)}$$
+$$\ce{C3H8(g) + 5O2(g) -> 3CO2(g) + 4H2O(g)}$$
 
 The flame is blue, or nearly invisible, and it is hot. It leaves no
 deposit on anything held in it.
@@ -44,9 +44,9 @@ Hydrogen still gets its oxygen — it is more reactive towards oxygen than
 carbon is — so the water is produced either way. The carbon comes out
 part-oxidised, or not oxidised at all.
 
-$$2\text{CH}_4\text{(g)} + 3\text{O}_2\text{(g)} \rightarrow 2\text{CO(g)} + 4\text{H}_2\text{O(g)}$$
+$$\ce{2CH4(g) + 3O2(g) -> 2CO(g) + 4H2O(g)}$$
 
-$$\text{CH}_4\text{(g)} + \text{O}_2\text{(g)} \rightarrow \text{C(s)} + 2\text{H}_2\text{O(g)}$$
+$$\ce{CH4(g) + O2(g) -> C(s) + 2H2O(g)}$$
 
 In practice a starved flame does both at once and a real one is a
 mixture of all three outcomes. Three things change, and all three are
@@ -69,7 +69,7 @@ next section.
 ## Carbon monoxide is why this matters
 
 > [!danger] Carbon monoxide gives you no warning at all
-> $\text{CO}$ is colourless, odourless, and tasteless. Your senses
+> $\ce{CO}$ is colourless, odourless, and tasteless. Your senses
 > cannot detect it at any concentration, including a fatal one.
 >
 > It does its damage by binding to the haemoglobin in your blood far

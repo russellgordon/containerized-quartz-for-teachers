@@ -22,7 +22,7 @@ Start from [[Water and Solutions]]. A dissolved ionic compound is not
 sitting in the water as tiny lumps of solid; it has come apart, and each
 ion is drifting independently, wrapped in its own shell of water
 molecules. Sodium chloride solution contains no sodium chloride. It
-contains $\text{Na}^+$ and $\text{Cl}^-$, going their separate ways.
+contains $\ce{Na+}$ and $\ce{Cl-}$, going their separate ways.
 
 Now pour in a second solution. Its ions arrive and everything mixes.
 Four kinds of ion are now present and each cation meets each anion many
@@ -58,19 +58,19 @@ The **full equation** — sometimes called the molecular equation, which
 is a poor name given that none of these is a molecule — writes every
 compound in its complete form:
 
-$$\text{AgNO}_3\text{(aq)} + \text{NaCl(aq)} \rightarrow \text{AgCl(s)} + \text{NaNO}_3\text{(aq)}$$
+$$\ce{AgNO3(aq) + NaCl(aq) -> AgCl(s) + NaNO3(aq)}$$
 
 The **complete ionic equation** writes what is really in the beaker,
 splitting apart everything that is genuinely present as separate ions:
 
-$$\text{Ag}^+\text{(aq)} + \text{NO}_3^-\text{(aq)} + \text{Na}^+\text{(aq)} + \text{Cl}^-\text{(aq)} \rightarrow \text{AgCl(s)} + \text{Na}^+\text{(aq)} + \text{NO}_3^-\text{(aq)}$$
+$$\ce{Ag+(aq) + NO3-(aq) + Na+(aq) + Cl-(aq) -> AgCl(s) + Na+(aq) + NO3-(aq)}$$
 
 Look at what is identical on both sides. Sodium ions came in dissolved
 and left dissolved. Nitrate ions did the same. They are **spectator
 ions** — present, but taking no part — and cancelling them leaves the
 **net ionic equation**:
 
-$$\text{Ag}^+\text{(aq)} + \text{Cl}^-\text{(aq)} \rightarrow \text{AgCl(s)}$$
+$$\ce{Ag+(aq) + Cl-(aq) -> AgCl(s)}$$
 
 That is the reaction. Three lines of chemistry reduced to the one thing
 that changed. It also makes a broader claim than the full equation did:
@@ -104,12 +104,12 @@ wrong even if every atom is accounted for.
 The same treatment applied to an acid and a base is startling, because
 almost the entire equation cancels:
 
-$$\text{HCl(aq)} + \text{NaOH(aq)} \rightarrow \text{NaCl(aq)} + \text{H}_2\text{O(l)}$$
+$$\ce{HCl(aq) + NaOH(aq) -> NaCl(aq) + H2O(l)}$$
 
 Split the strong acid, the strong base, and the soluble salt, cancel
 sodium and chloride, and what remains is
 
-$$\text{H}^+\text{(aq)} + \text{OH}^-\text{(aq)} \rightarrow \text{H}_2\text{O(l)}$$
+$$\ce{H+(aq) + OH-(aq) -> H2O(l)}$$
 
 Every neutralisation of a strong acid by a strong base has that same net
 ionic equation, whichever acid and base you chose. The salt is a
@@ -132,7 +132,7 @@ and fertiliser causes algal blooms in lakes, and it is dissolved, so
 filtration does nothing. Add an iron(III) or aluminium salt and it
 becomes a solid that can be settled and removed:
 
-$$\text{Fe}^{3+}\text{(aq)} + \text{PO}_4^{3-}\text{(aq)} \rightarrow \text{FePO}_4\text{(s)}$$
+$$\ce{Fe^3+(aq) + PO4^3-(aq) -> FePO4(s)}$$
 
 **Identifying an unknown ion.** Because each precipitate has a
 characteristic colour and a characteristic set of conditions, adding

@@ -80,7 +80,7 @@ of the answer.
 **c) Calculate the ratio** you need, using the
 Henderson–Hasselbalch equation:
 
-$$\text{pH} = \text{p}K_a + \log\frac{[\text{A}^-]}{[\text{HA}]}$$
+$$\text{pH} = \text{p}K_a + \log\frac{[\ce{A-}]}{[\ce{HA}]}$$
 
 > [!example]- The shape of the calculation, with illustrative numbers
 > These are not your numbers and the $K_a$ is not from any particular
@@ -91,9 +91,9 @@ $$\text{pH} = \text{p}K_a + \log\frac{[\text{A}^-]}{[\text{HA}]}$$
 >
 > $\text{p}K_a = -\log(1.8 \times 10^{-5}) = 4.74$
 >
-> $5.00 = 4.74 + \log\frac{[\text{A}^-]}{[\text{HA}]}$
+> $5.00 = 4.74 + \log\frac{[\ce{A-}]}{[\ce{HA}]}$
 >
-> $\log\frac{[\text{A}^-]}{[\text{HA}]} = 0.26 \quad \Rightarrow \quad \frac{[\text{A}^-]}{[\text{HA}]} = 10^{0.26} = 1.8$
+> $\log\frac{[\ce{A-}]}{[\ce{HA}]} = 0.26 \quad \Rightarrow \quad \frac{[\ce{A-}]}{[\ce{HA}]} = 10^{0.26} = 1.8$
 >
 > So the conjugate base has to be present at about **1.8 times** the
 > concentration of the weak acid. Notice how close to 1 that ratio is
@@ -121,7 +121,7 @@ Four numbers, committed in advance and dated:
    you concluded something was wrong.
 2. **The pH after adding a stated small amount of strong acid** — decide
    the amount and the concentration now, and keep it the same for
-   part 3. Show the calculation: how many moles of $\text{H}_3\text{O}^+$
+   part 3. Show the calculation: how many moles of $\ce{H3O+}$
    you are adding, which member of the pair absorbs it, what the new
    ratio is, and what pH that gives.
 3. **The pH after adding the same amount of strong base**, by the same

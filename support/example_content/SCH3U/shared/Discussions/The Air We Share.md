@@ -29,11 +29,11 @@ Canada's **Air Quality Health Index**, published by Environment and
 Climate Change Canada, is built from three things. It is worth knowing
 why those three, because the chemistry is not obvious.
 
-**Nitrogen dioxide, $\text{NO}_2$.** Nitrogen and oxygen sit beside each
+**Nitrogen dioxide, $\ce{NO2}$.** Nitrogen and oxygen sit beside each
 other in the air all day without reacting. Raise the temperature far
 enough — inside an engine cylinder, a furnace, a turbine — and they do:
 
-$$\text{N}_2\text{(g)} + \text{O}_2\text{(g)} \rightarrow 2\text{NO(g)}$$
+$$\ce{N2(g) + O2(g) -> 2NO(g)}$$
 
 The nitrogen monoxide then oxidises in the open air to nitrogen dioxide.
 Notice where the nitrogen came from. It is not an impurity in the fuel;
@@ -47,7 +47,7 @@ the nose and throat. Some is emitted directly by combustion and by
 wildfire smoke; some forms in the air out of gases that were not
 particles when they left the source.
 
-**Ground-level ozone, $\text{O}_3$.** This one is not emitted by
+**Ground-level ozone, $\ce{O3}$.** This one is not emitted by
 anything. It is a **secondary pollutant**, built in the air out of
 nitrogen oxides and volatile organic compounds under sunlight.[^1] That
 explains its behaviour: it peaks on hot, still, sunny afternoons, and
@@ -72,7 +72,7 @@ The same logic runs through acid deposition. Sulfur dioxide, from
 sulfur-bearing fuels and from smelting, is oxidised in the atmosphere to
 sulfur trioxide, which dissolves in cloud droplets:
 
-$$\text{SO}_3\text{(g)} + \text{H}_2\text{O(l)} \rightarrow \text{H}_2\text{SO}_4\text{(aq)}$$
+$$\ce{SO3(g) + H2O(l) -> H2SO4(aq)}$$
 
 The nitrogen oxides above do the equivalent thing and end up as nitric
 acid. That is ordinary [[Acids and Bases]] chemistry happening in a

@@ -146,31 +146,24 @@ $$\frac{1}{f} = \frac{1}{d_o} + \frac{1}{d_i}$$
 
 $$M = \frac{h_i}{h_o} = -\frac{d_i}{d_o}$$
 
-Chemistry is typeset the same way, so subscripts sit low, charges sit
-high, and reaction arrows are arrows rather than a hyphen and a
-greater-than sign:
-
-$$\text{CH}_4 + 2\text{O}_2 \rightarrow \text{CO}_2 + 2\text{H}_2\text{O}$$
-
-$$\text{HCl(aq)} + \text{NaOH(aq)} \rightarrow \text{NaCl(aq)} + \text{H}_2\text{O(l)}$$
-
-Ions carry their charge properly — sulfate is $\text{SO}_4^{2-}$ and
-ammonium is $\text{NH}_4^{+}$ — which matters, because
-$\text{SO}_4^{2-}$ and $\text{SO}_3^{2-}$ are different substances.
-
-There is a shorter way to write the same thing. `\ce{}` — from the
-**mhchem** extension, which this site includes — takes chemistry in
-roughly the form you would say it aloud and typesets the rest for you:
+Chemistry is written inside `\ce{...}`. Everything in there is read as
+chemistry, so subscripts sit low, charges sit high, and reaction arrows
+are arrows rather than a hyphen and a greater-than sign:
 
 $$\ce{CH4 + 2O2 -> CO2 + 2H2O}$$
 
-That is the first of the two equations above, written as one macro:
+$$\ce{HCl(aq) + NaOH(aq) -> NaCl(aq) + H2O(l)}$$
+
+Ions carry their charge properly — sulfate is $\ce{SO4^2-}$ and
+ammonium is $\ce{NH4+}$ — which matters, because
+$\ce{SO4^2-}$ and $\ce{SO3^2-}$ are different substances.
+
+**How that was made:** the first of those two equations is one
+line of source:
 
 ```markdown
 $$\ce{CH4 + 2O2 -> CO2 + 2H2O}$$
 ```
-
-No `\text{}`, no arrow command, and no braces around the subscripts.
 
 **How that was made:** single dollar signs keep it in the sentence,
 double ones give it a line of its own.
@@ -178,17 +171,18 @@ double ones give it a line of its own.
 ```markdown
 Inline: $f = 15\ \text{cm}$
 
-Display: $$\text{CH}_4 + 2\text{O}_2 \rightarrow \text{CO}_2 + 2\text{H}_2\text{O}$$
+Display: $$\ce{CH4 + 2O2 -> CO2 + 2H2O}$$
 ```
 
-> [!tip] For teachers: which form to write
-> Both forms on this page render, so either is safe. Prefer `\ce{}` on
-> new pages — it is less to type and harder to get subtly wrong. The
-> longhand is still here because these pages were written before the
-> extension was switched on, and it still works.
+> [!tip] For teachers: what `\ce{}` saves you
+> The **mhchem** extension is part of this site, so a whole equation fits
+> inside one macro, typed roughly as you would say it aloud. No braces
+> around subscripts, no arrow commands to look up: `->` draws a reaction
+> arrow and `<=>` an equilibrium one, `^` carries a charge, and
+> `(aq)`, `(g)`, `(s)`, `(l)` set a state.
 >
-> What you must not do is write `H_2O` bare. Without `\text{}` or `\ce{}`
-> the symbols come out in maths italic, which is the convention for
+> Write `$\ce{H2O}$` rather than a bare `$H_2O$` — outside `\ce{}` the
+> symbols come out in maths italic, which is the convention for
 > *variables* and looks wrong for elements.
 >
 > Display maths has to stay on **one physical line**. A `$$` span broken

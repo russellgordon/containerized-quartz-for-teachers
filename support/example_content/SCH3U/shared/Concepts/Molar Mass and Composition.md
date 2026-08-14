@@ -24,12 +24,12 @@ The **molar mass** $M$ of a compound is the sum of the molar masses of
 every atom in its formula, in grams per mole. That is all it is. The
 subscripts multiply, and anything in brackets multiplies through.
 
-Sulfuric acid, $\text{H}_2\text{SO}_4$: two hydrogens at 1.01, one
+Sulfuric acid, $\ce{H2SO4}$: two hydrogens at 1.01, one
 sulfur at 32.07, four oxygens at 16.00.
 
 $$M = 2(1.01) + 32.07 + 4(16.00) = 98.09 \text{ g/mol}$$
 
-Calcium nitrate, $\text{Ca(NO}_3\text{)}_2$: one calcium, and then
+Calcium nitrate, $\ce{Ca(NO3)2}$: one calcium, and then
 *two* nitrate groups, each of which is one nitrogen and three oxygens.
 
 $$M = 40.08 + 2\left[14.01 + 3(16.00)\right] = 164.10 \text{ g/mol}$$
@@ -55,12 +55,12 @@ percentage composition, which is why the number identifies a substance
 and a mass does not.
 
 > [!example] Worked: the water in blue copper sulfate
-> Copper(II) sulfate pentahydrate, $\text{CuSO}_4 \cdot 5\text{H}_2\text{O}$,
+> Copper(II) sulfate pentahydrate, $\ce{CuSO4 * 5H2O}$,
 > is the blue crystal. The dot means five water molecules are built into
 > the crystal structure — they are part of the formula, not
 > contamination.
 >
-> $\begin{aligned} M(\text{CuSO}_4) &= 63.55 + 32.07 + 4(16.00) = 159.62 \text{ g/mol} \\ M(5\text{H}_2\text{O}) &= 5\left[2(1.01) + 16.00\right] = 90.10 \text{ g/mol} \\ M(\text{total}) &= 159.62 + 90.10 = 249.72 \text{ g/mol} \end{aligned}$
+> $\begin{aligned} M(\ce{CuSO4}) &= 63.55 + 32.07 + 4(16.00) = 159.62 \text{ g/mol} \\ M(\ce{5H2O}) &= 5\left[2(1.01) + 16.00\right] = 90.10 \text{ g/mol} \\ M(\text{total}) &= 159.62 + 90.10 = 249.72 \text{ g/mol} \end{aligned}$
 >
 > So the water is $\frac{90.10}{249.72} \times 100\% = 36.08\%$ of the
 > mass, and the copper is

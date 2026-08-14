@@ -10,62 +10,62 @@ Count in a table. Balance the element that appears in the fewest
 formulas first, leave pure elements until last, and recount everything
 at the end — every time, including the time you are sure.
 
-**1.** Balance: $\text{H}_2 + \text{Cl}_2 \rightarrow \text{HCl}$
+**1.** Balance: $\ce{H2 + Cl2 -> HCl}$
 
 > [!success]- Answer 1
 > Left: 2 H and 2 Cl. Right: 1 H and 1 Cl. Both are short by a factor
 > of two on the right, so one coefficient fixes both.
 >
-> $$\text{H}_2 + \text{Cl}_2 \rightarrow 2\text{HCl}$$
+> $$\ce{H2 + Cl2 -> 2HCl}$$
 >
 > Final count: 2 H and 2 Cl on each side.
 
-**2.** Balance: $\text{Na} + \text{Cl}_2 \rightarrow \text{NaCl}$
+**2.** Balance: $\ce{Na + Cl2 -> NaCl}$
 
 > [!success]- Answer 2
 > Chlorine appears as a pair on the left and singly on the right, so
-> put a 2 in front of $\text{NaCl}$:
-> $\text{Na} + \text{Cl}_2 \rightarrow 2\text{NaCl}$.
+> put a 2 in front of $\ce{NaCl}$:
+> $\ce{Na + Cl2 -> 2NaCl}$.
 >
 > That now demands 2 sodium on the right, so put a 2 in front of the
 > sodium as well.
 >
-> $$2\text{Na} + \text{Cl}_2 \rightarrow 2\text{NaCl}$$
+> $$\ce{2Na + Cl2 -> 2NaCl}$$
 >
 > Final count: 2 Na and 2 Cl each side. Balancing the pure element last
 > is what made this two quick steps instead of a loop.
 
-**3.** Balance: $\text{Fe} + \text{O}_2 \rightarrow \text{Fe}_2\text{O}_3$
+**3.** Balance: $\ce{Fe + O2 -> Fe2O3}$
 
 > [!success]- Answer 3
 > Oxygen comes in twos on the left and threes on the right. The
 > smallest number both divide into is 6, so aim for 6 oxygen atoms on
-> each side: $3\text{O}_2$ on the left and $2\text{Fe}_2\text{O}_3$ on
+> each side: $\ce{3O2}$ on the left and $\ce{2Fe2O3}$ on
 > the right.
 >
 > That gives $2 \times 2 = 4$ iron atoms on the right, so 4 iron on the
 > left.
 >
-> $$4\text{Fe} + 3\text{O}_2 \rightarrow 2\text{Fe}_2\text{O}_3$$
+> $$\ce{4Fe + 3O2 -> 2Fe2O3}$$
 >
 > Final count: 4 Fe and 6 O each side, and 4 and 3 share no common
 > factor, so it is in lowest terms.
 
 **4.** Balance the combustion of propane:
-$\text{C}_3\text{H}_8 + \text{O}_2 \rightarrow \text{CO}_2 + \text{H}_2\text{O}$
+$\ce{C3H8 + O2 -> CO2 + H2O}$
 
 > [!success]- Answer 4
 > Carbon and hydrogen each appear in only two formulas, so do them
-> first and leave the pure $\text{O}_2$ until last.
+> first and leave the pure $\ce{O2}$ until last.
 >
-> Carbon: 3 on the left, so $3\text{CO}_2$ on the right. Hydrogen: 8 on
-> the left, and water carries 2 each, so $4\text{H}_2\text{O}$.
+> Carbon: 3 on the left, so $\ce{3CO2}$ on the right. Hydrogen: 8 on
+> the left, and water carries 2 each, so $\ce{4H2O}$.
 >
 > Now count oxygen on the right: $3 \times 2 = 6$ in the carbon
 > dioxide, plus $4 \times 1 = 4$ in the water, giving 10. Ten oxygen
-> atoms come from five $\text{O}_2$ molecules.
+> atoms come from five $\ce{O2}$ molecules.
 >
-> $$\text{C}_3\text{H}_8 + 5\text{O}_2 \rightarrow 3\text{CO}_2 + 4\text{H}_2\text{O}$$
+> $$\ce{C3H8 + 5O2 -> 3CO2 + 4H2O}$$
 >
 > Final count: 3 C, 8 H, 10 O on each side.
 
@@ -74,12 +74,12 @@ $\text{C}_3\text{H}_8 + \text{O}_2 \rightarrow \text{CO}_2 + \text{H}_2\text{O}$
 oxide and carbon dioxide gas.*
 
 > [!success]- Answer 5
-> Formulas first, from the charges: calcium is $\text{Ca}^{2+}$,
-> carbonate is $\text{CO}_3^{2-}$, so calcium carbonate is
-> $\text{CaCO}_3$. Calcium oxide is $\text{CaO}$, and carbon dioxide is
-> $\text{CO}_2$.
+> Formulas first, from the charges: calcium is $\ce{Ca^2+}$,
+> carbonate is $\ce{CO3^2-}$, so calcium carbonate is
+> $\ce{CaCO3}$. Calcium oxide is $\ce{CaO}$, and carbon dioxide is
+> $\ce{CO2}$.
 >
-> $$\text{CaCO}_3\text{(s)} \rightarrow \text{CaO(s)} + \text{CO}_2\text{(g)}$$
+> $$\ce{CaCO3(s) -> CaO(s) + CO2(g)}$$
 >
 > Count before you celebrate: 1 Ca, 1 C, and 3 O each side. It happened
 > to be balanced as written, which is not the same as not needing to be
@@ -91,34 +91,34 @@ oxide and carbon dioxide gas.*
 > [[Balancing by Counting]].
 
 **6.** Balance:
-$\text{AgNO}_3 + \text{MgCl}_2 \rightarrow \text{AgCl} + \text{Mg(NO}_3)_2$
+$\ce{AgNO3 + MgCl2 -> AgCl + Mg(NO3)2}$
 
 > [!success]- Answer 6
-> Do **not** break up the nitrate. It goes in as $\text{NO}_3$ and
-> comes out as $\text{NO}_3$, so count it as one unit.
+> Do **not** break up the nitrate. It goes in as $\ce{NO3}$ and
+> comes out as $\ce{NO3}$, so count it as one unit.
 >
-> Nitrate: 1 on the left, 2 on the right, so $2\text{AgNO}_3$. That
-> gives 2 silver on the left, so $2\text{AgCl}$ on the right. Chlorine:
-> 2 on the right now, and $\text{MgCl}_2$ already supplies 2. Magnesium:
+> Nitrate: 1 on the left, 2 on the right, so $\ce{2AgNO3}$. That
+> gives 2 silver on the left, so $\ce{2AgCl}$ on the right. Chlorine:
+> 2 on the right now, and $\ce{MgCl2}$ already supplies 2. Magnesium:
 > 1 each side.
 >
-> $$2\text{AgNO}_3 + \text{MgCl}_2 \rightarrow 2\text{AgCl} + \text{Mg(NO}_3)_2$$
+> $$\ce{2AgNO3 + MgCl2 -> 2AgCl + Mg(NO3)2}$$
 >
 > Final count: 2 Ag, 2 nitrate groups, 1 Mg, 2 Cl on each side.
 > Treating a polyatomic ion as a block turns a four-element problem
 > into a three-item one.
 
 **7.** Two students balance
-$\text{H}_2 + \text{O}_2 \rightarrow \text{H}_2\text{O}$. One writes
-$\text{H}_2 + \text{O}_2 \rightarrow \text{H}_2\text{O}_2$. The other
+$\ce{H2 + O2 -> H2O}$. One writes
+$\ce{H2 + O2 -> H2O2}$. The other
 writes
-$4\text{H}_2 + 2\text{O}_2 \rightarrow 4\text{H}_2\text{O}$. Neither
+$\ce{4H2 + 2O2 -> 4H2O}$. Neither
 is acceptable. Explain what is wrong with each, and say which one is
 the more serious error.
 
 > [!success]- Answer 7
 > **The first student changed a subscript.** Count it and the atoms do
-> match — but $\text{H}_2\text{O}_2$ is hydrogen peroxide, which
+> match — but $\ce{H2O2}$ is hydrogen peroxide, which
 > bleaches hair and decomposes on a shelf, and it is not water. A
 > subscript is part of a substance's identity, so changing one does not
 > balance the equation; it replaces one of the substances with a
@@ -130,7 +130,7 @@ the more serious error.
 > the right thing about the ratio in a clumsy way. Divide every
 > coefficient by 2:
 >
-> $$2\text{H}_2 + \text{O}_2 \rightarrow 2\text{H}_2\text{O}$$
+> $$\ce{2H2 + O2 -> 2H2O}$$
 >
 > **The first is far more serious**, and it is worth being clear about
 > why. The second student has written something correct in an

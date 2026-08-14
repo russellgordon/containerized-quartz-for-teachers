@@ -118,7 +118,7 @@ The grid. Rows are the metal you add; columns are the solution it goes
 into. In each cell record what you saw **and how long it took**, with
 the resolution of your timer noted at the top of the page.
 
-| Metal added | in $\text{MgSO}_4$ | in $\text{ZnSO}_4$ | in $\text{FeSO}_4$ | in $\text{CuSO}_4$ | in dilute $\text{HCl}$ |
+| Metal added | in $\ce{MgSO4}$ | in $\ce{ZnSO4}$ | in $\ce{FeSO4}$ | in $\ce{CuSO4}$ | in dilute $\ce{HCl}$ |
 | --- | --- | --- | --- | --- | --- |
 | Magnesium | | | | | |
 | Zinc | | | | | |

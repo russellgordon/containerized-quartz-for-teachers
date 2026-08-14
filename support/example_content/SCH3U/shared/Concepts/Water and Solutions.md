@@ -19,10 +19,10 @@ starts with the shape of one very small molecule.
 
 ## Water is bent, and that changes everything
 
-Two facts about $\text{H}_2\text{O}$, both from
+Two facts about $\ce{H2O}$, both from
 [[Lewis Structures and Models]]:
 
-Oxygen is much more electronegative than hydrogen, so each $\text{O-H}$
+Oxygen is much more electronegative than hydrogen, so each $\ce{O-H}$
 bond is strongly polar — the shared pair spends more time near the
 oxygen, leaving the oxygen $\delta-$ and each hydrogen $\delta+$.
 
@@ -32,7 +32,7 @@ carries two lone pairs that take up room.
 Put those together and the two bond dipoles do not cancel. Water has a
 definite negative end and a definite positive end: it is a **polar
 molecule**. Compare it with carbon dioxide, which also has two strongly
-polar bonds — but $\text{CO}_2$ is linear, the two pulls point in
+polar bonds — but $\ce{CO2}$ is linear, the two pulls point in
 exactly opposite directions, and they sum to nothing. Same kind of
 bonds, opposite result, purely because of shape.
 
@@ -79,7 +79,7 @@ others sit at the bottom of the beaker, which is the pattern catalogued
 in [[Solubility Rules]] and exploited in
 [[Precipitation and Net Ionic Equations]].
 
-**A polar molecular solid in water.** Sugar has many $\text{O-H}$
+**A polar molecular solid in water.** Sugar has many $\ce{O-H}$
 groups, so it makes hydrogen bonds with water directly. Ethanol does
 too, which is why it mixes with water in any proportion. No ions are
 produced, which is why sugar solution does not conduct electricity and
@@ -103,7 +103,7 @@ what "like" means: polar dissolves polar and ionic, non-polar dissolves
 non-polar, and the reason is always which attractions are being traded
 for which.
 
-Oxygen gas is the useful exception to keep in mind. $\text{O}_2$ is
+Oxygen gas is the useful exception to keep in mind. $\ce{O2}$ is
 completely non-polar, yet a small amount does dissolve in water — enough
 for every fish in the lake, and no more. Small non-polar molecules can
 be accommodated in the network without breaking too much of it.

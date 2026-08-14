@@ -55,7 +55,7 @@ they add to give a resultant pointing from the hydrogens towards the
 oxygen, reinforced by the two lone pairs sitting on the other side.
 Water is strongly polar, and that stream bends.
 
-$$\text{CO}_2 \text{ (linear, symmetric)} \rightarrow \text{non-polar} \qquad \text{H}_2\text{O} \text{ (bent)} \rightarrow \text{polar}$$
+$$\ce{CO2} \text{ (linear, symmetric)} \rightarrow \text{non-polar} \qquad \ce{H2O} \text{ (bent)} \rightarrow \text{polar}$$
 
 A working test, in the order you should apply it:
 
@@ -66,28 +66,28 @@ A working test, in the order you should apply it:
 
 The shortcut version: **if every outer atom is identical and the central
 atom has no lone pairs, the molecule is non-polar.** That rule catches
-$\text{CO}_2$, $\text{CCl}_4$, $\text{BF}_3$, and $\text{SO}_3$, and it
+$\ce{CO2}$, $\ce{CCl4}$, $\ce{BF3}$, and $\ce{SO3}$, and it
 is right often enough to trust — but it is a shortcut, not the
-principle. Square planar $\text{XeF}_4$ has two lone pairs on the
+principle. Square planar $\ce{XeF4}$ has two lone pairs on the
 central atom and is still non-polar, because those lone pairs sit
 opposite each other and cancel too. When the shortcut and the vectors
 disagree, the vectors win.
 
 > [!example]- Four cases worth working through before you look
-> **$\text{CCl}_4$** — four polar C–Cl bonds, tetrahedral, all outer
+> **$\ce{CCl4}$** — four polar C–Cl bonds, tetrahedral, all outer
 > atoms identical. The four dipoles point to the corners of a
 > tetrahedron and sum to zero. Non-polar, and it does not mix with
 > water.
 >
-> **$\text{CHCl}_3$** — swap one chlorine for a hydrogen and the
+> **$\ce{CHCl3}$** — swap one chlorine for a hydrogen and the
 > cancellation is destroyed. The three C–Cl dipoles no longer have a
 > fourth to balance them. Polar.
 >
-> **$\text{NH}_3$** — trigonal pyramidal, so the three N–H dipoles all
+> **$\ce{NH3}$** — trigonal pyramidal, so the three N–H dipoles all
 > have a component pointing the same way, up through the nitrogen, and
 > the lone pair adds to it. Strongly polar.
 >
-> **$\text{BF}_3$ against $\text{NF}_3$** — both have three bonds to
+> **$\ce{BF3}$ against $\ce{NF3}$** — both have three bonds to
 > fluorine, and their polarities are completely different. Boron
 > trifluoride is trigonal planar with no lone pair and cancels to zero.
 > Nitrogen trifluoride is trigonal pyramidal and does not. Same outer

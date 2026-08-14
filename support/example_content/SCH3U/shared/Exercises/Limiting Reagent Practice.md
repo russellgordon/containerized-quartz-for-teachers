@@ -23,7 +23,7 @@ The method that always works, and the only one worth learning:
 Step 2 is the step people skip, and skipping it is why "there is less of
 that one" gets the wrong answer so often.
 
-**1.** For $\text{Zn} + 2\text{HCl} \rightarrow \text{ZnCl}_2 + \text{H}_2$,
+**1.** For $\ce{Zn + 2HCl -> ZnCl2 + H2}$,
 you have 0.50 mol of zinc and 0.80 mol of hydrochloric acid.
 (a) Which is limiting?
 (b) How many moles of hydrogen form?
@@ -32,7 +32,7 @@ you have 0.50 mol of zinc and 0.80 mol of hydrochloric acid.
 > [!success]- Answer 1
 > **(a)** Divide each amount by its coefficient:
 >
-> $\begin{aligned} \text{Zn} &: \frac{0.50}{1} = 0.50 \\ \text{HCl} &: \frac{0.80}{2} = 0.40 \end{aligned}$
+> $\begin{aligned} \ce{Zn} &: \frac{0.50}{1} = 0.50 \\ \ce{HCl} &: \frac{0.80}{2} = 0.40 \end{aligned}$
 >
 > 0.40 is smaller, so **the hydrochloric acid is limiting**.
 >
@@ -42,7 +42,7 @@ you have 0.50 mol of zinc and 0.80 mol of hydrochloric acid.
 >
 > **(b)** Hydrogen and acid are in a 1 to 2 ratio:
 >
-> $n(\text{H}_2) = 0.80 \times \frac{1}{2} = 0.40 \text{ mol}$
+> $n(\ce{H2}) = 0.80 \times \frac{1}{2} = 0.40 \text{ mol}$
 >
 > **(c)** The acid consumes zinc in a 2 to 1 ratio, so
 > $0.80 \times \frac{1}{2} = 0.40$ mol of zinc is used up. Left over:
@@ -63,18 +63,18 @@ acid.
 > Everything to moles first. The acid is given as a concentration and a
 > volume, so use $n = cV$ with the **volume in litres**.
 >
-> $\begin{aligned} n(\text{Zn}) &= \frac{5.00 \text{ g}}{65.38 \text{ g/mol}} = 0.076476 \text{ mol} \\ n(\text{HCl}) &= (1.00 \text{ mol/L})(0.0500 \text{ L}) = 0.0500 \text{ mol} \end{aligned}$
+> $\begin{aligned} n(\ce{Zn}) &= \frac{5.00 \text{ g}}{65.38 \text{ g/mol}} = 0.076476 \text{ mol} \\ n(\ce{HCl}) &= (1.00 \text{ mol/L})(0.0500 \text{ L}) = 0.0500 \text{ mol} \end{aligned}$
 >
 > **(a)** Divide by coefficients:
 >
-> $\text{Zn} : \frac{0.076476}{1} = 0.0765 \qquad \text{HCl} : \frac{0.0500}{2} = 0.0250$
+> $\ce{Zn} : \frac{0.076476}{1} = 0.0765 \qquad \ce{HCl} : \frac{0.0500}{2} = 0.0250$
 >
 > **The acid is limiting**, and by a wide margin — you would need about
 > three times as much acid to use up all that zinc.
 >
-> **(b)** $n(\text{H}_2) = 0.0500 \times \frac{1}{2} = 0.0250 \text{ mol}$
+> **(b)** $n(\ce{H2}) = 0.0500 \times \frac{1}{2} = 0.0250 \text{ mol}$
 >
-> $m(\text{H}_2) = (0.0250 \text{ mol})(2.02 \text{ g/mol}) = 0.0505 \text{ g}$
+> $m(\ce{H2}) = (0.0250 \text{ mol})(2.02 \text{ g/mol}) = 0.0505 \text{ g}$
 >
 > **0.0505 g of hydrogen** — about fifty milligrams, from five grams of
 > metal and fifty millilitres of acid. Hydrogen's molar mass is so small
@@ -92,17 +92,17 @@ acid.
 > you would have predicted three times too much hydrogen.
 
 **3.** 14.0 g of nitrogen and 3.00 g of hydrogen are combined:
-$\text{N}_2 + 3\text{H}_2 \rightarrow 2\text{NH}_3$.
+$\ce{N2 + 3H2 -> 2NH3}$.
 (a) Which is limiting?
 (b) What mass of ammonia forms?
 (c) What mass of the excess reactant remains?
 
 > [!success]- Answer 3
-> $\begin{aligned} n(\text{N}_2) &= \frac{14.0}{28.02} = 0.49964 \text{ mol} \\ n(\text{H}_2) &= \frac{3.00}{2.02} = 1.48515 \text{ mol} \end{aligned}$
+> $\begin{aligned} n(\ce{N2}) &= \frac{14.0}{28.02} = 0.49964 \text{ mol} \\ n(\ce{H2}) &= \frac{3.00}{2.02} = 1.48515 \text{ mol} \end{aligned}$
 >
 > **(a)** Divide by coefficients:
 >
-> $\text{N}_2 : \frac{0.49964}{1} = 0.49964 \qquad \text{H}_2 : \frac{1.48515}{3} = 0.49505$
+> $\ce{N2} : \frac{0.49964}{1} = 0.49964 \qquad \ce{H2} : \frac{1.48515}{3} = 0.49505$
 >
 > **The hydrogen is limiting** — but only just. The two numbers differ
 > by about one part in a hundred, which means this mixture is very close
@@ -113,9 +113,9 @@ $\text{N}_2 + 3\text{H}_2 \rightarrow 2\text{NH}_3$.
 > those moles to two figures and both come out as 0.50, and you cannot
 > tell which is limiting at all.
 >
-> **(b)** $n(\text{NH}_3) = 1.48515 \times \frac{2}{3} = 0.99010 \text{ mol}$
+> **(b)** $n(\ce{NH3}) = 1.48515 \times \frac{2}{3} = 0.99010 \text{ mol}$
 >
-> $m(\text{NH}_3) = (0.99010)(17.04) = 16.87 \text{ g}$
+> $m(\ce{NH3}) = (0.99010)(17.04) = 16.87 \text{ g}$
 >
 > **16.9 g of ammonia**, to three significant figures.
 >
@@ -133,17 +133,17 @@ $\text{N}_2 + 3\text{H}_2 \rightarrow 2\text{NH}_3$.
 
 **4.** 25.0 mL of 0.100 mol/L silver nitrate is mixed with 25.0 mL of
 0.150 mol/L sodium chloride:
-$\text{AgNO}_3 + \text{NaCl} \rightarrow \text{AgCl(s)} + \text{NaNO}_3$.
+$\ce{AgNO3 + NaCl -> AgCl(s) + NaNO3}$.
 (a) What mass of silver chloride should form?
 (b) What is the concentration of the leftover reactant in the mixture?
 
 > [!success]- Answer 4
-> $\begin{aligned} n(\text{AgNO}_3) &= (0.100)(0.0250) = 2.50 \times 10^{-3} \text{ mol} \\ n(\text{NaCl}) &= (0.150)(0.0250) = 3.75 \times 10^{-3} \text{ mol} \end{aligned}$
+> $\begin{aligned} n(\ce{AgNO3}) &= (0.100)(0.0250) = 2.50 \times 10^{-3} \text{ mol} \\ n(\ce{NaCl}) &= (0.150)(0.0250) = 3.75 \times 10^{-3} \text{ mol} \end{aligned}$
 >
 > **(a)** Both coefficients are 1, so the smaller amount limits: the
 > **silver nitrate**.
 >
-> $M(\text{AgCl}) = 107.87 + 35.45 = 143.32 \text{ g/mol}$
+> $M(\ce{AgCl}) = 107.87 + 35.45 = 143.32 \text{ g/mol}$
 >
 > $m = (2.50 \times 10^{-3})(143.32) = 0.3583 \text{ g}$
 >

@@ -88,7 +88,7 @@ source **and** an explanation that points at a specific part of your
 drawing.
 
 This is the section where the whole of Unit 1 pays off. "It is soluble
-in water" is a fact. "The $-\text{OH}$ group can hydrogen bond to water,
+in water" is a fact. "The $-\ce{OH}$ group can hydrogen bond to water,
 and the carbon chain is short enough that the rest of the molecule does
 not outvote it" is chemistry.
 

@@ -36,8 +36,8 @@ Winkler isolated germanium.
 | Atomic mass | about 72 | 72.63 |
 | Density of the element | about 5.5 g/cm³ | 5.32 g/cm³ |
 | Appearance | dark grey | greyish white, lustrous |
-| Formula of the oxide | $\text{EsO}_2$ | $\text{GeO}_2$ |
-| Formula of the chloride | $\text{EsCl}_4$ | $\text{GeCl}_4$ |
+| Formula of the oxide | $\ce{EsO2}$ | $\ce{GeO2}$ |
+| Formula of the chloride | $\ce{EsCl4}$ | $\ce{GeCl4}$ |
 | Density of the chloride | about 1.9 g/cm³ | 1.88 g/cm³ |
 | Boiling point of the chloride | below 100 °C | about 86 °C |
 

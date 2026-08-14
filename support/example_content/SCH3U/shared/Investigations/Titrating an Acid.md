@@ -22,7 +22,7 @@ direction and most of them push the same way.
 The acid in vinegar is acetic acid, and it reacts with sodium hydroxide
 in a ratio the equation fixes:
 
-$$\text{CH}_3\text{COOH(aq)} + \text{NaOH(aq)} \rightarrow \text{NaCH}_3\text{COO(aq)} + \text{H}_2\text{O(l)}$$
+$$\ce{CH3COOH(aq) + NaOH(aq) -> NaCH3COO(aq) + H2O(l)}$$
 
 If you add sodium hydroxide of known concentration until the acid is
 exactly consumed, then the volume you added is a measurement of how much

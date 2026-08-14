@@ -8,14 +8,14 @@ tags:
 ---
 Naming is the one part of this course where being fast matters, because
 every later question hides a name or a formula inside it. If you have to
-stop and think about what $\text{Fe}_2(\text{SO}_4)_3$ is called, you
+stop and think about what $\ce{Fe2(SO4)3}$ is called, you
 will lose the thread of the stoichiometry question it was buried in.
 
 Keep [[Polyatomic Ions]] and [[Naming Rules at a Glance]] beside you for
 the first pass and then close them.
 
-**1.** Name these compounds: (a) $\text{KBr}$ (b) $\text{CaO}$
-(c) $\text{Li}_2\text{S}$ (d) $\text{MgCl}_2$ (e) $\text{Na}_3\text{N}$
+**1.** Name these compounds: (a) $\ce{KBr}$ (b) $\ce{CaO}$
+(c) $\ce{Li2S}$ (d) $\ce{MgCl2}$ (e) $\ce{Na3N}$
 
 > [!success]- Answer 1
 > All five are a metal from the first two groups with a non-metal, so
@@ -29,14 +29,14 @@ the first pass and then close them.
 > (e) sodium nitride
 >
 > Notice what the subscripts do **not** do: they never appear in the
-> name. $\text{MgCl}_2$ is not "magnesium dichloride". The 2 is not a
+> name. $\ce{MgCl2}$ is not "magnesium dichloride". The 2 is not a
 > choice somebody made — it is forced, because magnesium forms
-> $\text{Mg}^{2+}$ and chloride is $\text{Cl}^-$, and two chlorides are
+> $\ce{Mg^2+}$ and chloride is $\ce{Cl-}$, and two chlorides are
 > needed to balance one magnesium ion. Saying the 2 out loud would be
 > repeating information the name already contains.
 
-**2.** Name these: (a) $\text{FeCl}_2$ (b) $\text{FeCl}_3$
-(c) $\text{CuO}$ (d) $\text{Cu}_2\text{O}$ (e) $\text{PbO}_2$
+**2.** Name these: (a) $\ce{FeCl2}$ (b) $\ce{FeCl3}$
+(c) $\ce{CuO}$ (d) $\ce{Cu2O}$ (e) $\ce{PbO2}$
 
 > [!success]- Answer 2
 > These metals have **more than one possible charge**, so the name has
@@ -71,28 +71,28 @@ the first pass and then close them.
 > Polyatomic ions travel as a unit. When you need more than one of
 > them, the whole ion goes in brackets and the subscript goes outside.
 >
-> (a) $\text{Na}^+$ and $\text{CO}_3^{2-}$ — two sodiums per carbonate:
-> $\text{Na}_2\text{CO}_3$
+> (a) $\ce{Na+}$ and $\ce{CO3^2-}$ — two sodiums per carbonate:
+> $\ce{Na2CO3}$
 >
-> (b) $\text{NH}_4^+$ and $\text{SO}_4^{2-}$ — two ammoniums, so
-> brackets: $(\text{NH}_4)_2\text{SO}_4$
+> (b) $\ce{NH4+}$ and $\ce{SO4^2-}$ — two ammoniums, so
+> brackets: $\ce{(NH4)2SO4}$
 >
-> (c) $\text{Ca}^{2+}$ and $\text{NO}_3^-$ — two nitrates, so brackets:
-> $\text{Ca}(\text{NO}_3)_2$
+> (c) $\ce{Ca^2+}$ and $\ce{NO3-}$ — two nitrates, so brackets:
+> $\ce{Ca}(\ce{NO3})_2$
 >
-> (d) $\text{Fe}^{3+}$ and $\text{SO}_4^{2-}$ — the lowest whole numbers
+> (d) $\ce{Fe^3+}$ and $\ce{SO4^2-}$ — the lowest whole numbers
 > that balance $3+$ against $2-$ are two irons and three sulfates:
-> $\text{Fe}_2(\text{SO}_4)_3$
+> $\ce{Fe2(SO4)3}$
 >
-> (e) $\text{Mg}^{2+}$ and $\text{OH}^-$ — two hydroxides, so brackets:
-> $\text{Mg}(\text{OH})_2$
+> (e) $\ce{Mg^2+}$ and $\ce{OH-}$ — two hydroxides, so brackets:
+> $\ce{Mg}(\ce{OH})_2$
 >
-> Writing $\text{MgOH}_2$ instead of $\text{Mg}(\text{OH})_2$ changes
+> Writing $\ce{MgOH2}$ instead of $\ce{Mg}(\ce{OH})_2$ changes
 > the meaning completely: it says one oxygen and two hydrogens, which is
 > not two hydroxide ions. The brackets are not decoration.
 
-**4.** Name these: (a) $\text{CO}$ (b) $\text{CO}_2$
-(c) $\text{N}_2\text{O}_4$ (d) $\text{PCl}_5$ (e) $\text{SF}_6$. Then
+**4.** Name these: (a) $\ce{CO}$ (b) $\ce{CO2}$
+(c) $\ce{N2O4}$ (d) $\ce{PCl5}$ (e) $\ce{SF6}$. Then
 explain why these names use prefixes when the names in question 1 did
 not.
 
@@ -107,8 +107,8 @@ not.
 > which is why (a) and (b) both start with plain "carbon".
 >
 > **Why the prefixes are needed here.** In question 1 the ratio was
-> forced. Sodium is always $\text{Na}^+$ and chloride is always
-> $\text{Cl}^-$, so "sodium chloride" can only mean a one-to-one ratio —
+> forced. Sodium is always $\ce{Na+}$ and chloride is always
+> $\ce{Cl-}$, so "sodium chloride" can only mean a one-to-one ratio —
 > there is nothing left to specify.
 >
 > Two non-metals share electrons instead of transferring them, and
@@ -118,9 +118,9 @@ not.
 > in a closed garage. "Carbon oxide" would not distinguish them. The
 > prefix carries information that nothing else in the name can supply.
 
-**5.** Name these acids: (a) $\text{HCl(aq)}$ (b)
-$\text{H}_2\text{SO}_4\text{(aq)}$ (c) $\text{HNO}_3\text{(aq)}$
-(d) $\text{CH}_3\text{COOH(aq)}$
+**5.** Name these acids: (a) $\ce{HCl(aq)}$ (b)
+$\ce{H2SO4(aq)}$ (c) $\ce{HNO3(aq)}$
+(d) $\ce{CH3COOH(aq)}$
 
 > [!success]- Answer 5
 > (a) **hydrochloric acid.** A hydrogen with a simple anion takes
@@ -135,7 +135,7 @@ $\text{H}_2\text{SO}_4\text{(aq)}$ (c) $\text{HNO}_3\text{(aq)}$
 > acid in vinegar, and you will meet it again in [[Titrating an Acid]].
 >
 > The rule worth memorising is the pair: *-ate* becomes *-ic acid*, and
-> *-ite* becomes *-ous acid*. So $\text{H}_2\text{SO}_3$, built from
+> *-ite* becomes *-ous acid*. So $\ce{H2SO3}$, built from
 > sulfite, is sulfurous acid.
 >
 > The $\text{(aq)}$ matters. These are names for the substances
@@ -147,36 +147,36 @@ nitrate (c) sodium hydrogen carbonate (d) barium sulfate (e) potassium
 permanganate
 
 > [!success]- Answer 6
-> (a) $\text{NH}_4^+$ and $\text{PO}_4^{3-}$ — three ammoniums balance
-> one phosphate: $(\text{NH}_4)_3\text{PO}_4$
+> (a) $\ce{NH4+}$ and $\ce{PO4^3-}$ — three ammoniums balance
+> one phosphate: $\ce{(NH4)3PO4}$
 >
-> (b) $\text{Cu}^{2+}$ (the Roman numeral told you) and
-> $\text{NO}_3^-$ — two nitrates: $\text{Cu}(\text{NO}_3)_2$
+> (b) $\ce{Cu^2+}$ (the Roman numeral told you) and
+> $\ce{NO3-}$ — two nitrates: $\ce{Cu}(\ce{NO3})_2$
 >
-> (c) $\text{Na}^+$ and $\text{HCO}_3^-$ — one each:
-> $\text{NaHCO}_3$. This is baking soda, and the older name "sodium
+> (c) $\ce{Na+}$ and $\ce{HCO3-}$ — one each:
+> $\ce{NaHCO3}$. This is baking soda, and the older name "sodium
 > bicarbonate" is still on the box.
 >
-> (d) $\text{Ba}^{2+}$ and $\text{SO}_4^{2-}$ — the charges already
-> cancel one to one: $\text{BaSO}_4$
+> (d) $\ce{Ba^2+}$ and $\ce{SO4^2-}$ — the charges already
+> cancel one to one: $\ce{BaSO4}$
 >
-> (e) $\text{K}^+$ and $\text{MnO}_4^-$ — one each: $\text{KMnO}_4$
+> (e) $\ce{K+}$ and $\ce{MnO4-}$ — one each: $\ce{KMnO4}$
 >
 > Two habits to build from this set. First, always write the charges
 > down before you write the formula; the formula falls out of them.
 > Second, no brackets when you only need one of the polyatomic ion —
-> $(\text{BaSO}_4)$ and $\text{Ba}(\text{SO}_4)$ are both wrong-looking
-> ways to write something correct, and the plain $\text{BaSO}_4$ is the
+> $\ce{(BaSO4)}$ and $\ce{Ba}(\ce{SO4})$ are both wrong-looking
+> ways to write something correct, and the plain $\ce{BaSO4}$ is the
 > one to use.
 
-**7.** Magnesium nitride has the formula $\text{Mg}_3\text{N}_2$.
+**7.** Magnesium nitride has the formula $\ce{Mg3N2}$.
 Show where those subscripts come from. Then explain why the name is not
 "magnesium(II) nitride" and not "trimagnesium dinitride".
 
 > [!success]- Answer 7
 > **Where the subscripts come from.** Magnesium is in the second group
-> and forms $\text{Mg}^{2+}$. Nitrogen gains three electrons to form the
-> nitride ion, $\text{N}^{3-}$. A neutral compound needs the total
+> and forms $\ce{Mg^2+}$. Nitrogen gains three electrons to form the
+> nitride ion, $\ce{N^3-}$. A neutral compound needs the total
 > positive charge to equal the total negative charge, so you need the
 > lowest whole numbers $x$ and $y$ with
 >
@@ -184,7 +184,7 @@ Show where those subscripts come from. Then explain why the name is not
 >
 > The smallest whole-number solution is $x = 3$ and $y = 2$: three
 > magnesium ions at $2+$ give $6+$, and two nitride ions at $3-$ give
-> $6-$. Hence $\text{Mg}_3\text{N}_2$.
+> $6-$. Hence $\ce{Mg3N2}$.
 >
 > **Why not "magnesium(II) nitride".** A Roman numeral is only used when
 > the metal has more than one possible charge and the name would
@@ -202,42 +202,42 @@ Show where those subscripts come from. Then explain why the name is not
 
 **8.** A student hands in this list. Every line has something wrong with
 it. Say what, and give the correct version.
-*(a) $\text{FeSO}_4$ is iron sulfate.*
-*(b) $\text{Ca}(\text{OH})_2$ is calcium dihydroxide.*
-*(c) $\text{N}_2\text{O}$ is nitrogen oxide.*
-*(d) Sodium chloride is $\text{NaCl}_2$.*
-*(e) $\text{P}_4\text{O}_{10}$ is phosphorus(V) oxide, because each
+*(a) $\ce{FeSO4}$ is iron sulfate.*
+*(b) $\ce{Ca}(\ce{OH})_2$ is calcium dihydroxide.*
+*(c) $\ce{N2O}$ is nitrogen oxide.*
+*(d) Sodium chloride is $\ce{NaCl2}$.*
+*(e) $\ce{P4O10}$ is phosphorus(V) oxide, because each
 phosphorus is $5+$.*
 
 > [!success]- Answer 8
 > **(a) Missing the Roman numeral.** Iron has more than one possible
 > charge, so "iron sulfate" is ambiguous — it could be this compound or
-> $\text{Fe}_2(\text{SO}_4)_3$. Sulfate is $2-$ and there is one iron,
+> $\ce{Fe2(SO4)3}$. Sulfate is $2-$ and there is one iron,
 > so the iron is $2+$: **iron(II) sulfate**.
 >
 > **(b) Prefixes do not belong on an ionic compound.** The 2 is forced
-> by the charges: $\text{Ca}^{2+}$ needs two $\text{OH}^-$. Saying "di"
+> by the charges: $\ce{Ca^2+}$ needs two $\ce{OH-}$. Saying "di"
 > adds nothing and signals the wrong kind of compound. It is **calcium
 > hydroxide**.
 >
 > **(c) Prefixes *do* belong here**, and this is exactly the case that
 > shows why. Nitrogen and oxygen form a whole family of compounds —
-> $\text{NO}$, $\text{NO}_2$, $\text{N}_2\text{O}$,
-> $\text{N}_2\text{O}_4$ — and "nitrogen oxide" cannot pick one out.
+> $\ce{NO}$, $\ce{NO2}$, $\ce{N2O}$,
+> $\ce{N2O4}$ — and "nitrogen oxide" cannot pick one out.
 > This one is **dinitrogen monoxide**.
 >
 > **(d) The formula itself is wrong, not the name.** Sodium is
-> $\text{Na}^+$ and chloride is $\text{Cl}^-$, so one of each balances
-> and the formula is $\text{NaCl}$. $\text{NaCl}_2$ would carry a net
+> $\ce{Na+}$ and chloride is $\ce{Cl-}$, so one of each balances
+> and the formula is $\ce{NaCl}$. $\ce{NaCl2}$ would carry a net
 > charge of $1-$, which is not a neutral compound. Worth noticing that
 > this error is invisible if you write formulas by pattern-matching and
 > impossible if you write the charges down first.
 >
 > **(e) The name is acceptable and the reasoning is confused.** The
 > compound is commonly named from its empirical formula
-> $\text{P}_2\text{O}_5$, as phosphorus(V) oxide or as diphosphorus
+> $\ce{P2O5}$, as phosphorus(V) oxide or as diphosphorus
 > pentoxide. But phosphorus and oxygen are **both non-metals** — there
-> is no $\text{P}^{5+}$ ion sitting in a lattice here. The bonds are
+> is no $\ce{P^5+}$ ion sitting in a lattice here. The bonds are
 > shared, not transferred, and the V records a combining capacity rather
 > than an ionic charge. Getting the right name from the wrong picture is
 > the most dangerous kind of correct answer, because nothing marks it

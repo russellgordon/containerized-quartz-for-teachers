@@ -139,38 +139,32 @@ stay on the page without giving themselves away.
 
 Inline maths sits inside a sentence: at 25 °C the ion product of water
 is $K_w = 1.0 \times 10^{-14}$, so a solution with
-$[\text{H}_3\text{O}^+] = 1.0 \times 10^{-3}$ mol/L has
-$[\text{OH}^-] = 1.0 \times 10^{-11}$ mol/L.
+$[\ce{H3O+}] = 1.0 \times 10^{-3}$ mol/L has
+$[\ce{OH-}] = 1.0 \times 10^{-11}$ mol/L.
 
 Display maths gets a line of its own, centred:
 
-$$K_c = \frac{[\text{C}]^c [\text{D}]^d}{[\text{A}]^a [\text{B}]^b} \qquad \text{pH} = -\log[\text{H}_3\text{O}^+] \qquad Q = mc\Delta T$$
+$$K_c = \frac{[\ce{C}]^c [\ce{D}]^d}{[\ce{A}]^a [\ce{B}]^b} \qquad \text{pH} = -\log[\ce{H3O+}] \qquad Q = mc\Delta T$$
 
-Chemistry is typeset the same way, so subscripts sit low, charges sit
-high, states sit in brackets, and reaction arrows are arrows rather than
-a hyphen and a greater-than sign:
-
-$$\text{N}_2\text{O}_4\text{(g)} \rightleftharpoons 2\text{NO}_2\text{(g)}$$
-
-$$\text{CH}_3\text{COOH(aq)} + \text{H}_2\text{O(l)} \rightleftharpoons \text{CH}_3\text{COO}^-\text{(aq)} + \text{H}_3\text{O}^+\text{(aq)}$$
-
-The double arrow is written `\rightleftharpoons` and it is not
-decoration — it is the claim that both directions are running at once,
-which is the whole of [[Dynamic Equilibrium]].
-
-There is a shorter way to write the same thing. `\ce{}` — from the
-**mhchem** extension, which this site includes — takes chemistry in
-roughly the form you would say it aloud and typesets the rest for you:
+Chemistry is written inside `\ce{...}`. Everything in there is read as
+chemistry, so subscripts sit low, charges sit high, states sit in
+brackets, and reaction arrows are arrows rather than a hyphen and a
+greater-than sign:
 
 $$\ce{N2O4(g) <=> 2NO2(g)}$$
 
-That is the first of the two equations above, written as one macro:
+$$\ce{CH3COOH(aq) + H2O(l) <=> CH3COO-(aq) + H3O+(aq)}$$
+
+The double arrow is written `<=>` and it is not
+decoration — it is the claim that both directions are running at once,
+which is the whole of [[Dynamic Equilibrium]].
+
+**How that was made:** the first of those two equations is one
+line of source:
 
 ```markdown
 $$\ce{N2O4(g) <=> 2NO2(g)}$$
 ```
-
-No `\text{}`, no arrow command, and no braces around the subscripts.
 
 Multi-step working goes on a single line, aligned on the equals signs:
 
@@ -182,17 +176,18 @@ double ones give it a line of its own.
 ```markdown
 Inline: $K_w = 1.0 \times 10^{-14}$
 
-Display: $$\text{N}_2\text{O}_4 \rightleftharpoons 2\text{NO}_2$$
+Display: $$\ce{N2O4 <=> 2NO2}$$
 ```
 
-> [!tip] For teachers: which form to write
-> Both forms on this page render, so either is safe. Prefer `\ce{}` on
-> new pages — it is less to type and harder to get subtly wrong. The
-> longhand is still here because these pages were written before the
-> extension was switched on, and it still works.
+> [!tip] For teachers: what `\ce{}` saves you
+> The **mhchem** extension is part of this site, so a whole equation fits
+> inside one macro, typed roughly as you would say it aloud. No braces
+> around subscripts, no arrow commands to look up: `->` draws a reaction
+> arrow and `<=>` an equilibrium one, `^` carries a charge, and
+> `(aq)`, `(g)`, `(s)`, `(l)` set a state.
 >
-> What you must not do is write `H_2O` bare. Without `\text{}` or `\ce{}`
-> the symbols come out in maths italic, which is the convention for
+> Write `$\ce{H2O}$` rather than a bare `$H_2O$` — outside `\ce{}` the
+> symbols come out in maths italic, which is the convention for
 > *variables* and looks wrong for elements.
 >
 > Display maths has to stay on **one physical line**. A `$$` span broken

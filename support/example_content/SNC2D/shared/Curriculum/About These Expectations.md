@@ -70,11 +70,11 @@ rather than expectation wording, so they are not reproduced here. If you want
 them, they are in the source document at the page range given above.
 
 **Chemical formulas.** The document typesets formulas with real subscripts, and
-so do these pages: $\text{CO}_2$, $\text{H}_2\text{SO}_4\text{(aq)}$,
-$2\text{H}_2 + \text{O}_2 \rightarrow 2\text{H}_2\text{O}$. One oddity is
+so do these pages: $\ce{CO2}$, $\ce{H2SO4(aq)}$,
+$\ce{2H2 + O2 -> 2H2O}$. One oddity is
 reproduced rather than corrected — in `C3.8` the sulfate ion is printed as
-$\text{SO}_4^{-2}$, with the minus sign ahead of the numeral, where the
-convention you will be taught writes $\text{SO}_4^{2-}$. Use the modern form in
+$\ce{SO4^-2}$, with the minus sign ahead of the numeral, where the
+convention you will be taught writes $\ce{SO4^2-}$. Use the modern form in
 your own work; the expectation is quoted as it was printed.
 
 ## Why the codes matter more than they look

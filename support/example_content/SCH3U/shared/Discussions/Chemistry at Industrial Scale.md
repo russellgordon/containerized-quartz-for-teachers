@@ -91,10 +91,10 @@ to solve them, and every solution has a bill attached.
 | The problem | The chemical fix | The cost of the fix |
 | --- | --- | --- |
 | Sulfur dioxide in flue gas from combustion and smelting | Scrub it with a base — lime or limestone — turning an acidic oxide into a solid salt | Consumes limestone and produces a solid product that must be used or landfilled |
-| Carbon monoxide and unburned fuel from engines | A catalytic converter oxidises them to $\text{CO}_2$ and water and reduces nitrogen oxides toward $\text{N}_2$ | Depends on scarce platinum-group metals, which must themselves be mined |
+| Carbon monoxide and unburned fuel from engines | A catalytic converter oxidises them to $\ce{CO2}$ and water and reduces nitrogen oxides toward $\ce{N2}$ | Depends on scarce platinum-group metals, which must themselves be mined |
 | Acidic drainage from mine workings | Neutralise with lime | Ongoing forever, long after the mine closes |
 | Unsafe drinking water | Coagulation and disinfection | Disinfection can form by-products that then have to be managed |
-| Not enough nitrogen for crops | Synthesise ammonia from atmospheric $\text{N}_2$ | Very energy-intensive, and nitrogen that runs off does its own damage |
+| Not enough nitrogen for crops | Synthesise ammonia from atmospheric $\ce{N2}$ | Very energy-intensive, and nitrogen that runs off does its own damage |
 
 Notice what the right-hand column is not. It is not an argument that the
 fixes are pointless — scrubbing genuinely removed a great deal of acidic

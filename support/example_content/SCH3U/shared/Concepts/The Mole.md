@@ -18,10 +18,10 @@ measure to the quantity the reaction actually cares about.
 A balanced equation is a statement about **numbers of particles**. When
 you write
 
-$$\text{Zn} + 2\text{HCl} \rightarrow \text{ZnCl}_2 + \text{H}_2$$
+$$\ce{Zn + 2HCl -> ZnCl2 + H2}$$
 
 the 2 does not mean two grams of hydrochloric acid or two millilitres of
-it. It means that for every one zinc atom, two molecules of $\text{HCl}$
+it. It means that for every one zinc atom, two molecules of $\ce{HCl}$
 are consumed. The equation is a recipe written in particles.
 
 Your equipment cannot count particles. So you need a bridge — a way of
@@ -53,7 +53,7 @@ conversion chart.[^1]
 
 > [!warning] "Mole" names a number, not a substance
 > A mole of water and a mole of lead are the same *count* and wildly
-> different masses. A mole of $\text{H}_2\text{O}$ is 18.02 g; a mole of
+> different masses. A mole of $\ce{H2O}$ is 18.02 g; a mole of
 > lead is 207.2 g. If a sentence you have written would still make sense
 > with "mole" replaced by "gram", something has gone wrong.
 

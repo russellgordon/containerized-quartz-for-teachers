@@ -16,14 +16,14 @@ atoms appeared or vanished, and your own bag says otherwise.
 
 Write the reaction between hydrogen and oxygen the naive way:
 
-$$\text{H}_2 + \text{O}_2 \rightarrow \text{H}_2\text{O}$$
+$$\ce{H2 + O2 -> H2O}$$
 
 Count the atoms on each side. Two hydrogens on the left, two on the
 right — fine. But **two** oxygens on the left and only **one** on the
 right. Written that way, the equation says one oxygen atom ceased to
 exist. Balancing is not a ritual; it is fixing a false statement.
 
-$$2\text{H}_2 + \text{O}_2 \rightarrow 2\text{H}_2\text{O}$$
+$$\ce{2H2 + O2 -> 2H2O}$$
 
 Now: four hydrogens each side, two oxygens each side. The equation
 finally says what the bag said.
@@ -35,8 +35,8 @@ never change **subscripts** — the small numbers inside a formula.
 
 | Change | What it does | Allowed? |
 | --- | --- | --- |
-| $\text{H}_2\text{O} \to 2\text{H}_2\text{O}$ | Two water molecules instead of one | Yes |
-| $\text{H}_2\text{O} \to \text{H}_2\text{O}_2$ | A different substance entirely | No |
+| $\ce{H2O} \to \ce{2H2O}$ | Two water molecules instead of one | Yes |
+| $\ce{H2O} \to \ce{H2O2}$ | A different substance entirely | No |
 
 Changing a subscript does not balance the equation — it swaps one
 chemical for another. Hydrogen peroxide is not water with extra oxygen
@@ -50,22 +50,22 @@ work.
 - [ ] Count every element on both sides, in a table. Write the counts
       down; do not hold them in your head.
 - [ ] Balance the element that appears in the fewest formulas first.
-- [ ] Leave pure elements (such as $\text{O}_2$ or $\text{Na}$) until last —
+- [ ] Leave pure elements (such as $\ce{O2}$ or $\ce{Na}$) until last —
       they are the easiest to adjust without disturbing anything else.
 - [ ] Recount everything. Every time.
 - [ ] Check the coefficients share no common factor:
-      $4\text{H}_2 + 2\text{O}_2 \rightarrow 4\text{H}_2\text{O}$ is balanced
+      $\ce{4H2 + 2O2 -> 4H2O}$ is balanced
       but not in lowest terms.
 
 > [!example]- Worked: the combustion of methane
-> Start with $\text{CH}_4 + \text{O}_2 \rightarrow \text{CO}_2 + \text{H}_2\text{O}$.
+> Start with $\ce{CH4 + O2 -> CO2 + H2O}$.
 > Carbon is already balanced (one each side). Hydrogen: four on the
 > left, two on the right, so put a 2 in front of water —
-> $\text{CH}_4 + \text{O}_2 \rightarrow \text{CO}_2 + 2\text{H}_2\text{O}$.
-> Now recount oxygen: two in $\text{CO}_2$ plus two in
-> $2\text{H}_2\text{O}$ makes four on the right, two on the left. Put a
-> 2 in front of $\text{O}_2$:
-> $$\text{CH}_4 + 2\text{O}_2 \rightarrow \text{CO}_2 + 2\text{H}_2\text{O}$$
+> $\ce{CH4 + O2 -> CO2 + 2H2O}$.
+> Now recount oxygen: two in $\ce{CO2}$ plus two in
+> $\ce{2H2O}$ makes four on the right, two on the left. Put a
+> 2 in front of $\ce{O2}$:
+> $$\ce{CH4 + 2O2 -> CO2 + 2H2O}$$
 > Final count: 1 C, 4 H, 4 O on each side. Balanced, and in lowest
 > terms.
 

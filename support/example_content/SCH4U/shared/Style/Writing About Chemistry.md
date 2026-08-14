@@ -109,35 +109,35 @@ drafts.
 ## Write chemistry so it can be read
 
 Formulas need their subscripts, charges, and states to mean anything.
-$\text{H}_2\text{O}$ is water; H2O is a typing accident that happens to
+$\ce{H2O}$ is water; H2O is a typing accident that happens to
 be readable. Ions carry their charge properly: sulfate is
-$\text{SO}_4^{2-}$, not SO4-2 — the charge sits after the subscript, and
+$\ce{SO4^2-}$, not SO4-2 — the charge sits after the subscript, and
 the number comes before the sign.
 
 Four conventions that carry real meaning in this course:
 
-- **The arrow states a claim.** A single arrow $\rightarrow$ says the
-  reaction proceeds to completion. A double arrow
-  $\rightleftharpoons$ says both directions are running at once. In
+- **The arrow states a claim.** A single arrow, written `->`, says
+  the reaction proceeds to completion. A double arrow, written
+  `<=>`, says both directions are running at once. In
   Units 4 and 5 that is the difference between two different chemical
   claims, not a stylistic choice:
 
-$$\text{CH}_3\text{COOH(aq)} + \text{H}_2\text{O(l)} \rightleftharpoons \text{CH}_3\text{COO}^-\text{(aq)} + \text{H}_3\text{O}^+\text{(aq)}$$
+$$\ce{CH3COOH(aq) + H2O(l) <=> CH3COO-(aq) + H3O+(aq)}$$
 
 - **States are not optional.** `(aq)`, `(l)`, `(g)`, and `(s)` decide
   what goes into an equilibrium expression at all — pure solids and
   pure liquids stay out of it, and without the state labels the reader
   cannot check your work.
 - **Coefficients go in front, subscripts stay put.**
-  $2\text{H}_2\text{O}$ is two water molecules;
-  $\text{H}_4\text{O}_2$ is not a substance. Changing a subscript to
+  $\ce{2H2O}$ is two water molecules;
+  $\ce{H4O2}$ is not a substance. Changing a subscript to
   balance an equation changes what reacted.
 - **Capitals matter.** Co is cobalt; CO is carbon monoxide.
 
 For organic compounds there is one more. A condensed structural formula
-such as $\text{CH}_3\text{CH}_2\text{OH}$ tells a reader which atoms are
+such as $\ce{CH3CH2OH}$ tells a reader which atoms are
 attached to which, and a molecular formula such as
-$\text{C}_2\text{H}_6\text{O}$ does not — and in a unit whose entire
+$\ce{C2H6O}$ does not — and in a unit whose entire
 first lesson is that two substances can share a molecular formula, that
 distinction is the content. Name compounds systematically, per
 [[Naming Organic Compounds]]; common names are fine in conversation and

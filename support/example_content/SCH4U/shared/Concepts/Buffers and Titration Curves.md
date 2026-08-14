@@ -26,15 +26,15 @@ amount of strong acid or strong base is added.
 
 The mechanism is two reactions waiting to happen.
 
-- Add **acid**, and the incoming $\text{H}_3\text{O}^+$ is mopped up by
+- Add **acid**, and the incoming $\ce{H3O+}$ is mopped up by
   the conjugate base:
 
-$$\text{A}^-\text{(aq)} + \text{H}_3\text{O}^+\text{(aq)} \rightarrow \text{HA(aq)} + \text{H}_2\text{O(l)}$$
+$$\ce{A-(aq) + H3O+(aq) -> HA(aq) + H2O(l)}$$
 
-- Add **base**, and the incoming $\text{OH}^-$ is mopped up by the weak
+- Add **base**, and the incoming $\ce{OH-}$ is mopped up by the weak
   acid:
 
-$$\text{HA(aq)} + \text{OH}^-\text{(aq)} \rightarrow \text{A}^-\text{(aq)} + \text{H}_2\text{O(l)}$$
+$$\ce{HA(aq) + OH-(aq) -> A-(aq) + H2O(l)}$$
 
 Either way the strong species is converted into a weak one, and the
 ratio of the two reservoirs shifts a little instead of the pH shifting a
@@ -96,7 +96,7 @@ region is point X in".
 
 The **half-equivalence point**, halfway along the buffer region, is the
 most useful single point on the graph. At that moment exactly half the
-acid has been converted, so $[\text{HA}] = [\text{A}^-]$, those two
+acid has been converted, so $[\ce{HA}] = [\ce{A-}]$, those two
 terms cancel out of the $K_a$ expression, and
 
 $$\text{pH} = \text{p}K_a$$
@@ -116,7 +116,7 @@ $\text{p}K_a$ off that stretch.
 > requires 18.60 mL of 0.1050 mol/L sodium hydroxide to reach the
 > equivalence point. Find the concentration of the acid.
 >
-> $$\begin{aligned} n(\text{NaOH}) &= (0.01860\ \text{L})(0.1050\ \text{mol/L}) \\ &= 1.953 \times 10^{-3}\ \text{mol} \end{aligned}$$
+> $$\begin{aligned} n(\ce{NaOH}) &= (0.01860\ \text{L})(0.1050\ \text{mol/L}) \\ &= 1.953 \times 10^{-3}\ \text{mol} \end{aligned}$$
 >
 > The acid is monoprotic, so the mole ratio is one to one and the sample
 > contained $1.953 \times 10^{-3}$ mol of acid.

@@ -39,22 +39,22 @@ lone pair.
 
 | Domains | Lone pairs | Type | Electron-domain geometry | Molecular shape | Ideal angles | Example |
 | --- | --- | --- | --- | --- | --- | --- |
-| 2 | 0 | $\text{AX}_2$ | linear | linear | 180° | $\text{CO}_2$ |
-| 3 | 0 | $\text{AX}_3$ | trigonal planar | trigonal planar | 120° | $\text{SO}_3$ |
-| 3 | 1 | $\text{AX}_2\text{E}$ | trigonal planar | bent | slightly under 120° | $\text{SO}_2$ |
-| 4 | 0 | $\text{AX}_4$ | tetrahedral | tetrahedral | 109.5° | $\text{CH}_4$, $\text{NH}_4^{+}$ |
-| 4 | 1 | $\text{AX}_3\text{E}$ | tetrahedral | trigonal pyramidal | about 107° | $\text{NH}_3$ |
-| 4 | 2 | $\text{AX}_2\text{E}_2$ | tetrahedral | bent | about 104.5° | $\text{H}_2\text{O}$ |
-| 5 | 0 | $\text{AX}_5$ | trigonal bipyramidal | trigonal bipyramidal | 90° and 120° | $\text{PCl}_5$ |
-| 5 | 1 | $\text{AX}_4\text{E}$ | trigonal bipyramidal | seesaw | under 90° and 120° | $\text{SF}_4$ |
-| 5 | 2 | $\text{AX}_3\text{E}_2$ | trigonal bipyramidal | T-shaped | under 90° | $\text{ClF}_3$ |
-| 5 | 3 | $\text{AX}_2\text{E}_3$ | trigonal bipyramidal | linear | 180° | $\text{XeF}_2$ |
-| 6 | 0 | $\text{AX}_6$ | octahedral | octahedral | 90° | $\text{SF}_6$ |
-| 6 | 1 | $\text{AX}_5\text{E}$ | octahedral | square pyramidal | under 90° | $\text{BrF}_5$ |
-| 6 | 2 | $\text{AX}_4\text{E}_2$ | octahedral | square planar | 90° | $\text{XeF}_4$ |
+| 2 | 0 | $\ce{AX2}$ | linear | linear | 180° | $\ce{CO2}$ |
+| 3 | 0 | $\ce{AX3}$ | trigonal planar | trigonal planar | 120° | $\ce{SO3}$ |
+| 3 | 1 | $\ce{AX2E}$ | trigonal planar | bent | slightly under 120° | $\ce{SO2}$ |
+| 4 | 0 | $\ce{AX4}$ | tetrahedral | tetrahedral | 109.5° | $\ce{CH4}$, $\ce{NH4+}$ |
+| 4 | 1 | $\ce{AX3E}$ | tetrahedral | trigonal pyramidal | about 107° | $\ce{NH3}$ |
+| 4 | 2 | $\ce{AX2E2}$ | tetrahedral | bent | about 104.5° | $\ce{H2O}$ |
+| 5 | 0 | $\ce{AX5}$ | trigonal bipyramidal | trigonal bipyramidal | 90° and 120° | $\ce{PCl5}$ |
+| 5 | 1 | $\ce{AX4E}$ | trigonal bipyramidal | seesaw | under 90° and 120° | $\ce{SF4}$ |
+| 5 | 2 | $\ce{AX3E2}$ | trigonal bipyramidal | T-shaped | under 90° | $\ce{ClF3}$ |
+| 5 | 3 | $\ce{AX2E3}$ | trigonal bipyramidal | linear | 180° | $\ce{XeF2}$ |
+| 6 | 0 | $\ce{AX6}$ | octahedral | octahedral | 90° | $\ce{SF6}$ |
+| 6 | 1 | $\ce{AX5E}$ | octahedral | square pyramidal | under 90° | $\ce{BrF5}$ |
+| 6 | 2 | $\ce{AX4E2}$ | octahedral | square planar | 90° | $\ce{XeF4}$ |
 
 A molecule of only two atoms is **linear** whatever else is true, so
-$\text{O}_2$, $\text{N}_2$, and $\text{HCl}$ need no row.
+$\ce{O2}$, $\ce{N2}$, and $\ce{HCl}$ need no row.
 
 ## Why the angles shrink
 
@@ -92,13 +92,13 @@ tells you when the geometry allows it. The symmetric arrangements are:
 
 | Type | Shape | Non-polar if all outer atoms are identical |
 | --- | --- | --- |
-| $\text{AX}_2$ | linear | yes |
-| $\text{AX}_3$ | trigonal planar | yes |
-| $\text{AX}_4$ | tetrahedral | yes |
-| $\text{AX}_5$ | trigonal bipyramidal | yes |
-| $\text{AX}_6$ | octahedral | yes |
-| $\text{AX}_2\text{E}_3$ | linear | yes |
-| $\text{AX}_4\text{E}_2$ | square planar | yes |
+| $\ce{AX2}$ | linear | yes |
+| $\ce{AX3}$ | trigonal planar | yes |
+| $\ce{AX4}$ | tetrahedral | yes |
+| $\ce{AX5}$ | trigonal bipyramidal | yes |
+| $\ce{AX6}$ | octahedral | yes |
+| $\ce{AX2E3}$ | linear | yes |
+| $\ce{AX4E2}$ | square planar | yes |
 
 Every other row in the main table is polar when the bonds are polar.
 Note the last two entries: those two shapes have lone pairs and are
@@ -111,7 +111,7 @@ and the cancellation is destroyed. The full argument is in
 
 VSEPR predicts geometry. It does not predict bond length, bond strength,
 colour, magnetism, or reactivity, and it does not explain why the bonds
-exist. It also fails on $\text{O}_2$, whose Lewis structure suggests all
+exist. It also fails on $\ce{O2}$, whose Lewis structure suggests all
 electrons are paired when the molecule is measurably paramagnetic.
 
 Use it for what it is: a fast, accurate way of getting from a count to a

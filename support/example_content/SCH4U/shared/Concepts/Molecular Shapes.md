@@ -53,15 +53,15 @@ graph TD
 
 | Domains | Lone pairs | Electron-domain geometry | Molecular shape | Ideal angle | Example |
 | --- | --- | --- | --- | --- | --- |
-| 2 | 0 | linear | linear | 180° | $\text{CO}_2$ |
-| 3 | 0 | trigonal planar | trigonal planar | 120° | $\text{SO}_3$ |
-| 3 | 1 | trigonal planar | bent | just under 120° | $\text{SO}_2$ |
-| 4 | 0 | tetrahedral | tetrahedral | 109.5° | $\text{CH}_4$, $\text{NH}_4^{+}$ |
-| 4 | 1 | tetrahedral | trigonal pyramidal | about 107° | $\text{NH}_3$ |
-| 4 | 2 | tetrahedral | bent | about 104.5° | $\text{H}_2\text{O}$ |
+| 2 | 0 | linear | linear | 180° | $\ce{CO2}$ |
+| 3 | 0 | trigonal planar | trigonal planar | 120° | $\ce{SO3}$ |
+| 3 | 1 | trigonal planar | bent | just under 120° | $\ce{SO2}$ |
+| 4 | 0 | tetrahedral | tetrahedral | 109.5° | $\ce{CH4}$, $\ce{NH4+}$ |
+| 4 | 1 | tetrahedral | trigonal pyramidal | about 107° | $\ce{NH3}$ |
+| 4 | 2 | tetrahedral | bent | about 104.5° | $\ce{H2O}$ |
 
 Two atoms are always linear, whatever else is going on, which is why
-$\text{O}_2$ needs no model at all.
+$\ce{O2}$ needs no model at all.
 
 The full table, including the five- and six-domain shapes, lives in
 [[VSEPR Shapes]]. Keep it beside you until the first six rows are
@@ -107,7 +107,7 @@ should be able to state.
   way — but it is slightly fatter than a single bond, so it squeezes its
   neighbours a little. That is why formaldehyde's H–C–H angle is not
   exactly 120°.
-- **It fails outright on $\text{O}_2$.** Draw the Lewis structure and
+- **It fails outright on $\ce{O2}$.** Draw the Lewis structure and
   you get a double bond with all electrons paired, which predicts that
   liquid oxygen is not attracted to a magnet. It is — visibly. Oxygen is
   paramagnetic, it has two unpaired electrons, and neither Lewis

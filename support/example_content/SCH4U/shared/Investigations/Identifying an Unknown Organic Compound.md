@@ -42,12 +42,12 @@ All six are on the board with structures. They are:
 
 | Candidate | Class | What is on it |
 | --- | --- | --- |
-| Ethanoic acid, dilute | Carboxylic acid | $-\text{COOH}$ |
-| Propan-1-ol | Alcohol | $-\text{OH}$ |
-| Propanone | Ketone | $\text{C}=\text{O}$ inside the chain |
-| Propanal | Aldehyde | $\text{C}=\text{O}$ at the end of the chain |
-| Ethyl ethanoate | Ester | $-\text{COO}-$ |
-| Cyclohexene | Alkene | $\text{C}=\text{C}$ |
+| Ethanoic acid, dilute | Carboxylic acid | $-\ce{COOH}$ |
+| Propan-1-ol | Alcohol | $-\ce{OH}$ |
+| Propanone | Ketone | $\ce{C}=\ce{O}$ inside the chain |
+| Propanal | Aldehyde | $\ce{C}=\ce{O}$ at the end of the chain |
+| Ethyl ethanoate | Ester | $-\ce{COO}-$ |
+| Cyclohexene | Alkene | $\ce{C}=\ce{C}$ |
 
 Two of those differ only in **where** the carbonyl group sits, and they
 have the same molecular formula. If your scheme cannot separate
@@ -63,7 +63,7 @@ propanal from propanone, it has not finished.
 - **The hydrogen carbonate test.** A few drops of the unknown into
   sodium hydrogen carbonate solution. Steady effervescence is a
   positive:
-  $\text{CH}_3\text{COOH(aq)} + \text{NaHCO}_3\text{(aq)} \rightarrow \text{CH}_3\text{COONa(aq)} + \text{H}_2\text{O(l)} + \text{CO}_2\text{(g)}$
+  $\ce{CH3COOH(aq) + NaHCO3(aq) -> CH3COONa(aq) + H2O(l) + CO2(g)}$
 - **Odour, by wafting only**, in the fume hood, once, briefly. This is a
   real piece of evidence and it is also the weakest one you have. Treat
   it as a tiebreaker, never as a decider.
@@ -72,7 +72,7 @@ propanal from propanone, it has not finished.
 
 - **Bromine water.** An alkene decolourises it rapidly by addition
   across the double bond,
-  $\text{C}_6\text{H}_{10} + \text{Br}_2 \rightarrow \text{C}_6\text{H}_{10}\text{Br}_2$,
+  $\ce{C6H10 + Br2 -> C6H10Br2}$,
   and the others do not. Bromine water is corrosive and its vapour is
   toxic, so this one is mine.
 - **Benedict's solution, in a thermostatic water bath.** An aldehyde is
@@ -247,9 +247,9 @@ saying so is a better outcome than picking the one that feels right.
   containing 95% of one compound and 5% of another would behave, on
   this bench, exactly like the pure compound.
 - **Two compounds with the same formula are not the same substance.**
-  Propanal and propanone are both $\text{C}_3\text{H}_6\text{O}$. If
+  Propanal and propanone are both $\ce{C3H6O}$. If
   your chain never distinguished them, your answer is
-  "$\text{C}_3\text{H}_6\text{O}$, carbonyl present, position not
+  "$\ce{C3H6O}$, carbonyl present, position not
   established" — which is a real result, honestly stated.
 
 Where this goes next: [[Functional Groups]] sorts the groups by what

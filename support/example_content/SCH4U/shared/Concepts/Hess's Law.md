@@ -86,24 +86,24 @@ A working order that avoids most trouble:
    arrangements is wrong; go back rather than fudging.
 
 > [!example]- The carbon monoxide problem, worked symbolically
-> **Target:** $\text{C(s)} + \tfrac{1}{2}\text{O}_2\text{(g)} \rightarrow \text{CO(g)}$
+> **Target:** $\ce{C(s)} + \tfrac{1}{2}\ce{O2(g) -> CO(g)}$
 >
-> **Given (1):** $\text{C(s)} + \text{O}_2\text{(g)} \rightarrow \text{CO}_2\text{(g)}$, with $\Delta H_1$
+> **Given (1):** $\ce{C(s) + O2(g) -> CO2(g)}$, with $\Delta H_1$
 >
-> **Given (2):** $\text{CO(g)} + \tfrac{1}{2}\text{O}_2\text{(g)} \rightarrow \text{CO}_2\text{(g)}$, with $\Delta H_2$
+> **Given (2):** $\ce{CO(g)} + \tfrac{1}{2}\ce{O2(g) -> CO2(g)}$, with $\Delta H_2$
 >
 > Equation (1) already has carbon on the left, where the target needs
 > it, so leave it alone. Equation (2) has carbon monoxide on the left
 > and the target needs it on the right, so **reverse** it — and change
 > the sign:
 >
-> $$\text{CO}_2\text{(g)} \rightarrow \text{CO(g)} + \tfrac{1}{2}\text{O}_2\text{(g)} \qquad -\Delta H_2$$
+> $$\ce{CO2(g) -> CO(g)} + \tfrac{1}{2}\ce{O2(g)} \qquad -\Delta H_2$$
 >
 > Add that to equation (1). Carbon dioxide appears on both sides and
 > cancels completely. Of the oxygen, one mole is used on the left and
 > half a mole is produced on the right, leaving half a mole on the left:
 >
-> $$\text{C(s)} + \tfrac{1}{2}\text{O}_2\text{(g)} \rightarrow \text{CO(g)} \qquad \Delta H = \Delta H_1 - \Delta H_2$$
+> $$\ce{C(s)} + \tfrac{1}{2}\ce{O2(g) -> CO(g)} \qquad \Delta H = \Delta H_1 - \Delta H_2$$
 >
 > The target, exactly. Substitute the two combustion enthalpies from
 > your data booklet and the number falls out — and it is a number for a

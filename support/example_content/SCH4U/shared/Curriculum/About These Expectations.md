@@ -64,8 +64,8 @@ The Grade 12 chemistry curriculum names equilibrium constants, rate laws, cell
 notation, organic structures, and standard reduction potentials **in prose**,
 and prints no chemical equations at all — not one reaction arrow in fourteen
 pages. What it does typeset, these pages typeset: the shapes list in `C2.3`
-($\text{CH}_4$, $\text{SO}_3$, $\text{O}_2$, $\text{H}_2\text{O}$,
-$\text{NH}_4^{+}$), the equilibrium constants ($K_{eq}$, $K_{sp}$, $K_{w}$,
+($\ce{CH4}$, $\ce{SO3}$, $\ce{O2}$, $\ce{H2O}$,
+$\ce{NH4+}$), the equilibrium constants ($K_{eq}$, $K_{sp}$, $K_{w}$,
 $K_{a}$, $K_{b}$, $K_{p}$), the ions in `E3.5`, and the two thermochemical
 symbols.
 

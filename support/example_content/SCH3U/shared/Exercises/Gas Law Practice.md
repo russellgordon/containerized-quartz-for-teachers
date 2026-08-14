@@ -115,7 +115,7 @@ and 850. kPa?
 >
 > $n = \frac{PV}{RT} = \frac{(850. \text{ kPa})(5.00 \text{ L})}{(8.314)(298.15)} = \frac{4250}{2478.8} = 1.7146 \text{ mol}$
 >
-> Oxygen as a gas is $\text{O}_2$, so $M = 32.00$ g/mol:
+> Oxygen as a gas is $\ce{O2}$, so $M = 32.00$ g/mol:
 >
 > $m = nM = (1.7146 \text{ mol})(32.00 \text{ g/mol}) = 54.87 \text{ g}$
 >
@@ -134,12 +134,12 @@ and 850. kPa?
 0.500 g of magnesium reacts with excess dilute hydrochloric acid?
 
 > [!success]- Answer 5
-> $$\text{Mg} + 2\text{HCl} \rightarrow \text{MgCl}_2 + \text{H}_2$$
+> $$\ce{Mg + 2HCl -> MgCl2 + H2}$$
 >
-> $n(\text{Mg}) = \frac{0.500 \text{ g}}{24.31 \text{ g/mol}} = 0.020568 \text{ mol}$
+> $n(\ce{Mg}) = \frac{0.500 \text{ g}}{24.31 \text{ g/mol}} = 0.020568 \text{ mol}$
 >
 > The mole ratio of magnesium to hydrogen is 1 to 1, so
-> $n(\text{H}_2) = 0.020568$ mol. At STP the molar volume is 22.4 L/mol:
+> $n(\ce{H2}) = 0.020568$ mol. At STP the molar volume is 22.4 L/mol:
 >
 > $V = (0.020568 \text{ mol})(22.4 \text{ L/mol}) = 0.4607 \text{ L}$
 >
@@ -158,7 +158,7 @@ and 850. kPa?
 > different volumes under different conditions.
 
 **6.** Propane burns:
-$\text{C}_3\text{H}_8 + 5\text{O}_2 \rightarrow 3\text{CO}_2 + 4\text{H}_2\text{O}$.
+$\ce{C3H8 + 5O2 -> 3CO2 + 4H2O}$.
 At SATP, what volume of oxygen is needed to burn 10.0 L of propane, and
 what volume of carbon dioxide is produced? What about the water?
 
@@ -172,7 +172,7 @@ what volume of carbon dioxide is produced? What about the water?
 > fixed. So for gases at the same conditions, **the coefficient ratio is
 > a volume ratio directly**.
 >
-> $\begin{aligned} V(\text{O}_2) &= 10.0 \text{ L} \times \frac{5}{1} = 50.0 \text{ L} \\ V(\text{CO}_2) &= 10.0 \text{ L} \times \frac{3}{1} = 30.0 \text{ L} \end{aligned}$
+> $\begin{aligned} V(\ce{O2}) &= 10.0 \text{ L} \times \frac{5}{1} = 50.0 \text{ L} \\ V(\ce{CO2}) &= 10.0 \text{ L} \times \frac{3}{1} = 30.0 \text{ L} \end{aligned}$
 >
 > **50.0 L of oxygen, producing 30.0 L of carbon dioxide.**
 >

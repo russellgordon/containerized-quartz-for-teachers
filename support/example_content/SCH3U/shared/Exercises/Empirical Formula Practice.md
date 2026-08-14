@@ -30,13 +30,13 @@ oxygen by mass. Find its empirical formula.
 > directly. That assumption costs nothing, because a ratio does not care
 > how much you started with.
 >
-> $\begin{aligned} n(\text{C}) &= \frac{40.0}{12.01} = 3.3306 \text{ mol} \\ n(\text{H}) &= \frac{6.7}{1.01} = 6.6337 \text{ mol} \\ n(\text{O}) &= \frac{53.3}{16.00} = 3.3313 \text{ mol} \end{aligned}$
+> $\begin{aligned} n(\ce{C}) &= \frac{40.0}{12.01} = 3.3306 \text{ mol} \\ n(\ce{H}) &= \frac{6.7}{1.01} = 6.6337 \text{ mol} \\ n(\ce{O}) &= \frac{53.3}{16.00} = 3.3313 \text{ mol} \end{aligned}$
 >
 > Divide each by the smallest, which is 3.3306:
 >
-> $\begin{aligned} \text{C} &: \frac{3.3306}{3.3306} = 1.000 \\ \text{H} &: \frac{6.6337}{3.3306} = 1.992 \\ \text{O} &: \frac{3.3313}{3.3306} = 1.000 \end{aligned}$
+> $\begin{aligned} \ce{C} &: \frac{3.3306}{3.3306} = 1.000 \\ \ce{H} &: \frac{6.6337}{3.3306} = 1.992 \\ \ce{O} &: \frac{3.3313}{3.3306} = 1.000 \end{aligned}$
 >
-> **The empirical formula is $\text{CH}_2\text{O}$.**
+> **The empirical formula is $\ce{CH2O}$.**
 >
 > The hydrogen came out at 1.992 rather than exactly 2. That is a
 > rounding of the input percentages, not a chemical fact — 6.7% is given
@@ -51,16 +51,16 @@ its molecular formula.
 > The empirical formula gives the **ratio**; the molar mass gives the
 > **size**. You need both, and neither one alone is enough.
 >
-> $M(\text{CH}_2\text{O}) = 12.01 + 2(1.01) + 16.00 = 30.03 \text{ g/mol}$
+> $M(\ce{CH2O}) = 12.01 + 2(1.01) + 16.00 = 30.03 \text{ g/mol}$
 >
 > $$\frac{180.2}{30.03} = 6.001$$
 >
 > So the molecule is six empirical units:
 >
-> **$\text{C}_6\text{H}_{12}\text{O}_6$**
+> **$\ce{C6H12O6}$**
 >
 > That is glucose. Notice that the empirical formula
-> $\text{CH}_2\text{O}$ is also the empirical formula of formaldehyde,
+> $\ce{CH2O}$ is also the empirical formula of formaldehyde,
 > of acetic acid, and of ribose — all of which have the same carbon,
 > hydrogen, and oxygen ratio and none of which is remotely the same
 > substance. The ratio was never going to be enough on its own, which
@@ -74,15 +74,15 @@ the empirical formula of the product.
 > The oxygen was never weighed directly. It is the difference, and
 > saying so out loud is the whole trick of this style of question.
 >
-> $m(\text{O}) = 0.806 \text{ g} - 0.486 \text{ g} = 0.320 \text{ g}$
+> $m(\ce{O}) = 0.806 \text{ g} - 0.486 \text{ g} = 0.320 \text{ g}$
 >
-> $\begin{aligned} n(\text{Mg}) &= \frac{0.486}{24.31} = 0.019992 \text{ mol} \\ n(\text{O}) &= \frac{0.320}{16.00} = 0.020000 \text{ mol} \end{aligned}$
+> $\begin{aligned} n(\ce{Mg}) &= \frac{0.486}{24.31} = 0.019992 \text{ mol} \\ n(\ce{O}) &= \frac{0.320}{16.00} = 0.020000 \text{ mol} \end{aligned}$
 >
 > Divide both by the smaller, 0.019992:
 >
-> $\text{Mg} : 1.000 \qquad \text{O} : 1.000$
+> $\ce{Mg} : 1.000 \qquad \ce{O} : 1.000$
 >
-> **The empirical formula is $\text{MgO}$.**
+> **The empirical formula is $\ce{MgO}$.**
 >
 > Two things worth noticing. The oxygen mass, 0.320 g, is a difference
 > of two measured masses, so its uncertainty is **larger** than either
@@ -95,22 +95,22 @@ the empirical formula of the product.
 
 **4.** A sample of hydrated copper(II) sulfate has a mass of 4.99 g.
 After heating to constant mass, 3.19 g of the anhydrous solid remains.
-Find $x$ in $\text{CuSO}_4 \cdot x\text{H}_2\text{O}$.
+Find $x$ in $\ce{CuSO4} \cdot x\ce{H2O}$.
 
 > [!success]- Answer 4
-> $M(\text{CuSO}_4) = 63.55 + 32.07 + 4(16.00) = 159.62 \text{ g/mol}$
+> $M(\ce{CuSO4}) = 63.55 + 32.07 + 4(16.00) = 159.62 \text{ g/mol}$
 >
-> $M(\text{H}_2\text{O}) = 18.02 \text{ g/mol}$
+> $M(\ce{H2O}) = 18.02 \text{ g/mol}$
 >
 > The water lost is the difference in mass:
 >
-> $m(\text{H}_2\text{O}) = 4.99 - 3.19 = 1.80 \text{ g}$
+> $m(\ce{H2O}) = 4.99 - 3.19 = 1.80 \text{ g}$
 >
-> $\begin{aligned} n(\text{CuSO}_4) &= \frac{3.19}{159.62} = 0.019985 \text{ mol} \\ n(\text{H}_2\text{O}) &= \frac{1.80}{18.02} = 0.099889 \text{ mol} \end{aligned}$
+> $\begin{aligned} n(\ce{CuSO4}) &= \frac{3.19}{159.62} = 0.019985 \text{ mol} \\ n(\ce{H2O}) &= \frac{1.80}{18.02} = 0.099889 \text{ mol} \end{aligned}$
 >
-> $$x = \frac{n(\text{H}_2\text{O})}{n(\text{CuSO}_4)} = \frac{0.099889}{0.019985} = 4.998$$
+> $$x = \frac{n(\ce{H2O})}{n(\ce{CuSO4})} = \frac{0.099889}{0.019985} = 4.998$$
 >
-> **$x = 5$, so the formula is $\text{CuSO}_4 \cdot 5\text{H}_2\text{O}$.**
+> **$x = 5$, so the formula is $\ce{CuSO4 * 5H2O}$.**
 >
 > This is the calculation behind [[Finding an Empirical Formula]], and
 > the reason $x$ must be a whole number is that the water sits at
@@ -118,7 +118,7 @@ Find $x$ in $\text{CuSO}_4 \cdot x\text{H}_2\text{O}$.
 > compound with 4.6 waters exists; it means some of the water never
 > left.
 
-**5.** Ammonium nitrate, $\text{NH}_4\text{NO}_3$, is used as a
+**5.** Ammonium nitrate, $\ce{NH4NO3}$, is used as a
 fertiliser and its value depends on how much nitrogen it delivers.
 Calculate its percentage composition.
 
@@ -128,7 +128,7 @@ Calculate its percentage composition.
 >
 > $M = 2(14.01) + 4(1.01) + 3(16.00) = 28.02 + 4.04 + 48.00 = 80.06 \text{ g/mol}$
 >
-> $\begin{aligned} \%\text{N} &= \frac{28.02}{80.06} \times 100\% = 35.00\% \\ \%\text{H} &= \frac{4.04}{80.06} \times 100\% = 5.046\% \\ \%\text{O} &= \frac{48.00}{80.06} \times 100\% = 59.96\% \end{aligned}$
+> $\begin{aligned} \%\ce{N} &= \frac{28.02}{80.06} \times 100\% = 35.00\% \\ \%\ce{H} &= \frac{4.04}{80.06} \times 100\% = 5.046\% \\ \%\ce{O} &= \frac{48.00}{80.06} \times 100\% = 59.96\% \end{aligned}$
 >
 > Add them up as a check: $35.00 + 5.046 + 59.96 = 100.01\%$. The extra
 > hundredth is rounding, not an error — the unrounded values sum to
@@ -145,25 +145,25 @@ Calculate its percentage composition.
 0.3444 g of iron. Find its empirical formula.
 
 > [!success]- Answer 6
-> $m(\text{Cl}) = 1.000 - 0.3444 = 0.6556 \text{ g}$
+> $m(\ce{Cl}) = 1.000 - 0.3444 = 0.6556 \text{ g}$
 >
-> $\begin{aligned} n(\text{Fe}) &= \frac{0.3444}{55.85} = 6.1665 \times 10^{-3} \text{ mol} \\ n(\text{Cl}) &= \frac{0.6556}{35.45} = 1.8494 \times 10^{-2} \text{ mol} \end{aligned}$
+> $\begin{aligned} n(\ce{Fe}) &= \frac{0.3444}{55.85} = 6.1665 \times 10^{-3} \text{ mol} \\ n(\ce{Cl}) &= \frac{0.6556}{35.45} = 1.8494 \times 10^{-2} \text{ mol} \end{aligned}$
 >
 > Divide both by the smaller:
 >
-> $\text{Fe} : 1.000 \qquad \text{Cl} : \frac{1.8494 \times 10^{-2}}{6.1665 \times 10^{-3}} = 2.999$
+> $\ce{Fe} : 1.000 \qquad \ce{Cl} : \frac{1.8494 \times 10^{-2}}{6.1665 \times 10^{-3}} = 2.999$
 >
-> **The empirical formula is $\text{FeCl}_3$**, iron(III) chloride.
+> **The empirical formula is $\ce{FeCl3}$**, iron(III) chloride.
 >
 > Sanity check with the chemistry you already have: iron(III) is
-> $\text{Fe}^{3+}$ and chloride is $\text{Cl}^-$, so a one-to-three
+> $\ce{Fe^3+}$ and chloride is $\ce{Cl-}$, so a one-to-three
 > ratio is exactly what charge balance predicts. When a formula from
 > data agrees with a formula from charges, both are probably right, and
 > when they disagree it is worth finding out which one to trust before
 > writing anything down.
 
 **7.** Ethyne and benzene both have the empirical formula
-$\text{CH}$.
+$\ce{CH}$.
 (a) Explain why the empirical formula alone cannot distinguish them.
 (b) Their molar masses are 26.04 g/mol and 78.12 g/mol. Find both
 molecular formulas.
@@ -177,9 +177,9 @@ molecular formulas.
 > is preserved when you scale the molecule up, so nothing it knows can
 > tell you the scale.
 >
-> **(b)** $M(\text{CH}) = 12.01 + 1.01 = 13.02 \text{ g/mol}$
+> **(b)** $M(\ce{CH}) = 12.01 + 1.01 = 13.02 \text{ g/mol}$
 >
-> $\begin{aligned} \frac{26.04}{13.02} &= 2.000 \rightarrow \text{C}_2\text{H}_2 \\ \frac{78.12}{13.02} &= 6.000 \rightarrow \text{C}_6\text{H}_6 \end{aligned}$
+> $\begin{aligned} \frac{26.04}{13.02} &= 2.000 \rightarrow \ce{C2H2} \\ \frac{78.12}{13.02} &= 6.000 \rightarrow \ce{C6H6} \end{aligned}$
 >
 > **(c)** The **molar mass**, and nothing else is needed. That is the
 > whole content of the relationship between empirical and molecular
@@ -197,11 +197,11 @@ molecular formulas.
 give the correct result.
 *(a) "My percentages were 48.63% C, 8.18% H, 43.19% O. I divided by the
 smallest and got C 1.50, H 3.00, O 1.00. I rounded the 1.50 up, so the
-empirical formula is $\text{C}_2\text{H}_3\text{O}$."*
+empirical formula is $\ce{C2H3O}$."*
 *(b) "My ratio came out Fe 1.00 : O 1.33, so I rounded to
-$\text{FeO}$."*
-*(c) "I found the empirical formula was $\text{CH}_2$, so the molecular
-formula is $\text{CH}_2$."*
+$\ce{FeO}$."*
+*(c) "I found the empirical formula was $\ce{CH2}$, so the molecular
+formula is $\ce{CH2}$."*
 
 > [!success]- Answer 8
 > **(a) 1.50 is not a rounding error — it is a signal.** A value that
@@ -209,9 +209,9 @@ formula is $\text{CH}_2$."*
 > that your unit is twice as big as it should be. Multiply **every**
 > ratio by 2:
 >
-> $\text{C} : 1.50 \times 2 = 3 \qquad \text{H} : 3.00 \times 2 = 6 \qquad \text{O} : 1.00 \times 2 = 2$
+> $\ce{C} : 1.50 \times 2 = 3 \qquad \ce{H} : 3.00 \times 2 = 6 \qquad \ce{O} : 1.00 \times 2 = 2$
 >
-> **The empirical formula is $\text{C}_3\text{H}_6\text{O}_2$.**
+> **The empirical formula is $\ce{C3H6O2}$.**
 >
 > Two things went wrong at once. Rounding 1.50 to 2 changes the ratio by
 > a third, which is far outside any experimental uncertainty. And the
@@ -222,9 +222,9 @@ formula is $\text{CH}_2$."*
 > **(b) Same signal, different fraction.** 1.33 is close to
 > $\frac{4}{3}$, so multiply both by 3:
 >
-> $\text{Fe} : 3 \qquad \text{O} : 4$
+> $\ce{Fe} : 3 \qquad \ce{O} : 4$
 >
-> **The empirical formula is $\text{Fe}_3\text{O}_4$**, which is a real
+> **The empirical formula is $\ce{Fe3O4}$**, which is a real
 > and common iron oxide — so rounding 1.33 down to 1 did not just lose
 > precision, it named a different substance that was also sitting right
 > there on the shelf.
@@ -233,11 +233,11 @@ formula is $\text{CH}_2$."*
 > say — is not a fraction to be cleared and is usually a sign that a
 > mass or a molar mass went in wrong.
 >
-> **(c) The conclusion has no support.** $\text{CH}_2$ is the empirical
-> formula, and the molecular formula is $(\text{CH}_2)_n$ for some whole
+> **(c) The conclusion has no support.** $\ce{CH2}$ is the empirical
+> formula, and the molecular formula is $\ce{(CH2)_{n}}$ for some whole
 > number $n$ that the composition data cannot determine. It could be
-> $\text{C}_2\text{H}_4$, $\text{C}_3\text{H}_6$,
-> $\text{C}_4\text{H}_8$, and so on. To settle it you need the molar
+> $\ce{C2H4}$, $\ce{C3H6}$,
+> $\ce{C4H8}$, and so on. To settle it you need the molar
 > mass, exactly as in question 7. Assuming $n = 1$ because no other
 > information was given is not a conservative choice — it is an
 > unsupported claim wearing the clothes of one.

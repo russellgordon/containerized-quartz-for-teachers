@@ -18,7 +18,7 @@ two families are named differently in the first place — is in
 | A metal and a non-metal | binary ionic | metal name, then non-metal stem + **-ide** |
 | A metal and a polyatomic ion | ionic | metal name, then the polyatomic ion's own name |
 | Two non-metals | molecular | Greek prefixes on both elements |
-| $\text{H}$ first, in aqueous solution | an acid | the acid rules below |
+| $\ce{H}$ first, in aqueous solution | an acid | the acid rules below |
 | Ends in a dot and some water | a hydrate | the parent compound + prefix + **hydrate** |
 
 Everything below is that table expanded.
@@ -32,54 +32,54 @@ from the charges balancing to zero overall.
 
 | Element | Ion | Name |
 | --- | --- | --- |
-| Fluorine | $\text{F}^-$ | fluoride |
-| Chlorine | $\text{Cl}^-$ | chloride |
-| Bromine | $\text{Br}^-$ | bromide |
-| Iodine | $\text{I}^-$ | iodide |
-| Oxygen | $\text{O}^{2-}$ | oxide |
-| Sulfur | $\text{S}^{2-}$ | sulfide |
-| Nitrogen | $\text{N}^{3-}$ | nitride |
-| Phosphorus | $\text{P}^{3-}$ | phosphide |
+| Fluorine | $\ce{F-}$ | fluoride |
+| Chlorine | $\ce{Cl-}$ | chloride |
+| Bromine | $\ce{Br-}$ | bromide |
+| Iodine | $\ce{I-}$ | iodide |
+| Oxygen | $\ce{O^2-}$ | oxide |
+| Sulfur | $\ce{S^2-}$ | sulfide |
+| Nitrogen | $\ce{N^3-}$ | nitride |
+| Phosphorus | $\ce{P^3-}$ | phosphide |
 
 **Charges you can read off the periodic table:**
 
 | Group | Charge | Examples |
 | --- | --- | --- |
-| 1 | $1+$ | $\text{Li}^+$, $\text{Na}^+$, $\text{K}^+$ |
-| 2 | $2+$ | $\text{Mg}^{2+}$, $\text{Ca}^{2+}$, $\text{Ba}^{2+}$ |
-| 13 | $3+$ | $\text{Al}^{3+}$ |
-| 15 | $3-$ | $\text{N}^{3-}$, $\text{P}^{3-}$ |
-| 16 | $2-$ | $\text{O}^{2-}$, $\text{S}^{2-}$ |
-| 17 | $1-$ | $\text{F}^-$, $\text{Cl}^-$, $\text{Br}^-$ |
+| 1 | $1+$ | $\ce{Li+}$, $\ce{Na+}$, $\ce{K+}$ |
+| 2 | $2+$ | $\ce{Mg^2+}$, $\ce{Ca^2+}$, $\ce{Ba^2+}$ |
+| 13 | $3+$ | $\ce{Al^3+}$ |
+| 15 | $3-$ | $\ce{N^3-}$, $\ce{P^3-}$ |
+| 16 | $2-$ | $\ce{O^2-}$, $\ce{S^2-}$ |
+| 17 | $1-$ | $\ce{F-}$, $\ce{Cl-}$, $\ce{Br-}$ |
 
 Three transition metals behave as if they had a group: zinc is always
-$\text{Zn}^{2+}$, silver is always $\text{Ag}^+$, and cadmium is always
-$\text{Cd}^{2+}$. They take no Roman numeral.
+$\ce{Zn^2+}$, silver is always $\ce{Ag+}$, and cadmium is always
+$\ce{Cd^2+}$. They take no Roman numeral.
 
 **Multivalent metals need a Roman numeral** giving the charge on the
 metal ion — not the number of atoms of anything.
 
 | Metal | Common ions |
 | --- | --- |
-| Copper | $\text{Cu}^+$, $\text{Cu}^{2+}$ |
-| Iron | $\text{Fe}^{2+}$, $\text{Fe}^{3+}$ |
-| Lead | $\text{Pb}^{2+}$, $\text{Pb}^{4+}$ |
-| Tin | $\text{Sn}^{2+}$, $\text{Sn}^{4+}$ |
-| Chromium | $\text{Cr}^{2+}$, $\text{Cr}^{3+}$, $\text{Cr}^{6+}$ |
-| Manganese | $\text{Mn}^{2+}$, $\text{Mn}^{4+}$, $\text{Mn}^{7+}$ |
-| Cobalt | $\text{Co}^{2+}$, $\text{Co}^{3+}$ |
-| Nickel | $\text{Ni}^{2+}$, $\text{Ni}^{3+}$ |
-| Mercury | $\text{Hg}_2^{2+}$, $\text{Hg}^{2+}$ |
-| Gold | $\text{Au}^+$, $\text{Au}^{3+}$ |
+| Copper | $\ce{Cu+}$, $\ce{Cu^2+}$ |
+| Iron | $\ce{Fe^2+}$, $\ce{Fe^3+}$ |
+| Lead | $\ce{Pb^2+}$, $\ce{Pb^4+}$ |
+| Tin | $\ce{Sn^2+}$, $\ce{Sn^4+}$ |
+| Chromium | $\ce{Cr^2+}$, $\ce{Cr^3+}$, $\ce{Cr^6+}$ |
+| Manganese | $\ce{Mn^2+}$, $\ce{Mn^4+}$, $\ce{Mn^7+}$ |
+| Cobalt | $\ce{Co^2+}$, $\ce{Co^3+}$ |
+| Nickel | $\ce{Ni^2+}$, $\ce{Ni^3+}$ |
+| Mercury | $\ce{Hg2^2+}$, $\ce{Hg^2+}$ |
+| Gold | $\ce{Au+}$, $\ce{Au^3+}$ |
 
 To find the numeral from a formula, work backwards from the anion, whose
-charge you already know. $\text{Cu}_2\text{O}$ contains one
-$\text{O}^{2-}$ shared between two copper ions, so each is $1+$ and the
-name is copper(I) oxide. $\text{CuO}$ is copper(II) oxide.
+charge you already know. $\ce{Cu2O}$ contains one
+$\ce{O^2-}$ shared between two copper ions, so each is $1+$ and the
+name is copper(I) oxide. $\ce{CuO}$ is copper(II) oxide.
 
 Mercury(I) is the odd one: it exists as a joined pair,
-$\text{Hg}_2^{2+}$, so mercury(I) chloride is
-$\text{Hg}_2\text{Cl}_2$.
+$\ce{Hg2^2+}$, so mercury(I) chloride is
+$\ce{Hg2Cl2}$.
 
 **Polyatomic ions** keep their own names and go in brackets whenever you
 need more than one. The list is [[Polyatomic Ions]].
@@ -89,15 +89,15 @@ need more than one. The list is [[Polyatomic Ions]].
 1. Write the cation with its charge, then the anion with its charge.
 2. Find the smallest numbers of each that make the total charge zero.
    Crossing the charges over as subscripts is a shortcut for this.
-3. **Reduce to the lowest whole-number ratio.** $\text{Mg}^{2+}$ with
-   $\text{O}^{2-}$ crosses over to $\text{Mg}_2\text{O}_2$, which is
-   wrong. It is $\text{MgO}$.
+3. **Reduce to the lowest whole-number ratio.** $\ce{Mg^2+}$ with
+   $\ce{O^2-}$ crosses over to $\ce{Mg2O2}$, which is
+   wrong. It is $\ce{MgO}$.
 4. Bracket any polyatomic ion that needs a subscript greater than one.
 5. Drop any subscript of 1 — it is understood.
 
-Aluminium sulfate: $\text{Al}^{3+}$ and $\text{SO}_4^{2-}$ need two
+Aluminium sulfate: $\ce{Al^3+}$ and $\ce{SO4^2-}$ need two
 aluminium ions and three sulfate ions to balance, so it is
-$\text{Al}_2\text{(SO}_4\text{)}_3$.
+$\ce{Al2(SO4)3}$.
 
 ## Molecular compounds
 
@@ -113,12 +113,12 @@ ratio — the prefixes have to state it.
 | 5 | penta | 10 | deca |
 
 **mono- is dropped from the first element and kept on the second.**
-$\text{CO}$ is carbon monoxide; $\text{CO}_2$ is carbon dioxide;
-$\text{N}_2\text{O}_4$ is dinitrogen tetroxide;
-$\text{P}_4\text{O}_{10}$ is tetraphosphorus decoxide.
+$\ce{CO}$ is carbon monoxide; $\ce{CO2}$ is carbon dioxide;
+$\ce{N2O4}$ is dinitrogen tetroxide;
+$\ce{P4O10}$ is tetraphosphorus decoxide.
 
 A few molecular compounds keep older names that predate the system:
-water, ammonia ($\text{NH}_3$), methane ($\text{CH}_4$). These are not
+water, ammonia ($\ce{NH3}$), methane ($\ce{CH4}$). These are not
 exceptions to a rule, just names that were already in use.
 
 ## Acids
@@ -128,27 +128,27 @@ applies depends on what follows the hydrogen.
 
 | The anion | Rule | Example |
 | --- | --- | --- |
-| A simple **-ide** anion, no oxygen | **hydro-** + stem + **-ic acid** | $\text{HCl(aq)}$ is hydrochloric acid |
-| An **-ate** polyatomic ion | stem + **-ic acid** | $\text{H}_2\text{SO}_4$ is sulfuric acid |
-| An **-ite** polyatomic ion | stem + **-ous acid** | $\text{H}_2\text{SO}_3$ is sulfurous acid |
+| A simple **-ide** anion, no oxygen | **hydro-** + stem + **-ic acid** | $\ce{HCl(aq)}$ is hydrochloric acid |
+| An **-ate** polyatomic ion | stem + **-ic acid** | $\ce{H2SO4}$ is sulfuric acid |
+| An **-ite** polyatomic ion | stem + **-ous acid** | $\ce{H2SO3}$ is sulfurous acid |
 
 The ones you will meet:
 
 | Formula | Name | From |
 | --- | --- | --- |
-| $\text{HCl(aq)}$ | hydrochloric acid | chloride |
-| $\text{HF(aq)}$ | hydrofluoric acid | fluoride |
-| $\text{HNO}_3$ | nitric acid | nitrate |
-| $\text{HNO}_2$ | nitrous acid | nitrite |
-| $\text{H}_2\text{SO}_4$ | sulfuric acid | sulfate |
-| $\text{H}_2\text{SO}_3$ | sulfurous acid | sulfite |
-| $\text{H}_2\text{CO}_3$ | carbonic acid | carbonate |
-| $\text{H}_3\text{PO}_4$ | phosphoric acid | phosphate |
-| $\text{CH}_3\text{COOH}$ | ethanoic (acetic) acid | acetate |
+| $\ce{HCl(aq)}$ | hydrochloric acid | chloride |
+| $\ce{HF(aq)}$ | hydrofluoric acid | fluoride |
+| $\ce{HNO3}$ | nitric acid | nitrate |
+| $\ce{HNO2}$ | nitrous acid | nitrite |
+| $\ce{H2SO4}$ | sulfuric acid | sulfate |
+| $\ce{H2SO3}$ | sulfurous acid | sulfite |
+| $\ce{H2CO3}$ | carbonic acid | carbonate |
+| $\ce{H3PO4}$ | phosphoric acid | phosphate |
+| $\ce{CH3COOH}$ | ethanoic (acetic) acid | acetate |
 
-The per- and hypo- ladder carries through: $\text{HClO}_4$ is
-perchloric acid, $\text{HClO}_3$ is chloric acid, $\text{HClO}_2$ is
-chlorous acid, and $\text{HClO}$ is hypochlorous acid.
+The per- and hypo- ladder carries through: $\ce{HClO4}$ is
+perchloric acid, $\ce{HClO3}$ is chloric acid, $\ce{HClO2}$ is
+chlorous acid, and $\ce{HClO}$ is hypochlorous acid.
 
 ## Hydrates
 
@@ -157,9 +157,9 @@ with the same Greek prefixes:
 
 | Formula | Name |
 | --- | --- |
-| $\text{CuSO}_4 \cdot 5\text{H}_2\text{O}$ | copper(II) sulfate pentahydrate |
-| $\text{CaCl}_2 \cdot 2\text{H}_2\text{O}$ | calcium chloride dihydrate |
-| $\text{MgSO}_4 \cdot 7\text{H}_2\text{O}$ | magnesium sulfate heptahydrate |
+| $\ce{CuSO4 * 5H2O}$ | copper(II) sulfate pentahydrate |
+| $\ce{CaCl2 * 2H2O}$ | calcium chloride dihydrate |
+| $\ce{MgSO4 * 7H2O}$ | magnesium sulfate heptahydrate |
 
 The water counts towards the molar mass, which matters as soon as you
 start weighing things in [[Molar Mass and Composition]]. Driving it off

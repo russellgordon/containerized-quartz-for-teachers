@@ -21,7 +21,7 @@ partial credit route back from it.
 Assume enough of everything else is present unless a question says
 otherwise. Molar masses to two decimal places; round once, at the end.
 
-**1.** For $2\text{H}_2 + \text{O}_2 \rightarrow 2\text{H}_2\text{O}$,
+**1.** For $\ce{2H2 + O2 -> 2H2O}$,
 how many moles of water are produced from 3.0 mol of hydrogen? How many
 moles of oxygen are consumed?
 
@@ -32,11 +32,11 @@ moles of oxygen are consumed?
 > **Water.** The ratio of hydrogen to water in the equation is 2 to 2,
 > which is 1 to 1:
 >
-> $n(\text{H}_2\text{O}) = 3.0 \text{ mol} \times \frac{2}{2} = 3.0 \text{ mol}$
+> $n(\ce{H2O}) = 3.0 \text{ mol} \times \frac{2}{2} = 3.0 \text{ mol}$
 >
 > **Oxygen.** The ratio of hydrogen to oxygen is 2 to 1:
 >
-> $n(\text{O}_2) = 3.0 \text{ mol} \times \frac{1}{2} = 1.5 \text{ mol}$
+> $n(\ce{O2}) = 3.0 \text{ mol} \times \frac{1}{2} = 1.5 \text{ mol}$
 >
 > Write the ratio as a fraction with the substance you **want** on top
 > and the substance you **have** underneath, every single time. Done
@@ -44,14 +44,14 @@ moles of oxygen are consumed?
 > the answer comes out obviously the wrong size.
 
 **2.** In the reaction
-$\text{N}_2 + 3\text{H}_2 \rightarrow 2\text{NH}_3$, what mass of
+$\ce{N2 + 3H2 -> 2NH3}$, what mass of
 ammonia is produced from 28.0 g of nitrogen?
 
 > [!success]- Answer 2
-> $M(\text{N}_2) = 2(14.01) = 28.02 \text{ g/mol}$ and
-> $M(\text{NH}_3) = 14.01 + 3(1.01) = 17.04 \text{ g/mol}$
+> $M(\ce{N2}) = 2(14.01) = 28.02 \text{ g/mol}$ and
+> $M(\ce{NH3}) = 14.01 + 3(1.01) = 17.04 \text{ g/mol}$
 >
-> $\begin{aligned} n(\text{N}_2) &= \frac{28.0 \text{ g}}{28.02 \text{ g/mol}} = 0.99929 \text{ mol} \\ n(\text{NH}_3) &= 0.99929 \times \frac{2}{1} = 1.9986 \text{ mol} \\ m(\text{NH}_3) &= (1.9986)(17.04) = 34.06 \text{ g} \end{aligned}$
+> $\begin{aligned} n(\ce{N2}) &= \frac{28.0 \text{ g}}{28.02 \text{ g/mol}} = 0.99929 \text{ mol} \\ n(\ce{NH3}) &= 0.99929 \times \frac{2}{1} = 1.9986 \text{ mol} \\ m(\ce{NH3}) &= (1.9986)(17.04) = 34.06 \text{ g} \end{aligned}$
 >
 > **34.1 g of ammonia**, to three significant figures.
 >
@@ -62,13 +62,13 @@ ammonia is produced from 28.0 g of nitrogen?
 > which is 34.08. It is.
 
 **3.** Calcium carbonate decomposes on strong heating:
-$\text{CaCO}_3 \rightarrow \text{CaO} + \text{CO}_2$. Starting from
+$\ce{CaCO3 -> CaO + CO2}$. Starting from
 50.0 g of calcium carbonate, find the mass of each product.
 
 > [!success]- Answer 3
-> $M(\text{CaCO}_3) = 40.08 + 12.01 + 3(16.00) = 100.09 \text{ g/mol}$
+> $M(\ce{CaCO3}) = 40.08 + 12.01 + 3(16.00) = 100.09 \text{ g/mol}$
 >
-> $n(\text{CaCO}_3) = \frac{50.0}{100.09} = 0.49955 \text{ mol}$
+> $n(\ce{CaCO3}) = \frac{50.0}{100.09} = 0.49955 \text{ mol}$
 >
 > Both coefficient ratios are 1 to 1, so both products form in that same
 > amount.
@@ -91,11 +91,11 @@ $\text{CaCO}_3 \rightarrow \text{CaO} + \text{CO}_2$. Starting from
 > [[Chemistry at Industrial Scale]].
 
 **4.** Iron reacts with copper(II) sulfate solution:
-$\text{Fe} + \text{CuSO}_4 \rightarrow \text{FeSO}_4 + \text{Cu}$.
+$\ce{Fe + CuSO4 -> FeSO4 + Cu}$.
 What mass of copper should 2.00 g of iron produce?
 
 > [!success]- Answer 4
-> $\begin{aligned} n(\text{Fe}) &= \frac{2.00 \text{ g}}{55.85 \text{ g/mol}} = 0.035810 \text{ mol} \\ n(\text{Cu}) &= 0.035810 \times \frac{1}{1} = 0.035810 \text{ mol} \\ m(\text{Cu}) &= (0.035810)(63.55) = 2.2757 \text{ g} \end{aligned}$
+> $\begin{aligned} n(\ce{Fe}) &= \frac{2.00 \text{ g}}{55.85 \text{ g/mol}} = 0.035810 \text{ mol} \\ n(\ce{Cu}) &= 0.035810 \times \frac{1}{1} = 0.035810 \text{ mol} \\ m(\ce{Cu}) &= (0.035810)(63.55) = 2.2757 \text{ g} \end{aligned}$
 >
 > **2.28 g of copper.**
 >
@@ -110,37 +110,37 @@ What mass of copper should 2.00 g of iron produce?
 > [[Percentage Yield of a Precipitate]].
 
 **5.** Potassium chlorate decomposes on heating:
-$2\text{KClO}_3 \rightarrow 2\text{KCl} + 3\text{O}_2$. What mass of
+$\ce{2KClO3 -> 2KCl + 3O2}$. What mass of
 oxygen is produced from 12.25 g of potassium chlorate?
 
 > [!success]- Answer 5
-> $M(\text{KClO}_3) = 39.10 + 35.45 + 3(16.00) = 122.55 \text{ g/mol}$
+> $M(\ce{KClO3}) = 39.10 + 35.45 + 3(16.00) = 122.55 \text{ g/mol}$
 >
-> $\begin{aligned} n(\text{KClO}_3) &= \frac{12.25 \text{ g}}{122.55 \text{ g/mol}} = 0.099959 \text{ mol} \\ n(\text{O}_2) &= 0.099959 \times \frac{3}{2} = 0.14994 \text{ mol} \\ m(\text{O}_2) &= (0.14994)(32.00) = 4.7980 \text{ g} \end{aligned}$
+> $\begin{aligned} n(\ce{KClO3}) &= \frac{12.25 \text{ g}}{122.55 \text{ g/mol}} = 0.099959 \text{ mol} \\ n(\ce{O2}) &= 0.099959 \times \frac{3}{2} = 0.14994 \text{ mol} \\ m(\ce{O2}) &= (0.14994)(32.00) = 4.7980 \text{ g} \end{aligned}$
 >
 > **4.798 g of oxygen**, to four significant figures — the mass was
 > given to four and the molar masses support it.
 >
 > The $\frac{3}{2}$ is the whole question. Every other step is
-> bookkeeping, and a student who writes $n(\text{O}_2) = 0.0999$ mol has
+> bookkeeping, and a student who writes $n(\ce{O2}) = 0.0999$ mol has
 > done all the arithmetic correctly and answered a different question.
 > Circle the coefficients in the equation before you start; it takes two
 > seconds and it is where the marks are.
 
 **6.** Propane burns according to
-$\text{C}_3\text{H}_8 + 5\text{O}_2 \rightarrow 3\text{CO}_2 + 4\text{H}_2\text{O}$.
+$\ce{C3H8 + 5O2 -> 3CO2 + 4H2O}$.
 For 10.0 g of propane, find the mass of oxygen required and the mass of
 each product.
 
 > [!success]- Answer 6
-> $M(\text{C}_3\text{H}_8) = 3(12.01) + 8(1.01) = 44.11 \text{ g/mol}$
+> $M(\ce{C3H8}) = 3(12.01) + 8(1.01) = 44.11 \text{ g/mol}$
 >
-> $n(\text{C}_3\text{H}_8) = \frac{10.0}{44.11} = 0.22671 \text{ mol}$
+> $n(\ce{C3H8}) = \frac{10.0}{44.11} = 0.22671 \text{ mol}$
 >
 > Now one coefficient ratio per substance, all from the same starting
 > amount:
 >
-> $\begin{aligned} m(\text{O}_2) &= 0.22671 \times \tfrac{5}{1} \times 32.00 = 36.27 \text{ g} \\ m(\text{CO}_2) &= 0.22671 \times \tfrac{3}{1} \times 44.01 = 29.93 \text{ g} \\ m(\text{H}_2\text{O}) &= 0.22671 \times \tfrac{4}{1} \times 18.02 = 16.34 \text{ g} \end{aligned}$
+> $\begin{aligned} m(\ce{O2}) &= 0.22671 \times \tfrac{5}{1} \times 32.00 = 36.27 \text{ g} \\ m(\ce{CO2}) &= 0.22671 \times \tfrac{3}{1} \times 44.01 = 29.93 \text{ g} \\ m(\ce{H2O}) &= 0.22671 \times \tfrac{4}{1} \times 18.02 = 16.34 \text{ g} \end{aligned}$
 >
 > **36.3 g of oxygen, 29.9 g of carbon dioxide, and 16.3 g of water.**
 >
@@ -162,7 +162,7 @@ each product.
 > fuel emits more than fifty kilograms of carbon dioxide has just been
 > shown the reason.
 
-**7.** In $2\text{H}_2 + \text{O}_2 \rightarrow 2\text{H}_2\text{O}$,
+**7.** In $\ce{2H2 + O2 -> 2H2O}$,
 does 2 g of hydrogen react with 1 g of oxygen? Say exactly what the
 coefficients do and do not tell you, and work out the actual mass ratio.
 
@@ -191,7 +191,7 @@ coefficients do and do not tell you, and work out the actual mass ratio.
 > course.
 
 **8.** Three claims about question 3. Say what is wrong with each.
-*(a) "$n(\text{CaCO}_3) = 50.0 \times 100.09 = 5004.5$ mol."*
+*(a) "$n(\ce{CaCO3}) = 50.0 \times 100.09 = 5004.5$ mol."*
 *(b) "The mole ratio is 1 to 1, so 50.0 g of calcium carbonate gives
 50.0 g of carbon dioxide."*
 *(c) "Mass is conserved, so the mass of carbon dioxide must equal the

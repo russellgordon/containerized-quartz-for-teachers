@@ -14,11 +14,11 @@ still brown gas, and neither was winning.
 
 ## Stopped is the wrong word
 
-Nothing about the tube is finished. Molecules of $\text{N}_2\text{O}_4$
-are still splitting apart, and molecules of $\text{NO}_2$ are still
+Nothing about the tube is finished. Molecules of $\ce{N2O4}$
+are still splitting apart, and molecules of $\ce{NO2}$ are still
 pairing up, at every instant you are watching:
 
-$$\text{N}_2\text{O}_4 \rightleftharpoons 2\text{NO}_2$$
+$$\ce{N2O4 <=> 2NO2}$$
 
 What has stopped is the *change*. The forward reaction and the reverse
 reaction are running at the same rate, so every molecule consumed is
@@ -39,12 +39,12 @@ static. A film of the molecules would not.
 
 For a general reaction at a given temperature,
 
-$$a\text{A} + b\text{B} \rightleftharpoons c\text{C} + d\text{D}$$
+$$a\ce{A} + b\ce{B} \ce{<=>} c\ce{C} + d\ce{D}$$
 
 the equilibrium constant collects the concentrations that a system
 settles at:
 
-$$K_c = \frac{[\text{C}]^c [\text{D}]^d}{[\text{A}]^a [\text{B}]^b}$$
+$$K_c = \frac{[\ce{C}]^c [\ce{D}]^d}{[\ce{A}]^a [\ce{B}]^b}$$
 
 Products on top, reactants underneath, each raised to its coefficient.
 The remarkable part — and it is worth pausing on — is that you can start
@@ -64,10 +64,10 @@ arrival point is close to where it started.
 > [!example]- Two things that stay out of the expression
 > Pure solids and pure liquids are left out entirely. Their
 > concentrations are fixed by their density, not by how much you have —
-> a lump of $\text{CaCO}_3$ twice the size is not "more concentrated"
+> a lump of $\ce{CaCO3}$ twice the size is not "more concentrated"
 > calcium carbonate. So for
-> $\text{CaCO}_3\text{(s)} \rightleftharpoons \text{CaO(s)} + \text{CO}_2\text{(g)}$
-> the whole expression is $K_c = [\text{CO}_2]$, which says something
+> $\ce{CaCO3(s) <=> CaO(s) + CO2(g)}$
+> the whole expression is $K_c = [\ce{CO2}]$, which says something
 > genuinely surprising: at a given temperature that system reaches the
 > same carbon dioxide concentration regardless of how much solid is in
 > the vessel.

@@ -38,20 +38,20 @@ partners.*
 
 | Ion | Compounds are | Exceptions |
 | --- | --- | --- |
-| Group 1 cations — $\text{Li}^+$, $\text{Na}^+$, $\text{K}^+$, $\text{Rb}^+$, $\text{Cs}^+$ | soluble | none worth listing |
-| Ammonium, $\text{NH}_4^+$ | soluble | none |
-| Nitrate, $\text{NO}_3^-$ | soluble | none |
-| Chlorate, $\text{ClO}_3^-$ and perchlorate, $\text{ClO}_4^-$ | soluble | none worth listing |
-| Acetate, $\text{CH}_3\text{COO}^-$ | soluble | silver acetate is only slightly soluble |
-| Chloride, bromide, iodide | soluble | $\text{Ag}^+$, $\text{Pb}^{2+}$, and $\text{Hg}_2^{2+}$ are insoluble |
-| Sulfate, $\text{SO}_4^{2-}$ | soluble | $\text{Ba}^{2+}$, $\text{Sr}^{2+}$, $\text{Pb}^{2+}$ insoluble; $\text{Ca}^{2+}$ and $\text{Ag}^+$ slightly soluble |
-| Sulfide, $\text{S}^{2-}$ | insoluble | group 1, group 2, and $\text{NH}_4^+$ are soluble |
-| Hydroxide, $\text{OH}^-$ | insoluble | group 1, $\text{NH}_4^+$, and $\text{Ba}^{2+}$ soluble; $\text{Ca}^{2+}$ and $\text{Sr}^{2+}$ slightly soluble |
-| Carbonate, $\text{CO}_3^{2-}$ | insoluble | group 1 and $\text{NH}_4^+$ are soluble |
-| Phosphate, $\text{PO}_4^{3-}$ | insoluble | group 1 and $\text{NH}_4^+$ are soluble |
-| Sulfite, $\text{SO}_3^{2-}$ | insoluble | group 1 and $\text{NH}_4^+$ are soluble |
-| Chromate, $\text{CrO}_4^{2-}$ | insoluble | group 1, $\text{NH}_4^+$, and $\text{Mg}^{2+}$ are soluble |
-| Oxide, $\text{O}^{2-}$ | insoluble | group 1 and the heavier group 2 oxides react with water rather than simply dissolving, giving hydroxide solutions |
+| Group 1 cations — $\ce{Li+}$, $\ce{Na+}$, $\ce{K+}$, $\ce{Rb+}$, $\ce{Cs+}$ | soluble | none worth listing |
+| Ammonium, $\ce{NH4+}$ | soluble | none |
+| Nitrate, $\ce{NO3-}$ | soluble | none |
+| Chlorate, $\ce{ClO3-}$ and perchlorate, $\ce{ClO4-}$ | soluble | none worth listing |
+| Acetate, $\ce{CH3COO-}$ | soluble | silver acetate is only slightly soluble |
+| Chloride, bromide, iodide | soluble | $\ce{Ag+}$, $\ce{Pb^2+}$, and $\ce{Hg2^2+}$ are insoluble |
+| Sulfate, $\ce{SO4^2-}$ | soluble | $\ce{Ba^2+}$, $\ce{Sr^2+}$, $\ce{Pb^2+}$ insoluble; $\ce{Ca^2+}$ and $\ce{Ag+}$ slightly soluble |
+| Sulfide, $\ce{S^2-}$ | insoluble | group 1, group 2, and $\ce{NH4+}$ are soluble |
+| Hydroxide, $\ce{OH-}$ | insoluble | group 1, $\ce{NH4+}$, and $\ce{Ba^2+}$ soluble; $\ce{Ca^2+}$ and $\ce{Sr^2+}$ slightly soluble |
+| Carbonate, $\ce{CO3^2-}$ | insoluble | group 1 and $\ce{NH4+}$ are soluble |
+| Phosphate, $\ce{PO4^3-}$ | insoluble | group 1 and $\ce{NH4+}$ are soluble |
+| Sulfite, $\ce{SO3^2-}$ | insoluble | group 1 and $\ce{NH4+}$ are soluble |
+| Chromate, $\ce{CrO4^2-}$ | insoluble | group 1, $\ce{NH4+}$, and $\ce{Mg^2+}$ are soluble |
+| Oxide, $\ce{O^2-}$ | insoluble | group 1 and the heavier group 2 oxides react with water rather than simply dissolving, giving hydroxide solutions |
 
 ## The short version, if you only remember four lines
 
@@ -76,15 +76,15 @@ is soluble even though carbonates are not, because sodium is group 1.
 > Swap the partners: the possible products are barium sulfate and sodium
 > chloride.
 >
-> Barium sulfate — the sulfate row lists $\text{Ba}^{2+}$ as an
+> Barium sulfate — the sulfate row lists $\ce{Ba^2+}$ as an
 > exception, so it is **insoluble**. It precipitates.
 >
 > Sodium chloride — sodium is group 1, so it is soluble and stays in
 > solution as ions.
 >
-> $\text{BaCl}_2\text{(aq)} + \text{Na}_2\text{SO}_4\text{(aq)} \rightarrow \text{BaSO}_4\text{(s)} + 2\text{NaCl(aq)}$
+> $\ce{BaCl2(aq) + Na2SO4(aq) -> BaSO4(s) + 2NaCl(aq)}$
 >
-> Net ionic: $\text{Ba}^{2+}\text{(aq)} + \text{SO}_4^{2-}\text{(aq)} \rightarrow \text{BaSO}_4\text{(s)}$
+> Net ionic: $\ce{Ba^2+(aq) + SO4^2-(aq) -> BaSO4(s)}$
 >
 > **Potassium nitrate solution is mixed with sodium chloride solution.**
 >

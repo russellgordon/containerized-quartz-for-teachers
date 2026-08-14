@@ -8,7 +8,7 @@ tags:
   - organic
 ---
 [[Isomers]] left you with a problem rather than a fact. Nine different
-substances share the formula $\text{C}_7\text{H}_{16}$, and if you
+substances share the formula $\ce{C7H16}$, and if you
 cannot tell somebody which one you mean, you cannot order it, publish
 it, or repeat what you did with it. In class you tried describing a
 structure out loud to a partner who could not see it, and watched them
@@ -71,7 +71,7 @@ $$\text{carboxylic acid} > \text{ester} > \text{amide} > \text{aldehyde} > \text
 
 Multiple bonds sit below all of those and become part of the root
 suffix rather than competing for it. A molecule containing both an
-$-\text{OH}$ and a $\text{C=O}$ acid group is named as an **acid** with
+$-\ce{OH}$ and a $\ce{C=O}$ acid group is named as an **acid** with
 a `hydroxy` prefix, never as an alcohol. The full list of groups, with
 both their suffix and their prefix forms, is on
 [[Functional Groups at a Glance]].

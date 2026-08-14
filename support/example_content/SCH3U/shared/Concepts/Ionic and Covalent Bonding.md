@@ -22,25 +22,25 @@ routes to that, and which one happens is decided by the trends in
 **Transfer.** Put sodium next to chlorine. Sodium's outer electron is
 held weakly — low ionization energy. Chlorine pulls hard on a stray
 electron — high electron affinity. The electron moves across and stays
-there. Now you have $\text{Na}^+$ and $\text{Cl}^-$, two oppositely
+there. Now you have $\ce{Na+}$ and $\ce{Cl-}$, two oppositely
 charged particles, and the **ionic bond** is nothing more exotic than
 the electrostatic attraction between them.
 
 The crucial consequence is that this attraction is not directional and
-not paired off. A given $\text{Na}^+$ attracts *every* nearby
-$\text{Cl}^-$, and each of those attracts every nearby $\text{Na}^+$, so
+not paired off. A given $\ce{Na+}$ attracts *every* nearby
+$\ce{Cl-}$, and each of those attracts every nearby $\ce{Na+}$, so
 the ions stack into a three-dimensional **lattice** that continues to
 the edge of the crystal. There is no such thing as a molecule of sodium
-chloride. The formula $\text{NaCl}$ states a ratio, not a particle.
+chloride. The formula $\ce{NaCl}$ states a ratio, not a particle.
 
 **Sharing.** Put two chlorine atoms together instead. Both hold
 electrons tightly; neither can take one from the other. What they can do
 is put one electron each into a region between the two nuclei, where
 both nuclei attract the pair at once. That shared pair is a **covalent
 bond**, and because it belongs to those two atoms it *is* directional
-and it *is* paired off. Two chlorine atoms make one $\text{Cl}_2$
+and it *is* paired off. Two chlorine atoms make one $\ce{Cl2}$
 molecule and then they are finished — the molecule has no leftover
-attraction to offer, so the next $\text{Cl}_2$ along is held only by
+attraction to offer, so the next $\ce{Cl2}$ along is held only by
 weak forces.
 
 That single structural difference explains everything you measured:
@@ -79,7 +79,7 @@ different textbook may print 1.8 or 2.0 without being wrong.
 The counterexample to keep in mind is hydrogen fluoride. Fluorine is
 3.98 and hydrogen is 2.20, a difference of 1.78 — over the line, so the
 rule says ionic. Hydrogen fluoride is a gas at room temperature made of
-discrete $\text{HF}$ molecules. It is about as covalent as a compound
+discrete $\ce{HF}$ molecules. It is about as covalent as a compound
 can be while still being ferociously polar.
 
 So treat the number as evidence and the behaviour as the verdict. The
@@ -90,7 +90,7 @@ rather than a rule to apply harder.
 
 > [!tip] Say "mostly ionic", not "ionic"
 > Bonding is a continuum. Even in sodium chloride the electron is not
-> perfectly transferred, and even in $\text{Cl}_2$ the pair is not
+> perfectly transferred, and even in $\ce{Cl2}$ the pair is not
 > perfectly shared at every instant. Pure ionic and pure covalent are
 > the ends of a line, and every real bond is a point somewhere on it.
 > Writing "predominantly ionic, difference 2.23" is a better answer than
@@ -106,8 +106,8 @@ it is a **dipole**.
 
 A molecule with polar bonds is not automatically a polar molecule,
 because dipoles can cancel. Carbon dioxide has two strongly polar
-$\text{C=O}$ bonds, and the molecule is linear, so the two pulls point
-in exactly opposite directions and sum to nothing. $\text{CO}_2$ is a
+$\ce{C=O}$ bonds, and the molecule is linear, so the two pulls point
+in exactly opposite directions and sum to nothing. $\ce{CO2}$ is a
 non-polar molecule built entirely from polar bonds.
 
 Water has the same two-polar-bond arrangement and is **bent**, so the

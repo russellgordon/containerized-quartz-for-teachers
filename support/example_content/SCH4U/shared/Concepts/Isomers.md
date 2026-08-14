@@ -8,7 +8,7 @@ tags:
   - organic
 ---
 The model kits came out again for [[Building and Testing Models]], with
-one instruction: build $\text{C}_4\text{H}_{10}$. Two groups did, and
+one instruction: build $\ce{C4H10}$. Two groups did, and
 put two different objects on the bench. Neither had made a mistake.
 Every carbon had four bonds, every hydrogen had one, and the two models
 could not be twisted into each other however long anyone tried.
@@ -19,7 +19,7 @@ description of a substance.
 
 ## A formula is a weak claim
 
-Butane and 2-methylpropane are both $\text{C}_4\text{H}_{10}$. They are
+Butane and 2-methylpropane are both $\ce{C4H10}$. They are
 different substances with different properties, sold separately, boiling
 at different temperatures. **Isomers** are compounds with the same
 molecular formula and a different arrangement of atoms.
@@ -31,11 +31,11 @@ alarmingly:
 
 | Formula | Structural isomers |
 | --- | --- |
-| $\text{C}_4\text{H}_{10}$ | 2 |
-| $\text{C}_5\text{H}_{12}$ | 3 |
-| $\text{C}_6\text{H}_{14}$ | 5 |
-| $\text{C}_7\text{H}_{16}$ | 9 |
-| $\text{C}_8\text{H}_{18}$ | 18 |
+| $\ce{C4H10}$ | 2 |
+| $\ce{C5H12}$ | 3 |
+| $\ce{C6H14}$ | 5 |
+| $\ce{C7H16}$ | 9 |
+| $\ce{C8H18}$ | 18 |
 
 Nine possible molecules for one seven-carbon formula, and that is only
 the alkanes — allow a double bond, a ring, or an oxygen and the number
@@ -57,19 +57,19 @@ so its dispersion forces are weaker. That explanation comes straight out
 of [[Intermolecular Forces]] with nothing new added.
 
 **Positional isomers** have the same skeleton and the same functional
-group, attached in a different place. Propan-1-ol has its $-\text{OH}$
+group, attached in a different place. Propan-1-ol has its $-\ce{OH}$
 on an end carbon; propan-2-ol has it on the middle one. They are both
 alcohols and they behave differently enough that one is rubbing alcohol
 and the other is not.
 
 **Functional group isomers** are the dramatic case: the same atoms
 assembled into different *classes* of compound. The formula
-$\text{C}_2\text{H}_6\text{O}$ can be ethanol, which boils at about
+$\ce{C2H6O}$ can be ethanol, which boils at about
 78 °C, or it can be dimethyl ether, which boils at about $-24$ °C.
 One is a liquid you can hold in a beaker
 and the other is a gas at room temperature, and the difference is a
 single oxygen sitting between the carbons instead of on the end. Ethanol
-has an $-\text{OH}$ and hydrogen bonds to itself; the ether has no
+has an $-\ce{OH}$ and hydrogen bonds to itself; the ether has no
 hydrogen on its oxygen and cannot.
 
 ## Stereoisomers — the connections are the same
@@ -122,7 +122,7 @@ Take the general lesson, because it outlives the unit.
 A molecular formula is a **count**. A structural formula is a
 **description**. Only the second predicts anything, and the whole method
 of this course — structure predicts behaviour — collapses if you stop at
-the first. When you are handed $\text{C}_3\text{H}_8\text{O}$ and asked
+the first. When you are handed $\ce{C3H8O}$ and asked
 for a boiling point, the honest answer is a question: *which one?*
 
 That is also the reason organic chemists draw so much. A structural

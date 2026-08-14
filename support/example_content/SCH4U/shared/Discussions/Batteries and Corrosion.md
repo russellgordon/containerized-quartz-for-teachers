@@ -37,7 +37,7 @@ battery an energy source is like calling a bucket a spring.
 A **fuel cell** is different in kind. It converts continuously for as
 long as fuel is supplied, and the hydrogen–oxygen cell produces water:
 
-$$2\text{H}_2\text{(g)} + \text{O}_2\text{(g)} \rightarrow 2\text{H}_2\text{O(l)}$$
+$$\ce{2H2(g) + O2(g) -> 2H2O(l)}$$
 
 That equation is the reason fuel cells attract the word "clean", and it
 is a half-truth until you say where the hydrogen came from. Hydrogen is

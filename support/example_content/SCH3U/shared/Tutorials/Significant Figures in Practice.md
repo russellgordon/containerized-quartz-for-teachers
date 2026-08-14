@@ -174,7 +174,7 @@ limit your answer.
 - **Defined conversions.** 1 L is exactly 1000 mL, 1 kg is exactly
   1000 g. These are definitions, not measurements.
 - **Coefficients in a balanced equation.** The 2 in
-  $2\text{H}_2 + \text{O}_2 \rightarrow 2\text{H}_2\text{O}$ means
+  $\ce{2H2 + O2 -> 2H2O}$ means
   exactly two, in the way that a dozen means exactly twelve.
 - **The 100 in a percentage.**
 

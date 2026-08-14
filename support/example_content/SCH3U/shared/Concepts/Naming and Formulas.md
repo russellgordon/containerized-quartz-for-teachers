@@ -21,7 +21,7 @@ the rule.
 
 Everything you measured lines up on one side or the other.
 
-| Property | Ionic, such as $\text{NaCl}$ | Molecular, such as $\text{CH}_4$ |
+| Property | Ionic, such as $\ce{NaCl}$ | Molecular, such as $\ce{CH4}$ |
 | --- | --- | --- |
 | Made from | a metal and a non-metal | non-metals only |
 | Held together by | attraction between ions, throughout a lattice | shared pairs within each molecule |
@@ -33,9 +33,9 @@ Everything you measured lines up on one side or the other.
 | The formula means | the simplest whole-number ratio of ions | the actual number of atoms in one molecule |
 
 The last row is the one that gets skipped and matters most. There is no
-molecule of sodium chloride, so $\text{NaCl}$ is a **formula unit** — a
+molecule of sodium chloride, so $\ce{NaCl}$ is a **formula unit** — a
 statement that the crystal contains one sodium ion for every chloride
-ion. $\text{CH}_4$ is a different kind of claim entirely: it says one
+ion. $\ce{CH4}$ is a different kind of claim entirely: it says one
 real molecule contains one carbon atom and four hydrogen atoms.
 
 The decisive laboratory test is the molten-or-dissolved conductivity
@@ -52,29 +52,29 @@ chlorine gives sodium chlor**ide**; magnesium plus oxygen gives
 magnesium ox**ide**.
 
 The formula comes from the charges, because a compound is electrically
-neutral overall. Magnesium is $\text{Mg}^{2+}$ and chlorine is
-$\text{Cl}^-$, so it takes two chloride ions to balance one magnesium
-ion: $\text{MgCl}_2$. Crossing the charges over as subscripts is a
+neutral overall. Magnesium is $\ce{Mg^2+}$ and chlorine is
+$\ce{Cl-}$, so it takes two chloride ions to balance one magnesium
+ion: $\ce{MgCl2}$. Crossing the charges over as subscripts is a
 shortcut for that reasoning, and it works as long as you remember to
-reduce to the lowest ratio afterwards — $\text{Mg}^{2+}$ with
-$\text{O}^{2-}$ crosses over to $\text{Mg}_2\text{O}_2$, which is wrong.
-It is $\text{MgO}$.
+reduce to the lowest ratio afterwards — $\ce{Mg^2+}$ with
+$\ce{O^2-}$ crosses over to $\ce{Mg2O2}$, which is wrong.
+It is $\ce{MgO}$.
 
 **Multivalent metals** need a Roman numeral, because the name has to
-identify which ion you mean. Iron forms both $\text{Fe}^{2+}$ and
-$\text{Fe}^{3+}$, so "iron chloride" is ambiguous and unusable. Iron(II)
-chloride is $\text{FeCl}_2$; iron(III) chloride is $\text{FeCl}_3$. The
+identify which ion you mean. Iron forms both $\ce{Fe^2+}$ and
+$\ce{Fe^3+}$, so "iron chloride" is ambiguous and unusable. Iron(II)
+chloride is $\ce{FeCl2}$; iron(III) chloride is $\ce{FeCl3}$. The
 numeral gives the **charge on the metal ion**, not the number of
 anything — a mistake so common it is worth reading twice. Going
 backwards from a formula, work the charge out from the anions:
-$\text{Cu}_2\text{O}$ has two copper ions balancing one $\text{O}^{2-}$,
+$\ce{Cu2O}$ has two copper ions balancing one $\ce{O^2-}$,
 so each copper carries $1+$ and the name is copper(I) oxide.
 
 **Polyatomic ions** are groups of atoms that travel together carrying a
 single charge, and they keep their own names — sulfate stays sulfate, it
 does not become sulfide. When you need more than one of them the whole
 group goes in brackets: calcium nitrate is
-$\text{Ca(NO}_3\text{)}_2$, never $\text{CaNO}_{32}$. Learn the common
+$\ce{Ca(NO3)2}$, never $\ce{CaNO32}$. Learn the common
 ones from [[Polyatomic Ions]]; there are about twenty that carry almost
 all the work, and they will save you more time than any other thing you
 memorise this year.
@@ -85,11 +85,11 @@ Two non-metals means there are no charges to balance, so nothing tells
 you the ratio — you have to state it. That is what the Greek prefixes
 are for.
 
-Carbon and oxygen make both $\text{CO}$ and $\text{CO}_2$, and both are
+Carbon and oxygen make both $\ce{CO}$ and $\ce{CO2}$, and both are
 real, common, and completely different in what they do to you. Calling
 them carbon monoxide and carbon dioxide is not fussiness; it is the only
 thing keeping them apart. Dinitrogen tetroxide is
-$\text{N}_2\text{O}_4$.
+$\ce{N2O4}$.
 
 One convention: **mono-** is dropped from the first element and kept on
 the second. It is carbon dioxide, not monocarbon dioxide; but it is
@@ -106,12 +106,12 @@ A formula starting with hydrogen, in aqueous solution, is an acid, and
 acids have a third naming convention layered on top of the other two.
 The short version:
 
-- No oxygen in it: **hydro-** + stem + **-ic acid**. $\text{HCl(aq)}$ is
+- No oxygen in it: **hydro-** + stem + **-ic acid**. $\ce{HCl(aq)}$ is
   hydrochloric acid.
 - Contains an **-ate** polyatomic ion: stem + **-ic acid**. Sulfate gives
-  sulfuric acid, $\text{H}_2\text{SO}_4$.
+  sulfuric acid, $\ce{H2SO4}$.
 - Contains an **-ite** polyatomic ion: stem + **-ous acid**. Sulfite
-  gives sulfurous acid, $\text{H}_2\text{SO}_3$.
+  gives sulfurous acid, $\ce{H2SO3}$.
 
 The full pattern, including hydrates and the multivalent metals worth
 memorising, is set out in [[Naming Rules at a Glance]]. Why an acid

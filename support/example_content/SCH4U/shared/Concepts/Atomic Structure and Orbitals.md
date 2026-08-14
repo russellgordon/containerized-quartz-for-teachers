@@ -117,14 +117,14 @@ of [[The Blocks of the Periodic Table]].
 
 **The $4s$ and $3d$ problem.** The list above puts $4s$ before $3d$, and
 for potassium and calcium that is right: potassium is
-$[\text{Ar}]\,4s^1$, not $[\text{Ar}]\,3d^1$.
+$[\ce{Ar}]\,4s^1$, not $[\ce{Ar}]\,3d^1$.
 
 But the moment the $3d$ orbitals begin to fill, they drop **below** $4s$
 in energy. In a neutral iron atom, the $3d$ orbitals are the lower ones.
 This has a consequence you can check against data: when a transition
 metal is ionised, the electrons that leave are the $4s$ electrons, not
-the $3d$ ones. Iron is $[\text{Ar}]\,3d^6\,4s^2$ and the iron(II) ion is
-$[\text{Ar}]\,3d^6$ — not $[\text{Ar}]\,3d^4\,4s^2$.
+the $3d$ ones. Iron is $[\ce{Ar}]\,3d^6\,4s^2$ and the iron(II) ion is
+$[\ce{Ar}]\,3d^6$ — not $[\ce{Ar}]\,3d^4\,4s^2$.
 
 Read that twice, because it sounds like a contradiction and is not.
 **$4s$ fills first and $4s$ empties first.** Filling order and removal
@@ -139,8 +139,8 @@ follow the rule at all:
 
 | Element | Rule predicts | Actually observed |
 | --- | --- | --- |
-| Chromium | $[\text{Ar}]\,3d^4\,4s^2$ | $[\text{Ar}]\,3d^5\,4s^1$ |
-| Copper | $[\text{Ar}]\,3d^9\,4s^2$ | $[\text{Ar}]\,3d^{10}\,4s^1$ |
+| Chromium | $[\ce{Ar}]\,3d^4\,4s^2$ | $[\ce{Ar}]\,3d^5\,4s^1$ |
+| Copper | $[\ce{Ar}]\,3d^9\,4s^2$ | $[\ce{Ar}]\,3d^{10}\,4s^1$ |
 
 An electron has moved from $4s$ into $3d$ to give a half-filled or a
 completely filled $d$ subshell. Learn those two — they are the ones you
@@ -155,7 +155,7 @@ will be asked for.
 > precisely why these two elements can be tipped over the line at all.
 >
 > The giveaway is that the rule does not generalise. Palladium's ground
-> state is $[\text{Kr}]\,4d^{10}$ with *no* outer $s$ electron
+> state is $[\ce{Kr}]\,4d^{10}$ with *no* outer $s$ electron
 > whatsoever, and several other heavy $d$-block elements break the
 > pattern in ways "half-filled is stable" does not predict. Take
 > chromium and copper as measured facts about two elements, not as a

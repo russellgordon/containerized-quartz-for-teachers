@@ -17,18 +17,18 @@ the naming rules are in [[Naming Organic Compounds]].
 | Class | Group | Suffix | Prefix form | Example |
 | --- | --- | --- | --- | --- |
 | Alkane | C–C only | `-ane` | `alkyl-` | propane |
-| Alkene | $\text{C=C}$ | `-ene` | — | propene |
-| Alkyne | $\text{C}\equiv\text{C}$ | `-yne` | — | propyne |
+| Alkene | $\ce{C=C}$ | `-ene` | — | propene |
+| Alkyne | $\ce{C#C}$ | `-yne` | — | propyne |
 | Aromatic | benzene ring | — | `phenyl-` | methylbenzene |
 | Haloalkane | $\text{R}-\text{X}$ | — | `chloro-`, `bromo-` | 2-chloropropane |
-| Alcohol | $\text{R}-\text{OH}$ | `-ol` | `hydroxy-` | propan-1-ol |
-| Ether | $\text{R}-\text{O}-\text{R}'$ | — | `alkoxy-` | methoxyethane |
-| Aldehyde | $\text{R}-\text{CHO}$ | `-al` | `oxo-` | propanal |
-| Ketone | $\text{R}-\text{CO}-\text{R}'$ | `-one` | `oxo-` | propanone |
-| Carboxylic acid | $\text{R}-\text{COOH}$ | `-oic acid` | `carboxy-` | propanoic acid |
-| Ester | $\text{R}-\text{COO}-\text{R}'$ | `-oate` | rarely needed | ethyl ethanoate |
-| Amine | $\text{R}-\text{NH}_2$ | `-amine` | `amino-` | propan-1-amine |
-| Amide | $\text{R}-\text{CONH}_2$ | `-amide` | rarely needed | propanamide |
+| Alcohol | $\text{R}-\ce{OH}$ | `-ol` | `hydroxy-` | propan-1-ol |
+| Ether | $\text{R}-\ce{O}-\text{R}'$ | — | `alkoxy-` | methoxyethane |
+| Aldehyde | $\text{R}-\ce{CHO}$ | `-al` | `oxo-` | propanal |
+| Ketone | $\text{R}-\ce{CO}-\text{R}'$ | `-one` | `oxo-` | propanone |
+| Carboxylic acid | $\text{R}-\ce{COOH}$ | `-oic acid` | `carboxy-` | propanoic acid |
+| Ester | $\text{R}-\ce{COO}-\text{R}'$ | `-oate` | rarely needed | ethyl ethanoate |
+| Amine | $\text{R}-\ce{NH2}$ | `-amine` | `amino-` | propan-1-amine |
+| Amide | $\text{R}-\ce{CONH2}$ | `-amide` | rarely needed | propanamide |
 
 **Priority when two groups are present**, highest first — the winner
 takes the suffix and everything else becomes a prefix:
@@ -59,7 +59,7 @@ For compounds of **roughly equal molar mass**:
 Two comparisons worth remembering because they look wrong:
 
 - A **ketone boils lower than an alcohol** of similar mass, even though
-  its $\text{C=O}$ is more polar than an $\text{O}-\text{H}$ bond. The
+  its $\ce{C=O}$ is more polar than an $\ce{O}-\ce{H}$ bond. The
   ketone has no hydrogen attached to oxygen, so it cannot donate a
   hydrogen bond to a neighbour, and dipole–dipole attraction alone is
   weaker.

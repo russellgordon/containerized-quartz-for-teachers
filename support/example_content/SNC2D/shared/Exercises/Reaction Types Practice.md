@@ -13,10 +13,10 @@ predict the products of one you have never seen.
 **1.** Classify each reaction, and say in words what happened to the
 substances — not just which name it gets.
 
-> (a) $2\text{Mg} + \text{O}_2 \rightarrow 2\text{MgO}$
-> (b) $2\text{H}_2\text{O}_2 \rightarrow 2\text{H}_2\text{O} + \text{O}_2$
-> (c) $\text{Zn} + 2\text{HCl} \rightarrow \text{ZnCl}_2 + \text{H}_2$
-> (d) $\text{Na}_2\text{CO}_3 + \text{CaCl}_2 \rightarrow \text{CaCO}_3 + 2\text{NaCl}$
+> (a) $\ce{2Mg + O2 -> 2MgO}$
+> (b) $\ce{2H2O2 -> 2H2O + O2}$
+> (c) $\ce{Zn + 2HCl -> ZnCl2 + H2}$
+> (d) $\ce{Na2CO3 + CaCl2 -> CaCO3 + 2NaCl}$
 
 > [!success]- Answer 1
 > **(a) Synthesis.** Two elements, each on its own, combine into a
@@ -49,14 +49,14 @@ expect to see.
 > copper, and the copper is set free as an element. Sulfate travels
 > through unchanged as a unit.
 >
-> $$\text{Zn(s)} + \text{CuSO}_4\text{(aq)} \rightarrow \text{ZnSO}_4\text{(aq)} + \text{Cu(s)}$$
+> $$\ce{Zn(s) + CuSO4(aq) -> ZnSO4(aq) + Cu(s)}$$
 >
 > Count: 1 Zn, 1 Cu, 1 sulfate group on each side — balanced as
 > written.
 >
 > **What you would expect to see:** a reddish-brown solid building up
 > on the zinc, and the blue of the solution fading, because
-> $\text{ZnSO}_4\text{(aq)}$ is colourless. Note carefully that this is
+> $\ce{ZnSO4(aq)}$ is colourless. Note carefully that this is
 > what you would *expect*, and that observing it does not by itself
 > identify the solid as copper — as your group found in
 > [[Reaction Types Lab]].
@@ -66,7 +66,7 @@ sodium hydroxide solution. Name the products, and state the general
 pattern.
 
 > [!success]- Answer 3
-> $$\text{HCl(aq)} + \text{NaOH(aq)} \rightarrow \text{NaCl(aq)} + \text{H}_2\text{O(l)}$$
+> $$\ce{HCl(aq) + NaOH(aq) -> NaCl(aq) + H2O(l)}$$
 >
 > Products: **sodium chloride** and **water**. Counting: 1 Na, 1 Cl,
 > 1 O, and 2 H on each side.
@@ -81,16 +81,16 @@ pattern.
 > double displacement: the partners have swapped.
 
 **4.** Balance:
-$\text{H}_2\text{SO}_4\text{(aq)} + \text{NaOH(aq)} \rightarrow \text{Na}_2\text{SO}_4\text{(aq)} + \text{H}_2\text{O(l)}$,
+$\ce{H2SO4(aq) + NaOH(aq) -> Na2SO4(aq) + H2O(l)}$,
 and name the salt produced.
 
 > [!success]- Answer 4
-> The formula $\text{Na}_2\text{SO}_4$ needs two sodium, and each
-> $\text{NaOH}$ brings only one, so two of them are required. That puts
+> The formula $\ce{Na2SO4}$ needs two sodium, and each
+> $\ce{NaOH}$ brings only one, so two of them are required. That puts
 > 2 extra hydrogen and 2 extra oxygen on the left, which together with
 > the acid's 2 hydrogen makes 2 water molecules.
 >
-> $$\text{H}_2\text{SO}_4\text{(aq)} + 2\text{NaOH(aq)} \rightarrow \text{Na}_2\text{SO}_4\text{(aq)} + 2\text{H}_2\text{O(l)}$$
+> $$\ce{H2SO4(aq) + 2NaOH(aq) -> Na2SO4(aq) + 2H2O(l)}$$
 >
 > Check: Na 2 and 2. Sulfate 1 and 1. H — two from the acid plus two
 > from the hydroxides makes 4 on the left, and $2 \times 2 = 4$ on the

@@ -40,7 +40,7 @@ sense?[^1]
 
 **Part B.** Magnesium and dilute hydrochloric acid give hydrogen:
 
-$$\text{Mg(s)} + 2\text{HCl(aq)} \rightarrow \text{MgCl}_2\text{(aq)} + \text{H}_2\text{(g)}$$
+$$\ce{Mg(s) + 2HCl(aq) -> MgCl2(aq) + H2(g)}$$
 
 Weigh the magnesium and the equation tells you how many moles of
 hydrogen you made. Measure the volume that hydrogen occupies and you

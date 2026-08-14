@@ -59,7 +59,7 @@ thing three times.
 
 The reaction is:
 
-$$\text{HCl(aq)} + \text{NaOH(aq)} \rightarrow \text{NaCl(aq)} + \text{H}_2\text{O(l)}$$
+$$\ce{HCl(aq) + NaOH(aq) -> NaCl(aq) + H2O(l)}$$
 
 Your design decisions, written and justified **before** the lab:
 
@@ -179,8 +179,8 @@ writing 21.37 °C from one is a claim you cannot support. See
 >
 > Moles of water formed. The acid supplies
 > $n = cV = (1.00\ \text{mol/L})(0.0500\ \text{L}) = 0.0500\ \text{mol}$
-> of $\text{H}^+$, the base supplies the same amount of
-> $\text{OH}^-$, and the equation is one to one, so 0.0500 mol of water
+> of $\ce{H+}$, the base supplies the same amount of
+> $\ce{OH-}$, and the equation is one to one, so 0.0500 mol of water
 > is formed.
 >
 > Energy per mole:
