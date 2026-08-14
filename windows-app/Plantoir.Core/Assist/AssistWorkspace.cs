@@ -1520,6 +1520,172 @@ public sealed class AssistWorkspace
     /// The one place anything here writes a page, so the session's undo
     /// history sees every change without each caller having to remember.
     /// </summary>
+    // ---- Curriculum expectations on a page ---------------------------------
+
+    /// <summary>One curriculum expectation: its code, and what it actually says.</summary>
+    public sealed record Expectation(string Code, string Text, string RelativePath);
+
+    /// <summary>
+    /// Every curriculum expectation in the course, with its wording.
+    ///
+    /// The point of returning the TEXT, not just the codes, is that matching an
+    /// expectation to a lesson is a judgement about meaning — the one thing the
+    /// tools cannot do and a capable model can. So this hands over everything
+    /// needed to decide, and decides nothing itself.
+    /// </summary>
+    public List<Expectation> CurriculumExpectations(Course course, int sectionNumber)
+    {
+        var found = new List<Expectation>();
+
+        foreach (string relative in Pages(course, sectionNumber))
+        {
+            string full;
+            try { full = PagePaths.ResolveInside(_folder, relative); }
+            catch { continue; }
+            if (!IsCurriculum(course.DirectoryPath, full)) continue;
+
+            string code = Path.GetFileNameWithoutExtension(full);
+            // Index and strand-heading pages are not expectations; an
+            // expectation is a leaf, coded like A1.1 or B2.3.
+            if (!System.Text.RegularExpressions.Regex.IsMatch(code, @"^[A-Za-z]\d+\.\d+$")) continue;
+
+            string body;
+            try { body = File.ReadAllText(full); }
+            catch { continue; }
+
+            // The wording, minus the frontmatter and the block anchor.
+            string text = BodyAfterFrontmatter(body).Trim();
+            int anchor = text.LastIndexOf(" ^", StringComparison.Ordinal);
+            if (anchor > 0) text = text[..anchor].Trim();
+
+            found.Add(new Expectation(code, text, relative));
+        }
+
+        return found.OrderBy(e => e.Code, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    /// <summary>
+    /// Plan adding curriculum transclusions to a page.
+    ///
+    /// They go inside the <c>%%curriculum-start%%</c> markers the example
+    /// content uses, and the markers matter: a course installed without
+    /// curriculum has that whole block stripped at build time, so a
+    /// transclusion outside them would leave a dangling reference on a
+    /// teacher's site rather than disappearing quietly.
+    /// </summary>
+    public CurriculumMentionsPlan PlanCurriculumMentions(
+        string courseCode, int sectionNumber, string page, IReadOnlyList<string> codes)
+    {
+        var course = Course(courseCode);
+        int section = Section(course, sectionNumber);
+        string path = Page(course, section, page);
+        string text = File.ReadAllText(path);
+
+        var known = CurriculumExpectations(course, section)
+            .ToDictionary(e => e.Code, StringComparer.OrdinalIgnoreCase);
+
+        var adding = new List<Expectation>();
+        var alreadyThere = new List<string>();
+        var unknown = new List<string>();
+
+        foreach (string raw in codes.Select(c => c.Trim()).Where(c => c.Length > 0).Distinct())
+        {
+            if (!known.TryGetValue(raw, out var expectation)) { unknown.Add(raw); continue; }
+            if (text.Contains($"[[{expectation.Code}]]", StringComparison.OrdinalIgnoreCase))
+            { alreadyThere.Add(expectation.Code); continue; }
+            adding.Add(expectation);
+        }
+
+        return new CurriculumMentionsPlan
+        {
+            CourseCode = course.Code,
+            SectionNumber = section,
+            PageTitle = Path.GetFileNameWithoutExtension(path),
+            RelativePath = Relative(path),
+            Adding = adding,
+            AlreadyThere = alreadyThere,
+            Unknown = unknown,
+            HasBlockAlready = text.Contains(CurriculumStart, StringComparison.OrdinalIgnoreCase),
+        };
+    }
+
+    private const string CurriculumStart = "%%curriculum-start%%";
+    private const string CurriculumEnd = "%%curriculum-end%%";
+
+    /// <summary>Everything after the frontmatter fence, or the whole text if there is none.</summary>
+    private static string BodyAfterFrontmatter(string pageText)
+    {
+        string[] lines = pageText.Split('\n');
+        int open = -1;
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string trimmed = lines[i].Trim();
+            if (trimmed.Length == 0) continue;
+            if (trimmed != "---") return pageText;
+            open = i;
+            break;
+        }
+        if (open < 0) return pageText;
+
+        for (int i = open + 1; i < lines.Length; i++)
+            if (lines[i].Trim() is "---" or "...")
+                return string.Join("\n", lines.Skip(i + 1));
+        return pageText;
+    }
+
+    /// <summary>Write the transclusions the plan describes into the page.</summary>
+    public AssistResult ApplyCurriculumMentions(CurriculumMentionsPlan plan, IProgress<string>? progress = null)
+    {
+        var course = Course(plan.CourseCode);
+        int section = Section(course, plan.SectionNumber);
+        if (plan.ChangesNothing)
+            return new AssistResult(true, "Nothing to add — those expectations are already on the page.", null);
+
+        RefuseIfPlantoirIsBuilding(course);
+
+        string backup;
+        progress?.Report($"Backing up {course.Code} first…");
+        try { backup = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory(_folder)); }
+        catch (Exception error)
+        {
+            throw new AssistRefusal($"{course.Code} couldn’t be backed up, so the page was not changed: {error.Message}");
+        }
+
+        _undo?.Begin($"adding {plan.Adding.Count} curriculum expectations to “{plan.PageTitle}”");
+
+        string path = PagePaths.ResolveInside(_folder, plan.RelativePath);
+        string text = File.ReadAllText(path);
+        string lineEnd = text.Contains("\r\n") ? "\r\n" : "\n";
+        string transclusions = string.Join(lineEnd, plan.Adding.Select(e => $"![[{e.Code}]]"));
+
+        if (plan.HasBlockAlready)
+        {
+            // Append inside the existing block, keeping what is already there.
+            int end = text.IndexOf(CurriculumEnd, StringComparison.OrdinalIgnoreCase);
+            text = text[..end].TrimEnd() + lineEnd + transclusions + lineEnd + text[end..];
+        }
+        else
+        {
+            // A new block, before the "things to do" list if there is one —
+            // that list closes a class page, and the curriculum note belongs
+            // with the lesson rather than after the homework.
+            string block = CurriculumStart + lineEnd + "Today's work points here:" + lineEnd + lineEnd +
+                           transclusions + lineEnd + CurriculumEnd + lineEnd;
+            int before = text.IndexOf("## Things to do", StringComparison.OrdinalIgnoreCase);
+            text = before > 0
+                ? text[..before] + block + lineEnd + text[before..]
+                : text.TrimEnd() + lineEnd + lineEnd + block;
+        }
+
+        Save(path, text);
+        return new AssistResult(true,
+            $"Added {plan.Adding.Count} curriculum expectation{(plan.Adding.Count == 1 ? "" : "s")} to " +
+            $"“{plan.PageTitle}” — {string.Join(", ", plan.Adding.Select(e => e.Code))}. " +
+            "They are wrapped in the curriculum markers, so a course installed without curriculum still builds. " +
+            "Look the page over in Plantoir.",
+            backup);
+    }
+
     // ---- Making room in a course that is already built out -----------------
 
     /// <summary>A class page, understood as a numbered day of a numbered unit.</summary>

@@ -231,6 +231,76 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     private const string BlockHelp =
         "The block or section letter the teacher is timetabled in, for example F.";
 
+    [McpServerTool(Name = "list_curriculum_expectations", Title = "List curriculum expectations",
+                   ReadOnly = true, Destructive = false)]
+    [Description("List this course's curriculum expectations with their FULL WORDING, changing nothing. " +
+                 "Call this when a teacher asks you to point a page at the expectations it covers. Read the " +
+                 "page first, then read these, then decide which genuinely fit — that judgement is yours to " +
+                 "make and the tools cannot make it. Propose the codes to the teacher with your reasons and " +
+                 "let them choose; do not add expectations they have not agreed to.")]
+    public string ListCurriculumExpectations(
+        [Description("The course code, for example ADA1O.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description("Only list expectations whose code or wording contains this. Leave empty for all.")]
+        string matching = "")
+        => Guarded(() =>
+        {
+            var found = workspace.Course(course);
+            int number = workspace.Section(found, section);
+            var expectations = workspace.CurriculumExpectations(found, number);
+
+            string filter = matching.Trim();
+            if (filter.Length > 0)
+                expectations = expectations
+                    .Where(e => e.Code.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
+                                e.Text.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+            if (expectations.Count == 0)
+                return filter.Length > 0
+                    ? $"No curriculum expectation in {found.Code} matches “{filter}”."
+                    : $"{found.Code} has no curriculum expectations — this course was installed without them.";
+
+            var text = new StringBuilder();
+            foreach (var expectation in expectations)
+                text.AppendLine($"{expectation.Code}  {expectation.Text}");
+            return text.ToString().TrimEnd();
+        });
+
+    [McpServerTool(Name = "plan_curriculum_mentions", Title = "Plan pointing a page at the curriculum",
+                   ReadOnly = true, Destructive = false)]
+    [Description("Work out what adding curriculum transclusions to a page would do, changing nothing. " +
+                 "Show the teacher what it says — it quotes each expectation's wording so they can tell " +
+                 "whether it fits their lesson without looking it up — then wait for them to agree.")]
+    public string PlanCurriculumMentions(
+        [Description("The course code, for example ADA1O.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description("The page title, for example \"Movement Concepts\".")] string page,
+        [Description("The expectation codes to add, separated by commas — for example \"A1.1, A2.2\".")]
+        string codes)
+        => Guarded(() => workspace.PlanCurriculumMentions(course, section, page,
+                             codes.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                         .Describe());
+
+    [McpServerTool(Name = "add_curriculum_mentions", Title = "Point a page at curriculum expectations",
+                   Destructive = false, Idempotent = true)]
+    [Description("Add transclusions of curriculum expectations to a page, inside the curriculum markers so a " +
+                 "course installed without curriculum still builds. Call plan_curriculum_mentions FIRST and get " +
+                 "the teacher's agreement to the specific codes. Changes nothing else on the page, and changes " +
+                 "no page's visibility. The course is backed up first.")]
+    public string AddCurriculumMentions(
+        [Description("The course code, for example ADA1O.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description("The page title, for example \"Movement Concepts\".")] string page,
+        [Description("The expectation codes to add, separated by commas — for example \"A1.1, A2.2\".")]
+        string codes)
+        => Guarded(() =>
+        {
+            var plan = workspace.PlanCurriculumMentions(course, section, page,
+                codes.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+            return workspace.ApplyCurriculumMentions(plan).Message;
+        });
+
     private const string UnitHelp = "The unit number these classes belong to, for example 2.";
 
     [McpServerTool(Name = "plan_make_room_for_classes", Title = "Plan making room for classes",
