@@ -1,28 +1,21 @@
 ---
 title: Unit 5, Day 3
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_73__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-5
 ---
-Last class the reaction drove the meter. Today you drive the reaction,
-and gas comes off both electrodes while you stand there watching.
-
 ## Agenda
 
-1. Electrolysis of a salt solution — no flame anywhere near it, and the
-   cell is never sealed, because one of those gases is hydrogen
-2. Compare it with the cell you built: what reversed, and what did not?
-3. Name it: [[Galvanic and Electrolytic Cells]] — driven, and driving
-4. [[Corrosion and Electrolysis]] — the same chemistry, unwanted
-5. Discuss: [[Batteries and Corrosion]] — what we mine, and what we bury
-6. [[What This Site Can Do]] — features worth knowing before the showcase
+1. Warm-up: assign oxidation numbers across three equations, cold
+2. Practise: [[Redox and Cells Practice]], the balancing questions —
+   both methods, on the same reaction
+3. Which method to reach for, and why acidic and basic conditions
+   differ
 
 ## Things to do before our next class
 
-- [ ] Skim [[What This Site Can Do]] before you plan your showcase page.
-- [ ] Journal: something metal near you that is being deliberately
-      protected, and the method being used on it.
+- [ ] Balancing questions finished, by a named method.

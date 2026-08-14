@@ -1,16 +1,13 @@
 ---
 title: Unit 5, Day 1
 draft: false
-created: __CREATED_CLASS_23__
+created: __CREATED_CLASS_71__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-5
 ---
-Two metals, two solutions, and a voltmeter. Which metal wins is a
-question you can settle today with a reading rather than an opinion.
-
 ## Agenda
 
 1. Investigation: [[Building a Galvanic Cell]] — build it, then measure it

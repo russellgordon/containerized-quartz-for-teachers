@@ -8,9 +8,6 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-You will build the molecule before anyone tells you what shape it is
-supposed to be. Sticks, holes, and a count of electron pairs.
-
 ## Agenda
 
 1. Investigation: [[Building and Testing Models]] — build first, name later

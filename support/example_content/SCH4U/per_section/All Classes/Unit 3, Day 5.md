@@ -1,27 +1,23 @@
 ---
 title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_15__
+created: __CREATED_CLASS_39__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-3
 ---
-A table of concentrations against time, and no rate written anywhere in
-it. The rate is something you have to extract.
-
 ## Agenda
 
-1. Graph the data and take a tangent at three different times
-2. Compare the orders that different groups pulled from the same table
-3. Decide together which digits you are actually entitled to keep
-4. [[Significant Figures and Units]] — the rules behind that decision
-5. Practise: [[Rate Law Practice]] — orders from initial rates
-6. Still stuck after all of that: [[Help Sessions]]
+1. Investigation: [[Testing Hess's Law]] — run the two, predict the third
+2. Add and reverse equations until they give the reaction you actually want
+3. Compare your prediction with the value another group measured directly
+4. Name it: [[Hess's Law]] — and why the route genuinely does not matter
+5. Practise: [[Hess's Law Practice]]
 
 ## Things to do before our next class
 
-- [ ] [[Rate Law Practice]], first set, units on every answer.
-- [ ] Journal: the tangent you were least confident about, and what you
-      would do differently to draw it.
+- [ ] [[Hess's Law Practice]], first set.
+- [ ] Journal: the step where reversing an equation nearly caught you
+      out, and the check that saved you.

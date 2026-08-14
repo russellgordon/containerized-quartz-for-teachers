@@ -1,16 +1,13 @@
 ---
 title: Unit 4, Day 2
 draft: false
-created: __CREATED_CLASS_18__
+created: __CREATED_CLASS_54__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-4
 ---
-Three flasks, three different starting mixtures, and one number that all
-three agree on. Your job today is to find the number.
-
 ## Agenda
 
 1. Given the settled concentrations, hunt for a combination that comes out

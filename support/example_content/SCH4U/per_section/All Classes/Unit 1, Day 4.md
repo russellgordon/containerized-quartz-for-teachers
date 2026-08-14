@@ -8,19 +8,17 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-Your boiling point data has been sitting there unexplained since the
-first class. Today you rank the forces that explain it.
-
 ## Agenda
 
-1. Re-open [[Boiling Points and Structure]] and rank your liquids
-2. Propose what has to be pulled apart before each one can boil
-3. Test the ranking on molecules nobody measured — does it predict?
-4. Name it: [[Intermolecular Forces]] — and why water refuses to behave
-5. [[Writing a Lab Report]] — this investigation gets written up in full
+1. Predict which streams will bend, from your models, before anything runs
+2. Run the streams and record what actually happened
+3. Sort the liquids by bond type and by shape — which sorting predicts?
+4. Name it: [[Polarity]] — symmetry doing most of the work
+5. Practise: [[Shapes and Polarity Practice]], starting with your misses
+6. Discuss: [[Mistakes Are Data]] — a wrong prediction is worth keeping
 
 ## Things to do before our next class
 
-- [ ] Draft the analysis section of your boiling point report.
-- [ ] Journal: the liquid your ranking placed wrongly, and the force you
-      had not accounted for.
+- [ ] [[Shapes and Polarity Practice]], first set.
+- [ ] Journal: a molecule with polar bonds and no overall polarity, and
+      the reason the two facts sit together comfortably.

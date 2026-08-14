@@ -1,16 +1,13 @@
 ---
 title: Unit 2, Day 2
 draft: false
-created: __CREATED_CLASS_7__
+created: __CREATED_CLASS_19__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-2
 ---
-Invent a name for a structure so that a group who cannot see it can
-rebuild it exactly. That is the whole problem naming exists to solve.
-
 ## Agenda
 
 1. Name four structures your own way; hand only the names to another group

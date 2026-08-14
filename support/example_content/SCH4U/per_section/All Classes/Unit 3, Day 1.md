@@ -1,16 +1,13 @@
 ---
 title: Unit 3, Day 1
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_35__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-3
 ---
-Mix two cold solutions and the thermometer climbs. Nothing was heated.
-That energy came from somewhere, and today you go looking for it.
-
 ## Agenda
 
 1. Investigation: [[Calorimetry of a Neutralisation]] — dilute acid into

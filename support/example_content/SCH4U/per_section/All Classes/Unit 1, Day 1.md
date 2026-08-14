@@ -8,9 +8,6 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-Two clear liquids on your bench. One boils before the kettle is warm and
-the other outlasts boiling water. Nobody has told you why yet.
-
 ## Agenda
 
 1. Bench rules before anything else: [[Lab Safety and WHMIS]] — organic

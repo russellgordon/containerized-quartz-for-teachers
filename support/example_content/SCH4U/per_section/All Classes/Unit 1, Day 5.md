@@ -8,20 +8,13 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-Ionisation energy climbs across a period and then drops, over and over.
-That pattern is a map of where the electrons actually sit.
-
 ## Agenda
 
-1. Plot the ionisation energies you are given and mark every drop
-2. Argue what must be true of the electrons for those drops to happen
-3. Name it: [[Atomic Structure and Orbitals]] — orbitals, not tidy shells
-4. [[The Blocks of the Periodic Table]] — the map you just drew by hand
-5. Task launch: [[The Property Prediction]] — read the criteria before you
-   choose a substance, and read [[How Marks Work]] alongside them
+1. Warm-up: polar or not, five molecules, cold
+2. Clinic: [[Shapes and Polarity Practice]] to the end
+3. The symmetry argument, made carefully: identical bonds arranged
+   symmetrically cancel; anything else does not
 
 ## Things to do before our next class
 
-- [ ] Choose and post your substance for [[The Property Prediction]].
-- [ ] Read [[What a Strong Entry Looks Like]], then reread your own
-      entries with it open beside them.
+- [ ] Finish the practice set.

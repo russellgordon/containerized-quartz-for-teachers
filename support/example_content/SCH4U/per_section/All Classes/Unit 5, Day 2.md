@@ -1,16 +1,13 @@
 ---
 title: Unit 5, Day 2
 draft: false
-created: __CREATED_CLASS_24__
+created: __CREATED_CLASS_72__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-5
 ---
-Your cell reactions need splitting in half before they will tell you
-anything at all about where the electrons went.
-
 ## Agenda
 
 1. Assign oxidation numbers right across your own cell reactions

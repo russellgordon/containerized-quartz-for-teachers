@@ -1,16 +1,13 @@
 ---
 title: Unit 3, Day 2
 draft: false
-created: __CREATED_CLASS_12__
+created: __CREATED_CLASS_36__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-3
 ---
-Your temperature change becomes a value per mole today, and the room's
-values become one number with an honest spread around it.
-
 ## Agenda
 
 1. Turn your peak into energy with $Q = mc\Delta T$, then divide by moles
