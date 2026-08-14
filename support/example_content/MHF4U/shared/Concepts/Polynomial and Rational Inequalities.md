@@ -56,8 +56,38 @@ polynomial cousins in [[Polynomial Graphing Practice]]. A wrong
 interval on a first attempt is data, not damage: it tells you exactly
 which boundary you mishandled.
 
+## When the algebra runs out
+
+Some equations and inequalities have no algebraic route at all. There is
+no formula for the roots of a general fifth-degree polynomial, and
+$2^x = x^{10}$ or $\log x = \sin x$ cannot be rearranged into anything
+you can solve by hand.
+
+That is not a failure; it is the ordinary situation outside a textbook.
+The method is graphical and numerical:
+
+1. **Rearrange to one side**, so you are looking for zeros:
+   $2^x - x^{10} = 0$.
+2. **Graph it** and count the crossings. This tells you how many
+   solutions exist and roughly where — information no amount of algebra
+   was going to give you.
+3. **Zoom, or use the solver**, to as many decimals as the situation
+   deserves. A concentration measured to two figures does not need six.
+4. **Check each solution** in the original equation, not the rearranged
+   one.
+5. **Say how you got it.** "By technology, to three decimal places" is a
+   complete and honest answer; presenting a numerical root as though it
+   were exact is not.
+
+For an inequality, the same graph does the work: the solution is the set
+of intervals where one curve is above the other, read off between the
+crossing points. The sign chart above is the algebraic version of
+exactly that reading.
+
 %%curriculum-start%%
 ## Curriculum connection
+
+![[D3.2]]
 
 ![[C4.1]]
 

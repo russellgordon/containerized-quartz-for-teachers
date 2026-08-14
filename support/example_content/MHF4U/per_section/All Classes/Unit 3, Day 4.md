@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_41__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Random groups — [[The Two Waves]] at the boards: add two sinusoids
-   point by point and explain the throb
-2. Discuss: the sum repeats — could one equation describe it? What
-   would $\sin(a + b)$ even expand to?
-3. Consolidate: [[Compound Angles]] — the formulas that make the
-   question answerable, and unlock exact values like
-   $\sin\frac{\pi}{12}$
-4. Boards again: exact-value relay — every answer left in radicals
+1. Number talk: [[Visual Patterns]]
+2. Random groups — the exact-value relay: every special angle in all
+   four quadrants, in radians, against the clock
+3. Clinic: [[Radian Measure Practice]] to the end
 
 ## Things to do before our next class
 
-- [ ] Journal: test the claim $\sin(a + b) = \sin a + \sin b$ with
-      numbers, then explain why its failure was predictable.
+- [ ] Finish the practice set.

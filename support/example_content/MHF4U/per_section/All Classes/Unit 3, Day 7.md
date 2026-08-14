@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 7
 draft: false
-created: __CREATED_CLASS_20__
+created: __CREATED_CLASS_44__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Performances: [[The Sound of Two Waves]] is due — play the beats,
-   show the model, defend the identity
-2. Debrief: where the stopwatch and the model disagreed, which one
-   was wrong — and how do you know?
-3. Consolidation boards: Unit 3 on one board per group, radians
-   everywhere
-4. Journal: read [[Showing Growth]], then find the entry where the
-   radian finally clicked — and say so in the margin
+1. Number talk: [[True or False]] — 'every trigonometric function has
+   an amplitude'
+2. Random groups — graph $y = \tan x$ from the ratio $\frac{\sin x}{\cos x}$
+   and find where it breaks
+3. Consolidate: back to [[Sinusoids in Radians]] — asymptotes where
+   cosine is zero, and a period of $\pi$
 
 ## Things to do before our next class
 
-- [ ] Journal in next class — Unit 3 volume complete.
+- [ ] Journal: why the tangent function has no amplitude.

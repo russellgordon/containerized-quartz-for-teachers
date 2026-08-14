@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 4
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_23__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,15 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Number Strings]] — solve $\frac{6}{x} = 3$, then
-   $\frac{6}{x + 1} = 3$, then $\frac{6}{x + 1} = x$
-2. Random groups: when exactly does $\frac{2t}{t^2 + 1} = 0.5$? Solve
-   it two ways and make the answers agree
-3. Consolidate: rational equations — clear the denominators, then
-   interrogate every answer you created
-4. Launch: [[Safe Concentration]] — a dose curve is a rational
-   function with lives attached
+1. Number talk: [[Would You Rather]] — a function with two vertical
+   asymptotes, or one with none and a hole?
+2. Random groups: sketch $f(x) = \frac{2x - 3}{x + 1}$ — intercepts,
+   asymptotes, and the behaviour in every region, no technology
+3. Consolidate: the linear-over-linear playbook, and why the
+   horizontal asymptote lands at $y = \frac{a}{c}$
+4. Practise: [[Rational Functions Practice]]
 
 ## Things to do before our next class
 
-- [ ] Read [[Safe Concentration]] with your partner and write down
-      the two thresholds your model must respect.
+- [ ] Journal: today's sketch, redrawn small — with every feature
+      traced back to the part of the equation that forced it.

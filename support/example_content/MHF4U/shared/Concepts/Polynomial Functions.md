@@ -49,8 +49,36 @@ before you say anything else, and that is a real answer.
 arguments into a reflex; [[Zeros and Multiplicity]] takes over where
 the graph meets the x-axis.
 
+## Transforming one, like any other function
+
+The four parameters behave here exactly as they did on parabolas,
+exponentials, and sinusoids:
+
+$$y = a f\bigl(k(x - d)\bigr) + c$$
+
+Take $f(x) = x^3$ and change one at a time in [[Using Desmos]],
+predicting first: $2x^3$ stretches it vertically, $(2x)^3$ compresses it
+horizontally, $(x-4)^3$ slides it right, and $x^3 - 5$ slides it down.
+
+Two things are worth noticing that do not happen with parabolas. For an
+odd-degree parent, a vertical stretch and a horizontal compression can
+produce the *same* curve — $(2x)^3 = 8x^3$ — so two different equations
+describe one graph, exactly as they did for exponentials. And a vertical
+translation changes the **number of real zeros**: $x^3 - 5$ still has
+one, but $x^3 - 3x$ shifted upward can go from three zeros to one. The
+transformation did not move the zeros; it changed how many there are,
+which is a genuinely different kind of effect.
+
+The same applies to rational parents. Starting from
+$f(x) = \tfrac{1}{x}$, the parameter $d$ moves the vertical asymptote to
+$x = d$ and $c$ moves the horizontal one to $y = c$ — the asymptotes are
+where the transformations are easiest to see, and [[Asymptotes]] is
+where that behaviour is set out in full.
+
 %%curriculum-start%%
 ## Curriculum connection
+
+![[C1.6]]
 
 ![[C1.1]]
 

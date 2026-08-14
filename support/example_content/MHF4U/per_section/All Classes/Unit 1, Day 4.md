@@ -10,18 +10,18 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Graph Talks]] — a quartic with no equation attached:
-   argue the sign of its leading coefficient
-2. Random groups: sketch $y = -2(x + 1)(x - 2)^2(x - 4)$ from the
-   factored form alone — no technology until the sketch is defended
-3. Consolidate: symmetry — [[Even and Odd Functions]], proved with
-   $f(-x)$, never eyeballed
-4. Verify in [[Using Desmos]] — the graph settles bets, and that page
-   shows how to make it earn its keep
-5. Writing it up — a sketch is an argument, so show the argument:
-   [[Showing Your Thinking]] and [[Writing About Math]]
+1. Number talk: [[Number Strings]] — a chain of divisions where every
+   remainder predicts the next
+2. Random groups: is $x - 2$ a factor of $x^3 - 3x^2 + 4$? Decide
+   without graphing — then work out what $f(2)$ has to do with it
+3. Consolidate: [[The Factor Theorem]] — the remainder was the message
+   all along
+4. Debrief: [[Mistakes Are Data]] — the divisions that failed taught
+   the most
+5. Practise: [[Factor Theorem Practice]]
 
 ## Things to do before our next class
 
-- [ ] Journal: prove $f(x) = x^3 - x$ is odd algebraically, then say
-      what the algebra guarantees that the picture cannot.
+- [ ] Journal: why must $f(a) = 0$ exactly when $x - a$ divides
+      $f(x)$? A conjecture is enough; the proof comes at the boards.
+- [ ] Skim [[Getting Unstuck]] — you will want it before the task.

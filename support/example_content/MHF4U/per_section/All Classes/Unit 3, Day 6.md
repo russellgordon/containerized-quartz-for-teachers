@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 6
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_43__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Which One Doesn't Belong]] — four angles that all
-   claim to solve $\sin x = \frac{1}{2}$
-2. Random groups: solve $2\sin^2 x + \sin x - 1 = 0$ on $[0, 2\pi]$ —
-   before any algebra, how many answers must there be?
-3. Consolidate: quadratic disguises, the circle's symmetry, and why
-   solutions arrive in families
-4. Task time: [[The Sound of Two Waves]] — trade identity proofs with
-   another pair and attack each other's weakest step
+1. Number talk: [[Which One Doesn't Belong]] — four waves
+2. Random groups — equations from graphs, reversing the sketching
+   order: axis, amplitude, period, phase
+3. Consolidate: two correct equations for one curve, and why both are
+   right
 
 ## Things to do before our next class
 
-- [ ] Journal: design a trig equation with exactly three solutions on
-      $[0, 2\pi]$ — and give the argument that it has no more.
+- [ ] Journal: your sine version and your cosine version of one graph.

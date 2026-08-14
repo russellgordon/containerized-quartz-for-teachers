@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 2
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_62__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Number Strings]] — a string of base-10 logarithms
-   that ends somewhere between $2$ and $3$
-2. Random groups: compute $\log_2 8 + \log_2 4$ and $\log_2 32$ —
-   coincidence? Find three more pairs like this, then say why
-3. Consolidate: [[Laws of Logarithms]] — the exponent laws, reflected
-4. Practise: [[Logarithm Practice]]
+1. Number talk: [[Number Strings]] — what exponent turns this into that?
+2. Compare and name it: [[Logarithms as Undoing]] — the two forms as one
+   statement, and evaluation without a calculator
+3. At the boards: twelve logarithms evaluated by asking 'what power?'
 
 ## Things to do before our next class
 
-- [ ] Journal: convince a skeptic that $\log(xy) = \log x + \log y$ —
-      using powers of $10$, not authority.
+- [ ] Twelve more, evaluated without technology.

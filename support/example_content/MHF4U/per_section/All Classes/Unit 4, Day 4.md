@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 4
 draft: false
-created: __CREATED_CLASS_24__
+created: __CREATED_CLASS_64__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Random groups — [[How Fast Is It Changing?]] at the boards:
-   secants closing in on a tangent
-2. Discuss: the interval shrank and shrank — what did the slopes
-   converge *to*, and is that number real?
-3. Consolidate: [[Rates of Change]] — average, instantaneous, and the
-   tangent's slope
-4. Practise: [[Rates of Change Practice]]
-5. Task time: what is the rate-of-change question your signature
-   phenomenon must answer?
+1. Number talk: [[True or False]] — log law claims, including the false
+   ones students invent
+2. Random groups — expand and condense expressions, and test each
+   invented law against a case where you know the answer
+3. Clinic: [[Logarithm Practice]] to the end
 
 ## Things to do before our next class
 
-- [ ] Journal: your speedometer reads $60$. Average or instantaneous?
-      Defend your answer.
+- [ ] Finish the practice set.

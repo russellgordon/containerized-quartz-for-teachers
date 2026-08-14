@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_25__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Defend: [[Safe Concentration]] is due — the window argued in hours
-   and milligrams
-2. Debrief: [[What Makes a Model Good]] — your dose curves put the
-   question sharply
-3. Consolidation boards: everything Unit 2 knows about
-   $\frac{p(x)}{q(x)}$, one board per group
-4. Journal: run the [[Journal Checklist]] before collection next
-   class
+1. Number talk: [[Number Strings]]
+2. Random groups — a rational function with a hole, graphed carefully,
+   and the difference between a hole and an asymptote defended
+3. Consolidate: what technology draws wrongly, and why you check by
+   hand
 
 ## Things to do before our next class
 
-- [ ] Journal in next class — Unit 2 volume complete, checklist run.
+- [ ] Journal: how you would tell a hole from an asymptote on a screen.

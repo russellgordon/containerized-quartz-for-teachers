@@ -6,7 +6,7 @@ excludeBacklinks: true
 draft: false
 ---
 # Most Recent Class
-![[Unit 4, Day 5]]
+![[Unit 4, Day 23]]
 
 %% Teacher: after each class, point the transclusion above at the newest
 class page — students land here, so the latest agenda greets them first.
