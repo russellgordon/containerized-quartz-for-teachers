@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_18__
+created: __CREATED_CLASS_44__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: group's choice, five minutes
-2. Convention: [[Flashback and Flash-Forward]] — reordering time to build
-   [[Tension|tension]]
-3. Convention: [[Writing in Role]] — then trade letters between characters
-4. Rehearsal: [[Scene Study from a Story]] — add one time shift, if it
-   earns its place
+1. Warm-up: [[Group Counting]], then whisper rounds
+2. Concept: [[Subtext]] — what a line hides
+3. Convention: [[Corridor of Voices]] — your character's hardest decision
+4. Rehearsal: [[Scene Study from a Story]] — first blocking, on your feet
 
 ## Things to do before our next class
 
-- [ ] Glue the letter you wrote in role into your [[Drama Journal]].
-- [ ] Lines should be half-learned by now — see [[Learning Lines]].
+- [ ] Start [[Learning Lines]] — little and often beats late and lots.
+- [ ] Journal: what did the corridor tell your character to do? Did they
+      listen?

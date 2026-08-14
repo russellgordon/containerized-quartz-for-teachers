@@ -88,6 +88,20 @@ without them produces a course that is longer and worse:
   teacher nothing about the fortnight in between, which is the part they
   actually have to run. Milestones inside the task are what make the
   build days different from each other.
+  - **Give a significant task several WORKING PERIODS**, and say so on
+    the class page. Students need time in the room, with the teacher
+    present, to build the thing — that is when conferencing happens,
+    when the stuck get unstuck, and when a teacher sees the process
+    rather than only the product. How many depends on the task: a small
+    individual piece might take two, a rehearsed performance or a
+    culminating build takes many. Use judgement, and err towards more —
+    a schedule that assumes every task is finished at home is a
+    schedule written for the students who already have the most support
+    at home.
+  - Vary what the working periods are FOR, so they are not
+    interchangeable: planning, a first rough version, a checkpoint with
+    the teacher, testing or rehearsal, revision after feedback,
+    documentation. Name each one on its class page.
 - **Ideas come back, in a different form, on a later day.** Nobody
   learns an idea on the day it is named. Each substantial idea should be
   met as a problem, named, practised, and then RETURN — inside a later

@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 4
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_22__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: breath, hum, tongue-twisters
-2. Concept: [[Voice]] — volume, tone, and pace reveal character
-3. Scenes: gibberish pairs — meaning without words
-4. Launch our Unit 2 task: [[Improvisation Showcase]]
-5. Troupes form; build your first playlist of games
+1. Warm-up: [[Soundscape]] — a rainstorm, together
+2. Concept: [[Status]] — who is up, who is down, and how we can tell
+3. Play: [[Status Walks]] — wear a number from one to ten
+4. Paired scenes: the same two lines, status swapped
+5. Debrief: why status flips are funny — and sometimes not
 
 ## Things to do before our next class
 
-- [ ] Read [[Improvisation Showcase]] — note the success criteria.
-- [ ] Journal: which game does your troupe already play best, and why?
+- [ ] Journal: spot one status exchange outside class. Who was up? How
+      could you tell?

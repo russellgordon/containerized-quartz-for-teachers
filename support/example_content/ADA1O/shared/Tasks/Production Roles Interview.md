@@ -65,5 +65,9 @@ research shows the moment a question goes off script.
 
 ![[B3.3]]
 
+![[C3.2]]
+
+![[C3.3]]
+
 ![[C1.3]]
 %%curriculum-end%%

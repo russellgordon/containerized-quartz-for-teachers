@@ -1,26 +1,19 @@
 ---
 title: Unit 4, Day 6
-draft: true
-created: __CREATED_CLASS_26__
+draft: false
+created: __CREATED_CLASS_68__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-4
 ---
-%% This page is an example of a DRAFT: `draft: true` in the frontmatter
-means it is never published to the site. Plan tomorrow today, publish it
-when class ends — just flip draft to false. Delete this comment when you
-reuse the page; comments never appear on the site either. %%
-
 ## Agenda
 
-1. Celebrate: highlights of the semester, chosen by you
-2. Launch: [[Final Reflection]] — begin it in class
-3. Journal collection: [[Journal Checklist]] and [[Showing Growth]] are
-   your last look before handing it in
-4. Circle up one final time
+1. Warm-up: articulation and projection
+2. [[Culminating Performance]], day 6 — working period: off book, or off outline
+3. Line-run in the corner while the designers work on the space
 
 ## Things to do before our next class
 
-- [ ] Finish [[Final Reflection]] and hand in your [[Drama Journal]].
+- [ ] Lines learned to the point of boredom. That is when they are safe.

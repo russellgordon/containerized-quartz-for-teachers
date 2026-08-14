@@ -10,13 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Circle up
-2. Warm-up: [[Group Counting]] to twenty, eyes closed
-3. Convention: [[Thought Tracking]] on yesterday's tableaux
-4. Rehearsal: [[Tableau Story Sequence]] — choose your story, block your
-   five images
-5. Share: one image per group, cold
+1. Warm-up: [[Machine]] — build one, then change its tension
+2. In fours: three photographs, and the story each one implies
+3. Back to [[The Elements of Drama]] — name the element doing the work
+   in each image
+4. On your feet: recreate one photograph exactly, then change ONE thing
+   and watch the story move
 
 ## Things to do before our next class
 
-- [ ] Journal: which of your five images is weakest, and what would fix it?
+- [ ] Journal: the element you find hardest to see, and why.

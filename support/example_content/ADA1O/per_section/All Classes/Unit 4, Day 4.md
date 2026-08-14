@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 4
 draft: false
-created: __CREATED_CLASS_24__
+created: __CREATED_CLASS_66__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Mini-lesson: [[Simple Costumes and Props]] — suggestion beats spectacle
-2. Rehearsal: [[Culminating Performance]] — technical run, cues and
-   entrances, working as [[How to Rehearse]] describes
-3. Notes: [[Giving and Receiving Notes]] between paired groups
+1. Present: [[Production Roles Interview]] — meet the jobs behind every show
+2. Groups assign one production role per member for the
+   [[Culminating Performance]]
+3. Rehearsal: run the piece — the stage manager keeps time from today on
 
 ## Things to do before our next class
 
-- [ ] Costumes and props ready to go — we run in dress from here on.
-- [ ] We perform next class for an invited audience — reread the success
-      criteria in [[Culminating Performance]].
+- [ ] Journal: which production role did you take, and what does doing it
+      well look like?
+- [ ] Bring costume ideas — see [[Simple Costumes and Props]].

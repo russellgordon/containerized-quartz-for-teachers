@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_21__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Soundscape]] — a rainstorm, together
-2. Concept: [[Status]] — who is up, who is down, and how we can tell
-3. Play: [[Status Walks]] — wear a number from one to ten
-4. Paired scenes: the same two lines, status swapped
-5. Debrief: why status flips are funny — and sometimes not
+1. Warm-up: [[Zip Zap Zop]], eliminations off
+2. Blocking on purpose: one scene where every offer is refused. Notice
+   how quickly it dies
+3. Then the same scene accepting everything — and the third version,
+   accepting and ADDING
+4. Debrief: 'yes, and' is not politeness. It is the only way two people
+   can build one thing
 
 ## Things to do before our next class
 
-- [ ] Journal: spot one status exchange outside class. Who was up? How
-      could you tell?
+- [ ] Journal: a real conversation this week where somebody blocked.

@@ -49,6 +49,8 @@ it, quote your own words, then show the now.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[B2.2]]
+
 ![[B3.1]]
 
 ![[B3.2]]

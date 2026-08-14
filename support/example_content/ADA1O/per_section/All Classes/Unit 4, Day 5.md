@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 5
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_67__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Company warm-up; final checks by each stage manager
-2. House opens — our invited audience arrives
-3. Perform: [[Culminating Performance]]
-4. Strike the space together
+1. Warm-up: company's choice, led by your stage manager
+2. [[Culminating Performance]], day 5 — working period: blocking on your feet,
+   written down as you go
+3. The stage manager's book starts today and never stops
 
 ## Things to do before our next class
 
-- [ ] Journal: tonight, while it is fresh — one moment you are proud of,
-      and one you would restage.
+- [ ] Blocking recorded. [[Learning Lines]] if you have text.

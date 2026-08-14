@@ -42,6 +42,8 @@ judging them is the whole trick of that page too.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[C3.3]]
+
 ![[B1.3]]
 
 ![[C3.3]]

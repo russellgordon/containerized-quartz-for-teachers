@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 3
 draft: false
-created: __CREATED_CLASS_23__
+created: __CREATED_CLASS_65__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Present: [[Production Roles Interview]] — meet the jobs behind every show
-2. Groups assign one production role per member for the
-   [[Culminating Performance]]
-3. Rehearsal: run the piece — the stage manager keeps time from today on
+1. Warm-up: company circle — this is a company now, not a class
+2. [[Culminating Performance]], day 3 — working period: your piece chosen and
+   its shape agreed. Revive, adapt, or devise — decided today
+3. Conference with me: each company, five minutes, on what the piece is
+   about in one sentence
 
 ## Things to do before our next class
 
-- [ ] Journal: which production role did you take, and what does doing it
-      well look like?
-- [ ] Bring costume ideas — see [[Simple Costumes and Props]].
+- [ ] One sentence: what your piece is about. Everybody agrees on it.

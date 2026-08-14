@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 3
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_43__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Group Counting]], then whisper rounds
-2. Concept: [[Subtext]] — what a line hides
-3. Convention: [[Corridor of Voices]] — your character's hardest decision
-4. Rehearsal: [[Scene Study from a Story]] — first blocking, on your feet
+1. Warm-up: [[Mirrors]] in character
+2. [[Scene Study from a Story]], day 3 — working period: the scene cut to
+   length, and every line assigned
+3. Conference with me: whose story is this, and what does your
+   character want in it?
 
 ## Things to do before our next class
 
-- [ ] Start [[Learning Lines]] — little and often beats late and lots.
-- [ ] Journal: what did the corridor tell your character to do? Did they
-      listen?
+- [ ] Lines assigned. [[Learning Lines]] has the method that works.

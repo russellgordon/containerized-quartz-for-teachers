@@ -4,6 +4,7 @@ draft: false
 created: __CREATED__
 tags:
   - tasks
+  - final-evaluation
 enableToc: true
 ---
 > [!abstract] At a glance
@@ -72,4 +73,8 @@ Rehearsal time is class time, and how you use it counts — [[How Marks Work]].
 ![[C1.3]]
 
 ![[B3.1]]
+
+![[B3.3]]
+
+![[C3.1]]
 %%curriculum-end%%

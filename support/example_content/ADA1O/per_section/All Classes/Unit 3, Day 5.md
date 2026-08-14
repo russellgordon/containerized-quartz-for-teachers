@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_45__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: unison, echo, repetition — [[Choral Speaking]] on one proverb
-2. Rehearsal: [[Scene Study from a Story]] — full runs, off book
-3. Paired groups swap audiences and trade one note each
-4. Sign up for [[Help Sessions]] if lines or nerves need company
+1. Warm-up: the same line, eight ways
+2. Convention: [[Hot Seating]] your own character — the questions you
+   cannot answer are where the work is
+3. [[Scene Study from a Story]], day 5 — working period: find the line that
+   hides the most, and play what is underneath it
 
 ## Things to do before our next class
 
-- [ ] We perform next class — reread the success criteria in
-      [[Scene Study from a Story]].
-- [ ] Journal: which one note will you act on tomorrow?
+- [ ] Journal: what your character wants and cannot say.

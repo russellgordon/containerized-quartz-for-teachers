@@ -10,13 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Quiet warm-up as one ensemble; find your opening freeze
-2. Reminder: how we watch — [[Watching Like an Artist]]
-3. Perform: [[Tableau Story Sequence]]
-4. Circle up: two stars and a wish for every group
+1. Warm-up: breath and unison — everyone in, everyone out
+2. Convention: [[Choral Speaking]] — unison, echo, split, solo
+3. Apply it: one short text, four groups, four completely different
+   readings
+4. Debrief: what changed the meaning — the words never moved
 
 ## Things to do before our next class
 
-- [ ] Journal: what surprised you about performing — in your body, not in
-      your plan?
-- [ ] Check [[Journal Checklist]] — Unit 1 entries should all be in.
+- [ ] Bring a short text you would like the class to speak together.
