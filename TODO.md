@@ -4,16 +4,6 @@ Ideas and deferred work, in no particular order. Add items freely; remove
 an item when it ships (finished behaviour is recorded in
 [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md), not here).
 
-- **A missing font stops the Windows app building** — noted 2026-08-14.
-  `support/fonts/Poppins-SemiBold.ttf` is tracked in git and referenced as a
-  `Content` item by `Plantoir.csproj`, and the brand-image work deleted it
-  from the working tree. The build then fails with `MSB3030: Could not copy
-  … because it was not found` — nothing to do with the code being compiled,
-  which makes it a confusing five minutes for whoever hits it next. Either
-  the font stays, or the csproj stops referencing it. Restoring it with
-  `git checkout -- support/fonts/Poppins-SemiBold.ttf` unblocks a build in
-  the meantime, but that fights whoever removed it deliberately.
-
 - **`brand_images.py` is mid-change, and `cut-release` already depends on
   it** — noted 2026-08-14. The release skill instructs
   `python scripts/brand_images.py --install-card` in the same commit as the
@@ -31,16 +21,6 @@ an item when it ships (finished behaviour is recorded in
   serves the new version. The download links on that page are load-bearing
   for every teacher, so a cheap post-push fetch of `https://plantoir.app`
   confirming the `version-note` line matches the tag would be worth having.
-
-- **The assistant's speed is calculated, not timed** — noted 2026-08-14.
-  Two claims in [`AI-ASSIST-HANDOFF.md`](AI-ASSIST-HANDOFF.md) §7 rest on
-  arithmetic and a synthetic prefix rather than a stopwatch on the real
-  thing: that a warm turn beats ten seconds on the full 2,783-token surface
-  (measured 1.8s on a smaller one), and that restoring the saved prompt
-  cache actually skips the three-minute warm-up (`--slot-save-path` is wired
-  up and the save call works; a restore has never been observed shortening a
-  session). Both are quick to settle with one session and one reopen, and
-  the second is the biggest single win available if it works.
 
 - **Container recreation can kill live previews** — noted 2026-08-11.
   Every launcher "ensures" the working folder's container, and on a

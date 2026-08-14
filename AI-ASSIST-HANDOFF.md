@@ -298,16 +298,16 @@ accuracy.
 
 **Unproven, in the order I would test them:**
 
-1. **Does a disk-cache restore actually skip the warm-up?**
-   `--slot-save-path` is wired up and the save call works, but a restore has
-   never been observed shortening a session. If it works, the three minutes is
-   paid once ever rather than once per session. This is the biggest single win
-   available.
-2. **Is a real warm turn under ten seconds on the FULL 2,783-token prefix?**
-   1.8s was measured on a smaller synthetic prefix. The real one is untimed.
-3. **Did the phrasing work fix the 69%?** Re-run
-   `research/ai-assist/shipped-surface-suite.py` against the trimmed
-   11-or-15-tool surface. Nobody has.
+> Items 1–3 were run later the same day — see §10. The short version: the
+> restore works and is worth 163 seconds a session, a real warm turn is
+> ~12 seconds not ten, and the phrasing work took routing from 69% to 91% —
+> 94% once two argument-level fixes landed.
+
+1. ~~**Does a disk-cache restore actually skip the warm-up?**~~ **Yes — §10.1.**
+2. ~~**Is a real warm turn under ten seconds on the FULL prefix?**~~ **No —
+   about twelve seconds, and generation speed is the floor. §10.2.**
+3. ~~**Did the phrasing work fix the 69%?**~~ **Yes — 91%, with the failures
+   moved from routing to arguments. §10.3.**
 4. **Class insertion against a real course.** Renaming classes rewrites links
    across a 132-page course; the tests use four synthetic classes.
 
@@ -343,3 +343,89 @@ expected value:
   not think to check.
 * **Tests pin meaning, not sentences** — but when they pin a sentence, the
   sentence is user-facing and the pin is the point.
+
+---
+
+## 10. The open experiments, run — 2026-08-14, later the same day
+
+Everything below was measured against the real narrowed surface (15 tools,
+3,411 prompt tokens — the descriptions have grown past the 2,783 quoted
+above), in the same capped container, driven from outside the app. One
+practical note for whoever does this again: hold a WSL session open for the
+whole run, or the container dies the way §6.2 describes — it did, on the
+first attempt, twenty-five seconds in.
+
+### 10.1 The restore works, and it is the biggest win available
+
+Cold read of the surface: **175–179 s**. Save the slot: 3,428 tokens,
+98 MB, 140 ms. Kill the container, start a fresh one, restore: **30 ms**,
+and the same request then runs in **11.7 s** — prompt evaluation touched
+only the 35 tokens that were new. A control session with no restore paid
+the full 175 s again. The three minutes really is once ever.
+
+Why it had never been observed working: the save was fired blind
+(`>/dev/null 2>&1`) from a `finally` that ran even when the warm-up had
+died with the container, so it failed silently — and a save against an
+*empty* slot succeeds with `n_saved: 0`, writing a valid 36-byte file that
+makes the NEXT session say "picking up where I left off" and then read
+everything anyway. Fixed on this branch: save and restore now parse the
+server's reply and report truthfully, an empty save deletes its own file,
+"Ready" is only said when the warm-up finished, and the cache file is named
+per course *and section* — the prefix contains both (the system prompt's
+first sentence names them), so one shared file could only ever be warm for
+the last section that saved it. The name also carries a fingerprint of the
+tool schemas, because the prefix is mostly tool definitions: an app update
+that rewords one description would otherwise restore a prefix no
+conversation matches — n_restored healthy, three minutes paid anyway,
+behind "picking up where I left off". With the stamp, the old file simply
+isn't found, the cold read is announced as one, and the save that follows
+replaces the superseded file.
+
+### 10.2 A real warm turn is about twelve seconds
+
+Not under ten. Prompt evaluation is 3 s of it; the rest is generating
+~50 tokens of tool call at roughly 5.5 tokens/second. Generation speed,
+not prompt reading, is now the floor, and no amount of caching moves it.
+
+### 10.3 Routing re-measured: 69% → 91% → 94%
+
+The full suite (18 probes × 3 trials,
+`research/ai-assist/trimmed-surface-suite.py`, descended from
+`shipped-surface-suite.py`; raw rows in `trimmed-surface-results.txt` and
+`cache-restore-results.txt` beside it):
+
+| Surface | Accuracy | Inversions | Malformed | Wrong types |
+|---|---|---|---|---|
+| Old shipped surface (§6.1) | 31/45 (69%) | 0 | 0 | 0 |
+| Trimmed 15 tools, as shipped | **49/54 (91%)** | 0 | 0 | 0 |
+| + date appended + real-course examples | **51/54 (94%)** | 0 | 0 | 0 |
+
+Every phrasing that fell through to `list_pages` in §6.1 — "put up…",
+"take back down…" — now routes correctly. The failures that remain are
+*argument* failures, and both had the same shape: **the model copies the
+schema's examples when the request leaves a gap.**
+
+* **Dates.** Nothing told the model today's date, so "publish tomorrow's
+  class" produced `date: "2023-09-15"` — an echo of the schema's example
+  date — on every trial that needed one. Appending "(Today is
+  2026-08-14, a Friday.)" to the user message fixed all seven. **Prepending
+  the same line dropped routing to 76%** — "deploy at 6:30 tomorrow" started
+  going to a publish tool, and the deletion probe stopped declining — and
+  putting it in the system prompt would invalidate the saved cache at
+  midnight, because the tools render after it. Appended, and only appended.
+* **Course codes.** With no course named — the window's normal case, since
+  the teacher opened it on a section — the model wrote the schema's
+  "for example ICS3U" **nine trials out of nine**, ignoring the system
+  prompt's EXC2O, and once blended the two into ICS2O with the course named
+  in the sentence. Rewriting the examples to name the window's actual course
+  cured it: fifty-four trials after the change, not one wrong course. A
+  router matches text; the only example it cannot copy wrongly is the right
+  answer.
+
+Both fixes are in `AssistAgent` (`Say` appends the date;
+`NarrowToLocal(tools, courseCode)` rewrites the examples). The one miss
+left standing: the formal phrasing "publish tomorrow's class *and make sure
+every page it links to is published*" prefers `publish_pages` over
+`publish_class_on`, 3/3 — a write, but one the approval gate holds and the
+server validates, and the informal and typo'd versions of the same request
+route correctly.
