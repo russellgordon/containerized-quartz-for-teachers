@@ -1,0 +1,19 @@
+---
+title: Unit 3, Day 2
+draft: false
+created: __CREATED_CLASS_42__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-3
+---
+## Agenda
+
+1. A badly stated problem, restated four ways
+2. Strategies worth having: [[Solving Management Problems]]
+3. Five whys, run on a real school problem
+
+## Things to do before our next class
+
+- [ ] Bring a problem from a job, team, or club worth solving.

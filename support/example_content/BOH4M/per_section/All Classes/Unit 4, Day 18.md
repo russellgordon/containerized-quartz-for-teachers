@@ -1,0 +1,19 @@
+---
+title: Unit 4, Day 18
+draft: false
+created: __CREATED_CLASS_80__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. Day 5 of 8: checkpoint conferences with me, twelve minutes per team
+2. Teams not in conference: testing each other's findings
+3. The hardest question another team can ask you
+
+## Things to do before our next class
+
+- [ ] Redraft the findings that did not survive.
