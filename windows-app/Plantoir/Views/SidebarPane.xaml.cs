@@ -666,7 +666,7 @@ public sealed partial class SidebarPane : UserControl
             return;
         }
 
-        new AssistWindow(folder, course, number).Activate();
+        new AssistWindow(folder, course, number, _window).Activate();
     }
 
     private MenuFlyout ArchivedMenu(ArchivedItem item)

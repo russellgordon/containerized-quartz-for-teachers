@@ -36,18 +36,20 @@ public sealed partial class AssistWindow : Window
     private readonly string _folder;
     private readonly Course _course;
     private readonly int _section;
+    private readonly MainWindow? _main;
 
     private readonly LocalModel _model = new();
     private McpClient? _tools;
     private AssistAgent? _agent;
     private readonly CancellationTokenSource _closing = new();
 
-    public AssistWindow(string workspacePath, Course course, int section)
+    public AssistWindow(string workspacePath, Course course, int section, MainWindow? main = null)
     {
         InitializeComponent();
         _folder = workspacePath;
         _course = course;
         _section = section;
+        _main = main;
 
         // The prompt cache is per course and section, because the prefix it
         // holds is — see LocalModel.CacheIdentity.
@@ -163,7 +165,15 @@ public sealed partial class AssistWindow : Window
         // restoring a prefix no conversation will match — see StampCacheWith.
         _model.StampCacheWith(schemas);
 
-        _agent = new AssistAgent(_model, _tools, schemas, _course.Code, _section);
+        _agent = new AssistAgent(_model, _tools, schemas, _course.Code, _section)
+        {
+            // A tool that narrates gets its words on the thinking indicator,
+            // where "Thinking" alone would be a lie minutes long.
+            OnToolProgress = NoteToolProgress,
+            // And a tool that builds gets its result put on screen — the
+            // first live test built a preview nobody could see.
+            OnPreviewTouched = () => _main?.ShowPreviewFor(_course.Code, _section),
+        };
 
         // NOT "Ready." — it is not. Reading the instructions takes minutes on
         // a cold cache, and a teacher told "Ready" who then waits three of them
@@ -550,8 +560,28 @@ public sealed partial class AssistWindow : Window
     // ---- "It is still thinking" -------------------------------------------
 
     private Border? _thinking;
+    private TextBlock? _thinkingLabel;
     private DispatcherTimer? _tick;
     private DateTime _thinkingSince;
+
+    /// <summary>
+    /// Put a running tool's own words on the thinking indicator.
+    ///
+    /// "Thinking" is the right label while the model is choosing; it is the
+    /// wrong one for the minutes a rebuild can spend recreating its container
+    /// and reinstalling the toolchain. The toolchain narrates those minutes
+    /// in plain words, the server relays them, and this shows them — so the
+    /// teacher reads "Building the section…" with a climbing count instead of
+    /// deciding the window is stuck. Called from whatever thread the tool's
+    /// reply arrives on, hence the dispatch.
+    /// </summary>
+    private void NoteToolProgress(string message)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (_thinkingLabel is not null) _thinkingLabel.Text = message;
+        });
+    }
 
     /// <summary>
     /// Show that the assistant is working, and for how long.
@@ -572,7 +602,8 @@ public sealed partial class AssistWindow : Window
         HideThinking();
         _thinkingSince = DateTime.Now;
 
-        var label = new TextBlock { Text = "Thinking", Opacity = 0.8 };
+        var label = new TextBlock { Text = "Thinking", Opacity = 0.8, TextWrapping = TextWrapping.Wrap };
+        _thinkingLabel = label;
         var dots = new TextBlock { Text = "", Opacity = 0.8, MinWidth = 24 };
         var elapsed = new TextBlock { Text = "", Opacity = 0.55 };
 
@@ -616,6 +647,7 @@ public sealed partial class AssistWindow : Window
         _tick = null;
         if (_thinking is not null) Transcript.Children.Remove(_thinking);
         _thinking = null;
+        _thinkingLabel = null;
     }
 
     /// <summary>A turn that carries a progress bar as well as words.</summary>

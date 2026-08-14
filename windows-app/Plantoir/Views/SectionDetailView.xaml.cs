@@ -133,6 +133,18 @@ public sealed partial class SectionDetailView : UserControl
     /// <summary>Smoke-test entry: the same path the Preview button takes.</summary>
     public void StartPreviewForAutomation() => PreviewOrStop_Click(this, new RoutedEventArgs());
 
+    /// <summary>
+    /// Start this section's preview unless one is already serving — the
+    /// assistant's "come and look" path. Guarded, because the click handler
+    /// is a toggle: calling it blind against a running preview would STOP the
+    /// very thing the teacher was being shown.
+    /// </summary>
+    public void StartPreviewIfIdle()
+    {
+        if (_previewRunner.IsRunning) return;
+        PreviewOrStop_Click(this, new RoutedEventArgs());
+    }
+
     /// <summary>Smoke-test entry: open the console details pane.</summary>
     public void ShowDetailsForAutomation() => Progress.ExpandDetailsForAutomation();
 

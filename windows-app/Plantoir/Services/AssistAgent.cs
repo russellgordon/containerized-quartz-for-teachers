@@ -274,6 +274,30 @@ public sealed class AssistAgent
     /// <summary>A line for the transcript.</summary>
     public sealed record Line(string Speaker, string Text, bool NeedsApproval = false, string? Pending = null);
 
+    /// <summary>
+    /// Where a running tool's own narration goes — the toolchain's milestone
+    /// lines, relayed by the server as progress. A rebuild can spend minutes
+    /// recreating its container and reinstalling the toolchain before it
+    /// builds anything; without these lines that time is indistinguishable
+    /// from a hang. May be called from any thread.
+    /// </summary>
+    public Action<string>? OnToolProgress { get; set; }
+
+    /// <summary>
+    /// Tools that leave a fresh preview build behind. A build nobody sees
+    /// might as well not have happened — the first live test rebuilt a
+    /// section, reported success, and left the teacher looking at a chat
+    /// window with the result sitting invisible on disk. After one of these
+    /// runs, the window is told so it can put the preview on screen.
+    /// </summary>
+    private static readonly HashSet<string> TouchesPreview = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "rebuild_preview", "publish_pages", "unpublish_pages", "publish_class_on", "undo_last_change",
+    };
+
+    /// <summary>Called after a tool in <see cref="TouchesPreview"/> finishes. Any thread.</summary>
+    public Action? OnPreviewTouched { get; set; }
+
     private JsonObject? _awaiting;      // a write the teacher has not agreed to yet
 
     public bool IsAwaitingApproval => _awaiting is not null;
@@ -390,13 +414,14 @@ public sealed class AssistAgent
             catch { /* a malformed call is answered, not crashed on */ }
         }
 
-        string result = await _tools.CallTool(name, arguments, cancellation);
+        string result = await _tools.CallTool(name, arguments, OnToolProgress, cancellation);
         _messages.Add(new JsonObject
         {
             ["role"] = "tool",
             ["tool_call_id"] = call["id"]?.DeepClone(),
             ["content"] = result,
         });
+        if (TouchesPreview.Contains(name)) OnPreviewTouched?.Invoke();
         return result;
     }
 }

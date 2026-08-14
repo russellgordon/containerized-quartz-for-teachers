@@ -167,6 +167,28 @@ public sealed partial class MainWindow : Window
     }
 
     /// <summary>
+    /// Bring a section's preview onto the screen, for the assistant.
+    ///
+    /// The assistant's tools build the section's site, and a build nobody can
+    /// see might as well not have happened — a teacher approved a rebuild,
+    /// watched it finish, and had nothing to look at. So after a tool that
+    /// leaves a fresh build behind, the assistant's window asks this one to
+    /// select the section and start its preview. If a preview is already
+    /// serving, starting is skipped — live reload is showing the change — but
+    /// the window still comes forward so the teacher actually sees it.
+    /// May be called from any thread.
+    /// </summary>
+    public void ShowPreviewFor(string courseCode, int section)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            Workspace.Selection = new SidebarSelection.SectionItem(courseCode, section);
+            if (DetailHost.Content is SectionDetailView detail) detail.StartPreviewIfIdle();
+            Activate();
+        });
+    }
+
+    /// <summary>
     /// Restore the remembered selection — but only when its target still
     /// exists, so a course removed between sessions never greets the teacher
     /// with "Course Not Found". Unrecognized stored forms restore none.

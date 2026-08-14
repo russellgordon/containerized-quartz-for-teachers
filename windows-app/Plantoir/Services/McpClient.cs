@@ -122,13 +122,15 @@ public sealed class McpClient : IAsyncDisposable
     /// the model reads the reason and can correct itself — the same behaviour
     /// Claude Code gets.
     /// </summary>
-    public async Task<string> CallTool(string name, JsonObject arguments, CancellationToken cancellation = default)
+    public async Task<string> CallTool(string name, JsonObject arguments,
+                                       Action<string>? progress = null,
+                                       CancellationToken cancellation = default)
     {
         JsonNode? result;
         try
         {
             result = await Call("tools/call",
-                new JsonObject { ["name"] = name, ["arguments"] = arguments }, cancellation);
+                new JsonObject { ["name"] = name, ["arguments"] = arguments }, cancellation, progress);
         }
         catch (Exception error) { return $"That tool couldn’t be run: {error.Message}"; }
 
@@ -141,9 +143,20 @@ public sealed class McpClient : IAsyncDisposable
 
     // ---- JSON-RPC --------------------------------------------------------
 
-    private async Task<JsonNode?> Call(string method, JsonObject parameters, CancellationToken cancellation)
+    private async Task<JsonNode?> Call(string method, JsonObject parameters, CancellationToken cancellation,
+                                       Action<string>? onProgress = null)
     {
         int id = _nextId++;
+
+        // The server only narrates when asked. Sending a progress token is the
+        // asking; without one the SDK hands each tool a no-op IProgress and
+        // every milestone line the toolchain writes is thrown away — which is
+        // how a rebuild that recreates its container and re-installs the
+        // toolchain came to look exactly like a hang, for minutes, in front of
+        // a teacher who had just been told the assistant was working.
+        if (onProgress is not null)
+            parameters["_meta"] = new JsonObject { ["progressToken"] = id };
+
         var request = new JsonObject
         {
             ["jsonrpc"] = "2.0",
@@ -154,8 +167,8 @@ public sealed class McpClient : IAsyncDisposable
         await _to.WriteLineAsync(request.ToJsonString());
         await _to.FlushAsync();
 
-        // Notifications (progress, logging) arrive on the same stream and are
-        // skipped until the answer to THIS request turns up.
+        // Notifications arrive on the same stream. Progress for THIS request
+        // is passed along; everything else is skipped until the answer turns up.
         while (true)
         {
             string? line = await _from.ReadLineAsync(cancellation);
@@ -164,6 +177,17 @@ public sealed class McpClient : IAsyncDisposable
 
             JsonNode? message;
             try { message = JsonNode.Parse(line); } catch { continue; }
+
+            if (onProgress is not null &&
+                message?["method"]?.GetValue<string>() == "notifications/progress" &&
+                message["params"]?["progressToken"] is JsonValue token &&
+                token.TryGetValue(out int tokenId) && tokenId == id &&
+                message["params"]?["message"]?.GetValue<string>() is { Length: > 0 } note)
+            {
+                onProgress(note);
+                continue;
+            }
+
             if (message?["id"]?.GetValue<int>() != id) continue;
 
             if (message["error"] is { } failure)
