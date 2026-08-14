@@ -5,17 +5,35 @@ into one question: can a **small offline model, embedded in Plantoir's own
 Docker image**, reliably drive Plantoir on behalf of a teacher who has no AI
 account, no API key, and no internet requirement?*
 
-> **Status.** Step 1 of §6 — the MCP server, with no model in it — **is
-> built**, on this branch, in `windows-app/Plantoir.Mcp/` (see its
-> [README](windows-app/Plantoir.Mcp/README.md)). Steps 2–4 are not. None of
-> this is on `main` or in the 1.0 release; the branch exists so it can be
-> folded into a later release, or dropped, without disturbing that.
+> **Status.** All four steps of §6 are now **built** on this branch: the MCP
+> server (`windows-app/Plantoir.Mcp/`, see its
+> [README](windows-app/Plantoir.Mcp/README.md)), the local model runner
+> (`Plantoir/Services/LocalModel.cs`), the conversation loop
+> (`Services/AssistAgent.cs`), and a window to hold it
+> (`Views/AssistWindow.xaml`), reached from **Revise with AI…** on a
+> section's context menu. None of this is on `main` or in the 1.0 release;
+> the branch exists so it can be folded into a later release, or dropped,
+> without disturbing that.
+>
+> **Not yet exercised end to end:** the model download is ~940 MB and happens
+> only on a teacher's explicit yes, so the install-and-first-answer path has
+> not been run. Everything up to it has: the server answers real JSON-RPC,
+> and the app's client is verified against the running server.
 >
 > Building it confirmed the §3 finding in a way worth recording: the tool
 > surface that fell out of "the model must not plan" is also *simpler* than
 > the fine-grained one it replaced, and the code that resolves links and
 > picks the right frontmatter key is ordinary, testable, boring code. The
 > reliability was not bought with complexity.
+>
+> **Two things below are now out of date, and deliberately left as written**
+> — they are the record of what was measured, not a description of what
+> exists. Tool names have moved on (`set_draft` became `publish_pages` /
+> `unpublish_pages`; `publish_section` became `deploy_section`), and the
+> frontmatter flag those trials exercised was `draft:`, which is now
+> `publish:` with the opposite polarity. The finding the trials produced —
+> that the model inverts polarity often enough to matter — is exactly why
+> every write has a `plan_` twin and a teacher's yes in front of it.
 
 **Short answer: yes — but only if the model is never allowed to think.** Every
 measurement below points the same way: a ~1.5B model is a reliable *router*
