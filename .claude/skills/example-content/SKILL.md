@@ -163,6 +163,12 @@ from Phase 5 apply here too.
   authority. The linter fails any class page containing
   `%%curriculum-start%%`. When a unit's task launches, link the task from
   the class page and let the TASK page carry the codes.
+- **Checklists on the site are READ-ONLY.** `- [ ]` renders a box that
+  cannot be ticked: nothing is saved, and clicking does nothing. Never
+  write "click to check off", "tick these as you go", or any wording that
+  implies otherwise — a page that lies about the software is worse than a
+  page that omits it. Say what they are for instead: a list to copy into a
+  notebook, or to read down before handing something in.
 - Piped wikilinks inside table cells escape the pipe: `[[Page\|words]]`.
 - **Mathematics that must render** (KaTeX is strict about markdown's
   seams): display math is a SINGLE physical line, or an unindented
@@ -185,6 +191,14 @@ from Phase 5 apply here too.
   characters the chart widens and the pie itself shrinks to fit the
   column. "Dry air, by volume" beats "Composition of dry air by volume"
   on its own merits anyway.
+- **Mermaid `pie` slices must be big enough to label.** Mermaid prints
+  each percentage at its slice's mid-angle with NO collision avoidance,
+  and rounds to whole numbers — so two slices under about 3% print their
+  labels on top of each other, and anything under 0.5% renders as "0%",
+  which says nothing. Combine the tail into one slice ("Argon and
+  everything else: 1") and put the detail in a footnote. Sweep every pie
+  in a payload for this before shipping: no slice rounding to zero, no two
+  slices under 3%.
 - **CHEMISTRY: write it with mhchem (`\ce{...}`), never by hand.** The
   build enables the extension (`build_site.py` adds
   `import "katex/contrib/mhchem"` to `latex.ts`), so a whole equation
@@ -208,6 +222,10 @@ from Phase 5 apply here too.
     honest home in the arc, the arc is wrong, not the page: either the
     semester is missing a class the course actually needs, or the page
     should not exist.
+  - Curriculum pages are the ONE exemption: they are reference, reached
+    through the Curriculum index and Key Links by design, and a lesson
+    transcludes them rather than linking to them. The linter exempts the
+    curriculum folder for exactly this reason.
   - This is how the whole payload stays a course rather than a pile of
     documents, and it is the check that catches a strand the arc forgot
     to teach. SNC1W shipped with a complete Earth-and-Space library that
@@ -215,6 +233,17 @@ from Phase 5 apply here too.
 - Link only to pages that will exist. Maintain the full page inventory
   BEFORE fanning out authoring agents; hand every agent the complete
   sanctioned link list.
+
+**`Style/What This Site Can Do.md` is the showcase**, and it teaches by
+working example, not by comparison. Where the subject has notation the
+teacher will have to type, give it a MINI-TUTORIAL: a three-column table
+of *what you type* / *what appears* / *what it means*, where the middle
+column is a live span rather than a description of one, so the page cannot
+drift from the truth. The chemistry payloads' `\ce{}` tables are the
+reference. Never write a callout weighing up two ways of writing the same
+thing — a teacher wants to learn the one the site uses, not to adjudicate
+between them. Keep the honest warnings that are still true (display maths
+stays on one physical line; a bare `H_2O` comes out in variable italic).
 
 **Required pages beyond the subject folders**: the Setup set (How <X> Class
 Works, the safety/trust agreement in subject-appropriate form, What to
@@ -379,9 +408,19 @@ than hand-written:
   `__COURSE_NAME__`.
 - `lint_skeletons.py` is the gate — every link resolves, every page is
   titled, no template token survived. Run it after every generation.
+- The sidebar is a RULE, not a list: the `Curriculum` folder is never
+  visible, every other visible shared folder carries a chevron (including
+  one the teacher adds), and per-section folders — `All Classes` — stay
+  plain links to their listing. `lint_skeletons.py` checks every manifest
+  against it, and `SkeletonCatalog.sidebar(for:…)` is where the app
+  decides it.
 - The wizard offers the skeleton's folders as the DEFAULT answers to its
   structure questions; the app's New Course sheet does the same through
   `SkeletonCatalog`. A teacher's own edits are never overwritten.
+- Touching a shape or the family table changes up to fifty families at
+  once: regenerate, run `lint_skeletons.py`, then build ONE course from an
+  affected family and read it. `verify.sh` covers the toolchain, not the
+  content.
 
 **A new payload retires its skeleton automatically** — example content
 always wins for a code that has it. Nothing to remove.

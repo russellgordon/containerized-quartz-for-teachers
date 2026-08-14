@@ -426,9 +426,11 @@ website, something is broken. %%
 
 > [!tip] For teachers reading this
 > A shared page can also be published to one section and held back from
-> another, using per-section `draft` and `created` keys in the
-> frontmatter — useful when your two classes have drifted a few days
-> apart and one of them has not done the titration yet.
+> another: look at the top of this page's source and you will find a
+> `createdSection1` / `draftSection1` pair for each of your sections.
+> Set one section's `draft` to `true` and the page waits for that class —
+> useful when your two classes have drifted a few days apart and one of
+> them has not done the titration yet.
 
 ---
 

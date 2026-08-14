@@ -151,7 +151,7 @@ Before you open your coded bottle:
 
 ## Bench checklist
 
-Tick these off as you go. They are in this order for a reason.
+Work down this list in order — it is in this order for a reason.
 
 - [ ] Decision tree drawn and checked by me before any bottle is opened
 - [ ] Eye protection on, fume hood sash at the marked height

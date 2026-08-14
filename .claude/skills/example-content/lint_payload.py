@@ -52,6 +52,42 @@ def lint(course_code: str) -> int:
         if re.search(r"^(created|draft)Section\d+:", head, re.M):
             problems.append(f"{rel}: per-section keys are written by the installer, not the payload")
 
+        # A checklist on the site cannot be ticked — nothing is saved and
+        # clicking does nothing. A page that says otherwise lies about the
+        # software to the student reading it.
+        lowered = text.lower()
+        for phrase in ("click to check", "clicking checks", "check them off",
+                       "tick them off", "tick these off", "checkboxes are clickable",
+                       "clickable checklist", "click each box", "tick each box"):
+            at = lowered.find(phrase)
+            while at >= 0:
+                # Ticking a printed copy is honest and worth saying, so the
+                # sentence around the phrase decides.
+                sentence = lowered[max(0, at - 120):at + 160]
+                if not any(word in sentence for word in
+                           ("paper", "notebook", "printed", "print it", "your own copy")):
+                    problems.append(f"{rel}: says a checklist can be ticked — it is read-only")
+                    break
+                at = lowered.find(phrase, at + 1)
+
+        # Mermaid prints each pie percentage at its slice's mid-angle with
+        # no collision avoidance, and rounds to whole numbers.
+        for block in re.findall(r"```mermaid\n(.*?)```", text, re.S):
+            if not block.lstrip().startswith("pie"):
+                continue
+            values = [float(match.group(1)) for match
+                      in re.finditer(r'^\s*"[^"]*"\s*:\s*([0-9.]+)\s*$', block, re.M)]
+            total = sum(values)
+            if total <= 0:
+                continue
+            shares = [value / total * 100 for value in values]
+            vanishing = [share for share in shares if share < 0.5]
+            crowded = [share for share in shares if share < 3]
+            if vanishing:
+                problems.append(f"{rel}: a pie slice rounds to 0% — combine it into a larger one")
+            elif len(crowded) > 1:
+                problems.append(f"{rel}: two pie slices under 3% will print their labels on top of each other")
+
         # The whole link graph, so reachability can be checked below.
         outside_fences = re.sub(r"```[\s\S]*?```", "", text)
         page_links[page.stem] = {
