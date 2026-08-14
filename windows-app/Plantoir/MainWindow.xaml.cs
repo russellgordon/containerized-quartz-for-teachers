@@ -204,6 +204,20 @@ public sealed partial class MainWindow : Window
     }
 
     /// <summary>
+    /// Stop a section's preview, for the assistant — the first half of
+    /// stop, edit, start again. No Activate: a stop is not the moment to
+    /// pull the teacher away from the conversation.
+    /// </summary>
+    public void StopPreviewFor(string courseCode, int section)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            Workspace.Selection = new SidebarSelection.SectionItem(courseCode, section);
+            if (DetailHost.Content is SectionDetailView detail) detail.StopPreviewIfRunning();
+        });
+    }
+
+    /// <summary>
     /// Restore the remembered selection — but only when its target still
     /// exists, so a course removed between sessions never greets the teacher
     /// with "Course Not Found". Unrecognized stored forms restore none.

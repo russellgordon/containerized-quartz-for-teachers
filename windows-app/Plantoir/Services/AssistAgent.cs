@@ -301,6 +301,24 @@ public sealed class AssistAgent
     public Action? StartDeployInApp { get; set; }
 
     /// <summary>
+    /// Whether this section's preview is on screen right now, asked of the
+    /// window. It decides what a page edit must do about the preview: the
+    /// served site is a COPY, merged at build time, so a running preview
+    /// never notices an edit to the course folder on its own — the teacher
+    /// unpublished a page, watched the preview, and nothing changed.
+    /// </summary>
+    public Func<bool>? PreviewIsShowing { get; set; }
+
+    /// <summary>
+    /// Stop the section's preview in the main window. A page edit does what
+    /// a person would do: stop the preview, change the files, start the
+    /// preview again. No server-side build, no live-reload cleverness — the
+    /// served site is a merged COPY that never notices course-folder edits,
+    /// so the only honest preview is a restarted one.
+    /// </summary>
+    public Action? StopPreviewInApp { get; set; }
+
+    /// <summary>
     /// Tools that change pages. They run on the server as pure file edits —
     /// <c>preview: false</c>, so the server builds nothing — and then the
     /// app's own preview is put on screen to show what changed.
@@ -343,13 +361,17 @@ public sealed class AssistAgent
         if (PreviewAskedForPlainly(text) is { } handled) return handled;
 
         var today = DateTime.Now;
+        _dateline = $" (Today is {today:yyyy-MM-dd}, a {today.DayOfWeek}.)";
         _messages.Add(new JsonObject
         {
             ["role"] = "user",
-            ["content"] = $"{text} (Today is {today:yyyy-MM-dd}, a {today.DayOfWeek}.)",
+            ["content"] = text + _dateline,
         });
         return await Run(cancellation);
     }
+
+    /// <summary>This turn's date note, remembered so a parroting reply can have it stripped.</summary>
+    private string _dateline = "";
 
     /// <summary>
     /// The commonest command, answered without the model.
@@ -407,7 +429,7 @@ public sealed class AssistAgent
         var lines = new List<Line>();
         string result = await RunTool(call, lines, cancellation);
         lines.Add(new Line("tools", result));
-        if (TakeHandedToApp()) return lines;
+        if (TurnEnded(lines)) return lines;
         return lines.Concat(await Run(cancellation)).ToList();
     }
 
@@ -439,13 +461,24 @@ public sealed class AssistAgent
             }
             _messages.Add(reply.DeepClone()!);
 
-            string said = reply["content"]?.GetValue<string>() ?? "";
-            if (said.Trim().Length > 0) lines.Add(new Line("assistant", said.Trim()));
+            var calls = reply["tool_calls"] as JsonArray;
+            bool acting = calls is { Count: > 0 };
 
-            if (reply["tool_calls"] is not JsonArray calls || calls.Count == 0) return lines;
+            // Content alongside a tool call is almost always the request
+            // parroted back — measured as "Unpublishing Unit 4, Day 5
+            // (Today is 2026-08-14, a Friday.)", dateline and all, shown to
+            // the teacher who had just typed it. The tool's own result says
+            // what happened; the parrot adds nothing, so it is not shown.
+            // The dateline is stripped from what IS shown, for the same
+            // reason: it was written for the model, not the teacher.
+            string said = reply["content"]?.GetValue<string>() ?? "";
+            if (_dateline.Length > 0) said = said.Replace(_dateline, "");
+            if (!acting && said.Trim().Length > 0) lines.Add(new Line("assistant", said.Trim()));
+
+            if (!acting) return lines;
 
             // One at a time, so a teacher reading the transcript can follow it.
-            var call = calls[0] as JsonObject;
+            var call = calls![0] as JsonObject;
             if (call is null) return lines;
 
             string name = call["function"]?["name"]?.GetValue<string>() ?? "";
@@ -463,7 +496,7 @@ public sealed class AssistAgent
 
             string result = await RunTool(call, lines, cancellation);
             lines.Add(new Line("tools", result));
-            if (TakeHandedToApp()) return lines;
+            if (TurnEnded(lines)) return lines;
         }
 
         lines.Add(new Line("assistant",
@@ -484,6 +517,23 @@ public sealed class AssistAgent
         bool handed = _handedToApp;
         _handedToApp = false;
         return handed;
+    }
+
+    /// <summary>
+    /// Close out a turn whose last tool handed its work to the app, adding
+    /// the closing line to both the transcript and the model's context — a
+    /// follow-up question should know the preview is on screen.
+    /// </summary>
+    private bool TurnEnded(List<Line> lines)
+    {
+        if (!TakeHandedToApp()) return false;
+        if (_afterTurnNote is { } note)
+        {
+            lines.Add(new Line("assistant", note));
+            _messages.Add(new JsonObject { ["role"] = "assistant", ["content"] = note });
+            _afterTurnNote = null;
+        }
+        return true;
     }
 
     private async Task<string> RunTool(JsonObject call, List<Line> lines, CancellationToken cancellation)
@@ -517,9 +567,12 @@ public sealed class AssistAgent
             return Answer(call, "The section is deploying from Plantoir's main window — its progress is shown there.");
         }
 
-        // Page edits run on the server, but as PURE file edits: the server is
-        // told not to build, and the app's own preview shows the change.
+        // A page edit does what a person would do: stop the preview, change
+        // the files, start the preview again. The server never builds
+        // (preview declined), so the work happens once, in the main window.
+        bool edits = EditsPages.Contains(name);
         if (TakesPreviewFlag.Contains(name)) arguments["preview"] = false;
+        if (edits && PreviewIsShowing?.Invoke() == true) StopPreviewInApp?.Invoke();
 
         string result = await _tools.CallTool(name, arguments, OnToolProgress, cancellation);
         _messages.Add(new JsonObject
@@ -528,9 +581,17 @@ public sealed class AssistAgent
             ["tool_call_id"] = call["id"]?.DeepClone(),
             ["content"] = result,
         });
-        if (EditsPages.Contains(name)) ShowPreviewInApp?.Invoke();
+        if (edits)
+        {
+            ShowPreviewInApp?.Invoke();
+            _handedToApp = true;
+            _afterTurnNote = "The preview is starting in Plantoir's main window with this change in it.";
+        }
         return result;
     }
+
+    /// <summary>A closing line for a turn that ended by handing work to the app.</summary>
+    private string? _afterTurnNote;
 
     /// <summary>Record a tool's answer without having called the server.</summary>
     private string Answer(JsonObject call, string text)

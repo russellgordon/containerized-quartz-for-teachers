@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,7 +89,7 @@ public sealed partial class AssistWindow : Window
     {
         if (ClaudeCodeLauncher.FindServer() is not { } server)
         {
-            Say("Plantoir", "The Plantoir tools couldn’t be found, so there is nothing for the " +
+            Say("Assistant", "The Plantoir tools couldn’t be found, so there is nothing for the " +
                             "assistant to work with. Reinstalling Plantoir should put them back.");
             return;
         }
@@ -108,11 +109,11 @@ public sealed partial class AssistWindow : Window
             };
             if (await offer.ShowAsync() != ContentDialogResult.Primary)
             {
-                Say("Plantoir", "No assistant, then — close this window whenever you like.");
+                Say("Assistant", "No assistant, then — close this window whenever you like.");
                 return;
             }
 
-            var note = SayWithBar("Plantoir", "Downloading the assistant…");
+            var note = SayWithBar("Assistant", "Downloading the assistant…");
 
             // Reports are POSTED to this thread, so one can still be in the
             // queue when the download finishes — and it would land after the
@@ -140,7 +141,7 @@ public sealed partial class AssistWindow : Window
             note.Text.Text = "The assistant is downloaded.";
         }
 
-        var starting = Say("Plantoir", "Starting the assistant…");
+        var starting = Say("Assistant", "Starting the assistant…");
         if (!await _model.Start(new Progress<string>(line => starting.Text = line), _closing.Token))
         {
             starting.Text = "The assistant wouldn’t start. If Docker or WSL was just installed or updated, " +
@@ -174,6 +175,13 @@ public sealed partial class AssistWindow : Window
             // once, on screen — rather than running again behind the chat.
             ShowPreviewInApp = () => _main?.ShowPreviewFor(_course.Code, _section),
             StartDeployInApp = () => _main?.DeployFor(_course.Code, _section),
+            StopPreviewInApp = () => _main?.StopPreviewFor(_course.Code, _section),
+            // Same process as the previews, so the in-memory leases are the
+            // truth about whether one is on screen.
+            PreviewIsShowing = () => PreviewLeases.Active.Any(lease =>
+                lease.FolderPath == _folder &&
+                string.Equals(lease.CourseCode, _course.Code, StringComparison.OrdinalIgnoreCase) &&
+                lease.SectionNumber == _section),
         };
 
         // NOT "Ready." — it is not. Reading the instructions takes minutes on
@@ -198,7 +206,7 @@ public sealed partial class AssistWindow : Window
         // open, not an interruption. The once-per-section machinery stays for
         // Claude Code, where an assistant re-explaining itself mid-conversation
         // genuinely is one.
-        Say("Plantoir", Briefing.Words(_course.Code, _section, AssistWorkspace.DestinationOf(_course)));
+        Say("Assistant", Briefing.Words(_course.Code, _section, AssistWorkspace.DestinationOf(_course)));
 
         // What to say, in the words that work.
         //
@@ -208,7 +216,7 @@ public sealed partial class AssistWindow : Window
         // which is the one question it can only answer slowly and unhelpfully
         // — the examples are put in front of them before they type. These are
         // the shapes the routing was measured on.
-        Say("Plantoir", ExampleRequests);
+        Say("Assistant", ExampleRequests);
 
         // Typing is available from here. The teacher reads the briefing while
         // the model quietly evaluates that same 6,200-token prefix in the
@@ -242,7 +250,7 @@ public sealed partial class AssistWindow : Window
         // would deliver the three minutes unannounced.
         bool warmAlready = await Task.Run(() => _model.RestorePrefix(), _closing.Token);
 
-        var note = SayWithBar("Plantoir",
+        var note = SayWithBar("Assistant",
             warmAlready
                 ? "Picking up where I left off…"
                 : "Reading my instructions — this happens once, and takes a few minutes…");
@@ -432,7 +440,7 @@ public sealed partial class AssistWindow : Window
         catch (OperationCanceledException) { /* the window is closing */ }
         catch (Exception error)
         {
-            Say("Plantoir", $"Something went wrong there: {error.Message}");
+            Say("Assistant", $"Something went wrong there: {error.Message}");
         }
         finally
         {
@@ -446,10 +454,13 @@ public sealed partial class AssistWindow : Window
         }
     }
 
+    // One name for everything on the assistant's side. Tool results used to
+    // say "Plantoir" while the model said "Assistant", and a teacher reading
+    // the conversation saw two strangers where there is one helper.
     private static string Speaker(string raw) => raw switch
     {
         "assistant" => "Assistant",
-        "tools" => "Plantoir",
+        "tools" => "Assistant",
         _ => raw,
     };
 

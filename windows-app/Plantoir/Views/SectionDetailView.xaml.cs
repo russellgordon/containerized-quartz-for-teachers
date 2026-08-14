@@ -145,6 +145,12 @@ public sealed partial class SectionDetailView : UserControl
         PreviewOrStop_Click(this, new RoutedEventArgs());
     }
 
+    /// <summary>Stop the preview if one is up — the assistant's half of stop, edit, start again.</summary>
+    public void StopPreviewIfRunning()
+    {
+        if (_previewRunner.IsRunning) StopPreview();
+    }
+
     /// <summary>Smoke-test entry: open the console details pane.</summary>
     public void ShowDetailsForAutomation() => Progress.ExpandDetailsForAutomation();
 
