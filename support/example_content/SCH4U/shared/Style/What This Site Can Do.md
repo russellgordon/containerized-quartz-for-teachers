@@ -158,6 +158,20 @@ The double arrow is written `\rightleftharpoons` and it is not
 decoration — it is the claim that both directions are running at once,
 which is the whole of [[Dynamic Equilibrium]].
 
+There is a shorter way to write the same thing. `\ce{}` — from the
+**mhchem** extension, which this site includes — takes chemistry in
+roughly the form you would say it aloud and typesets the rest for you:
+
+$$\ce{N2O4(g) <=> 2NO2(g)}$$
+
+That is the first of the two equations above, written as one macro:
+
+```markdown
+$$\ce{N2O4(g) <=> 2NO2(g)}$$
+```
+
+No `\text{}`, no arrow command, and no braces around the subscripts.
+
 Multi-step working goes on a single line, aligned on the equals signs:
 
 $$\begin{aligned} q &= mc\Delta T = (100.0\ \text{g})(4.18\ \text{J/g}^\circ\text{C})(6.4\ ^\circ\text{C}) \\ &= 2.68 \times 10^3\ \text{J} \end{aligned}$$
@@ -171,23 +185,19 @@ Inline: $K_w = 1.0 \times 10^{-14}$
 Display: $$\text{N}_2\text{O}_4 \rightleftharpoons 2\text{NO}_2$$
 ```
 
-> [!warning] For teachers: element symbols need `\text{}`, and mhchem is not here
-> Write `\text{H}_2\text{O}`, not `H_2O` — without it the symbols come
-> out in maths italic, which is the convention for *variables* and looks
-> wrong for elements.
+> [!tip] For teachers: which form to write
+> Both forms on this page render, so either is safe. Prefer `\ce{}` on
+> new pages — it is less to type and harder to get subtly wrong. The
+> longhand is still here because these pages were written before the
+> extension was switched on, and it still works.
 >
-> More importantly: **this build does not include the `mhchem`
-> extension**, so the chemistry shorthand you may have met in other
-> KaTeX setups — the one that wraps a whole equation inside a single
-> macro — is unavailable here, and it fails *silently*. No error
-> message, no red text. It renders as garbage that a proofreader skims
-> straight past, and you will find it months later on a page a hundred
-> students have read. The plain commands above render correctly and are
-> worth the extra characters.
+> What you must not do is write `H_2O` bare. Without `\text{}` or `\ce{}`
+> the symbols come out in maths italic, which is the convention for
+> *variables* and looks wrong for elements.
 >
-> Display maths also has to stay on **one physical line**. A `$$` span
-> broken across lines, or indented four spaces, or placed inside a
-> callout across multiple lines, hits a markdown seam and shatters.
+> Display maths has to stay on **one physical line**. A `$$` span broken
+> across lines, or indented four spaces, or placed inside a callout
+> across multiple lines, hits a markdown seam and shatters.
 
 > [!note] For teachers: ICE tables are tables
 > The temptation is to typeset an ICE table as an aligned maths block.

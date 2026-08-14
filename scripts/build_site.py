@@ -1579,6 +1579,56 @@ def patch_content_meta_options(date_tsx_file_path: Path, show_reading_time: bool
 # --- END ADD ---
 
 # --- ADD: Patch renderPage.tsx to allow transcludeTitleSize frontmatter ---
+def patch_katex_mhchem(latex_ts_path: Path):
+    """
+    Turn on mhchem, the chemistry notation for KaTeX.
+
+    Quartz renders maths at build time with rehype-katex, and KaTeX ships
+    mhchem in the same package — it is simply not loaded. Without it
+    `\\ce{...}` fails SILENTLY: no error, no red text, just garbage on the
+    page that a proofreader skims past. With it, one import, chemistry
+    gets the notation it deserves:
+
+        $\\ce{CaCO3(s) <=> CaO(s) + CO2(g)}$
+
+    renders with a real equilibrium arrow and upright element symbols,
+    which is tedious and error-prone to hand-build out of \\text{} and
+    \\rightleftharpoons.
+
+    The import is a side effect on the shared KaTeX instance, and it runs
+    in Node during the build — nothing extra is sent to a browser.
+    Idempotent.
+    """
+    if not latex_ts_path.exists():
+        print(f"⚠️ latex.ts not found at {latex_ts_path}")
+        return
+    try:
+        with open(latex_ts_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        if "katex/contrib/mhchem" in content:
+            print("ℹ️ mhchem already enabled (no change).")
+            return
+
+        anchor = 'import rehypeKatex from "rehype-katex"'
+        if anchor not in content:
+            print("⚠️ Could not find the rehype-katex import; mhchem left off.")
+            return
+
+        content = content.replace(
+            anchor,
+            anchor + '\n// Chemistry notation for KaTeX. It ships inside the katex\n'
+                     '// package and only needs loading; without it \\ce{} fails silently.\n'
+                     'import "katex/contrib/mhchem"',
+            1,
+        )
+        with open(latex_ts_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        print("✅ Patched latex.ts to enable mhchem chemistry notation")
+    except Exception as e:
+        print(f"⚠️ Error enabling mhchem: {e}")
+
+
 def patch_google_font_href(theme_ts_path: Path, head_tsx_path: Path):
     """
     Stop asking Google Fonts for fonts that are not Google Fonts.
@@ -2751,6 +2801,8 @@ def build_section_site(
     theme_ts = output_dir / "quartz" / "util" / "theme.ts"
     head_tsx = output_dir / "quartz" / "components" / "Head.tsx"
     patch_google_font_href(theme_ts, head_tsx)
+    latex_ts = output_dir / "quartz" / "plugins" / "transformers" / "latex.ts"
+    patch_katex_mhchem(latex_ts)
     patch_mermaid_font_wait(mermaid_ts)
     patch_mermaid_pie_title_fit(mermaid_ts)
     patch_mermaid_pie_colours(mermaid_ts)

@@ -185,14 +185,17 @@ from Phase 5 apply here too.
   characters the chart widens and the pie itself shrinks to fit the
   column. "Dry air, by volume" beats "Composition of dry air by volume"
   on its own merits anyway.
-- **CHEMISTRY: mhchem (`\ce{...}`) IS NOT AVAILABLE**, and the failure
-  is SILENT — a `\ce{}` span produces no `katex-error`, it just renders
-  as garbage (`\ce2H2+O2−>2H2O`), so the render gate will not catch it.
-  Write chemistry in plain LaTeX with UPRIGHT element symbols:
-  `$\text{H}_2 + \text{Cl}_2 \rightarrow 2\text{HCl}$`, ions as
-  `$\text{SO}_4^{2-}$`, states as `$\text{CaO(s)}$`. Verified against
-  the build's own KaTeX: `\text{}` forms render; `\ce{}` throws
-  `Undefined control sequence`.
+- **CHEMISTRY: use mhchem (`\ce{...}`)**. The build enables it
+  (`build_site.py` adds `import "katex/contrib/mhchem"` to `latex.ts`),
+  so a whole equation fits in one macro and comes out correctly
+  typeset: `$\ce{CaCO3(s) <=> CaO(s) + CO2(g)}$`, ions as `$\ce{SO4^2-}$`.
+  It gives upright symbols, real subscripts, and true reaction arrows
+  without hand-building any of them. Longhand (`$\text{SO}_4^{2-}$`)
+  still renders and older payloads use it — leave those alone unless you
+  are rewriting the page anyway, but write new chemistry with `\ce{}`.
+  What has NOT changed: with neither `\ce{}` nor `\text{}`, `H_2O` comes
+  out in maths italic, the convention for variables, which is wrong for
+  elements.
 - **No page stands on its own.** Every page must be reachable from a
   class page (`Unit N, Day M`) either directly, or through ONE page that
   a class page links to — two hops, and no further. Being listed in
@@ -228,7 +231,9 @@ advancing it + `![[Help Sessions]]` + `![[Key Links]]`) and a populated
 `[[Curriculum/index|Curriculum Expectations]]` wrapped in curriculum
 markers — this link is a must in every payload (the linter enforces it),
 and it is easy to lose when adapting a previous payload's pages, because
-stripping curriculum blocks wholesale deletes it. Every folder's
+stripping curriculum blocks wholesale deletes it. Its LAST entry is
+`[[What This Site Can Do]]` — also enforced — so a teacher evaluating the
+course meets the site tour early instead of hunting for it. Every folder's
 `index.md` MUST have `title: <Folder Name>` — a literal `title: index`
 shows "index" as the page name on the built site.
 
@@ -317,10 +322,7 @@ the linter.
    HTML, not the whole page — index prose also mentions page names), and
    `grep -rl katex-error <public dir>` finds NOTHING — a katex-error span
    means an equation shattered at a markdown seam (see the math rules in
-   Phase 5). `katex-error` does NOT catch everything: an unavailable
-   extension renders as silent garbage, so also run
-   `grep -rn '\\ce{' support/example_content/<CODE>` and expect no hits.
-   For a payload with heavy notation, render every `$…$` span through
+   Phase 5). For a payload with heavy notation, render every `$…$` span through
    the build's own KaTeX with `throwOnError: true` — the module lives at
    `courses/<CODE>/.merged_output/section1/node_modules/katex` after any
    build.

@@ -158,6 +158,20 @@ Ions carry their charge properly — sulfate is $\text{SO}_4^{2-}$ and
 ammonium is $\text{NH}_4^{+}$ — which matters, because
 $\text{SO}_4^{2-}$ and $\text{SO}_3^{2-}$ are different substances.
 
+There is a shorter way to write the same thing. `\ce{}` — from the
+**mhchem** extension, which this site includes — takes chemistry in
+roughly the form you would say it aloud and typesets the rest for you:
+
+$$\ce{CH4 + 2O2 -> CO2 + 2H2O}$$
+
+That is the first of the two equations above, written as one macro:
+
+```markdown
+$$\ce{CH4 + 2O2 -> CO2 + 2H2O}$$
+```
+
+No `\text{}`, no arrow command, and no braces around the subscripts.
+
 **How that was made:** single dollar signs keep it in the sentence,
 double ones give it a line of its own.
 
@@ -167,14 +181,19 @@ Inline: $f = 15\ \text{cm}$
 Display: $$\text{CH}_4 + 2\text{O}_2 \rightarrow \text{CO}_2 + 2\text{H}_2\text{O}$$
 ```
 
-> [!warning] For teachers: element symbols need `\text{}`
-> Write `\text{H}_2\text{O}`, not `H_2O` — without it the symbols come
-> out in maths italic, which is the convention for *variables* and looks
-> wrong for elements. This build does not include the `mhchem`
-> extension, so the chemistry shorthand you may have seen in other
-> KaTeX setups is unavailable here — and it fails quietly, producing
-> garbled text rather than an error you would notice. The plain
-> commands above render correctly and are worth the extra characters.
+> [!tip] For teachers: which form to write
+> Both forms on this page render, so either is safe. Prefer `\ce{}` on
+> new pages — it is less to type and harder to get subtly wrong. The
+> longhand is still here because these pages were written before the
+> extension was switched on, and it still works.
+>
+> What you must not do is write `H_2O` bare. Without `\text{}` or `\ce{}`
+> the symbols come out in maths italic, which is the convention for
+> *variables* and looks wrong for elements.
+>
+> Display maths has to stay on **one physical line**. A `$$` span broken
+> across lines, or indented four spaces, or placed inside a callout
+> across multiple lines, hits a markdown seam and shatters.
 
 ---
 
