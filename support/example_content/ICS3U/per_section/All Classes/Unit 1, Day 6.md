@@ -10,16 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Trace It]] — pencil, paper, nobody runs anything
-2. Trace a program that is wrong on purpose, then say exactly which
-   line first told a lie
-3. Compare and name it: [[Testing and Debugging]]
-4. Discussion: [[Who Is This For]] — every program has a reader
-5. Launch our first task: [[The Helper Script]] — one real person, one
-   repeated chore. [[How Marks Work]] says what is being judged.
+1. Warm-up: [[Which One Doesn't Belong]] — four parts from inside a
+   machine
+2. Open the case: [[The Machine on the Bench]] — sketch first, name
+   nothing, argue about what each part is for
+3. Sketches on the board at the end; the disagreements stay unresolved
+   until next class, on purpose
 
 ## Things to do before our next class
 
-- [ ] Read [[The Helper Script]] and write down your person's name.
-- [ ] Ask them what they do now, step by step, and write down the
-      annoying part in their words.
+- [ ] Keep your sketch — you annotate it next class.
+- [ ] Journal: which part surprised you, and what you had expected.

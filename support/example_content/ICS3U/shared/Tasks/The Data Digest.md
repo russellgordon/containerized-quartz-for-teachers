@@ -7,8 +7,8 @@ tags:
 enableToc: true
 ---
 > [!abstract] At a glance
-> Solo or pairs · launched in Unit 2 and due at the digest gallery in
-> the next class · one program, one pile of data, one page of advice ·
+> Solo or pairs · launched in Unit 2 and due at the digest gallery
+> seven classes later · one program, one pile of data, one page of advice ·
 > the first task where the output has to change somebody's mind
 
 ## What you are making

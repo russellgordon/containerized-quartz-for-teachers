@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 4
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_22__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Predict the Output]] — four lines of string surprises
-2. Build the running-total pattern together: total, count, highest,
-   lowest — then the average, which is quietly two of those
-3. Then search: find the first value that matches, and stop looking
-4. Compare and name it: [[Working with Text]] — text is data too, and
-   it arrives messier than numbers do
-5. Practise: [[Text Practice]]
+1. Warm-up: [[Predict the Output]] — integer division, and a surprise
+2. From notation to program: [[Formulas as Algorithms]] — name every
+   symbol, order the steps, decide the units
+3. Work the first three of [[Formula Practice]] on paper before typing
+   anything
 
 ## Things to do before our next class
 
-- [ ] Finish [[Text Practice]].
-- [ ] Journal: one thing you can now compute about a pile of text that
-      you could not compute last week.
+- [ ] Finish the first three questions of [[Formula Practice]].

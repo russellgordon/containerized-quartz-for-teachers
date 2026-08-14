@@ -11,20 +11,28 @@ your screen. The order below is the order the course needs them in, not
 the order they appear in a textbook. Come here after class, when you
 want the idea in one place and in plain words.
 
-**Unit 1 — Programs that decide**
+**Unit 1 — Programs that decide, and the machine that runs them**
 
 - [[What a Program Is]]
 - [[Variables and Data Types]]
 - [[Input and Output]]
+- [[Inside the Machine]]
+- [[Reading a Spec Sheet]]
+- [[Applications, Languages, and Operating Systems]]
 - [[Making Decisions]]
 - [[Boolean Logic]]
 - [[Testing and Debugging]]
 
-**Unit 2 — Repetition and data**
+**Unit 2 — Repetition, data, and what computing costs**
 
 - [[Repetition]]
+- [[Formulas as Algorithms]]
 - [[Lists]]
 - [[Working with Text]]
+- [[From Source to Running Program]]
+- [[Keeping Data Safe]]
+- [[Computers and the Environment]]
+- [[Where to Take It, and Who to Ask]]
 
 **Unit 3 — Structure, files, and design**
 
@@ -33,13 +41,10 @@ want the idea in one place and in plain words.
 - [[Decomposition and Design]]
 - [[Files and Persistence]]
 - [[The Software Development Process]]
+- [[Where the Field Is Going]]
+- [[Pathways After This Course]]
 
 **Unit 4 — Building for someone else**
 
 - [[Computers and Society]]
 - [[Careers in Computer Science]]
-
-Every page here ends with the curriculum expectations it serves, and
-most of them point at a practice set in [[Exercises/index|Exercises]]
-and a complete working program in [[Programs/index|Programs]]. Read the
-idea, then go make it do something for somebody.

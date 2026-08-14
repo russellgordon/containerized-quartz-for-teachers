@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 1
 draft: false
-created: __CREATED_CLASS_20__
+created: __CREATED_CLASS_64__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Which One Doesn't Belong]] — four error messages, one of
-   them quietly cruel
-2. Interface clinic: rewrite three prompts so a tired person, in a
-   hurry, could not get them wrong
-3. Milestone work: sketch your client's screens on paper — every
-   prompt, every message, and every way out
-4. References while you sketch: [[Decomposition and Design]] for the
-   shape, [[Writing Code Others Can Read]] for the inside
-5. Log it in your [[Code Journal]]
+1. Warm-up: [[Name That Error]]
+2. [[The Community App]], day 4: the walking skeleton — it runs end to
+   end today, with fake data and placeholder output
+3. Stuck? [[Getting Unstuck]] before you ask; [[Ways to Find a Bug]]
+   once you have
 
 ## Things to do before our next class
 
-- [ ] Milestone: a paper design of every screen your client will see.
-- [ ] Bring your list of what your program must never ask for.
+- [ ] The skeleton runs. That is the milestone, not the polish.

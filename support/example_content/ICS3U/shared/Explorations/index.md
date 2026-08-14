@@ -24,6 +24,9 @@ chore, and try very hard to break a friend's program.
 | [[The Repeated Chunk]] | Who updates the fourth copy? |
 | [[The Client Interview]] | What is the problem behind the request? |
 | [[The Bad Input Hunt]] | What does your program do when a person is a person? |
+| [[The Machine on the Bench]] | What is each part of this machine for? |
+| [[The Spec Hunt]] | Which part does this person's money belong in? |
+| [[Where the Watts Go]] | What does this room actually use, in watts? |
 
 None of these pages ends with an answer, on purpose. The concept page
 comes after the room has already built the idea, which is the order the

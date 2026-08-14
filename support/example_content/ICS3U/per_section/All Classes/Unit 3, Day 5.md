@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_18__
+created: __CREATED_CLASS_45__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,15 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[What Would You Ask]] — one question, before any solution
-2. Compare and name it: [[The Software Development Process]]
-3. Culminating project launch: [[The Community App]] — a real person, a
-   modest problem, an app they still use after you leave
-4. Method: [[Interviewing Your Client]] — consent, questions, and the
-   things you must never write down
+1. Warm-up: [[Trace It]] — trace a call, then a call inside a call
+2. Take a real problem apart on paper: one box per job, arrows for what
+   each box needs and what it hands back
+3. Compare and name it: [[Decomposition and Design]]
+4. Turn your chart into empty functions with honest names, and run it
+   before a single one of them does anything
+5. Log it in your [[Code Journal]]
 
 ## Things to do before our next class
 
-- [ ] Milestone: bring two possible clients and the chore each of them
-      described to you.
-- [ ] Finish [[The Toolbox]] — it is due next class.
+- [ ] Journal: the job your chart had hidden inside another job, and
+      how you noticed.

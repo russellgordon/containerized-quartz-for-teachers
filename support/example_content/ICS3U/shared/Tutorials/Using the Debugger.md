@@ -118,3 +118,18 @@ Two frames, one story. The bug is not in the arithmetic — it is that
 nobody decided what the average of nothing should be, which is the
 sort of question [[The Bad Input Hunt]] exists to raise before your
 users find it for you.
+
+The debugger is not a separate program you install. It is part of the
+development environment you are already in — alongside the editor, the
+run button, the output pane, and the place errors appear. Knowing which
+part of that environment answers which question is most of what
+"knowing your tools" means, and it is why the same bug takes ten
+minutes for one person and an afternoon for another.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B4.5]]
+
+![[C3.1]]
+%%curriculum-end%%

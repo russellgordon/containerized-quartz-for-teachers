@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 6
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_46__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,18 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[What Would You Ask]] — today about a chore in this
-   building
-2. Paired interviews: [[The Client Interview]] — practise hearing the
-   problem behind the request
-3. Write your client's problem in your client's words, on one line, and
-   bring it to me for approval
-4. Hand in [[The Toolbox]]
-5. Log it in your [[Code Journal]]
+1. Warm-up: [[What Would You Ask]] — about a program somebody else
+   designed
+2. Drawing the shape: a structure chart on the board — one box per job,
+   arrows for what each hands back
+3. Then in your notebook, for the program you refactored yesterday
+4. Vocabulary that earns its keep: module, parameter, return value,
+   scope — used precisely, out loud, in your explanation
 
 ## Things to do before our next class
 
-- [ ] Milestone: client and problem approved, in writing, before you
-      design a single screen.
-- [ ] Confirm your client agrees to be named in your documentation —
-      and honour it if they say no.
+- [ ] Bring your structure chart; it becomes your Toolbox plan.

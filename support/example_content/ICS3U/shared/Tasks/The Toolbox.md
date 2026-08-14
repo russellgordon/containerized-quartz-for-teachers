@@ -7,8 +7,8 @@ tags:
 enableToc: true
 ---
 > [!abstract] At a glance
-> Solo · launched in Unit 3 and due two classes later · one module of
-> reusable functions, one demonstration program, one usage note · the
+> Solo · launched in Unit 3 and due nine classes later · six named
+> working days, one module of reusable functions, one demonstration program, one usage note · the
 > dress rehearsal for the culminating project
 
 ## What you are making
@@ -88,8 +88,8 @@ That is what makes it a tool rather than a fragment.
 Per [[How Marks Work]], the working periods and your
 [[Code Journal]] are part of the mark. The swap is the moment that
 matters most: I am watching whether a stranger can use your work, which
-is precisely what [[The Community App]] will demand of you in a
-fortnight, except that the stranger will be a person who does not
+is precisely what [[The Community App]] will demand of you for the rest
+of the course, except that the stranger will be a person who does not
 program at all. Treat this as the rehearsal it is — the habits you
 build here are the ones you will have under pressure later.
 

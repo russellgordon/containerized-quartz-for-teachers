@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_44__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Name That Error]] — the file that was not there
-2. The program that forgets: run it, close it, reopen it, and watch a
-   morning of work vanish
-3. Compare and name it: [[Files and Persistence]]
-4. Read and change: [[Reading and Writing Files]]
-5. Launch our next task: [[The Toolbox]] — functions and files built to
-   be reused. Warm up for it with [[Files Practice]].
+1. Warm-up: [[Trace It]] — a function called inside a loop
+2. Refactor together: take a Unit 2 program with a repeated block, pull
+   the block out one step at a time, running it after each step
+3. Compare and name it: modularity, in [[Decomposition and Design]] —
+   code you can lift out and use somewhere else
 
 ## Things to do before our next class
 
-- [ ] Finish [[Files Practice]].
-- [ ] Read [[The Toolbox]] and list three tools of your own worth
-      keeping past this week.
+- [ ] Refactor one of your own the same way. Keep both versions.

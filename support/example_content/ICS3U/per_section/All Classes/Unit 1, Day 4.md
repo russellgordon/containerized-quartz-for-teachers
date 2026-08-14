@@ -10,15 +10,17 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Predict the Output]] — three programs, one of them lying
-2. On paper first: a flowchart for a decision somebody in this room
-   makes every single morning
-3. Read and change: [[Branching Programs]]
-4. Compare and name it: [[Making Decisions]]
-5. Practise: [[Decisions Practice]]
+1. Warm-up: [[Name That Error]]
+2. Read and change: [[Talking to the User]] — a program that asks
+   before it answers
+3. Compare and name it: [[Input and Output]]
+4. Method: [[Reading an Error Message]] — a traceback is a note from a
+   teammate who watched the crash, not a verdict about you
+5. Practise: finish [[Variables and Types Practice]], this time with
+   input typed by the person beside you
 
 ## Things to do before our next class
 
-- [ ] Finish [[Decisions Practice]] as far as the chained conditions.
-- [ ] Skim [[Getting Help]] — knowing where to ask is most of asking.
-- [ ] Journal: a decision your flowchart got wrong the first time.
+- [ ] Skim [[Getting Unstuck]] — the moves to make before you ask.
+- [ ] Journal: paste one error message from today and write, in your
+      own words, what it was telling you.

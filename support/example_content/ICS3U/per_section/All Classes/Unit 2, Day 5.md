@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 5
 draft: false
-created: __CREATED_CLASS_12__
+created: __CREATED_CLASS_23__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Which One Doesn't Belong]] — four loops
-2. Rows and columns on paper first, then the loop inside a loop that
-   prints them
-3. Back to [[Repetition]] with new eyes: nesting is not a new idea, it
-   is the same idea standing on itself
-4. Launch our next task: [[The Data Digest]] — a pile of data, and one
-   person who has to decide something with it
+1. Warm-up: [[Spot the Bug]] — a formula transcribed with one bracket
+   out of place
+2. Finish [[Formula Practice]] — the averaging question is the one
+   worth arguing about
+3. Method: [[Writing a Test Plan]] — expected values decided BEFORE
+   anything runs
+4. Write a four-row plan for the question you just finished
 
 ## Things to do before our next class
 
-- [ ] Read [[The Data Digest]] and name both your data and your person.
-- [ ] Journal: the decision your digest is supposed to make easier.
+- [ ] Journal: the hand-worked case you used, and what it caught.

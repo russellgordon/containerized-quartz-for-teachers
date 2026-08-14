@@ -7,8 +7,8 @@ tags:
 enableToc: true
 ---
 > [!abstract] At a glance
-> Solo, or pairs with two clients' agreement · launched in Unit 3 and
-> running underneath every class of Unit 4 · a working app, a tested
+> Solo, or pairs with two clients' agreement · launched at the end of Unit 3 and
+> running through all of Unit 4 across fifteen named working days · a working app, a tested
 > handover, and a real person who keeps using it · the culminating
 > project of this course
 
@@ -88,29 +88,29 @@ they will and will not be getting, and finish the smaller thing well.
 ## Milestones
 
 These are checked in class, on the day named. Nothing here is a
-final-week scramble; a project that arrives at Unit 4, Day 3 without a
+final-week scramble; a project that arrives at Unit 4, Day 5 without a
 tested core is a project I will help you cut down, not a project you
 should try to rescue by staying up.
 
-- [ ] **Unit 3, Day 5 — launched.** Three people asked, and two
+- [ ] **Unit 3, Day 16 — launched.** Three people asked, and two
       possible clients with the chore each described.
-- [ ] **Unit 3, Day 6 — client and problem approved.** One named
+- [ ] **Unit 3, Day 17 — client and problem approved.** One named
       client, the problem in their words, their consent recorded, and
       my sign-off in writing.
-- [ ] **Unit 4, Day 1 — designed for them.** Every screen your client
+- [ ] **Unit 4, Day 2 — designed for them.** Every screen your client
       will see, on paper: each prompt, each message, each way out. Plus
       the list of what your app must never ask for.
-- [ ] **Unit 4, Day 2 — core runs, design reviewed.** The core feature
+- [ ] **Unit 4, Day 5 — core runs, design reviewed.** The core feature
       works end to end, badly is fine, and you have shown your screens
       and your "deliberately not doing" list to two classmates.
-- [ ] **Unit 4, Day 3 — tested with the real user.** Beside them, not
+- [ ] **Unit 4, Day 13 — tested with the real user.** Beside them, not
       for them. Written notes on everything they did that you did not
       expect.
-- [ ] **Unit 4, Day 4 — bugs triaged.** Every problem from the client
+- [ ] **Unit 4, Day 14 — bugs triaged.** Every problem from the client
       test either fixed, or written down honestly as a known limit.
-- [ ] **Unit 4, Day 6 — documented and handed over.** The handover
+- [ ] **Unit 4, Day 17 — documented and handed over.** The handover
       package below is complete, and the project is submitted.
-- [ ] **Unit 4, Day 7 — presented.** Your client runs it in front of
+- [ ] **Unit 4, Day 18 — presented.** Your client runs it in front of
       the room at [[Launch Day]], and takes it home.
 
 ## What a defensible handover contains

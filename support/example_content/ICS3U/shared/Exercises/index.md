@@ -32,6 +32,7 @@ to make it dependable.
 | [[Boolean Logic Practice]] | [[Boolean Logic]] |
 | [[Loops Practice]] | [[Repetition]] |
 | [[Lists Practice]] | [[Lists]] |
+| [[Formula Practice]] | [[Formulas as Algorithms]] |
 | [[Text Practice]] | [[Working with Text]] |
 | [[Functions Practice]] | [[Functions]], [[Parameters, Returns, and Scope]] |
 | [[Files Practice]] | [[Files and Persistence]] |

@@ -1,0 +1,20 @@
+---
+title: Unit 3, Day 21
+draft: false
+created: __CREATED_CLASS_61__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-3
+---
+## Agenda
+
+1. [[The Research Brief]], day 5: talks, second half
+2. Hand in [[The Research Brief]] — day 5, and done
+3. Synthesis on the board: what every talk had in common about how
+   computing helps another field
+
+## Things to do before our next class
+
+- [ ] Read [[Who Gets to Build]] before next class.

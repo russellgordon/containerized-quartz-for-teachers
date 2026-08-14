@@ -7,7 +7,7 @@ tags:
 enableToc: true
 ---
 > [!abstract] At a glance
-> Solo · launched in Unit 1 and due at the hand-off in the next class ·
+> Solo · launched in Unit 1 and handed over three classes later ·
 > one short Python program, one named person, one page of notes · your
 > first evidence that code can be useful to somebody who is not you
 
@@ -60,15 +60,18 @@ actually uses it. Ambition in this task is spent on *fit*, not on size.
    app in the first minute, start again.
 2. Write the sentence: *[Name] does [what], and the annoying part is
    [what].* Bring it to class.
-3. Sketch the conversation on paper — what the program asks, in order,
+3. Start from the skeleton we build in class rather than an empty file:
+   the input–process–output shape, with the thinking left to you.
+   [[Starting from a Skeleton]]
+4. Sketch the conversation on paper — what the program asks, in order,
    and what it says back. Two minutes with a pencil saves twenty at the
    keyboard.
-4. Build the shortest thing that answers the question. Run it after
+5. Build the shortest thing that answers the question. Run it after
    every few lines rather than at the end.
-5. Test it as a stranger: type a word where a number goes and see what
+6. Test it as a stranger: type a word where a number goes and see what
    happens. You are not expected to survive that yet, but you *are*
    expected to know it happens.
-6. At the hand-off, a partner runs your script while you say nothing.
+7. At the hand-off, a partner runs your script while you say nothing.
    Write down every hesitation. Fix exactly one.
 
 ## How this is assessed
@@ -112,6 +115,8 @@ different?
 ## Curriculum connection
 
 ![[A2.1]]
+
+![[B2.1]]
 
 ![[A2.2]]
 

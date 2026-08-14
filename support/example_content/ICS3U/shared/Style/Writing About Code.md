@@ -64,3 +64,22 @@ about technology sounds like a strong bug report: a claim, the
 evidence, and an honest note about what you do not yet know — which is
 exactly how the arguments in [[Should It Exist]] and
 [[When Code Hurts]] are meant to be conducted.
+
+## Reporting on something you researched
+
+A brief, a talk, and a poster are three shapes for the same job:
+telling somebody what you found out. Choose the shape for the audience
+and the time — a two-page brief for a reader who will act on it, five
+minutes for a room that has not thought about your topic, a poster for
+people walking past. Whichever it is, the structure holds: the question,
+what is genuinely known, the specific example that shows it, what
+remains unsolved, and where you got it. Naming your sources where you
+use them rather than in a heap at the end is what separates a report
+from an essay of opinions, and it is what [[The Research Brief]] is
+marked on.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D2.3]]
+%%curriculum-end%%

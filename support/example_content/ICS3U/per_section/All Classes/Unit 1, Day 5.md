@@ -10,15 +10,17 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Which One Doesn't Belong]] — four conditions
-2. The two-condition puzzle: when does "and" beat "or", and when does
-   it quietly lock everybody out of your program?
-3. Compare and name it: [[Boolean Logic]]
-4. Practise: [[Boolean Logic Practice]]
-5. Log it in your [[Code Journal]]
+1. Warm-up: [[Spot the Bug]] — a program that cannot find its own data
+   file
+2. Set your workspace up properly: [[Organizing Your Files]] — folders
+   made today, on your own machine
+3. Then protect it: [[Backing Up Your Work]] — three copies, and the
+   first one made before you leave
+4. Prove it: close everything, then find Tuesday's program in under ten
+   seconds without searching
 
 ## Things to do before our next class
 
-- [ ] Finish [[Boolean Logic Practice]].
-- [ ] Journal: one condition you wrote today that was right for the
-      wrong reason — and how you found out.
+- [ ] Finish the folder structure and make the second copy.
+- [ ] Bring the name of somebody who might need a computer — you will
+      interview them next week.

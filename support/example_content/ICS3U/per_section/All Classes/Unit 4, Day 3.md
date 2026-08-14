@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 3
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_66__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Predict the Output]] — what happens when somebody types
-   "seven" into a box expecting 7?
-2. Break each other's programs, kindly: [[The Bad Input Hunt]]
-3. Back to [[Testing and Debugging]] — a test plan is just a written
-   list of what you are afraid of
-4. Write the test plan you will run with your client, including what
-   you expect each case to do before you try it
-5. Log it in your [[Code Journal]]
+1. Warm-up: [[What Would You Ask]] — of a client seeing a half-built
+   thing for the first time
+2. [[The Community App]], day 5: client check-in — they use the skeleton while
+   you take notes and say nothing
+3. Triage what you heard: what is a defect, what is a new feature, and
+   what is a misunderstanding you can fix with one word
 
 ## Things to do before our next class
 
-- [ ] Milestone: test your program *with* your client — beside them,
-      not for them — and write down everything they did that you did
-      not expect.
+- [ ] Board updated from the check-in. Defects first, features never.

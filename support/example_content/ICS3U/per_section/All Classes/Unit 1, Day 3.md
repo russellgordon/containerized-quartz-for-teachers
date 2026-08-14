@@ -10,17 +10,15 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Name That Error]]
-2. Read and change: [[Talking to the User]] — a program that asks
-   before it answers
-3. Compare and name it: [[Input and Output]]
-4. Method: [[Reading an Error Message]] — a traceback is a note from a
-   teammate who watched the crash, not a verdict about you
-5. Practise: finish [[Variables and Types Practice]], this time with
-   input typed by the person beside you
+1. Warm-up: [[Predict the Output]] — two programs that differ by one
+   character
+2. Clinic: the rest of [[Variables and Types Practice]], in pairs — one
+   types, one reads aloud, then swap
+3. Naming pass: rename every variable in yesterday's program so that a
+   stranger could tell what it holds. [[Writing Code Others Can Read]]
+4. Log it in your [[Code Journal]]
 
 ## Things to do before our next class
 
-- [ ] Skim [[Getting Unstuck]] — the moves to make before you ask.
-- [ ] Journal: paste one error message from today and write, in your
-      own words, what it was telling you.
+- [ ] Finish [[Variables and Types Practice]].
+- [ ] Journal: the variable you renamed, and what the old name hid.

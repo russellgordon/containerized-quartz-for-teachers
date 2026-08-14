@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_24__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,15 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Tech Headlines]]
-2. Digest gallery: read three of your classmates', then act on exactly
-   one of them
-3. Discussion: [[When Code Hurts]] — who never made it into your pile,
-   and what your average is hiding
-4. Hand in [[The Data Digest]]
-5. Mid-semester look back: [[Showing Growth]] — read your own first
-   journal entry, out loud, to yourself
+1. Warm-up: [[Trace It]] — trace a loop, one row of the table per pass
+2. The pile on the desk: [[The Data Pile]] — forty values, one
+   question, and no good way to hold them yet
+3. Compare and name it: [[Lists]]
+4. Read and change: [[Working with Lists]]
+5. Practise: [[Lists Practice]]
 
 ## Things to do before our next class
 
-- [ ] Journal: one claim your digest cannot support, stated plainly and
-      without hedging.
+- [ ] Finish [[Lists Practice]] as far as indexing and slicing.
+- [ ] Journal: what forty separate variables would have cost you, in
+      lines and in bugs.

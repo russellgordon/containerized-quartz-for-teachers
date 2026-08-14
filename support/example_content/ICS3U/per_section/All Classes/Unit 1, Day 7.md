@@ -10,18 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Name That Error]] — today's errors come from your own
-   scripts
-2. Hand-off: your partner runs your script while you say nothing at
-   all. Not one word. Write down every hesitation.
-3. Fix exactly one thing you watched them stumble over
-4. Read it: [[Writing Code Others Can Read]] — names, comments, and the
-   stranger who inherits your file
-5. Hand in [[The Helper Script]], then check your journal against
-   [[Journal Checklist]]
+1. Warm-up: [[Name That Error]]
+2. Compare and name it: [[Inside the Machine]] — annotate yesterday's
+   sketch with the real names
+3. Narrate it: say out loud what happens, part by part, when your
+   program runs — storage, memory, processor, screen
+4. Where slow comes from: three symptoms, three suspects
 
 ## Things to do before our next class
 
-- [ ] Journal: the moment your partner hesitated, and what you changed.
-- [ ] Bring one thing you wished you could repeat a hundred times
-      without typing it a hundred times.
+- [ ] Journal: which part does the work in the loop you wrote on Tuesday,
+      and how you would know if it were the bottleneck.

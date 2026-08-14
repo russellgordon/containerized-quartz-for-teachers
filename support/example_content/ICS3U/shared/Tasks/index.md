@@ -25,10 +25,17 @@ lives in your [[Code Journal]], which every task collects from.
 
 - [[The Helper Script]] — a small tool that saves one named person one
   repeated chore. Small on purpose.
+- [[The Spec Sheet]] — one real person who needs a computer, turned
+  into specifications you can defend. No programming; all listening.
 - [[The Data Digest]] — turn a pile of data into something a person can
   actually act on, and say plainly what it does not show.
+- [[The Green Audit]] — what the computers in this building actually
+  cost, measured rather than guessed, with a program that does the
+  arithmetic.
 - [[The Toolbox]] — functions and files, built to be reused by somebody
   who is not you. The dress rehearsal.
+- [[The Research Brief]] — one border between computer science and
+  another field, reported honestly in two pages and five minutes.
 - [[The Community App]] — the culminating project: a real client in the
   school or local community, a modest problem in their words, built
   with them across Units 3 and 4 and handed over so they can keep using
@@ -36,3 +43,6 @@ lives in your [[Code Journal]], which every task collects from.
 - [[Launch Day]] — the finale: your client runs your app in front of
   the room, you hand it over properly, and the class critiques with
   care.
+- [[Final Examination]] — three hours at the end of the course: reading
+  code, finding faults, writing programs on paper, and short answers on
+  how computing works and what it costs.

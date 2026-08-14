@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 6
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_69__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,17 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[What Would You Ask]] — the questions your client will
-   have next month, when you are not there
-2. Write the handover: what it does, how to run it, how to change it,
-   and what it will never do
-3. Discussion: [[Sharing What You Build]] — credit, permission, and who
-   owns this now
-4. Hand in [[The Community App]]; begin [[Final Reflection]] in class
-5. Rehearse for [[Launch Day]] and check [[Journal Checklist]]
+1. Warm-up: [[Predict the Output]] — what happens when somebody types
+   "seven" into a box expecting 7?
+2. Break each other's programs, kindly: [[The Bad Input Hunt]]
+3. Back to [[Testing and Debugging]] — a test plan is just a written
+   list of what you are afraid of
+4. Write the test plan you will run with your client, including what
+   you expect each case to do before you try it
+5. Log it in your [[Code Journal]]
 
 ## Things to do before our next class
 
-- [ ] Confirm your client is coming, and tell them the time.
-- [ ] Finish [[Final Reflection]] and bring your [[Code Journal]].
+- [ ] Milestone: test your program *with* your client — beside them,
+      not for them — and write down everything they did that you did
+      not expect.

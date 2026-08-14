@@ -46,10 +46,58 @@ Investigations/Exercises (see EXC2O). If a folder has no reason to exist in
 this subject, it does not exist.
 
 Plan a **semestered arc, September to at latest January**: four units,
-roughly 26 classes (7/7/6/6 works), each unit building to a performance or
-summative task, the last unit culminating. Name class pages
-`Unit N, Day M.md`. Write the arc down before authoring — it is the
-skeleton everything hangs from, and class-page links are the schedule.
+each building to a performance or summative task, the last unit
+culminating. Name class pages `Unit N, Day M.md`. Write the arc down
+before authoring — it is the skeleton everything hangs from, and
+class-page links are the schedule.
+
+**An Ontario credit is 110 hours of scheduled time, and the arc must
+account for all of it.** One class page is one period. At the 75-minute
+period a semestered day school runs, that is **about 86 class pages plus a
+three-hour final evaluation** — roughly 18/22/22/24 across four units,
+dated on consecutive school days from September 8 to about January 19. Set
+`"class_weekday_step": 1` in the manifest so the installer dates them
+daily; it skips the winter break and Thanksgiving Monday on the way. The
+last **three or four classes are review**, tagged `review` in their
+frontmatter, and the final evaluation is a page in `Tasks` tagged
+`final-evaluation`. The linter checks the arithmetic and both tags.
+
+A 26-class arc is not a course — it is a sampler, and a teacher who
+adopts it inherits a timetable that runs out in November. Padding is not
+the answer either: real courses spend periods on work time, revision,
+conferencing, and catching up, and those days are worth writing down.
+A work period's class page is honestly short — an agenda of two lines and
+a checklist — and that is what makes the arc believable.
+
+Three rules govern the SHAPE of the arc, and lengthening a short one
+without them produces a course that is longer and worse:
+
+- **The culminating task ends the course.** Whatever the whole term was
+  building towards — the performance, the client hand-over, the launch —
+  is the last substantial class. After it come only reflection, review,
+  and the final evaluation. Never extend an arc by adding days AFTER the
+  culminating: a course cannot teach new material past the point where
+  it has already asked students to show everything they can do. If a
+  lengthened arc leaves the culminating in the middle, the arc is wrong,
+  not the culminating.
+- **A task occupies many days, and every one of them is named.** Real
+  tasks are launched, planned, built to a walking skeleton, tested,
+  documented, and handed in — each a period, each marked on the class
+  page as what it is ("day 3 of 8: the walking skeleton"). A task that
+  appears on the schedule twice, at launch and at due date, tells a
+  teacher nothing about the fortnight in between, which is the part they
+  actually have to run. Milestones inside the task are what make the
+  build days different from each other.
+- **Ideas come back, in a different form, on a later day.** Nobody
+  learns an idea on the day it is named. Each substantial idea should be
+  met as a problem, named, practised, and then RETURN — inside a later
+  task's requirements, as a warm-up weeks on, in a retrieval clinic
+  mixing units, and in review. Spacing and variation are how the
+  learning survives; three consecutive days on one topic and never again
+  is how it does not. This is also what turns thin coverage into real
+  coverage: an expectation genuinely addressed three times in three
+  different contexts is worth more than the same lesson written out
+  three ways.
 
 **Lean constructivist in the lesson plans.** Students meet an idea by
 working a problem, exploration, or activity BEFORE the idea gets its
@@ -173,7 +221,16 @@ from Phase 5 apply here too.
   pages that genuinely address each expectation rather than piling them on
   one page, and make sure each strand's overall expectations are reachable
   through a task — a strand whose chips are all red means nothing marked
-  addresses it. **Only PUBLISHED pages count**: a page still marked
+  addresses it. **No expectation may sit at zero.** Ontario asks that every
+  specific expectation be addressed at least once and ideally several
+  times, and that every overall expectation be evaluated for marks at least
+  once — so a shipped payload with a red cell teaches a teacher that it is
+  acceptable to leave one untaught. Check coverage EXPLICITLY, with the
+  linter, before shipping and again after any change to the arc: it reads
+  the payload's own transclusions and reports the same numbers the built
+  map will show. Treat "addressed exactly once" as thin rather than done —
+  the linter lists those too, and a course of 86 periods has room to meet
+  most expectations two or three times. **Only PUBLISHED pages count**: a page still marked
   `draft: true` is not on the site, so it cannot have addressed anything,
   and the map ignores it until the day it is published. The payload's one
   draft page — the final class — therefore contributes nothing, which is
@@ -360,7 +417,12 @@ the linter.
 
 1. `python3 .claude/skills/example-content/lint_payload.py <CODE>` — must
    end "clean"; read the "no class links" notes and confirm each is a
-   deliberate reference page.
+   deliberate reference page. Read the **coverage line** every time: it
+   reports `N/N expectations addressed` and lists those addressed only
+   once. Anything short of N/N is a failure, not a note — the built map
+   would show a red cell. The counts here and on the built page come from
+   the same rule, so they must agree; if they ever differ, one of the two
+   regexes has drifted and that is the bug to fix first.
 2. Installer E2E without Docker: import `scripts/setup_course.py` via
    importlib, call `install_example_content` into a temp dir for both
    curriculum states; assert no curriculum folder/links remain when

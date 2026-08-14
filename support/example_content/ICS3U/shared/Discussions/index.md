@@ -17,6 +17,7 @@ this course we argue, on purpose and on the record.
 | [[Who Is This For]] | Every program has a user. Do you know who yours is? |
 | [[When Code Hurts]] | Nobody wrote a line that says "work badly for them" |
 | [[Should It Exist]] | You can build it. That was never the question. |
+| [[Who Gets to Build]] | The room does not look like the country. Why not? |
 | [[Mistakes Are Data]] | What a room does with a broken build |
 | [[Sharing What You Build]] | Credit, licences, and giving work away well |
 

@@ -20,6 +20,13 @@ instead of explaining it again.
 | [[Writing Code Others Can Read]] | Code a stranger can pick up |
 | [[Interviewing Your Client]] | Asking well, and asking permission |
 | [[Getting Unstuck]] | Being stuck well instead of spinning |
+| [[Organizing Your Files]] | Folders and names you can still use in January |
+| [[Backing Up Your Work]] | Three copies, and one of them elsewhere |
+| [[Starting from a Skeleton]] | Beginning from a shape instead of a blank file |
+| [[Reading the Documentation]] | Finding out what a function actually does |
+| [[Ways to Find a Bug]] | Five methods, in the order to try them |
+| [[Writing a Test Plan]] | Deciding what "working" means before you run it |
+| [[Keeping a Project Board]] | Knowing what is finished, and what is stuck |
 
 Skim them all early and come back to each when it turns urgent. The
 error-message pair earns its keep the first time a program crashes,
