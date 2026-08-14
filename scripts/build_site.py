@@ -2112,6 +2112,20 @@ def append_coverage_styles(base_scss_path: Path):
     text += f"""
 
 {marker}
+.coverage-panel {{
+  /* The cell colours are fixed on purpose — the red-to-green reading is
+     the whole point — but the page behind them is not. Plantoir's colour
+     schemes run from near-white to near-black, so a dark green cell had
+     nothing to sit against in one scheme and a pale yellow one had
+     nothing in another. The panel gives every scheme the same neutral
+     ground, taken from the theme's OWN light grey: a light grey in light
+     schemes, a dark grey in dark ones, by construction rather than by a
+     second palette we would have to keep in step. */
+  background: var(--lightgray);
+  border-radius: 0.6rem;
+  padding: 1.2rem 1.3rem 1.1rem;
+  margin: 1.4rem 0;
+}}
 .coverage-map {{
   display: flex;
   flex-wrap: wrap;
@@ -2120,7 +2134,7 @@ def append_coverage_styles(base_scss_path: Path):
      each side needs at least 5px and the eye wants more. */
   gap: 1.4rem;
   align-items: flex-start;
-  margin: 1.4rem 0;
+  margin: 0;
 }}
 .coverage-strand {{
   display: flex;
@@ -2152,17 +2166,6 @@ def append_coverage_styles(base_scss_path: Path):
 }}
 .coverage-chip-yes {{ background: #15803d; }}
 .coverage-chip-no {{ background: #b91c1c; }}
-/* A hovered cell or chip is brightened with a filter, and a filter makes
-   the element a stacking context — which would trap Quartz's hover
-   preview inside it, because Quartz appends the popover to the link
-   itself. The sidebar carries z-index 1, so the trapped popover rendered
-   UNDERNEATH the navigation. Lifting the hovered element above the
-   sidebar takes its popover with it. */
-.coverage-cell,
-a.coverage-chip {{ position: relative; }}
-.coverage-cell:hover,
-a.coverage-chip:hover {{ z-index: 1000; }}
-a.coverage-chip:hover {{ filter: brightness(1.15); }}
 .coverage-cell {{
   display: flex;
   align-items: center;
@@ -2174,14 +2177,56 @@ a.coverage-chip:hover {{ filter: brightness(1.15); }}
   text-decoration: none;
   color: #fff;
   background: #9ca3af;
+  /* A hairline so every cell keeps its shape whatever it is sitting on.
+     The ramp spans near-white yellow to near-black green, so no single
+     neutral ground can hold all five away from the page: on a dark
+     scheme the darkest green all but vanished into the panel. Drawn in
+     the theme's mid grey, which is mid in BOTH light and dark schemes,
+     so it separates the pale end and the dark end at once. Inset, so it
+     costs no layout and cannot be confused with the assessed ring. */
+  box-shadow: inset 0 0 0 1px var(--gray);
 }}
-.coverage-cell:hover {{ filter: brightness(1.12); }}
 .coverage-code {{ font-weight: 600; }}
 .coverage-0 {{ background: #b91c1c; }}
 .coverage-1 {{ background: #ea580c; }}
 .coverage-2 {{ background: #eab308; color: #1f2937; }}
 .coverage-3 {{ background: #16a34a; }}
 .coverage-4 {{ background: #14532d; }}
+/* Hovering. Quartz recolours any hovered link to the theme's accent —
+   `color: var(--tertiary) !important` — which on a cell whose meaning IS
+   its background reads as a contrast failure at exactly the moment the
+   teacher is trying to read it: on the yellow level the label went from
+   near-black to a pale sage, about 1.4:1. So the label's colour is pinned
+   to what it already was (the `!important` is theirs, and only an
+   `!important` can answer it), and the hover shows itself by lightening
+   the BACKGROUND instead — a translucent white wash that composites over
+   whatever level colour the cell carries, so it needs no per-level rules
+   and cannot drift from the palette.
+
+   The lift to z-index 1000 is not decoration. Quartz appends its hover
+   preview INSIDE the link being hovered, so the preview can only rank
+   against that link's own children; the sidebar carries z-index 1 and
+   painted over it. Lifting the hovered cell takes its preview along. */
+.coverage-cell,
+a.coverage-chip {{ position: relative; }}
+.coverage-cell:hover,
+.coverage-cell:focus-visible,
+a.coverage-chip:hover,
+a.coverage-chip:focus-visible {{
+  z-index: 1000;
+  color: #fff !important;
+  /* Gentle on purpose, and the strength was measured rather than
+     guessed. Lightening the field a white label sits on COSTS that label
+     contrast, so a wash heavy enough to be obvious took the two
+     mid-ramp colours from marginal to unreadable. This much is plainly
+     visible on the dark cells — where most of a healthy course's map
+     lives — and costs the worst-off label about half a point. */
+  background-image: linear-gradient(rgba(255, 255, 255, 0.12),
+                                    rgba(255, 255, 255, 0.12));
+}}
+/* The one level light enough to carry dark text keeps it. */
+.coverage-2:hover,
+.coverage-2:focus-visible {{ color: #1f2937 !important; }}
 /* Assessed work is marked by a ring OUTSIDE the cell, with a gap.
    Inset rings were tried twice and failed both times: drawn on top of the
    cell's own colour they read as a hairline, and no single tone works
@@ -2196,15 +2241,17 @@ a.coverage-chip:hover {{ filter: brightness(1.15); }}
 }}
 .coverage-rule {{
   border: none;
-  border-top: 1px solid var(--lightgray);
-  margin: 1.4rem 0 1rem;
+  /* Mid grey, not the theme's light grey: the panel IS that light grey
+     now, and a rule drawn in it would be invisible. */
+  border-top: 1px solid var(--gray);
+  margin: 1.3rem 0 1rem;
 }}
 .coverage-legend {{
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.4rem;
-  margin: 0 0 1.4rem;
+  margin: 0;
   font-size: 0.85rem;
 }}
 .coverage-legend-row {{
@@ -2218,6 +2265,9 @@ a.coverage-chip:hover {{ filter: brightness(1.15); }}
   height: 1.35rem;
   border-radius: 0.22rem;
   flex: none;
+  /* The key swatches are the same five colours, so they need the same
+     hairline for the same reason. */
+  box-shadow: inset 0 0 0 1px var(--gray);
 }}
 """
     base_scss_path.write_text(text, encoding="utf-8")
@@ -3111,10 +3161,9 @@ Every expectation in {course_code}, coloured by how many pages address it.
 The map is built from this site's own links each time the site is built, so
 it cannot drift from the course.
 
+<div class="coverage-panel">
 <div class="coverage-map">{"".join(columns)}</div>
-
 <hr class="coverage-rule">
-
 <div class="coverage-legend">
 <div class="coverage-legend-row"><span class="coverage-key coverage-0"></span> {COVERAGE_WORDS[0].capitalize()}</div>
 <div class="coverage-legend-row"><span class="coverage-key coverage-1"></span> {COVERAGE_WORDS[1].capitalize()}</div>
@@ -3122,6 +3171,7 @@ it cannot drift from the course.
 <div class="coverage-legend-row"><span class="coverage-key coverage-3"></span> {COVERAGE_WORDS[3].capitalize()}</div>
 <div class="coverage-legend-row"><span class="coverage-key coverage-4"></span> {COVERAGE_WORDS[4].capitalize()}</div>
 <div class="coverage-legend-row"><span class="coverage-key coverage-2" data-assessed="true"></span> Included in assessed work — the cell carries a ring</div>
+</div>
 </div>
 
 Hover any cell to preview the expectation. The row of small chips under
