@@ -796,7 +796,7 @@ public class AssistWorkspaceTests : IDisposable
     }
 
     [Fact]
-    public void TheServerRefusesToBuildWhilePlantoirIsPreviewingTheSameCourse()
+    public void TheServerRefusesToBuildWhilePlantoirIsBuildingTheSameCourse()
     {
         // The other half of the protocol: the app writes what it is doing and
         // the server reads it. Both build into .merged_output/section<N>/,
@@ -805,18 +805,44 @@ public class AssistWorkspaceTests : IDisposable
         using var child = StartALongRunningChild();
         try
         {
-            WriteWorkLease("ICS3U", WorkLease.Previewing, child.Id, child.ProcessName);
+            WriteWorkLease("ICS3U", WorkLease.Building, child.Id, child.ProcessName);
             var workspace = Open();
             var plan = workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false);
 
             var refusal = Assert.ThrowsAsync<AssistRefusal>(() => workspace.Apply(plan)).Result;
 
-            Assert.Contains("Plantoir is previewing ICS3U right now", refusal.Message);
+            Assert.Contains("Plantoir is building ICS3U right now", refusal.Message);
             Assert.Contains("Reading and planning are fine meanwhile.", refusal.Message);
             Assert.Empty(_launcher.Runs);                 // never got as far as a build
             Assert.Contains("publish: false",
                 File.ReadAllText(Path.Combine(_folder, "courses", "ICS3U",
                     "section1", "All Classes", "Unit 2, Day 3.md")));   // and never edited
+        }
+        finally { try { child.Kill(entireProcessTree: true); } catch { } }
+    }
+
+    [Fact]
+    public void AnOpenPreviewNeverStopsTheAssistantFromWorking()
+    {
+        // The whole point of a separate window: the teacher watches the preview
+        // of the section while asking for the next change to it. A preview
+        // lease is held for as long as the SERVER runs, so treating it as a
+        // conflict meant a teacher had to close the very thing they were using
+        // to judge the assistant's work. Only an in-flight BUILD is exclusive.
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true);
+        using var child = StartALongRunningChild();
+        try
+        {
+            WriteWorkLease("ICS3U", WorkLease.Previewing, child.Id, child.ProcessName);
+            var workspace = Open();
+            var plan = workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false);
+
+            var result = workspace.Apply(plan).Result;
+
+            Assert.True(result.Succeeded);
+            Assert.Contains("publish: true",
+                File.ReadAllText(Path.Combine(_folder, "courses", "ICS3U",
+                    "section1", "All Classes", "Unit 2, Day 3.md")));
         }
         finally { try { child.Kill(entireProcessTree: true); } catch { } }
     }

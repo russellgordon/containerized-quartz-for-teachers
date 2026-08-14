@@ -858,6 +858,7 @@ public sealed class AssistWorkspace
                 "do it after that.");
 
         progress?.Report($"Building Section {section} of {course.Code}…");
+        using var claim = ClaimTheBuild(course);
         var build = await _launcher.Run("preview", new[] { course.Code, section.ToString(), "--build-only" },
                                         _folder, progress, cancellation);
         if (!build.Succeeded)
@@ -885,6 +886,7 @@ public sealed class AssistWorkspace
         RefuseIfPlantoirIsBuilding(course);
 
         progress?.Report($"Building a preview of Section {section} of {course.Code}…");
+        using var claim = ClaimTheBuild(course);
         var build = await _launcher.Run("preview", new[] { course.Code, section.ToString(), "--build-only" },
                                         _folder, progress, cancellation);
         return build.Succeeded
@@ -1051,18 +1053,27 @@ public sealed class AssistWorkspace
     /// </summary>
     private void RefuseIfPlantoirIsBuilding(Course course)
     {
-        var held = WorkLease.HeldBy(_folder, course.Code);
-        bool previewing = held.Contains(WorkLease.Previewing);
-        bool publishing = held.Contains(WorkLease.Publishing);
-        if (!previewing && !publishing) return;
+        // Only a BUILD in flight, which is the one thing that cannot happen
+        // twice. This used to refuse whenever Plantoir held a preview or
+        // publish lease at all — and a preview lease is held for as long as
+        // the preview SERVER runs, so the assistant refused to do anything
+        // for a teacher who had their preview open. That is precisely the
+        // teacher this exists to help: they watch the preview to judge the
+        // change while asking for the next one.
+        if (!WorkLease.HeldBy(_folder, course.Code).Contains(WorkLease.Building)) return;
 
-        string what = previewing && publishing ? "previewing and deploying"
-            : previewing ? "previewing" : "deploying";
         throw new AssistRefusal(
-            $"Plantoir is {what} {course.Code} right now, and building it here at the same time would " +
-            "spoil both. Wait for that to finish, then try again. " +
+            $"Plantoir is building {course.Code} right now, and building it here at the same time would " +
+            "spoil both — they write to the same folder. Try again in a moment. " +
             "Reading and planning are fine meanwhile.");
     }
+
+    /// <summary>
+    /// Claim the build for as long as it runs, so Plantoir's own Preview and
+    /// Deploy stand off rather than clearing the folder underneath it.
+    /// </summary>
+    private IDisposable ClaimTheBuild(Course course) =>
+        WorkLease.Take(_folder, course.Code, WorkLease.Building);
 
 
 

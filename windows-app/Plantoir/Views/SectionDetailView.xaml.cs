@@ -31,6 +31,14 @@ public sealed partial class SectionDetailView : UserControl
     private IDisposable? _previewWork;
     private IDisposable? _publishWork;
     private IDisposable? _publishActivity;
+
+    /// <summary>
+    /// Held only while a build is actually running, and dropped the moment the
+    /// preview server answers. The preview lease beside it lasts as long as the
+    /// SERVER does, which is a different question: serving is not a conflict,
+    /// building is.
+    /// </summary>
+    private IDisposable? _buildWork;
     private Uri? _previewUrl;
     private Uri? _lastLoadedUrl;
     private bool _isWaitingForServer;
@@ -76,25 +84,26 @@ public sealed partial class SectionDetailView : UserControl
         ReloadButton.IsEnabled = previewShown;
         BrowserButton.IsEnabled = previewShown;
 
-        // An assistant working on this course holds the build output, so
-        // neither building nor publishing can go ahead. This is the courtesy
-        // half — the click itself is checked too, because a session can start
-        // while these buttons are already on screen.
-        bool assisted = _window.Workspace.WorkspacePath is { } folder &&
-                        CourseActivity.IsAssisting(folder, _course.Code);
-        DeployButton.IsEnabled = !IsBusy && !assisted;
-        if (assisted)
-            ToolTipService.SetToolTip(DeployButton, $"Available once you finish revising {_course.Code} with Claude");
+        // Previewing DURING a conversation is the point of the assistant, not
+        // a conflict with it: the teacher reads the preview to judge the change
+        // they just asked for. So a session being open changes nothing here.
+        // Only a build actually in flight stands in the way, and only for the
+        // seconds it runs, because two builds clear the same output folder.
+        bool building = _window.Workspace.WorkspacePath is { } folder &&
+                        CourseActivity.IsBuildingElsewhere(folder, _course.Code);
+        DeployButton.IsEnabled = !IsBusy && !building;
+        if (building)
+            ToolTipService.SetToolTip(DeployButton, $"Available in a moment — {_course.Code} is being built");
 
         bool running = _previewRunner.IsRunning;
         PreviewLabel.Text = running ? "Stop Preview" : "Preview";
         PreviewIcon.Glyph = running ? Glyphs.Stop : Glyphs.Play;
         ToolTipService.SetToolTip(PreviewButton,
             running ? "Stop previewing this section"
-            : assisted ? $"Available once you finish revising {_course.Code} with Claude"
+            : building ? $"Available in a moment — {_course.Code} is being built"
             : "Preview this section's website");
         // Stopping a preview already under way is always allowed.
-        PreviewButton.IsEnabled = running || (!IsBusy && !assisted);
+        PreviewButton.IsEnabled = running || (!IsBusy && !building);
 
         // Which task owns the console: the running one, else the most recent.
         // Bind ONCE per runner (in the constructor) and only swap which is
@@ -131,29 +140,33 @@ public sealed partial class SectionDetailView : UserControl
     public void StartDeployForAutomation() => Deploy_Click(this, new RoutedEventArgs());
 
     /// <summary>
-    /// Refuse to start a build while an assistant is working on this course.
+    /// Refuse to start a build while the assistant is running one.
     ///
     /// Checked at the CLICK, not just when the buttons were last drawn: a
-    /// session can start at any moment from the sidebar, and the chrome only
+    /// build can start at any moment in the other process, and the chrome only
     /// redraws when a runner or the browser says something. The disabled
     /// button is the courtesy; this is the guarantee.
     ///
     /// Both would otherwise build into
     /// <c>.merged_output/section&lt;N&gt;/</c>, which the build clears before
-    /// writing — so the loser serves a half-written site, or publishes files
+    /// writing — so the loser serves a half-written site, or deploys files
     /// the other just deleted.
+    ///
+    /// It waits on a BUILD, never on the conversation. Waiting on the whole
+    /// session made a teacher choose between watching their preview and
+    /// talking about it, and those two things belong together.
     /// </summary>
-    private async Task<bool> AnAssistantHasThisCourse()
+    private async Task<bool> TheAssistantIsBuilding()
     {
         if (_window.Workspace.WorkspacePath is not { } folder) return false;
-        if (!CourseActivity.IsAssisting(folder, _course.Code)) return false;
+        if (!CourseActivity.IsBuildingElsewhere(folder, _course.Code)) return false;
 
         var dialog = new ContentDialog
         {
-            Title = $"{_course.Code} is being revised with Claude",
-            Content = "Building this section now would clash with what Claude is doing — " +
-                      "both write to the same place. Finish in the Claude window, close it, " +
-                      "then try again.",
+            Title = $"{_course.Code} is being built",
+            Content = "The assistant is rebuilding this course right now, and building it here at the " +
+                      "same time would clash — both write to the same place. This usually takes a few " +
+                      "seconds; try again when it finishes.",
             CloseButtonText = "OK",
             XamlRoot = XamlRoot,
         };
@@ -165,7 +178,7 @@ public sealed partial class SectionDetailView : UserControl
     private async void PreviewOrStop_Click(object sender, RoutedEventArgs e)
     {
         if (_previewRunner.IsRunning) { StopPreview(); return; }
-        if (await AnAssistantHasThisCourse()) return;
+        if (await TheAssistantIsBuilding()) return;
         if (_window.Workspace.WorkspacePath is not { } workspacePath) return;
 
         try
@@ -174,6 +187,8 @@ public sealed partial class SectionDetailView : UserControl
             // Say so on disk as well as in memory: an assistant is a separate
             // process and cannot see the in-memory lease.
             _previewWork = WorkLease.Take(workspacePath, _course.Code, WorkLease.Previewing);
+            // Dropped as soon as the server answers — see ReleaseBuildClaim.
+            _buildWork = WorkLease.Take(workspacePath, _course.Code, WorkLease.Building);
         }
         catch (PreviewLeases.LeaseRefusedException refusal)
         {
@@ -244,7 +259,11 @@ public sealed partial class SectionDetailView : UserControl
                     var response = await client.GetAsync(serverUrl);
                     if (response.IsSuccessStatusCode)
                     {
+                        // The site is up, so the build is over: the assistant
+                        // may build again from here on, while this preview
+                        // stays on screen for the teacher to read.
                         _isWaitingForServer = false;
+                        ReleaseBuildClaim();
                         _previewUrl = serverUrl;
                         LoadIfNeeded(serverUrl);
                         RefreshChrome();
@@ -255,7 +274,10 @@ public sealed partial class SectionDetailView : UserControl
                 await Task.Delay(1000);
                 elapsed++;
             }
+            // The server never answered. The build is over either way, so the
+            // claim must not outlive it.
             _isWaitingForServer = false;
+            ReleaseBuildClaim();
             RefreshChrome();
         }
         finally
@@ -296,8 +318,20 @@ public sealed partial class SectionDetailView : UserControl
         RefreshChrome();
     }
 
+    /// <summary>
+    /// Give up the build claim. Safe to call twice, and called on every path
+    /// that stops waiting — a claim left behind would lock the assistant out
+    /// of building for as long as Plantoir stayed open.
+    /// </summary>
+    private void ReleaseBuildClaim()
+    {
+        _buildWork?.Dispose();
+        _buildWork = null;
+    }
+
     private void ReleaseLease()
     {
+        ReleaseBuildClaim();
         _previewWork?.Dispose();
         _previewWork = null;
         if (_lease is { } lease) PreviewLeases.Release(lease);
@@ -309,7 +343,7 @@ public sealed partial class SectionDetailView : UserControl
     private async void Deploy_Click(object sender, RoutedEventArgs e)
     {
         if (IsBusy) return;
-        if (await AnAssistantHasThisCourse()) return;
+        if (await TheAssistantIsBuilding()) return;
         if (_window.Workspace.WorkspacePath is not { } workspacePath) return;
 
         // Folder publishing (rows 101–102): the save gate keeps the folder
@@ -364,6 +398,9 @@ public sealed partial class SectionDetailView : UserControl
         _publishActivity?.Dispose();
         _publishActivity = CourseActivity.BeginPublish(workspacePath, _course.Code, _sectionNumber);
         _publishWork = WorkLease.Take(workspacePath, _course.Code, WorkLease.Publishing);
+        // A deploy builds and then uploads, and both end together, so the
+        // build claim can simply run its whole length.
+        _buildWork = WorkLease.Take(workspacePath, _course.Code, WorkLease.Building);
 
         if (needsBuild)
         {
@@ -392,6 +429,7 @@ public sealed partial class SectionDetailView : UserControl
         _publishActivity = null;
         _publishWork?.Dispose();
         _publishWork = null;
+        ReleaseBuildClaim();
     }
 
     // ---- Browser chrome --------------------------------------------------

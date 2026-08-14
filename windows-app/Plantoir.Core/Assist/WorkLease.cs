@@ -36,6 +36,24 @@ public static class WorkLease
     /// <summary>The app is building and deploying.</summary>
     public const string Publishing = "publish";
 
+    /// <summary>
+    /// Somebody is running a BUILD of this course right now — the narrow thing
+    /// that genuinely cannot happen twice at once.
+    ///
+    /// The other three kinds say what somebody is DOING; this one says what
+    /// they are doing that clashes. Both a build and a rebuild write into
+    /// <c>.merged_output/section&lt;N&gt;/</c>, which the build clears first,
+    /// so two at once lose each other's work. Nothing else conflicts: editing
+    /// Markdown does not touch that folder, and a preview SERVER only reads it.
+    ///
+    /// It is held for the build and released the moment the build is done —
+    /// not for the life of the session or the life of the preview server.
+    /// Holding it that long is what made a teacher choose between watching
+    /// their preview and talking to the assistant about it, which is exactly
+    /// the pairing the assistant exists for.
+    /// </summary>
+    public const string Building = "build";
+
     private static string Directory(string workspacePath) =>
         Path.Combine(Workspace.CoursesDirectory(workspacePath), ".internal", "activity");
 

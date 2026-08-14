@@ -57,6 +57,17 @@ public static class CourseActivity
         Assist.WorkLease.IsHeld(folderPath, courseCode, Assist.WorkLease.Assisting);
 
     /// <summary>
+    /// Another process is running a build of this course right now.
+    ///
+    /// The question Preview and Deploy ask before starting. Note what it does
+    /// NOT ask: whether a conversation is open. A teacher previewing a section
+    /// while asking the assistant to change it is the intended way to use both,
+    /// and only the few seconds of an actual build are exclusive.
+    /// </summary>
+    public static bool IsBuildingElsewhere(string folderPath, string courseCode) =>
+        Assist.WorkLease.IsHeld(folderPath, courseCode, Assist.WorkLease.Building);
+
+    /// <summary>
     /// The short line naming what stands in the way of structural work on
     /// this course, or null when it is free.
     /// </summary>

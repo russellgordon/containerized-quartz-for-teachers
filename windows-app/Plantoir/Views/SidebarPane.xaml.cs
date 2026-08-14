@@ -412,12 +412,21 @@ public sealed partial class SidebarPane : UserControl
         {
             string? reason = Workspace.WorkspacePath is { } folder
                 ? CourseActivity.BusyReason(folder, course.Code) : null;
+            // Add Section rewrites the course's folders and files, so it waits
+            // for everything: a preview reading them, a deploy copying them, an
+            // assistant editing them.
             addItem.IsEnabled = reason is null;
             busyNote.Text = reason ?? "";
             busyNote.Visibility = reason is null ? Visibility.Collapsed : Visibility.Visible;
-            // A second assistant on the same course would have both of them
-            // building into the one output folder.
-            if (reviseItem is not null) reviseItem.IsEnabled = reason is null;
+
+            // Starting a conversation waits only for ANOTHER assistant. A
+            // preview running is not in the way — it is the thing the teacher
+            // is looking at while they decide what to ask for next, and gating
+            // this on the same reason as Add Section stopped them from opening
+            // a conversation about the preview in front of them.
+            if (reviseItem is not null)
+                reviseItem.IsEnabled = Workspace.WorkspacePath is not { } path ||
+                                       !CourseActivity.IsAssisting(path, course.Code);
         };
         menu.Items.Add(new MenuFlyoutSeparator());
         menu.Items.Add(MenuItem("Show in File Explorer", ExplorerGlyph, () => FolderActions.ShowInFileExplorer(course.DirectoryPath)));
@@ -473,12 +482,13 @@ public sealed partial class SidebarPane : UserControl
 
         // Read when the menu OPENS, never captured at render — the staleness
         // lesson from row 104, which cost a live debugging session.
+        //
+        // Only another assistant stands in the way. A preview of this very
+        // section running is the normal case, not a conflict: the teacher
+        // watches it to judge what the assistant just did.
         menu.Opening += (_, _) =>
-        {
-            string? reason = Workspace.WorkspacePath is { } folder
-                ? CourseActivity.BusyReason(folder, course.Code) : null;
-            reviseItem.IsEnabled = reason is null;
-        };
+            reviseItem.IsEnabled = Workspace.WorkspacePath is not { } folder ||
+                                   !CourseActivity.IsAssisting(folder, course.Code);
         return menu;
     }
 
@@ -497,9 +507,13 @@ public sealed partial class SidebarPane : UserControl
         // A second session on the same course would have both of them writing
         // into one output folder. The menu says so too; this is the guarantee,
         // since a session can start between the menu opening and the click.
-        if (CourseActivity.BusyReason(folder, course.Code) is { } reason)
+        // Deliberately NOT a check for previews or deploys — those can happily
+        // run alongside a conversation, and only a build is exclusive.
+        if (CourseActivity.IsAssisting(folder, course.Code))
         {
-            _ = ShowError($"{course.Code} is busy right now", reason + ".");
+            _ = ShowError($"{course.Code} is already being revised",
+                "There is an assistant working on this course already. Finish in that window, " +
+                "close it, then start again here.");
             return;
         }
 
