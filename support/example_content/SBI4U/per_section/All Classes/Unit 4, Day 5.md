@@ -1,0 +1,21 @@
+---
+title: Unit 4, Day 5
+draft: false
+created: __CREATED_CLASS_20__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. Discussion: [[Testing on Animals]]
+2. Work time: [[Homeostasis Report]], diagrams drawn in class
+3. Consolidate: four loops, one structure
+4. Hand in [[Homeostasis Report]]
+
+## Things to do before our next class
+
+- [ ] Read [[Population Growth]].
+- [ ] Journal: which control system would you least want to lose?

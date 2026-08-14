@@ -1,0 +1,12 @@
+---
+title: Portfolios
+draft: false
+created: __CREATED__
+tags:
+  - portfolios
+---
+Your own record of the course, in your own words.
+
+- [[Biology Journal]]
+- [[Your First Entry]]
+- [[Portfolio Checklist]]
