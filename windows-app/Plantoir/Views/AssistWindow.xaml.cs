@@ -619,10 +619,20 @@ public sealed partial class AssistWindow : Window
     private void Shutdown()
     {
         try { _closing.Cancel(); } catch { }
-        _ = Task.Run(async () =>
+
+        // WAITED ON, not fired and forgotten. The old version started this on
+        // a background task and returned, so closing the window — or closing
+        // Plantoir straight after — could end the process before the container
+        // was removed and the WSL keepalive released. Two conversations left
+        // four keepalives behind that way.
+        //
+        // Bounded, because a shutdown that hangs is worse than one that leaks:
+        // if Docker is wedged, the keepalive now ends by itself anyway.
+        var cleanup = Task.Run(async () =>
         {
             if (_tools is not null) await _tools.DisposeAsync();
             _model.Stop();
         });
+        try { cleanup.Wait(TimeSpan.FromSeconds(8)); } catch { }
     }
 }

@@ -219,7 +219,18 @@ public sealed class LocalModel
         info.ArgumentList.Add("-e");
         info.ArgumentList.Add("sh");
         info.ArgumentList.Add("-c");
-        info.ArgumentList.Add("sleep 21600");    // six hours, then it lets go by itself
+        // It watches the container and lets go within five seconds of it
+        // disappearing, rather than sleeping blindly for six hours.
+        //
+        // A plain sleep leaked: two conversations left four of these behind,
+        // still pinning WSL long after their windows had closed. Stop() kills
+        // them, but Stop() runs on the way out and does not always finish —
+        // and anything that only cleans up when asked nicely will eventually
+        // meet a process that was not asked. This one ends on its own.
+        info.ArgumentList.Add(
+            "for i in $(seq 1 4320); do " +
+            $"docker ps --filter name={ContainerName} --format '{{{{.Names}}}}' | grep -q {ContainerName} || exit 0; " +
+            "sleep 5; done");
         try { _keepWslAwake = Process.Start(info); } catch { _keepWslAwake = null; }
     }
 
