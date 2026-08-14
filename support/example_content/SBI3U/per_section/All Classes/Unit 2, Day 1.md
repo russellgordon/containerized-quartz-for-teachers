@@ -1,0 +1,21 @@
+---
+title: Unit 2, Day 1
+draft: false
+created: __CREATED_CLASS_6__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. Start of Unit 2 — five forelimbs, one pattern
+2. [[Comparative Anatomy]] — colour the same bone in all five
+3. Name it: [[Evidence for Evolution]]
+4. Hand in [[Biodiversity Field Study]]
+
+## Things to do before our next class
+
+- [ ] Finish the evidence table.
+- [ ] Journal: which line of evidence would be hardest to explain away?
