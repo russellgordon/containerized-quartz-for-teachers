@@ -2187,11 +2187,18 @@ def append_coverage_styles(base_scss_path: Path):
   box-shadow: inset 0 0 0 1px var(--gray);
 }}
 .coverage-code {{ font-weight: 600; }}
+/* The ramp is deep enough for its own labels. Every step was measured
+   against the label it carries rather than picked for looks: a lighter
+   orange and a lighter green left white text at 3.6:1 and 3.3:1, under
+   the 4.5:1 that small text needs. Deepening those two crowded the top
+   of the ramp, so the highest step went deeper still to stay distinct
+   from the one below it. Only the yellow step is light enough to take
+   dark ink, and it keeps it. */
 .coverage-0 {{ background: #b91c1c; }}
-.coverage-1 {{ background: #ea580c; }}
+.coverage-1 {{ background: #c2410c; }}
 .coverage-2 {{ background: #eab308; color: #1f2937; }}
-.coverage-3 {{ background: #16a34a; }}
-.coverage-4 {{ background: #14532d; }}
+.coverage-3 {{ background: #15803d; }}
+.coverage-4 {{ background: #052e16; }}
 /* Hovering. Quartz recolours any hovered link to the theme's accent —
    `color: var(--tertiary) !important` — which on a cell whose meaning IS
    its background reads as a contrast failure at exactly the moment the
