@@ -1,0 +1,68 @@
+---
+title: Final Examination
+draft: false
+created: __CREATED__
+enableToc: true
+tags:
+  - tasks
+  - final-evaluation
+---
+> [!abstract] At a glance
+> Individual · three hours in the examination period · closed book ·
+> alongside the final stage of [[The Independent Study]], this is the
+> final 30%
+
+## What is on it
+
+| Part | Roughly | What it asks |
+| --- | --- | --- |
+| A. Sight passage — prose | 25% | An unseen passage: comprehension, inference, and one analytical paragraph |
+| B. Sight passage — poem | 20% | An unseen poem, read closely, in a paragraph |
+| C. Short answers on the studied texts | 20% | Precise recall and interpretation across the play, the novel, and the non-fiction |
+| D. Essay | 35% | One argument about a studied text, planned and written in the room |
+
+## What it rewards
+
+- **Passages known cold.** Three per text, chosen now. Not word-perfect —
+  known: what happens, who is there, what it shows.
+- **Reading the question's verb.** *Analyse*, *evaluate*, *compare* — three
+  different shapes.
+- **Five minutes of planning** before the essay. Every year the strongest
+  essays have a visible plan in the margin.
+- **Analysis longer than quotation**, under pressure, which is a habit
+  rather than a decision.
+
+## How to prepare
+
+1. Three passages per text, annotated, in your notes.
+2. Redo your analytical paragraphs from the autumn — from the passage,
+   not from the old paragraph.
+3. Two timed sight passages before the examination: one in class, one at
+   home.
+4. Rebuild your essay outline template until it is automatic.
+5. Bring your questions to the four review classes.
+
+> [!tip] In the room
+> Budget by the weightings and wear a watch. Do the essay while you are
+> fresh if you have your argument; do the sight passages first if you do
+> not. Answer everything — partial answers earn partial marks.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B1.2]]
+
+![[B1.4]]
+
+![[C1.1]]
+
+![[C2.1]]
+
+![[B2.3]]
+
+![[B3.1]]
+
+![[C3.5]]
+
+![[D1.3]]
+%%curriculum-end%%

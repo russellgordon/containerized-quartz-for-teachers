@@ -1,0 +1,18 @@
+---
+title: Unit 2, Day 24
+draft: false
+created: __CREATED_CLASS_41__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. Hand in [[The Critical Essay]] — day 7
+2. Discussion: [[Whose Reading Counts]] — three readings of the witches
+
+## Things to do before our next class
+
+- [ ] One paragraph: the strongest reading that was not yours.

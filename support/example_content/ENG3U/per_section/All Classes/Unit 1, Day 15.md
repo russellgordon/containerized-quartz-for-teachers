@@ -1,0 +1,22 @@
+---
+title: Unit 1, Day 15
+draft: false
+created: __CREATED_CLASS_15__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Hand in [[The Close Reading Essay]] — day 5
+2. Three essays read aloud; the room names the mechanism in each
+3. Tutorial: [[Getting Unstuck]], and [[Getting Help]]; [[Help Sessions]]
+   explained
+4. Poem: "The Cariboo Horses" — setting as claim, from [[Poetry Unit]]
+5. Practise: [[Sight Passage Practice]], first two, under time
+
+## Things to do before our next class
+
+- [ ] Finish the sight passage questions.

@@ -1,0 +1,18 @@
+---
+title: Unit 3, Day 17
+draft: false
+created: __CREATED_CLASS_60__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-3
+---
+## Agenda
+
+1. Hand in [[The Comparative Response]] — day 5
+2. Discussion: [[What Is Canadian Literature For]]
+
+## Things to do before our next class
+
+- [ ] Write your two-sentence definition, and one text that breaks it.

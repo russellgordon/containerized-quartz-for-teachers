@@ -1,0 +1,18 @@
+---
+title: Unit 4, Day 13
+draft: false
+created: __CREATED_CLASS_78__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. [[The Independent Study]] — rewrite period; citations checked
+2. Conferences on request
+
+## Things to do before our next class
+
+- [ ] Essay due next class.
