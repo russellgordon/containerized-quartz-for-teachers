@@ -17,6 +17,39 @@ namespace Plantoir.Core.Assist;
 /// </summary>
 public sealed class ScheduledDeploy
 {
+    /// <summary>
+    /// Why this section cannot be scheduled, in plain words, or null if it can.
+    ///
+    /// Shared by the assistant and by the sidebar's own "Schedule Deploy…", so
+    /// the two paths cannot drift. A refusal that only one of them makes is a
+    /// refusal a teacher can walk around by using the other door — and the
+    /// thing being walked around here is a deploy that would sit waiting on a
+    /// question at half six in the morning.
+    /// </summary>
+    public static string? Problem(Models.Course course, int sectionNumber, DateTime when, DateTime now)
+    {
+        if (when <= now)
+            return $"{when:dddd d MMMM, h:mm tt} has already passed. Pick a time still to come.";
+
+        // A Pages-scoped Cloudflare token cannot list its own account, so the
+        // account id lives in Plantoir's settings and only a deploy started
+        // inside the app can pass it.
+        if (course.Configuration.DeploysToCloudflare)
+            return $"{course.Code} deploys to Cloudflare Pages, which needs the account ID only Plantoir " +
+                   "has. A scheduled deploy runs on its own and cannot be given it, so this can't be " +
+                   "scheduled — deploy this section from Plantoir instead.";
+
+        // With no site marker, deploy.py asks what to call the website. Nobody
+        // is there to answer at the scheduled time; it would simply wait.
+        if (!course.Configuration.DeploysToLocalFolder &&
+            !File.Exists(Path.Combine(course.DirectoryPath, ".netlify_sites", $"section{sectionNumber}.json")))
+            return $"{course.Code} Section {sectionNumber} has never been deployed, so deploying it asks " +
+                   "what to call the website. Nobody would be there to answer that at the scheduled time, " +
+                   "and it would wait. Deploy it once from Plantoir, and after that it can be scheduled.";
+
+        return null;
+    }
+
     public required string CourseCode { get; init; }
     public required int SectionNumber { get; init; }
     public required DateTime When { get; init; }

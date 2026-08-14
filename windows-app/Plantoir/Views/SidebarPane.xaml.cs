@@ -490,10 +490,15 @@ public sealed partial class SidebarPane : UserControl
         // Only shown when there is one to cancel. A permanently greyed-out
         // "Cancel Scheduled Deploy…" on every section would teach teachers to
         // ignore the line, which is the opposite of what it is for.
+        // Scheduling without going through the assistant: the same act, and
+        // most teachers setting a 6:30 deploy know exactly what they want and
+        // should not have to describe it in a sentence first.
         var scheduled = TaskScheduling.NextRun(course.Code, number);
-        if (scheduled is { } when)
-            menu.Items.Add(MenuItem($"Cancel Deploy at {when:h:mm tt}…", Glyphs.Clock,
-                                    () => ConfirmCancelScheduledDeploy(course, number, when)));
+        menu.Items.Add(scheduled is { } when
+            ? MenuItem($"Cancel Deploy at {when:h:mm tt}…", Glyphs.Clock,
+                       () => ConfirmCancelScheduledDeploy(course, number, when))
+            : MenuItem("Schedule Deploy…", Glyphs.Clock,
+                       () => AskWhenToDeploy(course, number)));
 
         menu.Items.Add(new MenuFlyoutSeparator());
 
@@ -512,6 +517,95 @@ public sealed partial class SidebarPane : UserControl
             foreach (var item in reviseItems) item.IsEnabled = canRevise;
         };
         return menu;
+    }
+
+    /// <summary>
+    /// Ask when to deploy, and set it.
+    ///
+    /// Defaults to half past six tomorrow morning, because that is the case
+    /// this exists for — the site live before the students are, without the
+    /// teacher being at their desk. Everything the computer must be doing at
+    /// that moment is stated in the dialog rather than discovered at 6:31.
+    /// </summary>
+    private async void AskWhenToDeploy(Course course, int number)
+    {
+        var tomorrow = DateTime.Today.AddDays(1).AddHours(6).AddMinutes(30);
+
+        var day = new CalendarDatePicker
+        {
+            Date = tomorrow,
+            MinDate = DateTimeOffset.Now.Date,
+            PlaceholderText = "Pick a day",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+        };
+        var time = new TimePicker
+        {
+            Time = tomorrow.TimeOfDay,
+            ClockIdentifier = "12HourClock",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+        };
+        var warning = new TextBlock
+        {
+            TextWrapping = TextWrapping.Wrap,
+            Visibility = Visibility.Collapsed,
+            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources[
+                "SystemFillColorCautionBrush"],
+        };
+
+        var body = new StackPanel { Spacing = 12 };
+        body.Children.Add(new TextBlock
+        {
+            TextWrapping = TextWrapping.Wrap,
+            Text = $"{course.Code} Section {number} will deploy on its own at the time you pick. " +
+                   "This computer must be switched on and awake then — plugged in if it is a laptop, " +
+                   "with the lid open. Plantoir does not wake it up.",
+        });
+        body.Children.Add(day);
+        body.Children.Add(time);
+        body.Children.Add(warning);
+
+        var dialog = new ContentDialog
+        {
+            Title = "Schedule a deploy",
+            Content = body,
+            PrimaryButtonText = "Schedule",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = XamlRoot,
+        };
+
+        // Checked as they choose, not after they commit — and the SAME check
+        // the assistant makes, so neither door is the lenient one.
+        void Recheck()
+        {
+            var chosen = Chosen();
+            string? problem = chosen is null
+                ? "Pick a day."
+                : ScheduledDeploy.Problem(course, number, chosen.Value, DateTime.Now);
+            warning.Text = problem ?? "";
+            warning.Visibility = problem is null ? Visibility.Collapsed : Visibility.Visible;
+            dialog.IsPrimaryButtonEnabled = problem is null;
+        }
+
+        DateTime? Chosen() => day.Date is { } picked
+            ? picked.Date.Add(time.Time)
+            : null;
+
+        day.DateChanged += (_, _) => Recheck();
+        time.TimeChanged += (_, _) => Recheck();
+        Recheck();
+
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+        if (Chosen() is not { } when) return;
+
+        if (Workspace.WorkspacePath is not { } folder) return;
+        if (TaskScheduling.Schedule(TaskScheduling.NameFor(course.Code, number),
+                                    folder, course.Code, number, when) is { } failure)
+        {
+            await ShowError("That couldn't be scheduled", failure);
+            return;
+        }
+        Refresh();   // the clock appears
     }
 
     /// <summary>

@@ -46,6 +46,61 @@ public sealed class ScheduledDeployTests : IDisposable
     private AssistWorkspace Open() => new(_folder, _launcher);
     private static DateTime Tomorrow => DateTime.Now.AddDays(1).Date.AddHours(6).AddMinutes(30);
 
+    // ---- The guard both doors share --------------------------------------
+
+    [Fact]
+    public void TheSameRefusalsApplyWhereverTheDeployIsScheduledFrom()
+    {
+        // The sidebar's "Schedule Deploy…" and the assistant's schedule_deploy
+        // call ONE checker. A refusal only one of them made would be a refusal
+        // a teacher could walk around by using the other door.
+        var course = Open().Course("ICS3U");
+        var now = new DateTime(2026, 8, 14, 9, 0, 0);
+
+        Assert.Contains("has already passed",
+            ScheduledDeploy.Problem(course, 1, now.AddHours(-1), now));
+        Assert.Null(ScheduledDeploy.Problem(course, 1, now.AddDays(1), now));
+    }
+
+    [Fact]
+    public void ASectionNeverDeployedCannotBeScheduled()
+    {
+        // deploy.py would ask what to call the website, and at 6:30 in the
+        // morning nobody is there to answer — it would simply wait.
+        File.Delete(Path.Combine(_folder, "courses", "ICS3U", ".netlify_sites", "section1.json"));
+        var course = Open().Course("ICS3U");
+        var now = new DateTime(2026, 8, 14, 9, 0, 0);
+
+        string? problem = ScheduledDeploy.Problem(course, 1, now.AddDays(1), now);
+
+        Assert.Contains("has never been deployed", problem);
+        Assert.Contains("Nobody would be there to answer", problem);
+    }
+
+    [Fact]
+    public void ACloudflareCourseCannotBeScheduled()
+    {
+        File.WriteAllText(Path.Combine(_folder, "courses", "ICS3U", "course_config.json"),
+            """
+            {
+              "course_code": "ICS3U",
+              "course_name": "Computer Science",
+              "deploy_target": "cloudflare_pages",
+              "num_sections": 1,
+              "per_section_folders": ["All Classes"],
+              "per_section_files": [],
+              "section_numbers": [1]
+            }
+            """);
+        var course = Open().Course("ICS3U");
+        var now = new DateTime(2026, 8, 14, 9, 0, 0);
+
+        // The account ID lives in Plantoir's settings, and an unattended run
+        // has no way to be given it.
+        Assert.Contains("needs the account ID only Plantoir has",
+            ScheduledDeploy.Problem(course, 1, now.AddDays(1), now));
+    }
+
     [Fact]
     public void ATimeThatHasPassedIsRefused()
     {
