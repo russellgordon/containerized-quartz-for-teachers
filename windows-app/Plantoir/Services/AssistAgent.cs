@@ -362,6 +362,7 @@ public sealed class AssistAgent
         var lines = new List<Line>();
         string result = await RunTool(call, lines, cancellation);
         lines.Add(new Line("tools", result));
+        if (TakeHandedToApp()) return lines;
         return lines.Concat(await Run(cancellation)).ToList();
     }
 
@@ -417,11 +418,27 @@ public sealed class AssistAgent
 
             string result = await RunTool(call, lines, cancellation);
             lines.Add(new Line("tools", result));
+            if (TakeHandedToApp()) return lines;
         }
 
         lines.Add(new Line("assistant",
             "I’ve gone round several times without finishing. Tell me what you’d like me to do next."));
         return lines;
+    }
+
+    /// <summary>
+    /// Whether the last tool handed its work to the main window — and if so,
+    /// the turn is over. Asking the model "what next?" after "the preview is
+    /// opening in the main window" got the same sentence restated, so the
+    /// teacher read it twice and paid ten seconds for the echo.
+    /// </summary>
+    private bool _handedToApp;
+
+    private bool TakeHandedToApp()
+    {
+        bool handed = _handedToApp;
+        _handedToApp = false;
+        return handed;
     }
 
     private async Task<string> RunTool(JsonObject call, List<Line> lines, CancellationToken cancellation)
@@ -438,16 +455,20 @@ public sealed class AssistAgent
         // once, where the teacher can watch — never by the server in a hidden
         // container run whose transcript lands in this chat.
         // These answers appear in the transcript word for word, so they are
-        // written for the teacher; the model reads the same sentence and has
-        // nothing further to add, which is the point.
+        // written for the teacher — and they END the turn. Asked "what next?"
+        // after reading one of these, a small model restates it, and the
+        // teacher saw the same sentence twice. There is nothing next: the
+        // main window has the work.
         if (name.Equals("rebuild_preview", StringComparison.OrdinalIgnoreCase) && ShowPreviewInApp is not null)
         {
             ShowPreviewInApp.Invoke();
+            _handedToApp = true;
             return Answer(call, "The preview is opening in Plantoir's main window — the build shows its progress there.");
         }
         if (name.Equals("deploy_section", StringComparison.OrdinalIgnoreCase) && StartDeployInApp is not null)
         {
             StartDeployInApp.Invoke();
+            _handedToApp = true;
             return Answer(call, "The section is deploying from Plantoir's main window — its progress is shown there.");
         }
 
