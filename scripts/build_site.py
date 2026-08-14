@@ -2095,15 +2095,20 @@ def append_coverage_styles(base_scss_path: Path):
 
     Colours are fixed rather than taken from the theme: the map's whole job
     is a red-to-green reading, and a colour scheme that recoloured it would
-    destroy the meaning. Each cell also carries its count as a digit, so the
-    map is readable without relying on colour at all.
+    destroy the meaning. The cells print no counts — the count reaches a
+    screen reader through each cell's label, and a teacher reads it off the
+    hover preview.
+
+    The block always goes at the end of the file, so an earlier one is
+    REPLACED rather than skipped: a stylesheet that survives from a previous
+    build must still pick up a change made since.
     """
     marker = "/* === curriculum coverage map === */"
     if not base_scss_path.exists():
         return
     text = base_scss_path.read_text(encoding="utf-8")
     if marker in text:
-        return
+        text = text[:text.index(marker)].rstrip() + "\n"
     text += f"""
 
 {marker}
@@ -2148,9 +2153,8 @@ a.coverage-chip:hover {{ filter: brightness(1.15); }}
 .coverage-cell {{
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.3rem;
-  padding: 0.28rem 0.4rem;
+  justify-content: center;
+  padding: 0.5rem 0.65rem;
   border-radius: 0.22rem;
   font-size: 0.72rem;
   line-height: 1.1;
@@ -2160,7 +2164,6 @@ a.coverage-chip:hover {{ filter: brightness(1.15); }}
 }}
 .coverage-cell:hover {{ filter: brightness(1.12); }}
 .coverage-code {{ font-weight: 600; }}
-.coverage-count {{ opacity: 0.85; font-variant-numeric: tabular-nums; }}
 .coverage-0 {{ background: #b91c1c; }}
 .coverage-1 {{ background: #ea580c; }}
 .coverage-2 {{ background: #eab308; color: #1f2937; }}
@@ -2168,24 +2171,30 @@ a.coverage-chip:hover {{ filter: brightness(1.15); }}
 .coverage-4 {{ background: #14532d; }}
 .coverage-cell[data-assessed="true"] {{ box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85); }}
 .coverage-2[data-assessed="true"] {{ box-shadow: inset 0 0 0 2px rgba(31, 41, 55, 0.8); }}
+.coverage-rule {{
+  border: none;
+  border-top: 1px solid var(--lightgray);
+  margin: 1.4rem 0 1rem;
+}}
 .coverage-legend {{
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem 0.8rem;
-  margin: 0.8rem 0 1.2rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0 0 1.4rem;
   font-size: 0.85rem;
 }}
-.coverage-key {{
-  display: inline-flex;
+.coverage-legend-row {{
+  display: flex;
   align-items: center;
-  justify-content: center;
-  min-width: 1.5rem;
-  padding: 0.15rem 0.3rem;
+  gap: 0.5rem;
+}}
+.coverage-key {{
+  display: inline-block;
+  width: 1.4rem;
+  height: 1.1rem;
   border-radius: 0.2rem;
-  color: #fff;
-  font-size: 0.72rem;
-  margin-right: 0.15rem;
+  flex: none;
 }}
 """
     base_scss_path.write_text(text, encoding="utf-8")
@@ -2872,15 +2881,35 @@ def _coverage_counts(content_root: Path, curriculum_dir: Path, specific: dict):
     return covered_by, assessed_by
 
 
+# How a count reads in words — the legend's labels, and the wording a
+# screen reader hears on a cell. Four or more is where the scale stops.
+COVERAGE_WORDS = {
+    0: "not yet addressed",
+    1: "addressed once",
+    2: "addressed twice",
+    3: "addressed three times",
+    4: "addressed four or more times",
+}
+
+
 def _coverage_cell(code: str, page: Path, content_root: Path, count: int, assessed: bool) -> str:
+    """One cell: the expectation's code, coloured by how often it is addressed.
+
+    The count is NOT printed. Fifty-odd cells each carrying a digit turns
+    the map into a table of numbers, which is the one thing it is not for —
+    the reading is the colour, and the exact count is a hover away. It
+    still reaches a screen reader through the label, where it costs
+    nothing.
+    """
     level = min(count, 4)
     href = _quartz_slug(page.relative_to(content_root))
     marker = ' data-assessed="true"' if assessed else ""
-    plural = "page" if count == 1 else "pages"
-    label = f"{count} {plural}"
-    return (f'<a class="internal coverage-cell coverage-{level}" href="{href}"{marker}>'
-            f'<span class="coverage-code">{code}</span>'
-            f'<span class="coverage-count" aria-label="{label}">{count}</span></a>')
+    label = f"{code}, {COVERAGE_WORDS[level]}"
+    if assessed:
+        label += ", included in assessed work"
+    return (f'<a class="internal coverage-cell coverage-{level}" href="{href}"{marker} '
+            f'aria-label="{label}">'
+            f'<span class="coverage-code">{code}</span></a>')
 
 
 def build_curriculum_coverage(content_root: Path, course_code: str) -> bool:
@@ -2950,13 +2979,15 @@ it cannot drift from the course.
 
 <div class="coverage-map">{"".join(columns)}</div>
 
+<hr class="coverage-rule">
+
 <div class="coverage-legend">
-<span class="coverage-key coverage-0">0</span> no page yet
-<span class="coverage-key coverage-1">1</span> one page
-<span class="coverage-key coverage-2">2</span> two
-<span class="coverage-key coverage-3">3</span> three
-<span class="coverage-key coverage-4">4</span> four or more
-<span class="coverage-key coverage-2" data-assessed="true">✓</span> addressed by assessed work
+<div class="coverage-legend-row"><span class="coverage-key coverage-0"></span> {COVERAGE_WORDS[0].capitalize()}</div>
+<div class="coverage-legend-row"><span class="coverage-key coverage-1"></span> {COVERAGE_WORDS[1].capitalize()}</div>
+<div class="coverage-legend-row"><span class="coverage-key coverage-2"></span> {COVERAGE_WORDS[2].capitalize()}</div>
+<div class="coverage-legend-row"><span class="coverage-key coverage-3"></span> {COVERAGE_WORDS[3].capitalize()}</div>
+<div class="coverage-legend-row"><span class="coverage-key coverage-4"></span> {COVERAGE_WORDS[4].capitalize()}</div>
+<div class="coverage-legend-row"><span class="coverage-key coverage-2" data-assessed="true"></span> Included in assessed work — the cell carries a ring</div>
 </div>
 
 Hover any cell to preview the expectation. The row of small chips under
