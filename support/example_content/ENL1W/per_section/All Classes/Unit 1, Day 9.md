@@ -1,0 +1,19 @@
+---
+title: Unit 1, Day 9
+draft: false
+created: __CREATED_CLASS_9__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. [[Who You Are, in Three Hundred Words]], day 2 — first draft, by hand,
+   no editing until the end of the period
+2. Concept: [[Voice]] — what makes two people sound different
+
+## Things to do before our next class
+
+- [ ] Nothing. Let the draft sit.

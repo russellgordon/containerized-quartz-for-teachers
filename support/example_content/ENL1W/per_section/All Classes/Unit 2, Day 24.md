@@ -1,0 +1,18 @@
+---
+title: Unit 2, Day 24
+draft: false
+created: __CREATED_CLASS_44__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. Consolidation: how stories work, on one page, built by the room
+2. Look ahead: next unit, everything gets shorter and louder
+
+## Things to do before our next class
+
+- [ ] Bring one song lyric you think is poetry, and be ready to defend it.
