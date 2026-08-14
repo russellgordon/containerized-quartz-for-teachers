@@ -47,6 +47,21 @@ public sealed class ReDatePlan
     /// </summary>
     public IReadOnlyList<PlannedDate> Reference { get; init; } = Array.Empty<PlannedDate>();
 
+    /// <summary>
+    /// How many of the reference pages are curriculum, which the plan has to
+    /// mention separately because the SITE will not show the date being set.
+    ///
+    /// build_site.py gives every curriculum page the section's newest class
+    /// date when it builds, and that behaviour stays. The source date is still
+    /// worth setting — the build only overwrites a date that is absent or
+    /// OLDER than the newest class, so a page left on a later date from a
+    /// previous year would otherwise survive and sort above everything — but
+    /// saying "these move to the first day" without saying the site shows them
+    /// differently would be the plan describing something a teacher cannot
+    /// see.
+    /// </summary>
+    public int CurriculumCount { get; init; }
+
     /// <summary>Date problems this change would leave behind, in plain words.</summary>
     public required IReadOnlyList<string> Problems { get; init; }
 
@@ -93,8 +108,15 @@ public sealed class ReDatePlan
 
         int movingReference = Reference.Count(r => r.WillChange);
         if (movingReference > 0)
+        {
             lines.Add($"{movingReference} year-round page{(movingReference == 1 ? "" : "s")} — " +
-                      "what Key Links points at, and the curriculum — move to the first day of class.");
+                      "the section's front page, what Key Links points at, and the curriculum — " +
+                      "move to the first day of class.");
+            if (CurriculumCount > 0)
+                lines.Add($"  (Of those, {CurriculumCount} are curriculum pages. Their dates change in your " +
+                          "files, but the website always shows curriculum alongside the newest class, so you " +
+                          "will not see a difference there.)");
+        }
 
         if (changing.Count > 0)
         {

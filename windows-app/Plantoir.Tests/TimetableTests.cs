@@ -395,6 +395,39 @@ public class ReDateTests : IDisposable
     }
 
     [Fact]
+    public void ThePlanSaysCurriculumDatesWillNotShowOnTheSite()
+    {
+        // build_site.py gives every curriculum page the newest class's date
+        // when it builds, and that stays. Setting the source date is still
+        // right — the build only overwrites a date that is absent or OLDER,
+        // so a page left on a later date from a previous year would survive —
+        // but claiming a change the teacher cannot see would be dishonest.
+        Class("Unit 1, Day 1", "2026-09-08");
+        Material("Ontario Curriculum/A1.1.md", "2025-08-01");
+        Material("Ontario Curriculum/A1.2.md", "2025-08-01");
+
+        var plan = Open().PlanReDate("ICS3U", 1, Block(), new[] { "Unit 1, Day 1" }, new[] { 1 });
+
+        Assert.Equal(2, plan.CurriculumCount);
+        Assert.Contains("2 are curriculum pages", plan.Describe());
+        Assert.Contains("you will not see a difference there", plan.Describe());
+        // …and they are still re-dated in the teacher's files.
+        Assert.Contains(plan.Reference, r => r.Title == "A1.1" && r.New == new DateOnly(2026, 10, 13));
+    }
+
+    [Fact]
+    public void APlanWithNoCurriculumDoesNotMentionIt()
+    {
+        Class("Unit 1, Day 1", "2026-09-08");
+        Write("section1/index.md", "draft: false\ncreated: 2025-08-01T07:00:00.000-0400", "# Most Recent Class");
+
+        var plan = Open().PlanReDate("ICS3U", 1, Block(), new[] { "Unit 1, Day 1" }, new[] { 1 });
+
+        Assert.Equal(0, plan.CurriculumCount);
+        Assert.DoesNotContain("curriculum pages", plan.Describe());
+    }
+
+    [Fact]
     public void CurriculumIsFoundWhateverTheFolderIsCalled()
     {
         // A real course has "Ontario Curriculum" and "College Board

@@ -399,6 +399,34 @@ This is deliberately separate from re-dating, and re-dating never does it on
 its own. A re-date shifts materials by a *delta*, preserving spacing the
 teacher meant; this flattens that spacing, so it only runs when asked for.
 
+## Curriculum dates belong to the build, and that is deliberate
+
+`build_site.py` gives every curriculum page the section's **newest class
+date** when it builds — so on the site, curriculum always sits alongside the
+most recent lesson. **That behaviour stays.** Do not "fix" it.
+
+A rollover still re-dates curriculum pages in the teacher's files, to the
+first day of class, and that is not pointless: the build only overwrites a
+date that is **absent or older** than the newest class. A page left on a
+*later* date from a previous year is untouched by the build and would sort
+above everything, which is exactly what a course rolling backwards produces —
+last year ran to June, this year ends in February.
+
+So the source date is a floor, and the build owns what is displayed. The plan
+says so rather than claiming a change the teacher would then not see:
+
+```
+62 year-round pages … move to the first day of class.
+  (Of those, 60 are curriculum pages. Their dates change in your files, but
+  the website always shows curriculum alongside the newest class, so you
+  will not see a difference there.)
+```
+
+Curriculum is identified the way the build identifies it: **any folder segment
+containing "curriculum"**, case-insensitively, with file names ignored. A real
+course has `Ontario Curriculum` and `College Board Curriculum` — matching the
+literal folder name `Curriculum` would miss every page in it.
+
 ## A naming trap, written down so nobody rediscovers it
 
 **Never call `Path.GetFileNameWithoutExtension` on a wikilink target.**

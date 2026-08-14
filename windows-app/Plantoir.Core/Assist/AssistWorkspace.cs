@@ -1000,6 +1000,11 @@ public sealed class AssistWorkspace
             Dates = dates,
             Materials = materials,
             Reference = reference,
+            CurriculumCount = reference.Count(r =>
+            {
+                try { return IsCurriculum(course.DirectoryPath, PagePaths.ResolveInside(_folder, r.RelativePath)); }
+                catch { return false; }
+            }),
             NonTeachingDays = timetable.NonTeachingDays,
             UnusedMeetings = Math.Max(0, timetable.Meetings.Count - chosen.Count),
             // Every date this plan would set, including the year-round pages —
