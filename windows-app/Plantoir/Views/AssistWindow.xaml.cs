@@ -104,8 +104,15 @@ public sealed partial class AssistWindow : Window
             }
 
             var note = SayWithBar("Plantoir", "Downloading the assistant…");
+
+            // Reports are POSTED to this thread, so one can still be in the
+            // queue when the download finishes — and it would land after the
+            // closing message and overwrite it with a stale byte count. The
+            // flag makes anything arriving after the end a no-op.
+            bool finished = false;
             var progress = new Progress<LocalModel.Fetching>(state =>
             {
+                if (finished) return;
                 note.Text.Text = state.Describe();
                 // An unknown total leaves the bar sweeping rather than sitting
                 // at zero, which reads as stuck.
@@ -113,14 +120,15 @@ public sealed partial class AssistWindow : Window
                 if (state.Known) note.Bar.Value = state.Percent;
             });
 
-            if (!await _model.Install(progress, _closing.Token))
+            bool installed = await _model.Install(progress, _closing.Token);
+            finished = true;
+            note.Bar.Visibility = Visibility.Collapsed;
+            if (!installed)
             {
                 note.Text.Text = "The download didn’t finish. Check the network and try opening this window again.";
-                note.Bar.Visibility = Visibility.Collapsed;
                 return;
             }
             note.Text.Text = "The assistant is downloaded.";
-            note.Bar.Visibility = Visibility.Collapsed;
         }
 
         var starting = Say("Plantoir", "Starting the assistant…");
@@ -140,18 +148,23 @@ public sealed partial class AssistWindow : Window
 
         var schemas = await _tools.Tools(_closing.Token);
         _agent = new AssistAgent(_model, _tools, schemas, _course.Code, _section);
-        starting.Text = "Ready.";
 
-        Input.IsEnabled = true;
-        SendButton.IsEnabled = true;
-        Input.Focus(FocusState.Programmatic);
+        // NOT "Ready." yet, and the input stays disabled. The briefing runs
+        // first, and the first answer is the slow one — the tool definitions
+        // are some six hundred tokens and are only cached after that. Saying
+        // Ready and enabling the box in front of a turn that immediately
+        // disables it again produced a window that invited typing and then
+        // ignored it, which reads as a hang rather than as a wait.
+        starting.Text = "Getting your bearings — the first answer takes a little longer than the rest.";
 
-        // The briefing, before anything else — it is what makes "publish" and
-        // "deploy" mean the same thing to both parties for the rest of the
-        // conversation. The tool itself decides whether it is still needed.
+        // The briefing itself — what makes "publish" and "deploy" mean the same
+        // thing to both parties for the rest of the conversation. The tool
+        // decides whether it is still needed.
         await Turn(() => _agent.Say(
             "Explain publishing for this section if that has not been done, then wait for me.",
             _closing.Token));
+
+        starting.Text = "Ready.";
     }
 
     // ---- One turn --------------------------------------------------------
@@ -240,31 +253,32 @@ public sealed partial class AssistWindow : Window
     private TextBlock Say(string speaker, string text)
     {
         var body = new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true };
-        var card = new Border
+        AddCard(speaker, body);
+        return body;
+    }
+
+    /// <summary>The one place a turn is built, so every card is the same card.</summary>
+    private void AddCard(string speaker, params UIElement[] contents)
+    {
+        var panel = new StackPanel { Spacing = 4 };
+        panel.Children.Add(new TextBlock
+        {
+            Text = speaker,
+            Opacity = 0.7,
+            Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
+        });
+        foreach (var element in contents) panel.Children.Add(element);
+
+        Transcript.Children.Add(new Border
         {
             Padding = new Thickness(12),
             CornerRadius = new CornerRadius(6),
             Background = (Brush)Application.Current.Resources[
                 speaker == "You" ? "SystemFillColorAttentionBackgroundBrush" : "CardBackgroundFillColorDefaultBrush"],
-            Child = new StackPanel
-            {
-                Spacing = 4,
-                Children =
-                {
-                    new TextBlock
-                    {
-                        Text = speaker,
-                        Opacity = 0.7,
-                        Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"],
-                    },
-                    body,
-                },
-            },
-        };
-        Transcript.Children.Add(card);
+            Child = panel,
+        });
         TranscriptScroller.UpdateLayout();
         TranscriptScroller.ChangeView(null, TranscriptScroller.ScrollableHeight, null);
-        return body;
     }
 
     /// <summary>A turn that carries a progress bar as well as words.</summary>
@@ -273,13 +287,20 @@ public sealed partial class AssistWindow : Window
     /// <summary>
     /// Say something that will take a while, with a bar under it.
     ///
-    /// The bar starts indeterminate: the total arrives from the server a moment
+    /// The bar is added to a panel this method built and still holds, rather
+    /// than to whatever <c>body.Parent</c> reports. Parent is a visual-tree
+    /// property and is not reliably set the instant an element is put in a
+    /// Children collection, so the first attempt silently added the bar to
+    /// nothing at all: the download ran with no bar on screen, which is the
+    /// very thing it was there to show.
+    ///
+    /// It starts indeterminate. The total arrives from the server a moment
     /// after the download begins, and a determinate bar pinned at zero in the
     /// meantime is exactly what "frozen" looks like.
     /// </summary>
     private Reporting SayWithBar(string speaker, string text)
     {
-        var body = Say(speaker, text);
+        var body = new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true };
         var bar = new ProgressBar
         {
             IsIndeterminate = true,
@@ -288,7 +309,7 @@ public sealed partial class AssistWindow : Window
             Margin = new Thickness(0, 8, 0, 0),
             HorizontalAlignment = HorizontalAlignment.Stretch,
         };
-        if (body.Parent is StackPanel panel) panel.Children.Add(bar);
+        AddCard(speaker, body, bar);
         return new Reporting(body, bar);
     }
 

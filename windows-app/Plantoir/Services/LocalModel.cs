@@ -107,12 +107,19 @@ public sealed class LocalModel
             // Delay first: at nought seconds there is nothing to report but the
             // zero already sent, and the wait is what keeps this to one process
             // every two seconds rather than one per frame.
-            try { await Task.Delay(2000, cancellation); }
+            //
+            // ConfigureAwait(false) matters more than it looks. Without it this
+            // loop resumes on the UI thread and then calls BytesSoFar, which
+            // starts wsl.exe and waits for it — freezing the window for a few
+            // hundred milliseconds out of every two seconds, while it is
+            // supposed to be demonstrating that the app is still alive.
+            try { await Task.Delay(2000, cancellation).ConfigureAwait(false); }
             catch (OperationCanceledException) { break; }
-            progress?.Report(new Fetching(BytesSoFar(part), total));
+            long got = await Task.Run(() => BytesSoFar(part)).ConfigureAwait(false);
+            progress?.Report(new Fetching(got, total));
         }
 
-        string result = await download;
+        string result = await download.ConfigureAwait(false);
         return result.Contains("done", StringComparison.Ordinal) && IsInstalled();
     }
 
@@ -129,30 +136,93 @@ public sealed class LocalModel
     private static long BytesSoFar(string path) =>
         long.TryParse(Wsl($"stat -c %s {path} 2>/dev/null").Trim(), out long size) ? size : 0;
 
+    /// <summary>
+    /// A WSL process that does nothing but exist, for as long as the assistant
+    /// does.
+    ///
+    /// WSL2 shuts the distro down once no session is holding it open, and that
+    /// takes the Docker daemon and every container with it. A detached
+    /// `docker run -d` holds nothing, so the assistant loaded its model,
+    /// answered a health check, reported itself Ready — and was killed about
+    /// twenty-five seconds later, mid-way through its first answer. The symptom
+    /// was an HTTP error from the app, which points at the network and is
+    /// nothing to do with it: measured directly, Windows reaches the container
+    /// on 127.0.0.1 perfectly well while it is alive.
+    ///
+    /// Every other part of the toolchain is accidentally immune, because the
+    /// preview and deploy launchers stay attached to their container for the
+    /// whole run. This one has to hold the door open deliberately.
+    ///
+    /// The sleep is bounded so that a Plantoir that dies without calling
+    /// <see cref="Stop"/> cannot pin WSL — and the container's memory — for the
+    /// rest of the day.
+    /// </summary>
+    private Process? _keepWslAwake;
+
     /// <summary>Start the model and wait for it to answer. Idempotent.</summary>
     public async Task<bool> Start(IProgress<string>? progress, CancellationToken cancellation)
     {
-        if (!IsRunning())
+        progress?.Report("Starting the assistant…");
+
+        // Before the container, not after: between `docker run` returning and
+        // the first health check there is already a window in which WSL could
+        // decide nobody wants it.
+        HoldWslOpen();
+
+        if (!await Task.Run(IsRunning, cancellation))
         {
-            progress?.Report("Starting the assistant…");
-            Wsl($"docker rm -f {ContainerName} >/dev/null 2>&1; " +
+            await Task.Run(() => Wsl(
+                $"docker rm -f {ContainerName} >/dev/null 2>&1; " +
                 $"docker run -d --name {ContainerName} --memory 4g --cpus=2 " +
                 $"-p {Port}:8080 -v {ModelDirectoryInWsl}:/models:ro {Image} " +
-                $"-m /models/{ModelFile} --no-mmap -c 8192 --jinja --host 0.0.0.0 --port 8080");
+                // One slot, not the four this image now defaults to: one window
+                // is one conversation, and four slots multiply the KV cache by
+                // four for no benefit here.
+                $"-m /models/{ModelFile} --no-mmap --parallel 1 -c 8192 " +
+                "--jinja --host 0.0.0.0 --port 8080"), cancellation);
         }
 
         // The first load reads a gigabyte off disk; later starts are quicker.
         for (int i = 0; i < 120 && !cancellation.IsCancellationRequested; i++)
         {
-            if (Wsl($"curl -s http://127.0.0.1:{Port}/health").Contains("ok", StringComparison.Ordinal))
-                return true;
+            bool up = await Task.Run(
+                () => Wsl($"curl -s http://127.0.0.1:{Port}/health").Contains("ok", StringComparison.Ordinal),
+                cancellation);
+            if (up) return true;
             await Task.Delay(1000, cancellation);
         }
         return false;
     }
 
+    private void HoldWslOpen()
+    {
+        if (_keepWslAwake is { HasExited: false }) return;
+
+        var info = new ProcessStartInfo
+        {
+            FileName = "wsl.exe",
+            CreateNoWindow = true,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        info.ArgumentList.Add("-e");
+        info.ArgumentList.Add("sh");
+        info.ArgumentList.Add("-c");
+        info.ArgumentList.Add("sleep 21600");    // six hours, then it lets go by itself
+        try { _keepWslAwake = Process.Start(info); } catch { _keepWslAwake = null; }
+    }
+
     /// <summary>Stop it, so the memory goes back to the machine when the conversation ends.</summary>
-    public void Stop() => Wsl($"docker rm -f {ContainerName} >/dev/null 2>&1 || true");
+    public void Stop()
+    {
+        Wsl($"docker rm -f {ContainerName} >/dev/null 2>&1 || true");
+
+        // After the container, so WSL is still up to receive that command.
+        try { _keepWslAwake?.Kill(entireProcessTree: true); } catch { }
+        try { _keepWslAwake?.Dispose(); } catch { }
+        _keepWslAwake = null;
+    }
 
     /// <summary>
     /// One turn of the conversation. Returns the raw assistant message, which
