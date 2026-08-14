@@ -2094,8 +2094,8 @@ def append_coverage_styles(base_scss_path: Path):
     Styles for the curriculum coverage map.
 
     Colours are fixed rather than taken from the theme: the map's whole job
-    is a red-to-green reading, and a colour scheme that recoloured it would
-    destroy the meaning. The cells print no counts — the count reaches a
+    is a graded reading from red through green to navy, and a colour scheme
+    that recoloured it would destroy the meaning. The cells print no counts — the count reaches a
     screen reader through each cell's label, and a teacher reads it off the
     hover preview.
 
@@ -2113,10 +2113,10 @@ def append_coverage_styles(base_scss_path: Path):
 
 {marker}
 .coverage-panel {{
-  /* The cell colours are fixed on purpose — the red-to-green reading is
-     the whole point — but the page behind them is not. Plantoir's colour
-     schemes run from near-white to near-black, so a dark green cell had
-     nothing to sit against in one scheme and a pale yellow one had
+  /* The cell colours are fixed on purpose — the graded reading is the
+     whole point — but the page behind them is not. Plantoir's colour
+     schemes run from near-white to near-black, so the darkest step had
+     nothing to sit against in one scheme and the pale yellow one had
      nothing in another. The panel gives every scheme the same neutral
      ground, taken from the theme's OWN light grey: a light grey in light
      schemes, a dark grey in dark ones, by construction rather than by a
@@ -2187,7 +2187,7 @@ def append_coverage_styles(base_scss_path: Path):
   /* A hairline so every cell keeps its shape whatever it is sitting on.
      The ramp spans near-white yellow to near-black green, so no single
      neutral ground can hold all five away from the page: on a dark
-     scheme the darkest green all but vanished into the panel. Drawn in
+     scheme the darkest step all but vanished into the panel. Drawn in
      the theme's mid grey, which is mid in BOTH light and dark schemes,
      so it separates the pale end and the dark end at once. Inset, so it
      costs no layout and cannot be confused with the assessed ring. */
@@ -2197,15 +2197,21 @@ def append_coverage_styles(base_scss_path: Path):
 /* The ramp is deep enough for its own labels. Every step was measured
    against the label it carries rather than picked for looks: a lighter
    orange and a lighter green left white text at 3.6:1 and 3.3:1, under
-   the 4.5:1 that small text needs. Deepening those two crowded the top
-   of the ramp, so the highest step went deeper still to stay distinct
-   from the one below it. Only the yellow step is light enough to take
-   dark ink, and it keeps it. */
+   the 4.5:1 that small text needs. Only the yellow step is light enough
+   to take dark ink, and it keeps it.
+
+   The top step LEAVES the ramp's hue on purpose. Deepening the green
+   below it left the two greens separable only by how dark they were,
+   and a green dark enough to be distinct was indistinguishable from
+   black. Navy separates by hue instead, which survives being dark,
+   holds up on a dark scheme, and stays distinguishable from the greens
+   for a red-green colour-blind reader — while still reading as "past
+   the end of the scale" rather than as another grade of green. */
 .coverage-0 {{ background: #b91c1c; }}
 .coverage-1 {{ background: #c2410c; }}
 .coverage-2 {{ background: #eab308; color: #1f2937; }}
 .coverage-3 {{ background: #15803d; }}
-.coverage-4 {{ background: #052e16; }}
+.coverage-4 {{ background: #1e3a8a; }}
 /* Hovering. Quartz recolours any hovered link to the theme's accent —
    `color: var(--tertiary) !important` — which on a cell whose meaning IS
    its background reads as a contrast failure at exactly the moment the
