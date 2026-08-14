@@ -71,7 +71,13 @@ one GitHub release carrying both platforms' assets.
    Netlify UI, link the site to the GitHub repo, publish directory
    `site/`, no build command). Cutting the release edits the
    version-note line in `site/index.html` and pushes — nothing manual.
-   The brand images are NOT touched by that — see **Brand images** below.
+   It also redraws the brand images and installs the card:
+
+       python scripts/brand_images.py --install-card
+
+   Safe to run every time: the output is deterministic, so unless the
+   icon, palette or tagline changed this leaves the working tree clean
+   and there is nothing to commit. See **Brand images** below.
 7. **Update the WinSparkle appcast** once in-app updates land (see
    below): add an `<item>` for the new version to `appcast.xml` on
    plantoir.app, pointing at the GitHub release asset URL.
@@ -93,20 +99,28 @@ Everything that carries the Plantoir mark — the `og:image` served at
 plantoir.app, the Bluesky and Instagram profile photos, the Bluesky
 banner — is drawn by one script from one source:
 
-    python scripts/brand_images.py
+    python scripts/brand_images.py --install-card
 
 It reads the artwork straight out of `mac-app/Plantoir.icon` (the same
 bundle Icon Composer edits) and the palette out of the constants at the
 top of the script, which mirror the CSS custom properties in
-`site/index.html`. Output lands in `brand/`. Nothing is fetched at run
-time; the Poppins weights it needs are committed in `support/fonts/`.
+`site/index.html`. The four images land in `brand/`; `--install-card`
+additionally copies the card to `site/social-card.png`, which Netlify
+serves as the `og:image`. Nothing is fetched at run time; the Poppins
+weights it needs are committed in `support/fonts/`.
 
-**This is not a per-release step.** Re-run it only when the icon, the
-palette, or the tagline actually changes — then eyeball the output and
-commit it. Most releases should not touch these files at all.
+**Cutting a release runs this** (step 6), and that is safe because the
+output is **deterministic** — identical inputs give byte-identical PNGs.
+A release that changed nothing about the artwork leaves the working tree
+clean and there is nothing to commit. A diff appears only when the icon,
+the palette or the tagline actually moved, which is exactly when you want
+to notice. So: if `git status` is quiet after this step, that is the
+expected result, not a sign it failed.
 
-Two things worth knowing before you run it with `--install-card`, which
-overwrites the deployed `site/social-card.png`:
+If it *does* produce a diff, look at the images before committing them —
+the push deploys the card to a public URL.
+
+Two things worth knowing about the card in particular:
 
 - The original card was hand-made and has no source. The generated one
   is measured to match it — tile 260&nbsp;px at 108,185; wordmark Poppins
@@ -123,7 +137,8 @@ overwrites the deployed `site/social-card.png`:
   is a separate artifact and was not rendered from that stylesheet.
 - That file is public and every social platform that has scraped
   plantoir.app has it cached. Replacing it is an outward-facing change,
-  not a refactor.
+  not a refactor. Platforms re-scrape on their own schedule, so the old
+  card can keep appearing in link previews for a while after deploy.
 
 The two greens are not interchangeable and both appear on the card:
 `--green-deep` (#2D6620) sets the wordmark, `--green` (#3E8C26) sets the
