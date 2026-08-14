@@ -242,11 +242,10 @@ public sealed partial class AssistWindow : Window
         double tokens = schemas.ToJsonString().Length / 3.6;
         double expected = Math.Max(20, tokens / 21.0);
 
-        var priming = new JsonArray
-        {
-            new JsonObject { ["role"] = "user", ["content"] = "Say ready." },
-        };
-        var warming = _model.Ask(priming, schemas, _closing.Token);
+        // The agent's OWN opening messages, so the prefix warmed here is the
+        // prefix every later turn actually starts with. Priming a different
+        // shape warms nothing.
+        var warming = _model.Ask(_agent!.PrimingMessages(), schemas, _closing.Token);
 
         try
         {

@@ -214,6 +214,33 @@ public sealed class AssistAgent
         });
     }
 
+    /// <summary>
+    /// A throwaway exchange shaped EXACTLY like a real one, for warming the
+    /// prompt cache.
+    ///
+    /// The system message has to be in it. Warming with just the tools and a
+    /// stray "Say ready" primes a prefix no real turn ever uses: llama.cpp
+    /// renders the tools and the system prompt into the same leading block, so
+    /// a conversation that carries a system message diverges from that warm-up
+    /// almost at the first token and re-reads everything.
+    ///
+    /// That is not a small waste. It is the difference between the three
+    /// minutes buying every later answer, and buying nothing at all — measured
+    /// as a 75-second wait for the word "Hi" AFTER a warm-up had finished.
+    ///
+    /// Called before any real turn, so this is the system message alone plus
+    /// one short user line, which is the shortest thing shaped like the real
+    /// prefix.
+    /// </summary>
+    public JsonArray PrimingMessages()
+    {
+        var priming = new JsonArray();
+        foreach (var message in _messages)
+            if (message is not null) priming.Add(message.DeepClone());
+        priming.Add(new JsonObject { ["role"] = "user", ["content"] = "Hello." });
+        return priming;
+    }
+
     /// <summary>A line for the transcript.</summary>
     public sealed record Line(string Speaker, string Text, bool NeedsApproval = false, string? Pending = null);
 
