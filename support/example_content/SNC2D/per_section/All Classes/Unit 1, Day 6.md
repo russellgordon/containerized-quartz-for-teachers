@@ -8,16 +8,13 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-Four case cards, each one a body system in trouble. Diagnose first, read after.
-
 ## Agenda
 
-1. Work out which system is failing in each case, from symptoms alone
-2. Discuss: [[What Counts as Evidence]] — what would settle it either way?
-3. Name it: [[Systems and Health]] — technology standing in for a system
-4. Task launch: [[The Systems Case Study]], marked as in [[How Marks Work]]
+1. Warm-up: sort six cells by their job
+2. Specialisation: how one identical copy becomes a nerve and another a
+   muscle — and what that means for tissues and organs
+3. Clinic: [[Cells and Systems Practice]] to the end
 
 ## Things to do before our next class
 
-- [ ] Choose your case and write the question your study will answer.
-- [ ] Stuck at any point? [[Getting Unstuck]] is the page to read first.
+- [ ] Finish the practice set.

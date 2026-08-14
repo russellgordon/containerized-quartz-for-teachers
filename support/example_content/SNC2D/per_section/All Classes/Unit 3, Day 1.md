@@ -1,16 +1,13 @@
 ---
 title: Unit 3, Day 1
 draft: false
-created: __CREATED_CLASS_15__
+created: __CREATED_CLASS_45__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-3
 ---
-Two jars, one lamp, one lid. Write down which jar warms faster and by
-how much before you switch anything on.
-
 ## Agenda
 
 1. Predict in writing, with a number and a reason attached to it

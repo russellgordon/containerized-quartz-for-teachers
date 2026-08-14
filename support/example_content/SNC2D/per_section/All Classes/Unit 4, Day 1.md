@@ -1,16 +1,13 @@
 ---
 title: Unit 4, Day 1
 draft: false
-created: __CREATED_CLASS_21__
+created: __CREATED_CLASS_65__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-4
 ---
-A lamp, three pinholes, and a card. Your job is to make the beam do
-something that straight lines cannot account for.
-
 ## Agenda
 
 1. Line the pinholes up, then try to get light around a corner

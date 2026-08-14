@@ -8,9 +8,6 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-Eight cell drawings, no labels on any of them. You sort them before
-anyone tells you what they are for.
-
 ## Agenda
 
 1. Sort the eight drawings into groups and defend your categories

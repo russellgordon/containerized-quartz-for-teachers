@@ -1,16 +1,13 @@
 ---
 title: Unit 2, Day 1
 draft: false
-created: __CREATED_CLASS_8__
+created: __CREATED_CLASS_24__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-2
 ---
-Five unknowns on the bench. Some of them made a new substance and some
-only looked like it, and you decide which is which.
-
 ## Agenda
 
 1. Investigation: [[Evidence of a Chemical Change]] — observe before judging

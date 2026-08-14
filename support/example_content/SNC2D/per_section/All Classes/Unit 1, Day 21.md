@@ -1,0 +1,20 @@
+---
+title: Unit 1, Day 21
+draft: false
+created: __CREATED_CLASS_21__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Discussion: [[Science in the News]] — a claim from this week, judged
+   on its evidence rather than its headline
+2. Method: [[What Counts as Evidence]]
+3. Journal in class
+
+## Things to do before our next class
+
+- [ ] Bring a claim you are not sure about.

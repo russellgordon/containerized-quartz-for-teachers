@@ -1,23 +1,22 @@
 ---
 title: Unit 4, Day 5
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_69__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-4
 ---
-A camera, a magnifier, and a length of fibre, opened up on the bench.
-
 ## Agenda
 
-1. Find where the image forms in each device before you open any page
-2. The eye as the same problem solved again — and what glasses actually fix
-3. Task launch: [[The Optics Design]] — an instrument for a stated need
-4. Constraints: the focal lengths you can actually get from the cupboard
+1. Coin in a cup, straw in a glass — write your explanation first
+2. Measure through a glass block: angles in and out, both directions
+3. Name it: [[Refraction]] — the mechanism, not just the pattern
+4. Does $n_1 \sin\theta_1 = n_2 \sin\theta_2$ fit your measurements?
+5. Practise: [[Refraction Practice]]
 
 ## Things to do before our next class
 
-- [ ] Bring a need, a first sketch, and the focal lengths it would require.
-- [ ] Journal: one device from today whose mechanism you can now explain.
+- [ ] [[Refraction Practice]], questions 1–5.
+- [ ] Journal: why the straw looks bent, in terms of what the rays do.

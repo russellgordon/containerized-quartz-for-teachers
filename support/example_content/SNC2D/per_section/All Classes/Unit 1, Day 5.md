@@ -8,18 +8,15 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-A plant has no heart and no stomach, and it still moves water several
-metres upward. Your mechanism first, then the celery.
-
 ## Agenda
 
-1. Write your mechanism: how does water get from soil to the top leaf?
-2. Celery, dye, and a stopwatch — test one variable that you choose
-3. Compare mechanisms across the room; which ones survive the evidence?
-4. Name it: [[Plant Systems]] — what plants solve differently, and why
-5. Journal standard: [[What a Strong Entry Looks Like]]
+1. Arrange the cards into levels and defend where you drew each line
+2. Where the room disagreed — is blood a tissue? is skin an organ?
+3. Name it: [[Tissues, Organs, and Systems]] — the levels biologists use
+4. Rearrange your cards. What moved, and what convinced you?
+5. Finding your way around: [[How This Site Is Organised]] and [[Key Links]]
 
 ## Things to do before our next class
 
-- [ ] Measure your journal against [[What a Strong Entry Looks Like]].
-- [ ] Journal: transport in a plant and transport in you, side by side.
+- [ ] [[Cells and Systems Practice]], questions 1–6.
+- [ ] Journal: one level you would still draw differently, with your reason.

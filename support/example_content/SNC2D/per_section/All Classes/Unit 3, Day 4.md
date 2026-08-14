@@ -1,24 +1,21 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_18__
+created: __CREATED_CLASS_48__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-3
 ---
-Ice under a lamp, and a melting rate that refuses to stay constant.
-Work out why before we give it a name.
-
 ## Agenda
 
-1. Melt ice under a lamp; measure the rate as the ice patch shrinks
-2. Draw the loop you observed — arrows, and a sign on every arrow
-3. Compare loops: which ones run away, and which settle down?
-4. Name it: [[Feedback Loops in Climate]] — why "positive" is not good news
+1. Sort the ten cards into three piles: natural, human, or both
+2. Argue the "both" pile — that is where the interesting cards sit
+3. Name it: [[Natural and Human Influences on Climate]] — timescale is the key
+4. Sort the cards again. Which ones moved, and what moved them?
 
 ## Things to do before our next class
 
-- [ ] Journal: one feedback loop from outside climate, drawn with signs.
-- [ ] Bring one climate decision that costs somebody who did not make it.
+- [ ] Journal: the card that moved, and the evidence that moved it.
+- [ ] Bring one climate graph from anywhere. We read them next class.

@@ -93,6 +93,16 @@ anything.
 [[Writing a Lab Report]] — question, prediction, variables, materials
 and procedure, observations, analysis, conclusion and limitations.
 
+**With the mass accounted for.** Whatever your question, weigh the
+system before and after: the reactants and the vessel, then the products
+and the vessel. If the totals differ, say by how much and where the
+missing mass went — a gas that left, water that evaporated, solid left
+on a filter paper. Mass is conserved in every reaction on this list, so
+a difference is always a measurement telling you something about your
+method rather than about chemistry. Use the correct words throughout —
+reactant, product, precipitate, aqueous, endothermic — because a report
+that says "the stuff" cannot be checked by anybody.
+
 **Plus a one-page recommendation**, addressed to a named audience: a
 building manager, a municipal water operator, a person deciding what to
 buy, a small business. This is the part that connects your bench to the
@@ -145,4 +155,8 @@ problem, and it needs three things:
 ![[A1.5]]
 
 ![[A1.10]]
+
+![[C2.1]]
+
+![[C2.4]]
 %%curriculum-end%%

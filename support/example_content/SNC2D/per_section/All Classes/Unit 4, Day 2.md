@@ -1,16 +1,13 @@
 ---
 title: Unit 4, Day 2
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_66__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-4
 ---
-Ten pairs of angles, measured by you and plotted by you. The law is
-whatever your graph turns out to say.
-
 ## Agenda
 
 1. Investigation: [[The Law of Reflection]] — measure ten pairs of angles

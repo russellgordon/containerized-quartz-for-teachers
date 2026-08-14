@@ -8,18 +8,15 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-Twelve cards on the bench: cell types, tissues, organs. Build the
-hierarchy yourselves before we agree on words for the levels.
-
 ## Agenda
 
-1. Arrange the cards into levels and defend where you drew each line
-2. Where the room disagreed — is blood a tissue? is skin an organ?
-3. Name it: [[Tissues, Organs, and Systems]] — the levels biologists use
-4. Rearrange your cards. What moved, and what convinced you?
-5. Finding your way around: [[How This Site Is Organised]] and [[Key Links]]
+1. Warm-up: three drawings on the board — which is a plant cell, and
+   what gives it away?
+2. Back at the scopes: [[Using a Microscope]] — this time you are
+   looking for evidence of specialisation, not just looking
+3. Skill: [[Drawing Scientific Diagrams]] — labelled, ruled, and drawn
+   to show rather than to decorate
 
 ## Things to do before our next class
 
-- [ ] [[Cells and Systems Practice]], questions 1–6.
-- [ ] Journal: one level you would still draw differently, with your reason.
+- [ ] One diagram redrawn to the standard on that page.

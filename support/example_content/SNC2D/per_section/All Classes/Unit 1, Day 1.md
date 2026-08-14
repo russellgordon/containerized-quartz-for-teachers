@@ -8,9 +8,6 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-First class, and you are at a microscope within twenty minutes. Nobody
-tells you what the slides are until after you have drawn them.
-
 ## Agenda
 
 1. Bench rules, quickly and for real: [[Lab Safety and WHMIS]]

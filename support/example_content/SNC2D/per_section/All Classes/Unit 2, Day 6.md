@@ -1,23 +1,21 @@
 ---
 title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_29__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-2
 ---
-Eight household liquids and a jug of red cabbage juice. Build the scale yourself.
-
 ## Agenda
 
-1. Order the eight liquids by colour; that ordering is your scale
-2. Compare scales — where did the room disagree, and which sample caused it?
-3. Name it: [[Acids and Bases]] — what a number on the pH scale counts
-4. Task launch: [[The Reaction Investigation]] — this one you design
+1. Write three of your unknowns from last week out as full sentences
+2. Compress each one; keep only what another chemist would need
+3. Compare shorthands across the room and keep whatever survives
+4. Name it: [[Chemical Equations]] — the conventions chemists settled on
 
 ## Things to do before our next class
 
-- [ ] Bring a question and your controlled variables for the investigation.
-- [ ] Bring a chemistry claim from the news for [[Science in the News]].
+- [ ] Rewrite your three sentences as chemical equations, states included.
+- [ ] Journal: what your shorthand lost that the standard notation keeps.

@@ -1,24 +1,20 @@
 ---
 title: Unit 3, Day 2
 draft: false
-created: __CREATED_CLASS_16__
+created: __CREATED_CLASS_46__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-3
 ---
-Ten cards, each one an influence on climate. Sort them into natural and
-human before you read a word about any of them.
-
 ## Agenda
 
-1. Sort the ten cards into three piles: natural, human, or both
-2. Argue the "both" pile — that is where the interesting cards sit
-3. Name it: [[Natural and Human Influences on Climate]] — timescale is the key
-4. Sort the cards again. Which ones moved, and what moved them?
+1. Bench: write up [[Modelling the Greenhouse Effect]] in class
+2. The limitation paragraph: what a jar under a lamp does NOT model
+3. Back to [[The Greenhouse Effect]] — the natural one, and why life
+   depends on it
 
 ## Things to do before our next class
 
-- [ ] Journal: the card that moved, and the evidence that moved it.
-- [ ] Bring one climate graph from anywhere. We read them next class.
+- [ ] Report finished, with the model's limits named.
