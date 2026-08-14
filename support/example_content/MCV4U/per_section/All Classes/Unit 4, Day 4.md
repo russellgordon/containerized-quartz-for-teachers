@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 4
 draft: false
-created: __CREATED_CLASS_23__
+created: __CREATED_CLASS_64__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Always, Sometimes, Never]] —
-   $|\vec{a} \times \vec{b}| \le |\vec{a}||\vec{b}|$
-2. Random groups: wanted — one arrow perpendicular to two given arrows
-   at once; build it from equations, not from luck
-3. Consolidate: [[The Cross Product]] — a product that points, and the
-   area it happens to measure along the way
-4. Practise: [[Dot and Cross Product Practice]] — the rest
+1. Number talk: [[Number Strings]]
+2. Random groups — vectors in three-space: the same operations, one
+   more component, and what changes about the picture
+3. Consolidate: back to [[Adding and Scaling Vectors]] — nothing in the
+   algebra changed
 
 ## Things to do before our next class
 
-- [ ] Journal: the dot product returns a number, the cross product a
-      vector. Why does each job need its own kind of answer?
+- [ ] Six operations in three-space, worked by hand.

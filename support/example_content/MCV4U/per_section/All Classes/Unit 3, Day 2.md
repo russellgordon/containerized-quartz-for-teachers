@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 2
 draft: false
-created: __CREATED_CLASS_15__
+created: __CREATED_CLASS_42__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Always, Sometimes, Never]] — if $f'(a) = 0$, then
-   $f$ has a maximum or a minimum at $x = a$
-2. Random groups: $f(x) = x^3 - 3x$ — everything the derivatives can
-   tell you, and no graphing until the sketch is defended
-3. Consolidate: [[Curve Sketching]] — first derivative for direction,
-   second for concavity, and the full interview checklist
-4. Practise: [[Curve Sketching Practice]], first set
+1. Number talk: [[Graph Talks]] — a function, and four candidate
+   derivative graphs
+2. Random groups — sketch $f'$ from $f$ for four functions given only
+   as graphs. No equations anywhere
+3. Consolidate: what a corner, a flat spot, and a steep section each
+   become in $f'$
 
 ## Things to do before our next class
 
-- [ ] Journal: always, sometimes, or never — settle this morning's
-      claim with one example and one counter-example.
+- [ ] Two more sketched, by hand.

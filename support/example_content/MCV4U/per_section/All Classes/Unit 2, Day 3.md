@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_9__
+created: __CREATED_CLASS_21__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,16 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Would You Rather]] — expand $(x^2 + 1)^{100}$ by
-   hand, or find a better way?
-2. Random groups: machines feeding machines — differentiate
-   $(x^2 + 1)^2$ and $(x^2 + 1)^3$ with the product rule, then hunt
-   the pattern
-3. Consolidate: [[The Chain Rule]] — outside derivative times inside
-   derivative, and why your pattern forced it
-4. Practise: [[Chain Rule Practice]]
+1. Number talk: [[Estimation Duels]] — how many seconds in a school
+   year? Closest estimate, no calculator, wins
+2. Random groups: differentiate $(3x + 2)(2x^2 - 1)$ two ways — expand
+   first, or take "derivative times derivative"; one of these lies
+3. Discuss: [[Mistakes Are Data]] — the wrong rule just taught us the
+   shape of the right one
+4. Consolidate: the product rule, and the quotient rule it drags along
+5. Practise: [[Derivative Rules Practice]], second set
 
 ## Things to do before our next class
 
-- [ ] Journal: invent a function with three layers, then take its
-      derivative apart layer by layer.
+- [ ] Journal: explain to a younger student why the derivative of a
+      product is not the product of the derivatives.

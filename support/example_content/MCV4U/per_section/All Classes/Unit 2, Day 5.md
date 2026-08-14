@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 5
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_23__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,16 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[True or False]] — a function and its derivative can
-   have the same period
-2. Random groups: tangent slopes on $y = \sin x$, plotted point by
-   point — the derivative's graph looks suspiciously familiar
-3. Consolidate: [[Derivatives of Sinusoidal Functions]] — and why the
-   answer is only this clean in radians
-4. Launch: [[Smooth Landing]] — a descent profile with three demands;
-   [[What Makes a Model Good]] frames the judging
-5. Practise: [[Exponential and Sinusoidal Derivatives Practice]], the rest
+1. Number talk: [[Would You Rather]] — expand $(x^2 + 1)^{100}$ by
+   hand, or find a better way?
+2. Random groups: machines feeding machines — differentiate
+   $(x^2 + 1)^2$ and $(x^2 + 1)^3$ with the product rule, then hunt
+   the pattern
+3. Consolidate: [[The Chain Rule]] — outside derivative times inside
+   derivative, and why your pattern forced it
+4. Practise: [[Chain Rule Practice]]
 
 ## Things to do before our next class
 
-- [ ] Read [[Smooth Landing]] with your partner; translate each demand
-      into a statement about a derivative.
+- [ ] Journal: invent a function with three layers, then take its
+      derivative apart layer by layer.

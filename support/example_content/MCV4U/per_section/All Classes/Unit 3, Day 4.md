@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_44__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Would You Rather]] — a litre of juice as a tall thin
-   prism or a short wide one — and what does "better" mean?
-2. Random groups — [[The Box Problem]] at the boards: one square
-   sheet, four cuts, and the biggest box in the room
-3. Consolidate: [[Optimization]] — constraint, model, derivative,
-   verdict
-4. Launch: [[The Packaging Brief]] — a real package, honestly costed;
-   the thread that ends at [[The Math Symposium]] starts here
+1. Number talk: [[Number Strings]]
+2. Random groups — critical points found and CLASSIFIED, three
+   functions, before any sketching
+3. Consolidate: maximum, minimum, or neither — and the test that
+   settles it
+4. Practise: [[Curve Sketching Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Read [[The Packaging Brief]]; bring a real package from home —
-      the more suspiciously shaped, the better.
+- [ ] Finish the first section.

@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 7
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_25__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Number Strings]] — $x^5$, then $4x^5$, then
-   $4x^5 + x$, then $(4x^5 + x)^3$: derivatives, one step at a time
-2. Toolbox stations — [[Derivative Rules Practice]],
-   [[Chain Rule Practice]], and
-   [[Exponential and Sinusoidal Derivatives Practice]]: start where
-   you are weakest, per [[How to Study for Math]]
-3. Task due: [[Smooth Landing]] — defend your touchdown out loud
-4. Journal collection — read [[Showing Growth]] first, then hand in
-   your Unit 2 volume
+1. Number talk: [[Which One Doesn't Belong]] — four expressions, one
+   rule each
+2. Random groups — twelve derivatives with no rule named. Deciding
+   WHICH rule is the skill being practised
+3. Consolidate: the decision tree, written on the board by the room
 
 ## Things to do before our next class
 
-- [ ] Journal (new volume): the rule you trust most, the rule you
-      trust least — and what would repair the second.
+- [ ] Journal: the expression that needed two rules, and in what order.

@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 4
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_22__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,18 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Graph Talks]] — one of these four curves is its own
-   derivative: which, and how could you know?
-2. Random groups: measure tangent slopes on $y = 2^x$, divide each by
-   the function's value there — then try $3^x$; what stays constant?
-3. The hunt: slide the base until curve and derivative coincide — the
-   number just past $2.718$ from Unit 1 walks back in
-4. Consolidate: [[Derivatives of Exponential Functions]] — $e$ earns
-   its throne
-5. Practise: [[Exponential and Sinusoidal Derivatives Practice]] — the
-   exponential half
+1. Number talk: [[True or False]] — 'the derivative of a product is the
+   product of the derivatives'
+2. Random groups — test that claim on $x^2 \cdot x^3$, where you know
+   the answer. Then derive what is actually true
+3. Clinic: [[Derivative Rules Practice]] to the end
 
 ## Things to do before our next class
 
-- [ ] Journal: of all the numbers there are, why would nature keep
-      picking $e$?
+- [ ] Finish the practice set.

@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 3
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_63__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,16 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[True or False]] — whatever multiplying two arrows
-   turns out to mean, $\vec{a} \cdot \vec{b} = \vec{b} \cdot \vec{a}$
-2. Random groups: invent a multiplication for arrows — every candidate
-   rule tested; which one can detect an angle?
-3. Consolidate: [[The Dot Product]] — two formulas, one number, and a
-   perpendicularity test that falls out free
-4. Practise: [[Dot and Cross Product Practice]] — the dot half
+1. Number talk: [[Visual Patterns]] — arrows laid tip to tail,
+   growing: where does step $n$ land?
+2. Random groups: the walk in coordinates — add arrows by adding
+   components; stretch them, reverse them, subtract them
+3. Consolidate: [[Adding and Scaling Vectors]] — and which of your
+   arithmetic habits survived the trip
+4. Preview: a plane flies one arrow while the wind flies another — the
+   sum is the whole story, and a task, on Day 5
 
 ## Things to do before our next class
 
-- [ ] Journal: the dot product of two arrows comes out to zero. What
-      do you now know, and why is it worth knowing?
+- [ ] Journal: does vector addition commute? Convince me with a
+      picture, then again with components.

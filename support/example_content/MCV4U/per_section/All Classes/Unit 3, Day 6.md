@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 6
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_46__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,16 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Graph Talks]] — a population curve: when was it
-   growing fastest, and how could you prove it?
-2. Random groups: rates in the wild — temperature, tides, populations:
-   given the function, how fast right now? Full circle to Day 1
-3. Task due: [[The Packaging Brief]] — defend the design, and what
-   "best" cost you
-4. Journal collection — [[Journal Checklist]] and [[Showing Growth]],
-   then hand in your Unit 3 volume
+1. Number talk: [[Which One Doesn't Belong]] — four curves; every
+   answer is defensible, if you argue from derivatives
+2. Sketching gallery at the boards — every group a different function,
+   the whole toolkit, no technology until the end
+3. Gallery walk: audit a neighbouring board with
+   [[Checking Your Own Work]] — technology confirms *after* the
+   argument
+4. Practise: [[Curve Sketching Practice]], second set
 
 ## Things to do before our next class
 
-- [ ] Journal (new volume): write to your Unit 1 self — what can you
-      now settle in one line that took them a whole table?
+- [ ] Journal: which feature of your function was hardest to pin down,
+      and which derivative finally settled it?

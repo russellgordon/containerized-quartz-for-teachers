@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 5
 draft: false
-created: __CREATED_CLASS_24__
+created: __CREATED_CLASS_65__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,15 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Would You Rather]] — cross a river aimed straight at
-   the far bank, or angled upstream?
-2. Random groups: describe *every* point on the line through two given
-   points in space — no $y = mx + b$ allowed
-3. Consolidate: [[Equations of Lines]] — vector, parametric, scalar,
-   and why three-space breaks the old habit
-4. Launch: [[The Flight Path]] — wind, heading, and a runway to hit
-5. Practise: [[Lines and Planes Practice]] — lines first
+1. Number talk: [[True or False]] — whatever multiplying two arrows
+   turns out to mean, $\vec{a} \cdot \vec{b} = \vec{b} \cdot \vec{a}$
+2. Random groups: invent a multiplication for arrows — every candidate
+   rule tested; which one can detect an angle?
+3. Consolidate: [[The Dot Product]] — two formulas, one number, and a
+   perpendicularity test that falls out free
+4. Practise: [[Dot and Cross Product Practice]] — the dot half
 
 ## Things to do before our next class
 
-- [ ] Read [[The Flight Path]] with your partner; sketch the wind
-      triangle for your packet before any arithmetic.
+- [ ] Journal: the dot product of two arrows comes out to zero. What
+      do you now know, and why is it worth knowing?

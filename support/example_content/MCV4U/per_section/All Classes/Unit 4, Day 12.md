@@ -1,0 +1,19 @@
+---
+title: Unit 4, Day 12
+draft: false
+created: __CREATED_CLASS_72__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. [[The Flight Path]], day 2 — working period: the vectors of the situation,
+   drawn before they are calculated
+2. Conference: which vector is the one you are solving for?
+
+## Things to do before our next class
+
+- [ ] Diagram drawn; knowns and unknowns labelled.

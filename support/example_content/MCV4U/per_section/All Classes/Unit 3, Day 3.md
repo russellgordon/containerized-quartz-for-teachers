@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 3
 draft: false
-created: __CREATED_CLASS_16__
+created: __CREATED_CLASS_43__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Which One Doesn't Belong]] — four curves; every
-   answer is defensible, if you argue from derivatives
-2. Sketching gallery at the boards — every group a different function,
-   the whole toolkit, no technology until the end
-3. Gallery walk: audit a neighbouring board with
-   [[Checking Your Own Work]] — technology confirms *after* the
-   argument
-4. Practise: [[Curve Sketching Practice]], second set
+1. Number talk: [[Always, Sometimes, Never]] — second derivative claims
+2. Random groups — from $f$ to $f'$ to $f''$, all three graphs stacked
+   on the same axes
+3. Consolidate: concavity, inflection, and why the second derivative
+   test works
 
 ## Things to do before our next class
 
-- [ ] Journal: which feature of your function was hardest to pin down,
-      and which derivative finally settled it?
+- [ ] Journal: what an inflection point looks like on all three graphs.

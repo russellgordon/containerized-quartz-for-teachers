@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 2
 draft: false
-created: __CREATED_CLASS_21__
+created: __CREATED_CLASS_62__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Visual Patterns]] — arrows laid tip to tail,
-   growing: where does step $n$ land?
-2. Random groups: the walk in coordinates — add arrows by adding
-   components; stretch them, reverse them, subtract them
-3. Consolidate: [[Adding and Scaling Vectors]] — and which of your
-   arithmetic habits survived the trip
-4. Preview: a plane flies one arrow while the wind flies another — the
-   sum is the whole story, and a task, on Day 5
+1. Number talk: [[Visual Patterns]] — arrows head to tail
+2. Random groups — the September walk in coordinates, then in
+   components, then as a magnitude and a bearing
+3. Consolidate: [[What Vectors Are]] — three representations of one
+   quantity, and when each is the convenient one
 
 ## Things to do before our next class
 
-- [ ] Journal: does vector addition commute? Convince me with a
-      picture, then again with components.
+- [ ] Journal: the same displacement written three ways.
