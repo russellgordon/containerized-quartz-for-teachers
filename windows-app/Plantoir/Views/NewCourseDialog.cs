@@ -390,7 +390,7 @@ public sealed class NewCourseDialog : ContentDialog
         form.Children.Add(FormBuilders.LabeledRow("Show page read-time estimates to students", readTimeToggle));
 
         // -------- Publishing --------
-        form.Children.Add(FormBuilders.SectionHeaderWithCaption("Publishing", null));
+        form.Children.Add(FormBuilders.SectionHeaderWithCaption("Deploying", null));
         _publishingChoice = new PublishingChoiceView(_window,
             () => _deployTarget, v => _deployTarget = v,
             () => _deployFolderPath, v => _deployFolderPath = v,

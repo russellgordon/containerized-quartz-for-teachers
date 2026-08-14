@@ -41,7 +41,7 @@
                  straight from the folder will not look right. -->
             <StackPanel x:Name="FolderResult" Visibility="Collapsed" Spacing="6"
                         AutomationProperties.AutomationId="publishedFolderResult">
-                <TextBlock Text="Your website was copied to its publishing folder." />
+                <TextBlock Text="Your website was copied to its deploy folder." />
                 <Button x:Name="FolderResultButton" Content="Show in File Explorer"
                         Click="FolderResult_Click" />
                 <TextBlock Opacity="0.7" FontSize="12" TextWrapping="Wrap"

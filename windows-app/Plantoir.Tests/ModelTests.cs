@@ -528,10 +528,10 @@ public class CourseActivityTests
         Assert.Null(CourseActivity.BusyReason(folder, "ICS3U"));
 
         var publish = CourseActivity.BeginPublish(folder, "ICS3U", 1);
-        Assert.Equal("Available once publish completed", CourseActivity.BusyReason(folder, "ICS3U"));
+        Assert.Equal("Available once deploy completed", CourseActivity.BusyReason(folder, "ICS3U"));
 
         var lease = PreviewLeases.Take(folder, "ICS3U", 2);
-        Assert.Equal("Available once preview and publish complete", CourseActivity.BusyReason(folder, "ICS3U"));
+        Assert.Equal("Available once preview and deploy complete", CourseActivity.BusyReason(folder, "ICS3U"));
 
         publish.Dispose();
         Assert.Equal("Available once preview completed", CourseActivity.BusyReason(folder, "ICS3U"));

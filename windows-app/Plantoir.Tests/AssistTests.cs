@@ -106,8 +106,9 @@ public class AssistWorkspaceTests : IDisposable
         var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true);
 
         // Every changing page names its key and its transition. A reader who
-        // has only seen class pages would otherwise generalise `draft:` to
+        // has only seen class pages would otherwise generalise `publish:` to
         // course-level pages and be wrong — which is exactly what happened.
+        // The closing line says DEPLOY, the teacher's own separate act.
         Assert.Equal(
             "Publish “Unit 2, Day 3” in ICS3U Section 1, and the 1 page they link to.\n" +
             "All 2 pages would change.\n" +
@@ -117,7 +118,7 @@ public class AssistWorkspaceTests : IDisposable
             "  courses/ICS3U/Concepts/Ohm's Law.md  (publishForSection1: false → true)\n" +
             "\n" +
             "Then rebuild the preview of Section 1, so you can look it over. " +
-            "Nothing goes live on Netlify until you publish it yourself in Plantoir.",
+            "Nothing goes live on Netlify until you deploy it yourself in Plantoir.",
             plan.Describe());
     }
 
@@ -176,7 +177,7 @@ public class AssistWorkspaceTests : IDisposable
     {
         Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: false);
         var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: false, draft: true);
-        Assert.StartsWith("Hide “Unit 2, Day 3” in ICS3U Section 1.", plan.Describe());
+        Assert.StartsWith("Unpublish “Unit 2, Day 3” in ICS3U Section 1.", plan.Describe());
         Assert.True(Assert.Single(plan.Named).WillChange);
     }
 
@@ -194,7 +195,7 @@ public class AssistWorkspaceTests : IDisposable
             includeLinked: false, draft: true);
 
         Assert.Equal(4, plan.Named.Count());
-        Assert.StartsWith("Hide 4 pages in ICS3U Section 1.", plan.Describe());
+        Assert.StartsWith("Unpublish 4 pages in ICS3U Section 1.", plan.Describe());
     }
 
     [Fact]
@@ -1032,7 +1033,7 @@ public class AssistWorkspaceTests : IDisposable
         var dangling = Assert.Single(plan.Dangling);
         Assert.EndsWith("E2.6.md", dangling.From, StringComparison.Ordinal);
         Assert.EndsWith("About These Expectations.md", dangling.To, StringComparison.Ordinal);
-        Assert.Contains("would point at a hidden page", plan.Describe());
+        Assert.Contains("would point at an unpublished page", plan.Describe());
     }
 
     [Fact]
@@ -1059,7 +1060,7 @@ public class AssistWorkspaceTests : IDisposable
         Class("ICS3U", "Unit 1, Day 2", "2026-09-09");
         var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" }, includeLinked: true, draft: true);
         Assert.Empty(plan.Dangling);
-        Assert.DoesNotContain("point at a hidden page", plan.Describe());
+        Assert.DoesNotContain("point at an unpublished page", plan.Describe());
     }
 
     [Fact]
@@ -1150,7 +1151,7 @@ public class AssistWorkspaceTests : IDisposable
             includeLinked: false, draft: true, onOrAfter: new DateOnly(2027, 1, 1));
 
         Assert.Contains("No class in ICS3U Section 1 falls in that date range.", plan.Problems);
-        // And it says that rather than "hide 0 pages … all 0 are already hidden".
+        // And it says that rather than "unpublish 0 pages … all 0 are already unpublished".
         Assert.StartsWith("No pages were selected in ICS3U Section 1, so there is nothing to do.",
             plan.Describe());
         Assert.True(plan.ChangesNothing);
@@ -1196,7 +1197,7 @@ public class AssistWorkspaceTests : IDisposable
 
         Assert.True(result.Succeeded);
         Assert.Contains("No content was changed.", result.Message);
-        Assert.Contains("publish it there when you're happy", result.Message);
+        Assert.Contains("deploy it there when you're happy", result.Message);
         Assert.Equal(new[] { "preview" }, _launcher.Runs.Select(r => r.Launcher));   // never "deploy"
         Assert.Contains("publish: false",
             File.ReadAllText(Path.Combine(_folder, "courses", "ICS3U", "section1", "All Classes", "Unit 2, Day 3.md")));

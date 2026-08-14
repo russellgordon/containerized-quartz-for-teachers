@@ -890,7 +890,7 @@ public sealed class AssistWorkspace
         return build.Succeeded
             ? new AssistResult(true,
                 $"Rebuilt the preview of {course.Code} Section {section}. No content was changed. " +
-                "Look it over in Plantoir, and publish it there when you're happy.", null)
+                "Look it over in Plantoir, and deploy it there when you're happy.", null)
             : new AssistResult(false, $"Nothing was changed, and the preview couldn’t be built. {build.Message}", null);
     }
 
@@ -1032,7 +1032,7 @@ public sealed class AssistWorkspace
             : $"Changed {changed.Count} page{(changed.Count == 1 ? "" : "s")} ({string.Join(", ", changed)})";
         return previewed
             ? $"{what}, and rebuilt the preview of {code} Section {section}. " +
-              "Look it over in Plantoir, and publish it there when you're happy."
+              "Look it over in Plantoir, and deploy it there when you're happy."
             : what + ".";
     }
 
@@ -1056,8 +1056,8 @@ public sealed class AssistWorkspace
         bool publishing = held.Contains(WorkLease.Publishing);
         if (!previewing && !publishing) return;
 
-        string what = previewing && publishing ? "previewing and publishing"
-            : previewing ? "previewing" : "publishing";
+        string what = previewing && publishing ? "previewing and deploying"
+            : previewing ? "previewing" : "deploying";
         throw new AssistRefusal(
             $"Plantoir is {what} {course.Code} right now, and building it here at the same time would " +
             "spoil both. Wait for that to finish, then try again. " +
@@ -1363,7 +1363,7 @@ public sealed class AssistWorkspace
 
         return new AssistResult(true,
             $"{what} onto block {plan.Block} in {course.Code} Section {section}. " +
-            "Nothing was published — preview or publish the section when ready.",
+            "Nothing was deployed — preview or deploy the section when ready.",
             backup);
     }
 
@@ -1484,7 +1484,7 @@ public sealed class AssistWorkspace
 
         return new AssistResult(true,
             $"Brought {moved} page{(moved == 1 ? "" : "s")} into date with the class that uses " +
-            (moved == 1 ? "it" : "them") + $" in {course.Code} Section {section}. Nothing was published.",
+            (moved == 1 ? "it" : "them") + $" in {course.Code} Section {section}. Nothing was deployed.",
             backup);
     }
 

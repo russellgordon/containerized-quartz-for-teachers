@@ -283,7 +283,7 @@ public sealed partial class MainWindow : Window
                 break;
             case null:
                 DetailHost.Content = EmptyState("Select a Course or Section",
-                    "Choose a course to edit its settings, or a section to preview and publish its website.",
+                    "Choose a course to edit its settings, or a section to preview and deploy its website.",
                     null, null);
                 break;
             default:

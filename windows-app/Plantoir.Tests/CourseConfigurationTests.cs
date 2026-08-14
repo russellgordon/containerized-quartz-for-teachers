@@ -56,7 +56,7 @@ public class CourseConfigurationTests
     [Fact]
     public void DeployFolderProblemsAreNamedInPlainWords()
     {
-        Assert.Equal("Choose the folder this course publishes into.",
+        Assert.Equal("Choose the folder this course deploys into.",
             CourseConfiguration.DeployFolderProblem("   "));
 
         string missing = Path.Combine(Path.GetTempPath(), "no-such-" + Guid.NewGuid().ToString("N"));

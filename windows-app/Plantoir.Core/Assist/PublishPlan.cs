@@ -91,15 +91,19 @@ public sealed class PublishPlan
     /// </summary>
     public string Describe()
     {
-        string verb = Hiding ? "Hide" : "Publish";
+        // "Unpublish", not "hide" — the pair a teacher actually says, and the
+        // pair the briefing teaches. Two words for one act would undo the
+        // point of explaining it once.
+        string verb = Hiding ? "Unpublish" : "Publish";
         var lines = new List<string>();
 
         var named = Named.ToList();
         var linked = Linked.ToList();
 
         // A date range that matched nothing selects no pages at all. Saying
-        // "hide 0 pages ... all 0 pages are already hidden" is arithmetic
-        // pretending to be a sentence; the problem line says what happened.
+        // "unpublish 0 pages ... all 0 pages are already unpublished" is
+        // arithmetic pretending to be a sentence; the problem line says what
+        // actually happened.
         if (Pages.Count == 0)
         {
             lines.Add($"No pages were selected in {CourseCode} Section {SectionNumber}, so there is nothing to do.");
@@ -120,7 +124,7 @@ public sealed class PublishPlan
 
         var changing = Changing.ToList();
         int total = Pages.Count;
-        string already = Hiding ? "hidden" : "published";
+        string already = Hiding ? "unpublished" : "published";
 
         int unchanged = total - changing.Count;
         if (changing.Count == 0)
@@ -168,7 +172,7 @@ public sealed class PublishPlan
             // something visible to students is the teacher's own action, taken
             // in front of the site they are about to change.
             lines.Add($"Then rebuild the preview of Section {SectionNumber}, so you can look it over. " +
-                      $"Nothing goes live on {Destination} until you publish it yourself in Plantoir.");
+                      $"Nothing goes live on {Destination} until you deploy it yourself in Plantoir.");
         }
         return string.Join("\n", lines);
     }
@@ -186,8 +190,8 @@ public sealed class PublishPlan
 
         lines.Add("");
         lines.Add($"Afterwards, {Dangling.Count} link{(Dangling.Count == 1 ? "" : "s")} " +
-                  $"on {(Hiding ? "pages students can still see" : "visible pages")} " +
-                  "would point at a hidden page:");
+                  $"on {(Hiding ? "pages students can still see" : "published pages")} " +
+                  "would point at an unpublished page:");
 
         foreach (var link in Dangling.Take(MostDanglingShown))
             lines.Add($"  {Name(link.From)} → {Name(link.To)}");

@@ -108,7 +108,7 @@ public sealed partial class CourseSettingsView : UserControl
         Form.Children.Add(FormBuilders.LabeledRow("Sidebar folders expand when clicking", expandBox));
 
         // -------- Publishing (course-level: every section goes the same way) --------
-        Form.Children.Add(FormBuilders.SectionHeaderWithCaption("Publishing", null));
+        Form.Children.Add(FormBuilders.SectionHeaderWithCaption("Deploying", null));
         _publishingChoice = new PublishingChoiceView(_window,
             () => Config.DeployTarget, v => Config.DeployTarget = v,
             () => Config.DeployFolderPath, v => Config.DeployFolderPath = v,
@@ -245,7 +245,7 @@ public sealed partial class CourseSettingsView : UserControl
         };
         var domainPanel = FormBuilders.LabeledRow("Custom domain", domainBox);
         var domainCaption = FormBuilders.ExampleCaption(
-            "e.g. ics3u.yourschool.ca — links to your published site will use this domain instead of the Netlify address. Your site must already answer there (set the domain up in Netlify first). Leave empty to use the Netlify address.");
+            "e.g. ics3u.yourschool.ca — links to your live site will use this domain instead of the Netlify address. Your site must already answer there (set the domain up in Netlify first). Leave empty to use the Netlify address.");
         var domainWarning = FormBuilders.WarningCaption("That doesn't look like a domain — e.g. ics3u.yourschool.ca");
         domainWarning.Visibility = Visibility.Collapsed;
         domainPanel.Children.Add(domainWarning);

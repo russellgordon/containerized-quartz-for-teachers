@@ -64,9 +64,9 @@ public static class CourseActivity
     {
         bool previewing = IsPreviewing(folderPath, courseCode);
         bool publishing = IsPublishing(folderPath, courseCode);
-        if (previewing && publishing) return "Available once preview and publish complete";
+        if (previewing && publishing) return "Available once preview and deploy complete";
         if (previewing) return "Available once preview completed";
-        if (publishing) return "Available once publish completed";
+        if (publishing) return "Available once deploy completed";
         // Said in the app's voice, naming the thing the teacher started rather
         // than the process that holds the lease.
         if (IsAssisting(folderPath, courseCode)) return "Available once you finish revising with Claude";

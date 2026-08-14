@@ -69,16 +69,21 @@
                     <TextBlock x:Name="PreviewLabel" Text="Preview" />
                 </StackPanel>
             </Button>
-            <!-- "Publish", never "Deploy" — deploy is web-developer jargon
-                 (row 103). Internal names (deploy.ps1, config keys, the
-                 automation id) deliberately keep their spelling. -->
+            <!-- "Deploy", NOT "Publish" — reversing row 103, which dropped
+                 the word as jargon. It has to come back, because "publish"
+                 now names something else entirely: a page carries
+                 `publish: true` when students can see it in the built site.
+                 One word cannot mean both "this page is visible" and "send
+                 the whole site to the web" without the assistant and the
+                 teacher talking past each other. Deploy is the rarer word,
+                 so it takes the rarer act. -->
             <Button x:Name="DeployButton" Grid.Column="7" Click="Deploy_Click"
                     MinWidth="34" MinHeight="30"
-                    ToolTipService.ToolTip="Publish this section's website"
+                    ToolTipService.ToolTip="Deploy this section's website"
                     AutomationProperties.AutomationId="deployButton">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <FontIcon Glyph="&#xE724;" FontSize="14" />
-                    <TextBlock Text="Publish" />
+                    <TextBlock Text="Deploy" />
                 </StackPanel>
             </Button>
             <Button x:Name="BrowserButton" Grid.Column="8" IsEnabled="False" Click="OpenInBrowser_Click"

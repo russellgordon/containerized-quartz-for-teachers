@@ -48,11 +48,11 @@ public sealed partial class SectionDetailView : UserControl
         SectionTitle.Text = TitleText;
         ObsidianButton.IsEnabled = FolderActions.ObsidianIsInstalled;
 
-        // The empty-state invitation follows the course's publishing choice —
+        // The empty-state invitation follows the course's destination —
         // "to Netlify" would be wrong twice over for a folder-publishing course.
         NoPreviewDetail.Text = course.Configuration.DeploysToLocalFolder
-            ? "Click Preview to build this section's website and see it here, or Publish to copy it to your publishing folder."
-            : "Click Preview to build this section's website and see it here, or Publish to put it online.";
+            ? "Click Preview to build this section's website and see it here, or Deploy to copy it to your publishing folder."
+            : "Click Preview to build this section's website and see it here, or Deploy to put it online.";
 
         // Each runner is bound to the progress view exactly once — its
         // question dialog and outcome states follow whichever runner the
@@ -104,7 +104,7 @@ public sealed partial class SectionDetailView : UserControl
             (_deployRunner.IsRunning ||
              (_deployRunner.StartedAt ?? DateTime.MinValue) > (_previewRunner.StartedAt ?? DateTime.MinValue));
         if (showDeploy)
-            Progress.Show(_deployRunner, $"Publishing {TitleText}");
+            Progress.Show(_deployRunner, $"Deploying {TitleText}");
         else
             Progress.Show(_previewRunner,
                 _previewRunner.IsRunning || _isWaitingForServer
@@ -321,8 +321,8 @@ public sealed partial class SectionDetailView : UserControl
         {
             var problemDialog = new ContentDialog
             {
-                Title = "The publishing folder needs attention",
-                Content = folderProblem + " Fix it in this course's settings, then publish again.",
+                Title = "The deploy folder needs attention",
+                Content = folderProblem + " Fix it in this course's settings, then deploy again.",
                 CloseButtonText = "OK",
                 XamlRoot = XamlRoot,
             };
@@ -340,7 +340,7 @@ public sealed partial class SectionDetailView : UserControl
             var accountDialog = new ContentDialog
             {
                 Title = "Cloudflare needs your Account ID",
-                Content = accountProblem + " Add it in this course's settings, under Publishing, then publish again.",
+                Content = accountProblem + " Add it in this course's settings, under Deploying, then deploy again.",
                 CloseButtonText = "OK",
                 XamlRoot = XamlRoot,
             };

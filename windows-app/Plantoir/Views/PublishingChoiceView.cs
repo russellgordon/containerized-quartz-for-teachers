@@ -81,7 +81,7 @@ public sealed class PublishingChoiceView
             _ => NetlifyIndex,
         };
         AutomationProperties.SetAutomationId(targetBox, "deployTargetPicker");
-        Root.Children.Add(FormBuilders.LabeledRow("Publish to", targetBox));
+        Root.Children.Add(FormBuilders.LabeledRow("Deploy to", targetBox));
 
         // ---- Folder ----
         _folderArea = new StackPanel { Spacing = 4 };
@@ -100,7 +100,7 @@ public sealed class PublishingChoiceView
         _problemText = CautionLine("deployFolderProblem");
         _folderArea.Children.Add(_problemText);
         _caption = FormBuilders.ExampleCaption(
-            "Each section publishes into its own subfolder here — section1, section2 — and only changed files are copied. Upload the folder to your web host however you prefer (e.g. over SFTP). Netlify isn’t involved.");
+            "Each section deploys into its own subfolder here — section1, section2 — and only changed files are copied. Upload the folder to your web host however you prefer (e.g. over SFTP). Netlify isn’t involved.");
         _folderArea.Children.Add(_caption);
         Root.Children.Add(_folderArea);
 
@@ -112,7 +112,7 @@ public sealed class PublishingChoiceView
         _cloudflareProblemText = CautionLine("cloudflareAccountProblem");
         _cloudflareArea.Children.Add(_cloudflareProblemText);
         _cloudflareCaption = FormBuilders.ExampleCaption(
-            "Each section gets its own free site at yourproject.pages.dev. Sign in at dash.cloudflare.com and open Workers and Pages — the Account ID is shown on the right, and it’s also the long code in the address bar. You only enter it once. The first publish asks for an API token with the Cloudflare Pages permission.");
+            "Each section gets its own free site at yourproject.pages.dev. Sign in at dash.cloudflare.com and open Workers and Pages — the Account ID is shown on the right, and it’s also the long code in the address bar. You only enter it once. The first deploy asks for an API token with the Cloudflare Pages permission.");
         _cloudflareArea.Children.Add(_cloudflareCaption);
 
         // Stays on screen the whole time Cloudflare is chosen — it is a

@@ -588,7 +588,7 @@ public sealed partial class SidebarPane : UserControl
             && CourseActivity.BusyReason(folder, item.CourseCode) is not null)
         {
             await ShowError($"{item.CourseCode} is busy right now",
-                "Restoring replaces the course's folders and files, and a preview or publish " +
+                "Restoring replaces the course's folders and files, and a preview or deploy " +
                 "of this course is still using them. Try again when it finishes.");
             return;
         }
@@ -775,7 +775,7 @@ public sealed partial class SidebarPane : UserControl
         {
             await ShowError($"{course.Code} is busy right now",
                 "Adding a section rewrites the course's folders and files, and a " +
-                "preview or publish of this course is still using them. Try again when it finishes.");
+                "preview or deploy of this course is still using them. Try again when it finishes.");
             return;
         }
         var dialog = new AddSectionDialog(course) { XamlRoot = XamlRoot };
