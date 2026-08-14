@@ -16,11 +16,7 @@ short enough to work with, which is the entire reason they exist.
 For an angle in a right triangle, with the usual opposite, adjacent, and
 hypotenuse:
 
-$$\csc\theta = \frac{\text{hyp}}{\text{opp}} = \frac{1}{\sin\theta}
-\qquad
-\sec\theta = \frac{\text{hyp}}{\text{adj}} = \frac{1}{\cos\theta}
-\qquad
-\cot\theta = \frac{\text{adj}}{\text{opp}} = \frac{1}{\tan\theta}$$
+$$\csc\theta = \frac{\text{hyp}}{\text{opp}} = \frac{1}{\sin\theta} \qquad \sec\theta = \frac{\text{hyp}}{\text{adj}} = \frac{1}{\cos\theta} \qquad \cot\theta = \frac{\text{adj}}{\text{opp}} = \frac{1}{\tan\theta}$$
 
 The pairing is deliberately awkward: **cosecant goes with sine** and
 **secant goes with cosine**, not the way the first letters suggest.
@@ -38,8 +34,7 @@ An **identity** is an equation true for every value of the variable, as
 opposed to an equation you solve for particular values. Three of them
 carry most of the work:
 
-$$\sin^2 x + \cos^2 x = 1 \qquad\qquad \tan x = \frac{\sin x}{\cos x}
-\qquad\qquad \cot x = \frac{\cos x}{\sin x}$$
+$$\sin^2 x + \cos^2 x = 1 \qquad\qquad \tan x = \frac{\sin x}{\cos x} \qquad\qquad \cot x = \frac{\cos x}{\sin x}$$
 
 The first is the Pythagorean theorem in disguise: on the unit circle a
 point is $(\cos x, \sin x)$ and its distance from the origin is 1.

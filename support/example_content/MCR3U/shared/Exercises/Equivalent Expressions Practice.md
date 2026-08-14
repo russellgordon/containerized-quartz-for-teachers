@@ -50,8 +50,7 @@ $$\frac{3}{x - 2} + \frac{5}{x + 1}$$
 $$\frac{x^2 - 4}{x^2 - x - 6} \times \frac{x + 3}{x + 2}$$
 
 > [!success]- Answer 4
-> $$\frac{(x-2)(x+2)}{(x-3)(x+2)} \times \frac{x+3}{x+2}
-> = \frac{(x-2)(x+3)}{(x-3)(x+2)}$$
+> $$\frac{(x-2)(x+2)}{(x-3)(x+2)} \times \frac{x+3}{x+2} = \frac{(x-2)(x+3)}{(x-3)(x+2)}$$
 > Restrictions: $x \neq 3$, $x \neq -2$. Factor everything before
 > cancelling anything — cancelling across an unfactored sum is the
 > error this question exists to catch.
