@@ -12,6 +12,88 @@ references are the durable pointers.)
 
 ## To implement
 
+- **The publication flag is `publish:`, not `draft:`** (Windows +
+  shared, 2026-08-13, `ai-assist` branch). Commits `2d6c59a` (the
+  toolchain and the app) and `7347d2b` (the example content and the
+  course-creation wizard). Same caveat as the AI Assist entry below:
+  **this lives on `ai-assist`, not `main`, and is not in 1.0.**
+
+  A page inside `section<N>/` now carries `publish:`; a course-level page
+  carries `publishForSection<N>:`. Both are the OPPOSITE polarity from
+  the keys they replace — `draft: true` becomes `publish: false`.
+
+  **The shared half is done and the mac inherits it**, so read this
+  before assuming the mac has to do anything drastic:
+
+  - `build_site.py` maps `publishForSection<N>` → `publish` for the
+    section being built, falls back to the legacy `draftSection<N>` /
+    `draft` **inverted**, and strips all four key families from the
+    built copy. A course nobody has touched builds exactly as it did.
+  - `patches/publish.ts` gives Quartz a `PublishFlag` filter, and
+    `build_site.py` rewrites `Plugin.RemoveDrafts()` to `Plugin.PublishFlag()`
+    in `quartz.config.ts`. **Do not reach for Quartz's own
+    `ExplicitPublish` instead** — it looks like exactly what we want and
+    it is a trap. It reads `publish === true`, which flips the DEFAULT,
+    and 60 of the sample course's 225 pages carry no flag at all,
+    every curriculum page among them. All of them would have vanished
+    silently. `PublishFlag` is eight lines that keep the forgiving
+    default and change only the word.
+  - `setup_course.py` creates new courses in the new schema.
+
+  **What the mac app owes**: the same reading and writing of the new
+  keys, in whatever its counterpart to `PageFrontmatter` is. Three rules
+  matter, and each one is there because breaking it caused a real bug:
+
+  1. **Read new-then-legacy, and invert the legacy value.** Per-section
+     key first, plain key second, then `draftSection<N>`, then `draft`.
+     No key at all means PUBLISHED.
+  2. **Never write a legacy key.** Writing the new key is the migration,
+     and it happens one page at a time as things are edited. There is no
+     sweep and no flag day.
+  3. **Write the new key in the OLD key's position**, so a migrated page
+     shows a one-line diff instead of reordered frontmatter in a file
+     Obsidian may have open.
+
+  Watch for the inversion bug, because it is subtle and it bit three
+  times here: any variable meaning "is this page hidden" must not be
+  fed the raw `publish` value. All three instances were caught by tests
+  that already existed — a plan that thought published pages still
+  needed publishing, a dangling-link check that found nothing in either
+  direction, and a transition line that told the teacher the exact
+  reverse of the truth. Reference: `PageFrontmatter.IsDraft` /
+  `StoredDraft` / `SetDraft` in
+  `windows-app/Plantoir.Core/Models/PageFrontmatter.cs`.
+
+  The example content in `support/` was inverted wholesale (1145 keys
+  across 957 files), including the prose that teaches the flag, so the
+  mac gets that for free. Verified against a real container build: a
+  course with a page for every branch — `publish` true/false/absent/
+  quoted-false, legacy `draft` both ways, and per-section keys set
+  OPPOSITE for two sections — built correctly in all fourteen cases,
+  with section 2's site the exact mirror of section 1's.
+
+- **"Deploy" comes back to the GUI — this REVERSES row 103** (Windows,
+  2026-08-13, `ai-assist` branch, commit `ba4889c`). Row 103 had the mac
+  drop "Deploy" as jargon and call the button "Publish". That has to be
+  undone, and not because row 103 was wrong: it was right when there was
+  only one act to name. There are two now. A page is **published** when
+  students can see it in the built site (the `publish:` flag above, which
+  the assistant changes); the whole site is **deployed** to Netlify,
+  Cloudflare, or a folder (the teacher's own act, which the assistant
+  never takes). One word for both makes "I published tomorrow's class"
+  mean a flag to one party and a live site to the other.
+
+  On Windows the sweep covered: the toolbar button and its tooltip, the
+  No Preview Running invitation, the progress title, the Publishing
+  settings group (now "Deploying") and its "Deploy to" picker, the
+  Cloudflare and folder problem dialogs, the busy lines in
+  `CourseActivity.BusyReason`, and the folder-copy completion note.
+  **Internal names deliberately keep their spelling** — `deploy.ps1` /
+  `deploy.sh`, `deploy_target`, `deploy_folder_path`, the `deployButton`
+  automation id — so nothing in the launchers or the config format
+  moves. Also worth copying: the assistant's plan says "Unpublish", not
+  "Hide", since hide/unhide is not a teacher's word.
+
 - **AI Assist — an MCP server, on the `ai-assist` branch** (Windows +
   shared, 2026-08-13). Commits `c6b1381` (the feasibility investigation
   and its evidence) and `b3b7fc0` (the server). **Nothing here is on
@@ -25,8 +107,11 @@ references are the durable pointers.)
   folder, built on the official `ModelContextProtocol` 2.2.0 C# SDK. Eight
   tools: four read-only, two planning tools that change nothing, and two
   writes that back up first. Verified end to end over real JSON-RPC against
-  the sample course — including a publish that flipped `draftSection1`
-  while leaving `draftSection2` untouched, with the backup written first.
+  the sample course — including a publish that flipped one section's
+  per-section key while leaving the other section's untouched, with the
+  backup written first. (Those keys were `draftSection<N>` at the time;
+  they are `publishForSection<N>` now — see the publication-flag entry
+  at the top of this file.)
   Plan logic is unit-tested against a fake launcher; the suite is at 200.
 
   **The mac side inherits most of it.** The platform-neutral logic lives in
