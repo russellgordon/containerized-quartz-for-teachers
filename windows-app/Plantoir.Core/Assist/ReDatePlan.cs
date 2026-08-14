@@ -148,10 +148,18 @@ public sealed record PlannedDate(
 {
     public bool WillChange => Current != New;
 
+    /// <summary>
+    /// The meeting number is only meaningful for a date that came from a
+    /// timetable. Pages taking a class's date have no meeting of their own,
+    /// and printing "meeting 0" beside them is noise in a line a teacher is
+    /// meant to read.
+    /// </summary>
+    private string Meeting => MeetingNumber > 0 ? $", meeting {MeetingNumber}" : "";
+
     public string Describe() =>
         WillChange
-            ? $"{Title}  {Show(Current)} → {New:yyyy-MM-dd} ({New:ddd}), meeting {MeetingNumber}"
-            : $"{Title}  {New:yyyy-MM-dd} ({New:ddd}), meeting {MeetingNumber} — unchanged";
+            ? $"{Title}  {Show(Current)} → {New:yyyy-MM-dd} ({New:ddd}){Meeting}"
+            : $"{Title}  {New:yyyy-MM-dd} ({New:ddd}){Meeting} — unchanged";
 
     private static string Show(DateOnly? value) => value is { } date ? date.ToString("yyyy-MM-dd") : "no date";
 }

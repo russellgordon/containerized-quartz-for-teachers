@@ -165,6 +165,28 @@ and then does the two things a teacher expects without asking for:
 - **The section's front page catches up**: the `# Most Recent Class` embed
   points at the newest published class, and the index takes that class's date.
 
+### Publishing follows two hops, hiding follows one
+
+A class links to a concept; the concept links to the expectations behind it.
+Following one hop leaves a **visible page pointing at a hidden one** — measured
+at 42 pages sitting two or three hops out in the sample course. So publishing
+goes two hops, with one rule at the second:
+
+- **Hidden two hops out** → published, and takes the date of the class that
+  brought it in.
+- **Already published two hops out** → left completely alone. It belongs to
+  whatever published it, so it keeps its state *and* its date.
+
+**Hiding never goes past one hop.** Each extra hop can swallow a page a
+still-published class depends on, and the further out it reaches the less a
+teacher can see it happening. The third hop, in either direction, is reported
+by the dangling-link check rather than swept along.
+
+**A class is never dragged along by a link, at any depth.** "Publish
+tomorrow's class" must not put next week's lesson in front of students because
+something mentioned it. The dead link is reported instead, so the teacher can
+publish that class deliberately if that is what they meant.
+
 **"Most recent" is computed, never remembered**, and that one decision makes it
 right in both directions with no code for either case: publishing an older
 class the teacher had missed does not drag the front page backwards, and

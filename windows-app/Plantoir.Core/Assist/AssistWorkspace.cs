@@ -413,32 +413,79 @@ public sealed class AssistWorkspace
                 problems.Add($"No class in {course.Code} Section {section} falls in that date range.");
         }
 
+        var carriedAlong = new List<PlannedDate>();
         if (includeLinked)
         {
+            var classPaths = new HashSet<string>(
+                ClassPages(course, section).Select(Path.GetFullPath), StringComparer.OrdinalIgnoreCase);
+
             foreach (string path in namedPaths)
             {
-                var resolutions = WikiLinks.Resolve(
-                    WikiLinks.Parse(File.ReadAllText(path)), course.DirectoryPath, section, path);
-                foreach (var resolution in resolutions)
+                DateOnly? classDate = DateOf(course, section, path);
+
+                foreach (var resolution in Links(course, section, path, problems))
                 {
-                    if (resolution.Problem is { } problem)
+                    string full = Path.GetFullPath(resolution);
+                    // A class is never dragged along by a link. "Publish
+                    // tomorrow's class" must not put next week's lesson live
+                    // because something mentioned it; the dangling-link check
+                    // reports the dead link instead, which the teacher can act
+                    // on deliberately.
+                    if (classPaths.Contains(full)) continue;
+
+                    if (seen.Add(full))
                     {
-                        if (!problems.Contains(problem)) problems.Add(problem);
-                        continue;
+                        if (protectedPaths.Contains(full)) { protectedLinked++; continue; }
+                        pages.Add(Plan(course, section, resolution, draft, viaLink: true));
                     }
-                    if (resolution.Outcome != LinkOutcome.Resolved) continue;
-                    // A page reached from two different classes is one page.
-                    string full = Path.GetFullPath(resolution.Path!);
-                    if (!seen.Add(full)) continue;
-                    // Reached only incidentally, so a count is enough; naming
-                    // each one would bury the change the teacher is checking.
-                    if (protectedPaths.Contains(full)) { protectedLinked++; continue; }
-                    pages.Add(Plan(course, section, resolution.Path!, draft, viaLink: true));
+
+                    // One more hop. A class links to a concept; the concept
+                    // links to the expectations behind it. Publishing only the
+                    // first hop leaves a visible page pointing at a hidden one
+                    // — measured at 42 pages sitting two or three hops out in
+                    // the sample course.
+                    if (draft) continue;                 // hiding never goes deeper: see below
+                    foreach (var deeper in Links(course, section, resolution, problems))
+                    {
+                        string deepFull = Path.GetFullPath(deeper);
+                        if (classPaths.Contains(deepFull)) continue;
+                        if (!seen.Add(deepFull)) continue;
+                        if (protectedPaths.Contains(deepFull)) { protectedLinked++; continue; }
+
+                        // Only pages the students cannot already see. One that
+                        // is already published belongs to whatever published
+                        // it, so it keeps both its state and its date.
+                        bool hidden;
+                        try { hidden = PageFrontmatter.IsDraft(File.ReadAllText(deeper), section); }
+                        catch { continue; }
+                        if (!hidden) continue;
+
+                        pages.Add(Plan(course, section, deeper, draft, viaLink: true));
+                        if (classDate is { } when)
+                        {
+                            bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, deeper);
+                            carriedAlong.Add(new PlannedDate(
+                                Title: Path.GetFileNameWithoutExtension(deeper),
+                                RelativePath: Relative(deeper),
+                                FrontmatterKey: PageFrontmatter.CreatedKeyFor(section, sectionLocal),
+                                Current: DateOf(course, section, deeper),
+                                New: when,
+                                MeetingNumber: 0));
+                        }
+                    }
                 }
             }
         }
 
         var inherited = InheritedDates(course, section, pages, draft);
+
+        // Pages brought in from a second hop take the date of the class that
+        // brought them, and only they know which class that was — so they are
+        // merged in here rather than recomputed. A page reached BOTH directly
+        // and at two hops keeps the direct answer, which is the stronger claim.
+        foreach (var carried in carriedAlong)
+            if (!inherited.Any(d => d.RelativePath == carried.RelativePath) && carried.WillChange)
+                inherited.Add(carried);
         var index = IndexChangeFor(course, section, pages, inherited);
 
         // Counted while following links above, so it has to be reported after
@@ -460,6 +507,29 @@ public sealed class AssistWorkspace
             InheritedDates = inherited,
             Index = index,
         };
+    }
+
+    /// <summary>
+    /// The pages one page links to, adding any unresolvable links to
+    /// <paramref name="problems"/> once each.
+    /// </summary>
+    private List<string> Links(Course course, int section, string page, List<string> problems)
+    {
+        var found = new List<string>();
+        string text;
+        try { text = File.ReadAllText(page); } catch { return found; }
+
+        foreach (var resolution in WikiLinks.Resolve(
+                     WikiLinks.Parse(text), course.DirectoryPath, section, page))
+        {
+            if (resolution.Problem is { } problem)
+            {
+                if (!problems.Contains(problem)) problems.Add(problem);
+                continue;
+            }
+            if (resolution.Outcome == LinkOutcome.Resolved) found.Add(resolution.Path!);
+        }
+        return found;
     }
 
     /// <summary>

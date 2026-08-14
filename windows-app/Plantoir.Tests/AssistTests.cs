@@ -226,6 +226,102 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Equal(3, plan.Pages.Count);
     }
 
+    // ---- Two hops out ------------------------------------------------------
+
+    [Fact]
+    public void PublishingFollowsASecondHopSoNoVisiblePagePointsAtAHiddenOne()
+    {
+        // A class links to a concept; the concept links to the expectations
+        // behind it. One hop leaves a visible page pointing at a hidden one.
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true, body: "Concept: [[Recursion]]");
+        Page("ICS3U", "Concepts/Recursion.md", draftSection1: true, body: "See [[E2.6]] and [[E2.2]].");
+        Page("ICS3U", "Curriculum/E2.6.md", draftSection1: true);
+        Page("ICS3U", "Curriculum/E2.2.md", draftSection1: true);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true);
+
+        Assert.Contains(plan.Pages, p => p.Title == "E2.6" && !p.Draft);
+        Assert.Contains(plan.Pages, p => p.Title == "E2.2" && !p.Draft);
+        Assert.Empty(plan.Dangling);
+    }
+
+    [Fact]
+    public void ASecondHopPageAlreadyPublishedKeepsItsStateAndItsDate()
+    {
+        // It belongs to whatever published it. Left entirely alone.
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true, body: "Concept: [[Recursion]]");
+        Page("ICS3U", "Concepts/Recursion.md", draftSection1: true, body: "See [[E2.6]].");
+        Write("ICS3U", "Curriculum/E2.6.md",
+              "draftSection1: false\ncreatedSection1: 2026-01-05T07:00:00.000-0400");
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true, body: "Concept: [[Recursion]]");
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true);
+
+        Assert.DoesNotContain(plan.Pages, p => p.Title == "E2.6");
+        Assert.DoesNotContain(plan.InheritedDates, d => d.Title == "E2.6");
+    }
+
+    [Fact]
+    public void ASecondHopPageTakesTheDateOfTheClassThatBroughtItIn()
+    {
+        Write("ICS3U", "section1/All Classes/Unit 2, Day 3.md",
+              "draft: true\ncreated: 2026-10-05T07:00:00.000-0400", "Concept: [[Recursion]]");
+        Page("ICS3U", "Concepts/Recursion.md", draftSection1: true, body: "See [[E2.6]].");
+        Page("ICS3U", "Curriculum/E2.6.md", draftSection1: true);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true);
+
+        Assert.Equal(new DateOnly(2026, 10, 5),
+            Assert.Single(plan.InheritedDates, d => d.Title == "E2.6").New);
+    }
+
+    [Fact]
+    public void HidingNeverFollowsASecondHop()
+    {
+        // Each extra hop can swallow a page a still-published class needs, and
+        // the further out it goes the less a teacher can see it happening.
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: false, body: "Concept: [[Recursion]]");
+        Page("ICS3U", "Concepts/Recursion.md", draftSection1: false, body: "See [[E2.6]].");
+        Page("ICS3U", "Curriculum/E2.6.md", draftSection1: false);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" },
+            includeLinked: true, draft: true);
+
+        Assert.Contains(plan.Pages, p => p.Title == "Recursion");
+        Assert.DoesNotContain(plan.Pages, p => p.Title == "E2.6");
+    }
+
+    [Fact]
+    public void PublishingAClassNeverDragsAnotherClassLive()
+    {
+        // "Publish tomorrow's class" must not put next week's lesson in front
+        // of students because something mentioned it.
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 3.md", draft: true,
+             body: "Recap of [[Unit 2, Day 1]], concept [[Recursion]]");
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 1.md", draft: true);
+        Page("ICS3U", "Concepts/Recursion.md", draftSection1: true, body: "See [[Unit 2, Day 9]].");
+        Page("ICS3U", "section1/All Classes/Unit 2, Day 9.md", draft: true);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true);
+
+        Assert.DoesNotContain(plan.Pages, p => p.Title == "Unit 2, Day 1");   // one hop
+        Assert.DoesNotContain(plan.Pages, p => p.Title == "Unit 2, Day 9");   // two hops
+        Assert.Contains(plan.Pages, p => p.Title == "Recursion");
+
+        // Not published, but not hidden either: the dead links are reported so
+        // the teacher can publish those classes deliberately if they meant to.
+        Assert.Contains(plan.Dangling, d => d.To.EndsWith("Unit 2, Day 1.md", StringComparison.Ordinal));
+        Assert.Contains(plan.Dangling, d => d.To.EndsWith("Unit 2, Day 9.md", StringComparison.Ordinal));
+    }
+
+    private void Write(string course, string relative, string frontmatter, string body = "Body.")
+    {
+        string full = Path.Combine(_folder, "courses", course,
+            relative.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+        File.WriteAllText(full, $"---\n{frontmatter}\n---\n{body}\n");
+    }
+
     // ---- Publishing the day's class, end to end ---------------------------
 
     /// <summary>A section index shaped like the example content's.</summary>
@@ -763,20 +859,24 @@ public class AssistWorkspaceTests : IDisposable
     [Fact]
     public void ThePlanWarnsWhenAVisiblePageWouldPointAtAHiddenOne()
     {
-        // The depth problem: a class links to a Concept, the Concept links to
-        // a curriculum expectation. Publishing one hop leaves the second hop
-        // hidden, so a published page points at a page that is not there.
+        // Publishing follows two hops, so the warning is now about the THIRD:
+        // class → concept → expectation → reference. The reference stays
+        // hidden and the expectation points at it.
         Class("ICS3U", "Unit 1, Day 2", "2026-09-09");
         File.AppendAllText(Path.Combine(_folder, "courses", "ICS3U",
             "section1", "All Classes", "Unit 1, Day 2.md"), "Concept: [[Ohm's Law]]\n");
         Page("ICS3U", "Concepts/Ohm's Law.md", draftSection1: true, body: "See [[E2.6]].");
-        Page("ICS3U", "Curriculum/E2.6.md", draftSection1: true);
+        Page("ICS3U", "Curriculum/E2.6.md", draftSection1: true, body: "Source: [[About These Expectations]].");
+        Page("ICS3U", "Curriculum/About These Expectations.md", draftSection1: true);
 
         var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" }, includeLinked: true);
 
+        // Two hops out is published…
+        Assert.Contains(plan.Pages, p => p.Title == "E2.6");
+        // …and the third is reported rather than swept along.
         var dangling = Assert.Single(plan.Dangling);
-        Assert.EndsWith("Ohm's Law.md", dangling.From, StringComparison.Ordinal);
-        Assert.EndsWith("E2.6.md", dangling.To, StringComparison.Ordinal);
+        Assert.EndsWith("E2.6.md", dangling.From, StringComparison.Ordinal);
+        Assert.EndsWith("About These Expectations.md", dangling.To, StringComparison.Ordinal);
         Assert.Contains("would point at a hidden page", plan.Describe());
     }
 
