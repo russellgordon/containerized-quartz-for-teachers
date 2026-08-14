@@ -486,6 +486,9 @@ public sealed partial class SidebarPane : UserControl
         // preview can stay on screen beside the conversation changing it.
         var reviseItems = ReviseItems(course, number);
         foreach (var item in reviseItems) menu.Items.Add(item);
+        // The revise group is its own idea; a divider keeps "talk to an
+        // assistant" from reading as one list with the actions below it.
+        if (reviseItems.Count > 0) menu.Items.Add(new MenuFlyoutSeparator());
 
         // Only shown when there is one to cancel. A permanently greyed-out
         // "Cancel Scheduled Deploy…" on every section would teach teachers to
@@ -723,11 +726,13 @@ public sealed partial class SidebarPane : UserControl
         // present. A teacher who has neither should not be shown a door that
         // opens onto an error about something they have never heard of.
         if (ClaudeCodeLauncher.IsAvailable)
-            items.Add(MenuItem("Revise with Claude…", Glyphs.Sparkle,
-                () => ReviseWithClaude(course), Glyphs.EmojiFont));
+            items.Add(MenuItem("Revise with Claude…", Glyphs.Star,
+                () => ReviseWithClaude(course)));
 
-        items.Add(MenuItem("Revise with AI…", Glyphs.Sparkle,
-            () => ReviseWithAi(course, section ?? course.SectionNumbers.First()), Glyphs.EmojiFont));
+        // "Local" is the word doing the work: it is what separates this from
+        // the Claude item above, and it is the privacy promise in one word.
+        items.Add(MenuItem("Revise with local AI assistant…", Glyphs.Star,
+            () => ReviseWithAi(course, section ?? course.SectionNumbers.First())));
 
         return items;
     }
