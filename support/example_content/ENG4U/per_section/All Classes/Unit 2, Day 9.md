@@ -1,0 +1,18 @@
+---
+title: Unit 2, Day 9
+draft: false
+created: __CREATED_CLASS_26__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. [[The Hamlet Seminar]], day 3 — questions approved, one group at a
+   time; the rest annotate
+
+## Things to do before our next class
+
+- [ ] Four passages chosen with act, scene, and line.

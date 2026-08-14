@@ -1,0 +1,18 @@
+---
+title: Unit 4, Day 14
+draft: false
+created: __CREATED_CLASS_81__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. Sight passage under time — prose, then poetry. Both marked together
+2. Practise: [[Sight Passage Practice]]
+
+## Things to do before our next class
+
+- [ ] Finish the practice set.
