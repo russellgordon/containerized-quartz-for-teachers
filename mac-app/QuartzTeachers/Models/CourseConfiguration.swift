@@ -317,6 +317,36 @@ class CourseConfiguration {
     /// trimmed, any scheme stripped, and anything from the first slash on
     /// dropped — so a pasted "https://ics3u.school.ca/" stores as
     /// "ics3u.school.ca".
+    /// Whether the curriculum coverage map should be switched on for a new
+    /// course.
+    ///
+    /// The map is drawn from the site's own links to the curriculum pages,
+    /// so it cannot exist without them: declining the curriculum forces the
+    /// map off, whatever the toggle was last left at. The reverse is not
+    /// true — keeping the curriculum pages and declining the map is a
+    /// reasonable choice, and this returns exactly what the teacher asked
+    /// for in that case.
+    ///
+    /// The rule lives here rather than inside the wizard view so that it
+    /// can be tested: a SwiftUI `@State` property has no backing store
+    /// until the view is on screen, so a test that sets one and reads a
+    /// computed result gets the default back every time.
+    static func curriculumCoverageEnabled(
+        codeHasExampleContent: Bool,
+        prepopulatesExampleContent: Bool,
+        payloadIncludesCurriculum: Bool,
+        includesCurriculumPages: Bool,
+        includesCurriculumCoverage: Bool
+    ) -> Bool {
+        guard codeHasExampleContent,
+              prepopulatesExampleContent,
+              payloadIncludesCurriculum,
+              includesCurriculumPages else {
+            return false
+        }
+        return includesCurriculumCoverage
+    }
+
     static func normalizedCustomDomain(_ raw: String) -> String {
         var domain: String = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         for scheme in ["https://", "http://"] {

@@ -37,6 +37,52 @@ final class ExampleContentTests: XCTestCase {
         XCTAssertEqual(configuration["include_curriculum_pages"] as? Bool, true)
     }
 
+    /// The coverage map reads the site's links to the curriculum pages, so
+    /// it cannot survive those pages being declined — whatever the toggle
+    /// was last left at. The rule is tested through the pure function
+    /// rather than the view, because a `@State` property set on a view
+    /// that is not on screen never takes.
+    @MainActor
+    func testTheCoverageMapFollowsTheCurriculumPages() {
+        // Curriculum kept, map wanted.
+        XCTAssertTrue(CourseConfiguration.curriculumCoverageEnabled(
+            codeHasExampleContent: true, prepopulatesExampleContent: true,
+            payloadIncludesCurriculum: true, includesCurriculumPages: true,
+            includesCurriculumCoverage: true))
+
+        // Curriculum declined: the map cannot exist, whatever its toggle says.
+        XCTAssertFalse(CourseConfiguration.curriculumCoverageEnabled(
+            codeHasExampleContent: true, prepopulatesExampleContent: true,
+            payloadIncludesCurriculum: true, includesCurriculumPages: false,
+            includesCurriculumCoverage: true))
+
+        // Curriculum kept, map declined — allowed, and respected.
+        XCTAssertFalse(CourseConfiguration.curriculumCoverageEnabled(
+            codeHasExampleContent: true, prepopulatesExampleContent: true,
+            payloadIncludesCurriculum: true, includesCurriculumPages: true,
+            includesCurriculumCoverage: false))
+
+        // No example content, or none poured in: nothing to measure.
+        XCTAssertFalse(CourseConfiguration.curriculumCoverageEnabled(
+            codeHasExampleContent: false, prepopulatesExampleContent: true,
+            payloadIncludesCurriculum: true, includesCurriculumPages: true,
+            includesCurriculumCoverage: true))
+        XCTAssertFalse(CourseConfiguration.curriculumCoverageEnabled(
+            codeHasExampleContent: true, prepopulatesExampleContent: false,
+            payloadIncludesCurriculum: true, includesCurriculumPages: true,
+            includesCurriculumCoverage: true))
+    }
+
+    /// The default answers a brand-new wizard hands over.
+    @MainActor
+    func testANewWizardDefaultsTheMapOnForACourseWithCurriculum() {
+        let wizard: NewCourseWizardView = NewCourseWizardView()
+        let configuration: [String: Any] = wizard.buildConfigurationDictionary(
+            code: "ADA1O", name: "Drama"
+        )
+        XCTAssertEqual(configuration["include_curriculum_coverage"] as? Bool, true)
+    }
+
     @MainActor
     func testTheFlagsAreFalseForACodeWithoutContent() {
         // The toggles default to on, but a stale on must mean nothing when

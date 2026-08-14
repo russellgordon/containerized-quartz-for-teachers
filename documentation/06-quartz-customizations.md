@@ -191,7 +191,7 @@ build means a re-run of the setup wizard (or a hand edit of
 | C2-18 | **Right sidebar column sharing** | `base.scss` (appended) | On a much-linked page the backlinks crowded out the table of contents. The contents are capped at 50% of the column (only when they have a sibling), the backlinks take the rest, and both lists scroll. |
 | C2-19 | **Google Fonts request filtered** | `quartz/util/theme.ts`, `quartz/components/Head.tsx` | Quartz builds ONE stylesheet request from all three font choices, and this app offers system stacks. Google rejects the whole request if any family is unknown to it — HTTP 400, so NO fonts downloaded, including the code font mermaid measures in. System stacks and families are now filtered out, and an empty request is dropped entirely. |
 | C2-20 | **mhchem enabled** | `quartz/plugins/transformers/latex.ts` | Adds `import "katex/contrib/mhchem"`, so `$\ce{CaCO3(s) <=> CaO(s) + CO2(g)}$` renders. KaTeX runs at build time here, and the `katex` package Quartz already installs ships the extension, so this downloads nothing. |
-| C2-21 | **Curriculum coverage map styles** | `quartz/styles/base.scss` (appended) | The grid, chips, and the five-step red-to-green scale for the generated `Curriculum Coverage` page. The colours are deliberately NOT taken from the course's colour scheme — the map's whole meaning is the red-to-green reading, and a scheme that recoloured it would destroy that. Cells carry the expectation's code and nothing else: a digit in every cell turned the map into a table of numbers, so the count now reaches a screen reader through the cell's label and a teacher through the hover preview. The legend is a vertical list below a rule, worded "addressed once", "addressed twice", and so on. The style block is REPLACED rather than skipped when it is already present, so a stylesheet surviving from an earlier build still picks up changes. |
+| C2-21 | **Curriculum coverage map styles** | `quartz/styles/base.scss` (appended) | The grid, chips, and the five-step red-to-green scale for the generated `Curriculum Coverage` page. The colours are deliberately NOT taken from the course's colour scheme — the map's whole meaning is the red-to-green reading, and a scheme that recoloured it would destroy that. Cells carry the expectation's code and nothing else: a digit in every cell turned the map into a table of numbers, so the count now reaches a screen reader through the cell's label and a teacher through the hover preview. The legend is a vertical list below a rule, worded "addressed once", "addressed twice", and so on. The ring marking assessed work is two rings — white inside dark — so that it stays legible on all five cell colours; a single tone disappeared on either yellow or the darkest green depending on which was chosen. The style block is REPLACED rather than skipped when it is already present, so a stylesheet surviving from an earlier build still picks up changes. |
 
 ### C3. Content-level transformations (every build)
 
@@ -213,7 +213,10 @@ adapt *Obsidian conventions* to *Quartz expectations* and are detailed in
   into the assembled content, never into the teacher's vault, so it is
   rebuilt from the site's own links every time and cannot drift. The link to
   it is inserted into the BUILT copy of `Key Links`, directly under the
-  curriculum entry. **Only published pages count** — a page held back with
+  curriculum entry. The page is also added to the Explorer's omit set, so
+  it never appears in the sidebar: it is a teacher's instrument, reached
+  from Key Links, and it sits at the content root where it would otherwise
+  be listed above every folder. **Only published pages count** — a page held back with
   `draft: true` is not on the site, so it leaves the map exactly where it
   was until the day it is published. The map applies Quartz's own draft
   test, and per-section publishing is resolved before it counts, so a

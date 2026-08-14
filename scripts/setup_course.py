@@ -416,6 +416,31 @@ def prompt_footer_html_stateful(saved_config: dict) -> str:
 
 # ---------- New helper: yes/no boolean with default -------------------------
 
+def prompt_curriculum_coverage(curriculum_included: bool, saved_config: dict) -> bool:
+    """
+    Offer the Curriculum Coverage heat map.
+
+    The map reads the site's own links to the curriculum pages, so it can
+    only exist when those pages do: with the curriculum declined there is
+    nothing to colour, and the question is not asked. The reverse is not
+    true — a teacher can keep the curriculum pages and still not want a
+    coverage map, which is why this is its own question rather than a
+    consequence of the previous one.
+
+    Defaults to ON when the curriculum is present.
+    """
+    if not curriculum_included:
+        return False
+    print("\n🗺️  A Curriculum Coverage page can be added: a heat map of every")
+    print("expectation, coloured by how many pages address it, rebuilt every time")
+    print("the site is built. It starts red in September and greens as the year")
+    print("goes on. It is linked from Key Links, and stays out of the sidebar.")
+    return prompt_yes_no_default(
+        "Include the Curriculum Coverage page?",
+        bool(saved_config.get("include_curriculum_coverage", True))
+    )
+
+
 def prompt_yes_no_default(prompt_text: str, default: bool) -> bool:
     """
     Ask a yes/no question with a boolean default.
@@ -1821,6 +1846,8 @@ def setup_course(no_backup: bool = False):
     example_manifest = None
     prepopulate_example = bool(saved_config.get("prepopulate_example_content", False))
     include_curriculum = bool(saved_config.get("include_curriculum_pages", False))
+    include_curriculum_coverage = bool(saved_config.get("include_curriculum_coverage", True))
+    coverage_asked = False
     if example_payload:
         manifest = load_example_content_manifest(example_payload)
         print(f"\n📖 Ready-made example content is available for {course_code}.")
@@ -1839,6 +1866,9 @@ def setup_course(no_backup: bool = False):
                 "Include the Ontario curriculum pages?",
                 bool(saved_config.get("include_curriculum_pages", True))
             )
+            include_curriculum_coverage = prompt_curriculum_coverage(
+                include_curriculum, saved_config)
+            coverage_asked = True
         elif not prepopulate_example:
             include_curriculum = False
         if prepopulate_example:
@@ -1866,6 +1896,16 @@ def setup_course(no_backup: bool = False):
             )
             if use_skeleton:
                 skeleton_payload = candidate
+                if skeleton_manifest.get("curriculum_folder"):
+                    print("\n🏛️  The skeleton includes an empty Curriculum folder, ready for")
+                    print(f"the expectations for {course_code} when you add them.")
+                    include_curriculum = prompt_yes_no_default(
+                        "Include the Curriculum pages?",
+                        bool(saved_config.get("include_curriculum_pages", True))
+                    )
+                    include_curriculum_coverage = prompt_curriculum_coverage(
+                        include_curriculum, saved_config)
+                    coverage_asked = True
             else:
                 skeleton_manifest = None
 
@@ -2001,22 +2041,16 @@ def setup_course(no_backup: bool = False):
         show_reading_time_default
     )
 
-    # ---------- Curriculum coverage map (stateful) --------------------------
-    # Only worth asking when the course has curriculum pages to measure
-    # against — otherwise the map would have nothing to colour.
+    # ---------- Curriculum coverage map -------------------------------------
+    # Normally asked in the Starting Content section, beside the curriculum
+    # question it depends on. This is the fallback for a course whose
+    # Curriculum folder came from neither example content nor a skeleton —
+    # a teacher who built the structure themselves.
     curriculum_folder_chosen = any("curriculum" in name.lower() for name in shared_folders)
-    include_curriculum_coverage = bool(saved_config.get("include_curriculum_coverage", True))
-    if curriculum_folder_chosen:
-        print("\n🗺️  A Curriculum Coverage page can be added to the site: a heat map of")
-        print("every expectation, coloured by how many pages address it, rebuilt every")
-        print("time the site is built. It starts red in September and greens as the")
-        print("year goes on.")
-        include_curriculum_coverage = prompt_yes_no_default(
-            "Include the Curriculum Coverage page?",
-            include_curriculum_coverage
-        )
-    else:
+    if not curriculum_folder_chosen:
         include_curriculum_coverage = False
+    elif not coverage_asked:
+        include_curriculum_coverage = prompt_curriculum_coverage(True, saved_config)
 
     # Ensure 'Media' is always in hidden list even though it wasn't prompted
     if "Media" not in hidden_items:

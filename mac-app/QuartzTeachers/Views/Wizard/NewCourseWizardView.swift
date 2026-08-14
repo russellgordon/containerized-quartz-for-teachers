@@ -40,6 +40,7 @@ struct NewCourseWizardView: View {
     /// Whether the example content brings the official curriculum pages
     /// along with it.
     @State var includesCurriculumPages: Bool = true
+    @State var includesCurriculumCoverage: Bool = true
 
     /// Whether the factory structure uses LCS's own words and folders
     /// (Grove Time, SIC, College Board Curriculum) instead of the
@@ -362,6 +363,16 @@ struct NewCourseWizardView: View {
                                 .disabled(!prepopulatesExampleContent)
                                 .accessibilityIdentifier("curriculumToggle")
                             ExampleCaption("Every expectation as its own page, so lessons and tasks can link to exactly what they address")
+                        }
+                        VStack(alignment: .leading, spacing: 4) {
+                            // The map reads the site's links to the
+                            // curriculum pages, so it cannot exist without
+                            // them — but keeping the pages and declining
+                            // the map is a perfectly reasonable choice.
+                            Toggle("Include the curriculum coverage map", isOn: $includesCurriculumCoverage)
+                                .disabled(!prepopulatesExampleContent || !includesCurriculumPages)
+                                .accessibilityIdentifier("curriculumCoverageToggle")
+                            ExampleCaption("A page showing every expectation coloured by how many pages address it — red in September, greener as the year goes on. Linked from Key Links, and kept out of the sidebar.")
                         }
                     }
                 } else if let skeleton = SkeletonCatalog.family(forCode: courseCode) {
@@ -707,6 +718,16 @@ struct NewCourseWizardView: View {
                 && prepopulatesExampleContent
                 && ExampleContentCatalog.includesCurriculum(forCode: code)
                 && includesCurriculumPages,
+            // Depends on the curriculum pages: without them the map has
+            // nothing to colour, so it is forced off here as well as
+            // disabled in the interface.
+            "include_curriculum_coverage": CourseConfiguration.curriculumCoverageEnabled(
+                codeHasExampleContent: ExampleContentCatalog.hasContent(forCode: code),
+                prepopulatesExampleContent: prepopulatesExampleContent,
+                payloadIncludesCurriculum: ExampleContentCatalog.includesCurriculum(forCode: code),
+                includesCurriculumPages: includesCurriculumPages,
+                includesCurriculumCoverage: includesCurriculumCoverage
+            ),
             "use_lcs_terminology": usesLCSTerminology,
             "deploy_target": deployTarget,
             "deploy_folder_path": deployTarget == "local_folder"

@@ -2169,8 +2169,17 @@ a.coverage-chip:hover {{ filter: brightness(1.15); }}
 .coverage-2 {{ background: #eab308; color: #1f2937; }}
 .coverage-3 {{ background: #16a34a; }}
 .coverage-4 {{ background: #14532d; }}
-.coverage-cell[data-assessed="true"] {{ box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85); }}
-.coverage-2[data-assessed="true"] {{ box-shadow: inset 0 0 0 2px rgba(31, 41, 55, 0.8); }}
+/* The assessed ring is TWO rings — a light one inside a dark one — so it
+   is legible on every cell colour and in every colour scheme. The cell
+   colours are fixed, but a single-tone ring still failed: white
+   disappeared on yellow and dark grey disappeared on the darkest green.
+   With both tones present, whichever one matches the cell recedes and the
+   other carries the shape. Rings sit INSIDE the cell, so the page's own
+   background never affects them. */
+.coverage-cell[data-assessed="true"],
+.coverage-key[data-assessed="true"] {{
+  box-shadow: inset 0 0 0 2px #ffffff, inset 0 0 0 4px #111827;
+}}
 .coverage-rule {{
   border: none;
   border-top: 1px solid var(--lightgray);
@@ -2191,9 +2200,9 @@ a.coverage-chip:hover {{ filter: brightness(1.15); }}
 }}
 .coverage-key {{
   display: inline-block;
-  width: 1.4rem;
-  height: 1.1rem;
-  border-radius: 0.2rem;
+  width: 1.7rem;
+  height: 1.35rem;
+  border-radius: 0.22rem;
   flex: none;
 }}
 """
@@ -2761,6 +2770,10 @@ def _ensure_netlify_link(output_dir: Path, course_dir: Path):
 # form the course uses to say "this page addresses this expectation" on
 # purpose, as opposed to a passing mention in prose.
 
+# The generated page's title. Used by the generator, by the Key Links
+# insertion, and by the Explorer omit list, so the three cannot drift.
+COVERAGE_PAGE_TITLE = "Curriculum Coverage"
+
 SPECIFIC_CODE = re.compile(r"^([A-F])(\d+)\.(\d+)$")
 OVERALL_FILE = re.compile(r"^([A-F]\d+)\.\s")
 CURRICULUM_BLOCK = re.compile(r"%%curriculum-start%%(.*?)%%curriculum-end%%", re.S)
@@ -2853,7 +2866,7 @@ def _coverage_counts(content_root: Path, curriculum_dir: Path, specific: dict):
     for page in sorted(content_root.rglob("*.md")):
         if page.parent == curriculum_dir or curriculum_dir in page.parents:
             continue
-        if page.name == "Curriculum Coverage.md":
+        if page.name == f"{COVERAGE_PAGE_TITLE}.md":
             continue
         try:
             text = page.read_text(encoding="utf-8")
@@ -3036,7 +3049,7 @@ those expectations are being met in every investigation without being
 cited by code. If that is the case here, it is worth citing a few of them
 where they genuinely apply rather than leaving the record silent.
 """
-    (content_root / "Curriculum Coverage.md").write_text(body, encoding="utf-8")
+    (content_root / f"{COVERAGE_PAGE_TITLE}.md").write_text(body, encoding="utf-8")
     print(f"🗺️  Curriculum Coverage: {total} expectations, {len(uncovered)} not yet addressed, "
           f"{len(unevaluated)} overall expectation(s) without assessed work.")
     return True
@@ -3053,12 +3066,12 @@ def link_coverage_from_key_links(content_root: Path):
     if not key_links.exists():
         return
     text = key_links.read_text(encoding="utf-8")
-    if "[[Curriculum Coverage]]" in text:
+    if f"[[{COVERAGE_PAGE_TITLE}]]" in text:
         return
     lines = text.split("\n")
     for index, line in enumerate(lines):
         if "Curriculum Expectations]]" in line:
-            lines.insert(index + 1, "- [[Curriculum Coverage]]")
+            lines.insert(index + 1, f"- [[{COVERAGE_PAGE_TITLE}]]")
             key_links.write_text("\n".join(lines), encoding="utf-8")
             return
 
@@ -3357,6 +3370,14 @@ def build_section_site(
     # ensure 'Media' is always hidden in Explorer omit set
     if "Media" not in hidden_list:
         hidden_list.append("Media")
+
+    # The Curriculum Coverage page is reached from Key Links, deliberately.
+    # It is a teacher's instrument rather than a place students navigate to,
+    # and it sits at the content root, so without this it would appear in
+    # the sidebar above the folders — the most prominent position on the
+    # site, for the page that needs it least.
+    if COVERAGE_PAGE_TITLE not in hidden_list:
+        hidden_list.append(COVERAGE_PAGE_TITLE)
 
     update_quartz_layout(quartz_layout_ts, hidden_list)  # ensure omit is present and updated
     
