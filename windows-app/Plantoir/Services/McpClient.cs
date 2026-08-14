@@ -99,10 +99,11 @@ public sealed class McpClient : IAsyncDisposable
             tools.Add(new JsonObject
             {
                 ["type"] = "function",
-                // Carried through unchanged, because the agent decides what
-                // needs the teacher's approval from `readOnlyHint` rather
-                // than from a second list of tool names that could drift out
-                // of step with this one. The model never sees it.
+                // The server's own annotations, carried through unchanged for
+                // any client logic that wants them. The model never sees them:
+                // llama.cpp parses tools into {name, description, parameters}
+                // and drops the rest. (The approval gate read readOnlyHint
+                // from here once; it gates only deploys now, by name.)
                 ["annotations"] = entry["annotations"]?.DeepClone(),
                 ["function"] = new JsonObject
                 {

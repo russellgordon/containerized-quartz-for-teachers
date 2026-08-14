@@ -80,22 +80,23 @@ public sealed class LocalModel
     public string CacheIdentity { get; set; } = "";
 
     /// <summary>
-    /// Fingerprint the cache with the tool surface it was read from.
+    /// Fingerprint the cache with the exact prefix it was read from — the
+    /// tool schemas AND the system prompt, because llama.cpp renders both
+    /// into the same leading block and either can change with the app.
     ///
-    /// The saved prefix is mostly tool definitions, and those change with the
-    /// app: an update that rewords one description makes every saved cache
-    /// stale in a way a restore cannot see — the tokens load, n_restored
-    /// looks healthy, and then the conversation's own prefix matches none of
-    /// them and the model re-reads the surface behind a message promising it
-    /// won't. Naming the file for a hash of the schemas turns that silent
-    /// three minutes into an honest one: after an update the old file simply
-    /// isn't found, the session announces a cold read, and the save that
-    /// follows replaces it.
+    /// An update that rewords one description or one system-prompt sentence
+    /// makes every saved cache stale in a way a restore cannot see — the
+    /// tokens load, n_restored looks healthy, and then the conversation's
+    /// own prefix matches none of them and the model re-reads the surface
+    /// behind a message promising it won't. Naming the file for the hash
+    /// turns that silent three minutes into an honest one: after an update
+    /// the old file simply isn't found, the session announces a cold read,
+    /// and the save that follows replaces it.
     /// </summary>
-    public void StampCacheWith(JsonArray tools)
+    public void StampCacheWith(JsonArray tools, string systemPrompt)
     {
         byte[] digest = System.Security.Cryptography.SHA256.HashData(
-            Encoding.UTF8.GetBytes(tools.ToJsonString()));
+            Encoding.UTF8.GetBytes(systemPrompt + "\n" + tools.ToJsonString()));
         _cacheStamp = Convert.ToHexString(digest)[..8].ToLowerInvariant();
     }
 

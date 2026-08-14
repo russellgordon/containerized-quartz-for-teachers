@@ -22,8 +22,10 @@ namespace Plantoir.Services;
 ///
 /// The safety rules are not enforced here either — they are enforced by the
 /// tools, and by there being no destructive tool to reach for. What this loop
-/// adds is the one thing tools cannot: **it never runs a write tool without
-/// showing the teacher the plan first and being told to go ahead.**
+/// adds is the one thing tools cannot: **nothing deploys to students without
+/// the teacher pressing a button.** Everything short of a deploy runs
+/// freely, because the tools make it reversible — backed up, undoable, and
+/// invisible to students until that button.
 /// </summary>
 public sealed class AssistAgent
 {
@@ -168,44 +170,26 @@ public sealed class AssistAgent
     }
 
     /// <summary>
-    /// The one tool that changes something and still needs no permission:
-    /// explaining what publishing means. All it writes is Plantoir's own note
-    /// that this section has been briefed — nothing of the teacher's — and
-    /// asking "may I explain how this works?" before the first sentence of the
-    /// first conversation would be absurd.
-    ///
-    /// A single name, rather than the list of writes this used to keep. That
-    /// list had already drifted: it named <c>hide_pages</c> and
-    /// <c>republish_section</c>, neither of which exists any more, so both
-    /// silently fell OUT of the set — and a renamed write tool that falls out
-    /// of the set runs unannounced, which is the one failure this class exists
-    /// to prevent. Approval is decided from the server's own
-    /// <c>readOnlyHint</c> now (see <see cref="NeedsApproval"/>), so there is
-    /// no second list to fall out of.
-    /// </summary>
-    private const string Briefing = "explain_publishing";
-
-    /// <summary>
     /// Whether this call has to be shown to the teacher before it runs.
     ///
-    /// Read-only tools — every list, read, check and plan — run freely. Anything
-    /// else waits. Note which way the unknown case falls: a tool this app has
-    /// never heard of, or one whose annotations went missing, needs approval.
-    /// The cost of being wrong that way is one extra question; the cost of being
-    /// wrong the other way is a teacher's course changing without being asked.
+    /// Only deploying waits for a button, because deploying is the only act
+    /// students ever notice. Everything else the assistant can reach is
+    /// reversible by construction — validated against the working folder,
+    /// backed up before it writes, behind undo_last_change — and a publish
+    /// flag changes nothing a student can see until a deploy. Gating every
+    /// one of those turned a conversation into a row of button presses, and
+    /// the teacher asked for it to stop.
+    ///
+    /// A SCHEDULED deploy is approved when it is scheduled — that yes is what
+    /// the button collects. The firing itself asks nobody, which is the whole
+    /// point of scheduling it.
     /// </summary>
-    private bool NeedsApproval(string name)
+    private static readonly HashSet<string> DeploysToStudents = new(StringComparer.OrdinalIgnoreCase)
     {
-        if (string.Equals(name, Briefing, StringComparison.OrdinalIgnoreCase)) return false;
+        "deploy_section", "schedule_deploy",
+    };
 
-        foreach (var tool in _schemas)
-        {
-            if (tool?["function"]?["name"]?.GetValue<string>() is not { } listed) continue;
-            if (!string.Equals(listed, name, StringComparison.OrdinalIgnoreCase)) continue;
-            return tool["annotations"]?["readOnlyHint"]?.GetValue<bool>() is not true;
-        }
-        return true;
-    }
+    private static bool NeedsApproval(string name) => DeploysToStudents.Contains(name);
 
     /// <summary>
     /// How many tool calls one turn may make before the loop stops.
@@ -224,25 +208,39 @@ public sealed class AssistAgent
         _messages.Add(new JsonObject
         {
             ["role"] = "system",
-            ["content"] =
-                $"You are Plantoir's assistant, helping a teacher with {courseCode} section {section}. " +
-                "Choose exactly one tool at a time and fill in its arguments from what the teacher said. " +
-                "Before anything that changes files, call the matching plan tool first and show the teacher " +
-                "exactly what it said, word for word, then wait. Never guess a course, a section, a page title " +
-                "or a date — if you are not certain, look it up or ask. " +
-                "If no tool fits, say so plainly instead of inventing one.\n" +
-                // Two words that sound alike and are not. The teacher gets this
-                // explained once per section by explain_publishing; the model
-                // needs it every turn, because it is the distinction it is
-                // likeliest to collapse.
-                "PUBLISHING a page decides whether students can see it in the site. " +
-                "DEPLOYING sends the whole site to the web. They are different acts. " +
-                "After a change, rebuild the preview so the teacher can look it over. " +
-                "Do not offer to deploy unless they ask; when they do ask, say plainly that " +
-                "deploying puts the change in front of students immediately and that reviewing " +
-                "the preview first is the safer order — then do as they decide.",
+            ["content"] = SystemPrompt(courseCode, section),
         });
     }
+
+    /// <summary>
+    /// The system prompt, exposed because it is part of the cached prefix:
+    /// the window fingerprints it alongside the schemas, so a wording change
+    /// here retires stale caches honestly instead of restoring a prefix no
+    /// conversation will match.
+    ///
+    /// It no longer says plan-first-and-wait. Publishing and unpublishing run
+    /// without ceremony now — backed up, undoable, and invisible to students
+    /// until a deploy — and the deploy gate is a button this class enforces,
+    /// not a behaviour the model has to be trusted to follow.
+    /// </summary>
+    public static string SystemPrompt(string courseCode, int section) =>
+        $"You are Plantoir's assistant, helping a teacher with {courseCode} section {section}. " +
+        "Choose exactly one tool at a time and fill in its arguments from what the teacher said. " +
+        "Publishing and unpublishing are safe to do straight away — every change is backed up " +
+        "and undo_last_change takes it back — so do what was asked without asking permission first. " +
+        "Never guess a course, a section, a page title " +
+        "or a date — if you are not certain, look it up or ask. " +
+        "If no tool fits, say so plainly instead of inventing one.\n" +
+        // Two words that sound alike and are not. The teacher gets this
+        // explained once per section by explain_publishing; the model
+        // needs it every turn, because it is the distinction it is
+        // likeliest to collapse.
+        "PUBLISHING a page decides whether students can see it in the site. " +
+        "DEPLOYING sends the whole site to the web. They are different acts. " +
+        "After a change, Plantoir opens the preview by itself so the teacher can look it over. " +
+        "Do not offer to deploy unless they ask; when they do ask, say plainly that " +
+        "deploying puts the change in front of students immediately and that reviewing " +
+        "the preview first is the safer order — then do as they decide.";
 
     /// <summary>
     /// A throwaway exchange shaped EXACTLY like a real one, for warming the

@@ -57,8 +57,8 @@ public sealed partial class AssistWindow : Window
 
         Title = $"Revise {course.Code} Section {section}";
         Heading.Text = $"Revising {course.Code} Section {section}";
-        Subheading.Text = "Ask for a change in plain words. Nothing is written until you say so, " +
-                          "and nothing reaches students until you deploy the section yourself.";
+        Subheading.Text = "Ask for a change in plain words. Every change is backed up and can be undone, " +
+                          "and nothing reaches students until the section deploys — which always waits for your OK.";
 
         Closed += (_, _) => Shutdown();
 
@@ -160,10 +160,10 @@ public sealed partial class AssistWindow : Window
         // prompt, and the prompt is what makes the first answer slow.
         var schemas = AssistAgent.NarrowToLocal(await _tools.Tools(_closing.Token), _course.Code);
 
-        // The cache file is named for these exact schemas, so an app update
-        // that changes a tool description retires the old cache instead of
-        // restoring a prefix no conversation will match — see StampCacheWith.
-        _model.StampCacheWith(schemas);
+        // The cache file is named for the exact prefix — schemas and system
+        // prompt — so an app update that changes either retires the old cache
+        // instead of restoring a prefix no conversation will match.
+        _model.StampCacheWith(schemas, AssistAgent.SystemPrompt(_course.Code, _section));
 
         _agent = new AssistAgent(_model, _tools, schemas, _course.Code, _section)
         {
