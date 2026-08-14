@@ -340,6 +340,8 @@ public sealed class AssistAgent
     /// </summary>
     public async Task<List<Line>> Say(string text, CancellationToken cancellation)
     {
+        if (PreviewAskedForPlainly(text) is { } handled) return handled;
+
         var today = DateTime.Now;
         _messages.Add(new JsonObject
         {
@@ -347,6 +349,51 @@ public sealed class AssistAgent
             ["content"] = $"{text} (Today is {today:yyyy-MM-dd}, a {today.DayOfWeek}.)",
         });
         return await Run(cancellation);
+    }
+
+    /// <summary>
+    /// The commonest command, answered without the model.
+    ///
+    /// Measured, after the routing cue for it was already in place: "Preview
+    /// the site" still went to check_section three trials out of four — "the
+    /// site" pulls toward that tool's own wording — and the teacher got a
+    /// statistics lecture instead of a preview, after a twenty-second wait.
+    /// Every phrase in this set means exactly one thing, so ordinary string
+    /// matching answers it: instantly, every time, with the model never
+    /// consulted. The model still handles anything that carries more than
+    /// the command itself.
+    /// </summary>
+    private static readonly HashSet<string> PreviewCommands = new()
+    {
+        "preview", "preview the site", "preview my site", "preview the section", "preview it",
+        "show me the preview", "show the preview", "open the preview", "start the preview",
+        "launch the preview", "rebuild the preview", "refresh the preview", "update the preview",
+    };
+
+    private List<Line>? PreviewAskedForPlainly(string text)
+    {
+        if (ShowPreviewInApp is null || !PreviewCommands.Contains(Plainly(text))) return null;
+
+        ShowPreviewInApp.Invoke();
+        const string said = "The preview is opening in Plantoir's main window — the build shows its progress there.";
+        // The exchange still goes in the transcript the model sees, so a
+        // follow-up question knows the preview is already on screen.
+        _messages.Add(new JsonObject { ["role"] = "user", ["content"] = text });
+        _messages.Add(new JsonObject { ["role"] = "assistant", ["content"] = said });
+        return new List<Line> { new("assistant", said) };
+    }
+
+    /// <summary>Lower-cased, letters only, courtesy words trimmed — the command underneath.</summary>
+    private static string Plainly(string text)
+    {
+        var letters = new System.Text.StringBuilder();
+        foreach (char c in text.ToLowerInvariant())
+            letters.Append(char.IsLetter(c) ? c : ' ');
+        string plain = string.Join(' ', letters.ToString().Split(' ', StringSplitOptions.RemoveEmptyEntries));
+        foreach (string opener in new[] { "please ", "can you ", "could you ", "would you " })
+            while (plain.StartsWith(opener, StringComparison.Ordinal)) plain = plain[opener.Length..];
+        if (plain.EndsWith(" please", StringComparison.Ordinal)) plain = plain[..^" please".Length];
+        return plain;
     }
 
     /// <summary>
