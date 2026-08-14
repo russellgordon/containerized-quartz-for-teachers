@@ -1,0 +1,19 @@
+---
+title: Unit 2, Day 3
+draft: false
+created: __CREATED_CLASS_21__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. 1.2–1.3: the arranged marriage, read without softening
+2. Juliet's age, said out loud, and what the play does with it
+3. Concept: [[Character and Motivation]] revisited — what Capulet wants
+
+## Things to do before our next class
+
+- [ ] Two passages marked for the seminar-style discussion next class.

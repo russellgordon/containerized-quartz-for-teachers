@@ -1,0 +1,19 @@
+---
+title: Unit 1, Day 9
+draft: false
+created: __CREATED_CLASS_9__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Read: "The Painted Door"
+2. Concept: [[Setting as Argument]] — weather as pressure
+3. The ending: argued two ways, with passages
+
+## Things to do before our next class
+
+- [ ] One paragraph on the ending, using two pieces of evidence.

@@ -1,0 +1,18 @@
+---
+title: Unit 3, Day 9
+draft: false
+created: __CREATED_CLASS_53__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-3
+---
+## Agenda
+
+1. Seminars: groups three and four
+2. Reading period with the novel
+
+## Things to do before our next class
+
+- [ ] Read to the end of the winter section.
