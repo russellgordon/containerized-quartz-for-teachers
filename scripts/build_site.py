@@ -2089,6 +2089,109 @@ def patch_mermaid_pie_title_fit(mermaid_ts_path: Path):
         print(f"⚠️ Error patching mermaid pie title fit: {e}")
 
 
+def append_coverage_styles(base_scss_path: Path):
+    """
+    Styles for the curriculum coverage map.
+
+    Colours are fixed rather than taken from the theme: the map's whole job
+    is a red-to-green reading, and a colour scheme that recoloured it would
+    destroy the meaning. Each cell also carries its count as a digit, so the
+    map is readable without relying on colour at all.
+    """
+    marker = "/* === curriculum coverage map === */"
+    if not base_scss_path.exists():
+        return
+    text = base_scss_path.read_text(encoding="utf-8")
+    if marker in text:
+        return
+    text += f"""
+
+{marker}
+.coverage-map {{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: flex-start;
+  margin: 1.4rem 0;
+}}
+.coverage-strand {{
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 4.6rem;
+}}
+.coverage-letter {{
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: center;
+  padding-bottom: 0.1rem;
+}}
+.coverage-chips {{
+  display: flex;
+  gap: 0.15rem;
+  justify-content: center;
+  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+}}
+.coverage-chip {{
+  font-size: 0.62rem;
+  line-height: 1;
+  padding: 0.18rem 0.24rem;
+  border-radius: 0.2rem;
+  color: #fff;
+  text-decoration: none;
+  background: #6b7280;
+}}
+.coverage-chip-yes {{ background: #15803d; }}
+.coverage-chip-no {{ background: #b91c1c; }}
+a.coverage-chip:hover {{ filter: brightness(1.15); }}
+.coverage-cell {{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.3rem;
+  padding: 0.28rem 0.4rem;
+  border-radius: 0.22rem;
+  font-size: 0.72rem;
+  line-height: 1.1;
+  text-decoration: none;
+  color: #fff;
+  background: #9ca3af;
+}}
+.coverage-cell:hover {{ filter: brightness(1.12); }}
+.coverage-code {{ font-weight: 600; }}
+.coverage-count {{ opacity: 0.85; font-variant-numeric: tabular-nums; }}
+.coverage-0 {{ background: #b91c1c; }}
+.coverage-1 {{ background: #ea580c; }}
+.coverage-2 {{ background: #eab308; color: #1f2937; }}
+.coverage-3 {{ background: #16a34a; }}
+.coverage-4 {{ background: #14532d; }}
+.coverage-cell[data-assessed="true"] {{ box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85); }}
+.coverage-2[data-assessed="true"] {{ box-shadow: inset 0 0 0 2px rgba(31, 41, 55, 0.8); }}
+.coverage-legend {{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.8rem;
+  margin: 0.8rem 0 1.2rem;
+  font-size: 0.85rem;
+}}
+.coverage-key {{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  padding: 0.15rem 0.3rem;
+  border-radius: 0.2rem;
+  color: #fff;
+  font-size: 0.72rem;
+  margin-right: 0.15rem;
+}}
+"""
+    base_scss_path.write_text(text, encoding="utf-8")
+    print("✅ Appended curriculum coverage map styles to base.scss")
+
+
 def patch_render_page_transclude_title(render_page_tsx_path: Path):
     """
     Change tagName: "h1" to tagName: page.frontmatter?.transcludeTitleSize ?? "h1"
@@ -2635,6 +2738,264 @@ def _ensure_netlify_link(output_dir: Path, course_dir: Path):
     print("ℹ️ No .netlify folder found to link/copy (deploy diffs may be slower).")
 # =============================================================================
 
+# ---------------------------------------------------------------------------
+# Curriculum coverage heat map
+# ---------------------------------------------------------------------------
+# Ontario asks two different things of a course: every SPECIFIC (minor)
+# expectation should be addressed at least once, and every OVERALL (major)
+# expectation must be evaluated for marks at least once. Both are easy to
+# lose track of in November. This builds a page that answers them at a
+# glance, from the site's own links — so it cannot drift from the course.
+#
+# What counts as coverage is deliberately narrow: a transclusion or link
+# inside a `%%curriculum-start%%` / `%%curriculum-end%%` block. That is the
+# form the course uses to say "this page addresses this expectation" on
+# purpose, as opposed to a passing mention in prose.
+
+SPECIFIC_CODE = re.compile(r"^([A-F])(\d+)\.(\d+)$")
+OVERALL_FILE = re.compile(r"^([A-F]\d+)\.\s")
+CURRICULUM_BLOCK = re.compile(r"%%curriculum-start%%(.*?)%%curriculum-end%%", re.S)
+BLOCK_LINK = re.compile(r"!?\[\[([^\]|#]+?)(?:\\?\|[^\]]*)?(?:#[^\]|]*)?\]\]")
+TRANSCLUSION = re.compile(r"!\[\[([^\]|#]+?)(?:\\?\|[^\]]*)?(?:#[^\]|]*)?\]\]")
+
+
+def _quartz_slug(relative: Path) -> str:
+    """The URL Quartz gives a page: spaces become hyphens, no extension."""
+    parts = list(relative.parts)
+    parts[-1] = relative.stem
+    return "/".join(part.replace(" ", "-") for part in parts)
+
+
+def _find_curriculum_folder(content_root: Path):
+    """The folder holding expectation pages, whatever the course calls it."""
+    for candidate in sorted(content_root.iterdir()):
+        if not candidate.is_dir():
+            continue
+        if "curriculum" not in candidate.name.lower():
+            continue
+        for page in candidate.glob("*.md"):
+            if SPECIFIC_CODE.match(page.stem):
+                return candidate
+    return None
+
+
+def _collect_expectations(curriculum_dir: Path):
+    """Specific expectations by code, and overall expectations by code."""
+    specific, overall = {}, {}
+    for page in sorted(curriculum_dir.glob("*.md")):
+        match = SPECIFIC_CODE.match(page.stem)
+        if match:
+            specific[page.stem] = page
+            continue
+        heading = OVERALL_FILE.match(page.stem)
+        if heading:
+            overall[heading.group(1)] = page
+    return specific, overall
+
+
+def _coverage_counts(content_root: Path, curriculum_dir: Path, specific: dict):
+    """
+    How many pages address each expectation, and which of those are assessed.
+
+    Coverage is counted from TRANSCLUSIONS — `![[A1.1]]` — because that is
+    the form a curriculum connection takes: the expectation's own wording
+    quoted on the page that addresses it. A piped inline mention
+    (`[[A1.1|safe practice]]`) is prose referring to an expectation, not a
+    claim to have covered it, and does not count.
+
+    The `%%curriculum-start%%` markers that wrap those transclusions in a
+    PAYLOAD are removed when the course is installed, so they cannot be
+    what the map keys on — but where a teacher's own vault still has them,
+    links inside them count too.
+
+    A page counts once per expectation however many times it names it.
+    """
+    covered_by = {code: set() for code in specific}
+    assessed_by = {code: set() for code in specific}
+    for page in sorted(content_root.rglob("*.md")):
+        if page.parent == curriculum_dir or curriculum_dir in page.parents:
+            continue
+        if page.name == "Curriculum Coverage.md":
+            continue
+        try:
+            text = page.read_text(encoding="utf-8")
+        except Exception:
+            continue
+        relative = page.relative_to(content_root)
+        # A page in a Tasks folder is assessed work — that is what makes an
+        # overall expectation "evaluated" rather than merely "addressed".
+        is_assessed = any("task" in part.lower() for part in relative.parts[:-1])
+
+        targets = set()
+        for link in TRANSCLUSION.finditer(text):
+            targets.add(link.group(1).strip().rstrip("\\").split("/")[-1])
+        for block in CURRICULUM_BLOCK.findall(text):
+            for link in BLOCK_LINK.finditer(block):
+                targets.add(link.group(1).strip().rstrip("\\").split("/")[-1])
+
+        for target in targets:
+            if target in covered_by:
+                covered_by[target].add(relative.as_posix())
+                if is_assessed:
+                    assessed_by[target].add(relative.as_posix())
+    return covered_by, assessed_by
+
+
+def _coverage_cell(code: str, page: Path, content_root: Path, count: int, assessed: bool) -> str:
+    level = min(count, 4)
+    href = _quartz_slug(page.relative_to(content_root))
+    marker = ' data-assessed="true"' if assessed else ""
+    plural = "page" if count == 1 else "pages"
+    label = f"{count} {plural}"
+    return (f'<a class="internal coverage-cell coverage-{level}" href="{href}"{marker}>'
+            f'<span class="coverage-code">{code}</span>'
+            f'<span class="coverage-count" aria-label="{label}">{count}</span></a>')
+
+
+def build_curriculum_coverage(content_root: Path, course_code: str) -> bool:
+    """Write the Curriculum Coverage page. Returns True when one was written."""
+    curriculum_dir = _find_curriculum_folder(content_root)
+    if not curriculum_dir:
+        return False
+    specific, overall = _collect_expectations(curriculum_dir)
+    if not specific:
+        return False
+
+    covered_by, assessed_by = _coverage_counts(content_root, curriculum_dir, specific)
+    folder = curriculum_dir.name
+
+    strands = {}
+    for code in specific:
+        strands.setdefault(code[0], []).append(code)
+    for letter in strands:
+        strands[letter].sort(key=lambda code: (int(code.split(".")[0][1:]), int(code.split(".")[1])))
+
+    columns = []
+    for letter in sorted(strands):
+        cells = []
+        # The overall expectations of this strand, and whether an assessed
+        # page addresses each one — through its own specifics or directly.
+        chips = []
+        for overall_code in sorted({code.split(".")[0] for code in strands[letter]},
+                                   key=lambda code: int(code[1:])):
+            evaluated = any(assessed_by.get(code) for code in strands[letter]
+                            if code.startswith(overall_code + "."))
+            page = overall.get(overall_code)
+            state = "yes" if evaluated else "no"
+            if page:
+                href = _quartz_slug(page.relative_to(content_root))
+                chips.append(f'<a class="internal coverage-chip coverage-chip-{state}" '
+                             f'href="{href}">{overall_code}</a>')
+            else:
+                chips.append(f'<span class="coverage-chip coverage-chip-{state}">{overall_code}</span>')
+        for code in strands[letter]:
+            count = len(covered_by[code])
+            cells.append(_coverage_cell(code, specific[code], content_root, count,
+                                        bool(assessed_by[code])))
+        columns.append(
+            '<div class="coverage-strand">'
+            f'<div class="coverage-letter">{letter}</div>'
+            f'<div class="coverage-chips">{"".join(chips)}</div>'
+            f'{"".join(cells)}'
+            "</div>")
+
+    total = len(specific)
+    uncovered = [code for code in specific if not covered_by[code]]
+    once = [code for code in specific if len(covered_by[code]) == 1]
+    unevaluated = []
+    for overall_code in sorted(overall, key=lambda code: (code[0], int(code[1:]))):
+        related = [code for code in specific if code.startswith(overall_code + ".")]
+        if related and not any(assessed_by[code] for code in related):
+            unevaluated.append(overall_code)
+
+    body = f"""---
+title: Curriculum Coverage
+draft: false
+enableToc: true
+---
+Every expectation in {course_code}, coloured by how many pages address it.
+The map is built from this site's own links each time the site is built, so
+it cannot drift from the course.
+
+<div class="coverage-map">{"".join(columns)}</div>
+
+<div class="coverage-legend">
+<span class="coverage-key coverage-0">0</span> no page yet
+<span class="coverage-key coverage-1">1</span> one page
+<span class="coverage-key coverage-2">2</span> two
+<span class="coverage-key coverage-3">3</span> three
+<span class="coverage-key coverage-4">4</span> four or more
+<span class="coverage-key coverage-2" data-assessed="true">✓</span> addressed by assessed work
+</div>
+
+Hover any cell to preview the expectation. The row of small chips under
+each strand letter is that strand's overall expectations: green when
+assessed work addresses them, red when nothing marked does.
+
+## Where this course stands
+
+| | |
+| --- | --- |
+| Specific expectations | {total} |
+| Not yet addressed | {len(uncovered)} |
+| Addressed by exactly one page | {len(once)} |
+| Overall expectations with no assessed work | {len(unevaluated)} |
+
+## What counts
+
+A page addresses an expectation when it **transcludes** it — when the
+expectation's own wording appears on the page, under a *Curriculum
+connection* heading. That is the deliberate form.
+
+A passing mention in prose does not count. A concept page can discuss an
+idea, and even link to the expectation behind it in a sentence, without
+claiming to have addressed it — which is why the number here is usually
+lower than the backlinks count on the expectation's own page, and why it
+means more.
+
+An expectation counts as **assessed** when one of those pages is in the
+Tasks folder. Ontario asks that every overall expectation be evaluated for
+marks at least once; the chips under each strand letter answer that, and
+the ring on a cell shows which specific expectations carry assessed work.
+
+## Reading it honestly
+
+Red is not failure — in September everything is red, and that is what the
+first months of a course look like. What matters is the direction of
+travel, and whether anything is still red in May.
+
+A strand of red in the skills strand usually means something different:
+those expectations are being met in every investigation without being
+cited by code. If that is the case here, it is worth citing a few of them
+where they genuinely apply rather than leaving the record silent.
+"""
+    (content_root / "Curriculum Coverage.md").write_text(body, encoding="utf-8")
+    print(f"🗺️  Curriculum Coverage: {total} expectations, {len(uncovered)} not yet addressed, "
+          f"{len(unevaluated)} overall expectation(s) without assessed work.")
+    return True
+
+
+def link_coverage_from_key_links(content_root: Path):
+    """
+    Put the coverage page in Key Links, directly under the curriculum entry.
+
+    Written into the BUILT copy only: the teacher's own Key Links page is
+    theirs, and a line that reappears every build would be infuriating.
+    """
+    key_links = content_root / "Key Links.md"
+    if not key_links.exists():
+        return
+    text = key_links.read_text(encoding="utf-8")
+    if "[[Curriculum Coverage]]" in text:
+        return
+    lines = text.split("\n")
+    for index, line in enumerate(lines):
+        if "Curriculum Expectations]]" in line:
+            lines.insert(index + 1, "- [[Curriculum Coverage]]")
+            key_links.write_text("\n".join(lines), encoding="utf-8")
+            return
+
+
 def build_section_site(
     course_code: str,
     section_number: int,
@@ -2801,6 +3162,7 @@ def build_section_site(
     theme_ts = output_dir / "quartz" / "util" / "theme.ts"
     head_tsx = output_dir / "quartz" / "components" / "Head.tsx"
     patch_google_font_href(theme_ts, head_tsx)
+    append_coverage_styles(output_dir / "quartz" / "styles" / "base.scss")
     latex_ts = output_dir / "quartz" / "plugins" / "transformers" / "latex.ts"
     patch_katex_mhchem(latex_ts)
     patch_mermaid_font_wait(mermaid_ts)
@@ -2893,6 +3255,7 @@ def build_section_site(
             rewrite_section_wikilinks(dest)
             print(f"  📄 Copied per-section file: {file_name}")
 
+
     # === NEW: Post-pass — sync Curriculum 'created' timestamps =================
     print("\n📆 Post-processing: syncing 'created' for Curriculum pages (if needed)...")
     latest = _find_latest_created_in_section(content_root)
@@ -2903,6 +3266,17 @@ def build_section_site(
         stamp = _format_created_timestamp_from_dt(latest)
         print(f"📆 Synced Curriculum 'created' → {stamp} for {updated} file(s) across {folders} folder(s) (skipped {skipped}).")
     # ===========================================================================
+
+    # === Curriculum coverage heat map =========================================
+    # Built from the assembled content, so it reflects exactly what this
+    # section will publish. Default is ON: a course with curriculum pages
+    # gets the map unless the teacher turned it off in the wizard.
+    if bool(config.get("include_curriculum_coverage", True)):
+        if build_curriculum_coverage(content_root, course_code):
+            link_coverage_from_key_links(content_root)
+    else:
+        print("ℹ️ Curriculum Coverage page is switched off for this course.")
+    # ==========================================================================
 
     # Copy course config into output root (back-compat)
     shutil.copy2(config_file, output_dir / "course_config.json")

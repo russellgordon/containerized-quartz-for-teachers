@@ -191,6 +191,7 @@ build means a re-run of the setup wizard (or a hand edit of
 | C2-18 | **Right sidebar column sharing** | `base.scss` (appended) | On a much-linked page the backlinks crowded out the table of contents. The contents are capped at 50% of the column (only when they have a sibling), the backlinks take the rest, and both lists scroll. |
 | C2-19 | **Google Fonts request filtered** | `quartz/util/theme.ts`, `quartz/components/Head.tsx` | Quartz builds ONE stylesheet request from all three font choices, and this app offers system stacks. Google rejects the whole request if any family is unknown to it — HTTP 400, so NO fonts downloaded, including the code font mermaid measures in. System stacks and families are now filtered out, and an empty request is dropped entirely. |
 | C2-20 | **mhchem enabled** | `quartz/plugins/transformers/latex.ts` | Adds `import "katex/contrib/mhchem"`, so `$\ce{CaCO3(s) <=> CaO(s) + CO2(g)}$` renders. KaTeX runs at build time here, and the `katex` package Quartz already installs ships the extension, so this downloads nothing. |
+| C2-21 | **Curriculum coverage map styles** | `quartz/styles/base.scss` (appended) | The grid, chips, and the five-step red-to-green scale for the generated `Curriculum Coverage` page. The colours are deliberately NOT taken from the course's colour scheme — the map's whole meaning is the red-to-green reading, and a scheme that recoloured it would destroy that. Every cell also carries its count as a digit, so the map is readable without relying on colour. |
 
 ### C3. Content-level transformations (every build)
 
@@ -205,6 +206,14 @@ adapt *Obsidian conventions* to *Quartz expectations* and are detailed in
 - Curriculum folders' `created` timestamps synced to the section's newest
   page.
 - `content/Media` created as a symlink to the course-level media folder.
+- **`Curriculum Coverage.md` generated** (when the course has curriculum
+  pages and `include_curriculum_coverage` is not false): a heat map of every
+  specific expectation, coloured by how many pages TRANSCLUDE it, with
+  assessed work marked and one chip per overall expectation. It is written
+  into the assembled content, never into the teacher's vault, so it is
+  rebuilt from the site's own links every time and cannot drift. The link to
+  it is inserted into the BUILT copy of `Key Links`, directly under the
+  curriculum entry.
 
 ---
 

@@ -175,6 +175,11 @@ example content is being installed, this whole step is skipped.
 - **Footer HTML** — optional raw HTML (e.g. a CC-BY licence notice) injected
   into every page's footer at build time.
 - **Reading-time estimates** — whether pages show "N min read".
+- **Curriculum Coverage page** — whether to generate the coverage heat map
+  (default ON, and only asked when the course keeps a curriculum folder,
+  since the map would otherwise have nothing to measure). Saved as
+  `include_curriculum_coverage`; the build treats a missing key as ON, so
+  courses created before this existed pick it up on their next build.
 
 ### 6. Timetable sections
 

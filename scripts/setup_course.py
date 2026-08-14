@@ -1966,6 +1966,23 @@ def setup_course(no_backup: bool = False):
         show_reading_time_default
     )
 
+    # ---------- Curriculum coverage map (stateful) --------------------------
+    # Only worth asking when the course has curriculum pages to measure
+    # against — otherwise the map would have nothing to colour.
+    curriculum_folder_chosen = any("curriculum" in name.lower() for name in shared_folders)
+    include_curriculum_coverage = bool(saved_config.get("include_curriculum_coverage", True))
+    if curriculum_folder_chosen:
+        print("\n🗺️  A Curriculum Coverage page can be added to the site: a heat map of")
+        print("every expectation, coloured by how many pages address it, rebuilt every")
+        print("time the site is built. It starts red in September and greens as the")
+        print("year goes on.")
+        include_curriculum_coverage = prompt_yes_no_default(
+            "Include the Curriculum Coverage page?",
+            include_curriculum_coverage
+        )
+    else:
+        include_curriculum_coverage = False
+
     # Ensure 'Media' is always in hidden list even though it wasn't prompted
     if "Media" not in hidden_items:
         hidden_items.append("Media")
@@ -1997,6 +2014,7 @@ def setup_course(no_backup: bool = False):
         # NEW: example-content choices, remembered for future re-runs
         "prepopulate_example_content": prepopulate_example,
         "use_skeleton": use_skeleton,
+        "include_curriculum_coverage": include_curriculum_coverage,
         "include_curriculum_pages": include_curriculum,
         # NEW: whether the default file names use LCS's own words
         "use_lcs_terminology": use_lcs_terminology,

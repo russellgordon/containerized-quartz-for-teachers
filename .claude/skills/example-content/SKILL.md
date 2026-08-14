@@ -163,6 +163,17 @@ from Phase 5 apply here too.
   authority. The linter fails any class page containing
   `%%curriculum-start%%`. When a unit's task launches, link the task from
   the class page and let the TASK page carry the codes.
+- **Transclusions drive the Curriculum Coverage map.** Every built site
+  with curriculum pages gets a generated `Curriculum Coverage` page: a heat
+  map of every specific expectation, coloured by how many pages transclude
+  it, with a ring on the ones addressed by a page in `Tasks` and a chip per
+  overall expectation showing whether assessed work covers it. It is built
+  from the site's own links, so a payload's curriculum blocks ARE the map.
+  Two consequences when authoring: spread the transclusions across the
+  pages that genuinely address each expectation rather than piling them on
+  one page, and make sure each strand's overall expectations are reachable
+  through a task — a strand whose chips are all red means nothing marked
+  addresses it.
 - **Checklists on the site are READ-ONLY.** `- [ ]` renders a box that
   cannot be ticked: nothing is saved, and clicking does nothing. Never
   write "click to check off", "tick these as you go", or any wording that
