@@ -84,7 +84,7 @@ public class ExampleContentCatalogTests
             Assert.False(ExampleContentCatalog.HasContent(root, "ICS3U"));
             Assert.False(ExampleContentCatalog.IncludesCurriculum(root, "ICS3U"));
         }
-        finally { Directory.Delete(root, true); }
+        finally { try { Directory.Delete(root, true); } catch { } }
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public class ExampleContentCatalogTests
             Assert.True(ExampleContentCatalog.HasContent(root, "  ada1o "));
             Assert.True(ExampleContentCatalog.IncludesCurriculum(root, "ada1o"));
         }
-        finally { Directory.Delete(root, true); }
+        finally { try { Directory.Delete(root, true); } catch { } }
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class ExampleContentCatalogTests
             Assert.Null(ExampleContentCatalog.ManifestPath(root, ""));
             Assert.Null(ExampleContentCatalog.ManifestPath(root, "   "));
         }
-        finally { Directory.Delete(root, true); }
+        finally { try { Directory.Delete(root, true); } catch { } }
     }
 
     [Fact]
@@ -126,7 +126,7 @@ public class ExampleContentCatalogTests
             Assert.False(ExampleContentCatalog.IncludesCurriculum(root, "BBB1O"));
             Assert.False(ExampleContentCatalog.IncludesCurriculum(root, "CCC1O"));
         }
-        finally { Directory.Delete(root, true); }
+        finally { try { Directory.Delete(root, true); } catch { } }
     }
 
     [Fact]

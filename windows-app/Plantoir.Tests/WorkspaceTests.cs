@@ -16,7 +16,7 @@ public class WorkspaceClassifyTests
             File.WriteAllText(Path.Combine(root, "preview.ps1"), "x");
             Assert.Equal(WorkspaceState.Ready, Workspace.Classify(root));
         }
-        finally { Directory.Delete(root, true); }
+        finally { try { Directory.Delete(root, true); } catch { } }
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public class WorkspaceClassifyTests
             File.WriteAllText(Path.Combine(root, "Thumbs.db"), "x");
             Assert.Equal(WorkspaceState.CanBeInitialized, Workspace.Classify(root));
         }
-        finally { Directory.Delete(root, true); }
+        finally { try { Directory.Delete(root, true); } catch { } }
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class WorkspaceClassifyTests
             File.WriteAllText(Path.Combine(root, "my-thesis.docx"), "x");
             Assert.Equal(WorkspaceState.Unrecognized, Workspace.Classify(root));
         }
-        finally { Directory.Delete(root, true); }
+        finally { try { Directory.Delete(root, true); } catch { } }
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class ToolchainMirrorTests
             Assert.False(File.Exists(Path.Combine(dest, "stale.txt")));   // extraneous file gone
             Assert.Equal(2, changed);   // one copy, one delete
         }
-        finally { Directory.Delete(root, true); }
+        finally { try { Directory.Delete(root, true); } catch { } }
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public class ToolchainMirrorTests
             Assert.False(File.Exists(Path.Combine(workspace, "setup.ps1")));
             Assert.Equal("new version", File.ReadAllText(Path.Combine(workspace, "preview.ps1")));
         }
-        finally { Directory.Delete(root, true); }
+        finally { try { Directory.Delete(root, true); } catch { } }
     }
 }
 

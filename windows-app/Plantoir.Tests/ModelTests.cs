@@ -165,7 +165,7 @@ public class SectionAdderTests
 
             Assert.Equal(new[] { 1, 2 }, CourseConfiguration.Load(course.ConfigFilePath).SectionNumbers);
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -185,7 +185,7 @@ public class SectionAdderTests
             Assert.Contains("title: Grade 9 Science, Section 1",
                 File.ReadAllText(Path.Combine(course.DirectoryPath, "section1", "index.md")));
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -202,7 +202,7 @@ public class SectionAdderTests
             var inTheWay = Assert.Throws<SectionAdder.SectionAddException>(() => SectionAdder.AddSection(3, course));
             Assert.Contains("Move it aside first — it may hold work you want to keep.", inTheWay.Message);
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     internal static Course MakeCourse(string root, string code, string configJson)
@@ -249,7 +249,7 @@ public class ArchiveRoundTripTests
             Assert.Equal(new[] { 1, 2 }, CourseConfiguration.Load(course.ConfigFilePath).SectionNumbers);
             Assert.False(File.Exists(archivePath));   // restored = no longer archived
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -276,7 +276,7 @@ public class ArchiveRoundTripTests
             Assert.Equal("Section 1 of ICS3U already exists. Remove it first if you want the archived copy back.", refusal.Message);
             Assert.True(File.Exists(zipPath));   // refusal leaves the archive alone
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 }
 
@@ -340,7 +340,7 @@ public class CourseBackupTests
             Assert.Contains(zip.Entries, e => e.FullName.EndsWith("Learning Goals.md"));
             Assert.DoesNotContain(zip.Entries, e => e.FullName.Contains(".merged_output"));
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -368,7 +368,7 @@ public class CourseBackupTests
             Assert.Equal(folderCreated, Directory.GetCreationTimeUtc(course.DirectoryPath));
             Assert.True(File.Exists(zipPath));   // the backup STAYS after restoring
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -429,7 +429,7 @@ public class CourseBackupTests
             Assert.True(Directory.Exists(course.DirectoryPath));
             Assert.Empty(Workspace.FindBackups(root));
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 }
 
@@ -564,7 +564,7 @@ public class BuildFreshnessTests
             var course = SectionAdderTests.MakeCourse(root, "ICS3U", """{"course_code":"ICS3U"}""");
             Assert.True(BuildFreshness.NeedsRebuild(course, 1));
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -586,7 +586,7 @@ public class BuildFreshnessTests
             File.SetLastWriteTimeUtc(Path.Combine(content, "index.md"), DateTime.UtcNow.AddMinutes(10));
             Assert.True(BuildFreshness.NeedsRebuild(course, 1));
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -608,7 +608,7 @@ public class BuildFreshnessTests
 
             Assert.False(BuildFreshness.NeedsRebuild(course, 1));
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -635,7 +635,7 @@ public class BuildFreshnessTests
             Assert.False(BuildFreshness.BuiltForPreview(index));
             Assert.False(BuildFreshness.NeedsRebuild(course, 1));
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 }
 
@@ -660,7 +660,7 @@ public class FolderContainerTests
             Assert.StartsWith("teaching-quartz-", expected);
             Assert.Equal("teaching-quartz-".Length + 8, expected.Length);
         }
-        finally { Directory.Delete(dir); }
+        finally { try { Directory.Delete(dir); } catch { } }
     }
 
     [Fact]

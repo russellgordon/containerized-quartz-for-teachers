@@ -70,7 +70,7 @@ public class CourseConfigurationTests
         string good = Path.Combine(Path.GetTempPath(), "ok-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(good);
         try { Assert.Null(CourseConfiguration.DeployFolderProblem(good)); }
-        finally { Directory.Delete(good); }
+        finally { try { Directory.Delete(good); } catch { } }
     }
 
     /// <summary>
