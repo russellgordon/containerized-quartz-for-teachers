@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 3
 draft: false
-created: __CREATED_CLASS_23__
+created: __CREATED_CLASS_65__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Would You Rather]] — money edition
-2. Random groups — at the boards: one loan, two rates — who pays more?
-3. Consolidate: growth that adds versus growth that multiplies
-4. Notes to your future self — naming [[Interest and Growth]]
-5. Coding: [[A Budget Calculator in Code]] — cost out your design
+1. Number talk: [[Estimation Duels]] — volumes by eye
+2. Random groups — thinking task: [[The Best Box]] at the boards
+3. Consolidate from the bottom: the trade-off between surface and space
+4. Notes to your future self — naming [[Measurement and Optimization]]
+5. [[Design Under Constraints]] — turn today's idea loose on your brief
 
 ## Things to do before our next class
 
-- [ ] Finish the calculator so it prices your own design.
-- [ ] Journal: a purchase you would now think twice about, and the math
-      behind the hesitation.
+- [ ] Journal: where your design wastes material, and what you will change.
+- [ ] Bring real measurements for your design — the costing starts next
+      class.

@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_18__
+created: __CREATED_CLASS_47__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Number Strings]]
-2. Random groups — predict at the boards: which dice sum wins, and by how
-   much?
-3. Coding: [[Simulating Dice]] — let Python roll ten thousand times
-4. Consolidate: what the simulation settles, and what it cannot
-5. Discussion: [[Mistakes Are Data]] — noise, error, and honest models
+1. Number talk: [[Which One Doesn't Belong]] — four graphs
+2. Random groups — thinking task: the same data, drawn three ways, one
+   of them designed to mislead
+3. Consolidate: what a graph's axes decide before anybody reads it
+4. [[A Data Story]], day 3 — working period: your question and how you will
+   collect
 
 ## Things to do before our next class
 
-- [ ] Finish collecting your [[A Data Story]] data — workday next class.
-- [ ] Journal: where your prediction and the simulation disagreed.
+- [ ] Question written; collection method decided.

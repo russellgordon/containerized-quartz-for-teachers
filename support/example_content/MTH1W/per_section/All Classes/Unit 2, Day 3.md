@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_24__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Which One Doesn't Belong]] — expressions edition
-2. Random groups — code tracing at the boards: what will this loop print?
-3. Coding: [[Coding Visual Patterns]] — your first growing pattern, in Python
-4. Launch our task: [[Pattern Machines]] — code a pattern, predict term 100
-5. Reference for the road: [[Variables and Formulas in Code]]
+1. Number talk: [[Visual Patterns]] — term 10, then term 100
+2. Random groups — at the boards: the same pattern, four different
+   correct expressions, all equivalent
+3. Consolidate: what stays and what grows, named as $an + b$
+4. Practice, in class: [[Expression Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Read [[Pattern Machines]] and choose the pattern your machine will grow.
-- [ ] Journal: one thing the computer did that you did not expect.
+- [ ] Finish the first section.

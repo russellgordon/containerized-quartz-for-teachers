@@ -10,16 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[True or False]] — signs and sizes
-2. Random groups — temperature-swing problems at the boards
-3. Consolidate: below zero is still a number
-4. Notes to your future self — naming [[Integers and the Number Line]]
-5. Check your understanding: [[Integer Practice]], first block
-6. [[Fermi Festival]] check-in: question locked, estimate underway
+1. Number talk: [[Number Strings]] — halving and doubling
+2. Random groups — a recipe-scaling problem at the boards
+3. Consolidate: proportional reasoning, from the simplest board up
+4. Notes to your future self — naming [[Ratios, Rates, and Proportions]]
+5. Check your understanding: [[Ratio and Rate Practice]], first block
 
 ## Things to do before our next class
 
-- [ ] Continue [[Integer Practice]] — and skim
-      [[How to Study for Math]] and [[Getting Unstuck]]: both earn their
-      keep from here on.
-- [ ] Bring your [[Fermi Festival]] work — the gallery walk is next class.
+- [ ] Work through the first block of [[Ratio and Rate Practice]].
+- [ ] Journal: describe one strategy from a board that was not yours.

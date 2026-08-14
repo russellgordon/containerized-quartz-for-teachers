@@ -77,4 +77,6 @@ redesign if the machine shipped again?
 ![[C2.2]]
 
 ![[C3.2]]
+
+![[C4.1]]
 %%curriculum-end%%

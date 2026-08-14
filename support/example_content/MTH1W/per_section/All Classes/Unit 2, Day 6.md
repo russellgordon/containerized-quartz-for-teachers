@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_27__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[True or False]] — equation edition
-2. Random groups — the hardest of [[Equation Practice]] at the boards
-3. Machine swap: trade [[Pattern Machines]] code, predict before you run
-4. Consolidate: what made a machine easy to read?
-5. Check your understanding: finish [[Equation Practice]]
+1. Number talk: [[True or False]] — equivalent expressions
+2. Random groups — at the boards: simplify by collecting like terms,
+   with a picture justifying each collection
+3. Consolidate: why $3n + 2n$ is $5n$ and $3n + 2$ is not $5n$
+4. Practice, in class: the rest of [[Expression Practice]]
 
 ## Things to do before our next class
 
-- [ ] Polish your machine — demos are next class.
-- [ ] Journal: what your partner's code taught you about your own.
+- [ ] Finish the practice set.

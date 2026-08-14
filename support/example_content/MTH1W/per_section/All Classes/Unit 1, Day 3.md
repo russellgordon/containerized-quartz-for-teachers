@@ -10,17 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Fraction Talks]] — what fraction is shaded, and how do
-   you know?
-2. Random groups — thinking task: [[The Locker Problem]] at the boards
-3. Consolidate: which lockers stay open, why the pattern holds — and
-   a first look at [[Number Sets and Infinity]]
-4. Notes to your future self — naming [[Fractions, Decimals, and Percents]]
-5. Check your understanding: [[Fraction and Percent Practice]], first block
+1. Number talk: [[Estimation Duels]] — an estimate, and the reasoning
+   that makes it defensible
+2. Random groups — thinking task at the boards: how many school buses
+   would hold everybody in this building?
+3. Consolidate from the bottom: whose method scaled, and whose broke
+4. Check your understanding: three estimates, written alone
 
 ## Things to do before our next class
 
-- [ ] Finish the first block of [[Fraction and Percent Practice]].
-- [ ] Read [[Showing Your Thinking]] — it is the standard for board
-      and journal work alike.
-- [ ] Journal: what surprised you at the boards today?
+- [ ] Journal: the estimate you would now defend, and how you got it.

@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 4
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_25__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Estimation Duels]] — data plans edition
-2. Random groups — thinking task: [[Which Phone Plan]] at the boards
-3. Consolidate: where the plans cross, and what that point means
-4. Notes to your future self — naming [[Solving Equations]]
-5. Check your understanding: [[Equation Practice]], first block
+1. Number talk: [[Which One Doesn't Belong]] — expressions edition
+2. Random groups — code tracing at the boards: what will this loop print?
+3. Coding: [[Coding Visual Patterns]] — your first growing pattern, in Python
+4. Launch our task: [[Pattern Machines]] — code a pattern, predict term 100
+5. Reference for the road: [[Variables and Formulas in Code]]
 
 ## Things to do before our next class
 
-- [ ] Continue [[Equation Practice]].
-- [ ] Read [[When Will I Use This]] — today's crossing point is
-      Exhibit A; we discuss it next class.
-- [ ] [[Pattern Machines]]: your machine should draw its first three terms
-      by now.
+- [ ] Read [[Pattern Machines]] and choose the pattern your machine will grow.
+- [ ] Journal: one thing the computer did that you did not expect.

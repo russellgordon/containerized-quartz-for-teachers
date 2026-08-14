@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_48__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Fraction Talks]] — the rematch
-2. Mini-lesson: [[Writing About Math]] — say what the data lets you say
-3. Workday: [[A Data Story]] — build your displays, draft your talk
-4. Conferences with me while you work
-5. Self-check before you leave: [[Checking Your Own Work]]
+1. Number talk: [[True or False]] — claims about graphs
+2. Random groups — thinking task: [[Bungee Drop]] at the boards
+3. Consolidate: the pattern in the points, and how far to trust it
+4. Notes to your future self — naming [[Scatter Plots and Trends]]
+5. Tool time: [[Using Desmos]] — fit a line to your bungee data
+6. Check your understanding: [[Scatter Plot Practice]], first block
 
 ## Things to do before our next class
 
-- [ ] Rehearse your data-story talk — presentations are next class.
-- [ ] Run your draft against [[Writing About Math]] one more time.
+- [ ] Continue [[Scatter Plot Practice]].
+- [ ] Keep collecting data for [[A Data Story]].

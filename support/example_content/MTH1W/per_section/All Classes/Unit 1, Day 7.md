@@ -10,13 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Estimation Duels]] — the rematch
-2. [[Fermi Festival]] gallery walk — leave a question on two posters
-3. Circle up: what makes an estimate trustworthy?
-4. Journal collection — run the [[Journal Checklist]] first
+1. Number talk: [[Would You Rather]] — two deals, one better
+2. Random groups — thinking task: mixing paint, where doubling one
+   colour does not double the result
+3. Consolidate: additive against multiplicative thinking, side by side
+4. Practice, in class: [[Ratio and Rate Practice]]
 
 ## Things to do before our next class
 
-- [ ] Rest your estimating muscles — Unit 2 starts with patterns.
-- [ ] Skim [[Getting Started with Python]] if you are curious about what
-      is coming.
+- [ ] Finish the practice set.

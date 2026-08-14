@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 5
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_67__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Quick number talk to settle the room: [[Dot Talks]] — where it all began
-2. Final setup: [[The Math Fair]] tables and displays
-3. The fair — visitors circulate; you explain, defend, and demonstrate
-4. Debrief circle: the visitor question that made you think hardest
-5. Reset the room
+1. Number talk: [[True or False]] — angle claims
+2. Random groups — at the boards: parallel lines, transversals, and the
+   angles you can deduce without measuring
+3. Consolidate: back to [[Geometric Relationships]] — a deduction chain,
+   written out
+4. Practice, in class: angle problems requiring a reason per step
 
 ## Things to do before our next class
 
-- [ ] Journal: the moment at the fair you want to remember.
-- [ ] Skim [[Final Reflection]] — we begin it next class.
+- [ ] Ten angle problems, each with its reason.

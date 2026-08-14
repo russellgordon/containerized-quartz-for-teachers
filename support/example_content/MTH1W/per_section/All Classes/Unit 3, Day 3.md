@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 3
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_46__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[True or False]] — claims about graphs
-2. Random groups — thinking task: [[Bungee Drop]] at the boards
-3. Consolidate: the pattern in the points, and how far to trust it
-4. Notes to your future self — naming [[Scatter Plots and Trends]]
-5. Tool time: [[Using Desmos]] — fit a line to your bungee data
-6. Check your understanding: [[Scatter Plot Practice]], first block
+1. Number talk: [[Estimation Duels]]
+2. Random groups — at the boards: two data sets with the same mean and
+   completely different stories
+3. Consolidate: back to [[Box Plots and Quartiles]] — why the middle
+   fifty is often the honest summary
+4. Practice, in class: building box plots from raw data
 
 ## Things to do before our next class
 
-- [ ] Continue [[Scatter Plot Practice]].
-- [ ] Keep collecting data for [[A Data Story]].
+- [ ] Two box plots drawn and compared in a sentence.

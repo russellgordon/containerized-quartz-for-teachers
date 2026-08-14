@@ -1,0 +1,22 @@
+---
+title: Unit 1, Day 17
+draft: false
+created: __CREATED_CLASS_17__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Number talk: [[Estimation Duels]] — the rematch
+2. [[Fermi Festival]] gallery walk — leave a question on two posters
+3. Circle up: what makes an estimate trustworthy?
+4. Journal collection — run the [[Journal Checklist]] first
+
+## Things to do before our next class
+
+- [ ] Rest your estimating muscles — Unit 2 starts with patterns.
+- [ ] Skim [[Getting Started with Python]] if you are curious about what
+      is coming.
