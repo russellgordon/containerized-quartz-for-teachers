@@ -189,6 +189,21 @@ public sealed partial class MainWindow : Window
     }
 
     /// <summary>
+    /// Deploy a section through this window's own flow — console, milestones,
+    /// needs-rebuild decision and all — for the assistant. The assistant
+    /// automates Plantoir; it does not deploy behind its back.
+    /// </summary>
+    public void DeployFor(string courseCode, int section)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            Workspace.Selection = new SidebarSelection.SectionItem(courseCode, section);
+            if (DetailHost.Content is SectionDetailView detail) detail.StartDeployForAutomation();
+            Activate();
+        });
+    }
+
+    /// <summary>
     /// Restore the remembered selection — but only when its target still
     /// exists, so a course removed between sessions never greets the teacher
     /// with "Course Not Found". Unrecognized stored forms restore none.

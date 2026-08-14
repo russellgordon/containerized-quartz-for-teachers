@@ -170,9 +170,10 @@ public sealed partial class AssistWindow : Window
             // A tool that narrates gets its words on the thinking indicator,
             // where "Thinking" alone would be a lie minutes long.
             OnToolProgress = NoteToolProgress,
-            // And a tool that builds gets its result put on screen — the
-            // first live test built a preview nobody could see.
-            OnPreviewTouched = () => _main?.ShowPreviewFor(_course.Code, _section),
+            // Building and deploying automate the main window's own flows —
+            // once, on screen — rather than running again behind the chat.
+            ShowPreviewInApp = () => _main?.ShowPreviewFor(_course.Code, _section),
+            StartDeployInApp = () => _main?.DeployFor(_course.Code, _section),
         };
 
         // NOT "Ready." — it is not. Reading the instructions takes minutes on

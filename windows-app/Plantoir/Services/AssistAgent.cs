@@ -284,19 +284,39 @@ public sealed class AssistAgent
     public Action<string>? OnToolProgress { get; set; }
 
     /// <summary>
-    /// Tools that leave a fresh preview build behind. A build nobody sees
-    /// might as well not have happened — the first live test rebuilt a
-    /// section, reported success, and left the teacher looking at a chat
-    /// window with the result sitting invisible on disk. After one of these
-    /// runs, the window is told so it can put the preview on screen.
+    /// The app, not the server, owns building and deploying — the assistant
+    /// AUTOMATES Plantoir rather than duplicating it.
+    ///
+    /// The first live test did it the other way: rebuild_preview built in the
+    /// server's own container run, invisible, while the chat showed dots —
+    /// and finished with the result sitting on disk where nobody could see
+    /// it. The main window already knows how to build a section with its
+    /// console on screen and the preview in front of the teacher. So
+    /// rebuild_preview and deploy_section never reach the server from here:
+    /// they press Plantoir's own buttons. The server keeps those tools for
+    /// the clients that have no window — Claude Code, and deploys scheduled
+    /// for half six in the morning.
     /// </summary>
-    private static readonly HashSet<string> TouchesPreview = new(StringComparer.OrdinalIgnoreCase)
+    public Action? ShowPreviewInApp { get; set; }
+
+    /// <summary>Deploy through the main window's own flow, console and all. Any thread.</summary>
+    public Action? StartDeployInApp { get; set; }
+
+    /// <summary>
+    /// Tools that change pages. They run on the server as pure file edits —
+    /// <c>preview: false</c>, so the server builds nothing — and then the
+    /// app's own preview is put on screen to show what changed.
+    /// </summary>
+    private static readonly HashSet<string> EditsPages = new(StringComparer.OrdinalIgnoreCase)
     {
-        "rebuild_preview", "publish_pages", "unpublish_pages", "publish_class_on", "undo_last_change",
+        "publish_pages", "unpublish_pages", "publish_class_on", "undo_last_change",
     };
 
-    /// <summary>Called after a tool in <see cref="TouchesPreview"/> finishes. Any thread.</summary>
-    public Action? OnPreviewTouched { get; set; }
+    /// <summary>The page-editing tools that accept a preview flag to decline the server's build.</summary>
+    private static readonly HashSet<string> TakesPreviewFlag = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "publish_pages", "unpublish_pages", "publish_class_on",
+    };
 
     private JsonObject? _awaiting;      // a write the teacher has not agreed to yet
 
@@ -414,6 +434,27 @@ public sealed class AssistAgent
             catch { /* a malformed call is answered, not crashed on */ }
         }
 
+        // Building and deploying are done by pressing Plantoir's own buttons,
+        // once, where the teacher can watch — never by the server in a hidden
+        // container run whose transcript lands in this chat.
+        // These answers appear in the transcript word for word, so they are
+        // written for the teacher; the model reads the same sentence and has
+        // nothing further to add, which is the point.
+        if (name.Equals("rebuild_preview", StringComparison.OrdinalIgnoreCase) && ShowPreviewInApp is not null)
+        {
+            ShowPreviewInApp.Invoke();
+            return Answer(call, "The preview is opening in Plantoir's main window — the build shows its progress there.");
+        }
+        if (name.Equals("deploy_section", StringComparison.OrdinalIgnoreCase) && StartDeployInApp is not null)
+        {
+            StartDeployInApp.Invoke();
+            return Answer(call, "The section is deploying from Plantoir's main window — its progress is shown there.");
+        }
+
+        // Page edits run on the server, but as PURE file edits: the server is
+        // told not to build, and the app's own preview shows the change.
+        if (TakesPreviewFlag.Contains(name)) arguments["preview"] = false;
+
         string result = await _tools.CallTool(name, arguments, OnToolProgress, cancellation);
         _messages.Add(new JsonObject
         {
@@ -421,7 +462,19 @@ public sealed class AssistAgent
             ["tool_call_id"] = call["id"]?.DeepClone(),
             ["content"] = result,
         });
-        if (TouchesPreview.Contains(name)) OnPreviewTouched?.Invoke();
+        if (EditsPages.Contains(name)) ShowPreviewInApp?.Invoke();
         return result;
+    }
+
+    /// <summary>Record a tool's answer without having called the server.</summary>
+    private string Answer(JsonObject call, string text)
+    {
+        _messages.Add(new JsonObject
+        {
+            ["role"] = "tool",
+            ["tool_call_id"] = call["id"]?.DeepClone(),
+            ["content"] = text,
+        });
+        return text;
     }
 }
