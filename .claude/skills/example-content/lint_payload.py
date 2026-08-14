@@ -44,6 +44,14 @@ def lint(course_code: str) -> int:
         if "created:" in text and "created: __CREATED" not in text and not is_curriculum:
             problems.append(f"{rel}: created: without a sentinel")
 
+        # A payload cannot know how many sections the teacher will choose,
+        # so per-section keys are the INSTALLER's job — it splits a shared
+        # page's created/draft into createdSectionN/draftSectionN for each
+        # section. Writing them here would fix the course at one section.
+        head = text.split("\n---", 1)[0] if text.startswith("---\n") else ""
+        if re.search(r"^(created|draft)Section\d+:", head, re.M):
+            problems.append(f"{rel}: per-section keys are written by the installer, not the payload")
+
         # The whole link graph, so reachability can be checked below.
         outside_fences = re.sub(r"```[\s\S]*?```", "", text)
         page_links[page.stem] = {

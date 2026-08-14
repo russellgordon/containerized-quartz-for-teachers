@@ -96,6 +96,14 @@ enum SectionAdder {
             try fileBody.write(to: sectionURL.appendingPathComponent(fileName), atomically: true, encoding: .utf8)
         }
 
+        // Course-level pages are shared by every section, but each section
+        // decides for itself when a page appeared and whether it is
+        // published — that is what `createdSectionN` / `draftSectionN` are
+        // for. A page that has those keys for the existing sections needs a
+        // pair for this one too, or the new section builds it with no date
+        // and no publishing state at all.
+        extendCourseLevelPages(in: course, toInclude: sectionNumber, created: created)
+
         // Only once the folder is safely in place does the section join the
         // course's settings — the same order restore uses, so a failure
         // partway never leaves the settings pointing at nothing.
@@ -104,6 +112,101 @@ enum SectionAdder {
         numbers.sort()
         course.configuration.setSectionNumbers(numbers)
         try course.configuration.write(to: course.configFileURL)
+    }
+
+    /// Every markdown page at the course level — the shared folders and
+    /// files, everything outside the `sectionN` folders — gains a
+    /// `createdSectionN` / `draftSectionN` pair for the section being added.
+    ///
+    /// The new section takes the LOWEST existing section's publishing state,
+    /// for the same reason the scaffolded files copy a sibling's: a section
+    /// added later should behave like the sections beside it. The date is
+    /// fresh, because the page did not appear in this section until now.
+    /// Pages with no per-section keys are left alone — a plain `created:`
+    /// already applies to every section, including this one.
+    static func extendCourseLevelPages(in course: Course, toInclude sectionNumber: Int, created: String) {
+        let sectionFolderNames: Set<String> = Set(course.sectionNumbers.map { "section\($0)" })
+        let fileManager: FileManager = FileManager.default
+        guard let enumerator = fileManager.enumerator(
+            at: course.directoryURL, includingPropertiesForKeys: nil
+        ) else {
+            return
+        }
+        while let entry = enumerator.nextObject() as? URL {
+            if sectionFolderNames.contains(entry.lastPathComponent) {
+                enumerator.skipDescendants()
+                continue
+            }
+            if entry.pathExtension != "md" {
+                continue
+            }
+            extendFrontmatter(ofPageAt: entry, toInclude: sectionNumber, created: created)
+        }
+    }
+
+    /// One page's frontmatter, given a pair for the new section. Only the
+    /// frontmatter block is read: a `draft: true` shown inside a fenced code
+    /// block further down the page is documentation, not metadata.
+    static func extendFrontmatter(ofPageAt url: URL, toInclude sectionNumber: Int, created: String) {
+        guard let text = try? String(contentsOf: url, encoding: .utf8),
+              let lines = frontmatterLines(ofFileAt: url) else {
+            return
+        }
+        if lines.contains(where: { $0.hasPrefix("createdSection\(sectionNumber):") || $0.hasPrefix("draftSection\(sectionNumber):") }) {
+            return
+        }
+
+        var lowestSection: Int? = nil
+        for line in lines {
+            guard let number = perSectionKeyNumber(in: line) else {
+                continue
+            }
+            if lowestSection == nil || number < lowestSection! {
+                lowestSection = number
+            }
+        }
+        guard let source = lowestSection else {
+            return
+        }
+
+        var addition: [String] = ["createdSection\(sectionNumber): \(created)"]
+        for line in lines where line.hasPrefix("draftSection\(source):") {
+            let value: String = String(line.dropFirst("draftSection\(source):".count)).trimmingCharacters(in: .whitespaces)
+            addition.append("draftSection\(sectionNumber): \(value)")
+        }
+
+        // The pair goes after the last per-section key, so each section's
+        // lines stay together and in order.
+        var updated: [String] = []
+        var lastKeyIndex: Int = -1
+        for (index, line) in lines.enumerated() where perSectionKeyNumber(in: line) != nil {
+            lastKeyIndex = index
+        }
+        for (index, line) in lines.enumerated() {
+            updated.append(line)
+            if index == lastKeyIndex {
+                updated.append(contentsOf: addition)
+            }
+        }
+
+        let body: String = String(text.dropFirst(("---\n" + lines.joined(separator: "\n")).count))
+        let rewritten: String = "---\n" + updated.joined(separator: "\n") + body
+        try? rewritten.write(to: url, atomically: true, encoding: .utf8)
+    }
+
+    /// The section number in a `createdSectionN:` or `draftSectionN:` key.
+    static func perSectionKeyNumber(in line: String) -> Int? {
+        for prefix in ["createdSection", "draftSection"] {
+            guard line.hasPrefix(prefix) else {
+                continue
+            }
+            let rest: Substring = line.dropFirst(prefix.count)
+            guard let colon = rest.firstIndex(of: ":") else {
+                continue
+            }
+            return Int(rest[rest.startIndex..<colon])
+        }
+        return nil
     }
 
     /// The same file in an existing section, if any section has it — the

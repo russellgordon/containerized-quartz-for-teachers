@@ -1,9 +1,6 @@
 ---
 created: __CREATED__
-createdSection1: 2026-11-18T08:00:00.000-0500
-draftSection1: false
-createdSection2: 2026-11-18T08:00:00.000-0500
-draftSection2: false
+draft: false
 enableToc: true
 tags:
   - physics

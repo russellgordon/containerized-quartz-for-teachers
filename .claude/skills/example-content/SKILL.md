@@ -297,6 +297,19 @@ the linter.
   the install-time date (fine for pure reference pages; the linter lists
   them so you can check the list is intentional).
 - Per-section pages may also use `__SECTION_NUMBER__`.
+- **Per-section publishing is the INSTALLER's job — never the payload's.**
+  A course-level page (anything under `shared/`) is shared by sections
+  that are not in step: one class may reach a topic a day later, or not
+  yet at all. So `install_payload_file` splits a shared page's
+  `created:`/`draft:` into `createdSectionN:`/`draftSectionN:` — one pair
+  per section, written together in section order — and `build_site.py`'s
+  `process_frontmatter` resolves them back to plain keys for whichever
+  section is being built. Write the payload with the ordinary single
+  `created: __CREATED__` / `draft: false`: the payload cannot know how
+  many sections the teacher will choose, and hand-writing per-section
+  keys would freeze the course at one section. The linter rejects them.
+  Pages under `per_section/` already belong to one section and keep the
+  plain keys.
 
 ## Phase 7 — Lint, verify, ship
 

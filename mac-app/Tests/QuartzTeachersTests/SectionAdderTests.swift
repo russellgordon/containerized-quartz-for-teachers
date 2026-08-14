@@ -158,6 +158,71 @@ final class SectionAdderTests: XCTestCase {
         XCTAssertTrue(newIndex.contains("excludeBacklinks: true"))
     }
 
+    /// A page at the course level belongs to every section, and each
+    /// section decides for itself when it appeared and whether it is
+    /// published. A section added later must gain its own pair of keys, or
+    /// it builds those pages with no date and no publishing state.
+    @MainActor
+    func testAddingASectionGivesCourseLevelPagesTheirOwnKeys() throws {
+        let (root, course) = try makeWorkspace()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let shared: String = """
+        ---
+        title: Learning Goals
+        createdSection1: 2026-09-08T07:00:00.000
+        draftSection1: false
+        createdSection3: 2026-09-08T07:00:00.000
+        draftSection3: true
+        enableToc: false
+        ---
+        A page with `draft: true` in its frontmatter is skipped.
+        """
+        let sharedURL: URL = course.directoryURL.appendingPathComponent("Learning Goals.md")
+        try shared.write(to: sharedURL, atomically: true, encoding: .utf8)
+
+        try SectionAdder.addSection(2, to: course)
+
+        let updated: String = try String(contentsOf: sharedURL, encoding: .utf8)
+        XCTAssertTrue(updated.contains("createdSection2:"),
+                      "The new section needs its own created date")
+        XCTAssertTrue(updated.contains("draftSection2: false"),
+                      "It takes the LOWEST existing section's publishing state")
+        XCTAssertTrue(updated.contains("createdSection1: 2026-09-08T07:00:00.000"),
+                      "The sections already there are untouched")
+        XCTAssertTrue(updated.contains("draftSection3: true"),
+                      "Including one deliberately held back")
+        XCTAssertTrue(updated.contains("enableToc: false"),
+                      "Everything else in the frontmatter survives")
+        XCTAssertEqual(updated.components(separatedBy: "draft: true").count - 1, 1,
+                       "Prose that mentions draft: true is not metadata and is left alone")
+    }
+
+    /// A page written with plain `created:` applies to every section
+    /// already, including the new one. Splitting it would change what the
+    /// existing sections show, so it is left exactly as it is.
+    @MainActor
+    func testAPlainCreatedDateIsLeftAlone() throws {
+        let (root, course) = try makeWorkspace()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let shared: String = """
+        ---
+        title: Help Sessions
+        created: 2026-09-08T07:00:00.000
+        draft: false
+        ---
+        Thursdays at lunch.
+        """
+        let sharedURL: URL = course.directoryURL.appendingPathComponent("Help Sessions.md")
+        try shared.write(to: sharedURL, atomically: true, encoding: .utf8)
+
+        try SectionAdder.addSection(2, to: course)
+
+        let updated: String = try String(contentsOf: sharedURL, encoding: .utf8)
+        XCTAssertEqual(updated, shared, "A page with no per-section keys is not rewritten")
+    }
+
     /// The other Exemplar bug: SNC1W is named "Grade 9 Science", and the
     /// scaffolded title read "Grade 9 Grade 9 Science, Section 3".
     @MainActor

@@ -229,7 +229,7 @@ skill `.claude/skills/example-content/` and checked by its
   per-invocation loop — this cost half a minute before every preview and
   publish, and it grows with each payload added.
 
-## Fixed in shared code — nothing to port (entries 111–117)
+## Fixed in shared code — nothing to port (entries 111–121)
 
 A run of rendering and content defects was found and fixed on the macOS
 side. All of it lives in shared Python or in the payloads, so Windows
@@ -261,6 +261,36 @@ diffs, and so nobody re-fixes them:
   links to), and no page stands on its own — every page must be reachable
   from a class page within two hops, with Key Links not counting. Both
   are in the example-content skill.
+- **Chemistry is typeset with mhchem.** `build_site.py` adds
+  `import "katex/contrib/mhchem"` to `latex.ts`, so `$\ce{CaCO3(s) <=>
+  CaO(s) + CO2(g)}$` renders properly. The three chemistry payloads were
+  converted outright — 1,533 spans — and the skill now forbids formulae
+  built by hand out of `\text{}`.
+- **`What This Site Can Do` is the LAST entry of every payload's
+  `Key Links`**, so a teacher evaluating the app meets the site tour from
+  the sidebar. Enforced by the linter.
+- **Per-section publishing in the installer**: a course-level page now
+  arrives with `createdSectionN` / `draftSectionN` for each section the
+  teacher chose, rather than one shared pair. Payloads keep the plain
+  sentinel — the split happens at install time, because a payload cannot
+  know the section count.
+
+## One thing that DOES need porting (entry 122)
+
+**Adding a section must extend the course-level pages.** The section
+folder is only half the job: every page at the course level — the shared
+folders and files, everything outside `sectionN/` — carries a
+`createdSectionN` / `draftSectionN` pair per section, and a section added
+later needs its own pair or it builds those pages with no date and no
+publishing state at all. macOS does this in
+`SectionAdder.extendCourseLevelPages`: walk the course folder skipping the
+`sectionN` directories, and for each markdown page whose FRONTMATTER
+already uses the per-section form, append a fresh
+`createdSection<new>` plus a `draftSection<new>` copied from the
+lowest-numbered existing section. Leave pages with a plain `created:`
+alone — they already apply to every section — and never read past the
+frontmatter, because the site-tour page shows `draft: true` inside a code
+block as documentation.
 
 ## Testing
 

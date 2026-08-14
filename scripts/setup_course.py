@@ -1359,11 +1359,63 @@ def unlink_curriculum_references(text: str, page_names: set) -> str:
     return "\n".join(result_lines)
 
 
+def per_section_frontmatter(text: str, section_numbers: list) -> str:
+    """
+    Give a course-level page one `created`/`draft` pair PER SECTION.
+
+    A page at the course root is shared by every section, but the sections
+    are not in step: one class may have covered the material a day later,
+    or not yet at all. Quartz reads `createdSectionN` / `draftSectionN` at
+    build time (see `process_frontmatter` in build_site.py) and resolves
+    them to the plain keys for the section being built, so splitting them
+    here is what lets a teacher publish a page to one section and hold it
+    back from another.
+
+    Only the frontmatter block is touched — a `draft: true` shown inside a
+    fenced code block on a tutorial page is documentation, not metadata.
+    """
+    if not section_numbers or not text.startswith("---\n"):
+        return text
+    end = text.find("\n---", 4)
+    if end < 0:
+        return text
+    head = text[4:end]
+    rest = text[end:]
+
+    values = {}
+    for line in head.split("\n"):
+        match = re.match(r"^(created|draft):[ \t]*(.*)$", line)
+        if match:
+            values.setdefault(match.group(1), match.group(2))
+    if not values:
+        return text
+
+    # Written section by section, so a teacher scanning the top of a page
+    # reads each section's pair together.
+    block = []
+    for number in section_numbers:
+        if "created" in values:
+            block.append(f"createdSection{number}: {values['created']}")
+        if "draft" in values:
+            block.append(f"draftSection{number}: {values['draft']}")
+
+    out = []
+    for line in head.split("\n"):
+        if re.match(r"^(created|draft):", line):
+            if block:
+                out.extend(block)
+                block = []
+            continue
+        out.append(line)
+    return "---\n" + "\n".join(out) + rest
+
+
 def install_payload_file(source: Path, destination: Path, now_str: str,
                          include_curriculum: bool, page_names: set,
                          section_number: int | None = None,
                          reference=None,
-                         first_use_date: str | None = None) -> bool:
+                         first_use_date: str | None = None,
+                         shared_sections: list | None = None) -> bool:
     """
     One file from payload to course. Markdown is adjusted on the way
     through; everything else is copied as-is. Existing files are never
@@ -1390,6 +1442,8 @@ def install_payload_file(source: Path, destination: Path, now_str: str,
     text = strip_curriculum_blocks(text, keep_content=include_curriculum)
     if not include_curriculum:
         text = unlink_curriculum_references(text, page_names)
+    if shared_sections:
+        text = per_section_frontmatter(text, shared_sections)
     with open(destination, "w", encoding="utf-8") as handle:
         handle.write(text)
     return True
@@ -1434,7 +1488,8 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
                 destination = course_path / source.relative_to(shared_root)
                 if install_payload_file(source, destination, now_str,
                                         include_curriculum, page_names,
-                                        first_use_date=class_use_dates.get(source.stem)):
+                                        first_use_date=class_use_dates.get(source.stem),
+                                        shared_sections=section_numbers):
                     written += 1
 
     per_section_root = payload_dir / "per_section"

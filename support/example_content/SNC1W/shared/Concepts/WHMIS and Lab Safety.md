@@ -1,9 +1,6 @@
 ---
 created: __CREATED__
-createdSection1: 2026-09-09T08:00:00.000-0400
-draftSection1: false
-createdSection2: 2026-09-10T08:00:00.000-0400
-draftSection2: false
+draft: false
 enableToc: true
 tags:
   - chemistry
