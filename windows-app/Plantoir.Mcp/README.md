@@ -177,10 +177,20 @@ goes two hops, with one rule at the second:
 - **Already published two hops out** → left completely alone. It belongs to
   whatever published it, so it keeps its state *and* its date.
 
-**Hiding never goes past one hop.** Each extra hop can swallow a page a
-still-published class depends on, and the further out it reaches the less a
-teacher can see it happening. The third hop, in either direction, is reported
-by the dangling-link check rather than swept along.
+**Hiding never goes past one hop**, and even at one hop it will not take down
+a page another *visible* class still links to. Publishing leaves no record of
+who published what, so hiding **cannot be a true inverse** — but it can refuse
+to break anything still in use, which is the half that matters. A concept used
+by both the lesson coming down and one still up belongs to the one still up.
+
+Classes being hidden in the *same* call do not count as "still using" a page,
+so hiding a whole unit does take its materials with it.
+
+Dates are not restored on hiding, and do not need to be: they are **derived**
+rather than remembered, so republishing a page re-derives it from the earliest
+class that links to it. The front page is computed the same way. Only the draft
+flags are genuinely one-way, and `back_up_course` — which every write calls
+first — is the real undo.
 
 **A class is never dragged along by a link, at any depth.** "Publish
 tomorrow's class" must not put next week's lesson in front of students because

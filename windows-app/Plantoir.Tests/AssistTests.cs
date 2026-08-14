@@ -226,6 +226,77 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Equal(3, plan.Pages.Count);
     }
 
+    // ---- Hiding: safe, not a mirror ----------------------------------------
+
+    [Fact]
+    public void HidingLeavesAPageAnotherVisibleClassStillUses()
+    {
+        // The Safety Contract case. Publishing leaves no record of who
+        // published what, so hiding cannot be a true inverse — but it can
+        // refuse to take down anything still in use, which is the half that
+        // matters.
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 1.md", draft: false,
+             body: "Setup: [[Safety Contract]]");
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 2.md", draft: false,
+             body: "Also: [[Safety Contract]] and [[Just Mine]]");
+        Page("ICS3U", "Setup/Safety Contract.md", draftSection1: false);
+        Page("ICS3U", "Concepts/Just Mine.md", draftSection1: false);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" },
+            includeLinked: true, draft: true);
+
+        Assert.DoesNotContain(plan.Pages, p => p.Title == "Safety Contract");
+        Assert.Contains(plan.Pages, p => p.Title == "Just Mine");
+        Assert.Contains(plan.Problems, p => p.Contains("another class students can still see links to it"));
+        Assert.Empty(plan.Dangling);
+    }
+
+    [Fact]
+    public void APageOnlyHiddenClassesUseComesDown()
+    {
+        // The other side of the same rule: nothing visible reaches it, so
+        // there is nothing to break.
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 1.md", draft: true,
+             body: "Setup: [[Shared Only With Hidden]]");
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 2.md", draft: false,
+             body: "Also: [[Shared Only With Hidden]]");
+        Page("ICS3U", "Setup/Shared Only With Hidden.md", draftSection1: false);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" },
+            includeLinked: true, draft: true);
+
+        Assert.Contains(plan.Pages, p => p.Title == "Shared Only With Hidden");
+    }
+
+    [Fact]
+    public void HidingSeveralClassesAtOnceDoesNotCountThemAsStillUsingAPage()
+    {
+        // Both classes are on their way out, so the page they share comes
+        // down with them.
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 1.md", draft: false, body: "[[Shared]]");
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 2.md", draft: false, body: "[[Shared]]");
+        Page("ICS3U", "Concepts/Shared.md", draftSection1: false);
+
+        var plan = Open().PlanPublish("ICS3U", 1,
+            new[] { "Unit 1, Day 1", "Unit 1, Day 2" }, includeLinked: true, draft: true);
+
+        Assert.Contains(plan.Pages, p => p.Title == "Shared");
+    }
+
+    [Fact]
+    public void CurriculumIsNeverHidden()
+    {
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 2.md", draft: false,
+             body: "Expectation: [[B2.1]]");
+        Page("ICS3U", "Ontario Curriculum/B2.1.md", draftSection1: false);
+
+        var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" },
+            includeLinked: true, draft: true);
+
+        Assert.DoesNotContain(plan.Pages, p => p.Title == "B2.1");
+        Assert.Contains(plan.Problems, p => p.Contains("the curriculum"));
+    }
+
     // ---- Two hops out ------------------------------------------------------
 
     [Fact]

@@ -173,6 +173,9 @@ public sealed class AssistWorkspace
     ///   missed a class is told to start; a section's own <c>index.md</c> is
     ///   the front door. An index is a way in, not a lesson, and an empty
     ///   folder page is far better than a broken one.
+    /// * **Curriculum.** The expectations are what the course is accountable
+    ///   to, and students, parents and administrators may look them up at any
+    ///   point in the year. They are always visible.
     ///
     /// This constrains the DRAFT FLAG only. Nothing here stops a page's
     /// <c>created</c> date being changed — rolling a course over to a new year
@@ -184,7 +187,8 @@ public sealed class AssistWorkspace
 
         foreach (string page in PagePaths.MarkdownPages(course.DirectoryPath, sectionNumber))
         {
-            if (string.Equals(Path.GetFileName(page), "index.md", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(Path.GetFileName(page), "index.md", StringComparison.OrdinalIgnoreCase) ||
+                IsCurriculum(course.DirectoryPath, page))
                 protectedPaths.Add(Path.GetFullPath(page));
         }
 
@@ -414,6 +418,7 @@ public sealed class AssistWorkspace
         }
 
         var carriedAlong = new List<PlannedDate>();
+        int stillNeeded = 0;
         if (includeLinked)
         {
             var classPaths = new HashSet<string>(
@@ -436,6 +441,19 @@ public sealed class AssistWorkspace
                     if (seen.Add(full))
                     {
                         if (protectedPaths.Contains(full)) { protectedLinked++; continue; }
+
+                        // Hiding is not the mirror of publishing, because
+                        // publishing leaves no record of who published what.
+                        // What it CAN do is never take down something still in
+                        // use: a page another class still shows to students
+                        // stays, and only the pages nothing visible reaches
+                        // come down. That is the safety half of an inverse,
+                        // and it is the half that matters.
+                        if (draft && StillShownByAnotherClass(course, section, resolution, namedPaths))
+                        {
+                            stillNeeded++;
+                            continue;
+                        }
                         pages.Add(Plan(course, section, resolution, draft, viaLink: true));
                     }
 
@@ -492,7 +510,12 @@ public sealed class AssistWorkspace
         // that loop rather than before it.
         if (protectedLinked > 0)
             problems.Add($"{protectedLinked} linked page{(protectedLinked == 1 ? " was" : "s were")} left published: " +
-                         "index pages, and the pages Key Links points at, are never hidden.");
+                         "index pages, the curriculum, and the pages Key Links points at are never hidden.");
+
+        if (stillNeeded > 0)
+            problems.Add($"{stillNeeded} linked page{(stillNeeded == 1 ? " was" : "s were")} left published " +
+                         "because another class students can still see links to " +
+                         (stillNeeded == 1 ? "it" : "them") + ".");
 
         return new PublishPlan
         {
@@ -507,6 +530,37 @@ public sealed class AssistWorkspace
             InheritedDates = inherited,
             Index = index,
         };
+    }
+
+    /// <summary>
+    /// True when some OTHER class — one students can still see after this
+    /// change — links to this page.
+    ///
+    /// This is what makes hiding safe without making it a true inverse. A
+    /// concept used by both the lesson coming down and one still up belongs to
+    /// the one still up; taking it down would leave that lesson pointing at
+    /// nothing. The classes being hidden in this same plan do not count, since
+    /// they are on their way out.
+    /// </summary>
+    private bool StillShownByAnotherClass(
+        Course course, int section, string page, IReadOnlyList<string> beingHidden)
+    {
+        var goingDown = new HashSet<string>(
+            beingHidden.Select(Path.GetFullPath), StringComparer.OrdinalIgnoreCase);
+
+        foreach (string other in ClassPages(course, section))
+        {
+            if (goingDown.Contains(Path.GetFullPath(other))) continue;
+            string text;
+            try { text = File.ReadAllText(other); } catch { continue; }
+            if (PageFrontmatter.IsDraft(text, section)) continue;     // already hidden: not in use
+
+            foreach (string target in Links(course, section, other, new List<string>()))
+                if (string.Equals(Path.GetFullPath(target), Path.GetFullPath(page),
+                        StringComparison.OrdinalIgnoreCase))
+                    return true;
+        }
+        return false;
     }
 
     /// <summary>
