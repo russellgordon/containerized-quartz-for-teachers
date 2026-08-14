@@ -1269,10 +1269,14 @@ def semester_class_timestamp(class_ordinal: int, reference,
     school year (the year whose September has most recently begun, or is
     about to). Matches the semestered September-to-January shape of the
     example content, and the 07:00 convention real courses here use.
+
+    The walk is done on a NAIVE date, and the offset attached only at the
+    end. A semester crosses the change off daylight time in November, so
+    borrowing the offset that happened to be in force when setup ran would
+    stamp every class after it an hour out.
     """
     year = reference.year if reference.month >= 8 else reference.year - 1
-    date = reference.replace(year=year, month=9, day=8,
-                             hour=7, minute=0, second=0, microsecond=0)
+    date = datetime(year, 9, 8, 7, 0, 0)
     while not is_school_day(date):
         date += timedelta(days=1)
     remaining_steps = (class_ordinal - 1) * max(1, weekday_step)
@@ -1280,7 +1284,7 @@ def semester_class_timestamp(class_ordinal: int, reference,
         date += timedelta(days=1)
         if is_school_day(date):
             remaining_steps -= 1
-    return date.strftime("%Y-%m-%dT%H:%M:%S.000%z")
+    return date.astimezone().strftime("%Y-%m-%dT%H:%M:%S.000%z")
 
 
 def replacing_class_sentinels(text: str, reference,
