@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_24__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Tech Headlines]]
-2. Same problem, both ways: write it recursively, write it with a loop,
-   time both, and say honestly which one you would hand to a partner
-3. Where recursion costs you: depth, repeated work, and the limit
-   Python enforces so your machine does not fall over
-4. Hand in [[The Structure Study]]
-5. Midpoint look back: [[Showing Growth]] — read your own first journal
-   entry out loud, to yourself
+1. Warm-up: [[Predict the Output]] — a grid printed row by row
+2. Compare and name it: [[Two-Dimensional Data]] — rows then columns,
+   and the aliasing trap in building an empty grid
+3. Build: a seating chart, filled, searched, and summarised by row
 
 ## Things to do before our next class
 
-- [ ] Journal: one place where the loop is the honest answer, and one
-      where the recursion genuinely reads better.
+- [ ] Grid program working; every cell reachable.

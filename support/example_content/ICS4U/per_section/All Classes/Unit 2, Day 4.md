@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 4
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_22__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,16 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Trace It]] — a dictionary whose values are lists of
-   objects, traced with pencil and paper only
-2. One problem, three containers: build the same lookup as a list, as a
-   dictionary, and as a queue, and time yourself writing each
-3. Compare and name it: [[Choosing a Data Structure]]
-4. Nested structures workshop: what happens when the value is itself a
-   collection, and how deep is too deep
-5. Post the decision table this room agrees on
+1. Warm-up: [[Which One Doesn't Belong]] — a list, a dictionary, an
+   undo history, and the line at the front counter
+2. Two disciplines, unplugged: last in first out, first in first out,
+   and the jobs each one is actually right for
+3. Compare and name it: [[Stacks and Queues]]
+4. Read and change: [[A Stack and a Queue]]
+5. Practise: [[Stacks and Queues Practice]]
 
 ## Things to do before our next class
 
-- [ ] Journal: the container you would defend for your own project
-      data, and the one you rejected on purpose.
+- [ ] Finish [[Stacks and Queues Practice]].
+- [ ] Journal: one thing in this building that is genuinely a queue,
+      and one thing people only pretend is a queue.

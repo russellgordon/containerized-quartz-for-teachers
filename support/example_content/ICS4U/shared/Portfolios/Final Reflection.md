@@ -60,3 +60,9 @@ words, then show the now.
 > ignored and should not have, the part of the handover you know is
 > thin. You have a course's worth of evidence that honesty is what
 > makes this writing good. Trust it one last time.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D4.4]]
+%%curriculum-end%%

@@ -10,16 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Which One Doesn't Belong]] — four candidate attributes
-2. Modelling the real thing: what belongs inside the object, what
-   belongs outside it, and who gets to decide
-3. Compare and name it: [[Attributes and Methods]]
-4. Practise: [[Classes and Objects Practice]]
-5. Board list: every attribute this room rejected, with the reason
-   beside it — we come back to this list in Unit 4
+1. Warm-up: [[Predict the Output]] — two objects, one shared attribute
+2. From scratch: a class for something in this room, designed on paper
+   before any typing
+3. Practise: [[Classes and Objects Practice]], first section
+4. Log it in your [[Code Journal]]
 
 ## Things to do before our next class
 
-- [ ] Finish the first half of [[Classes and Objects Practice]].
-- [ ] Stuck? Work [[Getting Unstuck]] first, then bring one specific
-      question — [[Getting Help]] says when and where.
+- [ ] Finish the first section.

@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_44__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,17 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Tech Headlines]]
-2. Race the sorts: the same data, three algorithms, one shared table of
-   times and comparison counts on the board
-3. Read and change: [[Sorting and Timing It]]
-4. Discussion: [[When Code Hurts]] — a sort is a ranking, and a ranking
-   of people decides who gets seen first
-5. Practise: [[Sorting Practice]]
+1. Warm-up: [[Which One Doesn't Belong]] — four ways to put a hand of
+   cards in order
+2. The problem of the day: [[Sorting by Hand]] — physical cards, strict
+   rules, and a tally of every comparison you make
+3. Compare and name it: [[Sorting]] — the algorithms you just invented,
+   with the names the field gave them
+4. Prove it sorts: [[Writing Tests]] — a sort you have not tested is a
+   sort you are guessing about
 
 ## Things to do before our next class
 
-- [ ] Finish [[Sorting Practice]].
-- [ ] Journal: the sort you would choose for a nearly sorted list, and
-      why that answer surprised the room.
+- [ ] Write your hand-sorting rules as code, and test them against a
+      list that is already sorted and a list that is backwards.
+- [ ] Journal: your comparison count, and your partner's.

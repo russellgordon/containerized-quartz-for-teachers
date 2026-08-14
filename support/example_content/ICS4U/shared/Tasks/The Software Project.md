@@ -81,6 +81,33 @@ This is the craft, not the paperwork.
   item you can defend is a decision. An item quietly attempted and
   abandoned is a mess.
 
+## Your team's code of practice
+
+Before any code is written, your team writes **one page** setting out
+how you will work and what you will not do. It is not decoration: at
+the handover, your partner is told it exists and what is in it.
+
+Ground it in a real professional code — the ACM Code of Ethics and
+Professional Conduct, the IEEE Code of Ethics, or the Canadian
+Information Processing Society's — and say which one you drew from.
+Read the actual document; do not summarise a summary. Your page has
+four parts:
+
+1. **What we owe the person we are building for**: honesty about what
+   the software does and does not do, and about when we are behind.
+2. **What we owe people who are not in the room**: anybody whose data
+   passes through this, anybody affected by a decision it makes.
+3. **What we will not do**, specifically, even if asked.
+4. **Why a profession needs a written code at all** — in your own
+   words, two or three sentences. Engineers, doctors, and lawyers have
+   one for reasons; programmers now build systems with comparable
+   reach and, in most jurisdictions, no licence at all.
+
+Then apply it. When a decision in the build runs into the page — a
+shortcut that would collect one extra field, a demo that would overstate
+what works — record the decision and what you did. Those records are
+marked. A code nobody consulted is a code nobody wrote.
+
 ## Milestones
 
 Checked in class, on the day named. Nothing here is a final-week
@@ -189,4 +216,14 @@ does not have the day you had? Then read
 ![[B2.1]]
 
 ![[B2.2]]
+
+![[B1.2]]
+
+![[B1.3]]
+
+![[D2.1]]
+
+![[D2.2]]
+
+![[D2.3]]
 %%curriculum-end%%

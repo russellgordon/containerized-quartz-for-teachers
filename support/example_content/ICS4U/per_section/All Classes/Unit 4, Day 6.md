@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 6
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_67__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Read the Diff]] — the last change before the build freeze
-2. Write the handover: what it does, how to run it, how to change it,
-   what it will never do, and where the data lives
-3. Discussion: [[What Happens When You Leave]] — the graduation problem,
-   asked about your own project
-4. Final build; hand in [[The Software Project]]
-5. Begin [[Final Reflection]] in class, with your history open beside you
+1. Warm-up: [[Name That Error]]
+2. [[The Software Project]], day 11 — working period: the ethics record. Where
+   a build decision met your code of practice, and what you did
+3. Conference: one decision each team would like a second opinion on
 
 ## Things to do before our next class
 
-- [ ] Confirm your community partner is coming, and tell them the time.
-- [ ] Finish [[Final Reflection]] and bring your [[Code Journal]].
-- [ ] Rehearse [[The Handover]] once, out loud, with a timer running.
+- [ ] Ethics record has at least two real entries.

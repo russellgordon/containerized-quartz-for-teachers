@@ -10,15 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Spot the Bug]] — an attribute set from outside the class
-2. The impossible object: a loan with negative days, a mark of 140, a
-   booking for nobody — each one set from a different part of the file
-3. Compare and name it: [[Encapsulation]] — why keeping people out is a
-   kindness to your future self, not a locked door
-4. Practise: [[Methods and Encapsulation Practice]]
+1. Warm-up: [[Spot the Bug]] — a method that forgets `self`
+2. Clinic: [[Classes and Objects Practice]] to the end
+3. Where a method belongs: the test is whether it needs the object's
+   own data
 
 ## Things to do before our next class
 
-- [ ] Finish [[Methods and Encapsulation Practice]].
-- [ ] Journal: one rule your object must never be allowed to break, and
-      the single place you now enforce it.
+- [ ] Finish the practice set.

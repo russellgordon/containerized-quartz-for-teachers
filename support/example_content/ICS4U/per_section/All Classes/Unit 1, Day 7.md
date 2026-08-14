@@ -10,15 +10,15 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Predict the Output]] — two objects, one conversation
-2. Compare and name it: [[Objects Working Together]] — one class holds
-   another, and neither one reaches inside the other
-3. Read and change: [[A Program with Two Classes]]
-4. Discussion: [[Who Maintains This]] — the program from Day 1 is
-   somebody's Tuesday afternoon, every year, forever
-5. Hand in [[The Model]]
+1. Warm-up: [[Spot the Bug]] — an attribute set from outside the class
+2. The impossible object: a loan with negative days, a mark of 140, a
+   booking for nobody — each one set from a different part of the file
+3. Compare and name it: [[Encapsulation]] — why keeping people out is a
+   kindness to your future self, not a locked door
+4. Practise: [[Methods and Encapsulation Practice]]
 
 ## Things to do before our next class
 
-- [ ] Journal: the attribute you defended in class today that you would
-      now cut, and what changed your mind.
+- [ ] Finish [[Methods and Encapsulation Practice]].
+- [ ] Journal: one rule your object must never be allowed to break, and
+      the single place you now enforce it.

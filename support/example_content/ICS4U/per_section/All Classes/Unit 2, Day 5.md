@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 5
 draft: false
-created: __CREATED_CLASS_12__
+created: __CREATED_CLASS_23__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Predict the Output]] — a function that calls itself
-2. The self-similar problem: a folder inside a folder inside a folder,
-   solved without a single loop
-3. Compare and name it: [[Recursion]] — base case first, always
-4. Launch our next task: [[The Structure Study]] — one problem, three
-   containers, and a justification you can defend out loud
-5. Practise: [[Recursion Practice]]
+1. Warm-up: [[Spot the Bug]] — a queue used as a stack
+2. Clinic: [[Dictionaries Practice]] to the end
+3. Build both by hand: a stack and a queue on top of a list, and the
+   cost of each operation
 
 ## Things to do before our next class
 
-- [ ] Finish [[Recursion Practice]], including the one that never stops
-      until you find its base case.
-- [ ] Read [[The Structure Study]] and choose your one problem.
+- [ ] Finish the practice set.

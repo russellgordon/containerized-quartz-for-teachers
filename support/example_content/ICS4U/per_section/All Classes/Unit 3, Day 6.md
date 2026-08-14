@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 6
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_46__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,19 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Predict the Output]] — the cost of one nested loop
-2. Defend your algorithm: each team states the search and the sort its
-   project will use, and the cost it is knowingly accepting
-3. Plan the work: [[Software Project Management]] — scope, tasks,
-   deliverables, and a schedule with real dates on it
-4. Method: [[Working in a Team]] — roles, and what you do when two
-   people disagree about the same file
-5. [[Journal Checklist]] — from today your journal is the record of
-   your individual contribution to a group build
+1. Warm-up: [[Name That Error]]
+2. Merge sort, built by the room: split, sort the halves, merge — the
+   merge step written on the board before anybody codes it
+3. Compare with the quadratic sorts you implemented: same answer, very
+   different growth
 
 ## Things to do before our next class
 
-- [ ] Milestone: partner confirmed, consent recorded, roles agreed in
-      writing and posted where the whole team can see them.
-- [ ] Milestone: scope document, including the "deliberately not doing"
-      list your team will be held to.
+- [ ] Journal: where the saving actually comes from.

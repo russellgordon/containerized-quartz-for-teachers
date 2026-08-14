@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 5
 draft: false
-created: __CREATED_CLASS_24__
+created: __CREATED_CLASS_66__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,16 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Tech Headlines]]
-2. Compare and name it: [[Ethics, Security, and the Profession]] — what
-   your program knows, who it can hurt once it runs at scale, and the
-   codes of ethics the field actually publishes
-3. Discussion: [[Should It Exist]] — the question that comes before
-   "can we build it?"
-4. Pathways: where this goes after Grade 12, including the routes
-   nobody mentions at an assembly
-5. Build period
+1. Warm-up: [[Read the Diff]] — a change to shared code, and the
+   question its author is hoping somebody asks
+2. Team build period: features on branches, merged only after review
+3. [[The Code Review]] — a structured review of a teammate's code, run
+   with the protocol that keeps it about the code
+4. Merge, and record in the history what each review actually changed
 
 ## Things to do before our next class
 
-- [ ] Milestone: your project's privacy statement — what it stores,
-      where it lives, and how your partner deletes it.
+- [ ] Milestone: every team member has reviewed one teammate's code and
+      has had their own code reviewed.
+- [ ] Journal: one review comment you received that improved the
+      program, quoted exactly as it was written.

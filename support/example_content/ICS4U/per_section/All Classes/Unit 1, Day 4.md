@@ -10,17 +10,16 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Name That Error]] — the missing `self`
-2. The bag of loose functions: four functions that keep being handed
-   the same object, and what that is quietly telling you
-3. Move the behaviour to where the data lives — the methods half of
-   [[Attributes and Methods]]
-4. Read and change: [[Objects in a List]] — many objects, each one
-   doing its own work
-5. When it breaks: [[Reading a Traceback in Someone Else's Code]]
+1. Warm-up: [[Which One Doesn't Belong]] — four candidate attributes
+2. Modelling the real thing: what belongs inside the object, what
+   belongs outside it, and who gets to decide
+3. Compare and name it: [[Attributes and Methods]]
+4. Practise: [[Classes and Objects Practice]]
+5. Board list: every attribute this room rejected, with the reason
+   beside it — we come back to this list in Unit 4
 
 ## Things to do before our next class
 
-- [ ] Finish [[Classes and Objects Practice]].
-- [ ] Journal: one method you wrote today that made an old comment
-      unnecessary.
+- [ ] Finish the first half of [[Classes and Objects Practice]].
+- [ ] Stuck? Work [[Getting Unstuck]] first, then bring one specific
+      question — [[Getting Help]] says when and where.
