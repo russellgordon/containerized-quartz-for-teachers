@@ -158,13 +158,6 @@ Ions carry their charge properly — sulfate is $\ce{SO4^2-}$ and
 ammonium is $\ce{NH4+}$ — which matters, because
 $\ce{SO4^2-}$ and $\ce{SO3^2-}$ are different substances.
 
-**How that was made:** the first of those two equations is one
-line of source:
-
-```markdown
-$$\ce{CH4 + 2O2 -> CO2 + 2H2O}$$
-```
-
 **How that was made:** single dollar signs keep it in the sentence,
 double ones give it a line of its own.
 
@@ -174,20 +167,34 @@ Inline: $f = 15\ \text{cm}$
 Display: $$\ce{CH4 + 2O2 -> CO2 + 2H2O}$$
 ```
 
-> [!tip] For teachers: what `\ce{}` saves you
-> The **mhchem** extension is part of this site, so a whole equation fits
-> inside one macro, typed roughly as you would say it aloud. No braces
-> around subscripts, no arrow commands to look up: `->` draws a reaction
-> arrow and `<=>` an equilibrium one, `^` carries a charge, and
-> `(aq)`, `(g)`, `(s)`, `(l)` set a state.
->
-> Write `$\ce{H2O}$` rather than a bare `$H_2O$` — outside `\ce{}` the
-> symbols come out in maths italic, which is the convention for
-> *variables* and looks wrong for elements.
->
-> Display maths has to stay on **one physical line**. A `$$` span broken
-> across lines, or indented four spaces, or placed inside a callout
-> across multiple lines, hits a markdown seam and shatters.
+### Writing chemistry with `\ce{}`
+
+Everything chemical on this site is typed inside `\ce{}`, and it is worth
+ten minutes once. You type roughly what you would say aloud; it works out
+which digits are subscripts, which are coefficients, and where the
+spacing goes.
+
+| What you type | What appears | What it means |
+| --- | --- | --- |
+| `$\ce{H2O}$` | $\ce{H2O}$ | Digits drop to subscripts |
+| `$\ce{2H2O}$` | $\ce{2H2O}$ | A digit in front is a coefficient |
+| `$\ce{SO4^2-}$` | $\ce{SO4^2-}$ | A charge, number before sign |
+| `$\ce{Ca(OH)2}$` | $\ce{Ca(OH)2}$ | Brackets as you write them |
+| `$\ce{NaCl(aq)}$` | $\ce{NaCl(aq)}$ | A state, typed literally |
+| `$\ce{2H2 + O2 -> 2H2O}$` | $\ce{2H2 + O2 -> 2H2O}$ | The reaction arrow |
+| `$\ce{H+ + OH- -> H2O}$` | $\ce{H+ + OH- -> H2O}$ | Ions carry their sign |
+| `$\ce{AgCl v}$` | $\ce{AgCl v}$ | Precipitate down, gas up |
+| `$\ce{->[heat]}$` | $\ce{->[heat]}$ | A condition above the arrow |
+
+Two habits worth keeping:
+
+- **Anything chemical goes inside `\ce{}`**, including a formula in the
+  middle of a sentence, like $\ce{NaHCO3}$. Outside it, `H_2O` comes out
+  in maths italic — the convention for *variables*, which reads wrongly
+  for an element.
+- **A display equation stays on one physical line.** A `$$` span broken
+  across lines, indented four spaces, or spread down a callout hits a
+  markdown seam and shatters.
 
 ---
 

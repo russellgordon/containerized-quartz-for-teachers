@@ -159,13 +159,6 @@ The double arrow is written `<=>` and it is not
 decoration — it is the claim that both directions are running at once,
 which is the whole of [[Dynamic Equilibrium]].
 
-**How that was made:** the first of those two equations is one
-line of source:
-
-```markdown
-$$\ce{N2O4(g) <=> 2NO2(g)}$$
-```
-
 Multi-step working goes on a single line, aligned on the equals signs:
 
 $$\begin{aligned} q &= mc\Delta T = (100.0\ \text{g})(4.18\ \text{J/g}^\circ\text{C})(6.4\ ^\circ\text{C}) \\ &= 2.68 \times 10^3\ \text{J} \end{aligned}$$
@@ -179,20 +172,37 @@ Inline: $K_w = 1.0 \times 10^{-14}$
 Display: $$\ce{N2O4 <=> 2NO2}$$
 ```
 
-> [!tip] For teachers: what `\ce{}` saves you
-> The **mhchem** extension is part of this site, so a whole equation fits
-> inside one macro, typed roughly as you would say it aloud. No braces
-> around subscripts, no arrow commands to look up: `->` draws a reaction
-> arrow and `<=>` an equilibrium one, `^` carries a charge, and
-> `(aq)`, `(g)`, `(s)`, `(l)` set a state.
->
-> Write `$\ce{H2O}$` rather than a bare `$H_2O$` — outside `\ce{}` the
-> symbols come out in maths italic, which is the convention for
-> *variables* and looks wrong for elements.
->
-> Display maths has to stay on **one physical line**. A `$$` span broken
-> across lines, or indented four spaces, or placed inside a callout
-> across multiple lines, hits a markdown seam and shatters.
+### Writing chemistry with `\ce{}`
+
+Everything chemical on this site is typed inside `\ce{}`, and it is worth
+ten minutes once. You type roughly what you would say aloud; it works out
+which digits are subscripts, which are coefficients, and where the
+spacing goes.
+
+| What you type | What appears | What it means |
+| --- | --- | --- |
+| `$\ce{H2O}$` | $\ce{H2O}$ | Digits drop to subscripts |
+| `$\ce{2H2O}$` | $\ce{2H2O}$ | A digit in front is a coefficient |
+| `$\ce{SO4^2-}$` | $\ce{SO4^2-}$ | A charge, number before sign |
+| `$\ce{Ca(OH)2}$` | $\ce{Ca(OH)2}$ | Brackets as you write them |
+| `$\ce{CH3COOH(aq)}$` | $\ce{CH3COOH(aq)}$ | A state, typed literally |
+| `$\ce{N2 + 3H2 -> 2NH3}$` | $\ce{N2 + 3H2 -> 2NH3}$ | The reaction arrow |
+| `$\ce{N2O4(g) <=> 2NO2(g)}$` | $\ce{N2O4(g) <=> 2NO2(g)}$ | The equilibrium arrow |
+| `$\ce{Fe^3+ + e- -> Fe^2+}$` | $\ce{Fe^3+ + e- -> Fe^2+}$ | Electrons behave like ions |
+| `$\ce{CH3-CH=CH2}$` | $\ce{CH3-CH=CH2}$ | Single and double bonds |
+| `$\ce{CuSO4 * 5H2O}$` | $\ce{CuSO4 * 5H2O}$ | The dot in a hydrate |
+| `$\ce{->[catalyst]}$` | $\ce{->[catalyst]}$ | A condition above the arrow |
+| `$\ce{BaSO4 v}$` | $\ce{BaSO4 v}$ | Precipitate down, gas up |
+
+Two habits worth keeping:
+
+- **Anything chemical goes inside `\ce{}`**, including a formula in the
+  middle of a sentence, like $\ce{NaHCO3}$. Outside it, `H_2O` comes out
+  in maths italic — the convention for *variables*, which reads wrongly
+  for an element.
+- **A display equation stays on one physical line.** A `$$` span broken
+  across lines, indented four spaces, or spread down a callout hits a
+  markdown seam and shatters.
 
 > [!note] For teachers: ICE tables are tables
 > The temptation is to typeset an ICE table as an aligned maths block.
