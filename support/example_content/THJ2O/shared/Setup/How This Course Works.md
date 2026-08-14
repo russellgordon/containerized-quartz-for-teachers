@@ -8,16 +8,14 @@ tags:
 Green Industries is learned by doing green industry work. You will spend
 most of this course on your feet — in the shop, on the school grounds, in
 the woodlot, at the waterfront, and at a working vegetable farm five
-minutes down the road. The pages on this site are what you read before
-and after that work, not instead of it.
+minutes down the road. These pages are what you read before and after.
 
 ## A normal period
 
 1. **Briefing, about ten minutes.** What today's job is, where it
    happens, what the hazards are, and who is doing what.
 2. **Kit and check.** Boots, gear, tools, and the check in
-   [[Before You Start Work]] — never skipped, and never quick on the days
-   it should not be.
+   [[Before You Start Work]] — never skipped.
 3. **The work, about fifty minutes.** Building, planting, propagating,
    measuring, maintaining, or surveying.
 4. **Clean, store, and record.** Tools cleaned and back on the wall, site
@@ -54,7 +52,6 @@ look after the person working next to you.
 Four units: how living things grow; tools, measurement, and making;
 growing and producing; and the industry around us. It ends in
 [[The Site Project]] — a real green-industry job on one of our sites,
-carried from survey and plan through to a maintenance schedule the next
-class can follow. Marks are in [[How Marks Work]], and [[Using This Site]]
-shows you around these pages.
-
+carried from survey and plan to a maintenance schedule the next class can
+follow. Marks are in [[How Marks Work]]; [[Using This Site]] shows you
+around these pages.

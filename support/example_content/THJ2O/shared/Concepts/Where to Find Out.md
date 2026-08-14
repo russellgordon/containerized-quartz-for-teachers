@@ -17,9 +17,8 @@ manual is always for the machine you have never seen before.
 **Government.** Federal and provincial agriculture, natural resources
 and food inspection bodies publish fact sheets, crop guides, pest alerts
 and regulations. Go here for anything with legal weight: what may be
-moved across a quarantine boundary, what must be reported, what a
-regulation actually says. The Canadian Food Inspection Agency handles
-regulated plant pests in Canada.
+moved across a quarantine boundary, what must be reported. The Canadian
+Food Inspection Agency handles regulated plant pests in Canada.
 
 **Extension and local advisers.** Your local conservation authority
 knows your watershed, your shoreline rules and which plants belong here.
@@ -31,12 +30,11 @@ training and the specifications contracts get written against — nursery
 stock standards define what a stated caliper means when you buy it.
 
 **Manufacturers.** The operator's manual is the authority on the machine
-in front of you, and safety data sheets are the authority on any product
-in the shop. Both are legally required to exist.
+in front of you; safety data sheets are the authority on any product.
 
 **News and events.** Trade newsletters and farm shows are how you hear
 about a new pest before it reaches a textbook — and also where opinion
-and advertising live, so read them differently.
+and advertising live.
 
 > [!success]- Four questions before you trust anything (click to expand)
 > **Who wrote it, and what do they sell?** A fact sheet from a regulator
@@ -48,10 +46,10 @@ and advertising live, so read them differently.
 > **Does anything else say the same?** Two independent sources agreeing
 > beats one source stated forcefully.
 
-You need all of these for [[The Pest and Disease Report]], where
-identification must be backed by something other than confidence. Name
-things properly using [[Reading the Green Industries]], and cite what
-you used as set out in [[Writing a Work Record]].
+You need all of these for [[The Pest and Disease Report]], where an
+identification must be backed by more than confidence. Name things using
+[[Reading the Green Industries]] and cite sources as set out in
+[[Writing a Work Record]].
 
 %%curriculum-start%%
 ## Curriculum connection

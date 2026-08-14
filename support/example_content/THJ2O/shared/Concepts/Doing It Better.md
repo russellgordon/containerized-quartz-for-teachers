@@ -20,9 +20,8 @@ Leave an unmown, planted strip between any working area and the water;
 that buffer traps sediment before it reaches the lake. Water the root
 zone rather than the aisle, in the morning, and mulch to cut
 evaporation. Choose plants suited to the site, because the cheapest
-maintenance is the maintenance you designed out. Keep engines tuned and
-blades sharp, shut equipment off instead of idling, compost on site, and
-reuse pots and trays instead of replacing them.
+maintenance is the maintenance you designed out. Keep engines tuned,
+shut equipment off instead of idling, compost on site, and reuse pots.
 
 ## Integrated pest management
 
@@ -49,9 +48,8 @@ are in a deliberate order.
 > keeping and prevention. Anything beyond that is a licensed adult's
 > decision, made with the product label in hand.
 
-The effects these answer are in [[What We Do to the Environment]]. You
-apply the monitoring half in [[Pests and Diseases in Our Woodlot]] and
-the soil-and-water half in [[Planting a Shoreline]].
+The effects these answer are in [[What We Do to the Environment]]; you
+apply the monitoring half in [[Pests and Diseases in Our Woodlot]].
 
 %%curriculum-start%%
 ## Curriculum connection

@@ -6,12 +6,11 @@ tags:
   - safety
   - unit-1
 ---
-Protective equipment is the last line, not the first. The first line is
+Protective equipment is the last line, not the first. The first is
 removing the hazard and the second is guarding it. Safety glasses do not
 make a job with flying stones safe — they mean that when the job goes
-wrong anyway, you keep your eye. Wear the gear knowing that is what it
-is for. Boots are not negotiable in this course, and the rest of the kit
-list is in [[What to Wear and Bring]].
+wrong anyway, you keep your eye. Boots are not negotiable in this course,
+and the rest of the kit list is in [[What to Wear and Bring]].
 
 ## What to wear for which task
 
@@ -30,13 +29,10 @@ list is in [[What to Wear and Bring]].
 It only works when it fits you and is worn as designed. Glasses sit
 against your face, not on your forehead. Hearing protection goes on
 before the machine starts and stays on until it stops — hearing loss is
-permanent, painless at the time, and you will not notice it happening. A
-dust mask that does not seal against your skin is filtering the room, not
-your breath.
-
-One reversal to remember: **gloves come off around rotating machinery.**
-A glove that catches takes your hand in with it. Gloves are for handling;
-guards and distance are for machines.
+permanent, painless at the time, and you never notice it happening. A
+dust mask that does not seal filters the room, not your breath. And one
+reversal: **gloves come off around rotating machinery**, because a glove
+that catches takes your hand in with it.
 
 ## How to tell it has stopped doing its job
 
@@ -49,12 +45,11 @@ and tell your teacher so it gets replaced.
   round; foam plugs gone stiff.
 - Gloves holed or worn through at the palm; boots with a split upper, a
   worn-out sole, or an exposed toe cap.
-- A dust mask that is damp, clogged, or bent at the nose piece;
-  high-visibility fabric faded or too dirty to stand out.
+- A dust mask damp, clogged, or bent at the nose piece; high-visibility
+  fabric faded or too dirty to stand out.
 
 Shared gear gets cleaned between people, and equipment in the wrong size
-is the same as none — say so. You will be assessed on choosing and using
-all of this in [[The Safety Ticket]].
+is the same as none. You are assessed on this in [[The Safety Ticket]].
 
 %%curriculum-start%%
 ## Curriculum connection

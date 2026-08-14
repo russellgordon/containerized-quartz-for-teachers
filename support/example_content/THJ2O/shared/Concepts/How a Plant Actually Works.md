@@ -32,16 +32,14 @@ deep never appears. See [[Propagation From Seed]].
 
 In the leaves, light energy combines carbon dioxide from the air with
 water from the roots, producing sugar and releasing oxygen. Sugar is the
-plant's income, and everything else — new leaves, new roots, flowers,
-fruit, thickening wood — is bought with it.
+plant's income; new leaves, roots, flowers and wood are bought with it.
 
 Respiration runs the other way: sugar and oxygen are broken down to
 release energy, giving off carbon dioxide and water. It happens in every
 living cell, day and night, and speeds up as things get warmer. Growth
 is what is left when income beats spending. A plant in the dark still
-respires, which is why it starves rather than merely stalls — and why
-warmth after harvest is expensive, as
-[[Harvest and What Happens Next]] explains.
+respires, which is why it starves rather than stalls — and why warmth
+after harvest is expensive; see [[Harvest and What Happens Next]].
 
 ## Reproduction — making the next one
 
@@ -49,9 +47,9 @@ Sexual reproduction runs pollen to a receptive flower, producing seed
 that mixes two parents. Vegetative reproduction takes a piece of one
 parent and grows a genetically identical plant. The trade uses both on
 purpose: seed for variety and volume, cuttings when the customer wants
-exactly the plant they saw. Run all four processes against your own
-plants in [[The Growing Trial]] — if a trial plant is not growing, one
-of them is blocked, and your job is to say which.
+exactly the plant they saw. Run all four against your own plants in
+[[The Growing Trial]] — if one is not growing, one of these is blocked,
+and your job is to say which.
 
 %%curriculum-start%%
 ## Curriculum connection

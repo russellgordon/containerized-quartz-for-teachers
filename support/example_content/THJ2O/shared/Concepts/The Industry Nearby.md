@@ -27,7 +27,6 @@ everything about how a business operates.
 | Greenhouse growing bedding plants | Garden centre, seasonal aisle | Volume, timing, and a spring rush |
 | Cut-flower grower | Florist, event work | Design, arrangement, same-day delivery |
 | Maple syrup producer | Specialty food store, own farm gate | Packaging, branding, and shelf space |
-| Sod farm | Landscape contractor, builder | Installation and a warranty |
 | Woodlot | Sawmill, firewood dealer | Grading, drying, and a truck |
 
 ## What it does to a community
@@ -35,18 +34,16 @@ everything about how a business operates.
 An operation that employs people locally, keeps land open and sells food
 that did not travel far is doing several good things at once — and not
 all of its effects are comfortable. The same business may bring seasonal
-work that is hard to fill, truck traffic on a rural road, odour on a
-warm evening, and a landscape people value looking at. Naming both sides
-is the part of a site plan that actually persuades a neighbour.
+work that is hard to fill, truck traffic, odour on a warm evening, and a
+landscape people value. Naming both sides is what persuades a neighbour.
 
 ## Finding out for real
 
-Drive the concession roads and list what is grown. Read the signs at the
-market and note where each vendor is from. Ask the farm we visit who
-buys their crop, what share goes to each outlet, and what changed in the
-last five years. One good question to a working grower beats an hour of
-searching, though [[Where to Find Out]] tells you how to check the
-answer. Record it in [[The Evidence File]].
+Drive the concession roads and list what is grown. Read the market signs
+and note where each vendor is from. Ask the farm we visit who buys their
+crop and what changed in five years. One good question to a working
+grower beats an hour of searching; [[Where to Find Out]] says how to
+check it.
 
 %%curriculum-start%%
 ## Curriculum connection

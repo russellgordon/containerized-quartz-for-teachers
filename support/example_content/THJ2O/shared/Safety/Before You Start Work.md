@@ -7,8 +7,8 @@ tags:
   - unit-1
 ---
 Experienced workers do something before every task that looks, from the
-outside, like standing still for half a minute. They are running a check.
-It is the single habit separating people who work outdoors for thirty
+outside, like standing still for half a minute. They are running a check,
+and it is the single habit separating people who work outdoors for thirty
 years from people who get hurt in their first season.
 
 > [!question] The four questions, before every task
@@ -28,34 +28,28 @@ years from people who get hurt in their first season.
 
 Walk it before you work it. Look for what will not announce itself: a
 hole in long grass, a slick of wet clay, a slope steeper than it looks, a
-root that will catch a toe. Look up for dead branches and for overhead
-wires — a long-handled tool and a wire are a fatal combination. Look for
-a wasp nest in a bank or a bed before a mower finds it for you. At the
-waterfront, find the edge of firm ground and stay back from it, because
-banks undercut where you cannot see. At the farm, find the traffic route
-before you find your task. In the woodlot, know where the trail is,
-because that is how help reaches you.
+root that will catch a toe. Look up for dead branches and overhead wires
+— a long-handled tool and a wire are a fatal combination — and look for a
+wasp nest before a mower finds it. At the waterfront stay well back from
+the edge, because banks undercut where you cannot see.
 
-Then the twenty-second tool check in [[Hand Tools]] and
-[[Power Tools and Equipment]] — every time, not the first time. Be honest
-about the last question: a tool you have watched someone else use is a
-tool you have not been trained on.
+Then the tool check in [[Hand Tools]] and [[Power Tools and Equipment]],
+every time and not just the first time. A tool you watched someone else
+use is one you have not been trained on.
 
 ## The weather and the people
 
 Heat is the hazard people underestimate most, because it builds slowly
 and reaches your judgement before your body. Start hydrated, drink before
-you are thirsty, take the shade breaks when they are called. Wind changes
-what a trimmer throws. Rain turns a ramp, a paver, a bed edge, or a rock
-at the shoreline into something you slide on. The full list is
-[[Hazards on a Green Industry Site]].
+you are thirsty, take the shade breaks when they are called. Rain turns a
+paver, a bed edge, or a shoreline rock into something you slide on — the
+full list is [[Hazards on a Green Industry Site]].
 
 Say what you are about to do, out loud, to whoever is near, and agree how
 you will stop each other — a raised hand works when a shout will not get
-through hearing protection. Nobody works alone at the water's edge.
-
-And when the check fails, you do not start. That is not a delay in the
-work; that *is* the work — [[Our Working Agreement]].
+through hearing protection. Nobody works alone at the water's edge. And
+when the check fails, you do not start: that is not a delay in the work,
+that *is* the work — [[Our Working Agreement]].
 
 %%curriculum-start%%
 ## Curriculum connection

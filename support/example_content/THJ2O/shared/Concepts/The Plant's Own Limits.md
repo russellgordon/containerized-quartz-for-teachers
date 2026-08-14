@@ -33,24 +33,22 @@ it most needs to rebuild roots.
 
 **Stage of life** sets what is possible now. Prune at the wrong stage
 and you remove next year's flowers; harvest at the wrong stage and the
-crop will not keep.
+crop will not keep. Match the job to the stage the plant is in.
 
 ## After harvest, the biology keeps running
 
 The moment you cut a lettuce or pick a tomato, it stops earning and
 keeps spending. Respiration continues, using up sugars, water and
 firmness, and the warmer it is the faster that happens. Some crops go on
-ripening after picking; others, such as sweet corn and most leafy
-greens, only get worse from the moment they leave the plant.
+ripening after picking; sweet corn and most leafy greens only get worse.
 
 > [!warning] A harvested crop is still alive
 > Produce left in the sun in a bin at the end of a row can lose more
 > quality in one hot afternoon than in a week of proper storage. The
 > clock starts at the cut, not at the loading dock.
 
-The environmental half of this story is
-[[Light, Water, Temperature, Soil]]; what to do once the crop is off the
-plant is [[Harvest and What Happens Next]].
+The environmental half is [[Light, Water, Temperature, Soil]]; what to
+do once the crop is off the plant is [[Harvest and What Happens Next]].
 
 %%curriculum-start%%
 ## Curriculum connection

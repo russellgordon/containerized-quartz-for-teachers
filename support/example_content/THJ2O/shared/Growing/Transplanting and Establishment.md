@@ -9,59 +9,45 @@ tags:
 Transplanting is deliberate injury. You lift a plant out of the
 conditions it has adapted to, damage a large share of its absorbing
 roots, and ask it to keep the same amount of leaf alive on what is left.
-Good planting technique is entirely about making that injury smaller and
-the recovery faster.
+Good technique is entirely about making that injury smaller.
 
 ## Before the shovel
 
-Early spring and early autumn are kindest: soil warm enough for root
-growth, air cool enough that the plant is not losing water quickly. A
-cloudy, still day beats a hot, windy one every time.
-
-Then check what is underground. **Locates are required by law in Ontario
+Early spring and early autumn are kindest: soil warm enough for roots to
+grow, air cool enough that the plant is not losing water quickly. Then
+check what is underground. **Locates are required by law in Ontario
 before you dig** — the utility locate service must be contacted and the
-marks must be on the ground before a shovel goes in, on school property
-as much as anywhere else. Look up as well, for overhead lines, and think
-about where the mature crown will be in twenty years.
+marks on the ground before a shovel goes in. Look up, too.
 
 ## Planting
 
-1. **Dig wide, not deep.** Two to three times the width of the root
-   ball, and no deeper than the root ball is tall. Roots spread
-   sideways, and a hole dug too deep lets the plant settle.
-2. **Find the root flare** — where the trunk widens into the roots. It
-   must sit at or very slightly above finished grade. Nursery stock is
-   often potted too deep, so scrape until you find it.
-3. **Free the roots.** Take the container off. If roots are circling,
-   tease them outward or cut through them in several places, or they
-   will strangle the plant years later. On balled stock, remove twine
-   and cut back burlap and wire at least from the top third.
-4. **Backfill with the soil you took out.** Rich amendment in the hole
-   only encourages roots to stay in the hole.
-5. **Water it in** as you backfill, to close air pockets, then build a
-   shallow saucer of soil at the edge.
-6. **Mulch 5 to 8 cm deep**, pulled back a hand's width from the stem.
+1. **Dig wide, not deep.** Two to three times the width of the root ball
+   and no deeper than the ball is tall — a deep hole lets it settle.
+2. **Find the root flare**, where the trunk widens into the roots; it
+   sits at finished grade. Stock is often potted too deep, so scrape.
+3. **Free the roots.** Circling roots must be teased outward or cut, or
+   they strangle the plant later. On balled stock, remove twine and cut
+   burlap and wire back from the top third.
+4. **Backfill with the soil you took out**, then **water it in** as you
+   go to close air pockets. Rich amendment only keeps roots in the hole.
+5. **Mulch 5 to 8 cm deep**, pulled back a hand's width from the stem.
 
 > [!tip] A donut, not a volcano
 > Mulch piled against a trunk holds moisture against the bark, invites
-> rot and rodents, and encourages roots to grow into the mulch instead
-> of the soil. You should be able to see the root flare from standing
-> height.
+> rot and rodents, and sends roots into the mulch instead of the soil.
+> You should see the root flare from standing height.
 
 ## Establishment
 
 A transplant is not established until its roots grow out into the
 surrounding soil — a full season for a shrub, several years for a tree.
 Until then it depends on you: deep, regular water through the first two
-growing seasons, especially in late summer. See [[Watering Properly]].
-Skip fertilizer at planting; the plant needs roots, not top growth.
-Stake only if it will not stand on its own, and remove the ties within a
-year, because a forgotten tie girdles the trunk.
+growing seasons; see [[Watering Properly]]. Skip fertilizer at planting,
+stake only if it will not stand alone, and remove ties within a year.
 
-Work through [[Before You Start Work]] first. Wear boots when using a
-spade, let your legs do the lifting, and carry heavy root balls with two
-people. Tool technique is in [[Hand Tools]]; all of this gets used for
-real in [[The Site Project]].
+Work through [[Before You Start Work]] first: boots when using a spade,
+legs doing the lifting, two people on a heavy root ball. All of it is
+used in [[The Site Project]].
 
 %%curriculum-start%%
 ## Curriculum connection

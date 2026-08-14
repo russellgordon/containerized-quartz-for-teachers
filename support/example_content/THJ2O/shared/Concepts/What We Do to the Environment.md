@@ -37,19 +37,17 @@ greenhouse gas emissions. Livestock operations add to it directly.
 A heated greenhouse through a Canadian winter and a cold room through a
 Canadian August are both large, continuous energy demands. Noise is a
 genuine effect on neighbours and on wildlife. And clearing land removes
-what was there before — a hedgerow, a wetland, a woodlot edge — the
-effect hardest to reverse.
+what was there before — a hedgerow, a wetland, a woodlot edge.
 
 Every one of these has a practice that reduces it, and every practice
-costs somebody money, time or convenience. That tension is the real
-content of this unit. Read the reductions in [[Doing It Better]], see
-one built at the water's edge in [[Planting a Shoreline]], and account
-for both sides in [[The Site Project]].
+costs somebody money, time or convenience. That tension is this unit.
+Read the reductions in [[Doing It Better]], see one built at the water's
+edge in [[Planting a Shoreline]], and account for both sides in
+[[The Site Project]].
 
 [^phosphorus]: Phosphorus is the nutrient that most often drives algal
     blooms in fresh water. Lake Erie's recurring summer blooms are the
-    best-known Ontario example, and agricultural and urban runoff both
-    contribute.
+    best-known Ontario example; farm and urban runoff both contribute.
 
 %%curriculum-start%%
 ## Curriculum connection
