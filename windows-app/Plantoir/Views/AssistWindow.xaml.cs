@@ -204,15 +204,76 @@ public sealed partial class AssistWindow : Window
     /// </summary>
     private async Task WarmUp(JsonArray schemas)
     {
+        var note = SayWithBar("Plantoir", "Reading my instructions — this happens once…");
+        var started = DateTime.Now;
+
+        // How long this should take, from the size of what it has to read.
+        //
+        // PROJECTED from elapsed time rather than read from the model, because
+        // the model barely reports it: llama.cpp logs progress once per
+        // completed batch, and measured against a prompt this size that meant
+        // nothing at all for 81 seconds, a single reading of 32%, then silence
+        // until the answer arrived. A bar driven by that would sit at zero,
+        // jump a third of the way, and freeze — which is worse than no bar,
+        // because it looks like something broke.
+        //
+        // So the estimate is arithmetic on two measured numbers: roughly 3.6
+        // characters per token, and roughly 21 tokens a second on two CPU
+        // cores. When a real reading DOES turn up it wins, so the bar is
+        // corrected by the truth whenever the truth is available.
+        double tokens = schemas.ToJsonString().Length / 3.6;
+        double expected = Math.Max(20, tokens / 21.0);
+
+        var priming = new JsonArray
+        {
+            new JsonObject { ["role"] = "user", ["content"] = "Say ready." },
+        };
+        var warming = _model.Ask(priming, schemas, _closing.Token);
+
         try
         {
-            var priming = new JsonArray
+            while (!warming.IsCompleted)
             {
-                new JsonObject { ["role"] = "user", ["content"] = "Say ready." },
-            };
-            await _model.Ask(priming, schemas, _closing.Token);
+                try { await Task.Delay(1000, _closing.Token).ConfigureAwait(true); }
+                catch (OperationCanceledException) { break; }
+
+                int elapsed = (int)(DateTime.Now - started).TotalSeconds;
+                var reported = await Task.Run(() => _model.PromptProgress(), _closing.Token);
+
+                // Never quite reaches the end on the estimate alone: finishing
+                // is what the disappearing bar says, not 100% sitting there.
+                double fraction = Math.Min(0.97, elapsed / expected);
+                if (reported is { } real && real > fraction) fraction = Math.Min(0.99, real);
+
+                note.Bar.IsIndeterminate = false;
+                note.Bar.Value = fraction * 100;
+
+                int left = Math.Max(0, (int)expected - elapsed);
+                note.Text.Text = left > 0
+                    ? $"Reading my instructions — {fraction * 100:0}%. " +
+                      $"{Spent(elapsed)} so far, about {Spent(left)} to go. " +
+                      "This happens once; after it, answers are quick."
+                    : $"Reading my instructions — nearly there. {Spent(elapsed)} so far.";
+            }
+
+            await warming;
         }
         catch { /* a cold cache is slow, not broken */ }
+        finally
+        {
+            note.Bar.Visibility = Visibility.Collapsed;
+            note.Text.Text = "Ready — ask me for a change whenever you like.";
+        }
+    }
+
+    /// <summary>A duration a person would say out loud.</summary>
+    private static string Spent(int seconds)
+    {
+        if (seconds < 0) seconds = 0;
+        if (seconds < 60) return $"{seconds}s";
+        int minutes = seconds / 60;
+        int rest = seconds % 60;
+        return rest == 0 ? $"{minutes}m" : $"{minutes}m {rest}s";
     }
 
     /// <summary>

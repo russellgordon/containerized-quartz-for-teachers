@@ -223,6 +223,38 @@ public sealed class LocalModel
         try { _keepWslAwake = Process.Start(info); } catch { _keepWslAwake = null; }
     }
 
+    /// <summary>
+    /// How far through reading the prompt the model is, from 0 to 1, or null
+    /// when it is not reading one.
+    ///
+    /// llama.cpp says this itself, once per batch, on its own log:
+    ///
+    ///   prompt processing, n_tokens = 2048, progress = 0.33, t = 97.32 s
+    ///
+    /// which is the only honest source for it — the HTTP request is a single
+    /// POST that returns when the whole thing is done, so from the app's side
+    /// there is nothing to watch. Reading the container's log is not elegant,
+    /// and it is the difference between a bar that moves and a spinner that
+    /// lies.
+    ///
+    /// Only the LAST line matters: earlier ones belong to batches already
+    /// finished, or to a previous request.
+    /// </summary>
+    public double? PromptProgress()
+    {
+        // A short tail: enough to catch the current batch, small enough that
+        // this stays cheap at one call every second or two.
+        string log = Wsl($"docker logs --tail 12 {ContainerName} 2>&1 | grep -o 'progress = [0-9.]*' | tail -1");
+        var match = System.Text.RegularExpressions.Regex.Match(log, @"progress = ([0-9.]+)");
+        if (!match.Success) return null;
+        return double.TryParse(match.Groups[1].Value,
+                               System.Globalization.NumberStyles.Float,
+                               System.Globalization.CultureInfo.InvariantCulture,
+                               out double fraction)
+            ? Math.Clamp(fraction, 0, 1)
+            : null;
+    }
+
     /// <summary>Stop it, so the memory goes back to the machine when the conversation ends.</summary>
     public void Stop()
     {
