@@ -83,8 +83,16 @@ public sealed class AssistAgent
     /// it, and the assistant will say it cannot do that here rather than
     /// silently doing something else. That is the better failure: the tools it
     /// does have are the ones it routes to reliably.
+    ///
+    /// The schemas' example course becomes THIS window's course, because the
+    /// model copies examples: asked to publish with no course named, it wrote
+    /// the schema's "for example ICS3U" nine trials out of nine, ignoring the
+    /// system prompt's answer — and once even blended the two into ICS2O.
+    /// A router matches text; the only example it cannot get wrong is the
+    /// right answer. Measured after the change: fifty-four trials, not one
+    /// wrong course.
     /// </summary>
-    public static JsonArray NarrowToLocal(JsonArray tools)
+    public static JsonArray NarrowToLocal(JsonArray tools, string courseCode)
     {
         var kept = new JsonArray();
         foreach (var tool in tools)
@@ -94,10 +102,32 @@ public sealed class AssistAgent
 
             var copy = tool.DeepClone();
             if (copy["function"]?["description"]?.GetValue<string>() is { } description)
-                copy["function"]!["description"] = Briefly(description);
+                copy["function"]!["description"] = Briefly(description).Replace(ExampleCourse, courseCode);
+            MakeExamplesReal(copy["function"]?["parameters"], courseCode);
             kept.Add(copy);
         }
         return kept;
+    }
+
+    /// <summary>The course code the server's schemas use in their examples.</summary>
+    private const string ExampleCourse = "ICS3U";
+
+    private static void MakeExamplesReal(JsonNode? node, string courseCode)
+    {
+        switch (node)
+        {
+            case JsonObject fields:
+                if (fields["description"]?.GetValue<string>() is { } text &&
+                    text.Contains(ExampleCourse, StringComparison.Ordinal))
+                    fields["description"] = text.Replace(ExampleCourse, courseCode);
+                // Snapshotted, because replacing a description mid-walk would
+                // otherwise be mutation during enumeration.
+                foreach (var field in fields.ToList()) MakeExamplesReal(field.Value, courseCode);
+                break;
+            case JsonArray items:
+                foreach (var item in items) MakeExamplesReal(item, courseCode);
+                break;
+        }
     }
 
     /// <summary>
@@ -250,10 +280,30 @@ public sealed class AssistAgent
 
     /// <summary>
     /// Say something to the assistant and get back everything that happened.
+    ///
+    /// The date rides along on every user turn, because the model has no
+    /// other way to know it and "publish tomorrow's class" is the request
+    /// this window exists for — without it, every trial fabricated a date
+    /// from the schema's examples (2023-09-15, in 2026).
+    ///
+    /// APPENDED, not prepended, and not in the system prompt. Prepended, the
+    /// date crowds out the request: measured routing fell from 91% to 76%,
+    /// with "deploy at 6:30 tomorrow" answered by a publish tool. In the
+    /// system prompt it would sit ahead of the tool definitions and
+    /// invalidate the saved prompt cache every midnight. Appended, routing
+    /// measured 94% and every date came out right.
+    ///
+    /// Only what the MODEL sees carries it; the window shows the teacher
+    /// their own words.
     /// </summary>
     public async Task<List<Line>> Say(string text, CancellationToken cancellation)
     {
-        _messages.Add(new JsonObject { ["role"] = "user", ["content"] = text });
+        var today = DateTime.Now;
+        _messages.Add(new JsonObject
+        {
+            ["role"] = "user",
+            ["content"] = $"{text} (Today is {today:yyyy-MM-dd}, a {today.DayOfWeek}.)",
+        });
         return await Run(cancellation);
     }
 

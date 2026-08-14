@@ -49,6 +49,10 @@ public sealed partial class AssistWindow : Window
         _course = course;
         _section = section;
 
+        // The prompt cache is per course and section, because the prefix it
+        // holds is — see LocalModel.CacheIdentity.
+        _model.CacheIdentity = $"{course.Code.ToLowerInvariant()}-s{section}";
+
         Title = $"Revise {course.Code} Section {section}";
         Heading.Text = $"Revising {course.Code} Section {section}";
         Subheading.Text = "Ask for a change in plain words. Nothing is written until you say so, " +
@@ -152,7 +156,13 @@ public sealed partial class AssistWindow : Window
         // Narrowed before the model ever sees them — see AssistAgent for the
         // measurements. Fewer tools is both better routing and a shorter
         // prompt, and the prompt is what makes the first answer slow.
-        var schemas = AssistAgent.NarrowToLocal(await _tools.Tools(_closing.Token));
+        var schemas = AssistAgent.NarrowToLocal(await _tools.Tools(_closing.Token), _course.Code);
+
+        // The cache file is named for these exact schemas, so an app update
+        // that changes a tool description retires the old cache instead of
+        // restoring a prefix no conversation will match — see StampCacheWith.
+        _model.StampCacheWith(schemas);
+
         _agent = new AssistAgent(_model, _tools, schemas, _course.Code, _section);
 
         // NOT "Ready." — it is not. Reading the instructions takes minutes on
@@ -215,9 +225,11 @@ public sealed partial class AssistWindow : Window
     private async Task WarmUp(JsonArray schemas)
     {
         // A cache from a previous session, if there is one — this is what turns
-        // three minutes per session into three minutes once.
-        bool warmAlready = await Task.Run(() => _model.HasSavedPrefix(), _closing.Token);
-        if (warmAlready) await Task.Run(() => _model.RestorePrefix(), _closing.Token);
+        // three minutes per session into three minutes once. Believed only when
+        // the restore says it restored something: the wording below promises a
+        // short wait, and a failed restore behind "picking up where I left off"
+        // would deliver the three minutes unannounced.
+        bool warmAlready = await Task.Run(() => _model.RestorePrefix(), _closing.Token);
 
         var note = SayWithBar("Plantoir",
             warmAlready
@@ -240,12 +252,15 @@ public sealed partial class AssistWindow : Window
         // cores. When a real reading DOES turn up it wins, so the bar is
         // corrected by the truth whenever the truth is available.
         double tokens = schemas.ToJsonString().Length / 3.6;
-        double expected = Math.Max(20, tokens / 21.0);
+        // After a restore the model reads a sentence, not the surface: measured
+        // at about twelve seconds against 175 for the same turn cold.
+        double expected = warmAlready ? 15 : Math.Max(20, tokens / 21.0);
 
         // The agent's OWN opening messages, so the prefix warmed here is the
         // prefix every later turn actually starts with. Priming a different
         // shape warms nothing.
         var warming = _model.Ask(_agent!.PrimingMessages(), schemas, _closing.Token);
+        bool warmed = false;
 
         try
         {
@@ -273,18 +288,32 @@ public sealed partial class AssistWindow : Window
                     : $"Reading my instructions — nearly there. {Spent(elapsed)} so far.";
             }
 
-            await warming;
+            warmed = await warming is not null;
         }
         catch { /* a cold cache is slow, not broken */ }
         finally
         {
             note.Bar.Visibility = Visibility.Collapsed;
-            note.Text.Text = "Ready — ask me for a change whenever you like.";
 
-            // Keep the cache, so the next session starts warm rather than
-            // spending another three minutes on the same instructions.
-            if (!_closing.IsCancellationRequested)
-                _ = Task.Run(() => _model.SavePrefix());
+            if (warmed)
+            {
+                note.Text.Text = "Ready — ask me for a change whenever you like.";
+
+                // Keep the cache, so the next session starts warm rather than
+                // spending another three minutes on the same instructions.
+                // Only after a warm-up that finished: saving a slot that never
+                // read the prefix writes an empty file that the next session
+                // would mistake for a warm start.
+                if (!_closing.IsCancellationRequested)
+                    _ = Task.Run(() => _model.SavePrefix());
+            }
+            else if (!_closing.IsCancellationRequested)
+            {
+                // Saying "Ready" here misled a teacher once already: the model
+                // had died mid-warm-up, and Ready was followed by silence.
+                note.Text.Text = "The warm-up didn’t finish. You can still ask — the first " +
+                                 "answer may take a few minutes while I read my instructions.";
+            }
         }
     }
 

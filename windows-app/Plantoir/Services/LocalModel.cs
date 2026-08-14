@@ -65,8 +65,48 @@ public sealed class LocalModel
     /// </summary>
     private const string CacheDirectoryInWsl = "/var/lib/plantoir/cache";
 
+    /// <summary>
+    /// Which conversation's prefix the cache holds, set by the window before
+    /// the first save or restore — "exc2o-s1", say.
+    ///
+    /// Per course and section, not one file, because the prefix itself is:
+    /// the system prompt names the course and the section in its first
+    /// sentence, so a cache saved for section 2 matches a section 1
+    /// conversation for about fifteen tokens and the model re-reads the
+    /// whole surface — behind a message promising it is picking up where it
+    /// left off. Each file is about 98 MB; a teacher with several sections
+    /// keeps several.
+    /// </summary>
+    public string CacheIdentity { get; set; } = "";
+
+    /// <summary>
+    /// Fingerprint the cache with the tool surface it was read from.
+    ///
+    /// The saved prefix is mostly tool definitions, and those change with the
+    /// app: an update that rewords one description makes every saved cache
+    /// stale in a way a restore cannot see — the tokens load, n_restored
+    /// looks healthy, and then the conversation's own prefix matches none of
+    /// them and the model re-reads the surface behind a message promising it
+    /// won't. Naming the file for a hash of the schemas turns that silent
+    /// three minutes into an honest one: after an update the old file simply
+    /// isn't found, the session announces a cold read, and the save that
+    /// follows replaces it.
+    /// </summary>
+    public void StampCacheWith(JsonArray tools)
+    {
+        byte[] digest = System.Security.Cryptography.SHA256.HashData(
+            Encoding.UTF8.GetBytes(tools.ToJsonString()));
+        _cacheStamp = Convert.ToHexString(digest)[..8].ToLowerInvariant();
+    }
+
+    private string _cacheStamp = "";
+
     /// <summary>The saved prefix, named for the model so a model change cannot restore the wrong one.</summary>
-    private const string CacheFile = "prefix-qwen2.5-1.5b.bin";
+    private string CacheFile =>
+        "prefix-qwen2.5-1.5b" +
+        (CacheIdentity.Length > 0 ? $"-{CacheIdentity}" : "") +
+        (_cacheStamp.Length > 0 ? $"-{_cacheStamp}" : "") +
+        ".bin";
 
     public string Endpoint => $"http://127.0.0.1:{Port}/v1/chat/completions";
 
@@ -280,23 +320,54 @@ public sealed class LocalModel
     /// <summary>
     /// Load the prompt cache saved by an earlier session, if there is one.
     ///
-    /// Failure is not worth reporting: a cache that will not load simply means
-    /// the model reads its instructions again, which is what it did before any
-    /// of this existed.
+    /// Returns whether anything was actually restored, because the window's
+    /// wording depends on it: "picking up where I left off" over a restore
+    /// that quietly failed announces a ten-second wait and delivers a
+    /// three-minute one. Measured working: 3,428 tokens back in about 30 ms,
+    /// and the next turn evaluated only the sentence the teacher typed.
     /// </summary>
-    public void RestorePrefix()
+    public bool RestorePrefix()
     {
-        if (!HasSavedPrefix()) return;
-        Wsl($"curl -s -m 120 -X POST 'http://127.0.0.1:{Port}/slots/0?action=restore' " +
-            $"-H 'Content-Type: application/json' -d '{{\"filename\":\"{CacheFile}\"}}' >/dev/null 2>&1");
+        if (!HasSavedPrefix()) return false;
+        string reply = Wsl($"curl -s -m 120 -X POST 'http://127.0.0.1:{Port}/slots/0?action=restore' " +
+                           $"-H 'Content-Type: application/json' -d '{{\"filename\":\"{CacheFile}\"}}'");
+        return TokensIn(reply, "n_restored") > 0;
     }
 
-    /// <summary>Keep the prompt cache for next time. Best effort, by the same argument.</summary>
-    public void SavePrefix()
+    /// <summary>
+    /// Keep the prompt cache for next time.
+    ///
+    /// The one failure worth guarding against is the quiet one. Saving an
+    /// EMPTY slot succeeds — HTTP 200, n_saved = 0, a valid 36-byte file —
+    /// and that file makes the next session claim it is picking up where it
+    /// left off, restore nothing, and pay the three minutes anyway, now
+    /// unannounced. So the save is checked, and a save that kept no tokens
+    /// is deleted rather than left to mislead.
+    /// </summary>
+    public bool SavePrefix()
     {
-        Wsl($"mkdir -p {CacheDirectoryInWsl}; " +
-            $"curl -s -m 120 -X POST 'http://127.0.0.1:{Port}/slots/0?action=save' " +
-            $"-H 'Content-Type: application/json' -d '{{\"filename\":\"{CacheFile}\"}}' >/dev/null 2>&1");
+        string reply = Wsl($"mkdir -p {CacheDirectoryInWsl}; " +
+                           $"curl -s -m 120 -X POST 'http://127.0.0.1:{Port}/slots/0?action=save' " +
+                           $"-H 'Content-Type: application/json' -d '{{\"filename\":\"{CacheFile}\"}}'");
+        if (TokensIn(reply, "n_saved") > 0)
+        {
+            // Superseded saves for the same section — older schema stamps —
+            // are 98 MB each and can never be restored again. One live file
+            // per section.
+            if (CacheIdentity.Length > 0 && _cacheStamp.Length > 0)
+                Wsl($"for f in {CacheDirectoryInWsl}/prefix-qwen2.5-1.5b-{CacheIdentity}-*.bin; do " +
+                    $"[ \"$f\" = \"{CacheDirectoryInWsl}/{CacheFile}\" ] || rm -f \"$f\"; done");
+            return true;
+        }
+        Wsl($"rm -f {CacheDirectoryInWsl}/{CacheFile}");
+        return false;
+    }
+
+    /// <summary>A count out of the slot endpoint's JSON, or 0 when the call failed.</summary>
+    private static long TokensIn(string reply, string field)
+    {
+        var match = System.Text.RegularExpressions.Regex.Match(reply, $"\"{field}\"\\s*:\\s*(\\d+)");
+        return match.Success && long.TryParse(match.Groups[1].Value, out long count) ? count : 0;
     }
 
     /// <summary>
