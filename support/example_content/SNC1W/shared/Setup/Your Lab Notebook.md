@@ -1,4 +1,5 @@
 ---
+title: Your Lab Notebook
 created: __CREATED__
 draft: false
 enableToc: true

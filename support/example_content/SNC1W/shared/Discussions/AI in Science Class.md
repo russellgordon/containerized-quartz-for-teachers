@@ -1,4 +1,5 @@
 ---
+title: AI in Science Class
 created: __CREATED__
 draft: false
 enableToc: true
@@ -35,4 +36,8 @@ Whatever you use, **say so and say how**. See [[Finding and Citing Sources]].
 > citations that look completely real. Checking is not optional. In this class,
 > an unchecked citation is treated the same as a made-up one.
 
-Background: [[A2.2]]
+%%curriculum-start%%
+## Curriculum connection
+
+![[A2.2]]
+%%curriculum-end%%

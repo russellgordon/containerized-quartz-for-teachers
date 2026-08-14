@@ -1,4 +1,5 @@
 ---
+title: How This Site Is Organised
 created: __CREATED__
 draft: false
 enableToc: true

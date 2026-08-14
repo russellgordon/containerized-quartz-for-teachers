@@ -1,4 +1,5 @@
 ---
+title: Circuit Components and Symbols
 created: __CREATED__
 draft: false
 enableToc: true
@@ -43,7 +44,7 @@ graph LR
 Practise at [[Circuit Diagram Practice]].
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[D2.3]] — ![[D2.3#^text]]
+![[D2.3]]
 %%curriculum-end%%

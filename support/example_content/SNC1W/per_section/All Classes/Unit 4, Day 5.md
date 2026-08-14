@@ -1,6 +1,7 @@
 ---
+title: Unit 4, Day 5
 draft: false
-created: __CREATED_CLASS_21__
+created: __CREATED_CLASS_56__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Investigation: [[Efficiency of a Light Bulb]] — measure the waste heat
-2. Concept: [[Electrical Power and Efficiency]] — where the rest of it went
-3. Concept: [[Where Our Electricity Comes From]] — no source without a cost
+1. Bench: write up [[Ohm's Law Investigation]] in class
+2. The gradient, and what it is in physical terms
+3. Skill: [[Making Graphs in a Spreadsheet]] — line of best fit, and
+   what its slope means
 
 ## Things to do before our next class
 
-- [ ] Lab table complete, with your largest source of error named.
-- [ ] Exercise: [[Efficiency Calculations]], all six.
-- [ ] Prepare the side of the [[Energy Source Debate]] you were assigned.
+- [ ] Report finished; gradient interpreted.

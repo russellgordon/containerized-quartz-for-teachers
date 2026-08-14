@@ -1,4 +1,5 @@
 ---
+title: The Particle Theory of Matter
 created: __CREATED__
 draft: false
 enableToc: true
@@ -41,7 +42,7 @@ graph LR
 > its particles move faster — nothing more mysterious than that.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[C2.1]] — ![[C2.1#^text]]
+![[C2.1]]
 %%curriculum-end%%

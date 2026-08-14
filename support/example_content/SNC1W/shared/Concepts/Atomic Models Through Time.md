@@ -1,4 +1,5 @@
 ---
+title: Atomic Models Through Time
 created: __CREATED__
 draft: false
 enableToc: true
@@ -43,7 +44,7 @@ observation so far. When an observation does not fit, the model changes — not
 the observation.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[C2.2]] — ![[C2.2#^text]]
+![[C2.2]]
 %%curriculum-end%%

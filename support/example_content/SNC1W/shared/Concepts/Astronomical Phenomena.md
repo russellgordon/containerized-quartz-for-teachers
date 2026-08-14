@@ -1,4 +1,5 @@
 ---
+title: Astronomical Phenomena
 created: __CREATED__
 draft: false
 enableToc: true
@@ -49,8 +50,9 @@ graph LR
 > they are worth travelling to see.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[E2.6]] — ![[E2.6#^text]]
-- [[E2.2]] — ![[E2.2#^text]]
+![[E2.6]]
+
+![[E2.2]]
 %%curriculum-end%%

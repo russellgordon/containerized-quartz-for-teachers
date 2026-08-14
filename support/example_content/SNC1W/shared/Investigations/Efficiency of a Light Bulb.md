@@ -1,4 +1,5 @@
 ---
+title: Efficiency of a Light Bulb
 created: __CREATED__
 draft: false
 enableToc: true
@@ -65,8 +66,9 @@ where $c = 4.18\ \mathrm{J/(g \cdot ^\circ C)}$ for water.
 - [ ] A statement of the largest source of error and its likely direction
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[D2.8]] — ![[D2.8#^text]]
-- [[A1.2]] — ![[A1.2#^text]]
+![[D2.8]]
+
+![[A1.2]]
 %%curriculum-end%%

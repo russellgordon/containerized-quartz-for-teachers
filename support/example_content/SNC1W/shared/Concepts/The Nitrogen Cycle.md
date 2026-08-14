@@ -1,4 +1,5 @@
 ---
+title: The Nitrogen Cycle
 created: __CREATED__
 draft: false
 enableToc: true
@@ -7,7 +8,7 @@ tags:
 ---
 ## The idea
 
-The air is **78% nitrogen**, and almost nothing can use it. $\mathrm{N_2}$ is
+The air is **78% nitrogen**, and almost nothing can use it. $\ce{N2}$ is
 held together by a triple bond that most living things cannot break.
 
 ```mermaid
@@ -29,7 +30,7 @@ caps how much can grow. Three ways to add it:
 
 1. Plant legumes — clover, beans, alfalfa — which host nitrogen-fixing bacteria.
 2. Spread manure or compost, returning nitrogen the decomposers released.
-3. Apply synthetic fertiliser, made by forcing $\mathrm{N_2}$ and hydrogen
+3. Apply synthetic fertiliser, made by forcing $\ce{N2}$ and hydrogen
    together at high temperature and pressure.
 
 > [!warning] Too much of a good thing
@@ -39,8 +40,9 @@ caps how much can grow. Three ways to add it:
 > waterways are worth the lost field space.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[B2.2]] — ![[B2.2#^text]]
-- [[B2.7]] — ![[B2.7#^text]]
+![[B2.2]]
+
+![[B2.7]]
 %%curriculum-end%%

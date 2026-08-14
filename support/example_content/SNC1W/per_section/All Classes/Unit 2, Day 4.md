@@ -1,6 +1,7 @@
 ---
+title: Unit 2, Day 4
 draft: false
-created: __CREATED_CLASS_8__
+created: __CREATED_CLASS_18__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,12 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Investigation: [[Investigating Photosynthesis]] — floating leaf discs
-2. Concept: [[Photosynthesis]] — now name what made the discs rise
-3. Concept: [[Cellular Respiration]] — the two as one system
-4. Portfolio: [[Reflecting on an Investigation]]
+1. Investigation: [[Modelling Energy Flow]] — where does the rest of it go?
+2. Concept: [[Energy Flow in Ecosystems]] — the ten percent rule, named
+3. Concept: [[Food Webs and Trophic Levels]]
+4. Task assigned: [[Coding a Scientific Model]] — the starter code models
+   the very pyramid you just built
 
 ## Things to do before our next class
 
-- [ ] Lab report due in one week — [[Writing a Lab Report]] has the format.
-- [ ] Read [[Photosynthesis]] and note one thing you do not yet understand.
+- [ ] Exercise: [[Reading a Food Web]], all six questions.
+- [ ] New to code? Work through [[Getting Started with Python]] first.

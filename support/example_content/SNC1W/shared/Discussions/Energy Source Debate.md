@@ -1,4 +1,5 @@
 ---
+title: Energy Source Debate
 created: __CREATED__
 draft: false
 enableToc: true
@@ -39,4 +40,32 @@ is the point.
 Write a paragraph: having heard everyone, what would you actually choose, and
 what changed your mind? You may absolutely disagree with the side you argued.
 
-Background: [[Where Our Electricity Comes From]], [[D1.1]], [[D1.2]]
+Then go one step further, on one page:
+
+1. **Name one change** to how electricity is produced or used that you
+   would actually push for — in this school, this town, or the province.
+2. **Say who would have to act**, by name where you can: a principal, a
+   board, a municipal council, a ministry.
+3. **Cost it, roughly.** What would it take, and what would it save? A
+   rough number you can source beats a confident number you cannot.
+4. **Say how you would know it worked.** One measurement, taken before
+   and after.
+
+That page is a **plan of action**, and it is the difference between having
+an opinion about energy and being able to do something about it.
+
+Background: [[Where Our Electricity Comes From]]
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D1.1]]
+
+![[D1.2]]
+
+![[D1.4]]
+
+![[A2.4]]
+
+![[D1.3]]
+%%curriculum-end%%

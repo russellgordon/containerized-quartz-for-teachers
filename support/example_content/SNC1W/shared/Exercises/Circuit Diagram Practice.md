@@ -1,4 +1,5 @@
 ---
+title: Circuit Diagram Practice
 created: __CREATED__
 draft: false
 enableToc: true

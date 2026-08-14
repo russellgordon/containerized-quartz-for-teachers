@@ -1,4 +1,5 @@
 ---
+title: Physical and Chemical Properties
 created: __CREATED__
 draft: false
 enableToc: true
@@ -41,8 +42,9 @@ identifies a substance regardless of how much you have.
 > than ones that depend on sample size.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[C2.6]] — ![[C2.6#^text]]
-- [[C2.1]] — ![[C2.1#^text]]
+![[C2.6]]
+
+![[C2.1]]
 %%curriculum-end%%

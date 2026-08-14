@@ -1,4 +1,5 @@
 ---
+title: Design Challenge
 created: __CREATED__
 draft: false
 enableToc: true
@@ -7,7 +8,8 @@ tags:
   - assessment
 ---
 > [!abstract] At a glance
-> **Format:** built prototype + design log · **Curriculum:** [[A1.3]], [[A2.1]], [[D2.3]], [[D2.8]]
+> Pairs · **five class periods** of work time across the electricity unit ·
+> **Format:** a built prototype, a design log, and a plan of action
 
 ## The task
 
@@ -56,9 +58,42 @@ Keep it as you go, not afterwards. It carries most of the marks.
 > for reasons you understood and documented demonstrates more than one that
 > worked by luck.
 
+## Where the power comes from
+
+Your device runs on a battery. One page, alongside the build:
+
+- **The energy behind it.** Trace the electricity in this building back
+  to how it was generated, and name one benefit and one cost of that
+  method — social, environmental, or economic.
+- **Who is affected.** Generation and consumption land differently on
+  different communities. Name one community affected by the method that
+  powers this school, and say how.
+- **A plan of action.** One realistic change — in this room, this
+  building, or your home — that would reduce electrical energy use or
+  shift when it is used. Say what it would save, what it would cost, and
+  whose decision it is. A plan nobody could act on is a wish.
+
 ## Hand in
 
 - [ ] The device
 - [ ] Design log
 - [ ] Circuit diagram drawn to convention — see [[Circuit Diagram Practice]]
 - [ ] Two minutes demonstrating it to the class
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.3]]
+
+![[A2.1]]
+
+![[D2.3]]
+
+![[D2.8]]
+
+![[D1.1]]
+
+![[D1.2]]
+
+![[D1.3]]
+%%curriculum-end%%

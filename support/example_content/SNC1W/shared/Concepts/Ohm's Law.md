@@ -1,4 +1,5 @@
 ---
+title: Ohm's Law
 created: __CREATED__
 draft: false
 enableToc: true
@@ -60,8 +61,9 @@ $$
 > follow $V = IR$ are called **ohmic**; plenty are not.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[D2.4]] — ![[D2.4#^text]]
-- [[D2.5]] — ![[D2.5#^text]]
+![[D2.4]]
+
+![[D2.5]]
 %%curriculum-end%%

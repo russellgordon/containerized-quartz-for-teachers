@@ -1,6 +1,7 @@
 ---
+title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_20__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,10 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Investigation: [[Testing Water Quality]] — four samples, four indicators
-2. Concept: [[Biodiversity]] — what a healthy sample could support
-3. Concept: [[Ecological Succession]]
+1. Investigation: [[Investigating Photosynthesis]] — floating leaf discs
+2. Concept: [[Photosynthesis]] — now name what made the discs rise
+3. Concept: [[Cellular Respiration]] — the two as one system
+4. Portfolio: [[Reflecting on an Investigation]]
 
 ## Things to do before our next class
 
-- [ ] Water quality ranking, justified with your numbers.
+- [ ] Lab report due in one week — [[Writing a Lab Report]] has the format.
+- [ ] Read [[Photosynthesis]] and note one thing you do not yet understand.

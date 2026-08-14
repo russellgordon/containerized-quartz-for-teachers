@@ -1,4 +1,5 @@
 ---
+title: What Counts as Evidence
 created: __CREATED__
 draft: false
 enableToc: true
@@ -28,4 +29,12 @@ Rank them. Defend your ranking. Then argue with someone who ranked differently.
 > the value of controlled testing is a genuinely hard question — which is why we
 > are discussing it rather than me telling you.
 
-Background: [[A2.4]], [[A2.5]], [[E2.3]]
+%%curriculum-start%%
+## Curriculum connection
+
+![[A2.4]]
+
+![[A2.5]]
+
+![[E2.3]]
+%%curriculum-end%%

@@ -1,4 +1,5 @@
 ---
+title: Using the Periodic Table
 created: __CREATED__
 draft: false
 enableToc: true

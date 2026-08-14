@@ -1,4 +1,5 @@
 ---
+title: Interpreting Climate Graphs
 created: __CREATED__
 draft: false
 enableToc: true
@@ -57,4 +58,5 @@ to misrepresent this way?
 
 > [!important] The skill being practised
 > Not "is this graph true?" but "what is this graph *for*, and what has it left
-> out?" That question is the whole of [[A2.4]].
+> out?" That question is the whole of
+> [[A2.4|the scientific literacy expectation]].

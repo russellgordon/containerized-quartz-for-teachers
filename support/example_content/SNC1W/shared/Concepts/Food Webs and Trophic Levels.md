@@ -1,4 +1,5 @@
 ---
+title: Food Webs and Trophic Levels
 created: __CREATED__
 draft: false
 enableToc: true
@@ -46,8 +47,9 @@ Two questions to ask of any food web:
 Practise this in [[Reading a Food Web]].
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[B2.2]] — ![[B2.2#^text]]
-- [[B2.5]] — ![[B2.5#^text]]
+![[B2.2]]
+
+![[B2.5]]
 %%curriculum-end%%

@@ -1,4 +1,5 @@
 ---
+title: Modelling Energy Flow
 created: __CREATED__
 draft: false
 enableToc: true
@@ -53,8 +54,9 @@ explain why food chains are short.
 - [ ] Analysis answers
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[B2.2]] — ![[B2.2#^text]]
-- [[A1.3]] — ![[A1.3#^text]]
+![[B2.2]]
+
+![[A1.3]]
 %%curriculum-end%%

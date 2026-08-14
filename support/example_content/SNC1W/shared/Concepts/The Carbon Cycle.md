@@ -1,4 +1,5 @@
 ---
+title: The Carbon Cycle
 created: __CREATED__
 draft: false
 enableToc: true
@@ -42,8 +43,9 @@ fast one. That is climate change in a sentence.
 > in the atmosphere. Which of the arrows above decides how long it stays?
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[B2.2]] — ![[B2.2#^text]]
-- [[B2.6]] — ![[B2.6#^text]]
+![[B2.2]]
+
+![[B2.6]]
 %%curriculum-end%%

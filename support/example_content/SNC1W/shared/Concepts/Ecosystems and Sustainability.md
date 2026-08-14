@@ -1,4 +1,5 @@
 ---
+title: Ecosystems and Sustainability
 created: __CREATED__
 draft: false
 enableToc: true
@@ -47,10 +48,47 @@ graph LR
 That loop at the bottom is the important part. Energy flows *through* an
 ecosystem and leaves as heat. Matter **cycles** and gets used again.
 
-%%curriculum-start%%
-## Curriculum
+## Practices that keep the cycles going
 
-- [[B2.1]] — ![[B2.1#^text]]
-- [[B2.2]] — ![[B2.2#^text]]
-- [[B2.4]] — ![[B2.4#^text]]
+Sustainability is not only a thing to want. It is a set of practices, and
+several of them are old.
+
+| Practice | What it does to the cycles |
+| --- | --- |
+| Composting food and yard waste | Returns carbon and nitrogen to soil instead of sending them to landfill, where they leave as methane |
+| Crop rotation, and planting legumes | Puts nitrogen back into soil biologically, so less has to be manufactured |
+| The Three Sisters — corn, beans, and squash grown together | Haudenosaunee agriculture in which the beans fix nitrogen, the corn gives the beans a stalk, and the squash shades out weeds and holds soil moisture |
+| Cultural burning | Deliberate low-intensity fire, used by many First Nations, that returns nutrients to soil, clears fuel that would otherwise feed a catastrophic fire, and encourages the plants people and animals depend on |
+| Protecting wetlands | Holds water and stores carbon that drainage would release |
+
+The last two are worth sitting with. Cultural burning was banned across
+much of Canada for most of a century, and fire agencies are now asking
+the nations who practised it to teach it again — because the ecological
+case for it turned out to be sound. That is a scientific finding and a
+piece of history at the same time.
+
+> [!note] Whose knowledge this is
+> Cultural burning and Three Sisters agriculture are Indigenous
+> knowledge, held by specific nations, developed over generations of
+> observation on specific land. When you write about them, name the
+> nation where you can, and say where you learned it — the same
+> citation practice you would use for any other source.
+> **Robin Wall Kimmerer**, a botanist and member of the Citizen
+> Potawatomi Nation, writes about this in *Braiding Sweetgrass* (2013),
+> including the principle she calls the Honourable Harvest: take only
+> what you need, never take the first or the last, and give something
+> back.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B2.1]]
+
+![[B2.2]]
+
+![[B2.4]]
+
+![[B1.3]]
+
+![[B2.7]]
 %%curriculum-end%%

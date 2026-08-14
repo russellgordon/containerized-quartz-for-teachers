@@ -1,6 +1,7 @@
 ---
+title: Unit 4, Day 6
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_57__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,11 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Discussion: [[Energy Source Debate]] — you argue the side you were given
-2. [[Design Challenge]] demonstrations — two minutes each
-3. Where the electricity in this room came from while we were arguing
+1. Predict first: two lamps in one loop, or two on their own branches —
+   which is brighter?
+2. Investigation: [[Building Series and Parallel Circuits]]
+3. Concept: [[Series and Parallel Circuits]] — your own rules, named
+4. Task assigned: [[Design Challenge]]
 
 ## Things to do before our next class
 
-- [ ] Debate paragraph: what would you actually choose, and what changed it?
-- [ ] Design log handed in with the device.
+- [ ] Both data tables, and four rules in your own words with numbers.
+- [ ] Design log started: the problem, and who actually has it.

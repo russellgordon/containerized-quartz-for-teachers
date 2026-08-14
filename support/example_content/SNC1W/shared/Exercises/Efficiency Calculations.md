@@ -1,4 +1,5 @@
 ---
+title: Efficiency Calculations
 created: __CREATED__
 draft: false
 enableToc: true

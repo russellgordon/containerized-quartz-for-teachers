@@ -1,4 +1,5 @@
 ---
+title: Static Electricity Stations
 created: __CREATED__
 draft: false
 enableToc: true
@@ -50,8 +51,9 @@ the movement of electrons.
 - [ ] Analysis answers
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[D2.1]] — ![[D2.1#^text]]
-- [[A1.2]] — ![[A1.2#^text]]
+![[D2.1]]
+
+![[A1.2]]
 %%curriculum-end%%

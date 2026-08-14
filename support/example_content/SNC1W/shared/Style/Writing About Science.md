@@ -1,4 +1,5 @@
 ---
+title: Writing About Science
 created: __CREATED__
 draft: false
 enableToc: true

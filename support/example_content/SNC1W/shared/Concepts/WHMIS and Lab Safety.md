@@ -1,4 +1,5 @@
 ---
+title: WHMIS and Lab Safety
 created: __CREATED__
 draft: false
 enableToc: true
@@ -16,10 +17,10 @@ you can read at a glance.
 | --- | --- | --- |
 | Flame | Flammable | Ethanol |
 | Exclamation mark | Irritant, harmful | Dilute acids |
-| Corrosion | Burns skin, eats metal | Concentrated $\mathrm{HCl}$ |
+| Corrosion | Burns skin, eats metal | Concentrated $\ce{HCl}$ |
 | Skull and crossbones | Acutely toxic | Methanol |
 | Health hazard | Long-term harm | Some solvents |
-| Gas cylinder | Gas under pressure | Compressed $\mathrm{CO_2}$ |
+| Gas cylinder | Gas under pressure | Compressed $\ce{CO2}$ |
 
 > [!danger] Non-negotiable rules in this room
 > - Goggles on **before** anything is opened, off after everything is put away.
@@ -38,10 +39,10 @@ detail, including first aid and disposal.
 > [!question] Before every investigation
 > What could go wrong here, and what would I do about it? Write your answer in
 > the safety section of your lab notebook. That habit is the whole point of
-> A1.5 — see [[A1.5]].
+> A1.5 — see [[A1.5|the safety expectation]].
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[A1.5]] — ![[A1.5#^text]]
+![[A1.5]]
 %%curriculum-end%%

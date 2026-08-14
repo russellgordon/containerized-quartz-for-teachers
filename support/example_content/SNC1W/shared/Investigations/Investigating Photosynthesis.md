@@ -1,4 +1,5 @@
 ---
+title: Investigating Photosynthesis
 created: __CREATED__
 draft: false
 enableToc: true
@@ -20,7 +21,7 @@ float** is a measure of photosynthetic rate.
 ## Materials
 
 - Spinach leaves, hole punch, 10 mL syringe (no needle)
-- Sodium bicarbonate solution (the $\mathrm{CO_2}$ source), drop of dish soap
+- Sodium bicarbonate solution (the $\ce{CO2}$ source), drop of dish soap
 - Clear cups, lamp, ruler, timer
 
 ## Procedure
@@ -62,8 +63,9 @@ float** is a measure of photosynthetic rate.
 - [ ] One limitation of this method, honestly stated
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[A1.2]] — ![[A1.2#^text]]
-- [[B2.3]] — ![[B2.3#^text]]
+![[A1.2]]
+
+![[B2.3]]
 %%curriculum-end%%

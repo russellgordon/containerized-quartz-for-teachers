@@ -1,4 +1,5 @@
 ---
+title: The Bohr-Rutherford Model
 created: __CREATED__
 draft: false
 enableToc: true
@@ -46,8 +47,9 @@ graph TD
 Practise at [[Bohr-Rutherford Diagrams]].
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[C2.3]] — ![[C2.3#^text]]
-- [[C2.4]] — ![[C2.4#^text]]
+![[C2.3]]
+
+![[C2.4]]
 %%curriculum-end%%

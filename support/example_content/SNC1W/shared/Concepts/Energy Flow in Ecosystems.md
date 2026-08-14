@@ -1,4 +1,5 @@
 ---
+title: Energy Flow in Ecosystems
 created: __CREATED__
 draft: false
 enableToc: true
@@ -37,8 +38,9 @@ That is also why a pyramid is the right shape for this diagram, and why eating
 lower on the food chain feeds more people from the same land.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[B2.2]] — ![[B2.2#^text]]
-- [[B2.3]] — ![[B2.3#^text]]
+![[B2.2]]
+
+![[B2.3]]
 %%curriculum-end%%

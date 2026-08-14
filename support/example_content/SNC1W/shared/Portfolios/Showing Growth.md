@@ -1,4 +1,5 @@
 ---
+title: Showing Growth
 created: __CREATED__
 draft: false
 enableToc: true

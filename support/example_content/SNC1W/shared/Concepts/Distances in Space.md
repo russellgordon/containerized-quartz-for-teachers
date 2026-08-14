@@ -1,4 +1,5 @@
 ---
+title: Distances in Space
 created: __CREATED__
 draft: false
 enableToc: true
@@ -45,8 +46,9 @@ see it as it was 2.5 million years ago. Telescopes are time machines pointed the
 only direction they can go.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[E2.5]] — ![[E2.5#^text]]
-- [[E2.4]] — ![[E2.4#^text]]
+![[E2.5]]
+
+![[E2.4]]
 %%curriculum-end%%

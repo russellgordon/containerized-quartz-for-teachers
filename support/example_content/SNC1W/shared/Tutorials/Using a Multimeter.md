@@ -1,4 +1,5 @@
 ---
+title: Using a Multimeter
 created: __CREATED__
 draft: false
 enableToc: true

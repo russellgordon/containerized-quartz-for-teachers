@@ -1,6 +1,7 @@
 ---
+title: Unit 4, Day 4
 draft: false
-created: __CREATED_CLASS_20__
+created: __CREATED_CLASS_55__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,13 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Predict first: two lamps in one loop, or two on their own branches —
-   which is brighter?
-2. Investigation: [[Building Series and Parallel Circuits]]
-3. Concept: [[Series and Parallel Circuits]] — your own rules, named
-4. Task assigned: [[Design Challenge]]
+1. Investigation: [[Ohm's Law Investigation]] — find the relationship yourself
+2. Graphing the results before we name anything
+3. Concept: [[Ohm's Law]] — now that you have derived it
 
 ## Things to do before our next class
 
-- [ ] Both data tables, and four rules in your own words with numbers.
-- [ ] Design log started: the problem, and who actually has it.
+- [ ] Graph with best-fit line and slope calculation.
+- [ ] Exercise: [[Ohm's Law Practice]] — formula, substitution, and units.

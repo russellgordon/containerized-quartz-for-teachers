@@ -1,4 +1,5 @@
 ---
+title: Final Portfolio
 created: __CREATED__
 draft: false
 enableToc: true

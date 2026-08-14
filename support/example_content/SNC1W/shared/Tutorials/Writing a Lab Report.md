@@ -1,4 +1,5 @@
 ---
+title: Writing a Lab Report
 created: __CREATED__
 draft: false
 enableToc: true

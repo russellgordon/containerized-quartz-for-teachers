@@ -1,4 +1,5 @@
 ---
+title: Molecular Compounds
 created: __CREATED__
 draft: false
 enableToc: true
@@ -30,9 +31,9 @@ Molecular names use prefixes; ionic names do not.
 | tetra- | 4 |
 | penta- | 5 |
 
-- $\mathrm{CO}$ — carbon monoxide
-- $\mathrm{CO_2}$ — carbon dioxide
-- $\mathrm{N_2O_4}$ — dinitrogen tetroxide
+- $\ce{CO}$ — carbon monoxide
+- $\ce{CO2}$ — carbon dioxide
+- $\ce{N2O4}$ — dinitrogen tetroxide
 
 > [!warning] One letter, one very large difference
 > Carbon dioxide is what you exhale. Carbon **monoxide** binds to your blood 200
@@ -41,8 +42,9 @@ Molecular names use prefixes; ionic names do not.
 > so fussy.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[C2.7]] — ![[C2.7#^text]]
-- [[C1.1]] — ![[C1.1#^text]]
+![[C2.7]]
+
+![[C1.1]]
 %%curriculum-end%%

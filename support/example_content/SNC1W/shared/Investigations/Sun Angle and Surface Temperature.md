@@ -1,4 +1,5 @@
 ---
+title: Sun Angle and Surface Temperature
 created: __CREATED__
 draft: false
 enableToc: true
@@ -58,9 +59,11 @@ heats — the mechanism behind seasons.
 - [ ] One improvement you would make to the procedure
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[E2.2]] — ![[E2.2#^text]]
-- [[E2.6]] — ![[E2.6#^text]]
-- [[A1.2]] — ![[A1.2#^text]]
+![[E2.2]]
+
+![[E2.6]]
+
+![[A1.2]]
 %%curriculum-end%%

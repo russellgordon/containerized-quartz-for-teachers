@@ -1,4 +1,5 @@
 ---
+title: Photosynthesis
 created: __CREATED__
 draft: false
 enableToc: true
@@ -12,7 +13,7 @@ Producers convert light energy into chemical energy stored in sugar. That is the
 doorway through which nearly all energy on Earth enters living systems.
 
 $$
-6\,\mathrm{CO_2} + 6\,\mathrm{H_2O} + \text{light energy} \longrightarrow \mathrm{C_6H_{12}O_6} + 6\,\mathrm{O_2}
+\ce{6CO2 + 6H2O ->[light energy] C6H12O6 + 6O2}
 $$
 
 In words: **carbon dioxide** and **water**, given light, become **glucose** and
@@ -22,8 +23,8 @@ In words: **carbon dioxide** and **water**, given light, become **glucose** and
 
 | Ingredient | Where it comes from | What happens to it |
 | --- | --- | --- |
-| $\mathrm{CO_2}$ | Air, through the stomata | Its carbon ends up in glucose |
-| $\mathrm{H_2O}$ | Soil, through the roots | Split apart; its oxygen is released |
+| $\ce{CO2}$ | Air, through the stomata | Its carbon ends up in glucose |
+| $\ce{H2O}$ | Soil, through the roots | Split apart; its oxygen is released |
 | Light | The Sun | Not a *substance* — it is the energy input |
 
 > [!warning] A common misconception
@@ -38,8 +39,9 @@ pulled out of the atmosphere by living things and buried. Burning it puts that
 carbon back — see [[The Carbon Cycle]] and [[Indicators of Climate Change]].
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[B2.3]] — ![[B2.3#^text]]
-- [[B2.2]] — ![[B2.2#^text]]
+![[B2.3]]
+
+![[B2.2]]
 %%curriculum-end%%

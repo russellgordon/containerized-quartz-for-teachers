@@ -1,4 +1,5 @@
 ---
+title: Series and Parallel Circuits
 created: __CREATED__
 draft: false
 enableToc: true
@@ -46,8 +47,9 @@ whole string went dark.
 > test it in [[Building Series and Parallel Circuits]].
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[D2.6]] — ![[D2.6#^text]]
-- [[D2.4]] — ![[D2.4#^text]]
+![[D2.6]]
+
+![[D2.4]]
 %%curriculum-end%%

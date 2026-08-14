@@ -1,4 +1,5 @@
 ---
+title: Unit 1, Day 3
 draft: false
 created: __CREATED_CLASS_3__
 transcludeTitleSize: h2
@@ -9,13 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Skills: [[Measuring Accurately]] — meniscus, parallax, estimating a digit
-2. Exercise: [[Scientific Notation and Units]]
-3. Tutorial: [[Working in a Lab Group]] — roles assigned
-4. Skills: [[Graphing Practice]] — in the group you were just given
-5. Tutorial: [[Making Graphs in a Spreadsheet]]
+1. Safety walk: the eyewash, the shower, the extinguisher, the exits —
+   found, not pointed at
+2. [[WHMIS and Lab Safety]] symbols on the actual bottles in this room
+3. Sign and file [[Safety Contract]]; nobody works at a bench without it
 
 ## Things to do before our next class
 
-- [ ] Finish [[Scientific Notation and Units]] — answers are on the page.
-- [ ] Bring your [[Graphing Practice]] graph, printed or on screen.
+- [ ] Contract signed. Read [[What to Bring]].

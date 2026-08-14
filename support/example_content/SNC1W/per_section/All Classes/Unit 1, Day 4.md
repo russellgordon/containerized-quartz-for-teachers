@@ -1,4 +1,5 @@
 ---
+title: Unit 1, Day 4
 draft: false
 created: __CREATED_CLASS_4__
 transcludeTitleSize: h2
@@ -9,13 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Tutorial: [[Writing a Lab Report]] — the six sections
-2. Skills: [[Writing About Science]] — an observation is not an interpretation
-3. Tutorial: [[Finding and Citing Sources]]
-4. Task introduced: [[Science in the News]] — first of three
-5. Discussion: [[AI in Science Class]] — where the line is
+1. Skills: [[Measuring Accurately]] — meniscus, parallax, estimating a digit
+2. Exercise: [[Scientific Notation and Units]]
+3. Tutorial: [[Working in a Lab Group]] — roles assigned
+4. Skills: [[Graphing Practice]] — in the group you were just given
+5. Tutorial: [[Making Graphs in a Spreadsheet]]
 
 ## Things to do before our next class
 
-- [ ] First [[Science in the News]] submission due in one week.
-- [ ] Dress for outdoors later this week — we work on the field rain or shine.
+- [ ] Finish [[Scientific Notation and Units]] — answers are on the page.
+- [ ] Bring your [[Graphing Practice]] graph, printed or on screen.

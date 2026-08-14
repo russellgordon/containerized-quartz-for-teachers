@@ -1,4 +1,5 @@
 ---
+title: Making Graphs in a Spreadsheet
 created: __CREATED__
 draft: false
 enableToc: true

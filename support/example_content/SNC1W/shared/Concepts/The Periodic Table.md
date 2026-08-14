@@ -1,4 +1,5 @@
 ---
+title: The Periodic Table
 created: __CREATED__
 draft: false
 enableToc: true
@@ -39,8 +40,9 @@ come from electron shells.
 Investigate these yourself in [[Finding Patterns in the Periodic Table]].
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[C2.4]] — ![[C2.4#^text]]
-- [[C2.5]] — ![[C2.5#^text]]
+![[C2.4]]
+
+![[C2.5]]
 %%curriculum-end%%

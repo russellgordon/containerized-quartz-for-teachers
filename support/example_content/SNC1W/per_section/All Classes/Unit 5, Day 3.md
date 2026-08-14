@@ -1,6 +1,7 @@
 ---
+title: Unit 5, Day 3
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_71__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Investigation: [[Sun Angle and Surface Temperature]] — one lamp, three
-   angles, and the card cooled to room temperature every time
-2. Concept: [[Astronomical Phenomena]] — seasons, phases, and eclipses
-3. Concept: [[The Sun]] — the energy behind almost everything we studied
+1. Practise: [[Scale and Distance Calculations]] to the end
+2. In pairs: how long does light take to reach us from each planet?
+3. Why astronomers use light-years, and what that says about the sky you
+   see
 
 ## Things to do before our next class
 
-- [ ] All three trials graphed on one set of axes.
-- [ ] Analysis answers, including why late July is hotter than the solstice.
+- [ ] Finish the practice set.

@@ -1,4 +1,5 @@
 ---
+title: First Entry
 created: __CREATED__
 draft: false
 enableToc: true

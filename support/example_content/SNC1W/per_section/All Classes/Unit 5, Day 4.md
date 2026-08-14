@@ -1,26 +1,21 @@
 ---
-draft: true
-created: __CREATED_CLASS_26__
+title: Unit 5, Day 4
+draft: false
+created: __CREATED_CLASS_72__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-5
 ---
-%% This page is an example of a DRAFT: `draft: true` in the frontmatter
-means it is never published to the site. Plan tomorrow today, publish it
-when class ends — just flip draft to false. Delete this comment when you
-reuse the page; comments never appear on the site either. %%
-
 ## Agenda
 
-1. Concept: [[The Origin of the Universe]] — three independent lines of
-   evidence, and why three matters more than one
-2. Concept: [[Technology From Space Exploration]]
-3. Task assigned: [[Space Mission Proposal]] — including the case against it
-4. Course wrap: [[Final Portfolio]], checked against [[Portfolio Checklist]]
+1. Investigation: [[Sun Angle and Surface Temperature]] — one lamp, three
+   angles, and the card cooled to room temperature every time
+2. Concept: [[Astronomical Phenomena]] — seasons, phases, and eclipses
+3. Concept: [[The Sun]] — the energy behind almost everything we studied
 
 ## Things to do before our next class
 
-- [ ] [[Space Mission Proposal]]: destination and question chosen.
-- [ ] Portfolio complete — every box on [[Portfolio Checklist]] ticked.
+- [ ] All three trials graphed on one set of axes.
+- [ ] Analysis answers, including why late July is hotter than the solstice.

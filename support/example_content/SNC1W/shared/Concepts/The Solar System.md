@@ -1,4 +1,5 @@
 ---
+title: The Solar System
 created: __CREATED__
 draft: false
 enableToc: true
@@ -37,8 +38,9 @@ Build a scale model in [[Scale Model of the Solar System]] and the numbers in
 that table stop being abstract.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[E2.4]] — ![[E2.4#^text]]
-- [[E2.5]] — ![[E2.5#^text]]
+![[E2.4]]
+
+![[E2.5]]
 %%curriculum-end%%

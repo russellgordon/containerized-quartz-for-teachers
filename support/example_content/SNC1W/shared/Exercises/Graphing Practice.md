@@ -1,4 +1,5 @@
 ---
+title: Graphing Practice
 created: __CREATED__
 draft: false
 enableToc: true

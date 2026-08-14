@@ -1,4 +1,5 @@
 ---
+title: Science in the News
 created: __CREATED__
 draft: false
 enableToc: true
@@ -7,7 +8,9 @@ tags:
   - assessment
 ---
 > [!abstract] At a glance
-> **Frequency:** three times this semester · **Curriculum:** [[A2.2]], [[A2.4]], [[A2.5]]
+> Individual · **three submissions** across the semester — one in
+> September, one at mid-course, one in the final weeks · **Format:** one
+> page each, five questions answered
 
 ## The task
 
@@ -36,4 +39,15 @@ Find a news article making a scientific claim, and take it apart.
 
 Choose an article about **artificial intelligence in science**, and additionally
 address: what work is the AI actually doing, and what claim is being made about
-it that the evidence does not support? See [[A2.2]].
+it that the evidence does not support? See
+[[A2.2|what this course asks about emerging technologies]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A2.2]]
+
+![[A2.4]]
+
+![[A2.5]]
+%%curriculum-end%%

@@ -1,4 +1,5 @@
 ---
+title: Ohm's Law Investigation
 created: __CREATED__
 draft: false
 enableToc: true
@@ -66,8 +67,9 @@ graph LR
 - [ ] Analysis answers
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[D2.4]] — ![[D2.4#^text]]
-- [[A1.2]] — ![[A1.2#^text]]
+![[D2.4]]
+
+![[A1.2]]
 %%curriculum-end%%

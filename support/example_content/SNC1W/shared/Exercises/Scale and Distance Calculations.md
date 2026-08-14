@@ -1,4 +1,5 @@
 ---
+title: Scale and Distance Calculations
 created: __CREATED__
 draft: false
 enableToc: true

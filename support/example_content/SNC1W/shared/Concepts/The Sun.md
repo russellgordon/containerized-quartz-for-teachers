@@ -1,4 +1,5 @@
 ---
+title: The Sun
 created: __CREATED__
 draft: false
 enableToc: true
@@ -45,8 +46,9 @@ graph LR
 > constantly. Sunlight on your face left the core before the last ice age.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[E2.1]] — ![[E2.1#^text]]
-- [[E2.2]] — ![[E2.2#^text]]
+![[E2.1]]
+
+![[E2.2]]
 %%curriculum-end%%

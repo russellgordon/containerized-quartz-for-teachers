@@ -1,4 +1,5 @@
 ---
+title: What This Site Can Do
 created: __CREATED__
 draft: false
 enableToc: true
@@ -140,11 +141,7 @@ $$
 $$
 
 It handles anything a science course needs — fractions, subscripts,
-superscripts, chemical formulas, and Greek:
-
-$$
-6\,\mathrm{CO_2} + 6\,\mathrm{H_2O} \xrightarrow{\ \text{light}\ } \mathrm{C_6H_{12}O_6} + 6\,\mathrm{O_2}
-$$
+superscripts, and Greek:
 
 $$
 \rho = \frac{m}{V} \qquad E = mc^2 \qquad \Delta T = T_f - T_i
@@ -161,6 +158,39 @@ $$
 \rho = \frac{m}{V}
 $$
 ```
+
+### Writing chemistry with `\ce{}`
+
+Chemistry goes inside `\ce{...}`, and it is worth ten minutes once. You
+type roughly what you would say aloud, and it works out which digits drop
+to subscripts, which are coefficients, and where the spacing belongs.
+
+| What you type | What appears | What it means |
+| --- | --- | --- |
+| `$\ce{H2O}$` | $\ce{H2O}$ | Digits drop to subscripts |
+| `$\ce{2H2O}$` | $\ce{2H2O}$ | A digit in front is a coefficient |
+| `$\ce{Ca^2+}$` | $\ce{Ca^2+}$ | A charge — number first, then the sign |
+| `$\ce{Ca(OH)2}$` | $\ce{Ca(OH)2}$ | Brackets as you write them |
+| `$\ce{NaCl(aq)}$` | $\ce{NaCl(aq)}$ | A state, typed literally |
+| `$\ce{2H2 + O2 -> 2H2O}$` | $\ce{2H2 + O2 -> 2H2O}$ | The reaction arrow |
+| `$\ce{->[light]}$` | $\ce{->[light]}$ | A condition above the arrow |
+
+That last row is how the photosynthesis equation on [[Photosynthesis]] is
+written — one line of typing:
+
+$$
+\ce{6CO2 + 6H2O ->[light] C6H12O6 + 6O2}
+$$
+
+Two habits worth keeping:
+
+- **Anything chemical goes inside `\ce{}`**, including a formula in the
+  middle of a sentence, like $\ce{NaHCO3}$. Outside it, `H_2O` comes out
+  in maths italic — the convention for *variables*, which reads wrongly
+  for an element.
+- **A display equation stays on one physical line.** A `$$` span broken
+  across lines, indented four spaces, or spread down a callout hits a
+  markdown seam and shatters.
 
 ---
 
@@ -324,10 +354,10 @@ This is what makes the site more than a pile of documents.
 ### Transclusion — one page inside another
 
 **How that was made:** `![[Page name]]` — a link with an exclamation mark in
-front of it. Here is a curriculum expectation, embedded live rather than
+front of it. Here is another page of this site, embedded live rather than
 copied:
 
-![[D2.4]]
+![[Help Sessions]]
 
 Change the source page and every page that embeds it updates. This is how each
 class page shows the current expectation without anyone maintaining duplicates.

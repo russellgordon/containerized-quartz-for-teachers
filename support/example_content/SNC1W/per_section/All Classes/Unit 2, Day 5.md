@@ -1,6 +1,7 @@
 ---
+title: Unit 2, Day 5
 draft: false
-created: __CREATED_CLASS_9__
+created: __CREATED_CLASS_19__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,10 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[The Carbon Cycle]]
-2. Concept: [[The Water Cycle]]
-3. Concept: [[The Nitrogen Cycle]]
+1. [[Coding a Scientific Model]], day 2 — working period: choose your model and
+   get the starting program running unchanged
+2. Change one number, predict, then run. That loop is the whole task
 
 ## Things to do before our next class
 
-- [ ] Draw all three cycles from memory. Compare with the pages afterwards.
+- [ ] Program runs; one parameter explored.

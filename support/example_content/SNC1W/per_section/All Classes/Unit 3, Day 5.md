@@ -1,6 +1,7 @@
 ---
+title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_16__
+created: __CREATED_CLASS_38__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,14 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[Ions and Ionic Compounds]]
-2. Concept: [[Molecular Compounds]]
-3. Exercise: [[Naming Compounds]]
-4. Task assigned: [[Product Life Cycle Analysis]] — and why the obvious
-   product is usually the hardest one to trace
+1. Warm-up: draw a Bohr-Rutherford diagram from memory
+2. Practise: [[Bohr-Rutherford Diagrams]] — the first twenty elements
+3. Why the model changed: each experiment, and what it forced
 
 ## Things to do before our next class
 
-- [ ] Finish [[Naming Compounds]] — all ten.
-- [ ] Product chosen and two elements identified.
-- [ ] Halfway point: add a [[Showing Growth]] entry to your portfolio.
+- [ ] Finish the practice set.

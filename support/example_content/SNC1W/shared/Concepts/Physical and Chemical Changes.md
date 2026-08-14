@@ -1,4 +1,5 @@
 ---
+title: Physical and Chemical Changes
 created: __CREATED__
 draft: false
 enableToc: true
@@ -41,8 +42,9 @@ $$
 Test this yourself in [[Physical and Chemical Change Stations]].
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[C2.1]] — ![[C2.1#^text]]
-- [[C2.6]] — ![[C2.6#^text]]
+![[C2.1]]
+
+![[C2.6]]
 %%curriculum-end%%

@@ -1,4 +1,5 @@
 ---
+title: Whose Responsibility Is Climate Action
 created: __CREATED__
 draft: false
 enableToc: true
@@ -30,4 +31,14 @@ corporations, or governments?
 > campaign for an oil company. Does knowing that change how you weigh the first
 > position? Should the origin of an idea affect whether it is true?
 
-Background: [[Indicators of Climate Change]], [[B1.1]], [[A2.3]]
+Background: [[Indicators of Climate Change]]
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B1.1]]
+
+![[B1.2]]
+
+![[A2.3]]
+%%curriculum-end%%

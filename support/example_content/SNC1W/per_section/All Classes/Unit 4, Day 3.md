@@ -1,6 +1,7 @@
 ---
+title: Unit 4, Day 3
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_54__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,11 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Investigation: [[Ohm's Law Investigation]] — find the relationship yourself
-2. Graphing the results before we name anything
-3. Concept: [[Ohm's Law]] — now that you have derived it
+1. Practise: [[Circuit Diagram Practice]] — symbols, then reading, then
+   drawing from a description
+2. In pairs: build the circuit your partner drew, without speaking
+3. Where diagrams go wrong: the junction that is not a junction
 
 ## Things to do before our next class
 
-- [ ] Graph with best-fit line and slope calculation.
-- [ ] Exercise: [[Ohm's Law Practice]] — formula, substitution, and units.
+- [ ] Finish the practice set.

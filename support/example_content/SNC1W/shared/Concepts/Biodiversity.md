@@ -1,4 +1,5 @@
 ---
+title: Biodiversity
 created: __CREATED__
 draft: false
 enableToc: true
@@ -41,8 +42,9 @@ evenness.
 Collect data like this yourself in [[Measuring Abiotic Factors]].
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[B2.4]] — ![[B2.4#^text]]
-- [[B1.1]] — ![[B1.1#^text]]
+![[B2.4]]
+
+![[B1.1]]
 %%curriculum-end%%

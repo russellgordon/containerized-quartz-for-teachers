@@ -1,4 +1,5 @@
 ---
+title: Technology From Space Exploration
 created: __CREATED__
 draft: false
 enableToc: true
@@ -23,7 +24,7 @@ Earth. This is the strongest practical argument made for space budgets.
 
 The strongest scientific case may be looking *back*. Satellites measure sea
 level, ice extent, deforestation, sea surface temperature, and atmospheric
-$\mathrm{CO_2}$ — global, continuous, consistent records no ground station
+$\ce{CO2}$ — global, continuous, consistent records no ground station
 network could produce. Nearly every indicator in
 [[Indicators of Climate Change]] depends on them.
 
@@ -34,9 +35,11 @@ network could produce. Nearly every indicator in
 > [[Space Mission Proposal]] worth doing carefully.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[E1.1]] — ![[E1.1#^text]]
-- [[E1.2]] — ![[E1.2#^text]]
-- [[E1.3]] — ![[E1.3#^text]]
+![[E1.1]]
+
+![[E1.2]]
+
+![[E1.3]]
 %%curriculum-end%%

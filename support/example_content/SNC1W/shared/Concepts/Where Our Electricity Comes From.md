@@ -1,4 +1,5 @@
 ---
+title: Where Our Electricity Comes From
 created: __CREATED__
 draft: false
 enableToc: true
@@ -17,7 +18,7 @@ differently between cost, emissions, land, and reliability.
 | Hydroelectric | Very low | Mostly | Floods land; disrupts rivers and fish |
 | Wind | None | No — varies with weather | Needs backup or storage |
 | Solar | None | No — daily and seasonal | Same, plus winter in Canada |
-| Natural gas | Substantial | Yes, and fast to start | Emits $\mathrm{CO_2}$ and methane leaks |
+| Natural gas | Substantial | Yes, and fast to start | Emits $\ce{CO2}$ and methane leaks |
 
 ```mermaid
 pie title Ontario's generation mix
@@ -32,7 +33,7 @@ pie title Ontario's generation mix
 > The mix shifts year to year with demand, water levels, and which reactors are
 > being refurbished. Treat the chart above as a rough illustration, then find
 > current figures from the system operator — that is exactly the scientific
-> literacy skill described in [[A2.4]].
+> literacy skill described in [[A2.4|the scientific literacy expectation]].
 
 ## The question worth arguing about
 
@@ -41,9 +42,11 @@ willing to carry, and who ends up carrying them** — which is what
 [[Energy Source Debate]] is for.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[D1.1]] — ![[D1.1#^text]]
-- [[D1.2]] — ![[D1.2#^text]]
-- [[D1.4]] — ![[D1.4#^text]]
+![[D1.1]]
+
+![[D1.2]]
+
+![[D1.4]]
 %%curriculum-end%%

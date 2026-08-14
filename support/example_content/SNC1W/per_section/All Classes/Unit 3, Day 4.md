@@ -1,6 +1,7 @@
 ---
+title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_15__
+created: __CREATED_CLASS_37__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,12 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Investigation: [[Finding Patterns in the Periodic Table]] — sort the cards
-   first, and write your rule down before you look anything up
-2. Concept: [[The Periodic Table]] — the pattern the cards were hiding
-3. Tutorial: [[Using the Periodic Table]]
+1. Investigation: [[Flame Tests]] — every metal, its own colour
+2. Concept: [[Atomic Models Through Time]] — five models in a century
+3. Why Rutherford was so surprised
+4. Concept: [[The Bohr-Rutherford Model]] — where those colours come from
 
 ## Things to do before our next class
 
-- [ ] Compare your sorting rule with the real one. Where were you right?
-- [ ] Two elements of your choice: group, period, and what those predict.
+- [ ] Flame test analysis due next class.
+- [ ] Exercise: [[Bohr-Rutherford Diagrams]], questions 1–3.
+- [ ] Second [[Science in the News]] submission due Friday.

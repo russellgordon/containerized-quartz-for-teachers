@@ -1,4 +1,5 @@
 ---
+title: Culminating Reflection
 created: __CREATED__
 draft: false
 enableToc: true
@@ -6,7 +7,8 @@ tags:
   - assessment
 ---
 > [!abstract] At a glance
-> **Due:** final week · **Curriculum:** all strands
+> Individual · begun in class in the final week, with your portfolio open
+> beside you · **Format:** written, four questions answered
 
 ## The task
 

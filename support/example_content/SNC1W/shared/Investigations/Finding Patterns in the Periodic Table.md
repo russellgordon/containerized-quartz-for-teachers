@@ -1,4 +1,5 @@
 ---
+title: Finding Patterns in the Periodic Table
 created: __CREATED__
 draft: false
 enableToc: true
@@ -55,9 +56,11 @@ yourself, rather than being told it.
 - [ ] Analysis answers, including your prediction and how close it was
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[C2.5]] — ![[C2.5#^text]]
-- [[C2.4]] — ![[C2.4#^text]]
-- [[A1.1]] — ![[A1.1#^text]]
+![[C2.5]]
+
+![[C2.4]]
+
+![[A1.1]]
 %%curriculum-end%%

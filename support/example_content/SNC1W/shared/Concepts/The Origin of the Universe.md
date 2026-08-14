@@ -1,4 +1,5 @@
 ---
+title: The Origin of the Universe
 created: __CREATED__
 draft: false
 enableToc: true
@@ -37,10 +38,12 @@ Cultures around the world, including First Nations, Métis, and Inuit peoples,
 have long traditions of observing and explaining the night sky. Many encode real
 observational knowledge — seasonal star positions used for navigation and
 timing. Understanding how different knowledge systems record and pass on
-observations is part of [[E2.3]].
+observations is part of [[E2.3|what this course asks of you]].
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[E2.3]] — ![[E2.3#^text]]
+![[E2.3]]
+
+![[A2.5]]
 %%curriculum-end%%

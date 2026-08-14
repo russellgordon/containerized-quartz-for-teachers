@@ -1,4 +1,5 @@
 ---
+title: Current Electricity
 created: __CREATED__
 draft: false
 enableToc: true
@@ -40,8 +41,9 @@ actually drift the other way. Franklin guessed the sign before anyone knew
 electrons existed, and the convention stuck.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[D2.3]] — ![[D2.3#^text]]
-- [[D2.7]] — ![[D2.7#^text]]
+![[D2.3]]
+
+![[D2.7]]
 %%curriculum-end%%

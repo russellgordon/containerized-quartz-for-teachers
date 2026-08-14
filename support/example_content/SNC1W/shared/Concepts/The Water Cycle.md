@@ -1,4 +1,5 @@
 ---
+title: The Water Cycle
 created: __CREATED__
 draft: false
 enableToc: true
@@ -31,8 +32,9 @@ arrives at the creek in minutes instead of days, all at once, carrying road salt
 and oil with it. That is the mechanism behind most urban flooding.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[B2.1]] — ![[B2.1#^text]]
-- [[B2.2]] — ![[B2.2#^text]]
+![[B2.1]]
+
+![[B2.2]]
 %%curriculum-end%%

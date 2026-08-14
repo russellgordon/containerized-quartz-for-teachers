@@ -1,4 +1,5 @@
 ---
+title: Working in a Lab Group
 created: __CREATED__
 draft: false
 enableToc: true

@@ -1,4 +1,5 @@
 ---
+title: Static Electricity
 created: __CREATED__
 draft: false
 enableToc: true
@@ -47,8 +48,9 @@ graph LR
 > start biting in January and not in September.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[D2.1]] — ![[D2.1#^text]]
-- [[D2.2]] — ![[D2.2#^text]]
+![[D2.1]]
+
+![[D2.2]]
 %%curriculum-end%%

@@ -1,4 +1,5 @@
 ---
+title: Electrical Power and Efficiency
 created: __CREATED__
 draft: false
 enableToc: true
@@ -49,8 +50,9 @@ $$
 Measure this for yourself in [[Efficiency of a Light Bulb]].
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[D2.8]] — ![[D2.8#^text]]
-- [[D2.7]] — ![[D2.7#^text]]
+![[D2.8]]
+
+![[D2.7]]
 %%curriculum-end%%

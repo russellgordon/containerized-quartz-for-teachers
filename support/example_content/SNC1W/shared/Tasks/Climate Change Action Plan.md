@@ -1,4 +1,5 @@
 ---
+title: Climate Change Action Plan
 created: __CREATED__
 draft: false
 enableToc: true
@@ -7,8 +8,8 @@ tags:
   - assessment
 ---
 > [!abstract] At a glance
-> **Due:** end of the biology unit · **Format:** 4–6 pages or equivalent ·
-> **Curriculum:** [[B1.1]], [[B1.2]], [[B1.3]], [[A2.4]]
+> Individual · **four class periods** of work time, then handed in
+> at the end of the biology unit · **Format:** 4–6 pages or equivalent
 
 ## The task
 
@@ -49,3 +50,19 @@ for responding to it.
 - [ ] The plan itself
 - [ ] Source list with a sentence on why each is trustworthy
 - [ ] A short reflection: what surprised you?
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B1.1]]
+
+![[B1.2]]
+
+![[B1.3]]
+
+![[A2.4]]
+
+![[B2.1]]
+
+![[B2.2]]
+%%curriculum-end%%

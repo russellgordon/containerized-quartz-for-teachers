@@ -1,4 +1,5 @@
 ---
+title: Biotic and Abiotic Factors
 created: __CREATED__
 draft: false
 enableToc: true
@@ -35,8 +36,9 @@ around it.
 You will measure some of these yourself in [[Measuring Abiotic Factors]].
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[B2.1]] — ![[B2.1#^text]]
-- [[B2.4]] — ![[B2.4#^text]]
+![[B2.1]]
+
+![[B2.4]]
 %%curriculum-end%%

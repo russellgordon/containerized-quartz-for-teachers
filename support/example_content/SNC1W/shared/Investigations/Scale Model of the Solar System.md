@@ -1,4 +1,5 @@
 ---
+title: Scale Model of the Solar System
 created: __CREATED__
 draft: false
 enableToc: true
@@ -59,9 +60,11 @@ $$
 - [ ] Analysis answers
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[E2.5]] — ![[E2.5#^text]]
-- [[E2.4]] — ![[E2.4#^text]]
-- [[A1.3]] — ![[A1.3#^text]]
+![[E2.5]]
+
+![[E2.4]]
+
+![[A1.3]]
 %%curriculum-end%%

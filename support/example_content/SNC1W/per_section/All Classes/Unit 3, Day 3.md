@@ -1,6 +1,7 @@
 ---
+title: Unit 3, Day 3
 draft: false
-created: __CREATED_CLASS_14__
+created: __CREATED_CLASS_36__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,13 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Investigation: [[Flame Tests]] — every metal, its own colour
-2. Concept: [[Atomic Models Through Time]] — five models in a century
-3. Why Rutherford was so surprised
-4. Concept: [[The Bohr-Rutherford Model]] — where those colours come from
+1. Bench: write up [[Physical and Chemical Changes]] in class
+2. The evidence list for a chemical change, agreed by the room and
+   written into every notebook
+3. Where the criteria disagree: a colour change that is only mixing
 
 ## Things to do before our next class
 
-- [ ] Flame test analysis due next class.
-- [ ] Exercise: [[Bohr-Rutherford Diagrams]], questions 1–3.
-- [ ] Second [[Science in the News]] submission due Friday.
+- [ ] Report finished; criteria copied.

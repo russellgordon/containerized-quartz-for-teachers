@@ -1,4 +1,5 @@
 ---
+title: Testing Conductivity
 created: __CREATED__
 draft: false
 enableToc: true
@@ -57,8 +58,9 @@ relate the result to atomic structure.
 - [ ] One material you would test next, and your prediction
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[D2.2]] — ![[D2.2#^text]]
-- [[A1.2]] — ![[A1.2#^text]]
+![[D2.2]]
+
+![[A1.2]]
 %%curriculum-end%%

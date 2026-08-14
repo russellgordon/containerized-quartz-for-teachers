@@ -1,4 +1,5 @@
 ---
+title: Reflecting on an Investigation
 created: __CREATED__
 draft: false
 enableToc: true

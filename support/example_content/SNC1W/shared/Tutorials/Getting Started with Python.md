@@ -1,4 +1,5 @@
 ---
+title: Getting Started with Python
 created: __CREATED__
 draft: false
 enableToc: true
@@ -48,3 +49,9 @@ print(distance, "AU is", kilometres, "km")
 > `NameError` means you used a name Python has not seen — usually a typo.
 > `TypeError` means you mixed text and numbers, often because `input()` returns
 > text and you forgot `float()`. Read the last line of the message first.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.4]]
+%%curriculum-end%%

@@ -1,4 +1,5 @@
 ---
+title: The Greenhouse Effect
 created: __CREATED__
 draft: false
 enableToc: true
@@ -24,23 +25,24 @@ graph TD
 ## Why the wavelength matters
 
 Sunlight arrives mostly as visible light, which passes straight through
-$\mathrm{CO_2}$. The warmed surface radiates **infrared**, which
-$\mathrm{CO_2}$ and $\mathrm{CH_4}$ absorb strongly. Energy comes in easily
+$\ce{CO2}$. The warmed surface radiates **infrared**, which
+$\ce{CO2}$ and $\ce{CH4}$ absorb strongly. Energy comes in easily
 and leaves with difficulty — so it accumulates.
 
 | Gas | Main human source | Relative warming per molecule |
 | --- | --- | --- |
-| Carbon dioxide, $\mathrm{CO_2}$ | Burning fossil fuels | 1 (the reference) |
-| Methane, $\mathrm{CH_4}$ | Livestock, landfills, leaks | ~25× over a century |
-| Nitrous oxide, $\mathrm{N_2O}$ | Fertiliser | ~265× |
+| Carbon dioxide, $\ce{CO2}$ | Burning fossil fuels | 1 (the reference) |
+| Methane, $\ce{CH4}$ | Livestock, landfills, leaks | ~25× over a century |
+| Nitrous oxide, $\ce{N2O}$ | Fertiliser | ~265× |
 
 Methane is far more potent but breaks down within about a decade;
-$\mathrm{CO_2}$ is weaker and lasts for centuries. Both facts matter when
+$\ce{CO2}$ is weaker and lasts for centuries. Both facts matter when
 choosing what to cut first.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[B2.6]] — ![[B2.6#^text]]
-- [[B1.1]] — ![[B1.1#^text]]
+![[B2.6]]
+
+![[B1.1]]
 %%curriculum-end%%

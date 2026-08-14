@@ -1,4 +1,5 @@
 ---
+title: Unit 1, Day 1
 draft: false
 created: __CREATED_CLASS_1__
 transcludeTitleSize: h2

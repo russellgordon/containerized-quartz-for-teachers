@@ -1,4 +1,5 @@
 ---
+title: Bohr-Rutherford Diagrams
 created: __CREATED__
 draft: false
 enableToc: true
@@ -52,10 +53,10 @@ diagram. Shells hold 2, 8, 8.
 each charge.
 
 > [!success]- Answer
-> $\mathrm{Na^+}$ — 11 protons, 10 electrons, shells 2, 8. One more positive
+> $\ce{Na+}$ — 11 protons, 10 electrons, shells 2, 8. One more positive
 > than negative, so the charge is $1+$.
 >
-> $\mathrm{Cl^-}$ — 17 protons, 18 electrons, shells 2, 8, 8. Charge $1-$.
+> $\ce{Cl-}$ — 17 protons, 18 electrons, shells 2, 8, 8. Charge $1-$.
 >
 > Notice what both now have: a full outer shell. That is the whole reason they
 > did it.
@@ -68,3 +69,9 @@ each charge.
 > identical. They are **isotopes**.
 
 Reference: [[The Bohr-Rutherford Model]]
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[C2.3]]
+%%curriculum-end%%

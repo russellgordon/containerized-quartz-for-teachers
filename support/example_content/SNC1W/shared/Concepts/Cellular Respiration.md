@@ -1,4 +1,5 @@
 ---
+title: Cellular Respiration
 created: __CREATED__
 draft: false
 enableToc: true
@@ -12,7 +13,7 @@ Respiration is photosynthesis run backwards. Cells take the sugar and the oxygen
 and release the stored energy in a form the cell can spend.
 
 $$
-\mathrm{C_6H_{12}O_6} + 6\,\mathrm{O_2} \longrightarrow 6\,\mathrm{CO_2} + 6\,\mathrm{H_2O} + \text{energy}
+\ce{C6H12O6 + 6O2 -> 6CO2 + 6H2O + energy}
 $$
 
 ## Compare the two
@@ -21,8 +22,8 @@ $$
 | --- | --- | --- |
 | Who does it | Producers | **Every** living thing, producers included |
 | Energy | Stored | Released |
-| Takes in | $\mathrm{CO_2}$, $\mathrm{H_2O}$ | $\mathrm{C_6H_{12}O_6}$, $\mathrm{O_2}$ |
-| Gives off | $\mathrm{C_6H_{12}O_6}$, $\mathrm{O_2}$ | $\mathrm{CO_2}$, $\mathrm{H_2O}$ |
+| Takes in | $\ce{CO2}$, $\ce{H2O}$ | $\ce{C6H12O6}$, $\ce{O2}$ |
+| Gives off | $\ce{C6H12O6}$, $\ce{O2}$ | $\ce{CO2}$, $\ce{H2O}$ |
 | When | Only in light | All the time |
 
 ```mermaid
@@ -42,8 +43,9 @@ graph LR
 > of ==dynamic equilibrium== you will meet all year.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[B2.3]] — ![[B2.3#^text]]
-- [[B2.2]] — ![[B2.2#^text]]
+![[B2.3]]
+
+![[B2.2]]
 %%curriculum-end%%

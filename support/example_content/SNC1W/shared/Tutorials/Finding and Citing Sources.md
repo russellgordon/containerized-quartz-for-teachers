@@ -1,4 +1,5 @@
 ---
+title: Finding and Citing Sources
 created: __CREATED__
 draft: false
 enableToc: true
@@ -34,4 +35,5 @@ Give enough that a reader can find it: author, title, publisher, date, and link.
 > If you use one, say so and say how. They produce fluent text and invent
 > citations that look real. **Check every reference against the actual source**
 > — a citation you have not opened is a citation you cannot use. See
-> [[A2.2]] for why this matters beyond this class.
+> [[A2.2|what this course says about emerging technologies]] for why this
+> matters beyond this class.

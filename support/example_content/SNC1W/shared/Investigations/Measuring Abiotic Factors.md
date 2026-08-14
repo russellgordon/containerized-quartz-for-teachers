@@ -1,4 +1,5 @@
 ---
+title: Measuring Abiotic Factors
 created: __CREATED__
 draft: false
 enableToc: true
@@ -63,9 +64,11 @@ the data to explain the differences in what grows there.
 - [ ] One sentence stating what you would measure next, and why
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[A1.2]] — ![[A1.2#^text]]
-- [[B2.1]] — ![[B2.1#^text]]
-- [[B2.4]] — ![[B2.4#^text]]
+![[A1.2]]
+
+![[B2.1]]
+
+![[B2.4]]
 %%curriculum-end%%

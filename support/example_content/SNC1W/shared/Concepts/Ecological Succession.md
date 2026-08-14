@@ -1,4 +1,5 @@
 ---
+title: Ecological Succession
 created: __CREATED__
 draft: false
 enableToc: true
@@ -36,7 +37,7 @@ cautious about that word — disturbance is normal, and many ecosystems never
 settle. Treat it as a useful simplification rather than a law.
 
 %%curriculum-start%%
-## Curriculum
+## Curriculum connection
 
-- [[B2.4]] — ![[B2.4#^text]]
+![[B2.4]]
 %%curriculum-end%%
