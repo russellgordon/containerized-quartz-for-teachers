@@ -59,3 +59,11 @@ in some form; yours starts now.
 > Check the class page in All Classes, then check the assignment desk —
 > your team may have filed while you were out, and the fastest way back
 > in is asking your editor what needs doing.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D1.1]]
+
+![[D2.4]]
+%%curriculum-end%%

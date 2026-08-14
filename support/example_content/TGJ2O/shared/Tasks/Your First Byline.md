@@ -75,4 +75,8 @@ The distance between those two versions is the learning.
 ![[B3.1]]
 
 ![[B3.2]]
+
+![[B2.2]]
+
+![[D2.4]]
 %%curriculum-end%%

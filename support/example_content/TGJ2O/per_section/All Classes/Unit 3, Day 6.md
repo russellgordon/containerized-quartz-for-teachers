@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 6
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_49__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,15 @@ tags:
 ---
 ## Agenda
 
-1. Standup — element day: what does your story need beyond text?
-2. Warm-up: [[Spot the Edit]]
-3. Studio: [[Record a Standup]] — or cut an audio element with what
-   [[Clean Audio]] taught your ears
-4. Back it up before anything else: [[Backing Up Your Media]] —
-   no exceptions today
-5. Desk time: weave the element into your draft
+1. Standup
+2. New warm-up: [[Spot the Edit]] — one of these images is not what
+   it claims
+3. Compare calls, then name it: [[Misinformation and Verification]]
+4. Drills: [[Verification Practice]] — then verify one claim in your
+   own story
+5. Discussion: [[When Is a Photo True]]
 
 ## Things to do before our next class
 
-- [ ] Bring a complete draft — text plus element — to peer edit.
-- [ ] Journal: how many takes your standup really took.
+- [ ] Verify the remaining claims in your notes — every fact gets a source.
+- [ ] Journal: a claim you believed until you checked.

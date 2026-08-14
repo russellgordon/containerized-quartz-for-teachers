@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 5
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_70__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Standup — the shortest one all term
-2. Final checks, then publish: the term's best work goes live across
-   every channel
-3. [[Publication Day]] — invited readers arrive, and you walk them
-   through what you made
-4. Debrief: [[Showing Growth]] — read your first entry beside your last
-5. File and log: [[Newsroom Journal]] — tonight it is a keepsake
+1. Standup
+2. Warm-up: [[Headline Help Desk]] — the fitting round: same headline,
+   three column widths
+3. Drills: [[Layout Practice]]
+4. Desk time: [[Build the Front Page]] — the chosen thumbnail, built
 
 ## Things to do before our next class
 
-- [ ] Skim [[Final Reflection]] — we begin it together next class.
-- [ ] Journal: one thing an invited reader said that you will keep.
+- [ ] Finish the practice set; page laid out.

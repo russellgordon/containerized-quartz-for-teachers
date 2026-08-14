@@ -72,4 +72,8 @@ whether the room can read each claim without being told.
 ![[B3.1]]
 
 ![[C2.4]]
+
+![[A2.2]]
+
+![[A2.3]]
 %%curriculum-end%%

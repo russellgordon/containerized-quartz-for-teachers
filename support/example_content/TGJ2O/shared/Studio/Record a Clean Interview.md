@@ -72,4 +72,8 @@ than hearing the same voice lose.
 ![[A1.4]]
 
 ![[B3.1]]
+
+![[A2.2]]
+
+![[D1.2]]
 %%curriculum-end%%

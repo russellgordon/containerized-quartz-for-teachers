@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 3
 draft: false
-created: __CREATED_CLASS_16__
+created: __CREATED_CLASS_46__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,16 @@ tags:
 ---
 ## Agenda
 
-1. Standup
-2. New warm-up: [[Spot the Edit]] — one of these images is not what
-   it claims
-3. Compare calls, then name it: [[Misinformation and Verification]]
-4. Drills: [[Verification Practice]] — then verify one claim in your
-   own story
-5. Discussion: [[When Is a Photo True]]
+1. Standup — pitches locked
+2. Warm-up: [[One-Minute Pitch]], round two — same story, tighter
+3. Drills: [[Interview Question Practice]]
+4. Read before you report: [[Releases and Consent]] — who must say yes,
+   and how we ask
+5. Desk time: source list and interview plan for [[The Investigation]]
 
 ## Things to do before our next class
 
-- [ ] Verify the remaining claims in your notes — every fact gets a source.
-- [ ] Journal: a claim you believed until you checked.
+- [ ] Skim [[The Production Pipeline]] — the investigation is your
+      first full pre-production-to-published arc; plan it like one.
+- [ ] Contact your first source and propose a time to talk.
+- [ ] Journal: the source you are nervous to approach, and why.

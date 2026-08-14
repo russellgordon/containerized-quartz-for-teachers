@@ -14,6 +14,7 @@ every later page can simply link here instead of re-explaining it.
 | Tutorial | The skill |
 | --- | --- |
 | [[Using This Site]] | Finding your way around this site quickly |
+| [[Planning a Production]] | Objectives, criteria, constraints, and a sketch |
 | [[Filing a Story]] | Getting work from "done" to published |
 | [[Releases and Consent]] | Asking permission the right way |
 | [[Backing Up Your Media]] | Never losing a shoot |

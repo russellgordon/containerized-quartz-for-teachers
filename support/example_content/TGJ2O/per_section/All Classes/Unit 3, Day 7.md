@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 7
 draft: false
-created: __CREATED_CLASS_20__
+created: __CREATED_CLASS_50__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Standup — deadline day
-2. Edit and compare: full drafts on the screen, peer edit under
-   [[Our Newsroom Standards]]
-3. Desk time: final revisions, then file per [[Filing a Story]]
-4. Filed — [[The Investigation]] is in, and the room reads
-5. Journal collection: [[Journal Checklist]] before you hand it in
+1. Standup
+2. Warm-up: [[Spot the Edit]]
+3. Drills: [[Verification Practice]] — three claims, checked to their
+   origin
+4. The rule: three articles that trace to one press release are one
+   source
 
 ## Things to do before our next class
 
-- [ ] Read one classmate's investigation start to finish.
-- [ ] Rest your eyes — the final unit puts everything on the page at once.
+- [ ] Finish the practice set.

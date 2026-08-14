@@ -10,14 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Standup — who is chasing what for [[Your First Byline]]
-2. New warm-up: [[Headline Help Desk]] — your first shift
-3. Drills at desks: [[Lead Paragraph Practice]]
-4. Desk time: reporting — interviews, notes, and a working lede
-5. File and log: close the class in your [[Newsroom Journal]]
+1. Standup
+2. Warm-up: [[News or Not]]
+3. Tour of the site: [[Using This Site]], [[How This Site Is Organised]],
+   and [[What This Site Can Do]] — where everything in this course lives
+4. Desk time: file your first practice piece the proper way, per
+   [[Filing a Story]]
 
 ## Things to do before our next class
 
-- [ ] Bring a full draft of [[Your First Byline]] to peer edit.
-- [ ] Try [[Headline Practice]], first block.
-- [ ] Journal: the fact you had to chase hardest.
+- [ ] Practice piece filed.

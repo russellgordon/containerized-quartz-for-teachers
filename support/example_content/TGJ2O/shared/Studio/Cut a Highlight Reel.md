@@ -72,4 +72,8 @@ which one they would publish.
 ![[B2.6]]
 
 ![[B3.2]]
+
+![[A1.5]]
+
+![[A2.3]]
 %%curriculum-end%%

@@ -36,3 +36,9 @@ Forgot something? Borrow from the front desk, return it at the bell, and
 nobody will make it a thing. If gear or connectivity at home is ever a
 genuine barrier, tell me quietly — see [[Getting Help]] — and we will
 sort it out.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D1.2]]
+%%curriculum-end%%

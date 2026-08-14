@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 4
 draft: false
-created: __CREATED_CLASS_24__
+created: __CREATED_CLASS_69__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Standup — two classes until readers arrive
-2. Drills: [[Copyright Scenarios Practice]] — then audit your own
-   package against [[Copyright and Fair Dealing]]
-3. Discussion: [[Free Press, School Press]]
-4. Desk time: polish — every piece checked against
-   [[Writing for Publication]]
-5. File and log: [[Newsroom Journal]]
+1. Standup
+2. Warm-up: [[Which One Doesn't Belong]] — four typefaces
+3. Drills: type at three sizes, three weights, and one bad pairing named
+4. Desk time: the page's type set to a scale rather than by eye
 
 ## Things to do before our next class
 
-- [ ] Finish polishing — tomorrow we publish for invited readers.
-- [ ] Journal: one thing in your package you fixed before anyone
-      could ask.
+- [ ] Type scale written down and applied.

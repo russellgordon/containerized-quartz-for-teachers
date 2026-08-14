@@ -20,6 +20,8 @@ by hand. Read them after the work, not instead of it.
 - [[Making Photographs]]
 - [[Shooting Video]]
 - [[Clean Audio]]
+- [[The Science Behind the Picture]]
+- [[Doing the Numbers]]
 
 **Design and publishing** — shaping work for real readers:
 
@@ -27,11 +29,14 @@ by hand. Read them after the work, not instead of it.
 - [[Typography]]
 - [[Audiences and Platforms]]
 - [[The Production Pipeline]]
+- [[The Software You Will Meet]]
 
 **The wider world** — the responsibilities that come with a byline:
 
 - [[Copyright and Fair Dealing]]
 - [[Misinformation and Verification]]
+- [[The Footprint of Media]]
+- [[Careers in Communications]]
 
 Every page ends with the curriculum expectations it addresses, and the
 tasks will send you back here as each idea becomes load-bearing.

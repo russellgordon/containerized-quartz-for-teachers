@@ -72,4 +72,8 @@ sometimes the exercise proves your first call for good.
 ![[A1.2]]
 
 ![[B3.2]]
+
+![[A1.5]]
+
+![[A2.3]]
 %%curriculum-end%%

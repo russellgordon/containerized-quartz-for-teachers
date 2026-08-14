@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 5
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_25__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. Standup at the venue — crew check, and releases confirmed against
-   [[Releases and Consent]]
-2. Cover the event: photos, five-shot sequences, interviews — everything
-   [[The Athletics Package]] needs, gathered today
-3. Before we leave: [[Backing Up Your Media]] — every card, twice
-4. Log it while it is fresh: [[Newsroom Journal]] — what you got, what
-   you missed
+1. Standup
+2. Warm-up: [[Caption This]]
+3. Compare yesterday's portraits, then name it: [[Composition and Framing]]
+   and [[Making Photographs]]
+4. Drills: [[Photo Critique Practice]] — the room's own frames
+5. Desk time: reshoot one portrait using what now has a name
 
 ## Things to do before our next class
 
-- [ ] Confirm your backups actually open.
-- [ ] Journal: the moment you almost missed — and how you would catch it
-      next time.
+- [ ] Try [[Photo Critique Practice]], next block.
+- [ ] Journal: one rule of framing you broke on purpose — or wish you had.

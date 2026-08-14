@@ -72,4 +72,8 @@ and notice how much story sound carries before a single word is said.
 ![[A1.3]]
 
 ![[B3.1]]
+
+![[B2.5]]
+
+![[A2.2]]
 %%curriculum-end%%

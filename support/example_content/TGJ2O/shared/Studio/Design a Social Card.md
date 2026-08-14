@@ -72,4 +72,8 @@ six words, or both. That gap is the audience made visible.
 ![[B3.1]]
 
 ![[C2.1]]
+
+![[A1.5]]
+
+![[A2.1]]
 %%curriculum-end%%

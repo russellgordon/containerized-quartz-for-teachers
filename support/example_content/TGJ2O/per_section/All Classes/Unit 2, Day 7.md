@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 7
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_27__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Standup — deadline day
-2. Desk time: final edits, then file — [[The Athletics Package]] is
-   published
-3. Studio: [[Design a Social Card]] to send readers to your package
-4. Edit and compare: cards on the screen, packages open beside them
-5. Journal collection: [[Journal Checklist]] and
-   [[What a Strong Entry Looks Like]] before you hand it in
+1. Standup
+2. Warm-up: [[Photo Critique Practice]] — the room critiques four frames
+3. Desk time: edit your portraits — the limits of an honest edit, per
+   [[When Is a Photo True]]
 
 ## Things to do before our next class
 
-- [ ] Watch a teammate's highlight reel and leave them one edit note.
-- [ ] Start noticing questions around town — the next beat is
-      the community.
+- [ ] Two edited portraits filed.

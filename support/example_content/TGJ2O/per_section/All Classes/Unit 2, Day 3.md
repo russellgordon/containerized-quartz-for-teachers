@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_9__
+created: __CREATED_CLASS_23__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -11,12 +11,11 @@ tags:
 ## Agenda
 
 1. Standup
-2. Warm-up: [[Caption This]] — sports photos edition
-3. Studio: [[The Five-Shot Sequence]] — shoot it before any lesson
-4. Compare cuts, then name it: [[Shooting Video]]
-5. Launch the beat's big assignment: [[The Athletics Package]]
+2. Warm-up: [[Caption This]]
+3. Concept: [[The Science Behind the Picture]] — light, lenses, and the
+   three settings that trade against each other
+4. Studio: the same subject at three apertures, compared on screen
 
 ## Things to do before our next class
 
-- [ ] Read [[The Athletics Package]] and choose your crew role.
-- [ ] Journal: which of your five shots earned its place.
+- [ ] Journal: what changed, and what stayed the same.

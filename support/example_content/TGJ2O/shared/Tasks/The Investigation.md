@@ -77,4 +77,8 @@ surprised its reporter is evidence of a question worth asking.
 ![[C2.5]]
 
 ![[A1.1]]
+
+![[B2.2]]
+
+![[D2.3]]
 %%curriculum-end%%

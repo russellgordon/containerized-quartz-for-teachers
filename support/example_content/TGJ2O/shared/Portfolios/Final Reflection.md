@@ -52,4 +52,8 @@ taught — date it, quote your own words, then show the now:
 ## Curriculum connection
 
 ![[D2.1]]
+
+![[D2.3]]
+
+![[D2.4]]
 %%curriculum-end%%

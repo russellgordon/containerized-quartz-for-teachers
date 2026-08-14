@@ -4,6 +4,7 @@ draft: false
 created: __CREATED__
 tags:
   - tasks
+  - final-evaluation
 enableToc: true
 ---
 > [!abstract] At a glance
@@ -77,4 +78,14 @@ was the spoken draft; the journal entry is the record.
 ![[B3.2]]
 
 ![[D2.5]]
+
+![[C1.1]]
+
+![[C1.2]]
+
+![[D1.2]]
+
+![[A2.3]]
+
+![[D2.4]]
 %%curriculum-end%%

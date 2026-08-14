@@ -72,4 +72,8 @@ Then watch for both pieces on [[Publication Day]].
 ![[B1.2]]
 
 ![[B3.2]]
+
+![[A1.5]]
+
+![[C1.2]]
 %%curriculum-end%%

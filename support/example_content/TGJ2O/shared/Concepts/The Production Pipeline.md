@@ -56,4 +56,8 @@ day-to-day rhythm that keeps all this moving is described in
 ![[B1.1]]
 
 ![[B1.2]]
+
+![[B2.2]]
+
+![[B2.5]]
 %%curriculum-end%%

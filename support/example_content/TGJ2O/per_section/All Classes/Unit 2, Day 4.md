@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 4
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_24__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Standup — event crew check
-2. Warm-up: [[Headline Help Desk]] — sports desk shift
-3. Studio: [[Record a Clean Interview]] — mic a partner, then listen back
-4. Compare recordings, then name it: [[Clean Audio]]
-5. Event prep: shot lists, crew roles, and a [[Releases and Consent]] check
+1. Standup
+2. Warm-up: [[Which One Doesn't Belong]] — four exposures
+3. Concept: [[Doing the Numbers]] — stops, and why three settings can
+   give the same exposure and different pictures
+4. Desk time: exposure arithmetic, then tested against the camera
 
 ## Things to do before our next class
 
-- [ ] Charge batteries and clear cards — [[What to Bring]] has the list.
-- [ ] Reread your role in [[The Athletics Package]] plan.
-- [ ] Journal: what your own recording taught your ears.
+- [ ] Finish the exposure questions.

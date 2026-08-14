@@ -72,4 +72,8 @@ is why reporters practise it before they need it.
 ![[A1.3]]
 
 ![[B3.1]]
+
+![[D1.2]]
+
+![[A2.2]]
 %%curriculum-end%%

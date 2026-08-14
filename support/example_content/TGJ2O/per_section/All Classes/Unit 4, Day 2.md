@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 2
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_67__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -11,13 +11,11 @@ tags:
 ## Agenda
 
 1. Standup
-2. Warm-up: [[Headline Help Desk]] — front-page headlines this time
-3. Compare typefaces, then name it: [[Typography]]
-4. Drills: [[Layout Practice]] and [[Headline Practice]]
-5. Desk time: [[The Front Page]] — your section takes shape
+2. Warm-up: [[Which One Doesn't Belong]] — four grids
+3. Studio: thumbnails first — three front pages sketched at postcard
+   size before anything is typeset
+4. Consolidate: [[Design Principles]] — the focal point, argued for
 
 ## Things to do before our next class
 
-- [ ] Bring your section of [[The Front Page]] to a shareable state.
-- [ ] Journal: the typeface you rejected, and what it said that
-      you did not mean.
+- [ ] Three thumbnails, one chosen with a reason.

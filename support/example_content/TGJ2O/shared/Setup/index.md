@@ -9,6 +9,8 @@ your first week and come back whenever the routines feel fuzzy.
 - [[How the Newsroom Runs]] — standup, warm-up, desk time, edit, file.
 - [[Our Newsroom Standards]] — accuracy, fairness, consent, credit,
   deadlines. The most important page in this folder.
+- [[Safety in the Newsroom]] — the slow injuries this work causes, and
+  the habits that prevent them.
 - [[What to Bring]] — a reporter's notebook, layers for shoot days,
   the phone rule.
 - [[How Marks Work]] — process, growth, and communication. Not being

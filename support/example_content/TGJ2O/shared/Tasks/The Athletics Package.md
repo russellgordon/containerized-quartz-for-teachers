@@ -77,4 +77,10 @@ what will you hand to the next person who holds it?
 ![[B3.1]]
 
 ![[B3.2]]
+
+![[A2.2]]
+
+![[D1.2]]
+
+![[A1.5]]
 %%curriculum-end%%

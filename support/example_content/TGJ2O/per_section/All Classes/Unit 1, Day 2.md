@@ -10,16 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Standup — two minutes, whole room: working on, need, blocked by
-2. Warm-up: [[News or Not]], round two
-3. Desk time: fix a buried lede — the news is in there somewhere, dig it out
-4. Edit and compare, then name it: [[The Inverted Pyramid]]
-5. Launch your [[Newsroom Journal]] — write [[Your First Entry]] before
-   the bell
+1. Standup — two minutes, whole room
+2. Warm-up: [[News or Not]]
+3. Read together: [[Safety in the Newsroom]] — the slow injuries this
+   work causes, and the habits that prevent them
+4. Set up your [[Newsroom Journal]]: [[Your First Entry]], with
+   [[What a Strong Entry Looks Like]] read together
 
 ## Things to do before our next class
 
-- [ ] Finish [[Your First Entry]] — [[What a Strong Entry Looks Like]]
-      shows the bar.
-- [ ] Try [[Lead Paragraph Practice]], first block.
-- [ ] Journal: where your lede was buried, and how you knew.
+- [ ] First journal entry written.
