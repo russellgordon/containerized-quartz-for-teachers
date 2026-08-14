@@ -985,10 +985,15 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         => Act(course, section, pages, includeLinked, draft: true, preview, onOrAfter, before,
                progress, cancellation);
 
+    // The cues cover STARTING a preview as well as refreshing one. The first
+    // live request to the local assistant was "Preview the site", and with
+    // every cue here assuming a preview already existed, the model matched
+    // nothing — and wrote a paragraph describing a rebuild it never did.
     [McpServerTool(Name = "rebuild_preview", Title = "Rebuild the preview", Destructive = false, Idempotent = true)]
-    [Description("TEACHERS SAY: \"rebuild the preview\", \"refresh what I'm looking at\", \"update the preview\", " +
-                 "\"build it again\". " +
-                 "Rebuild a section preview without changing any page. " +
+    [Description("TEACHERS SAY: \"preview the site\", \"show me the preview\", \"start the preview\", " +
+                 "\"open the preview\", \"rebuild the preview\", \"refresh what I'm looking at\", " +
+                 "\"update the preview\", \"build it again\". " +
+                 "Build a section's preview and put it on screen, without changing any page. " +
                  "Use this after a batch of publish_pages or unpublish_pages calls made with preview=false. " +
                  "This takes several minutes.")]
     public async Task<string> RebuildPreview(
