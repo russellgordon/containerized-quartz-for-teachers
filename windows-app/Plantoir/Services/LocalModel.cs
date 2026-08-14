@@ -54,6 +54,20 @@ public sealed class LocalModel
     /// <summary>Where the model lives inside WSL, beside the toolchain's own data.</summary>
     private const string ModelDirectoryInWsl = "/var/lib/plantoir/models";
 
+    /// <summary>
+    /// Where the prompt cache is kept between sessions.
+    ///
+    /// Reading the tool definitions takes about three minutes on two CPU
+    /// cores — measured, not estimated: 97% at 2m 48s. Paying that once is
+    /// defensible; paying it every time a teacher opens the window is not.
+    /// llama.cpp can save a slot's KV cache to disk and restore it, so the
+    /// three minutes happens once and every session after starts warm.
+    /// </summary>
+    private const string CacheDirectoryInWsl = "/var/lib/plantoir/cache";
+
+    /// <summary>The saved prefix, named for the model so a model change cannot restore the wrong one.</summary>
+    private const string CacheFile = "prefix-qwen2.5-1.5b.bin";
+
     public string Endpoint => $"http://127.0.0.1:{Port}/v1/chat/completions";
 
     /// <summary>True when the model file has already been fetched.</summary>
@@ -178,7 +192,12 @@ public sealed class LocalModel
             await Task.Run(() => Wsl(
                 $"docker rm -f {ContainerName} >/dev/null 2>&1; " +
                 $"docker run -d --name {ContainerName} --memory 4g --cpus=2 " +
-                $"-p {Port}:8080 -v {ModelDirectoryInWsl}:/models:ro {Image} " +
+                $"-p {Port}:8080 -v {ModelDirectoryInWsl}:/models:ro " +
+                // A WRITABLE mount for the prompt cache, beside the read-only
+                // model. Without somewhere to put it, the three minutes spent
+                // reading the tool definitions is paid again every session.
+                $"-v {CacheDirectoryInWsl}:/cache {Image} " +
+                "--slot-save-path /cache " +
                 // One slot, not the four this image now defaults to: one window
                 // is one conversation, and four slots multiply the KV cache by
                 // four for no benefit here. That saving is what pays for the
@@ -227,11 +246,57 @@ public sealed class LocalModel
         // them, but Stop() runs on the way out and does not always finish —
         // and anything that only cleans up when asked nicely will eventually
         // meet a process that was not asked. This one ends on its own.
+        // It must not give up before the container it is waiting for EXISTS.
+        //
+        // The first version checked immediately and exited when it saw
+        // nothing — and it is started BEFORE `docker run`, deliberately, so
+        // that WSL cannot idle out in the gap. So it killed itself on its
+        // first tick, every time, and the container died with WSL a minute
+        // later: "the target machine actively refused it". The leak fix
+        // reintroduced the very bug it was written after.
+        //
+        // So: sleep first, and only leave once the container has been SEEN and
+        // then gone. If it never appears at all — a start that failed — give up
+        // after five minutes rather than holding WSL open for the full run.
         info.ArgumentList.Add(
-            "for i in $(seq 1 4320); do " +
-            $"docker ps --filter name={ContainerName} --format '{{{{.Names}}}}' | grep -q {ContainerName} || exit 0; " +
-            "sleep 5; done");
+            "seen=0; missing=0; " +
+            "for i in $(seq 1 4320); do sleep 5; " +
+            $"if docker ps --filter name={ContainerName} --format '{{{{.Names}}}}' | grep -q {ContainerName}; " +
+            "then seen=1; missing=0; " +
+            "else if [ \"$seen\" = 1 ]; then exit 0; fi; " +
+            "missing=$((missing+1)); if [ \"$missing\" -gt 60 ]; then exit 0; fi; fi; done");
         try { _keepWslAwake = Process.Start(info); } catch { _keepWslAwake = null; }
+    }
+
+    /// <summary>
+    /// Whether a prompt cache from an earlier session is waiting on disk.
+    ///
+    /// Used to decide what to tell the teacher before the wait starts: three
+    /// minutes announced is tolerable, three minutes unexplained is not.
+    /// </summary>
+    public bool HasSavedPrefix() =>
+        Wsl($"test -f {CacheDirectoryInWsl}/{CacheFile} && echo yes").Trim() == "yes";
+
+    /// <summary>
+    /// Load the prompt cache saved by an earlier session, if there is one.
+    ///
+    /// Failure is not worth reporting: a cache that will not load simply means
+    /// the model reads its instructions again, which is what it did before any
+    /// of this existed.
+    /// </summary>
+    public void RestorePrefix()
+    {
+        if (!HasSavedPrefix()) return;
+        Wsl($"curl -s -m 120 -X POST 'http://127.0.0.1:{Port}/slots/0?action=restore' " +
+            $"-H 'Content-Type: application/json' -d '{{\"filename\":\"{CacheFile}\"}}' >/dev/null 2>&1");
+    }
+
+    /// <summary>Keep the prompt cache for next time. Best effort, by the same argument.</summary>
+    public void SavePrefix()
+    {
+        Wsl($"mkdir -p {CacheDirectoryInWsl}; " +
+            $"curl -s -m 120 -X POST 'http://127.0.0.1:{Port}/slots/0?action=save' " +
+            $"-H 'Content-Type: application/json' -d '{{\"filename\":\"{CacheFile}\"}}' >/dev/null 2>&1");
     }
 
     /// <summary>

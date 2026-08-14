@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Plantoir.Core.Assist;
 using Plantoir.Core.Models;
 using Plantoir.Services;
 using Windows.System;
@@ -153,21 +154,30 @@ public sealed partial class AssistWindow : Window
         // prompt, and the prompt is what makes the first answer slow.
         var schemas = AssistAgent.NarrowToLocal(await _tools.Tools(_closing.Token));
         _agent = new AssistAgent(_model, _tools, schemas, _course.Code, _section);
-        starting.Text = "Ready.";
 
-        // The briefing is fetched from the tool DIRECTLY, with no model in the
-        // loop. It used to be a conversational turn, and that turn was the
-        // slowest thing in the session: the 22 tool definitions come to some
-        // 6,200 tokens, and at the 21 tokens/second this hardware manages that
-        // is five minutes of prompt evaluation before the teacher sees a word.
-        // Nothing about it needed a model — the text is fixed, and the tool
-        // already decides whether this section has heard it.
-        string briefing = await _tools.CallTool("explain_publishing", new JsonObject
-        {
-            ["course"] = _course.Code,
-            ["section"] = _section,
-        }, _closing.Token);
-        if (briefing.Trim().Length > 0) Say("Plantoir", briefing.Trim());
+        // NOT "Ready." — it is not. Reading the instructions takes minutes on
+        // a cold cache, and a teacher told "Ready" who then waits three of them
+        // has been misled by the one line that was supposed to orient them.
+        // The warm-up card below says Ready, when it is.
+        starting.Text = "Started.";
+
+        // The briefing, EVERY time this window opens, and taken straight from
+        // the words rather than through the tool.
+        //
+        // Two reasons. The tool answers a returning section with "this has
+        // been explained already — don't repeat it, carry on with what the
+        // teacher asked", which is an instruction addressed to a MODEL; a
+        // teacher was being shown it, and it reads as the assistant talking
+        // about them rather than to them.
+        //
+        // And once per section turned out to be too rare. These two words
+        // decide whether "published" means students can see it, and a teacher
+        // opening this window a month later has every reason to want the
+        // reminder. It is four sentences at the top of a window they chose to
+        // open, not an interruption. The once-per-section machinery stays for
+        // Claude Code, where an assistant re-explaining itself mid-conversation
+        // genuinely is one.
+        Say("Plantoir", Briefing.Words(_course.Code, _section, AssistWorkspace.DestinationOf(_course)));
 
         // What to say, in the words that work.
         //
@@ -204,7 +214,15 @@ public sealed partial class AssistWindow : Window
     /// </summary>
     private async Task WarmUp(JsonArray schemas)
     {
-        var note = SayWithBar("Plantoir", "Reading my instructions — this happens once…");
+        // A cache from a previous session, if there is one — this is what turns
+        // three minutes per session into three minutes once.
+        bool warmAlready = await Task.Run(() => _model.HasSavedPrefix(), _closing.Token);
+        if (warmAlready) await Task.Run(() => _model.RestorePrefix(), _closing.Token);
+
+        var note = SayWithBar("Plantoir",
+            warmAlready
+                ? "Picking up where I left off…"
+                : "Reading my instructions — this happens once, and takes a few minutes…");
         var started = DateTime.Now;
 
         // How long this should take, from the size of what it has to read.
@@ -263,6 +281,11 @@ public sealed partial class AssistWindow : Window
         {
             note.Bar.Visibility = Visibility.Collapsed;
             note.Text.Text = "Ready — ask me for a change whenever you like.";
+
+            // Keep the cache, so the next session starts warm rather than
+            // spending another three minutes on the same instructions.
+            if (!_closing.IsCancellationRequested)
+                _ = Task.Run(() => _model.SavePrefix());
         }
     }
 
@@ -305,8 +328,9 @@ public sealed partial class AssistWindow : Window
         "Deploying is the one that students actually notice, so I'll always ask you to look at the " +
         "preview first — and you press the button, not me.\n\n" +
         "Name the page if you can — “Unit 2, Day 3” rather than “tomorrow's one” — and I'll be quicker " +
-        "and more certain. Bigger jobs (re-dating a term, rolling a course over, adding a unit's worth " +
-        "of pages) are best done with Claude, from the same menu.";
+        "and more certain. Bigger jobs — re-dating a term, rolling a course over, adding a unit's worth " +
+        "of pages — are beyond me, and want one of the more capable assistants in the same right-click " +
+        "menu.";
 
     // ---- One turn --------------------------------------------------------
 
