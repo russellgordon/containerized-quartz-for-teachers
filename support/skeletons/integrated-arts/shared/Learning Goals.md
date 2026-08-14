@@ -19,5 +19,5 @@ By the end of this course you will be able to:
 - Replace this with a third.
 
 Written in plain words on purpose. The Ministry's wording lives in
-[[Ontario Curriculum/index|the curriculum folder]]; this page is the version
+[[Curriculum/index|the curriculum folder]]; this page is the version
 you would say out loud on the first day.

@@ -87,7 +87,13 @@ def check(family: str) -> list:
         prose = re.sub(r"`[^`\n]*`", "", prose)
         for link in LINK.finditer(prose):
             target = link.group(1).strip().rstrip("\\")
-            if target in addressable or target.split("/")[-1] in addressable:
+            if "/" in target:
+                # A path link has to resolve as a path: every folder has an
+                # index, so matching on the stem alone would accept a link
+                # to a folder that does not exist.
+                if target in addressable:
+                    continue
+            elif target in addressable:
                 continue
             problems.append(f"{relative}: links to {target!r}, which does not exist here")
 

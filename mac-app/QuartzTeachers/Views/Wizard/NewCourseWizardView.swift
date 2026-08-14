@@ -626,12 +626,44 @@ struct NewCourseWizardView: View {
             fontsSectionsMap[key] = fontChoice.dictionaryRepresentation
         }
 
+        // The structure written to disk is the one the skeleton chose,
+        // whether or not the code field's onChange has run — a config that
+        // disagreed with the pages about to be installed would leave empty
+        // folders beside them.
+        var chosenSharedFolders: [String] = sharedFolders
+        var chosenSharedFiles: [String] = sharedFiles
+        var chosenPerSectionFolders: [String] = perSectionFolders
+        var chosenPerSectionFiles: [String] = perSectionFiles
+        var skeleton: SkeletonCatalog.Family? = nil
+        if startsFromSkeleton {
+            if let adopted = SkeletonCatalog.structureToAdopt(
+                forCode: code, currentSharedFolders: sharedFolders
+            ) {
+                skeleton = adopted
+                chosenSharedFolders = adopted.sharedFolders
+                chosenSharedFiles = adopted.sharedFiles
+                chosenPerSectionFolders = adopted.perSectionFolders
+                chosenPerSectionFiles = adopted.perSectionFiles
+            } else if SkeletonCatalog.hasSkeleton(forCode: code),
+                      let current = SkeletonCatalog.family(forCode: code),
+                      current.sharedFolders == sharedFolders {
+                skeleton = current
+            }
+        }
+
+        // A skeleton knows which of its own folders should be hidden and
+        // which should expand — a music course's Repertoire is not in the
+        // app's generic list, and its Curriculum folder is.
+        let hiddenCandidates: [String] = skeleton.map { ["Media"] + $0.hidden }
+            ?? WizardDefaults.hiddenItems
+        let expandableCandidates: [String] = skeleton?.expandable ?? WizardDefaults.expandableItems
+
         var hiddenItems: [String] = []
-        for item in WizardDefaults.hiddenItems {
-            let isKnown: Bool = sharedFolders.contains(item)
-                || sharedFiles.contains(item)
-                || perSectionFolders.contains(item)
-                || perSectionFiles.contains(item)
+        for item in hiddenCandidates {
+            let isKnown: Bool = chosenSharedFolders.contains(item)
+                || chosenSharedFiles.contains(item)
+                || chosenPerSectionFolders.contains(item)
+                || chosenPerSectionFiles.contains(item)
                 || item == "Media"
             if isKnown {
                 hiddenItems.append(item)
@@ -639,8 +671,8 @@ struct NewCourseWizardView: View {
         }
 
         var expandableItems: [String] = []
-        for item in WizardDefaults.expandableItems {
-            if sharedFolders.contains(item) || perSectionFolders.contains(item) {
+        for item in expandableCandidates {
+            if chosenSharedFolders.contains(item) || chosenPerSectionFolders.contains(item) {
                 expandableItems.append(item)
             }
         }
@@ -653,10 +685,10 @@ struct NewCourseWizardView: View {
             "emojis": ["sections": emojiMap],
             "num_sections": sectionNumbers.count,
             "section_numbers": sectionNumbers,
-            "shared_folders": sharedFolders,
-            "shared_files": sharedFiles,
-            "per_section_folders": perSectionFolders,
-            "per_section_files": perSectionFiles,
+            "shared_folders": chosenSharedFolders,
+            "shared_files": chosenSharedFiles,
+            "per_section_folders": chosenPerSectionFolders,
+            "per_section_files": chosenPerSectionFiles,
             "hidden": hiddenItems,
             "expandable": expandableItems,
             "expandOnFolderClick": expandOnFolderClick,

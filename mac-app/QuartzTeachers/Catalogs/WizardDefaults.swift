@@ -42,7 +42,7 @@ enum WizardDefaults {
     /// Both terminologies appear here, so whichever names a course ends up
     /// with are hidden by default.
     static let hiddenItems: [String] = [
-        "Media", "Ontario Curriculum", "College Board Curriculum",
+        "Media", "Curriculum", "Ontario Curriculum", "College Board Curriculum",
         "Extra Help.md", "SIC Drop-In Sessions.md", "Grove Time.md",
         "Learning Goals.md",
         "Private Notes.md", "Scratch Page.md", "Key Links.md",

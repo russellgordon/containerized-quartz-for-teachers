@@ -24,9 +24,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / "support" / "skeletons"
 
-# The curriculum folder is named as the wizard's factory default names it,
-# so a teacher who later adds real expectations is in the expected place.
-CURRICULUM_FOLDER = "Ontario Curriculum"
+# Named as the example-content payloads name it, so every course built by
+# this software puts its expectations in the same place.
+CURRICULUM_FOLDER = "Curriculum"
 
 UTILITY_FILES = ["Key Links.md", "Private Notes.md", "Scratch Page.md"]
 SHARED_FILES = ["Learning Goals.md", "Help Sessions.md"]
@@ -560,7 +560,8 @@ def fill(text: str, fam: dict) -> str:
             .replace("%SUBJECT%", fam["subject"])
             .replace("%LABEL%", fam["label"])
             .replace("%ROOM%", fam["room"])
-            .replace("%AGREEMENT%", fam["agreement"]))
+            .replace("%AGREEMENT%", fam["agreement"])
+            .replace("%CURRICULUM%", CURRICULUM_FOLDER))
 
 
 def page(title: str, body: str, *, tags=None, toc=False, extra_frontmatter=None,
@@ -1202,7 +1203,7 @@ By the end of this course you will be able to:
 - Replace this with a third.
 
 Written in plain words on purpose. The Ministry's wording lives in
-[[Ontario Curriculum/index|the curriculum folder]]; this page is the version
+[[%CURRICULUM%/index|the curriculum folder]]; this page is the version
 you would say out loud on the first day.
 """, fam).replace("%PLACEHOLDER%", fill(PLACEHOLDER_NOTE, fam)), tags=["setup"]),
 

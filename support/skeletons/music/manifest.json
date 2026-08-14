@@ -9,7 +9,7 @@
     "Setup",
     "Style",
     "Tutorials",
-    "Ontario Curriculum"
+    "Curriculum"
   ],
   "shared_files": [
     "Learning Goals.md",
@@ -24,7 +24,7 @@
     "Scratch Page.md"
   ],
   "hidden": [
-    "Ontario Curriculum",
+    "Curriculum",
     "Learning Goals.md",
     "Help Sessions.md",
     "Key Links.md",
@@ -42,7 +42,7 @@
     "Style",
     "Tutorials"
   ],
-  "curriculum_folder": "Ontario Curriculum",
+  "curriculum_folder": "Curriculum",
   "skeleton": true,
   "label": "Music"
 }

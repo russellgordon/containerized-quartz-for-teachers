@@ -30,7 +30,8 @@ final class SkeletonCatalogTests: XCTestCase {
         XCTAssertEqual(music.label, "Music")
         XCTAssertTrue(music.sharedFolders.contains("Repertoire"),
                       "A music course rehearses repertoire")
-        XCTAssertTrue(music.sharedFolders.contains("Ontario Curriculum"))
+        XCTAssertTrue(music.sharedFolders.contains("Curriculum"),
+                      "Named as the example-content payloads name it")
         XCTAssertTrue(music.perSectionFolders.contains("All Classes"))
 
         let chemistry: SkeletonCatalog.Family = try XCTUnwrap(SkeletonCatalog.family(forCode: "SCH3U"))
@@ -70,6 +71,22 @@ final class SkeletonCatalogTests: XCTestCase {
         let music: SkeletonCatalog.Family = try XCTUnwrap(SkeletonCatalog.family(forCode: "AMU3M"))
         XCTAssertNil(SkeletonCatalog.structureToAdopt(
             forCode: "AMU2O", currentSharedFolders: music.sharedFolders))
+    }
+
+    /// The folders a skeleton hides and expands are its own, not the app's
+    /// generic list — which knows nothing about Repertoire.
+    @MainActor
+    func testASkeletonCourseHidesAndExpandsItsOwnFolders() {
+        let wizard: NewCourseWizardView = NewCourseWizardView()
+        let configuration: [String: Any] = wizard.buildConfigurationDictionary(
+            code: "AMU3M", name: "Music")
+        let hidden: [String] = try! XCTUnwrap(configuration["hidden"] as? [String])
+        let expandable: [String] = try! XCTUnwrap(configuration["expandable"] as? [String])
+        XCTAssertTrue(hidden.contains("Curriculum"))
+        XCTAssertTrue(hidden.contains("Media"))
+        XCTAssertTrue(expandable.contains("Repertoire"))
+        XCTAssertFalse(expandable.contains("Curriculum"),
+                       "A hidden folder cannot also be expandable")
     }
 
     @MainActor

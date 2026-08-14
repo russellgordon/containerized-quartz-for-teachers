@@ -6,7 +6,7 @@ transcludeTitleSize: h2
 excludeBacklinks: true
 ---
 %%curriculum-start%%
-- [[Ontario Curriculum/index|Curriculum Expectations]]
+- [[Curriculum/index|Curriculum Expectations]]
 %%curriculum-end%%
 - [[Learning Goals]]
 - [[How This Class Works]]
