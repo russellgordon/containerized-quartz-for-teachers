@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_41__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,15 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Graph Talks]] — a graph that keeps repeating itself:
-   what could it be measuring?
-2. Random groups — [[The Ferris Wheel]] at the boards
-3. Consolidate: words for repetition — cycle, period, amplitude, axis
-4. Extend: your graph knows the future — predict a height three
-   minutes from now
+1. Number talk: [[Always, Sometimes, Never]] — round two: sides versus
+   angles
+2. Random groups — three sides, zero angles, and the sine law refuses
+   to start: now what?
+3. Consolidate: [[The Cosine Law]] — and a decision map for choosing
+   your tool
+4. Check your understanding: [[Trig Ratios and Laws Practice]]
 
 ## Things to do before our next class
 
-- [ ] Journal: something in your own week that is periodic; sketch one
-      honest cycle of it.
+- [ ] Journal: draw the decision map your own way — how do you pick the
+      tool before touching a formula?

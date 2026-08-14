@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 2
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_62__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Visual Patterns]] — a staircase of cubes, counted
-   sideways
-2. Random groups — [[The Allowance Choice]] at the boards
-3. Consolidate: [[Series]] — adding the terms without adding the terms
-4. Check your understanding: the sequences half of
-   [[Sequences, Series, and Interest Practice]]
+1. Number talk: [[Visual Patterns]] — term 10, then term $n$
+2. Compare and name it: [[Sequences as Functions]] — a sequence is a
+   function whose domain is the natural numbers
+3. At the boards: explicit and recursive forms of the same sequence,
+   and what each is good for
 
 ## Things to do before our next class
 
-- [ ] Journal: which allowance you chose, and the exact week you would
-      switch sides.
+- [ ] Journal: the sequence you could only write recursively.

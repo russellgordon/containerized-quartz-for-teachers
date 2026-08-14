@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_25__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Data day — every group gets a fresh data set: cooling water, a
-   bouncing ball, dice that decay
-2. From table to equation — hunt the constant ratio, then name the base
-3. Discuss: [[What Makes a Model Good]] — fit is not the whole story
-4. [[Double or Nothing]] due — two-minute stand-up summaries
+1. Number talk: [[Estimation Duels]] — how many folds to reach the moon?
+2. Random groups — build a table for $2^x$ by hand to $x = 20$, then
+   argue about what the graph must do between the integers
+3. Consolidate: why the domain is every real number, and what that
+   means for a table that only has whole numbers in it
 
 ## Things to do before our next class
 
-- [ ] Journal: where your model should not be trusted, and why saying
-      so makes the write-up stronger.
+- [ ] Journal: what $2^{1.5}$ means, in your own words.

@@ -10,18 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Which One Doesn't Belong]] — four expressions, three
-   of them secretly equal
-2. Random groups — different-looking formulas, identical outputs:
-   prove it or break it
-3. Consolidate: [[Equivalent Algebraic Expressions]] — simplifying
-   rationals, and the restrictions that keep us honest
-4. [[The Transformation Gallery]] due — a gallery walk of galleries
-5. Close the unit: every family we met fits one recipe
+1. Number talk: [[True or False]] — inverse claims
+2. Random groups — at the boards: find inverses algebraically, then
+   graph both and find the line of symmetry for yourselves
+3. Consolidate: back to [[The Inverse of a Function]] — when the
+   inverse is a function, and what to restrict when it is not
 
 ## Things to do before our next class
 
-- [ ] First journal collection is next class — measure your entries
-      against [[Journal Checklist]].
-- [ ] Journal: the restriction your group almost forgot, and what it
-      protects.
+- [ ] Journal: the function whose inverse surprised you.

@@ -10,15 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Which One Doesn't Belong]] — four graphs, one parent
-2. Random groups — one parent, many children: what does $\sqrt{x - 2}$
-   do that $\sqrt{x} - 2$ does not?
-3. Gallery walk — every board holds a family portrait; find the family
-   resemblance
-4. Confirm your conjectures with sliders — [[Using Desmos]]
-5. Debrief: [[Mistakes Are Data]] — the wrong graphs taught us the most
+1. Number talk: [[Which One Doesn't Belong]] — four domains
+2. Random groups — at the boards: state the domain and range of six
+   functions given only by equations, and justify each
+3. Consolidate: what forces a restriction — a denominator, a square
+   root, a context
+4. Check your understanding: [[Domain and Range Practice]], first
+   section
 
 ## Things to do before our next class
 
-- [ ] Stuck today? That was the design — read [[Getting Unstuck]].
-- [ ] Journal: the move that behaved backwards, and your best guess why.
+- [ ] Finish the first section.

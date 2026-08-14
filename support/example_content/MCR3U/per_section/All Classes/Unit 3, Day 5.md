@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_18__
+created: __CREATED_CLASS_42__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[True or False]] — claims about $\sin x$
-2. Random groups — unwrap the unit circle: plot the sine ratio for
-   every angle from $0°$ to $360°$
-3. Consolidate: [[Sinusoidal Functions]] — the wave finally gets a name
-4. Check your understanding: [[Sinusoidal Functions Practice]]
+1. Number talk: [[Always, Sometimes, Never]] — 'the sine law works here'
+2. Random groups — six triangles, and which law each one needs, decided
+   before any arithmetic
+3. Clinic: [[Trig Ratios and Laws Practice]] to the end, including the ambiguous
+   case
 
 ## Things to do before our next class
 
-- [ ] Journal: why the Ferris wheel graph and today's unwrapped circle
-      drew the same shape.
+- [ ] Finish the practice set.

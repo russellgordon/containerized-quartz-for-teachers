@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_22__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Number Strings]] — halves in the exponent this time
-2. Random groups — the laws insist $4^{1/2} \times 4^{1/2} = 4$: so
-   what number *is* $4^{1/2}$?
-3. Consolidate: [[Rational Exponents]] — roots were exponents all along
-4. Check your understanding — integer and rational exponents mixed, no
-   calculator until the final step
+1. Number talk: [[Number Strings]] — powers of powers
+2. Random groups — at the boards: simplify six expressions mixing
+   negative and fractional exponents
+3. Clinic: [[Exponent Laws Practice]] to the end
 
 ## Things to do before our next class
 
-- [ ] Journal: why $27^{1/3}$ had no choice but to be $3$.
+- [ ] Finish the practice set.

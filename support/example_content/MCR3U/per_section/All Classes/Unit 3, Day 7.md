@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 7
 draft: false
-created: __CREATED_CLASS_20__
+created: __CREATED_CLASS_44__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Work period — tide models finished and stress-tested
-2. Swap boards: another group interrogates your model — where does it
-   bend, and where does it break?
-3. Revisit: [[What Makes a Model Good]] — now with waves
-4. [[The Tide Problem]] due — one prediction, defended out loud
+1. Number talk: [[True or False]] — is this an identity or an equation?
+2. Random groups — prove three simple identities, one side only, each
+   line following from the one above
+3. Consolidate: the method, written on the board and copied down
 
 ## Things to do before our next class
 
-- [ ] Journal: the moment your model disagreed with the data, and whose
-      side you took.
+- [ ] Two more proofs, laid out properly.

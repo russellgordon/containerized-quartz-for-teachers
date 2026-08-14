@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 2
 draft: false
-created: __CREATED_CLASS_15__
+created: __CREATED_CLASS_39__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Always, Sometimes, Never]] — claims about triangles
-2. Random groups — no right angle in sight: find the missing side
-   anyway
-3. Consolidate: [[The Sine Law]] — including the case where two
-   different triangles both fit your facts
-4. Check your understanding — one ambiguous case, both triangles found
+1. Number talk: [[Number Strings]] — exact values
+2. Random groups — the special triangles rebuilt from scratch, then
+   used for six exact ratios with no calculator
+3. Consolidate: back to [[Special Angles]] — and why exact beats
+   decimal in every later calculation
 
 ## Things to do before our next class
 
-- [ ] Journal: how your group discovered the second triangle hiding in
-      the same three facts.
+- [ ] The two special triangles, drawn from memory.
