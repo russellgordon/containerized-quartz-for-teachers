@@ -291,10 +291,10 @@ public class ReDateTests : IDisposable
     private static Timetable Block() => Timetable.Parse(Sheet, "F", 2026);
 
     private void Class(string title, string date, string body = "Body.") =>
-        Write($"section1/All Classes/{title}.md", $"draft: false\ncreated: {date}T07:00:00.000-0400", body);
+        Write($"section1/All Classes/{title}.md", $"publish: true\ncreated: {date}T07:00:00.000-0400", body);
 
     private void Material(string path, string date, string body = "Body.") =>
-        Write(path, $"draftSection1: false\ncreatedSection1: {date}T08:00:00.000-0500", body);
+        Write(path, $"publishForSection1: true\ncreatedSection1: {date}T08:00:00.000-0500", body);
 
     private void Write(string relative, string frontmatter, string body)
     {
@@ -507,7 +507,7 @@ public class ReDateTests : IDisposable
         Class("Unit 1, Day 1", "2026-09-08");
         var workspace = Open();
         workspace.ApplyReDate(workspace.PlanReDate("ICS3U", 1, Block(), new[] { "Unit 1, Day 1" }, new[] { 1 }));
-        Assert.Contains("draft: false", Read("section1/All Classes/Unit 1, Day 1.md"));
+        Assert.Contains("publish: true", Read("section1/All Classes/Unit 1, Day 1.md"));
     }
 
     [Fact]
@@ -606,7 +606,7 @@ public class ReDateTests : IDisposable
         Assert.NotNull(result.BackupPath);
         string text = Read("Concepts/Variables.md");
         Assert.Contains("createdSection1: 2026-10-13T08:00:00.000-0500", text);
-        Assert.Contains("draftSection1: false", text);
+        Assert.Contains("publishForSection1: true", text);
     }
 
     [Fact]

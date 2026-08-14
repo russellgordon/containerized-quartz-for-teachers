@@ -1215,6 +1215,44 @@ def _sync_curriculum_created(content_root: Path, latest_dt: datetime) -> tuple[i
 _logged_curriculum_folders = set()
 
 # UPDATED: process frontmatter for draft/created fields (no unconditional curriculum bump)
+def use_publish_filter(quartz_config_path: Path):
+    """
+    Point Quartz at the `publish:` filter instead of the stock draft one.
+
+    Quartz's own RemoveDrafts reads `draft: true`; PublishFlag (patches/publish.ts)
+    reads `publish: false` and keeps the same default, so a page with no flag
+    stays visible. Patched here rather than in a config file because the
+    config comes from Quartz's own repo at image build time.
+    """
+    try:
+        text = quartz_config_path.read_text(encoding="utf-8")
+    except Exception as e:
+        print(f"⚠️ Could not read quartz.config.ts to set the publish filter: {e}")
+        return
+
+    if "Plugin.PublishFlag()" in text:
+        print("ℹ️ Quartz already filters on 'publish' (no change).")
+        return
+
+    updated = text.replace("Plugin.RemoveDrafts()", "Plugin.PublishFlag()")
+    if updated == text:
+        print("⚠️ Could not find the draft filter in quartz.config.ts — pages may not be filtered as expected.")
+        return
+
+    try:
+        quartz_config_path.write_text(updated, encoding="utf-8")
+        print("✅ Quartz now decides visibility from 'publish:' rather than 'draft:'.")
+    except Exception as e:
+        print(f"⚠️ Could not set the publish filter: {e}")
+
+
+def _as_bool(value) -> bool:
+    """YAML quoting varies, so a quoted "true" counts as true."""
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() == "true"
+
+
 def process_frontmatter(file_path: Path, section_number: int):
     if file_path.suffix.lower() != ".md":
         return
@@ -1224,16 +1262,31 @@ def process_frontmatter(file_path: Path, section_number: int):
         print(f"⚠️ Could not read frontmatter from {file_path}: {e}")
         return
 
-    draft_key = f"draftSection{section_number}"
+    # Whether students see a page is `publish:`, and per-section it is
+    # `publishForSection<N>:`. A teacher says a page is or is not published;
+    # they never say it is or is not a draft, and "draft" reads as
+    # "unfinished" rather than "not visible", which is a different thing.
+    publish_key = f"publishForSection{section_number}"
     created_key = f"createdSection{section_number}"
 
-    if draft_key in post:
-        post["draft"] = post[draft_key]
+    if publish_key in post:
+        post["publish"] = post[publish_key]
     if created_key in post:
         post["created"] = post[created_key]
 
+    # Courses written before the change still carry the old keys. Read them,
+    # inverted, but never let them override an explicit publish flag — a page
+    # carrying both has already been migrated and the old key is a leftover.
+    legacy_key = f"draftSection{section_number}"
+    if "publish" not in post:
+        if legacy_key in post:
+            post["publish"] = not _as_bool(post[legacy_key])
+        elif "draft" in post:
+            post["publish"] = not _as_bool(post["draft"])
+
     for key in list(post.keys()):
-        if re.match(r"draftSection\d+", key) or re.match(r"createdSection\d+", key):
+        if (re.match(r"publishForSection\d+", key) or re.match(r"draftSection\d+", key)
+                or re.match(r"createdSection\d+", key) or key == "draft"):
             del post[key]
 
     # NOTE: Removed unconditional Curriculum timestamp bump here.
@@ -2143,6 +2196,8 @@ def build_section_site(
             )
         else:
             print("ℹ️ No font selections found in course_config.json — leaving Quartz defaults.")
+
+        use_publish_filter(config_path)
 
         # NEW: copy/symlink .netlify into output so deploy CLI can diff (later step)
         _ensure_netlify_link(output_dir, course_dir)

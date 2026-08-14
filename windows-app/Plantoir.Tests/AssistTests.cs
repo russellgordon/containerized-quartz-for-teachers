@@ -92,8 +92,8 @@ public class AssistWorkspaceTests : IDisposable
 
         var plan = Open().PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true);
 
-        Assert.Equal("draft", Assert.Single(plan.Named).FrontmatterKey);
-        Assert.Equal("draftSection1", Assert.Single(plan.Linked).FrontmatterKey);
+        Assert.Equal("publish", Assert.Single(plan.Named).FrontmatterKey);
+        Assert.Equal("publishForSection1", Assert.Single(plan.Linked).FrontmatterKey);
     }
 
     [Fact]
@@ -113,8 +113,8 @@ public class AssistWorkspaceTests : IDisposable
             "All 2 pages would change.\n" +
             "\n" +
             "Would change:\n" +
-            "  courses/ICS3U/section1/All Classes/Unit 2, Day 3.md  (draft: true → false)\n" +
-            "  courses/ICS3U/Concepts/Ohm's Law.md  (draftSection1: true → false)\n" +
+            "  courses/ICS3U/section1/All Classes/Unit 2, Day 3.md  (publish: false → true)\n" +
+            "  courses/ICS3U/Concepts/Ohm's Law.md  (publishForSection1: false → true)\n" +
             "\n" +
             "Then rebuild the preview of Section 1, so you can look it over. " +
             "Nothing goes live on Netlify until you publish it yourself in Plantoir.",
@@ -155,7 +155,7 @@ public class AssistWorkspaceTests : IDisposable
 
         Assert.Contains("and the 2 pages they link to", description);      // links followed
         Assert.Contains("1 of 3 pages would change", description);          // pages changing
-        Assert.Contains("(draftSection1: true → false)", description);      // and the state it saw
+        Assert.Contains("(publishForSection1: false → true)", description);      // and the state it saw
     }
 
     [Fact]
@@ -209,7 +209,7 @@ public class AssistWorkspaceTests : IDisposable
         var plan = Open().PlanPublish("ICS3U", 1, new[] { "Safety Contract" }, includeLinked: false);
 
         var page = Assert.Single(plan.Named);
-        Assert.Equal("draftSection1", page.FrontmatterKey);
+        Assert.Equal("publishForSection1", page.FrontmatterKey);
         Assert.True(page.WillChange);
     }
 
@@ -241,15 +241,15 @@ public class AssistWorkspaceTests : IDisposable
 
         await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" },
             includeLinked: true, publishes: false));
-        Assert.Contains("draft: false", File.ReadAllText(page));
-        Assert.Contains("draftSection1: false", File.ReadAllText(concept));
+        Assert.Contains("publish: true", File.ReadAllText(page));
+        Assert.Contains("publishForSection1: true", File.ReadAllText(concept));
 
         var result = history.Undo();
 
         Assert.True(result.Succeeded);
         Assert.Empty(result.Skipped);
-        Assert.Contains("draft: true", File.ReadAllText(page));
-        Assert.Contains("draftSection1: true", File.ReadAllText(concept));
+        Assert.Contains("publish: false", File.ReadAllText(page));
+        Assert.Contains("publishForSection1: false", File.ReadAllText(concept));
         Assert.Contains("publishing “Unit 1, Day 2”", result.Description);
     }
 
@@ -292,13 +292,13 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Equal(2, history.Entries.Count);
 
         history.Undo();
-        Assert.Contains("draft: true", File.ReadAllText(Path.Combine(
+        Assert.Contains("publish: false", File.ReadAllText(Path.Combine(
             _folder, "courses", "ICS3U", "section1", "All Classes", "Unit 1, Day 2.md")));
-        Assert.Contains("draft: false", File.ReadAllText(Path.Combine(
+        Assert.Contains("publish: true", File.ReadAllText(Path.Combine(
             _folder, "courses", "ICS3U", "section1", "All Classes", "Unit 1, Day 1.md")));
 
         history.Undo();
-        Assert.Contains("draft: true", File.ReadAllText(Path.Combine(
+        Assert.Contains("publish: false", File.ReadAllText(Path.Combine(
             _folder, "courses", "ICS3U", "section1", "All Classes", "Unit 1, Day 1.md")));
         Assert.Empty(history.Entries);
     }
@@ -510,7 +510,7 @@ public class AssistWorkspaceTests : IDisposable
 
     private void DatedClass(string course, string title, string date, bool draft, string body = "Body.") =>
         File.WriteAllText(EnsurePath(course, $"section1/All Classes/{title}.md"),
-            $"---\ndraft: {(draft ? "true" : "false")}\ncreated: {date}T07:00:00.000-0400\n---\n{body}\n");
+            $"---\npublish: {(draft ? "false" : "true")}\ncreated: {date}T07:00:00.000-0400\n---\n{body}\n");
 
     private string EnsurePath(string course, string relative)
     {
@@ -559,7 +559,7 @@ public class AssistWorkspaceTests : IDisposable
         string concept = File.ReadAllText(
             Path.Combine(_folder, "courses", "ICS3U", "Concepts", "Recursion.md"));
         Assert.Contains("createdSection1: 2026-10-05", concept);   // Day 3's date, not Day 4's
-        Assert.Contains("draftSection1: false", concept);
+        Assert.Contains("publishForSection1: true", concept);
     }
 
     [Fact]
@@ -813,7 +813,7 @@ public class AssistWorkspaceTests : IDisposable
             Assert.Contains("Plantoir is previewing ICS3U right now", refusal.Message);
             Assert.Contains("Reading and planning are fine meanwhile.", refusal.Message);
             Assert.Empty(_launcher.Runs);                 // never got as far as a build
-            Assert.Contains("draft: true",
+            Assert.Contains("publish: false",
                 File.ReadAllText(Path.Combine(_folder, "courses", "ICS3U",
                     "section1", "All Classes", "Unit 2, Day 3.md")));   // and never edited
         }
@@ -1180,7 +1180,7 @@ public class AssistWorkspaceTests : IDisposable
         Class("ICS3U", "Unit 1, Day 2", "2026-09-09");
         var plan = Open().PlanPublish("ICS3U", 1, Array.Empty<string>(),
             includeLinked: false, draft: true, onOrAfter: new DateOnly(2026, 9, 1));
-        Assert.Contains("(2026-09-09, draft: false → true)", plan.Describe());
+        Assert.Contains("(2026-09-09, publish: true → false)", plan.Describe());
     }
 
     [Fact]
@@ -1198,7 +1198,7 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Contains("No content was changed.", result.Message);
         Assert.Contains("publish it there when you're happy", result.Message);
         Assert.Equal(new[] { "preview" }, _launcher.Runs.Select(r => r.Launcher));   // never "deploy"
-        Assert.Contains("draft: true",
+        Assert.Contains("publish: false",
             File.ReadAllText(Path.Combine(_folder, "courses", "ICS3U", "section1", "All Classes", "Unit 2, Day 3.md")));
     }
 
@@ -1311,8 +1311,8 @@ public class AssistWorkspaceTests : IDisposable
         await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 2, Day 3" }, includeLinked: true, publishes: false));
 
         string text = File.ReadAllText(Path.Combine(_folder, "courses", "ICS3U", "Concepts", "Ohm's Law.md"));
-        Assert.Contains("draftSection1: false", text);
-        Assert.Contains("draftSection2: true", text);   // section 2 is none of this operation's business
+        Assert.Contains("publishForSection1: true", text);
+        Assert.Contains("publishForSection2: false", text);   // section 2 is none of this operation's business
     }
 
 
@@ -1411,10 +1411,15 @@ public class AssistWorkspaceTests : IDisposable
             relative.Replace('/', Path.DirectorySeparatorChar));
         Directory.CreateDirectory(Path.GetDirectoryName(full)!);
 
+        // Fixtures are written in the vocabulary the app now uses: publish,
+        // not draft, and the opposite polarity. The parameters keep their
+        // "draft" names because that is what a test READS as — "publish: false"
+        // means the page is not visible — and flipping every call site would
+        // obscure what each test is actually about.
         var frontmatter = new List<string>();
-        if (draft is { } d) frontmatter.Add($"draft: {(d ? "true" : "false")}");
-        if (draftSection1 is { } one) frontmatter.Add($"draftSection1: {(one ? "true" : "false")}");
-        if (draftSection2 is { } two) frontmatter.Add($"draftSection2: {(two ? "true" : "false")}");
+        if (draft is { } d) frontmatter.Add($"publish: {(d ? "false" : "true")}");
+        if (draftSection1 is { } one) frontmatter.Add($"publishForSection1: {(one ? "false" : "true")}");
+        if (draftSection2 is { } two) frontmatter.Add($"publishForSection2: {(two ? "false" : "true")}");
 
         File.WriteAllText(full, "---\n" + string.Join("\n", frontmatter) + "\n---\n" + body + "\n");
     }

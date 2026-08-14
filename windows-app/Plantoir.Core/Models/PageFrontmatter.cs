@@ -29,12 +29,26 @@ namespace Plantoir.Core.Models;
 /// </summary>
 public static class PageFrontmatter
 {
-    /// <summary>The frontmatter key that governs this page in this section.</summary>
+    /// <summary>
+    /// The frontmatter key that decides whether students see this page.
+    ///
+    /// <c>publish: true</c> means visible; <c>publish: false</c> means not.
+    /// A teacher says a page is or is not published — never that it is or is
+    /// not a draft, which reads as "unfinished" and is a different thing.
+    /// </summary>
     /// <param name="isSectionLocal">
     /// True when the page lives under <c>section&lt;N&gt;/</c>. Callers get
     /// this from <see cref="PagePaths"/> rather than deciding it themselves.
     /// </param>
-    public static string DraftKeyFor(int sectionNumber, bool isSectionLocal) =>
+    public static string PublishKeyFor(int sectionNumber, bool isSectionLocal) =>
+        isSectionLocal ? "publish" : "publishForSection" + sectionNumber;
+
+    /// <summary>
+    /// What the same page used to use. Courses written before the change still
+    /// carry these, and are read — inverted — until something touches the page
+    /// and writes the new key.
+    /// </summary>
+    public static string LegacyDraftKeyFor(int sectionNumber, bool isSectionLocal) =>
         isSectionLocal ? "draft" : "draftSection" + sectionNumber;
 
     /// <summary>
@@ -47,9 +61,16 @@ public static class PageFrontmatter
     {
         var block = Block.Parse(pageText);
         if (block is null) return false;
+
+        // The new keys win outright. A page carrying both has already been
+        // migrated, and the leftover draft key must not contradict it.
+        if (block.BoolValue("publishForSection" + sectionNumber) is { } perSection) return !perSection;
+        if (block.BoolValue("publish") is { } plain) return !plain;
+
+        // Not yet migrated: read the old keys, inverted.
         return block.BoolValue("draftSection" + sectionNumber)
             ?? block.BoolValue("draft")
-            ?? false;
+            ?? false;   // no flag at all means visible, then as now
     }
 
     /// <summary>
@@ -63,6 +84,26 @@ public static class PageFrontmatter
     /// <summary>One key's value exactly as written, or null when absent.</summary>
     public static string? StoredText(string pageText, string key) =>
         Block.Parse(pageText)?.RawValue(key);
+
+    /// <summary>
+    /// Whether this page is currently hidden, in DRAFT terms, or null when it
+    /// says nothing either way.
+    ///
+    /// Callers reason in "is it hidden" because that is the question a plan
+    /// answers, while the file now stores the opposite. Reading the raw
+    /// <c>publish</c> value into a field that means "draft" inverts every
+    /// comparison that depends on it — which is exactly what happened, and
+    /// what made a plan think an already-published page still needed
+    /// publishing.
+    /// </summary>
+    public static bool? StoredDraft(string pageText, string publishKey)
+    {
+        var block = Block.Parse(pageText);
+        if (block is null) return null;
+        if (block.BoolValue(publishKey) is { } published) return !published;
+        if (block.BoolValue(LegacyKeyOf(publishKey)) is { } draft) return draft;
+        return null;
+    }
 
     /// <summary>
     /// The key carrying this page's date, following the same rule as the draft
@@ -157,30 +198,72 @@ public static class PageFrontmatter
     /// which can never land inside a nested list or block scalar. A page with
     /// no frontmatter at all gets a block.
     /// </summary>
+    /// <summary>
+    /// Set a page's visibility, writing the <c>publish</c> key and clearing
+    /// any leftover <c>draft</c> one.
+    ///
+    /// Migration happens here, a page at a time, as things are touched. There
+    /// is no sweep and no flag day: build_site.py reads the old keys too, so a
+    /// course that nobody has touched still builds exactly as it did, and a
+    /// page converts the moment anything changes its visibility.
+    /// </summary>
+    /// <param name="key">The publish key, from <see cref="PublishKeyFor"/>.</param>
+    /// <param name="draft">True to hide the page from students.</param>
     public static (string Text, DraftEdit Edit) SetDraft(string pageText, string key, bool draft)
     {
+        bool publish = !draft;
         var block = Block.Parse(pageText);
-        bool? before = block?.BoolValue(key);
-        if (before == draft) return (pageText, new DraftEdit(key, before, draft, Changed: false));
+        // Reads the old key too, so a page that predates the change reports
+        // the state it actually has rather than "not set".
+        bool? before = StoredDraft(pageText, key);
+
+        string legacy = LegacyKeyOf(key);
+        bool hasLegacy = block?.IndexOf(legacy) is not null;
+
+        // Already right AND already migrated: nothing to do.
+        if (before == draft && !hasLegacy)
+            return (pageText, new DraftEdit(key, before, draft, Changed: false));
 
         string newline = DominantNewline(pageText);
-        string line = key + ": " + (draft ? "true" : "false");
+        string line = key + ": " + (publish ? "true" : "false");
 
         if (block is null)
         {
-            // No frontmatter. Give the page a block and keep its body intact.
             string text = "---" + newline + line + newline + "---" + newline + pageText;
             return (text, new DraftEdit(key, null, draft, Changed: true));
         }
 
         var lines = new List<string>(block.Lines);
-        if (block.IndexOf(key) is { } at)
-            lines[at] = ReplaceValue(lines[at], draft);
+        int? publishAt = block.IndexOf(key);
+        int? legacyAt = block.IndexOf(legacy);
+
+        if (publishAt is { } at)
+        {
+            lines[at] = ReplaceValue(lines[at], publish);
+            // Already migrated; the leftover is just noise now.
+            if (legacyAt is { } duplicate) lines.RemoveAt(duplicate);
+        }
+        else if (legacyAt is { } old)
+        {
+            // Migrating: put the new key exactly where the old one sat, so the
+            // teacher's frontmatter keeps its order. Moving it to the top would
+            // show up as a reordered diff in a file Obsidian has open.
+            string carriageReturn = lines[old].EndsWith('\r') ? "\r" : "";
+            lines[old] = line + carriageReturn;
+        }
         else
+        {
             lines.Insert(block.FirstBodyLine, line);
+        }
 
         return (block.Rebuild(lines, newline), new DraftEdit(key, before, draft, Changed: true));
     }
+
+    /// <summary>The pre-change key that answers the same question as <paramref name="key"/>.</summary>
+    private static string LegacyKeyOf(string key) =>
+        key.StartsWith("publishForSection", StringComparison.Ordinal)
+            ? "draftSection" + key["publishForSection".Length..]
+            : "draft";
 
     /// <summary>
     /// Rewrites the value after the colon while preserving whatever came

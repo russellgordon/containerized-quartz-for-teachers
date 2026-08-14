@@ -13,19 +13,63 @@ public class PageFrontmatterTests
     // ---- Which key governs the page -------------------------------------
 
     [Fact]
-    public void ASectionLocalPageUsesThePlainDraftKey()
+    public void ASectionLocalPageUsesThePlainPublishKey()
     {
-        // A page under section1/ belongs to one section, so "draft" is
+        // A page under section1/ belongs to one section, so "publish" is
         // unambiguous — this is how All Classes pages are written.
-        Assert.Equal("draft", PageFrontmatter.DraftKeyFor(1, isSectionLocal: true));
+        Assert.Equal("publish", PageFrontmatter.PublishKeyFor(1, isSectionLocal: true));
     }
 
     [Fact]
-    public void ASharedPageUsesThePerSectionDraftKey()
+    public void ASharedPageUsesThePerSectionPublishKey()
     {
-        // Concepts/ is copied into every section, so hiding it in section 2
-        // must not hide it in section 1.
-        Assert.Equal("draftSection2", PageFrontmatter.DraftKeyFor(2, isSectionLocal: false));
+        // Concepts/ is copied into every section, so unpublishing it in
+        // section 2 must not unpublish it in section 1.
+        Assert.Equal("publishForSection2", PageFrontmatter.PublishKeyFor(2, isSectionLocal: false));
+    }
+
+    // ---- Reading a course that predates the change -----------------------
+
+    [Fact]
+    public void APageStillOnTheOldDraftKeyIsReadInverted()
+    {
+        // Courses written before the change keep working. build_site.py reads
+        // the old keys too, so nothing has to be converted before it builds.
+        Assert.True(PageFrontmatter.IsDraft("---\ndraft: true\n---\nbody\n", 1));
+        Assert.False(PageFrontmatter.IsDraft("---\ndraft: false\n---\nbody\n", 1));
+        Assert.True(PageFrontmatter.IsDraft("---\ndraftSection2: true\n---\nbody\n", 2));
+    }
+
+    [Fact]
+    public void ThePublishKeyWinsOverALeftoverDraftKey()
+    {
+        // A page carrying both has already been migrated; the leftover must
+        // not contradict the answer that replaced it.
+        Assert.False(PageFrontmatter.IsDraft("---\ndraft: true\npublish: true\n---\nbody\n", 1));
+    }
+
+    [Fact]
+    public void WritingVisibilityMigratesThePageAndDropsTheOldKey()
+    {
+        // Migration happens a page at a time, as things are touched — no
+        // sweep, no flag day.
+        var (text, edit) = PageFrontmatter.SetDraft(
+            "---\ndraft: true\ntags:\n  - unit-1\n---\nbody\n", "publish", draft: false);
+
+        Assert.Equal("---\npublish: true\ntags:\n  - unit-1\n---\nbody\n", text);
+        Assert.True(edit.Changed);
+    }
+
+    [Fact]
+    public void MigratingAPerSectionPageDropsOnlyItsOwnOldKey()
+    {
+        var (text, _) = PageFrontmatter.SetDraft(
+            "---\ndraftSection1: true\ndraftSection2: false\n---\nbody\n",
+            "publishForSection1", draft: false);
+
+        Assert.Contains("publishForSection1: true", text);
+        Assert.DoesNotContain("draftSection1", text);
+        Assert.Contains("draftSection2: false", text);   // section 2 is not this call's business
     }
 
     // ---- Reading the effective state ------------------------------------
@@ -76,11 +120,14 @@ public class PageFrontmatterTests
     {
         string page = "---\ncreatedSection1: 2026-11-20T08:00:00.000-0500\n" +
                       "draftSection1: false\nenableToc: true\ntags:\n  - physics\n---\n## The idea\n";
-        var (text, edit) = PageFrontmatter.SetDraft(page, "draftSection1", draft: true);
+        var (text, edit) = PageFrontmatter.SetDraft(page, "publishForSection1", draft: true);
 
+        // The new key takes the old one's PLACE, so the teacher's frontmatter
+        // keeps its order — a reordered diff in a file Obsidian has open is
+        // exactly the noise this class exists to avoid.
         Assert.Equal(
             "---\ncreatedSection1: 2026-11-20T08:00:00.000-0500\n" +
-            "draftSection1: true\nenableToc: true\ntags:\n  - physics\n---\n## The idea\n",
+            "publishForSection1: false\nenableToc: true\ntags:\n  - physics\n---\n## The idea\n",
             text);
         Assert.True(edit.Changed);
         Assert.Equal(false, edit.Before);
@@ -92,8 +139,8 @@ public class PageFrontmatterTests
     {
         // The confirmation panel needs to be able to say "already published"
         // rather than proposing a no-op write.
-        string page = "---\ndraft: false\n---\nbody\n";
-        var (text, edit) = PageFrontmatter.SetDraft(page, "draft", draft: false);
+        string page = "---\npublish: true\n---\nbody\n";
+        var (text, edit) = PageFrontmatter.SetDraft(page, "publish", draft: false);
         Assert.Equal(page, text);
         Assert.False(edit.Changed);
         Assert.Equal("“Ohm’s Law” is already published", edit.Describe("Ohm’s Law"));
@@ -104,24 +151,24 @@ public class PageFrontmatterTests
     {
         // The top can never land inside a nested list or block scalar.
         string page = "---\ntags:\n  - unit-1\n---\nbody\n";
-        var (text, edit) = PageFrontmatter.SetDraft(page, "draftSection1", draft: true);
-        Assert.Equal("---\ndraftSection1: true\ntags:\n  - unit-1\n---\nbody\n", text);
+        var (text, edit) = PageFrontmatter.SetDraft(page, "publishForSection1", draft: true);
+        Assert.Equal("---\npublishForSection1: false\ntags:\n  - unit-1\n---\nbody\n", text);
         Assert.Null(edit.Before);
     }
 
     [Fact]
     public void APageWithNoFrontmatterGetsABlockAndKeepsItsBody()
     {
-        var (text, _) = PageFrontmatter.SetDraft("## Agenda\n\n1. Something\n", "draft", draft: true);
-        Assert.Equal("---\ndraft: true\n---\n## Agenda\n\n1. Something\n", text);
+        var (text, _) = PageFrontmatter.SetDraft("## Agenda\n\n1. Something\n", "publish", draft: true);
+        Assert.Equal("---\npublish: false\n---\n## Agenda\n\n1. Something\n", text);
     }
 
     [Fact]
     public void ACommentAfterTheValueSurvives()
     {
         var (text, _) = PageFrontmatter.SetDraft(
-            "---\ndraft: false  # not ready yet\n---\nbody\n", "draft", draft: true);
-        Assert.Equal("---\ndraft: true # not ready yet\n---\nbody\n", text);
+            "---\npublish: true  # not ready yet\n---\nbody\n", "publish", draft: true);
+        Assert.Equal("---\npublish: false # not ready yet\n---\nbody\n", text);
     }
 
     [Fact]
@@ -129,9 +176,9 @@ public class PageFrontmatterTests
     {
         // Obsidian has these files open; converting line endings would show up
         // as an all-lines-changed diff in the teacher's vault.
-        string page = "---\r\ndraft: false\r\ntags:\r\n  - unit-1\r\n---\r\nbody\r\n";
-        var (text, _) = PageFrontmatter.SetDraft(page, "draft", draft: true);
-        Assert.Equal("---\r\ndraft: true\r\ntags:\r\n  - unit-1\r\n---\r\nbody\r\n", text);
+        string page = "---\r\npublish: true\r\ntags:\r\n  - unit-1\r\n---\r\nbody\r\n";
+        var (text, _) = PageFrontmatter.SetDraft(page, "publish", draft: true);
+        Assert.Equal("---\r\npublish: false\r\ntags:\r\n  - unit-1\r\n---\r\nbody\r\n", text);
         // No line may have been left with a bare LF.
         Assert.Equal(text.Split('\n').Length - 1, text.Split("\r\n").Length - 1);
     }
@@ -140,8 +187,8 @@ public class PageFrontmatterTests
     public void InsertingIntoACrlfFileUsesCrlfForTheNewLineToo()
     {
         string page = "---\r\ntags:\r\n  - unit-1\r\n---\r\nbody\r\n";
-        var (text, _) = PageFrontmatter.SetDraft(page, "draftSection1", draft: true);
-        Assert.Equal("---\r\ndraftSection1: true\r\ntags:\r\n  - unit-1\r\n---\r\nbody\r\n", text);
+        var (text, _) = PageFrontmatter.SetDraft(page, "publishForSection1", draft: true);
+        Assert.Equal("---\r\npublishForSection1: false\r\ntags:\r\n  - unit-1\r\n---\r\nbody\r\n", text);
     }
 
     [Fact]

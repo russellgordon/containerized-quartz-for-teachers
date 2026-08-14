@@ -244,8 +244,18 @@ public sealed record PlannedPage(
     /// a real session, and a plan listing bare paths did nothing to prevent
     /// it. Showing the key makes the two schemas impossible to miss.
     /// </summary>
+    /// <summary>
+    /// Shown in PUBLISH terms, because that is what the file says.
+    ///
+    /// <see cref="CurrentValue"/> and <see cref="Draft"/> both mean "hidden",
+    /// which is the question a plan answers — but the frontmatter key means
+    /// the opposite, so printing them unchanged beside it would read as a
+    /// double negative and tell the teacher the reverse of the truth.
+    /// </summary>
     public string Transition =>
-        $"{RelativePath}  ({When}{FrontmatterKey}: {Show(CurrentValue)} → {Show(Draft)})";
+        $"{RelativePath}  ({When}{FrontmatterKey}: {Show(Invert(CurrentValue))} → {Show(!Draft)})";
+
+    private static bool? Invert(bool? value) => value is null ? null : !value;
 
     /// <summary>
     /// The class's date, when it has one. A batch chosen BY date has to be

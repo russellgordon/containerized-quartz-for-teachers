@@ -30,6 +30,10 @@ RUN git clone --branch v4.5.0 https://github.com/jackyzha0/quartz.git quartz
 COPY patches/Explorer.tsx /opt/quartz/quartz/components/Explorer.tsx
 COPY patches/FolderContent.tsx /opt/quartz/quartz/components/pages/FolderContent.tsx
 COPY patches/explorer.inline.ts /opt/quartz/quartz/components/scripts/explorer.inline.ts
+# Whether a page reaches the built site is decided by `publish:`, not `draft:`
+# — the teacher's word, and the polarity they actually use.
+COPY patches/publish.ts /opt/quartz/quartz/plugins/filters/publish.ts
+COPY patches/filters-index.ts /opt/quartz/quartz/plugins/filters/index.ts
 
 # Copy Quartz scaffold to /opt/quartz-site
 RUN cp -r /opt/quartz /opt/quartz-site

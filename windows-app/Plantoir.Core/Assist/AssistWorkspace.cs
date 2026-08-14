@@ -739,8 +739,10 @@ public sealed class AssistWorkspace
             bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, path);
             try
             {
-                string key = PageFrontmatter.DraftKeyFor(section, sectionLocal);
-                return PageFrontmatter.StoredValue(File.ReadAllText(path), key) ?? false;
+                // "Hidden" is the question here, and the file answers the
+                // opposite one, so it has to be read in draft terms.
+                string key = PageFrontmatter.PublishKeyFor(section, sectionLocal);
+                return PageFrontmatter.StoredDraft(File.ReadAllText(path), key) ?? false;
             }
             catch { return false; }
         });
@@ -755,8 +757,10 @@ public sealed class AssistWorkspace
             bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, path);
             try
             {
-                string key = PageFrontmatter.DraftKeyFor(section, sectionLocal);
-                return PageFrontmatter.StoredValue(File.ReadAllText(path), key) ?? false;
+                // "Hidden" is the question here, and the file answers the
+                // opposite one, so it has to be read in draft terms.
+                string key = PageFrontmatter.PublishKeyFor(section, sectionLocal);
+                return PageFrontmatter.StoredDraft(File.ReadAllText(path), key) ?? false;
             }
             catch { return false; }
         }
@@ -767,13 +771,13 @@ public sealed class AssistWorkspace
     private PlannedPage Plan(Course course, int section, string pagePath, bool draft, bool viaLink)
     {
         bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, pagePath);
-        string key = PageFrontmatter.DraftKeyFor(section, sectionLocal);
+        string key = PageFrontmatter.PublishKeyFor(section, sectionLocal);
         string text = File.ReadAllText(pagePath);
         return new PlannedPage(
             Title: Path.GetFileNameWithoutExtension(pagePath),
             RelativePath: Relative(pagePath),
             FrontmatterKey: key,
-            CurrentValue: PageFrontmatter.StoredValue(text, key),
+            CurrentValue: PageFrontmatter.StoredDraft(text, key),
             Draft: draft,
             ViaLink: viaLink,
             Date: PageFrontmatter.CreatedOn(text, section, sectionLocal));
