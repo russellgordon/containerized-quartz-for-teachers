@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-11-17T08:00:00.000-0500
+title: Circuit Diagram Practice
+createdSection1: 2026-11-20T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-11-17T08:00:00.000-0500
+createdSection2: 2026-11-23T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:

@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-11-19T08:00:00.000-0500
+title: Ohm's Law Investigation
+createdSection1: 2026-11-24T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-11-19T08:00:00.000-0500
+createdSection2: 2026-11-25T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -67,7 +68,8 @@ graph LR
 - [ ] Graph with best-fit line and slope calculation shown
 - [ ] Analysis answers
 
-## Curriculum
+## Curriculum connection
 
-- [[D2.4]] — ![[D2.4#^text]]
-- [[A1.2]] — ![[A1.2#^text]]
+![[D2.4]]
+
+![[A1.2]]

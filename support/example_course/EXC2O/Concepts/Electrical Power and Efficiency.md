@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Electrical Power and Efficiency
+createdSection1: 2026-12-02T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-12-03T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -50,7 +51,8 @@ $$
 
 Measure this for yourself in [[Efficiency of a Light Bulb]].
 
-## Curriculum
+## Curriculum connection
 
-- [[D2.8]] — ![[D2.8#^text]]
-- [[D2.7]] — ![[D2.7#^text]]
+![[D2.8]]
+
+![[D2.7]]

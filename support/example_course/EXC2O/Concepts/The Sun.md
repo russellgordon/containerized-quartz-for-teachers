@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: The Sun
+createdSection1: 2026-12-17T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-12-18T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -46,7 +47,8 @@ graph LR
 > thousand years to escape the Sun's interior — it is absorbed and re-emitted
 > constantly. Sunlight on your face left the core before the last ice age.
 
-## Curriculum
+## Curriculum connection
 
-- [[E2.1]] — ![[E2.1#^text]]
-- [[E2.2]] — ![[E2.2#^text]]
+![[E2.1]]
+
+![[E2.2]]

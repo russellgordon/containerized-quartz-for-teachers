@@ -1,7 +1,9 @@
 ---
 title: Learning Goals
-draft: false
-created: 2026-09-08T08:00:00.000-0400
+createdSection1: 2026-09-08T07:00:00.000-0400
+draftSection1: false
+createdSection2: 2026-09-09T07:00:00.000-0400
+draftSection2: false
 transcludeTitleSize: h2
 ---
 By the end of this course you will be able to:

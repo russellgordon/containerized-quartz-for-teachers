@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-18T08:00:00.000-0400
+title: Modelling Energy Flow
+createdSection1: 2026-10-01T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-21T08:00:00.000-0400
+createdSection2: 2026-10-02T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -54,7 +55,8 @@ explain why food chains are short.
 - [ ] A labelled pyramid diagram drawn to scale
 - [ ] Analysis answers
 
-## Curriculum
+## Curriculum connection
 
-- [[B2.2]] — ![[B2.2#^text]]
-- [[A1.3]] — ![[A1.3#^text]]
+![[B2.2]]
+
+![[A1.3]]

@@ -1,6 +1,7 @@
 ---
+title: Unit 3, Day 5
 draft: false
-created: 2026-10-22T07:00:00.000-0400
+created: 2026-11-02T07:00:00.000-0500
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,10 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[The Periodic Table]]
-2. Investigation: [[Finding Patterns in the Periodic Table]] — sort the cards first
-3. Tutorial: [[Using the Periodic Table]]
+1. Warm-up: draw a Bohr-Rutherford diagram from memory
+2. Practise: [[Bohr-Rutherford Diagrams]] — the first twenty elements
+3. Why the model changed: each experiment, and what it forced
 
 ## Things to do before our next class
 
-- [ ] Write your sorting rule in your notebook before you look anything up.
+- [ ] Finish the practice set.

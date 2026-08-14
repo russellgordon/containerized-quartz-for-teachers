@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-25T08:00:00.000-0400
+title: The Greenhouse Effect
+createdSection1: 2026-10-14T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-28T08:00:00.000-0400
+createdSection2: 2026-10-15T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -26,21 +27,22 @@ graph TD
 ## Why the wavelength matters
 
 Sunlight arrives mostly as visible light, which passes straight through
-$\mathrm{CO_2}$. The warmed surface radiates **infrared**, which
-$\mathrm{CO_2}$ and $\mathrm{CH_4}$ absorb strongly. Energy comes in easily
+$\ce{CO2}$. The warmed surface radiates **infrared**, which
+$\ce{CO2}$ and $\ce{CH4}$ absorb strongly. Energy comes in easily
 and leaves with difficulty — so it accumulates.
 
 | Gas | Main human source | Relative warming per molecule |
 | --- | --- | --- |
-| Carbon dioxide, $\mathrm{CO_2}$ | Burning fossil fuels | 1 (the reference) |
-| Methane, $\mathrm{CH_4}$ | Livestock, landfills, leaks | ~25× over a century |
-| Nitrous oxide, $\mathrm{N_2O}$ | Fertiliser | ~265× |
+| Carbon dioxide, $\ce{CO2}$ | Burning fossil fuels | 1 (the reference) |
+| Methane, $\ce{CH4}$ | Livestock, landfills, leaks | ~25× over a century |
+| Nitrous oxide, $\ce{N2O}$ | Fertiliser | ~265× |
 
 Methane is far more potent but breaks down within about a decade;
-$\mathrm{CO_2}$ is weaker and lasts for centuries. Both facts matter when
+$\ce{CO2}$ is weaker and lasts for centuries. Both facts matter when
 choosing what to cut first.
 
-## Curriculum
+## Curriculum connection
 
-- [[B2.6]] — ![[B2.6#^text]]
-- [[B1.1]] — ![[B1.1#^text]]
+![[B2.6]]
+
+![[B1.1]]

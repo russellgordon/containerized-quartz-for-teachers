@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-23T08:00:00.000-0400
+title: The Carbon Cycle
+createdSection1: 2026-10-07T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-24T08:00:00.000-0400
+createdSection2: 2026-10-08T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -43,7 +44,8 @@ fast one. That is climate change in a sentence.
 > The carbon dioxide released by a car this afternoon may spend the next century
 > in the atmosphere. Which of the arrows above decides how long it stays?
 
-## Curriculum
+## Curriculum connection
 
-- [[B2.2]] — ![[B2.2#^text]]
-- [[B2.6]] — ![[B2.6#^text]]
+![[B2.2]]
+
+![[B2.6]]

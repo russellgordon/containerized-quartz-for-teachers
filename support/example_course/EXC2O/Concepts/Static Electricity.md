@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-11-16T08:00:00.000-0500
+title: Static Electricity
+createdSection1: 2026-11-19T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-11-17T08:00:00.000-0500
+createdSection2: 2026-11-20T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -48,7 +49,8 @@ graph LR
 > vapour, so charge accumulates instead of draining — which is why doorknobs
 > start biting in January and not in September.
 
-## Curriculum
+## Curriculum connection
 
-- [[D2.1]] — ![[D2.1#^text]]
-- [[D2.2]] — ![[D2.2#^text]]
+![[D2.1]]
+
+![[D2.2]]

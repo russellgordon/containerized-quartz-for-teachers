@@ -1,6 +1,7 @@
 ---
+title: Unit 4, Day 1
 draft: false
-created: 2026-11-16T07:00:00.000-0500
+created: 2026-11-19T07:00:00.000-0500
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,8 +10,8 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[Static Electricity]] — begin physics
-2. Investigation: [[Static Electricity Stations]]
+1. Investigation: [[Static Electricity Stations]] — begin physics
+2. Concept: [[Static Electricity]] — naming what happened at each station
 
 ## Things to do before our next class
 

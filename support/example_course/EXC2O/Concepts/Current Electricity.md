@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-11-17T08:00:00.000-0500
+title: Current Electricity
+createdSection1: 2026-11-20T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-11-17T08:00:00.000-0500
+createdSection2: 2026-11-23T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -41,7 +42,8 @@ By convention, current is drawn flowing from **+ to −**, even though electrons
 actually drift the other way. Franklin guessed the sign before anyone knew
 electrons existed, and the convention stuck.
 
-## Curriculum
+## Curriculum connection
 
-- [[D2.3]] — ![[D2.3#^text]]
-- [[D2.7]] — ![[D2.7#^text]]
+![[D2.3]]
+
+![[D2.7]]

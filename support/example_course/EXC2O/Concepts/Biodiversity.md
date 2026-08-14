@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-24T08:00:00.000-0400
+title: Biodiversity
+createdSection1: 2026-10-09T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-25T08:00:00.000-0400
+createdSection2: 2026-10-13T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -42,7 +43,8 @@ evenness.
 
 Collect data like this yourself in [[Measuring Abiotic Factors]].
 
-## Curriculum
+## Curriculum connection
 
-- [[B2.4]] — ![[B2.4#^text]]
-- [[B1.1]] — ![[B1.1#^text]]
+![[B2.4]]
+
+![[B1.1]]

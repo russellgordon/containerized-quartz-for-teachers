@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-10-22T08:00:00.000-0400
+title: Naming Compounds
+createdSection1: 2026-11-04T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-10-23T08:00:00.000-0400
+createdSection2: 2026-11-05T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -11,8 +12,8 @@ tags:
 
 The metal keeps its name; the non-metal takes the ending **-ide**. No prefixes.
 
-- $\mathrm{NaCl}$ — sodium chloride
-- $\mathrm{MgO}$ — magnesium oxide
+- $\ce{NaCl}$ — sodium chloride
+- $\ce{MgO}$ — magnesium oxide
 
 ## Molecular: non-metal + non-metal
 
@@ -32,29 +33,29 @@ Prefixes on both, except *mono-* is dropped on the first.
 
 ## Name these
 
-**1.** $\mathrm{KBr}$
+**1.** $\ce{KBr}$
 
 > [!success]- Answer
 > Potassium bromide. Metal + non-metal, so no prefixes.
 
-**2.** $\mathrm{Al_2O_3}$
+**2.** $\ce{Al2O3}$
 
 > [!success]- Answer
-> Aluminium oxide. The subscripts balance the charges ($\mathrm{Al^{3+}}$ with
-> $\mathrm{O^{2-}}$) — they are not named.
+> Aluminium oxide. The subscripts balance the charges ($\ce{Al^3+}$ with
+> $\ce{O^2-}$) — they are not named.
 
-**3.** $\mathrm{SO_2}$
+**3.** $\ce{SO2}$
 
 > [!success]- Answer
 > Sulfur dioxide. Two non-metals, so prefixes are used — and *mono-* is dropped
 > from the first element.
 
-**4.** $\mathrm{PCl_5}$
+**4.** $\ce{PCl5}$
 
 > [!success]- Answer
 > Phosphorus pentachloride.
 
-**5.** $\mathrm{Li_2S}$
+**5.** $\ce{Li2S}$
 
 > [!success]- Answer
 > Lithium sulfide. Not "dilithium" — it is ionic.
@@ -64,26 +65,26 @@ Prefixes on both, except *mono-* is dropped on the first.
 **6.** Calcium fluoride
 
 > [!success]- Answer
-> $\mathrm{CaF_2}$ — one $\mathrm{Ca^{2+}}$ needs two $\mathrm{F^-}$.
+> $\ce{CaF2}$ — one $\ce{Ca^2+}$ needs two $\ce{F-}$.
 
 **7.** Sodium oxide
 
 > [!success]- Answer
-> $\mathrm{Na_2O}$ — two $\mathrm{Na^+}$ to balance one $\mathrm{O^{2-}}$.
+> $\ce{Na2O}$ — two $\ce{Na+}$ to balance one $\ce{O^2-}$.
 
 **8.** Carbon tetrachloride
 
 > [!success]- Answer
-> $\mathrm{CCl_4}$
+> $\ce{CCl4}$
 
 **9.** Diphosphorus pentoxide
 
 > [!success]- Answer
-> $\mathrm{P_2O_5}$
+> $\ce{P2O5}$
 
 **10.** Aluminium chloride
 
 > [!success]- Answer
-> $\mathrm{AlCl_3}$ — $\mathrm{Al^{3+}}$ needs three $\mathrm{Cl^-}$.
+> $\ce{AlCl3}$ — $\ce{Al^3+}$ needs three $\ce{Cl-}$.
 
 Reference: [[Ions and Ionic Compounds]], [[Molecular Compounds]]

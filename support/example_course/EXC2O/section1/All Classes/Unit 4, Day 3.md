@@ -1,6 +1,7 @@
 ---
+title: Unit 4, Day 3
 draft: false
-created: 2026-11-18T07:00:00.000-0500
+created: 2026-11-23T07:00:00.000-0500
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,9 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Investigation: [[Testing Conductivity]]
-2. Why salt water conducts and distilled water does not
+1. Practise: [[Circuit Diagram Practice]] — symbols, then reading, then
+   drawing from a description
+2. In pairs: build the circuit your partner drew, without speaking
+3. Where diagrams go wrong: the junction that is not a junction
 
 ## Things to do before our next class
 
-- [ ] Conductivity table complete with classifications.
+- [ ] Finish the practice set.

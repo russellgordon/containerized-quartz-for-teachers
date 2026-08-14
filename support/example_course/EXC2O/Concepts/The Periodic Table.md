@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-10-21T08:00:00.000-0400
+title: The Periodic Table
+createdSection1: 2026-11-02T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-10-22T08:00:00.000-0400
+createdSection2: 2026-11-03T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -40,7 +41,8 @@ come from electron shells.
 
 Investigate these yourself in [[Finding Patterns in the Periodic Table]].
 
-## Curriculum
+## Curriculum connection
 
-- [[C2.4]] — ![[C2.4#^text]]
-- [[C2.5]] — ![[C2.5#^text]]
+![[C2.4]]
+
+![[C2.5]]

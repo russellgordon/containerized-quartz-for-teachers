@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Astronomical Phenomena
+createdSection1: 2026-12-17T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-12-18T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -50,7 +51,8 @@ graph LR
 > shadow misses. Eclipses need the alignment to be nearly perfect — which is why
 > they are worth travelling to see.
 
-## Curriculum
+## Curriculum connection
 
-- [[E2.6]] — ![[E2.6#^text]]
-- [[E2.2]] — ![[E2.2#^text]]
+![[E2.6]]
+
+![[E2.2]]

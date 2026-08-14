@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Efficiency of a Light Bulb
+createdSection1: 2026-12-02T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-12-03T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -57,7 +58,7 @@ where $c = 4.18\ \mathrm{J/(g \cdot ^\circ C)}$ for water.
 1. Which bulb wasted more energy as heat? By how much?
 2. This method underestimates waste heat. Give two reasons.
 3. An LED costs more up front. Using your percentages and a rate of
-   $0.13\ \mathrm{\$/kWh}$, estimate how long it takes to pay for itself at
+   $0.13\ \mathrm{\textdollar /kWh}$, estimate how long it takes to pay for itself at
    4 hours a day.
 
 ## Hand in
@@ -66,7 +67,8 @@ where $c = 4.18\ \mathrm{J/(g \cdot ^\circ C)}$ for water.
 - [ ] Analysis answers
 - [ ] A statement of the largest source of error and its likely direction
 
-## Curriculum
+## Curriculum connection
 
-- [[D2.8]] — ![[D2.8#^text]]
-- [[A1.2]] — ![[A1.2#^text]]
+![[D2.8]]
+
+![[A1.2]]

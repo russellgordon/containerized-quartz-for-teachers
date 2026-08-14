@@ -1,0 +1,19 @@
+---
+title: Unit 4, Day 7
+draft: false
+created: 2026-11-27T07:00:00.000-0500
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. Warm-up: predict the brightness in four circuits, in writing
+2. In groups: build all four and compare with the predictions
+3. Consolidate: the rule you can state, and the one you had to see
+
+## Things to do before our next class
+
+- [ ] Journal: the prediction you got wrong, and why.

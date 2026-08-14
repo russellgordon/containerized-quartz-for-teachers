@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-22T08:00:00.000-0400
+title: Reflecting on an Investigation
+createdSection1: 2026-10-05T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-23T08:00:00.000-0400
+createdSection2: 2026-10-06T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:

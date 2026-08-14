@@ -1,4 +1,5 @@
 ---
+title: Unit 1, Day 1
 draft: false
 created: 2026-09-09T07:00:00.000-0400
 transcludeTitleSize: h2
@@ -9,13 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Welcome, and what this course actually is
+1. Welcome, and what this course actually is: [[Learning Goals]]
 2. Tour of the site: [[Using This Site]]
-3. Setup: [[What to Bring]]
-4. Setup: [[Accounts You Need]]
-5. Portfolio: [[Why We Keep a Portfolio]]
+3. Two kinds of page: [[How This Site Is Organised]]
+4. [[How Marks Work]] — and why a lab counts as thinking, not recall
+5. Setup: [[What to Bring]], then [[Accounts You Need]]
 
 ## Things to do before our next class
 
 - [ ] Read [[Safety Contract]] with a parent or guardian and bring it signed.
-- [ ] Write your [[First Entry]] in your portfolio.
+- [ ] Bookmark this section page. It is the only bookmark you need.

@@ -1,0 +1,22 @@
+---
+title: Unit 1, Day 6
+draft: false
+created: 2026-09-15T07:00:00.000-0400
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Tutorial: [[Writing a Lab Report]] — the six sections
+2. Skills: [[Writing About Science]] — an observation is not an interpretation
+3. Tutorial: [[Finding and Citing Sources]]
+4. Task introduced: [[Science in the News]] — first of three
+5. Discussion: [[AI in Science Class]] — where the line is
+
+## Things to do before our next class
+
+- [ ] First [[Science in the News]] submission due in one week.
+- [ ] Dress for outdoors later this week — we work on the field rain or shine.

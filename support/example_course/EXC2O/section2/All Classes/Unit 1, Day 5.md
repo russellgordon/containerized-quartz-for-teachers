@@ -1,4 +1,5 @@
 ---
+title: Unit 1, Day 5
 draft: false
 created: 2026-09-15T07:00:00.000-0400
 transcludeTitleSize: h2
@@ -9,10 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Tutorial: [[Finding and Citing Sources]]
-2. Task introduced: [[Science in the News]] — first of three
-3. Discussion: [[AI in Science Class]] — where the line is
+1. Practise: [[Graphing Practice]] — axes, scale, and the graph the data
+   actually needs
+2. In pairs: three data sets, three graph types, defended
+3. Where a graph misleads: the axis that does not start at zero
 
 ## Things to do before our next class
 
-- [ ] First [[Science in the News]] submission due in one week.
+- [ ] Finish the practice set.

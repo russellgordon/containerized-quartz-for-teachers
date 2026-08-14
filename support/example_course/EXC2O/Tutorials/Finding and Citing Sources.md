@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-14T08:00:00.000-0400
+title: Finding and Citing Sources
+createdSection1: 2026-09-15T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-15T08:00:00.000-0400
+createdSection2: 2026-09-16T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -36,4 +37,5 @@ Give enough that a reader can find it: author, title, publisher, date, and link.
 > If you use one, say so and say how. They produce fluent text and invent
 > citations that look real. **Check every reference against the actual source**
 > — a citation you have not opened is a citation you cannot use. See
-> [[A2.2]] for why this matters beyond this class.
+> [[A2.2|what this course says about emerging technologies]] for why this
+> matters beyond this class.

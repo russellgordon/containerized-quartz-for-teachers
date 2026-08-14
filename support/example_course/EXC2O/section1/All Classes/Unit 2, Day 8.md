@@ -1,6 +1,7 @@
 ---
+title: Unit 2, Day 8
 draft: false
-created: 2026-09-25T07:00:00.000-0400
+created: 2026-10-07T07:00:00.000-0400
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,10 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[The Greenhouse Effect]]
-2. Concept: [[Indicators of Climate Change]]
-3. Exercise: [[Interpreting Climate Graphs]]
+1. Concept: [[The Carbon Cycle]]
+2. Concept: [[The Water Cycle]]
+3. Concept: [[The Nitrogen Cycle]]
 
 ## Things to do before our next class
 
-- [ ] Task assigned: [[Climate Change Action Plan]]. Bring your chosen impact next class.
+- [ ] Draw all three cycles from memory. Compare with the pages afterwards.

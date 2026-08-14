@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-10-16T08:00:00.000-0400
+title: Physical and Chemical Change Stations
+createdSection1: 2026-10-27T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-10-19T08:00:00.000-0400
+createdSection2: 2026-10-28T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -24,7 +25,7 @@ justify each decision with evidence.
 | 1 | Dissolve salt in water | Does anything new appear? |
 | 2 | Melt candle wax, let it resolidify | Is it still wax? |
 | 3 | Mix baking soda and vinegar | Gas? Temperature? |
-| 4 | Drop magnesium into dilute $\mathrm{HCl}$ | Bubbles, warmth |
+| 4 | Drop magnesium into dilute $\ce{HCl}$ | Bubbles, warmth |
 | 5 | Tear and crumple paper | Any new substance? |
 | 6 | Mix lead-free solutions to form a precipitate | Solid from two clear liquids |
 
@@ -52,8 +53,10 @@ justify each decision with evidence.
 - [ ] Completed table with evidence for every row
 - [ ] Analysis answers
 
-## Curriculum
+## Curriculum connection
 
-- [[A1.2]] — ![[A1.2#^text]]
-- [[C2.1]] — ![[C2.1#^text]]
-- [[A1.5]] — ![[A1.5#^text]]
+![[A1.2]]
+
+![[C2.1]]
+
+![[A1.5]]

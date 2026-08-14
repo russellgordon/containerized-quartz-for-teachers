@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Series and Parallel Circuits
+createdSection1: 2026-11-26T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-11-27T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -47,7 +48,8 @@ whole string went dark.
 > battery. Which arrangement is brighter, and why? Commit to an answer, then
 > test it in [[Building Series and Parallel Circuits]].
 
-## Curriculum
+## Curriculum connection
 
-- [[D2.6]] — ![[D2.6#^text]]
-- [[D2.4]] — ![[D2.4#^text]]
+![[D2.6]]
+
+![[D2.4]]

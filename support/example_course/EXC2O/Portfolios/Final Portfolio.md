@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Final Portfolio
+createdSection1: 2027-01-13T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2027-01-14T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:

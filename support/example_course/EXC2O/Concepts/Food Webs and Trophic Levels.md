@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-18T08:00:00.000-0400
+title: Food Webs and Trophic Levels
+createdSection1: 2026-10-01T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-21T08:00:00.000-0400
+createdSection2: 2026-10-02T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -47,7 +48,8 @@ Two questions to ask of any food web:
 
 Practise this in [[Reading a Food Web]].
 
-## Curriculum
+## Curriculum connection
 
-- [[B2.2]] — ![[B2.2#^text]]
-- [[B2.5]] — ![[B2.5#^text]]
+![[B2.2]]
+
+![[B2.5]]

@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Distances in Space
+createdSection1: 2026-12-15T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-12-16T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -46,7 +47,8 @@ Light takes time. The Andromeda galaxy is 2.5 million light-years away, so you
 see it as it was 2.5 million years ago. Telescopes are time machines pointed the
 only direction they can go.
 
-## Curriculum
+## Curriculum connection
 
-- [[E2.5]] — ![[E2.5#^text]]
-- [[E2.4]] — ![[E2.4#^text]]
+![[E2.5]]
+
+![[E2.4]]

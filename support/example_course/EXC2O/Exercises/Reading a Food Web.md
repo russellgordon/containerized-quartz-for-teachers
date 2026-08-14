@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-18T08:00:00.000-0400
+title: Reading a Food Web
+createdSection1: 2026-10-01T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-21T08:00:00.000-0400
+createdSection2: 2026-10-02T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:

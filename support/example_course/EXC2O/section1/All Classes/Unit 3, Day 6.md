@@ -1,6 +1,7 @@
 ---
+title: Unit 3, Day 6
 draft: false
-created: 2026-10-22T07:00:00.000-0400
+created: 2026-11-02T07:00:00.000-0500
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,10 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[Ions and Ionic Compounds]]
-2. Concept: [[Molecular Compounds]]
-3. Exercise: [[Naming Compounds]]
+1. Investigation: [[Finding Patterns in the Periodic Table]] — sort the cards
+   first, and write your rule down before you look anything up
+2. Concept: [[The Periodic Table]] — the pattern the cards were hiding
+3. Tutorial: [[Using the Periodic Table]]
 
 ## Things to do before our next class
 
-- [ ] Finish [[Naming Compounds]] — all ten.
+- [ ] Compare your sorting rule with the real one. Where were you right?
+- [ ] Two elements of your choice: group, period, and what those predict.

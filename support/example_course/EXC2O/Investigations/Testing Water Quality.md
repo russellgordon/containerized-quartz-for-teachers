@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-24T08:00:00.000-0400
+title: Testing Water Quality
+createdSection1: 2026-10-09T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-25T08:00:00.000-0400
+createdSection2: 2026-10-13T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -58,8 +59,10 @@ supports the healthiest ecosystem.
 - [ ] Ranking with justification
 - [ ] Answers to analysis questions
 
-## Curriculum
+## Curriculum connection
 
-- [[A1.2]] — ![[A1.2#^text]]
-- [[B2.4]] — ![[B2.4#^text]]
-- [[B2.5]] — ![[B2.5#^text]]
+![[A1.2]]
+
+![[B2.4]]
+
+![[B2.5]]

@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-11-20T08:00:00.000-0500
+title: Ohm's Law Practice
+createdSection1: 2026-11-24T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-11-20T08:00:00.000-0500
+createdSection2: 2026-11-25T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:

@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Getting Started with Python
+createdSection1: 2026-09-18T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-09-21T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -50,3 +51,7 @@ print(distance, "AU is", kilometres, "km")
 > `NameError` means you used a name Python has not seen — usually a typo.
 > `TypeError` means you mixed text and numbers, often because `input()` returns
 > text and you forgot `float()`. Read the last line of the message first.
+
+## Curriculum connection
+
+![[A1.4]]

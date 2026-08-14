@@ -1,6 +1,7 @@
 ---
+title: Unit 2, Day 3
 draft: false
-created: 2026-09-18T07:00:00.000-0400
+created: 2026-09-30T07:00:00.000-0400
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,10 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[Energy Flow in Ecosystems]] — the ten percent rule
-2. Investigation: [[Modelling Energy Flow]]
-3. Concept: [[Food Webs and Trophic Levels]]
+1. Bench: write up [[Measuring Abiotic Factors]] in class
+2. Compare the two sites: which factor differed most, and did the living
+   things differ with it?
+3. Skill: [[Making Graphs in a Spreadsheet]] on your own data
 
 ## Things to do before our next class
 
-- [ ] Exercise: [[Reading a Food Web]], all six questions.
+- [ ] Report finished with a graph of both sites.

@@ -1,6 +1,7 @@
 ---
+title: Unit 3, Day 2
 draft: false
-created: 2026-10-16T07:00:00.000-0400
+created: 2026-10-27T07:00:00.000-0400
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,9 +10,9 @@ tags:
 ---
 ## Agenda
 
-1. Concept: [[Physical and Chemical Properties]]
-2. Concept: [[Physical and Chemical Changes]]
-3. Investigation: [[Physical and Chemical Change Stations]]
+1. Investigation: [[Physical and Chemical Change Stations]]
+2. Concept: [[Physical and Chemical Properties]]
+3. Concept: [[Physical and Chemical Changes]] — the evidence you collected
 
 ## Things to do before our next class
 

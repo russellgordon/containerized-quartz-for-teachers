@@ -1,6 +1,7 @@
 ---
+title: Unit 3, Day 4
 draft: false
-created: 2026-10-20T07:00:00.000-0400
+created: 2026-10-29T07:00:00.000-0400
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -9,11 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Finish [[Bohr-Rutherford Diagrams]]
-2. Investigation: [[Flame Tests]] — identifying the unknown
-3. Connection: how we know what stars are made of
+1. Investigation: [[Flame Tests]] — every metal, its own colour
+2. Concept: [[Atomic Models Through Time]] — five models in a century
+3. Why Rutherford was so surprised
+4. Concept: [[The Bohr-Rutherford Model]] — where those colours come from
 
 ## Things to do before our next class
 
 - [ ] Flame test analysis due next class.
+- [ ] Exercise: [[Bohr-Rutherford Diagrams]], questions 1–3.
 - [ ] Second [[Science in the News]] submission due Friday.

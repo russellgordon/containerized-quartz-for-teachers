@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-25T08:00:00.000-0400
+title: Indicators of Climate Change
+createdSection1: 2026-10-14T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-28T08:00:00.000-0400
+createdSection2: 2026-10-15T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -16,7 +17,7 @@ No single measurement proves climate change. What convinces scientists is that
 | Indicator | What is measured | Direction |
 | --- | --- | --- |
 | Global mean surface temperature | Thermometers, satellites | Rising |
-| Atmospheric $\mathrm{CO_2}$ | Air samples, ice cores | Rising |
+| Atmospheric $\ce{CO2}$ | Air samples, ice cores | Rising |
 | Sea level | Tide gauges, satellite altimetry | Rising |
 | Arctic sea ice extent | Satellite imagery | Falling |
 | Glacier mass balance | Repeat surveys | Falling |
@@ -39,7 +40,8 @@ the **statistics** of weather over decades.
 > holding it. Watch the dog for a minute and you learn nothing about where the
 > walk is going.
 
-## Curriculum
+## Curriculum connection
 
-- [[B2.6]] — ![[B2.6#^text]]
-- [[B1.1]] — ![[B1.1#^text]]
+![[B2.6]]
+
+![[B1.1]]

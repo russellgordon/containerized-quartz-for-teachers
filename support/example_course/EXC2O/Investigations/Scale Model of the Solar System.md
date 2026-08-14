@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Scale Model of the Solar System
+createdSection1: 2026-12-14T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-12-15T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -60,8 +61,10 @@ $$
 - [ ] Photograph of your model
 - [ ] Analysis answers
 
-## Curriculum
+## Curriculum connection
 
-- [[E2.5]] — ![[E2.5#^text]]
-- [[E2.4]] — ![[E2.4#^text]]
-- [[A1.3]] — ![[A1.3#^text]]
+![[E2.5]]
+
+![[E2.4]]
+
+![[A1.3]]

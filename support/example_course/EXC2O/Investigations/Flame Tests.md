@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-10-20T08:00:00.000-0400
+title: Flame Tests
+createdSection1: 2026-10-29T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-10-21T08:00:00.000-0400
+createdSection2: 2026-10-30T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -38,11 +39,11 @@ $$
 
 | Solution | Metal ion | Flame colour | Confidence |
 | --- | --- | --- | --- |
-| Lithium chloride | $\mathrm{Li^+}$ | | |
-| Sodium chloride | $\mathrm{Na^+}$ | | |
-| Potassium chloride | $\mathrm{K^+}$ | | |
-| Calcium chloride | $\mathrm{Ca^{2+}}$ | | |
-| Copper(II) chloride | $\mathrm{Cu^{2+}}$ | | |
+| Lithium chloride | $\ce{Li+}$ | | |
+| Sodium chloride | $\ce{Na+}$ | | |
+| Potassium chloride | $\ce{K+}$ | | |
+| Calcium chloride | $\ce{Ca^2+}$ | | |
+| Copper(II) chloride | $\ce{Cu^2+}$ | | |
 | **Unknown** | ? | | |
 
 ## Analysis
@@ -55,7 +56,8 @@ $$
 > [!note] Where else you have seen this
 > Fireworks are flame tests with a budget. Strontium for red, barium for green,
 > copper for blue. Astronomers use the same principle in reverse to determine
-> what distant stars are made of — see [[E2.3]].
+> what distant stars are made of — see
+> [[E2.3|the evidence about the universe's origin]].
 
 ## Hand in
 
@@ -63,8 +65,10 @@ $$
 - [ ] Identification of the unknown with reasoning
 - [ ] Answers to analysis questions
 
-## Curriculum
+## Curriculum connection
 
-- [[A1.2]] — ![[A1.2#^text]]
-- [[C2.2]] — ![[C2.2#^text]]
-- [[C2.5]] — ![[C2.5#^text]]
+![[A1.2]]
+
+![[C2.2]]
+
+![[C2.5]]

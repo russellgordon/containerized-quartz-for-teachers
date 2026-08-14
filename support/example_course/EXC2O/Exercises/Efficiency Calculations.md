@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Efficiency Calculations
+createdSection1: 2026-12-02T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-12-03T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -34,10 +35,10 @@ joules and in kilowatt-hours?
 >
 > In kilowatt-hours: $1.5\ \mathrm{kW} \times 0.05\ \mathrm{h} = 0.075\ \mathrm{kWh}$
 
-**4.** At $0.13\ \mathrm{\$/kWh}$, what does question 3 cost?
+**4.** At $0.13\ \mathrm{\textdollar /kWh}$, what does question 3 cost?
 
 > [!success]- Answer
-> $0.075\ \mathrm{kWh} \times 0.13 \approx \$0.01$ — about one cent. Worth
+> $0.075\ \mathrm{kWh} \times 0.13 \approx \textdollar 0.01$ — about one cent. Worth
 > knowing before anyone tells you the kettle is why the bill is high.
 
 **5.** A 60 W incandescent bulb and a 9 W LED give the same light. Over 1000
@@ -45,7 +46,7 @@ hours, how much energy does each use, and what is saved?
 
 > [!success]- Answer
 > Incandescent: $60\ \mathrm{kWh}$. LED: $9\ \mathrm{kWh}$. A saving of
-> $51\ \mathrm{kWh}$, or about $\$6.63$ at 13 cents.
+> $51\ \mathrm{kWh}$, or about \$6.63 at 13 cents.
 >
 > One bulb, one year of evenings. Multiply by every socket in a school.
 

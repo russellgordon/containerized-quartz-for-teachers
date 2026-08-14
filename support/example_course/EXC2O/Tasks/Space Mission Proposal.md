@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Space Mission Proposal
+createdSection1: 2027-01-04T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2027-01-05T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -9,7 +10,8 @@ tags:
   - assessment
 ---
 > [!abstract] At a glance
-> **Format:** proposal + 5-minute pitch · **Curriculum:** [[E1.1]], [[E1.2]], [[E1.3]], [[A2.1]]
+> Groups of three · **three class periods** of work time, then presented ·
+> **Format:** a written proposal and a five-minute pitch
 
 ## The task
 
@@ -35,7 +37,8 @@ Do not choose a weak objection to knock down.
 > [!important] This is the actual skill
 > Anyone can argue for something they like. Stating the opposing case fairly and
 > *then* responding is what separates an argument from an advertisement — and it
-> is exactly what [[A2.4]] asks of you.
+> is exactly what
+> [[A2.4|the scientific literacy expectation]] asks of you.
 
 ## Assessment
 
@@ -51,3 +54,17 @@ Do not choose a weak objection to knock down.
 - [ ] Written proposal
 - [ ] Slides or visual for the pitch
 - [ ] Source list
+
+## Curriculum connection
+
+![[E1.1]]
+
+![[E1.2]]
+
+![[E1.3]]
+
+![[A2.1]]
+
+![[E2.1]]
+
+![[E2.2]]

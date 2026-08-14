@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-25T08:00:00.000-0400
+title: Climate Change Action Plan
+createdSection1: 2026-10-14T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-28T08:00:00.000-0400
+createdSection2: 2026-10-15T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -9,8 +10,8 @@ tags:
   - assessment
 ---
 > [!abstract] At a glance
-> **Due:** end of the biology unit · **Format:** 4–6 pages or equivalent ·
-> **Curriculum:** [[B1.1]], [[B1.2]], [[B1.3]], [[A2.4]]
+> Individual · **four class periods** of work time, then handed in
+> at the end of the biology unit · **Format:** 4–6 pages or equivalent
 
 ## The task
 
@@ -51,3 +52,17 @@ for responding to it.
 - [ ] The plan itself
 - [ ] Source list with a sentence on why each is trustworthy
 - [ ] A short reflection: what surprised you?
+
+## Curriculum connection
+
+![[B1.1]]
+
+![[B1.2]]
+
+![[B1.3]]
+
+![[A2.4]]
+
+![[B2.1]]
+
+![[B2.2]]

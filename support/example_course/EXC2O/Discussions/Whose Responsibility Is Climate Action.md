@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-28T08:00:00.000-0400
+title: Whose Responsibility Is Climate Action
+createdSection1: 2026-10-14T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-29T08:00:00.000-0400
+createdSection2: 2026-10-15T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -32,4 +33,12 @@ corporations, or governments?
 > campaign for an oil company. Does knowing that change how you weigh the first
 > position? Should the origin of an idea affect whether it is true?
 
-Background: [[Indicators of Climate Change]], [[B1.1]], [[A2.3]]
+Background: [[Indicators of Climate Change]]
+
+## Curriculum connection
+
+![[B1.1]]
+
+![[B1.2]]
+
+![[A2.3]]

@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-10-21T08:00:00.000-0400
+title: Finding Patterns in the Periodic Table
+createdSection1: 2026-11-02T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-10-22T08:00:00.000-0400
+createdSection2: 2026-11-03T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -56,8 +57,10 @@ yourself, rather than being told it.
 - [ ] Your arrangement compared with the real table
 - [ ] Analysis answers, including your prediction and how close it was
 
-## Curriculum
+## Curriculum connection
 
-- [[C2.5]] — ![[C2.5#^text]]
-- [[C2.4]] — ![[C2.4#^text]]
-- [[A1.1]] — ![[A1.1#^text]]
+![[C2.5]]
+
+![[C2.4]]
+
+![[A1.1]]

@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-25T08:00:00.000-0400
+title: Interpreting Climate Graphs
+createdSection1: 2026-10-14T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-28T08:00:00.000-0400
+createdSection2: 2026-10-15T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -59,4 +60,5 @@ to misrepresent this way?
 
 > [!important] The skill being practised
 > Not "is this graph true?" but "what is this graph *for*, and what has it left
-> out?" That question is the whole of [[A2.4]].
+> out?" That question is the whole of
+> [[A2.4|the scientific literacy expectation]].

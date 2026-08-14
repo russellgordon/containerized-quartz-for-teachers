@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Sun Angle and Surface Temperature
+createdSection1: 2026-12-17T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-12-18T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -59,8 +60,10 @@ heats — the mechanism behind seasons.
 - [ ] Analysis answers
 - [ ] One improvement you would make to the procedure
 
-## Curriculum
+## Curriculum connection
 
-- [[E2.2]] — ![[E2.2#^text]]
-- [[E2.6]] — ![[E2.6#^text]]
-- [[A1.2]] — ![[A1.2#^text]]
+![[E2.2]]
+
+![[E2.6]]
+
+![[A1.2]]

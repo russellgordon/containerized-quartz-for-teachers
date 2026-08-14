@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-11T08:00:00.000-0400
+title: Graphing Practice
+createdSection1: 2026-09-11T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-14T08:00:00.000-0400
+createdSection2: 2026-09-14T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:

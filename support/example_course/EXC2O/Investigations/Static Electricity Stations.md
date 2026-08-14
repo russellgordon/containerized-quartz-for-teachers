@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-11-16T08:00:00.000-0500
+title: Static Electricity Stations
+createdSection1: 2026-11-19T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-11-17T08:00:00.000-0500
+createdSection2: 2026-11-20T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -51,7 +52,8 @@ the movement of electrons.
 - [ ] A labelled diagram of station 4 showing where charges sit
 - [ ] Analysis answers
 
-## Curriculum
+## Curriculum connection
 
-- [[D2.1]] — ![[D2.1#^text]]
-- [[A1.2]] — ![[A1.2#^text]]
+![[D2.1]]
+
+![[A1.2]]

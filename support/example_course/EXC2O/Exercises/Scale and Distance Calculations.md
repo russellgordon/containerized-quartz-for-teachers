@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Scale and Distance Calculations
+createdSection1: 2026-12-15T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-12-16T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:

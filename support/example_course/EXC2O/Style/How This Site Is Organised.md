@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: How This Site Is Organised
+createdSection1: 2026-09-08T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-09-09T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -26,9 +27,9 @@ Everything else — Concepts, Investigations, Exercises, Tasks, Tutorials — is
 
 ```mermaid
 graph LR
-    D1["Unit 3, Day 4"] --> OHM["Ohm's Law"]
-    D2["Unit 3, Day 5"] --> OHM
-    D3["Unit 3, Day 9"] --> OHM
+    D1["Unit 4, Day 3"] --> OHM["Ohm's Law"]
+    D2["Unit 4, Day 4"] --> OHM
+    D3["Unit 4, Day 6"] --> OHM
     OHM --> BL["Backlinks show all three"]
 ```
 

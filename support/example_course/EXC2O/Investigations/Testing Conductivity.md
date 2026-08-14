@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-11-18T08:00:00.000-0500
+title: Testing Conductivity
+createdSection1: 2026-11-09T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-11-18T08:00:00.000-0500
+createdSection2: 2026-11-10T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -58,7 +59,8 @@ relate the result to atomic structure.
 - [ ] Analysis answers
 - [ ] One material you would test next, and your prediction
 
-## Curriculum
+## Curriculum connection
 
-- [[D2.2]] — ![[D2.2#^text]]
-- [[A1.2]] — ![[A1.2#^text]]
+![[D2.2]]
+
+![[A1.2]]

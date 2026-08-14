@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-10-19T08:00:00.000-0400
+title: Atomic Models Through Time
+createdSection1: 2026-10-29T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-10-20T08:00:00.000-0400
+createdSection2: 2026-10-30T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -44,6 +45,6 @@ A model is not "the truth". It is the simplest thing that explains every
 observation so far. When an observation does not fit, the model changes — not
 the observation.
 
-## Curriculum
+## Curriculum connection
 
-- [[C2.2]] — ![[C2.2#^text]]
+![[C2.2]]

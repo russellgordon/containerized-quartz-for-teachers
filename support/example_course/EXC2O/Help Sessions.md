@@ -1,7 +1,9 @@
 ---
 title: Help Sessions
-draft: false
-created: 2026-09-08T08:00:00.000-0400
+createdSection1: 2026-10-14T07:00:00.000-0400
+draftSection1: false
+createdSection2: 2026-10-15T07:00:00.000-0400
+draftSection2: false
 transcludeTitleSize: h2
 excludeBacklinks: true
 ---

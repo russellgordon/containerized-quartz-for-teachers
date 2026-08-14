@@ -1,4 +1,5 @@
 ---
+title: Unit 1, Day 2
 draft: false
 created: 2026-09-09T07:00:00.000-0400
 transcludeTitleSize: h2
@@ -13,8 +14,9 @@ tags:
 2. Concept: [[WHMIS and Lab Safety]] — pictograms and the rules of this room
 3. Setup: [[Your Lab Notebook]] — set up your first pages
 4. Where the equipment lives, and the safety walk
+5. Portfolio: [[Why We Keep a Portfolio]]
 
 ## Things to do before our next class
 
 - [ ] Signed [[Safety Contract]] due next class. **No signature, no lab.**
-- [ ] Set up your lab notebook as shown.
+- [ ] Write your [[First Entry]] in your portfolio.

@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-18T08:00:00.000-0400
+title: Energy Flow in Ecosystems
+createdSection1: 2026-10-01T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-21T08:00:00.000-0400
+createdSection2: 2026-10-02T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -38,7 +39,8 @@ Start with 10 000 kJ captured by plants in a field:
 That is also why a pyramid is the right shape for this diagram, and why eating
 lower on the food chain feeds more people from the same land.
 
-## Curriculum
+## Curriculum connection
 
-- [[B2.2]] — ![[B2.2#^text]]
-- [[B2.3]] — ![[B2.3#^text]]
+![[B2.2]]
+
+![[B2.3]]

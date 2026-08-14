@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-10-23T08:00:00.000-0400
+title: Product Life Cycle Analysis
+createdSection1: 2026-11-04T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-10-26T08:00:00.000-0400
+createdSection2: 2026-11-05T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -9,7 +10,8 @@ tags:
   - assessment
 ---
 > [!abstract] At a glance
-> **Due:** end of the chemistry unit · **Curriculum:** [[C1.1]], [[C1.2]], [[A2.3]]
+> Individual · **three class periods** of work time, then handed in at the
+> end of the chemistry unit · **Format:** written analysis with sources
 
 ## The task
 
@@ -50,3 +52,13 @@ lithium and cobalt are the obvious pair, and their stories are not the same.
 - [ ] Analysis of each stage
 - [ ] Two elements traced end to end
 - [ ] Three concrete recommendations, each naming who would have to act
+
+## Curriculum connection
+
+![[C1.1]]
+
+![[C1.2]]
+
+![[A2.3]]
+
+![[C2.1]]

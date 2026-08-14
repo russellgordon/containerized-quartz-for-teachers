@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-23T08:00:00.000-0400
+title: The Water Cycle
+createdSection1: 2026-10-07T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-24T08:00:00.000-0400
+createdSection2: 2026-10-08T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -32,7 +33,8 @@ Cover ground with asphalt and you replace infiltration with runoff. The water
 arrives at the creek in minutes instead of days, all at once, carrying road salt
 and oil with it. That is the mechanism behind most urban flooding.
 
-## Curriculum
+## Curriculum connection
 
-- [[B2.1]] — ![[B2.1#^text]]
-- [[B2.2]] — ![[B2.2#^text]]
+![[B2.1]]
+
+![[B2.2]]

@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-10-19T08:00:00.000-0400
+title: The Bohr-Rutherford Model
+createdSection1: 2026-10-29T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-10-20T08:00:00.000-0400
+createdSection2: 2026-10-30T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -47,7 +48,8 @@ graph TD
 
 Practise at [[Bohr-Rutherford Diagrams]].
 
-## Curriculum
+## Curriculum connection
 
-- [[C2.3]] — ![[C2.3#^text]]
-- [[C2.4]] — ![[C2.4#^text]]
+![[C2.3]]
+
+![[C2.4]]

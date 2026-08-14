@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-16T08:00:00.000-0400
+title: Biotic and Abiotic Factors
+createdSection1: 2026-09-28T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-17T08:00:00.000-0400
+createdSection2: 2026-09-29T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -36,7 +37,8 @@ around it.
 
 You will measure some of these yourself in [[Measuring Abiotic Factors]].
 
-## Curriculum
+## Curriculum connection
 
-- [[B2.1]] — ![[B2.1#^text]]
-- [[B2.4]] — ![[B2.4#^text]]
+![[B2.1]]
+
+![[B2.4]]

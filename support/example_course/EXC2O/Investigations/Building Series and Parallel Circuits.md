@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Building Series and Parallel Circuits
+createdSection1: 2026-11-26T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-11-27T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -68,7 +69,8 @@ state the rules for each from your own measurements.
 - [ ] Four rules, stated in your own words with supporting numbers
 - [ ] Analysis answers
 
-## Curriculum
+## Curriculum connection
 
-- [[D2.6]] — ![[D2.6#^text]]
-- [[A1.2]] — ![[A1.2#^text]]
+![[D2.6]]
+
+![[A1.2]]

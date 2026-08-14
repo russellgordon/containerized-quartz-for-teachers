@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-10-16T08:00:00.000-0400
+title: Physical and Chemical Properties
+createdSection1: 2026-10-27T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-10-19T08:00:00.000-0400
+createdSection2: 2026-10-28T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -42,7 +43,8 @@ identifies a substance regardless of how much you have.
 > move. Properties that behave this way are far more useful for identification
 > than ones that depend on sample size.
 
-## Curriculum
+## Curriculum connection
 
-- [[C2.6]] — ![[C2.6#^text]]
-- [[C2.1]] — ![[C2.1#^text]]
+![[C2.6]]
+
+![[C2.1]]

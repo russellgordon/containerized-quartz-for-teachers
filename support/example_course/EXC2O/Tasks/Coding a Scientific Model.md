@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Coding a Scientific Model
+createdSection1: 2026-10-01T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-10-02T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -9,7 +10,8 @@ tags:
   - assessment
 ---
 > [!abstract] At a glance
-> **Curriculum:** [[A1.4]] · **Language:** Python (or another, if you ask first)
+> Individual or pairs · **two class periods** of work time · **Format:**
+> a working program plus a short write-up of what it shows and where it lies
 
 ## The task
 
@@ -65,3 +67,7 @@ for index in range(len(amounts)):
 > [!tip] Do not confuse a calculator with a model
 > Computing one answer is arithmetic. A model lets you ask "what if?" repeatedly
 > and see a *pattern* in the answers. Aim for the second.
+
+## Curriculum connection
+
+![[A1.4]]

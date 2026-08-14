@@ -1,6 +1,7 @@
 ---
+title: Unit 3, Day 1
 draft: false
-created: 2026-10-16T07:00:00.000-0400
+created: 2026-10-27T07:00:00.000-0400
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true

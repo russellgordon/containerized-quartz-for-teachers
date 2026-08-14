@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-09T08:00:00.000-0400
+title: What Counts as Evidence
+createdSection1: 2026-09-09T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-10T08:00:00.000-0400
+createdSection2: 2026-09-10T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -30,4 +31,10 @@ Rank them. Defend your ranking. Then argue with someone who ranked differently.
 > the value of controlled testing is a genuinely hard question — which is why we
 > are discussing it rather than me telling you.
 
-Background: [[A2.4]], [[A2.5]], [[E2.3]]
+## Curriculum connection
+
+![[A2.4]]
+
+![[A2.5]]
+
+![[E2.3]]

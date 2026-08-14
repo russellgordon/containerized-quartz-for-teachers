@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-17T08:00:00.000-0400
+title: Measuring Abiotic Factors
+createdSection1: 2026-09-29T07:00:00.000-0400
 draftSection1: false
-createdSection2: 2026-09-18T08:00:00.000-0400
+createdSection2: 2026-09-30T07:00:00.000-0400
 draftSection2: false
 enableToc: true
 tags:
@@ -64,8 +65,10 @@ the data to explain the differences in what grows there.
 - [ ] Answers to the three analysis questions
 - [ ] One sentence stating what you would measure next, and why
 
-## Curriculum
+## Curriculum connection
 
-- [[A1.2]] — ![[A1.2#^text]]
-- [[B2.1]] — ![[B2.1#^text]]
-- [[B2.4]] — ![[B2.4#^text]]
+![[A1.2]]
+
+![[B2.1]]
+
+![[B2.4]]

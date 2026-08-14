@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Where Our Electricity Comes From
+createdSection1: 2026-12-02T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2026-12-03T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -19,10 +20,10 @@ differently between cost, emissions, land, and reliability.
 | Hydroelectric | Very low | Mostly | Floods land; disrupts rivers and fish |
 | Wind | None | No — varies with weather | Needs backup or storage |
 | Solar | None | No — daily and seasonal | Same, plus winter in Canada |
-| Natural gas | Substantial | Yes, and fast to start | Emits $\mathrm{CO_2}$ and methane leaks |
+| Natural gas | Substantial | Yes, and fast to start | Emits $\ce{CO2}$ and methane leaks |
 
 ```mermaid
-pie title A typical Ontario generation mix
+pie title Ontario's generation mix
     "Nuclear" : 55
     "Hydro" : 24
     "Wind" : 9
@@ -34,7 +35,7 @@ pie title A typical Ontario generation mix
 > The mix shifts year to year with demand, water levels, and which reactors are
 > being refurbished. Treat the chart above as a rough illustration, then find
 > current figures from the system operator — that is exactly the scientific
-> literacy skill described in [[A2.4]].
+> literacy skill described in [[A2.4|the scientific literacy expectation]].
 
 ## The question worth arguing about
 
@@ -42,8 +43,10 @@ There is no source without a cost. The real question is **which costs we are
 willing to carry, and who ends up carrying them** — which is what
 [[Energy Source Debate]] is for.
 
-## Curriculum
+## Curriculum connection
 
-- [[D1.1]] — ![[D1.1#^text]]
-- [[D1.2]] — ![[D1.2#^text]]
-- [[D1.4]] — ![[D1.4#^text]]
+![[D1.1]]
+
+![[D1.2]]
+
+![[D1.4]]

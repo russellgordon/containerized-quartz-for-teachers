@@ -1,14 +1,16 @@
 ---
-createdSection1: 2026-09-08T08:00:00.000-0400
+title: Culminating Reflection
+createdSection1: 2027-01-12T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-09-08T08:00:00.000-0400
+createdSection2: 2027-01-13T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
   - assessment
 ---
 > [!abstract] At a glance
-> **Due:** final week · **Curriculum:** all strands
+> Individual · begun in class in the final week, with your portfolio open
+> beside you · **Format:** written, four questions answered
 
 ## The task
 

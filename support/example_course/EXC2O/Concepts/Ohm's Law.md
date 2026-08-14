@@ -1,7 +1,8 @@
 ---
-createdSection1: 2026-11-20T08:00:00.000-0500
+title: Ohm's Law
+createdSection1: 2026-11-24T07:00:00.000-0500
 draftSection1: false
-createdSection2: 2026-11-20T08:00:00.000-0500
+createdSection2: 2026-11-25T07:00:00.000-0500
 draftSection2: false
 enableToc: true
 tags:
@@ -61,7 +62,8 @@ $$
 > Heat a filament and its resistance climbs, and the line bends. Materials that
 > follow $V = IR$ are called **ohmic**; plenty are not.
 
-## Curriculum
+## Curriculum connection
 
-- [[D2.4]] — ![[D2.4#^text]]
-- [[D2.5]] — ![[D2.5#^text]]
+![[D2.4]]
+
+![[D2.5]]
