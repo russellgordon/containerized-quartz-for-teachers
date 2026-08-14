@@ -2115,7 +2115,10 @@ def append_coverage_styles(base_scss_path: Path):
 .coverage-map {{
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
+  /* Wide enough that two ringed cells in neighbouring columns keep clear
+     air between their outlines — the ring is 3px with a 2px offset, so
+     each side needs at least 5px and the eye wants more. */
+  gap: 1.4rem;
   align-items: flex-start;
   margin: 1.4rem 0;
 }}
@@ -3120,6 +3123,13 @@ def link_coverage_from_key_links(content_root: Path):
 
     Written into the BUILT copy only: the teacher's own Key Links page is
     theirs, and a line that reappears every build would be infuriating.
+
+    The curriculum entry is found by where it POINTS — a link into the
+    curriculum folder — rather than by its wording. Teachers rename these
+    links ("Curriculum expectations", "Ontario Curriculum", "The
+    expectations"), and matching on text meant the example course, whose
+    link differed by one lower-case letter, silently never got the map in
+    its Key Links. Falls back to appending at the end.
     """
     key_links = content_root / "Key Links.md"
     if not key_links.exists():
@@ -3127,12 +3137,25 @@ def link_coverage_from_key_links(content_root: Path):
     text = key_links.read_text(encoding="utf-8")
     if f"[[{COVERAGE_PAGE_TITLE}]]" in text:
         return
+
+    curriculum_dir = _find_curriculum_folder(content_root)
+    folder = curriculum_dir.name if curriculum_dir else None
     lines = text.split("\n")
+    target_index = None
     for index, line in enumerate(lines):
-        if "Curriculum Expectations]]" in line:
-            lines.insert(index + 1, f"- [[{COVERAGE_PAGE_TITLE}]]")
-            key_links.write_text("\n".join(lines), encoding="utf-8")
+        if not line.lstrip().startswith("- "):
+            continue
+        points_at_curriculum = folder and f"[[{folder}/" in line
+        if points_at_curriculum or "curriculum expectations]]" in line.lower():
+            target_index = index
+    if target_index is None:
+        # No curriculum entry to sit under: put it after the last bullet.
+        bullets = [i for i, line in enumerate(lines) if line.lstrip().startswith("- ")]
+        if not bullets:
             return
+        target_index = bullets[-1]
+    lines.insert(target_index + 1, f"- [[{COVERAGE_PAGE_TITLE}]]")
+    key_links.write_text("\n".join(lines), encoding="utf-8")
 
 
 def build_section_site(
