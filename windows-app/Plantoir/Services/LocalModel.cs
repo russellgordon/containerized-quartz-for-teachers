@@ -34,7 +34,7 @@ namespace Plantoir.Services;
 /// </summary>
 public sealed class LocalModel
 {
-    /// <summary>The measured winner. Roughly 940 MB on disk.</summary>
+    /// <summary>The measured winner. 1,117,320,736 bytes — about 1.1 GB.</summary>
     private const string ModelFile = "Qwen2.5-1.5B-Instruct-Q4_K_M.gguf";
 
     private const string ModelUrl =
@@ -60,22 +60,74 @@ public sealed class LocalModel
         Wsl($"docker ps --filter name={ContainerName} --format '{{{{.Names}}}}'").Trim() == ContainerName;
 
     /// <summary>
-    /// Fetch the model. Roughly 940 MB, once, and only after the teacher has
-    /// said yes — this is the whole reason the feature is opt-in.
+    /// How far the one-time download has got. <see cref="Total"/> is 0 when the
+    /// server would not say how big the file is, which turns the bar
+    /// indeterminate rather than inventing a denominator.
     /// </summary>
-    public Task<bool> Install(IProgress<string>? progress, CancellationToken cancellation) =>
-        Task.Run(() =>
+    public readonly record struct Fetching(long Bytes, long Total)
+    {
+        public bool Known => Total > 0;
+
+        /// <summary>Clamped, because a resumed or over-long response must not read as 103%.</summary>
+        public double Percent => Known ? Math.Min(100, 100.0 * Bytes / Total) : 0;
+
+        public string Describe() => Known
+            ? $"Downloading the assistant — {Mb(Bytes)} of {Mb(Total)} ({Percent:0}%)."
+            : $"Downloading the assistant — {Mb(Bytes)} so far.";
+
+        private static string Mb(long bytes) => $"{bytes / 1024.0 / 1024.0:0} MB";
+    }
+
+    /// <summary>
+    /// Fetch the model. About 1.1 GB, once, and only after the teacher has
+    /// said yes — this is the whole reason the feature is opt-in.
+    ///
+    /// Progress is measured by watching the part-file grow rather than by
+    /// parsing curl's own meter: curl draws that with carriage returns on
+    /// stderr, which arrives as one unreadable line through two layers of
+    /// process redirection. Asking the file how big it is costs one cheap call
+    /// every two seconds and cannot be broken by curl changing its output.
+    /// </summary>
+    public async Task<bool> Install(IProgress<Fetching>? progress, CancellationToken cancellation)
+    {
+        string part = $"{ModelDirectoryInWsl}/{ModelFile}.part";
+        long total = await Task.Run(SizeOnServer, cancellation);
+        progress?.Report(new Fetching(0, total));
+
+        var download = Task.Run(() => Wsl(
+            $"mkdir -p {ModelDirectoryInWsl} && " +
+            $"curl -fL --retry 3 -o {part} '{ModelUrl}' && " +
+            // Renamed only on success, so an interrupted download is never
+            // mistaken for an installed model.
+            $"mv {part} {ModelDirectoryInWsl}/{ModelFile} && echo done",
+            minutes: 30), cancellation);
+
+        while (!download.IsCompleted)
         {
-            progress?.Report("Fetching the assistant — this is about 940 MB, and happens once.");
-            string result = Wsl(
-                $"mkdir -p {ModelDirectoryInWsl} && " +
-                $"curl -fL --retry 3 -o {ModelDirectoryInWsl}/{ModelFile}.part '{ModelUrl}' && " +
-                // Renamed only on success, so an interrupted download is never
-                // mistaken for an installed model.
-                $"mv {ModelDirectoryInWsl}/{ModelFile}.part {ModelDirectoryInWsl}/{ModelFile} && echo done",
-                minutes: 30);
-            return result.Contains("done", StringComparison.Ordinal) && IsInstalled();
-        }, cancellation);
+            // Delay first: at nought seconds there is nothing to report but the
+            // zero already sent, and the wait is what keeps this to one process
+            // every two seconds rather than one per frame.
+            try { await Task.Delay(2000, cancellation); }
+            catch (OperationCanceledException) { break; }
+            progress?.Report(new Fetching(BytesSoFar(part), total));
+        }
+
+        string result = await download;
+        return result.Contains("done", StringComparison.Ordinal) && IsInstalled();
+    }
+
+    /// <summary>How big the finished file will be, or 0 if the server won't say.</summary>
+    private static long SizeOnServer()
+    {
+        // -L because the real file sits behind a redirect to a CDN, and it is
+        // the LAST content-length that describes it.
+        string headers = Wsl($"curl -sIL '{ModelUrl}' | tr -d '\\r' | grep -i '^content-length:' | tail -1");
+        string[] parts = headers.Split(':', 2);
+        return parts.Length == 2 && long.TryParse(parts[1].Trim(), out long size) ? size : 0;
+    }
+
+    private static long BytesSoFar(string path) =>
+        long.TryParse(Wsl($"stat -c %s {path} 2>/dev/null").Trim(), out long size) ? size : 0;
 
     /// <summary>Start the model and wait for it to answer. Idempotent.</summary>
     public async Task<bool> Start(IProgress<string>? progress, CancellationToken cancellation)

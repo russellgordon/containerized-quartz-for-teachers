@@ -15,7 +15,7 @@ account, no API key, and no internet requirement?*
 > the branch exists so it can be folded into a later release, or dropped,
 > without disturbing that.
 >
-> **Not yet exercised end to end:** the model download is ~940 MB and happens
+> **Not yet exercised end to end:** the model download is ~1.1 GB and happens
 > only on a teacher's explicit yes, so the install-and-first-answer path has
 > not been run. Everything up to it has: the server answers real JSON-RPC,
 > and the app's client is verified against the running server.

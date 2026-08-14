@@ -91,7 +91,7 @@ public sealed partial class AssistWindow : Window
             {
                 Title = "Download the assistant?",
                 Content = "The assistant runs on this computer — nothing you write is sent anywhere. " +
-                          "It needs a one-time download of about 940 MB, and then it works offline.",
+                          "It needs a one-time download of about 1.1 GB, and then it works offline.",
                 PrimaryButtonText = "Download",
                 CloseButtonText = "Not now",
                 DefaultButton = ContentDialogButton.Primary,
@@ -103,13 +103,24 @@ public sealed partial class AssistWindow : Window
                 return;
             }
 
-            var note = Say("Plantoir", "Downloading the assistant…");
-            var progress = new Progress<string>(line => note.Text = line);
+            var note = SayWithBar("Plantoir", "Downloading the assistant…");
+            var progress = new Progress<LocalModel.Fetching>(state =>
+            {
+                note.Text.Text = state.Describe();
+                // An unknown total leaves the bar sweeping rather than sitting
+                // at zero, which reads as stuck.
+                note.Bar.IsIndeterminate = !state.Known;
+                if (state.Known) note.Bar.Value = state.Percent;
+            });
+
             if (!await _model.Install(progress, _closing.Token))
             {
-                note.Text = "The download didn’t finish. Check the network and try opening this window again.";
+                note.Text.Text = "The download didn’t finish. Check the network and try opening this window again.";
+                note.Bar.Visibility = Visibility.Collapsed;
                 return;
             }
+            note.Text.Text = "The assistant is downloaded.";
+            note.Bar.Visibility = Visibility.Collapsed;
         }
 
         var starting = Say("Plantoir", "Starting the assistant…");
@@ -254,6 +265,31 @@ public sealed partial class AssistWindow : Window
         TranscriptScroller.UpdateLayout();
         TranscriptScroller.ChangeView(null, TranscriptScroller.ScrollableHeight, null);
         return body;
+    }
+
+    /// <summary>A turn that carries a progress bar as well as words.</summary>
+    private sealed record Reporting(TextBlock Text, ProgressBar Bar);
+
+    /// <summary>
+    /// Say something that will take a while, with a bar under it.
+    ///
+    /// The bar starts indeterminate: the total arrives from the server a moment
+    /// after the download begins, and a determinate bar pinned at zero in the
+    /// meantime is exactly what "frozen" looks like.
+    /// </summary>
+    private Reporting SayWithBar(string speaker, string text)
+    {
+        var body = Say(speaker, text);
+        var bar = new ProgressBar
+        {
+            IsIndeterminate = true,
+            Minimum = 0,
+            Maximum = 100,
+            Margin = new Thickness(0, 8, 0, 0),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+        };
+        if (body.Parent is StackPanel panel) panel.Children.Add(bar);
+        return new Reporting(body, bar);
     }
 
     private void ShowApproval(string question)
