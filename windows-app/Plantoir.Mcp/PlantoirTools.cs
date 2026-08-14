@@ -231,6 +231,43 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     private const string BlockHelp =
         "The block or section letter the teacher is timetabled in, for example F.";
 
+    private const string UnitHelp = "The unit number these classes belong to, for example 2.";
+
+    [McpServerTool(Name = "plan_add_classes", Title = "Plan adding class pages",
+                   ReadOnly = true, Destructive = false)]
+    [Description("Work out which class pages would be created for a unit and what dates they would fall on, " +
+                 "changing nothing. Use this for \"add placeholder pages for the next unit, seven days\" or " +
+                 "\"add Unit 2 Days 1 through 10\". Dates come from the section's remembered timetable, skipping " +
+                 "days already taken by an existing class, so the new unit follows on from the work already there. " +
+                 "Show the teacher what it says, word for word, then wait.")]
+    public string PlanAddClasses(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description(UnitHelp)] int unit,
+        [Description("How many class pages to add.")] int howMany,
+        [Description("The day number to start at within the unit. 1 unless the earlier days already exist.")]
+        int firstDay = 1)
+        => Guarded(() => workspace.PlanAddClasses(course, section, unit, firstDay, howMany).Describe());
+
+    [McpServerTool(Name = "add_classes", Title = "Add class pages", Destructive = false, Idempotent = false)]
+    [Description("Create the class pages for a unit, dated to the days the section actually meets. " +
+                 "Call plan_add_classes FIRST and show the teacher what it said. " +
+                 "\n\nThe pages are created UNPUBLISHED — empty skeletons for the teacher to write, which stay out " +
+                 "of the site until they publish them. An existing page is never written over. The course is " +
+                 "backed up first, and undo_last_change removes what this created.")]
+    public string AddClasses(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description(UnitHelp)] int unit,
+        [Description("How many class pages to add.")] int howMany,
+        [Description("The day number to start at within the unit. 1 unless the earlier days already exist.")]
+        int firstDay = 1)
+        => Guarded(() =>
+        {
+            var plan = workspace.PlanAddClasses(course, section, unit, firstDay, howMany);
+            return workspace.ApplyAddClasses(plan).Message;
+        });
+
     [McpServerTool(Name = "read_remembered_timetable", Title = "What dates this section meets",
                    ReadOnly = true, Destructive = false)]
     [Description("Read the class meeting dates Plantoir already knows for a section, changing nothing. " +

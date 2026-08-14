@@ -1520,6 +1520,184 @@ public sealed class AssistWorkspace
     /// The one place anything here writes a page, so the session's undo
     /// history sees every change without each caller having to remember.
     /// </summary>
+    // ---- Laying down a unit that has not been written yet ------------------
+
+    /// <summary>
+    /// Plan the class pages for a unit, on the section's own meeting dates.
+    ///
+    /// The dates come from <see cref="TimetableMemory"/> and the ones already
+    /// spoken for are skipped, so "give me seven days in Unit 3" lands on the
+    /// next seven days this class actually meets rather than the next seven
+    /// days in the calendar. A teacher should never have to work that out.
+    /// </summary>
+    public NewClassesPlan PlanAddClasses(string courseCode, int sectionNumber, int unit,
+                                         int firstDay, int count)
+    {
+        var course = Course(courseCode);
+        int section = Section(course, sectionNumber);
+
+        if (unit < 1) throw new AssistRefusal("A unit number starts at 1.");
+        if (firstDay < 1) throw new AssistRefusal("A day number starts at 1.");
+        if (count < 1) throw new AssistRefusal("Ask for at least one class.");
+
+        var remembered = TimetableMemory.Read(_folder, course.Code, section)
+            ?? throw new AssistRefusal(
+                $"I don't know when {course.Code} Section {section} meets, so I can't date new classes. " +
+                "Ask the teacher for their class dates, then record them with remember_timetable.");
+
+        string folder = ClassFolder(course, section);
+        var existing = ClassPages(course, section);
+
+        // Dates already carried by a class page are spoken for. Working from
+        // what the pages SAY, rather than counting from the start of the year,
+        // means a course that has already been re-dated or reshuffled still
+        // gets the right answer.
+        var taken = new HashSet<DateOnly>();
+        foreach (string page in existing)
+            if (DateOf(course, section, page) is { } date) taken.Add(date);
+
+        var free = remembered.Dates.Where(date => !taken.Contains(date)).ToList();
+
+        var classes = new List<NewClass>();
+        var alreadyThere = new List<string>();
+        var problems = new List<string>();
+
+        for (int i = 0; i < count; i++)
+        {
+            int day = firstDay + i;
+            string title = $"Unit {unit}, Day {day}";
+            string path = Path.Combine(folder, title + ".md");
+
+            // Never written over. A page with this name may be a lesson the
+            // teacher wrote months ago.
+            if (File.Exists(path)) { alreadyThere.Add(title); continue; }
+
+            if (classes.Count >= free.Count)
+            {
+                problems.Add(
+                    $"Only {free.Count} unused class date{(free.Count == 1 ? "" : "s")} remain in the " +
+                    $"timetable, so the last {count - alreadyThere.Count - classes.Count} " +
+                    "can't be dated. Add more dates to the timetable and ask again.");
+                break;
+            }
+            classes.Add(new NewClass(title, Relative(path), free[classes.Count], day));
+        }
+
+        return new NewClassesPlan
+        {
+            CourseCode = course.Code,
+            SectionNumber = section,
+            Unit = unit,
+            Classes = classes,
+            AlreadyThere = alreadyThere,
+            Problems = problems,
+            SpareDatesLeft = Math.Max(0, free.Count - classes.Count),
+        };
+    }
+
+    /// <summary>Create the pages the plan describes. Backed up first, and undoable.</summary>
+    public AssistResult ApplyAddClasses(NewClassesPlan plan, IProgress<string>? progress = null)
+    {
+        var course = Course(plan.CourseCode);
+        int section = Section(course, plan.SectionNumber);
+        if (plan.ChangesNothing)
+            return new AssistResult(true, "Nothing to add — those classes already exist.", null);
+
+        RefuseIfPlantoirIsBuilding(course);
+
+        string backup;
+        progress?.Report($"Backing up {course.Code} first…");
+        try { backup = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory(_folder)); }
+        catch (Exception error)
+        {
+            throw new AssistRefusal(
+                $"{course.Code} couldn’t be backed up, so no pages were created: {error.Message}");
+        }
+
+        _undo?.Begin($"adding {plan.Classes.Count} class pages to Unit {plan.Unit} of " +
+                     $"{course.Code} Section {section}");
+
+        // Match the time of day and UTC offset the section's existing classes
+        // use, so a new page sorts beside them rather than at midnight.
+        string tail = SiblingTimeAndOffset(course, section, ClassPages(course, section));
+        string folder = ClassFolder(course, section);
+        Directory.CreateDirectory(folder);
+
+        foreach (var created in plan.Classes)
+        {
+            string path = Path.Combine(folder, created.Title + ".md");
+            if (File.Exists(path)) continue;       // checked again: the plan may be minutes old
+            Save(path, ClassSkeleton(created, plan.Unit, plan.Classes.Count, tail));
+        }
+
+        return new AssistResult(true,
+            $"Created {plan.Classes.Count} class page{(plan.Classes.Count == 1 ? "" : "s")} in Unit " +
+            $"{plan.Unit} of {course.Code} Section {section}, dated " +
+            $"{plan.Classes[0].Date:yyyy-MM-dd} to {plan.Classes[^1].Date:yyyy-MM-dd}. " +
+            "They are unpublished, so nothing changed in the site — write them, then publish when ready.",
+            backup);
+    }
+
+    /// <summary>Where a section's class pages live.</summary>
+    private static string ClassFolder(Course course, int sectionNumber)
+    {
+        var folders = course.Configuration.PerSectionFolders;
+        // "All Classes" by convention, but a course names its own folders and
+        // the first per-section folder is where classes go.
+        string name = folders.FirstOrDefault(f => f.Contains("Class", StringComparison.OrdinalIgnoreCase))
+                      ?? folders.FirstOrDefault()
+                      ?? "All Classes";
+        return Path.Combine(course.SectionDirectory(sectionNumber), name);
+    }
+
+    /// <summary>
+    /// An empty class page in the shape every other class page takes.
+    ///
+    /// The teacher's own template, down to the frontmatter keys — with one
+    /// deliberate difference. It starts <c>publish: false</c>: a page nobody
+    /// has written yet has no business appearing in the site, and the teacher
+    /// asked for exactly that.
+    /// </summary>
+    private static string ClassSkeleton(NewClass created, int unit, int howMany, string tail)
+    {
+        string plural = howMany == 1 ? "This page was" : $"{howMany} of these were";
+        return $"""
+            ---
+            title: {created.Title}
+            publish: false
+            created: {created.Date:yyyy-MM-dd}{tail}
+            transcludeTitleSize: h2
+            enableToc: false
+            excludeBacklinks: true
+            tags:
+              - unit-{unit}
+            ---
+
+            %%
+            This is the shape every class page takes: a numbered agenda of what
+            happened, with links to the pages it used, then a short list of things
+            to do before next time. Nothing is explained here — the links do that.
+
+            {plural} created for you, dated to the days this class actually meets.
+            Rename them, add more, delete the ones you do not need. The `created:`
+            date is what puts them in order under All Classes, so a new page needs
+            one of its own.
+
+            This page is unpublished. Write it, then publish it when it is ready.
+            Delete this comment when you do — comments never reach the site either.
+            %%
+
+            ## Agenda
+
+            1.
+
+            ## Things to do before our next class
+
+            - [ ]
+
+            """;
+    }
+
     private void Save(string path, string text)
     {
         string? before = null;
