@@ -2152,6 +2152,16 @@ def append_coverage_styles(base_scss_path: Path):
 }}
 .coverage-chip-yes {{ background: #15803d; }}
 .coverage-chip-no {{ background: #b91c1c; }}
+/* A hovered cell or chip is brightened with a filter, and a filter makes
+   the element a stacking context — which would trap Quartz's hover
+   preview inside it, because Quartz appends the popover to the link
+   itself. The sidebar carries z-index 1, so the trapped popover rendered
+   UNDERNEATH the navigation. Lifting the hovered element above the
+   sidebar takes its popover with it. */
+.coverage-cell,
+a.coverage-chip {{ position: relative; }}
+.coverage-cell:hover,
+a.coverage-chip:hover {{ z-index: 1000; }}
 a.coverage-chip:hover {{ filter: brightness(1.15); }}
 .coverage-cell {{
   display: flex;
