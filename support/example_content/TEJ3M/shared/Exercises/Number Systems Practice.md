@@ -132,3 +132,11 @@ Do them by hand; the point is to stop needing a tool for a byte.
 
 Take these to where they bite: [[Logic Gates Practice]] treats the bits
 as decisions, and [[Networking Practice]] treats them as addresses.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A5.1]]
+
+![[A5.2]]
+%%curriculum-end%%

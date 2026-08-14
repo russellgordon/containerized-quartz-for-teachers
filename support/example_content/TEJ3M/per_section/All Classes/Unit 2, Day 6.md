@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_25__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,18 +10,18 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Spot the Hazard]] — the wiring round: a board so untidy
-   that nobody, including its builder, can trace it
-2. Bench time: [[Build the Logic Machine]] — build it, then test every
-   row of your own truth table and record each failure you fixed
-3. Trade benches: the group across the aisle gets five minutes to break
-   your machine, and you get five to break theirs
-4. Document to the standard in [[Documenting Your Build]], then hand in
-   [[The Logic Machine]]
+1. Warm-up: [[Which One Doesn't Belong]] — four Boolean expressions, and
+   two defensible answers
+2. Bench time: two benches, two different circuits, one shared truth
+   table. Prove they behave identically by measuring every row — an
+   argument is not a proof here
+3. Compare and name it: [[Boolean Algebra]] — the rules that let you
+   delete gates without changing a single row of behaviour
+4. Practise: [[Boolean Simplification Practice]], first block together
 5. Tools away, log it in your [[Tech Journal]]
 
 ## Things to do before our next class
 
-- [ ] Submit [[The Logic Machine]] with its schematic and test log.
-- [ ] Journal: the fault that took longest, and the step that finally
-      cornered it.
+- [ ] Simplify the two-of-three circuit from last class and count the
+      gates you saved.
+- [ ] Finish the first block of [[Boolean Simplification Practice]].

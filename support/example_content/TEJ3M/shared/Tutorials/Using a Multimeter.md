@@ -128,3 +128,11 @@ knows in which direction.
 Everything above turns into practice at the bench in
 [[Measure a Circuit]], and every number it produces belongs in your
 [[Tech Journal]] with its unit and its conditions attached.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A3.1]]
+
+![[B3.2]]
+%%curriculum-end%%

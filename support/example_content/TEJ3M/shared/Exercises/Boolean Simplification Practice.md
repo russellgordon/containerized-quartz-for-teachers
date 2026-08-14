@@ -179,3 +179,11 @@ and a plus sign means OR.
 
 Build the reduced version rather than the first one you drew, in
 [[Build the Logic Machine]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A5.3]]
+
+![[B3.4]]
+%%curriculum-end%%

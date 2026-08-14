@@ -85,4 +85,8 @@ shape of a strong entry; the content has to be yours.
 ![[B3.1]]
 
 ![[B3.3]]
+
+![[A1.1]]
+
+![[D1.1]]
 %%curriculum-end%%

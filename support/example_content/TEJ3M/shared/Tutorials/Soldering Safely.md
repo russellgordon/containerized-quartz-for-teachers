@@ -126,3 +126,11 @@ not admired. A build is not finished when it works once; it is
 finished when somebody could reasonably expect it to keep working,
 which is the argument running through
 [[When Good Enough Is Not Safe]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D1.1]]
+
+![[D1.2]]
+%%curriculum-end%%

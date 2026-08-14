@@ -125,4 +125,8 @@ working, and your own account of what went wrong first. See
 ![[D3.1]]
 
 ![[D3.2]]
+
+![[D3.3]]
+
+![[D3.5]]
 %%curriculum-end%%

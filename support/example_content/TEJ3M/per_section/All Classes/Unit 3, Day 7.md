@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 7
 draft: false
-created: __CREATED_CLASS_20__
+created: __CREATED_CLASS_42__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,19 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Tech Headlines]] — an embedded device in the news, and
-   whether the failure was hardware, software, or the seam between them
-2. Bench time: [[The Embedded Device]] finished — sensor in, actuator
-   out, and a fault log that shows the chase rather than the conclusion
-3. When hardware and software disagree, halve the system and test the
-   halves: [[Debugging Hardware and Software Together]]
-4. Demonstrations in rotation, then hand in
-5. Put today's journal entry beside your first one: [[Showing Growth]]
+1. Warm-up: [[Which One Doesn't Belong]] — four sensors, and a reason
+   that survives a follow-up question
+2. Bench time: a potentiometer into an analog pin. Turn it, watch the
+   number, and keep the meter on the same node so you can say what each
+   count is worth in volts
+3. Then a light sensor in a divider. Predict the reading with the room
+   lit and with the sensor covered, in counts, before you try it
+4. Compare and name it: [[Digital and Analog Signals]] — sampling,
+   resolution, and what a converter quietly throws away
+5. Read it, run it: [[Reading Sensors]]
 
 ## Things to do before our next class
 
-- [ ] Submit [[The Embedded Device]] with its code and fault log.
-- [ ] Journal: the bug that was in the wiring the whole time you were
-      searching the code, and what would have found it sooner.
+- [ ] Journal: your sensor's reading at three light levels, in counts
+      and in volts, with the conversion shown.
+- [ ] Bring one sensor idea worth building a device around.

@@ -102,4 +102,14 @@ you would need next in order to do this professionally.
 ![[B3.1]]
 
 ![[B5.3]]
+
+![[B1.1]]
+
+![[C1.1]]
+
+![[C2.1]]
+
+![[D2.3]]
+
+![[B4.5]]
 %%curriculum-end%%

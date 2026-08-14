@@ -154,3 +154,11 @@ an error.
 Once the gates are secure, start reducing them in
 [[Boolean Simplification Practice]], then build something that has to
 work in [[The Logic Machine]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A5.3]]
+
+![[B3.3]]
+%%curriculum-end%%

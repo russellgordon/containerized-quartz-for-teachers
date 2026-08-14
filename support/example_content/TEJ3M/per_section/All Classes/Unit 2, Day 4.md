@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 4
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_23__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,18 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Which One Doesn't Belong]] — four Boolean expressions, and
-   two defensible answers
-2. Bench time: two benches, two different circuits, one shared truth
-   table. Prove they behave identically by measuring every row — an
-   argument is not a proof here
-3. Compare and name it: [[Boolean Algebra]] — the rules that let you
-   delete gates without changing a single row of behaviour
-4. Practise: [[Boolean Simplification Practice]], first block together
-5. Tools away, log it in your [[Tech Journal]]
+1. Warm-up: [[Read the Schematic]] — logic symbols
+2. Practise: [[Logic Gates Practice]] — tables, then circuits
+3. Consolidate: [[Logic Gates]] — a decision made out of switches
 
 ## Things to do before our next class
 
-- [ ] Simplify the two-of-three circuit from last class and count the
-      gates you saved.
-- [ ] Finish the first block of [[Boolean Simplification Practice]].
+- [ ] Finish the practice set.

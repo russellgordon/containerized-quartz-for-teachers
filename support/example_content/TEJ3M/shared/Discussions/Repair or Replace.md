@@ -65,3 +65,13 @@ The argument gets a practical test. Every build you hand in this
 semester carries a known-issues list, because
 [[Documenting Your Build]] insists on one. Decide here what you think
 "repairable" obliges a maker to provide — and then provide it.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[C1.1]]
+
+![[C1.2]]
+
+![[C2.2]]
+%%curriculum-end%%

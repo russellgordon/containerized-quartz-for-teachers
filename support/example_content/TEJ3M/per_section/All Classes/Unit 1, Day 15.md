@@ -1,0 +1,20 @@
+---
+title: Unit 1, Day 15
+draft: false
+created: __CREATED_CLASS_15__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Warm-up: [[Which One Doesn't Belong]] — four circuit ideas
+2. [[The Working Circuit]], day 2 — the sentence, the schematic, and every
+   value justified by arithmetic
+3. Conference: which value are you least sure about?
+
+## Things to do before our next class
+
+- [ ] Schematic with calculated values.

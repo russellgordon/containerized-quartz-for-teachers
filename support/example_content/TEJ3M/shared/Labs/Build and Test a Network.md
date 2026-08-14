@@ -131,4 +131,10 @@ describe a cable that "tests fine but drops out".
 ![[B4.3]]
 
 ![[B4.4]]
+
+![[B4.2]]
+
+![[B4.5]]
+
+![[A4.4]]
 %%curriculum-end%%

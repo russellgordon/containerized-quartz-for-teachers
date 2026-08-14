@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 1
 draft: false
-created: __CREATED_CLASS_21__
+created: __CREATED_CLASS_56__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,18 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Tech Headlines]] — an outage story, traced back to what
-   actually broke
-2. Bench time before any theory: two machines, one cable. Find each
-   machine's address and mask, get one to answer the other, and write
-   down exactly what worked and what did not
-3. Now change one digit of one address and try again. Predict first
-4. Compare and name it: [[Networks and Protocols]] — addresses, masks,
-   gateways, and the layers doing work underneath your commands
-5. Practise: [[Networking Practice]], first block together
+1. Warm-up: [[Name That Part]] — the port round: name every connector on
+   the bench machine
+2. Concept: [[Ports and Connection Standards]] — what a standard actually
+   specifies, and why a cable that fits may not work
+3. Bench time: [[Build a Machine to Spec]] — the brief restated as
+   requirements, parts chosen and checked for compatibility
 
 ## Things to do before our next class
 
-- [ ] Finish the first block of [[Networking Practice]].
-- [ ] Record your own machine's address, mask, and gateway at home, and
-      say which of the three is shared with the house next door.
+- [ ] Parts list with compatibility notes.

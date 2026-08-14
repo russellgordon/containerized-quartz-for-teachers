@@ -73,3 +73,13 @@ list gets written; and every task this semester is marked partly on
 whether somebody else could safely service what you made. Decide here
 what you think you owe the person who plugs it in, because you will be
 asked to act on that answer within the week.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D1.1]]
+
+![[D1.2]]
+
+![[B1.2]]
+%%curriculum-end%%

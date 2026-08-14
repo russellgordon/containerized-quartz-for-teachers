@@ -98,3 +98,11 @@ and it is what earns most of the marks described in
 [[How Marks Work]]. Write it in the language
 [[Writing About Technology]] describes: specific, quantified, and
 addressed to the next technician, who might well be you.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D3.4]]
+
+![[B1.4]]
+%%curriculum-end%%

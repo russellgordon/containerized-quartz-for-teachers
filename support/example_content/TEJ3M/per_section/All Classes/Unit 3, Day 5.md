@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_18__
+created: __CREATED_CLASS_40__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,20 +10,20 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Spot the Hazard]] — the motor round: one drive circuit,
-   three things missing, and one of them is a diode
-2. Safety notes, read before anything spins: a motor is not an LED. Its
-   own supply, grounds tied together, a flyback diode across the
-   winding, and never a motor hung off a microcontroller pin
-3. Bench time: [[Drive a Motor]] — measure the winding resistance and
-   predict the stall current before you choose a switching device
-4. Compare and name it: [[Sensors and Actuators]] — the world coming in,
-   the world being pushed back on
-5. Read it, run it: [[Driving Outputs Safely]]
+1. Warm-up: [[Read the Schematic]] — pull-up and pull-down, told apart
+   in five seconds
+2. Bench time: a button on an input pin, counting presses. Press it
+   once; the counter jumps by three. Something in this room is lying and
+   it is not the program
+3. Look at the actual signal: [[Using an Oscilloscope]] — the contact
+   bounce is right there on the screen, and it lasts milliseconds
+4. Read it, run it, then fix it: [[Input, Output, and Timing]] —
+   debouncing, and why a delay is a blunt instrument
+5. Tools away, log it in your [[Tech Journal]]
 
 ## Things to do before our next class
 
-- [ ] Journal: running current and stall current, both measured, with
-      the ratio between them and what that ratio implies.
-- [ ] Reread [[Driving Outputs Safely]] before you design anything that
-      moves.
+- [ ] Measure your switch's bounce duration on the scope and record it
+      in milliseconds.
+- [ ] Journal: why "it works most of the time" is a bug report and not a
+      result.

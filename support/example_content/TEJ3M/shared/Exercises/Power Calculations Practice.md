@@ -125,3 +125,11 @@ about whether the part survives.
 
 Bring the thermal instinct to [[Spot the Hazard]], and apply it for real
 when you cost out the parts list for [[The Working Circuit]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A3.3]]
+
+![[A3.4]]
+%%curriculum-end%%

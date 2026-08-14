@@ -100,3 +100,11 @@ your units do not land there, the working is wrong.
 Take the same arithmetic to a real circuit in [[Predict the Circuit]],
 where the meter gets the last word, and to
 [[Series and Parallel Practice]] when one resistor stops being enough.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A3.1]]
+
+![[A3.3]]
+%%curriculum-end%%

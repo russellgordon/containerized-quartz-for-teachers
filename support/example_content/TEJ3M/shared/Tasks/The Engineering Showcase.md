@@ -4,6 +4,7 @@ draft: false
 created: __CREATED__
 tags:
   - tasks
+  - final-evaluation
 enableToc: true
 ---
 > [!abstract] At a glance
@@ -93,4 +94,10 @@ benches clear, one final log in your [[Tech Journal]].
 ![[D3.5]]
 
 ![[D3.6]]
+
+![[C2.2]]
+
+![[D3.1]]
+
+![[D3.3]]
 %%curriculum-end%%

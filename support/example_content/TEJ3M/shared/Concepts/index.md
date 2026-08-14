@@ -38,9 +38,15 @@ rather than reach for the drawer and hope.
 - [[Digital and Analog Signals]]
 - [[Sensors and Actuators]]
 
-**Unit 4 — Networks, systems, and the profession**
+**Unit 4 — Computer systems, networks, and the profession**
 
+- [[Ports and Connection Standards]]
+- [[BIOS, Firmware, and Boot]]
+- [[Operating Systems]]
 - [[Networks and Protocols]]
+- [[Network Types and Topologies]]
+- [[Securing a Network]]
+- [[Licensing, Policy, and Privacy]]
 - [[Health and Safety in the Shop]]
 - [[Careers and the Environment]]
 

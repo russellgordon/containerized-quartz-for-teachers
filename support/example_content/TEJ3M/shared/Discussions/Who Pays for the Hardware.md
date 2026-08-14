@@ -72,3 +72,13 @@ about a resistor. [[Careers and the Environment]] carries the
 background; what you decide here shows up later in what you choose to
 build, what you choose to keep running, and what you are willing to
 put your name on.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[C2.1]]
+
+![[C2.2]]
+
+![[C1.1]]
+%%curriculum-end%%

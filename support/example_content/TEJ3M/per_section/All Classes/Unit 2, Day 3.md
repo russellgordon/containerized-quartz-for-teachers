@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_22__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,19 +10,19 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Read the Schematic]] — logic symbols this time, and the
-   difference a small circle on an output makes
-2. The puzzle, stated once and then left alone: three judges, one
-   buzzer. It sounds when any two of the three press. Build it from what
-   is in the drawer. No method is coming
-3. Compare methods at the board — every bench that solved it, side by
-   side, with its gate count written underneath
-4. Stuck is normal and it has a procedure: [[Getting Unstuck]] — halve
-   the circuit, test the half, halve again
-5. Tools away, log it in your [[Tech Journal]]
+1. Warm-up: [[Name That Part]] — the package round: what a notch, a dot,
+   and a pin-count tell you before you read a single character
+2. Before any chip leaves its tube: [[Anti-Static Habits]] — strap on,
+   mat grounded, and the reason a shock you cannot feel still counts
+3. Bench time: [[Gates on the Bench]] — four chips with their part
+   numbers taped over. Probe the pins, build the table, then argue about
+   what each one is
+4. Compare and name it: [[Logic Gates]] — your tables, given the symbols
+   and the names the industry already agreed on
+5. Practise: [[Logic Gates Practice]], first block together
 
 ## Things to do before our next class
 
-- [ ] Write your solution as a truth table with all eight rows filled.
-- [ ] Journal: which bench's circuit was simplest, and what they saw in
-      the problem that you did not.
+- [ ] Finish the first block of [[Logic Gates Practice]].
+- [ ] Journal: the gate whose behaviour surprised you, with the row of
+      the table that gave it away.

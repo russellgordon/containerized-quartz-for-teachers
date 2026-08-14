@@ -85,4 +85,8 @@ time. Real products get this wrong regularly, and users experience it as
 ![[B3.2]]
 
 ![[B3.3]]
+
+![[A5.1]]
+
+![[A5.2]]
 %%curriculum-end%%

@@ -182,3 +182,13 @@ are drilled in [[Number Systems Practice]].
 > network just gives you better instruments.
 
 Wire it, address it, and prove it in [[Build and Test a Network]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A4.1]]
+
+![[A4.2]]
+
+![[B4.2]]
+%%curriculum-end%%

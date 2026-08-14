@@ -168,3 +168,13 @@ Always confirm against your own board's pinout.
 
 When these are automatic, write the real thing in
 [[Structuring Embedded Code]] and take it to [[The Embedded Device]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B5.1]]
+
+![[B5.2]]
+
+![[B5.3]]
+%%curriculum-end%%

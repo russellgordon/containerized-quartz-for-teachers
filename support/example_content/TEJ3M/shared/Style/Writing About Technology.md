@@ -78,3 +78,9 @@ fail under load.
 Strong technical writing — in a journal, a build record, or an
 argument — reads like a good service log. Symptom, evidence, action,
 verification, and an honest note about what you do not yet know.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D3.4]]
+%%curriculum-end%%

@@ -66,3 +66,13 @@ started one, and the paperwork is a formality that comes later.
     provinces and territories — meaning the same credential travels
     with you if the work does. Worth knowing before you choose where
     to train.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D3.1]]
+
+![[D3.2]]
+
+![[D3.3]]
+%%curriculum-end%%

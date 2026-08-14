@@ -15,7 +15,7 @@ prediction because the resistor measured 487 Ω" is a finding.
 
 Every lab opens with the safety notes that genuinely apply to that bench —
 not a generic list — and we read them together before tools move. That is
-the agreement in [[Safety in the Lab]], and it holds in all eight.
+the agreement in [[Safety in the Lab]], and it holds in all ten.
 
 | Lab | What you build, and what you prove |
 | --- | --- |
@@ -27,6 +27,8 @@ the agreement in [[Safety in the Lab]], and it holds in all eight.
 | [[Blink, Read, React]] | Code that makes a pin do exactly what you calculated |
 | [[Drive a Motor]] | A load too big for a pin, driven safely anyway |
 | [[Build and Test a Network]] | Cables you made and machines that answer each other |
+| [[Build a Machine to Spec]] | A computer that meets a written brief, measured against it |
+| [[Two Operating Systems, One Machine]] | Dual boot and a virtual machine, compared with your own numbers |
 
 > [!tip] The results table is the lab
 > Photographs are nice; the table is the evidence. Fill it in at the

@@ -128,3 +128,11 @@ What you may not do is assume. [[Components and Their Markings]] gets
 you as far as identifying the part; from there the datasheet is the
 primary source, and "I thought it was about two volts" is not a
 number anybody can build on.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A3.1]]
+
+![[A1.2]]
+%%curriculum-end%%

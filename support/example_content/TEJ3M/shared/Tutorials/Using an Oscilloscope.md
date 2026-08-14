@@ -117,3 +117,11 @@ waveform you settle on belongs in your [[Tech Journal]] as a sketch
 with both scale settings written beside it — a trace with no
 volts-per-division and no time-per-division is a drawing, not a
 measurement.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A3.2]]
+
+![[B3.2]]
+%%curriculum-end%%

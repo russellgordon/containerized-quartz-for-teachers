@@ -28,6 +28,8 @@ this year they are what "finished" means:
   simplified before it is built and tested against every row.
 - [[The Embedded Device]] — one sensor in, one actuator out, one job,
   and a measured claim about how well it does it.
+- [[The Client Build]] — a workstation, a network, and a handover
+  package a stranger could service from.
 - [[The Engineering Project]] — the capstone: a device of your own
   design, proposed in writing, built from circuits, logic, and code.
 - [[The Engineering Showcase]] — the finale: demonstrate what you built

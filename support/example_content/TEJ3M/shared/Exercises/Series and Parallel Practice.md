@@ -130,3 +130,11 @@ branch currents at a junction must add to the current arriving. Use them
 When the arithmetic is dependable, take it to the bench in
 [[Measure a Circuit]] and see how close the meter lands, then use it for
 real in [[The Working Circuit]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A3.3]]
+
+![[B3.3]]
+%%curriculum-end%%
