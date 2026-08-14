@@ -24,19 +24,16 @@ flowchart LR
   C --> D[Shoot and first leaves] --> E[Photosynthesis begins]
 ```
 
-Until those first true leaves open, the seedling is spending a fixed
-amount of stored energy and cannot earn any more. That is why a seed
-sown too deep never appears — it ran out before it reached the surface.
-See [[Propagation From Seed]].
+Until those first true leaves open, the seedling spends a fixed amount
+of stored energy and cannot earn any more, which is why a seed sown too
+deep never appears. See [[Propagation From Seed]].
 
-## Photosynthesis — earning
+## Earning and spending
 
 In the leaves, light energy combines carbon dioxide from the air with
 water from the roots, producing sugar and releasing oxygen. Sugar is the
-plant's income. Everything else — new leaves, new roots, flowers, fruit,
-thickening wood — is bought with it.
-
-## Respiration — spending
+plant's income, and everything else — new leaves, new roots, flowers,
+fruit, thickening wood — is bought with it.
 
 Respiration runs the other way: sugar and oxygen are broken down to
 release energy, giving off carbon dioxide and water. It happens in every
@@ -52,9 +49,9 @@ Sexual reproduction runs pollen to a receptive flower, producing seed
 that mixes two parents. Vegetative reproduction takes a piece of one
 parent and grows a genetically identical plant. The trade uses both on
 purpose: seed for variety and volume, cuttings when the customer wants
-exactly the plant they saw. Run all four against your own plants in
-[[The Growing Trial]] — if a trial plant is not growing, one of these
-four is blocked, and your job is to say which.
+exactly the plant they saw. Run all four processes against your own
+plants in [[The Growing Trial]] — if a trial plant is not growing, one
+of them is blocked, and your job is to say which.
 
 %%curriculum-start%%
 ## Curriculum connection

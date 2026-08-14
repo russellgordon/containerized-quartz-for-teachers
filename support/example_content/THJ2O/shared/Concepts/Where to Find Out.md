@@ -28,16 +28,15 @@ no national source can.
 
 **Industry associations.** Trade associations publish standards,
 training and the specifications contracts get written against — nursery
-stock standards, for instance, define what a stated caliper means when
-you buy it.
+stock standards define what a stated caliper means when you buy it.
 
 **Manufacturers.** The operator's manual is the authority on the machine
 in front of you, and safety data sheets are the authority on any product
-in the shop. Both are legally required to exist; neither is optional.
+in the shop. Both are legally required to exist.
 
 **News and events.** Trade newsletters and farm shows are how you hear
-about a new pest before it reaches a textbook. They are also where
-opinion and advertising live, so read them differently.
+about a new pest before it reaches a textbook — and also where opinion
+and advertising live, so read them differently.
 
 > [!success]- Four questions before you trust anything (click to expand)
 > **Who wrote it, and what do they sell?** A fact sheet from a regulator

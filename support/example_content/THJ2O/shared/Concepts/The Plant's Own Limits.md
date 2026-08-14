@@ -31,24 +31,22 @@ respiration together decide how fast a plant can grow at all. Strip half
 the leaves off a transplant and you have halved its income at the moment
 it most needs to rebuild roots.
 
-**Stage of life** sets what is possible right now. Prune at the wrong
-stage and you remove next year's flowers; harvest at the wrong stage and
-the crop will not keep.
+**Stage of life** sets what is possible now. Prune at the wrong stage
+and you remove next year's flowers; harvest at the wrong stage and the
+crop will not keep.
 
 ## After harvest, the biology keeps running
 
 The moment you cut a lettuce or pick a tomato, it stops earning and
 keeps spending. Respiration continues, using up sugars, water and
-firmness, and the warmer it is the faster that happens. Some crops, such
-as tomatoes, go on ripening after picking; others, such as sweet corn
-and most leafy greens, only get worse from the moment they leave the
-plant.
+firmness, and the warmer it is the faster that happens. Some crops go on
+ripening after picking; others, such as sweet corn and most leafy
+greens, only get worse from the moment they leave the plant.
 
 > [!warning] A harvested crop is still alive
 > Produce left in the sun in a bin at the end of a row can lose more
 > quality in one hot afternoon than in a week of proper storage. The
-> clock starts at the cut, not at the loading dock — get it into shade
-> before you do anything else.
+> clock starts at the cut, not at the loading dock.
 
 The environmental half of this story is
 [[Light, Water, Temperature, Soil]]; what to do once the crop is off the

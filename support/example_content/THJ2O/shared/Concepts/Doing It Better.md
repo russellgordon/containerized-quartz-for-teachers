@@ -31,8 +31,8 @@ are in a deliberate order.
 
 1. **Prevent.** Right plant, right place; healthy soil; clean tools and
    pots; resistant cultivars; crop rotation; do not move firewood.
-2. **Identify.** Know exactly what you have. Most insects on a plant are
-   not damaging it, and some are eating the ones that are.
+2. **Identify.** Most insects on a plant are not damaging it, and some
+   are eating the ones that are.
 3. **Monitor.** Check on a schedule and write down what you find, so you
    see a trend rather than a panic.
 4. **Set a threshold.** Decide in advance how much damage actually
@@ -49,10 +49,9 @@ are in a deliberate order.
 > keeping and prevention. Anything beyond that is a licensed adult's
 > decision, made with the product label in hand.
 
-The effects these practices answer are in
-[[What We Do to the Environment]]. You will apply the monitoring half in
-[[Pests and Diseases in Our Woodlot]] and the soil-and-water half in
-[[Planting a Shoreline]].
+The effects these answer are in [[What We Do to the Environment]]. You
+apply the monitoring half in [[Pests and Diseases in Our Woodlot]] and
+the soil-and-water half in [[Planting a Shoreline]].
 
 %%curriculum-start%%
 ## Curriculum connection

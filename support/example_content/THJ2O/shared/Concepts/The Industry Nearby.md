@@ -10,8 +10,8 @@ The green industries are not somewhere else. Within a short drive of
 this school there is a working vegetable farm, and within a longer one
 there will be a garden centre, a landscape contractor, a golf course, a
 municipal parks yard, a florist and somebody selling firewood off a
-woodlot. Learning to see them as an industry rather than as scenery is
-most of what this unit asks.
+woodlot. Seeing them as an industry rather than as scenery is most of
+what this unit asks.
 
 ## Who produces, and who sells
 
@@ -22,7 +22,7 @@ everything about how a business operates.
 
 | Producer | Typical outlet | What the outlet adds |
 | --- | --- | --- |
-| Vegetable farm | Farmers' market, farm stand, grocer, restaurant | Reaches customers who will not drive to a field |
+| Vegetable farm | Farmers' market, farm stand, grocer | Reaches customers who will not drive to a field |
 | Nursery growing shrubs and trees | Garden centre, landscape contractor | Storage, advice, delivery, planting |
 | Greenhouse growing bedding plants | Garden centre, seasonal aisle | Volume, timing, and a spring rush |
 | Cut-flower grower | Florist, event work | Design, arrangement, same-day delivery |
