@@ -2125,6 +2125,13 @@ def append_coverage_styles(base_scss_path: Path):
   border-radius: 0.6rem;
   padding: 1.2rem 1.3rem 1.1rem;
   margin: 1.4rem 0;
+  /* Hug the map instead of taking the whole column. A div is block-level,
+     so a four-strand course drew a panel as wide as the article with two
+     thirds of it empty. `fit-content` is min(max-content, available), so
+     a map too wide for the column still gets the full width and still
+     wraps — the panel only shrinks when there is something to shrink to. */
+  width: fit-content;
+  max-width: 100%;
 }}
 .coverage-map {{
   display: flex;
