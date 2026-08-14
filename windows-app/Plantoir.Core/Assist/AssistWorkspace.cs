@@ -231,17 +231,24 @@ public sealed class AssistWorkspace
 
     /// <summary>
     /// Year-round reference pages, which belong to the start of the year
-    /// rather than to any one lesson: everything Key Links points at, and
-    /// every curriculum page.
+    /// rather than to any one lesson: the section's own front page,
+    /// everything Key Links points at, and every curriculum page.
     ///
     /// A rollover moves the classes but leaves these behind on last year's
     /// dates, where they sort oddly and show up as stragglers in the date
     /// audit. Dating them to the first day of class puts them at the
     /// beginning of the year, which is what they are.
+    ///
+    /// The front page is included even though publishing later moves it again
+    /// — to the most recent published class — because a rolled-over course is
+    /// not published yet, and until it is, the install date is simply wrong.
     /// </summary>
     private List<PlannedDate> ReferenceDates(Course course, int section, DateOnly firstDay)
     {
         var reference = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        string index = SectionIndex.PathFor(course, section);
+        if (File.Exists(index)) reference.Add(Path.GetFullPath(index));
 
         string keyLinks = Path.Combine(course.SectionDirectory(section), KeyLinksFileName);
         if (File.Exists(keyLinks))

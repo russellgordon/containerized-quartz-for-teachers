@@ -371,6 +371,59 @@ public class ReDateTests : IDisposable
     }
 
     [Fact]
+    public void TheYearRoundPagesMoveToTheFirstDayOfClass()
+    {
+        // The section's front page, what Key Links points at, and the
+        // curriculum. They belong to the start of the year, not to a lesson.
+        Class("Unit 1, Day 1", "2026-09-08");
+        Class("Unit 1, Day 2", "2026-09-09");
+        Write("section1/index.md", "draft: false\ncreated: 2025-08-01T07:00:00.000-0400", "# Most Recent Class");
+        Write("section1/Key Links.md", "draft: false\ncreated: 2025-08-01T07:00:00.000-0400",
+              "- [[How Marks Work]]");
+        Material("Setup/How Marks Work.md", "2025-08-01");
+        Material("Ontario Curriculum/A1.1.md", "2025-08-01");
+
+        var plan = Open().PlanReDate("ICS3U", 1, Block(),
+            new[] { "Unit 1, Day 1", "Unit 1, Day 2" }, new[] { 1, 2 });
+
+        // Block F's meeting 1 is 2026-10-13 — the first day of class.
+        var moved = plan.Reference.ToDictionary(r => r.Title, r => r.New);
+        Assert.Equal(new DateOnly(2026, 10, 13), moved["index"]);
+        Assert.Equal(new DateOnly(2026, 10, 13), moved["Key Links"]);
+        Assert.Equal(new DateOnly(2026, 10, 13), moved["How Marks Work"]);
+        Assert.Equal(new DateOnly(2026, 10, 13), moved["A1.1"]);
+    }
+
+    [Fact]
+    public void CurriculumIsFoundWhateverTheFolderIsCalled()
+    {
+        // A real course has "Ontario Curriculum" and "College Board
+        // Curriculum", not "Curriculum" — matching the literal name would
+        // miss every page in it.
+        Assert.True(AssistWorkspace.IsCurriculum(@"C:\c", @"C:\c\Ontario Curriculum\A1.1.md"));
+        Assert.True(AssistWorkspace.IsCurriculum(@"C:\c", @"C:\c\College Board Curriculum\U1.md"));
+        Assert.True(AssistWorkspace.IsCurriculum(@"C:\c", @"C:\c\Curriculum\index.md"));
+        Assert.False(AssistWorkspace.IsCurriculum(@"C:\c", @"C:\c\Concepts\Recursion.md"));
+        // The FILE name never counts — only folders.
+        Assert.False(AssistWorkspace.IsCurriculum(@"C:\c", @"C:\c\Setup\Curriculum Notes.md"));
+    }
+
+    [Fact]
+    public async Task ApplyingARolloverWritesTheFrontPagesNewDate()
+    {
+        Class("Unit 1, Day 1", "2026-09-08");
+        Write("section1/index.md", "draft: false\ncreated: 2025-08-01T07:00:00.000-0400", "# Most Recent Class");
+        var workspace = Open();
+
+        workspace.ApplyReDate(workspace.PlanReDate("ICS3U", 1, Block(),
+            new[] { "Unit 1, Day 1" }, new[] { 1 }));
+
+        Assert.Contains("created: 2026-10-13", Read("section1/index.md"));
+        Assert.Contains("# Most Recent Class", Read("section1/index.md"));   // body untouched
+        await Task.CompletedTask;
+    }
+
+    [Fact]
     public void AMaterialNoClassLinksToIsLeftAloneAndReported()
     {
         Class("Unit 1, Day 1", "2026-09-08");
