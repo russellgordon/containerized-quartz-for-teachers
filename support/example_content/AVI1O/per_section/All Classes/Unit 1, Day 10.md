@@ -1,0 +1,19 @@
+---
+title: Unit 1, Day 10
+draft: false
+created: __CREATED_CLASS_10__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Studio time: elements studies
+2. Individual conferences
+3. Clearing up, properly: [[Clearing Up]]
+
+## Things to do before our next class
+
+- [ ] Two studies finished.

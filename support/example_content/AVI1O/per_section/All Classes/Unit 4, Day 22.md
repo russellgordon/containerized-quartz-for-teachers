@@ -1,0 +1,20 @@
+---
+title: Unit 4, Day 22
+draft: false
+created: __CREATED_CLASS_84__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+  - review
+---
+## Agenda
+
+1. [[What You Take With You]] — the skills that are not art
+2. Evidence hunting in your own portfolio
+3. Writing period
+
+## Things to do before our next class
+
+- [ ] Draft that entry.
