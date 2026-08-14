@@ -1152,6 +1152,7 @@ public sealed class AssistWorkspace
             SectionNumber = section,
             Block = timetable.Block,
             Dates = dates,
+            AllMeetings = timetable.Meetings.Select(meeting => meeting.Date).ToList(),
             Materials = materials,
             Reference = reference,
             CurriculumCount = reference.Count(r =>
@@ -1347,6 +1348,13 @@ public sealed class AssistWorkspace
             throw new AssistRefusal(
                 $"{course.Code} couldn’t be backed up, so no dates were changed: {error.Message}");
         }
+
+        // Write the timetable down now the teacher has committed to it. They
+        // have just done the tedious part; asking again next week — or in the
+        // next conversation — is the tedium this is here to end.
+        if (plan.AllMeetings.Count > 0)
+            TimetableMemory.Write(_folder, course.Code, section, plan.AllMeetings,
+                $"block {plan.Block}", DateOnly.FromDateTime(DateTime.Now));
 
         _undo?.Begin($"re-dating {course.Code} Section {section} onto block {plan.Block}");
         string tail = SiblingTimeAndOffset(course, section, ClassPages(course, section));

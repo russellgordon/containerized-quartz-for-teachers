@@ -68,6 +68,18 @@ public sealed class ReDatePlan
     /// <summary>Days the timetable names that no unit content belongs on.</summary>
     public required IReadOnlyList<NonTeachingDay> NonTeachingDays { get; init; }
 
+    /// <summary>
+    /// Every date this section meets, not only the ones this plan uses.
+    ///
+    /// Carried so that applying the plan can write the timetable down: the
+    /// teacher has just done the annoying part — finding the sheet, picking
+    /// out their block — and nothing was keeping the answer, so the next
+    /// conversation asked again. Everything that inserts a class or lays down
+    /// placeholder pages needs these dates, and none of it should send the
+    /// teacher back to a spreadsheet.
+    /// </summary>
+    public IReadOnlyList<DateOnly> AllMeetings { get; init; } = Array.Empty<DateOnly>();
+
     /// <summary>Meetings the spread did not use.</summary>
     public required int UnusedMeetings { get; init; }
 

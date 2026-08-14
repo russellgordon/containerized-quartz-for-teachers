@@ -103,8 +103,10 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     [McpServerTool(Name = "read_page", Title = "Read a page", ReadOnly = true, Destructive = false)]
     [Description("Read one page's Markdown, including its frontmatter. Use this to see what a class page's agenda links to, " +
-                 "and to see which draft key governs the page: a page under section1/ carries `draft:`, while a course-level " +
-                 "page such as a Concept carries `draftSection1:` and `draftSection2:` — one flag per section.")]
+                 "and to see which key governs the page: a page under section1/ carries `publish:`, while a course-level " +
+                 "page such as a Concept carries `publishForSection1:` and `publishForSection2:` — one flag per section. " +
+                 "Older courses carry `draft:` and `draftSection1:` instead, which mean the OPPOSITE — `draft: true` is a " +
+                 "page students cannot see. Both are understood; report what you find without rewriting it yourself.")]
     public string ReadPage(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
@@ -228,6 +230,84 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     private const string BlockHelp =
         "The block or section letter the teacher is timetabled in, for example F.";
+
+    [McpServerTool(Name = "read_remembered_timetable", Title = "What dates this section meets",
+                   ReadOnly = true, Destructive = false)]
+    [Description("Read the class meeting dates Plantoir already knows for a section, changing nothing. " +
+                 "CALL THIS FIRST whenever you need to know when a section's classes fall — before asking the " +
+                 "teacher for a timetable, and before any tool that needs dates. It is remembered from the last " +
+                 "time they gave one. If it returns nothing, then ask; once they answer, record it with " +
+                 "remember_timetable so nobody has to ask a third time.")]
+    public string ReadRememberedTimetable(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section)
+        => Guarded(() =>
+        {
+            var found = workspace.Course(course);
+            int number = workspace.Section(found, section);
+            var remembered = TimetableMemory.Read(workspace.FolderPath, found.Code, number);
+            if (remembered is null)
+                return $"No class dates are recorded for {found.Code} Section {number}. Ask the teacher when " +
+                       "this class meets — a timetable file, or the dates themselves — then call " +
+                       "remember_timetable so this only has to be asked once.";
+
+            var text = new StringBuilder();
+            text.AppendLine($"{found.Code} Section {number} meets on {remembered.Dates.Count} dates " +
+                            $"({remembered.Dates[0]:yyyy-MM-dd} to {remembered.Dates[^1]:yyyy-MM-dd}), " +
+                            $"from {remembered.Source}, recorded {remembered.Recorded:yyyy-MM-dd}.");
+            var upcoming = remembered.From(DateOnly.FromDateTime(DateTime.Now));
+            text.AppendLine($"{upcoming.Count} of those are still to come.");
+            text.AppendLine();
+            foreach (var date in remembered.Dates) text.AppendLine($"  {date:yyyy-MM-dd} {date.DayOfWeek}");
+            return text.ToString().TrimEnd();
+        });
+
+    [McpServerTool(Name = "remember_timetable", Title = "Remember when a section meets",
+                   Destructive = false, Idempotent = true)]
+    [Description("Write down the dates a section's classes fall on, so nobody has to ask again. Call this as soon " +
+                 "as a teacher tells you when their class meets, however they say it. Replaces anything recorded " +
+                 "before, so send the WHOLE list every time, not just new dates. Dates are YYYY-MM-DD, separated " +
+                 "by commas or spaces.")]
+    public string RememberTimetable(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description("Every date this section meets, as YYYY-MM-DD, separated by commas.")] string dates,
+        [Description("Where these came from, in the teacher's words — \"timetable.xlsx, block H\", \"typed in by hand\".")]
+        string source = "the teacher")
+        => Guarded(() =>
+        {
+            var found = workspace.Course(course);
+            int number = workspace.Section(found, section);
+
+            var parsed = new List<DateOnly>();
+            var unreadable = new List<string>();
+            foreach (string piece in dates.Split([',', ';', ' ', '\t', '\n', '\r'],
+                                                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                if (DateOnly.TryParse(piece, out var date)) parsed.Add(date);
+                else unreadable.Add(piece);
+            }
+
+            // Half a timetable is worse than none: it would be remembered, and
+            // then quietly used to date the wrong classes.
+            if (unreadable.Count > 0)
+                throw new AssistRefusal(
+                    $"Nothing was recorded — {unreadable.Count} of those aren't dates I can read " +
+                    $"({string.Join(", ", unreadable.Take(5))}). Give them as YYYY-MM-DD and I'll keep the lot.");
+            if (parsed.Count == 0)
+                throw new AssistRefusal("Nothing was recorded — no dates were given.");
+
+            if (!TimetableMemory.Write(workspace.FolderPath, found.Code, number, parsed, source,
+                                       DateOnly.FromDateTime(DateTime.Now)))
+                throw new AssistRefusal(
+                    "Those dates couldn't be saved, so they aren't remembered. Tell the teacher they may be " +
+                    "asked again — don't claim otherwise.");
+
+            var stored = TimetableMemory.Read(workspace.FolderPath, found.Code, number)!;
+            return $"Recorded {stored.Dates.Count} class dates for {found.Code} Section {number}, " +
+                   $"{stored.Dates[0]:yyyy-MM-dd} to {stored.Dates[^1]:yyyy-MM-dd}. " +
+                   "I won't need to ask for this again.";
+        });
 
     [McpServerTool(Name = "read_timetable", Title = "Read a timetable", ReadOnly = true, Destructive = false)]
     [Description("Read one block's class meetings out of a school timetable, changing nothing. Returns each meeting's " +
