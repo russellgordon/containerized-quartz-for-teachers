@@ -42,7 +42,10 @@ try
     // teacher starts an assistant from that course's menu: the request was
     // about that course, so a lock is a stronger guarantee than an
     // instruction in a prompt the model might drift from.
-    workspace = new AssistWorkspace(folder, new LauncherRunner(), course);
+    // The undo history lives for the life of this process, which is the life
+    // of the teacher's conversation — so "undo that" works for as long as they
+    // are talking, and nothing accumulates on disk afterwards.
+    workspace = new AssistWorkspace(folder, new LauncherRunner(), course, new UndoHistory());
 }
 catch (Exception error)
 {

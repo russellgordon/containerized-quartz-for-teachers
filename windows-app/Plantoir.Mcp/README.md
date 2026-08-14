@@ -507,6 +507,36 @@ The cause was wording, and it is fixed by two rules:
    from an earlier plan without either looking wrong — and it makes the dual
    frontmatter schema impossible to miss.
 
+## "Oops" — undoing within the conversation
+
+`list_recent_changes` and `undo_last_change`. A teacher in a rush publishes
+the wrong class; one sentence puts exactly those pages back, without
+disturbing anything else.
+
+A whole-course backup is still taken before every write and is the durable
+safety net — but it is a sledgehammer, and restoring it loses everything else
+done since. The common mistake is small and recent, and deserves a small and
+recent fix.
+
+**Deliberately in memory and session-scoped.** The history lives as long as the
+server process, which lives as long as the teacher's conversation. Nothing
+accumulates on disk, nothing needs pruning, and there is no second copy of
+course content to drift out of step with the files. Anything older than the
+conversation is what the backups are for, and the tool says so once its own
+history runs out.
+
+Each entry records what every file held **before** and what this session wrote
+**after**. The "after" is the important half: on undo, a file whose contents no
+longer match what we wrote has been changed by somebody else — Obsidian, the
+teacher, another session — so putting our copy back would destroy their work.
+Those files are named and left alone, and the change stays on the list so it
+can be retried.
+
+Two honest limits, both in the tool description: an operation that changed
+nothing is not remembered (so undo never burns a step doing nothing), and
+undoing the pages does **not** un-publish a website that was already
+republished — the section has to be republished to catch up.
+
 ## The lease protocol, in both directions
 
 Plantoir and this server are separate processes. Preview leases and publish

@@ -226,6 +226,106 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Equal(3, plan.Pages.Count);
     }
 
+    // ---- "Oops" ------------------------------------------------------------
+
+    [Fact]
+    public async Task TheWrongClassPublishedInAHurryCanBeTakenBack()
+    {
+        var history = new UndoHistory();
+        var workspace = new AssistWorkspace(_folder, _launcher, undo: history);
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 2.md", draft: true, body: "[[Ohm's Law]]");
+        Page("ICS3U", "Concepts/Ohm's Law.md", draftSection1: true);
+        string page = Path.Combine(_folder, "courses", "ICS3U", "section1", "All Classes", "Unit 1, Day 2.md");
+        string concept = Path.Combine(_folder, "courses", "ICS3U", "Concepts", "Ohm's Law.md");
+
+        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" },
+            includeLinked: true, publishes: false));
+        Assert.Contains("draft: false", File.ReadAllText(page));
+        Assert.Contains("draftSection1: false", File.ReadAllText(concept));
+
+        var result = history.Undo();
+
+        Assert.True(result.Succeeded);
+        Assert.Empty(result.Skipped);
+        Assert.Contains("draft: true", File.ReadAllText(page));
+        Assert.Contains("draftSection1: true", File.ReadAllText(concept));
+        Assert.Contains("publishing “Unit 1, Day 2”", result.Description);
+    }
+
+    [Fact]
+    public async Task UndoingRefusesToOverwriteWorkSomebodyElseDidSince()
+    {
+        // The teacher edited the page in Obsidian after publishing. Our copy
+        // of "before" is stale, and writing it back would throw their work
+        // away — so that file is named and left alone.
+        var history = new UndoHistory();
+        var workspace = new AssistWorkspace(_folder, _launcher, undo: history);
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 2.md", draft: true);
+        string page = Path.Combine(_folder, "courses", "ICS3U", "section1", "All Classes", "Unit 1, Day 2.md");
+
+        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" },
+            includeLinked: false, publishes: false));
+        File.AppendAllText(page, "\nA sentence the teacher typed afterwards.\n");
+
+        var result = history.Undo();
+
+        Assert.Empty(result.Restored);
+        Assert.Single(result.Skipped);
+        Assert.Contains("A sentence the teacher typed afterwards.", File.ReadAllText(page));
+        // Still on the list, so it can be retried.
+        Assert.Single(history.Entries);
+    }
+
+    [Fact]
+    public async Task UndoStepsBackThroughSeveralChanges()
+    {
+        var history = new UndoHistory();
+        var workspace = new AssistWorkspace(_folder, _launcher, undo: history);
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 1.md", draft: true);
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 2.md", draft: true);
+
+        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 1" },
+            includeLinked: false, publishes: false));
+        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" },
+            includeLinked: false, publishes: false));
+        Assert.Equal(2, history.Entries.Count);
+
+        history.Undo();
+        Assert.Contains("draft: true", File.ReadAllText(Path.Combine(
+            _folder, "courses", "ICS3U", "section1", "All Classes", "Unit 1, Day 2.md")));
+        Assert.Contains("draft: false", File.ReadAllText(Path.Combine(
+            _folder, "courses", "ICS3U", "section1", "All Classes", "Unit 1, Day 1.md")));
+
+        history.Undo();
+        Assert.Contains("draft: true", File.ReadAllText(Path.Combine(
+            _folder, "courses", "ICS3U", "section1", "All Classes", "Unit 1, Day 1.md")));
+        Assert.Empty(history.Entries);
+    }
+
+    [Fact]
+    public void UndoingWithNothingToUndoSaysSoPlainly()
+    {
+        var history = new UndoHistory();
+        var result = history.Undo();
+        Assert.False(result.Succeeded);
+        Assert.Equal("This conversation hasn’t changed anything yet.", result.Description);
+    }
+
+    [Fact]
+    public async Task AnOperationThatChangedNothingIsNotRememberedAsUndoable()
+    {
+        // Otherwise "undo" would burn a step doing nothing, and the teacher
+        // would have to ask twice to reach the change they meant.
+        var history = new UndoHistory();
+        var workspace = new AssistWorkspace(_folder, _launcher, undo: history);
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 2.md", draft: false);
+
+        await workspace.Apply(workspace.PlanPublish("ICS3U", 1, new[] { "Unit 1, Day 2" },
+            includeLinked: false, publishes: false));
+
+        Assert.Empty(history.Entries);
+    }
+
     // ---- Hiding: safe, not a mirror ----------------------------------------
 
     [Fact]

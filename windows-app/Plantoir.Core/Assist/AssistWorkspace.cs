@@ -34,6 +34,7 @@ public sealed class AssistWorkspace
     private readonly string _folder;
     private readonly ILauncherRunner _launcher;
     private readonly string? _lockedCourse;
+    private readonly UndoHistory? _undo;
 
     /// <param name="lockedCourse">
     /// When given, the session can see and touch this course and nothing else.
@@ -42,10 +43,17 @@ public sealed class AssistWorkspace
     /// one is never right, and a lock is a stronger guarantee than an
     /// instruction the model might drift from.
     /// </param>
-    public AssistWorkspace(string workspacePath, ILauncherRunner launcher, string? lockedCourse = null)
+    /// <param name="undo">
+    /// Remembers what this session changed, so a wrong publish can be taken
+    /// back without restoring a whole course. Optional: without it every write
+    /// still happens, just unrecorded.
+    /// </param>
+    public AssistWorkspace(string workspacePath, ILauncherRunner launcher, string? lockedCourse = null,
+                           UndoHistory? undo = null)
     {
         _folder = Path.GetFullPath(workspacePath);
         _launcher = launcher;
+        _undo = undo;
         _lockedCourse = string.IsNullOrWhiteSpace(lockedCourse) ? null : lockedCourse.Trim();
         if (Workspace.Classify(_folder) != WorkspaceState.Ready)
             throw new AssistRefusal(
@@ -59,6 +67,9 @@ public sealed class AssistWorkspace
     }
 
     public string FolderPath => _folder;
+
+    /// <summary>What this session has changed, or null when nothing tracks it.</summary>
+    public UndoHistory? History => _undo;
 
     /// <summary>The one course this session may touch, or null when unrestricted.</summary>
     public string? LockedCourse => _lockedCourse;
@@ -877,6 +888,10 @@ public sealed class AssistWorkspace
                 $"{course.Code} couldn’t be backed up, so nothing was changed: {error.Message}");
         }
 
+        _undo?.Begin($"{(plan.Hiding ? "hiding" : "publishing")} " +
+                     $"{Humanize(plan.Named.Select(p => "“" + p.Title + "”"))} " +
+                     $"in {course.Code} Section {section}");
+
         var changed = new List<string>();
         foreach (var page in plan.Changing)
         {
@@ -884,7 +899,7 @@ public sealed class AssistWorkspace
             string text = File.ReadAllText(full);
             var (updated, edit) = PageFrontmatter.SetDraft(text, page.FrontmatterKey, page.Draft);
             if (!edit.Changed) continue;
-            File.WriteAllText(full, updated);
+            Save(full, updated);
             changed.Add(page.Title);
         }
         if (changed.Count > 0)
@@ -899,13 +914,15 @@ public sealed class AssistWorkspace
                 string full = PagePaths.ResolveInside(_folder, date.RelativePath);
                 var (updated, moved) = PageFrontmatter.SetCreated(
                     File.ReadAllText(full), date.FrontmatterKey, date.New, tail);
-                if (moved) File.WriteAllText(full, updated);
+                if (moved) Save(full, updated);
             }
             catch { }
         }
 
         // And the front page catches up with what is now published.
         if (plan.Index is { WillChange: true } index) ApplyIndexChange(index, tail);
+
+        _undo?.End();
 
         if (!plan.Publishes)
             return new AssistResult(true, Summary(changed, published: false, course.Code, section), backup);
@@ -943,7 +960,7 @@ public sealed class AssistWorkspace
             string text = File.ReadAllText(path);
             if (SectionIndex.WithMostRecent(text, index.ToClass) is not { } withEmbed) return;
             var (withDate, _) = PageFrontmatter.SetCreated(withEmbed, "created", index.ToDate, tail);
-            File.WriteAllText(path, withDate);
+            Save(path, withDate);
         }
         catch { /* the front page falling behind must not fail the publish */ }
     }
@@ -1283,7 +1300,20 @@ public sealed class AssistWorkspace
             if (!File.Exists(marker)) continue;
             string kept = Path.Combine(course.DirectoryPath, folder,
                 $"section{sectionNumber}.previous-{DateTime.Now:yyyy-MM-dd_HHmmss}.json");
-            try { File.Move(marker, kept); return Relative(kept); }
+            // Recorded as a move so an undo puts the section back on last
+            // year's site rather than leaving it orphaned.
+            try
+            {
+                string? contents = File.ReadAllText(marker);
+                _undo?.Begin($"cutting section {sectionNumber} loose from its website");
+                _undo?.Touch(marker, contents);
+                _undo?.Touch(kept, null);
+                File.Move(marker, kept);
+                _undo?.Wrote(marker, null);
+                _undo?.Wrote(kept, contents);
+                _undo?.End();
+                return Relative(kept);
+            }
             catch { return null; }
         }
         return null;
@@ -1305,6 +1335,7 @@ public sealed class AssistWorkspace
                 $"{course.Code} couldn’t be backed up, so no dates were changed: {error.Message}");
         }
 
+        _undo?.Begin($"re-dating {course.Code} Section {section} onto block {plan.Block}");
         string tail = SiblingTimeAndOffset(course, section, ClassPages(course, section));
         var classPaths = new HashSet<string>(
             plan.Dates.Select(d => d.RelativePath), StringComparer.OrdinalIgnoreCase);
@@ -1316,9 +1347,11 @@ public sealed class AssistWorkspace
             var (updated, changed) = PageFrontmatter.SetCreated(
                 File.ReadAllText(full), date.FrontmatterKey, date.New, tail);
             if (!changed) continue;
-            File.WriteAllText(full, updated);
+            Save(full, updated);
             if (classPaths.Contains(date.RelativePath)) classes++; else materials++;
         }
+
+        _undo?.End();
 
         // Counted apart, because "moved 91 classes" when 26 classes and 65
         // materials moved is a sentence a teacher would rightly query.
@@ -1431,6 +1464,9 @@ public sealed class AssistWorkspace
                 $"{course.Code} couldn’t be backed up, so no dates were changed: {error.Message}");
         }
 
+        _undo?.Begin($"bringing {Humanize(plan.Anchors)}’ pages into date in " +
+                     $"{course.Code} Section {section}");
+
         string tail = SiblingTimeAndOffset(course, section, ClassPages(course, section));
         int moved = 0;
         foreach (var date in plan.Changing)
@@ -1439,9 +1475,10 @@ public sealed class AssistWorkspace
             var (updated, changed) = PageFrontmatter.SetCreated(
                 File.ReadAllText(full), date.FrontmatterKey, date.New, tail);
             if (!changed) continue;
-            File.WriteAllText(full, updated);
+            Save(full, updated);
             moved++;
         }
+        _undo?.End();
 
         return new AssistResult(true,
             $"Brought {moved} page{(moved == 1 ? "" : "s")} into date with the class that uses " +
@@ -1457,6 +1494,19 @@ public sealed class AssistWorkspace
     }
 
     // ---- Helpers ---------------------------------------------------------
+
+    /// <summary>
+    /// The one place anything here writes a page, so the session's undo
+    /// history sees every change without each caller having to remember.
+    /// </summary>
+    private void Save(string path, string text)
+    {
+        string? before = null;
+        try { if (File.Exists(path)) before = File.ReadAllText(path); } catch { }
+        _undo?.Touch(path, before);
+        File.WriteAllText(path, text);
+        _undo?.Wrote(path, text);
+    }
 
     /// <summary>A path as the teacher sees it: relative to the working folder, forward slashes.</summary>
     public string Relative(string fullPath) =>

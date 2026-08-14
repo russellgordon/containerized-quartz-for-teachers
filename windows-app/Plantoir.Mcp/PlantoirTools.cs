@@ -456,6 +456,67 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         throw new AssistRefusal($"“{raw}” isn’t a date {which} can use. Give it as YYYY-MM-DD, for example 2026-09-15.");
     }
 
+    // ---- Taking it back --------------------------------------------------
+
+    [McpServerTool(Name = "list_recent_changes", Title = "What this conversation changed",
+                   ReadOnly = true, Destructive = false)]
+    [Description("List what this conversation has changed, newest first, so the teacher can see what could be " +
+                 "taken back. This history is only kept while this conversation is open. Anything older lives in " +
+                 "Plantoir's Backups list, which is made before every change.")]
+    public string ListRecentChanges()
+    {
+        var entries = workspace.History?.Entries;
+        if (entries is null || entries.Count == 0)
+            return "This conversation hasn’t changed anything yet.";
+
+        var text = new StringBuilder();
+        for (int i = entries.Count - 1; i >= 0; i--)
+        {
+            var entry = entries[i];
+            text.AppendLine($"{(i == entries.Count - 1 ? "most recent: " : "             ")}" +
+                            $"{entry.When:HH:mm} — {entry.Description} " +
+                            $"({entry.Files.Count} file{(entry.Files.Count == 1 ? "" : "s")})");
+        }
+        text.Append("\nundo_last_change takes the most recent one back.");
+        return text.ToString();
+    }
+
+    [McpServerTool(Name = "undo_last_change", Title = "Undo the last change",
+                   Destructive = false, Idempotent = false)]
+    [Description("Take back the most recent change this conversation made — the fix for publishing the wrong " +
+                 "class in a hurry. Puts exactly those pages back the way they were, without disturbing anything " +
+                 "else. Can be called more than once to step further back. " +
+                 "\n\nOnly changes made in THIS conversation can be undone this way; the history is not kept " +
+                 "afterwards. For anything older, Plantoir's Backups list has a full copy of the course taken " +
+                 "before each change. " +
+                 "\n\nIf the website was already republished, undoing the pages does not un-publish the site — " +
+                 "republish the section afterwards to put the live site back in step.")]
+    public string UndoLastChange()
+    {
+        if (workspace.History is not { } history)
+            return "This session isn’t keeping an undo history.";
+
+        var result = history.Undo();
+        if (!result.Succeeded && result.Restored.Count == 0 && result.Skipped.Count == 0)
+            return result.Description;   // nothing to undo: the message says so
+
+        var text = new StringBuilder();
+        text.Append($"Undid {result.Description} — put {result.Restored.Count} " +
+                    $"file{(result.Restored.Count == 1 ? "" : "s")} back.");
+
+        if (result.Skipped.Count > 0)
+        {
+            text.AppendLine().AppendLine();
+            text.AppendLine($"{result.Skipped.Count} file{(result.Skipped.Count == 1 ? " was" : "s were")} " +
+                            "left alone, because they have changed since — putting the old copy back would " +
+                            "throw away that newer work:");
+            foreach (string path in result.Skipped.Take(MostListed))
+                text.AppendLine("  " + workspace.Relative(path));
+            text.Append("\nThis change is still on the list, so it can be tried again.");
+        }
+        return text.ToString();
+    }
+
     // ---- The commonest request of all ------------------------------------
 
     private const string ClassDateHelp =
