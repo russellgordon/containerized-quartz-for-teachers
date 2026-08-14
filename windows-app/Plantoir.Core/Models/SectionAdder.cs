@@ -4,12 +4,12 @@ namespace Plantoir.Core.Models;
 
 /// <summary>
 /// Scaffolds a brand-new section for an existing course, imitating a sibling
-/// section where one exists so a page the siblings keep as an unpublished
-/// draft starts as a draft here too.
+/// section where one exists so a page the siblings keep unpublished starts
+/// unpublished here too.
 /// </summary>
 public static class SectionAdder
 {
-    /// <summary>Teacher-eyes-only pages: created as drafts, never published.</summary>
+    /// <summary>Teacher-eyes-only pages: created unpublished, never in the site.</summary>
     public static readonly IReadOnlySet<string> UnpublishedFileNames =
         new HashSet<string> { "Private Notes.md", "Scratch Page.md" };
 
@@ -116,8 +116,17 @@ public static class SectionAdder
             });
             return string.Join("\n", rewritten);
         }
+        // The publish key, not the legacy draft one, and note the polarity is
+        // INVERTED: a teacher-eyes-only page is `publish: false`. Missing this
+        // would have quietly born every new section in the old schema — the
+        // same gap that setup_course.py had, in the other creation path.
+        //
+        // Only the fallback writes this. When there is a sibling section its
+        // frontmatter is copied verbatim, which is what a course still using
+        // `draft:` wants: the new section matches its siblings rather than
+        // becoming the one page in the course with a different vocabulary.
         string title = newTitle ?? fallbackTitle ?? "";
-        return $"title: {title}\ncreated: {created}\ndraft: {(fallbackIsDraft ? "true" : "false")}";
+        return $"title: {title}\ncreated: {created}\npublish: {(fallbackIsDraft ? "false" : "true")}";
     }
 
     /// <summary>

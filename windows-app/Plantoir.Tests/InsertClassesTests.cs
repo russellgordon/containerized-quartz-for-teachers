@@ -177,6 +177,40 @@ public sealed class InsertClassesTests : IDisposable
     }
 
     [Fact]
+    public void EveryLinkFormObsidianWritesSurvivesTheRename()
+    {
+        // Obsidian rewrites links itself when IT does the rename — but this
+        // rename happens on disk from another process, which Obsidian sees as
+        // a delete and a create and leaves links alone, and it may not even be
+        // running. So Plantoir has to handle every form Obsidian can write.
+        FourClasses();
+        File.WriteAllText(ClassPath("Unit 1, Day 1"),
+            "---\ntitle: Unit 1, Day 1\npublish: true\ncreated: 2026-09-08T07:00:00.000-0400\n---\n" +
+            "Plain [[Unit 2, Day 2]]\n" +
+            "Alias [[Unit 2, Day 2|the task day]]\n" +
+            "Embed ![[Unit 2, Day 2]]\n" +
+            "Heading [[Unit 2, Day 2#Agenda]]\n" +
+            "Block [[Unit 2, Day 2#^abc123]]\n" +
+            "Heading with alias [[Unit 2, Day 2#Agenda|what we did]]\n");
+
+        var workspace = Open();
+        var plan = workspace.PlanInsertClasses("ICS3U", 1, unit: 2, atDay: 1, count: 1);
+        workspace.ApplyInsertClasses(plan);
+
+        string text = File.ReadAllText(ClassPath("Unit 1, Day 1"));
+        Assert.Contains("Plain [[Unit 2, Day 3]]", text);
+        Assert.Contains("Alias [[Unit 2, Day 3|the task day]]", text);
+        Assert.Contains("Embed ![[Unit 2, Day 3]]", text);
+        // The heading and block anchors point INSIDE the page and must survive
+        // untouched — only the page name changed.
+        Assert.Contains("Heading [[Unit 2, Day 3#Agenda]]", text);
+        Assert.Contains("Block [[Unit 2, Day 3#^abc123]]", text);
+        Assert.Contains("Heading with alias [[Unit 2, Day 3#Agenda|what we did]]", text);
+        // And nothing still points at the old name.
+        Assert.DoesNotContain("Unit 2, Day 2", text);
+    }
+
+    [Fact]
     public void ApplyingCreatesTheNewClassUnpublished()
     {
         FourClasses();

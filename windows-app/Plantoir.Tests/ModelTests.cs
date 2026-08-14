@@ -179,8 +179,9 @@ public class SectionAdderTests
                  "per_section_files":["Private Notes.md","Key Links.md"]}
                 """);
             SectionAdder.AddSection(1, course);
-            Assert.Contains("draft: true", File.ReadAllText(Path.Combine(course.DirectoryPath, "section1", "Private Notes.md")));
-            Assert.Contains("draft: false", File.ReadAllText(Path.Combine(course.DirectoryPath, "section1", "Key Links.md")));
+            // publish:, and inverted — a teacher-eyes-only page is publish: false.
+            Assert.Contains("publish: false", File.ReadAllText(Path.Combine(course.DirectoryPath, "section1", "Private Notes.md")));
+            Assert.Contains("publish: true", File.ReadAllText(Path.Combine(course.DirectoryPath, "section1", "Key Links.md")));
             Assert.Contains("title: Grade 9 Science, Section 1",
                 File.ReadAllText(Path.Combine(course.DirectoryPath, "section1", "index.md")));
         }

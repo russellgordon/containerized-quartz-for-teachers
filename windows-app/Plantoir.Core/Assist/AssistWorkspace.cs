@@ -1974,7 +1974,25 @@ public sealed class AssistWorkspace
             backup);
     }
 
-    /// <summary>Point every link at a renamed page's new name.</summary>
+    /// <summary>
+    /// Point every link at a renamed page's new name.
+    ///
+    /// Obsidian does this itself when OBSIDIAN performs the rename. This one
+    /// happens on disk, from another process — which Obsidian reads as a
+    /// delete and a create, leaving links alone — and Obsidian may not be
+    /// running at all. So it cannot be delegated. What Obsidian is good for is
+    /// the list of forms that have to survive, and all of them do:
+    /// <c>[[Page]]</c>, <c>[[Page|alias]]</c>, <c>![[Page]]</c>,
+    /// <c>[[Page#Heading]]</c>, <c>[[Page#^block]]</c> and the combinations,
+    /// because the pattern stops at <c>#</c> and <c>|</c> and only the name
+    /// between the brackets moves.
+    ///
+    /// The one form NOT handled is Obsidian's optional Markdown-style link,
+    /// <c>[text](Unit%202,%20Day%203.md)</c>. Every page Plantoir ships uses
+    /// wikilinks, and the rest of the toolchain only understands those, so a
+    /// vault switched to Markdown links has bigger problems than this — but it
+    /// is a real gap and belongs written down rather than discovered.
+    /// </summary>
     private void RewriteLinks(Course course, int section, IReadOnlyList<Rename> renames)
     {
         if (renames.Count == 0) return;
