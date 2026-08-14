@@ -173,7 +173,12 @@ from Phase 5 apply here too.
   pages that genuinely address each expectation rather than piling them on
   one page, and make sure each strand's overall expectations are reachable
   through a task — a strand whose chips are all red means nothing marked
-  addresses it.
+  addresses it. **Only PUBLISHED pages count**: a page still marked
+  `draft: true` is not on the site, so it cannot have addressed anything,
+  and the map ignores it until the day it is published. The payload's one
+  draft page — the final class — therefore contributes nothing, which is
+  another reason curriculum blocks belong on destination pages rather than
+  class pages.
 - **Checklists on the site are READ-ONLY.** `- [ ]` renders a box that
   cannot be ticked: nothing is saved, and clicking does nothing. Never
   write "click to check off", "tick these as you go", or any wording that
@@ -392,12 +397,28 @@ the linter.
    expression against the document's plain-text form token by token,
    and read the rendered pages.
 7. Clean up: `docker rm -f <container>`, `rm -rf courses/<CODE>`.
-8. No GUI-IMPROVEMENTS entry for a content-only payload (the spec tracks
+8. **Refresh the course-code catalogue page.** It states how many courses
+   arrive fully written, so a new payload makes it wrong the moment it
+   lands:
+
+       python3 .claude/skills/example-content/build_catalogue_page.py <scratchpad>/ontario-course-codes.html
+
+   then publish that file with the Artifact tool, passing
+   `url: https://claude.ai/code/artifact/cfb0ce4b-3691-4aaa-93a8-4d848254510f`
+   and `favicon: 🎓` — the URL is the one the teacher already has, so it
+   must be updated in place rather than replaced, and the favicon is how
+   they find its tab. The generator reads the code lookup, the payload
+   folders, and `families.json`; it never hard-codes a count. When the app
+   or installer changes how a code resolves to a family, change
+   `family_for()` to match — the page's job is to tell the truth about
+   what a teacher receives, so a guess there is a lie there.
+9. No GUI-IMPROVEMENTS entry for a content-only payload (the spec tracks
    behaviour); commit with a message naming the course code.
 
 ## Skeletons: what every OTHER course code starts as
 
-Eighteen codes have payloads. The other ~1,900 Ontario codes get a
+The codes in `support/example_content/` have payloads — count the folders
+rather than trusting a number written here. Every other Ontario code gets a
 **skeleton** — the same shape with placeholder content, generated rather
 than hand-written:
 

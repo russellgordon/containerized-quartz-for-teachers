@@ -1300,7 +1300,8 @@ def find_skeleton_dir(course_code: str) -> Path | None:
     """
     The starting skeleton for this course code.
 
-    Eighteen course codes have real example content; every other Ontario
+    A couple of dozen course codes have real example content, and the list
+    grows; every other Ontario
     code gets a skeleton shaped for its SUBJECT — a drama course opens with
     Conventions and Warm-Ups, a chemistry course with Investigations and
     Safety in the Lab. The mapping is by three-letter prefix (ADA, SCH,

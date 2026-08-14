@@ -2793,6 +2793,27 @@ def _collect_expectations(curriculum_dir: Path):
     return specific, overall
 
 
+def _is_draft(text: str) -> bool:
+    """
+    Is this page held back from the built site?
+
+    The same test Quartz's own RemoveDrafts filter applies: `draft: true`,
+    or the string "true". Anything else — false, absent, a comment — is
+    published.
+    """
+    if not text.startswith("---\n"):
+        return False
+    end = text.find("\n---", 4)
+    if end < 0:
+        return False
+    for line in text[4:end].split("\n"):
+        match = re.match(r"^draft:\s*(.+?)\s*$", line)
+        if match:
+            value = match.group(1).strip().strip('"').strip("'").lower()
+            return value == "true"
+    return False
+
+
 def _coverage_counts(content_root: Path, curriculum_dir: Path, specific: dict):
     """
     How many pages address each expectation, and which of those are assessed.
@@ -2808,6 +2829,14 @@ def _coverage_counts(content_root: Path, curriculum_dir: Path, specific: dict):
     what the map keys on — but where a teacher's own vault still has them,
     links inside them count too.
 
+    Only PUBLISHED pages count. A page still marked `draft: true` is not on
+    the site a student can read, so it cannot have addressed anything yet —
+    and a teacher who writes next week's lesson early should not see the map
+    turn green before the class has happened. By the time this runs, the
+    per-section keys have already been resolved (see `process_frontmatter`),
+    so a page held back from one section is uncounted in that section's map
+    and counted in the other's, which is the honest answer for each.
+
     A page counts once per expectation however many times it names it.
     """
     covered_by = {code: set() for code in specific}
@@ -2820,6 +2849,8 @@ def _coverage_counts(content_root: Path, curriculum_dir: Path, specific: dict):
         try:
             text = page.read_text(encoding="utf-8")
         except Exception:
+            continue
+        if _is_draft(text):
             continue
         relative = page.relative_to(content_root)
         # A page in a Tasks folder is assessed work — that is what makes an
@@ -2952,6 +2983,11 @@ idea, and even link to the expectation behind it in a sentence, without
 claiming to have addressed it — which is why the number here is usually
 lower than the backlinks count on the expectation's own page, and why it
 means more.
+
+**Only published pages count.** A page still marked `draft: true` is not on
+the site yet, so it cannot have addressed anything — next week's lesson,
+written early, leaves the map exactly where it was until the day it is
+published.
 
 An expectation counts as **assessed** when one of those pages is in the
 Tasks folder. Ontario asks that every overall expectation be evaluated for

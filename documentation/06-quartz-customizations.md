@@ -213,7 +213,12 @@ adapt *Obsidian conventions* to *Quartz expectations* and are detailed in
   into the assembled content, never into the teacher's vault, so it is
   rebuilt from the site's own links every time and cannot drift. The link to
   it is inserted into the BUILT copy of `Key Links`, directly under the
-  curriculum entry.
+  curriculum entry. **Only published pages count** — a page held back with
+  `draft: true` is not on the site, so it leaves the map exactly where it
+  was until the day it is published. The map applies Quartz's own draft
+  test, and per-section publishing is resolved before it counts, so a
+  course whose sections are at different points gets an honest map for
+  each one.
 
 ---
 
