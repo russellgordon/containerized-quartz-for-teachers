@@ -239,6 +239,29 @@ class CourseConfiguration {
         set { values["show_reading_time"] = newValue }
     }
 
+    /// Whether this course publishes the Curriculum Coverage page.
+    var includesCurriculumCoverage: Bool {
+        get { return boolValue(forKey: "include_curriculum_coverage", fallback: true) }
+        set {
+            values["include_curriculum_coverage"] = newValue
+            // The sections cannot outlive the page they sit on.
+            if !newValue {
+                values["include_coverage_notes"] = false
+            }
+        }
+    }
+
+    /// Whether the coverage page carries its two explanatory sections.
+    var includesCoverageNotes: Bool {
+        get {
+            return CourseConfiguration.coverageNotesEnabled(
+                curriculumCoverageEnabled: includesCurriculumCoverage,
+                includesCoverageNotes: boolValue(forKey: "include_coverage_notes", fallback: true)
+            )
+        }
+        set { values["include_coverage_notes"] = newValue }
+    }
+
     /// Every item that can be hidden or made expandable in the sidebar.
     var allSidebarItems: [String] {
         var result: [String] = []
@@ -345,6 +368,24 @@ class CourseConfiguration {
             return false
         }
         return includesCurriculumCoverage
+    }
+
+    /// Whether the coverage page's two explanatory sections should be
+    /// switched on for a new course.
+    ///
+    /// The sections live on the coverage page, so they cannot exist without
+    /// it: declining the map forces them off whatever the toggle was last
+    /// left at. Keeping the map and declining the sections is a reasonable
+    /// choice — a page published to students is often better as the map
+    /// alone — and this returns exactly that.
+    static func coverageNotesEnabled(
+        curriculumCoverageEnabled: Bool,
+        includesCoverageNotes: Bool
+    ) -> Bool {
+        guard curriculumCoverageEnabled else {
+            return false
+        }
+        return includesCoverageNotes
     }
 
     static func normalizedCustomDomain(_ raw: String) -> String {

@@ -41,6 +41,7 @@ struct NewCourseWizardView: View {
     /// along with it.
     @State var includesCurriculumPages: Bool = true
     @State var includesCurriculumCoverage: Bool = true
+    @State var includesCoverageNotes: Bool = true
 
     /// Whether the factory structure uses LCS's own words and folders
     /// (Grove Time, SIC, College Board Curriculum) instead of the
@@ -373,6 +374,16 @@ struct NewCourseWizardView: View {
                                 .disabled(!prepopulatesExampleContent || !includesCurriculumPages)
                                 .accessibilityIdentifier("curriculumCoverageToggle")
                             ExampleCaption("A page showing every expectation coloured by how many pages address it — red in September, greener as the year goes on. Linked from Key Links, and kept out of the sidebar.")
+                        }
+                        VStack(alignment: .leading, spacing: 4) {
+                            // The sections sit on the coverage page, so they
+                            // cannot exist without it.
+                            Toggle("Explain the map on the page", isOn: $includesCoverageNotes)
+                                .disabled(!prepopulatesExampleContent
+                                          || !includesCurriculumPages
+                                          || !includesCurriculumCoverage)
+                                .accessibilityIdentifier("coverageNotesToggle")
+                            ExampleCaption("Two short sections at the foot of the map: what counts as addressing an expectation, and how to read it honestly — red in September is normal, red in May is not. Turn this off to publish the map on its own.")
                         }
                     }
                 } else if let skeleton = SkeletonCatalog.family(forCode: courseCode) {
@@ -727,6 +738,16 @@ struct NewCourseWizardView: View {
                 payloadIncludesCurriculum: ExampleContentCatalog.includesCurriculum(forCode: code),
                 includesCurriculumPages: includesCurriculumPages,
                 includesCurriculumCoverage: includesCurriculumCoverage
+            ),
+            "include_coverage_notes": CourseConfiguration.coverageNotesEnabled(
+                curriculumCoverageEnabled: CourseConfiguration.curriculumCoverageEnabled(
+                    codeHasExampleContent: ExampleContentCatalog.hasContent(forCode: code),
+                    prepopulatesExampleContent: prepopulatesExampleContent,
+                    payloadIncludesCurriculum: ExampleContentCatalog.includesCurriculum(forCode: code),
+                    includesCurriculumPages: includesCurriculumPages,
+                    includesCurriculumCoverage: includesCurriculumCoverage
+                ),
+                includesCoverageNotes: includesCoverageNotes
             ),
             "use_lcs_terminology": usesLCSTerminology,
             "deploy_target": deployTarget,

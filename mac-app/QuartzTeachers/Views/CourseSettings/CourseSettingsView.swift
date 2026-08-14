@@ -40,6 +40,16 @@ struct CourseSettingsView: View {
                     Toggle("Show page read-time estimates to students", isOn: $configuration.showReadingTime)
                         .accessibilityIdentifier("readingTimeToggle")
 
+                    // The map is drawn from this site's own links to the
+                    // curriculum pages, and its explanatory sections live on
+                    // it — so the second switch is off and unavailable
+                    // whenever the first one is off.
+                    Toggle("Publish the curriculum coverage map", isOn: $configuration.includesCurriculumCoverage)
+                        .accessibilityIdentifier("coverageToggle")
+                    Toggle("Explain the map on the page", isOn: $configuration.includesCoverageNotes)
+                        .disabled(!configuration.includesCurriculumCoverage)
+                        .accessibilityIdentifier("coverageNotesToggle")
+
                     Picker("Sidebar folders expand when clicking", selection: $configuration.expandOnFolderClick) {
                         Text("Chevron or folder name").tag(true)
                         Text("Chevron only (name opens the folder)").tag(false)

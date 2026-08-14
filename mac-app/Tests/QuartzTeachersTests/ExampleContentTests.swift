@@ -73,6 +73,41 @@ final class ExampleContentTests: XCTestCase {
             includesCurriculumCoverage: true))
     }
 
+    /// The two explanatory sections live ON the coverage page, so they
+    /// cannot outlive it. Tested through the pure function for the same
+    /// reason as the rule above.
+    @MainActor
+    func testTheCoverageNotesFollowTheCoverageMap() {
+        // Map published, sections wanted.
+        XCTAssertTrue(CourseConfiguration.coverageNotesEnabled(
+            curriculumCoverageEnabled: true, includesCoverageNotes: true))
+
+        // Map published, sections declined — allowed, and respected.
+        XCTAssertFalse(CourseConfiguration.coverageNotesEnabled(
+            curriculumCoverageEnabled: true, includesCoverageNotes: false))
+
+        // No map: the sections have nowhere to live, whatever the toggle says.
+        XCTAssertFalse(CourseConfiguration.coverageNotesEnabled(
+            curriculumCoverageEnabled: false, includesCoverageNotes: true))
+    }
+
+    /// Turning the map off in course settings must take the sections with
+    /// it, so that a saved config can never claim sections on a page that
+    /// is not being written.
+    @MainActor
+    func testTurningTheMapOffInSettingsTakesTheSectionsWithIt() {
+        let configuration: CourseConfiguration = CourseConfiguration(
+            values: ["include_curriculum_coverage": true,
+                     "include_coverage_notes": true],
+            lastSavedData: Data()
+        )
+        XCTAssertTrue(configuration.includesCoverageNotes)
+
+        configuration.includesCurriculumCoverage = false
+        XCTAssertFalse(configuration.includesCoverageNotes)
+        XCTAssertEqual(configuration.values["include_coverage_notes"] as? Bool, false)
+    }
+
     /// The default answers a brand-new wizard hands over.
     @MainActor
     func testANewWizardDefaultsTheMapOnForACourseWithCurriculum() {
@@ -81,6 +116,7 @@ final class ExampleContentTests: XCTestCase {
             code: "ADA1O", name: "Drama"
         )
         XCTAssertEqual(configuration["include_curriculum_coverage"] as? Bool, true)
+        XCTAssertEqual(configuration["include_coverage_notes"] as? Bool, true)
     }
 
     @MainActor

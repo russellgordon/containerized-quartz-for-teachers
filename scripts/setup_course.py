@@ -441,6 +441,31 @@ def prompt_curriculum_coverage(curriculum_included: bool, saved_config: dict) ->
     )
 
 
+def prompt_coverage_notes(coverage_included: bool, saved_config: dict) -> bool:
+    """
+    Offer the coverage page's two explanatory sections.
+
+    "What counts" and "Reading it honestly" explain what the map counts and
+    how to read a wall of red in September. They are written for a teacher
+    meeting the map for the first time — a department that has already had
+    that conversation, or a teacher publishing the map to students, may want
+    the page to be the map and nothing else.
+
+    They cannot exist without the map, so declining the map answers this
+    question too. Defaults to ON.
+    """
+    if not coverage_included:
+        return False
+    print("\n📝 The coverage page ends with two short sections: what counts as")
+    print("addressing an expectation, and how to read the map honestly — red in")
+    print("September is normal, red in May is not. They can be left off, leaving")
+    print("the map, the legend, and the summary table.")
+    return prompt_yes_no_default(
+        "Include those explanatory sections on the coverage page?",
+        bool(saved_config.get("include_coverage_notes", True))
+    )
+
+
 def prompt_yes_no_default(prompt_text: str, default: bool) -> bool:
     """
     Ask a yes/no question with a boolean default.
@@ -1851,6 +1876,7 @@ def setup_course(no_backup: bool = False):
     prepopulate_example = bool(saved_config.get("prepopulate_example_content", False))
     include_curriculum = bool(saved_config.get("include_curriculum_pages", False))
     include_curriculum_coverage = bool(saved_config.get("include_curriculum_coverage", True))
+    include_coverage_notes = bool(saved_config.get("include_coverage_notes", True))
     coverage_asked = False
     if example_payload:
         manifest = load_example_content_manifest(example_payload)
@@ -1872,6 +1898,8 @@ def setup_course(no_backup: bool = False):
             )
             include_curriculum_coverage = prompt_curriculum_coverage(
                 include_curriculum, saved_config)
+            include_coverage_notes = prompt_coverage_notes(
+                include_curriculum_coverage, saved_config)
             coverage_asked = True
         elif not prepopulate_example:
             include_curriculum = False
@@ -1909,6 +1937,8 @@ def setup_course(no_backup: bool = False):
                     )
                     include_curriculum_coverage = prompt_curriculum_coverage(
                         include_curriculum, saved_config)
+                    include_coverage_notes = prompt_coverage_notes(
+                        include_curriculum_coverage, saved_config)
                     coverage_asked = True
             else:
                 skeleton_manifest = None
@@ -2055,6 +2085,10 @@ def setup_course(no_backup: bool = False):
         include_curriculum_coverage = False
     elif not coverage_asked:
         include_curriculum_coverage = prompt_curriculum_coverage(True, saved_config)
+        include_coverage_notes = prompt_coverage_notes(
+            include_curriculum_coverage, saved_config)
+    if not include_curriculum_coverage:
+        include_coverage_notes = False
 
     # Ensure 'Media' is always in hidden list even though it wasn't prompted
     if "Media" not in hidden_items:
@@ -2088,6 +2122,7 @@ def setup_course(no_backup: bool = False):
         "prepopulate_example_content": prepopulate_example,
         "use_skeleton": use_skeleton,
         "include_curriculum_coverage": include_curriculum_coverage,
+        "include_coverage_notes": include_coverage_notes,
         "include_curriculum_pages": include_curriculum,
         # NEW: whether the default file names use LCS's own words
         "use_lcs_terminology": use_lcs_terminology,

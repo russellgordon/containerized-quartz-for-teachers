@@ -2778,6 +2778,50 @@ def _ensure_netlify_link(output_dir: Path, course_dir: Path):
 # insertion, and by the Explorer omit list, so the three cannot drift.
 COVERAGE_PAGE_TITLE = "Curriculum Coverage"
 
+# The two explanatory sections at the foot of the coverage page. They are
+# written for a teacher meeting the map for the first time, and a course
+# can switch them off once that conversation has happened.
+COVERAGE_NOTES = """## What counts
+
+A page addresses an expectation when it **transcludes** it — when the
+expectation's own wording appears on the page, under a *Curriculum
+connection* heading. That is the deliberate form.
+
+A passing mention in prose does not count. A concept page can discuss an
+idea, and even link to the expectation behind it in a sentence, without
+claiming to have addressed it — which is why the number here is usually
+lower than the backlinks count on the expectation's own page, and why it
+means more. If a page genuinely covers an expectation, put it in that
+page's *Curriculum connection* rather than leaving it as a mention.
+
+**Only pages this course teaches count.** The page carrying the
+connection has to be reachable from a class page — linked from one
+directly, or from a page a class page links to. A page written in August
+and never put into a class has addressed nothing yet, and a page reached
+only from Key Links is a reference, not a lesson.
+
+**Only published pages count.** A page still marked `draft: true` is not on
+the site yet, so it cannot have addressed anything — next week's lesson,
+written early, leaves the map exactly where it was until the day it is
+published.
+
+An expectation counts as **assessed** when one of those pages is in the
+Tasks folder. Ontario asks that every overall expectation be evaluated for
+marks at least once; the chips under each strand letter answer that, and
+the ring on a cell shows which specific expectations carry assessed work.
+
+## Reading it honestly
+
+Red is not failure — in September everything is red, and that is what the
+first months of a course look like. What matters is the direction of
+travel, and whether anything is still red in May.
+
+A strand of red in the skills strand usually means something different:
+those expectations are being met in every investigation without being
+cited by code. If that is the case here, it is worth citing a few of them
+where they genuinely apply rather than leaving the record silent.
+"""
+
 SPECIFIC_CODE = re.compile(r"^([A-F])(\d+)\.(\d+)$")
 OVERALL_FILE = re.compile(r"^([A-F]\d+)\.\s")
 CURRICULUM_BLOCK = re.compile(r"%%curriculum-start%%(.*?)%%curriculum-end%%", re.S)
@@ -2980,8 +3024,17 @@ def _coverage_cell(code: str, page: Path, content_root: Path, count: int, assess
             f'<span class="coverage-code">{code}</span></a>')
 
 
-def build_curriculum_coverage(content_root: Path, course_code: str) -> bool:
-    """Write the Curriculum Coverage page. Returns True when one was written."""
+def build_curriculum_coverage(content_root: Path, course_code: str,
+                             include_notes: bool = True) -> bool:
+    """
+    Write the Curriculum Coverage page. Returns True when one was written.
+
+    `include_notes` controls the two explanatory sections at the foot of
+    the page — "What counts" and "Reading it honestly". They exist for a
+    teacher meeting the map for the first time; a department that has
+    already had that conversation can switch them off and keep the map,
+    the legend, and the standings table.
+    """
     curriculum_dir = _find_curriculum_folder(content_root)
     if not curriculum_dir:
         return False
@@ -3036,6 +3089,9 @@ def build_curriculum_coverage(content_root: Path, course_code: str) -> bool:
         if related and not any(assessed_by[code] for code in related):
             unevaluated.append(overall_code)
 
+    # The explanatory sections, which the teacher can switch off.
+    notes = COVERAGE_NOTES if include_notes else ""
+
     body = f"""---
 title: Curriculum Coverage
 draft: false
@@ -3071,46 +3127,7 @@ assessed work addresses them, red when nothing marked does.
 | Addressed by exactly one page | {len(once)} |
 | Overall expectations with no assessed work | {len(unevaluated)} |
 
-## What counts
-
-A page addresses an expectation when it **transcludes** it — when the
-expectation's own wording appears on the page, under a *Curriculum
-connection* heading. That is the deliberate form.
-
-A passing mention in prose does not count. A concept page can discuss an
-idea, and even link to the expectation behind it in a sentence, without
-claiming to have addressed it — which is why the number here is usually
-lower than the backlinks count on the expectation's own page, and why it
-means more. If a page genuinely covers an expectation, put it in that
-page's *Curriculum connection* rather than leaving it as a mention.
-
-**Only pages this course teaches count.** The page carrying the
-connection has to be reachable from a class page — linked from one
-directly, or from a page a class page links to. A page written in August
-and never put into a class has addressed nothing yet, and a page reached
-only from Key Links is a reference, not a lesson.
-
-**Only published pages count.** A page still marked `draft: true` is not on
-the site yet, so it cannot have addressed anything — next week's lesson,
-written early, leaves the map exactly where it was until the day it is
-published.
-
-An expectation counts as **assessed** when one of those pages is in the
-Tasks folder. Ontario asks that every overall expectation be evaluated for
-marks at least once; the chips under each strand letter answer that, and
-the ring on a cell shows which specific expectations carry assessed work.
-
-## Reading it honestly
-
-Red is not failure — in September everything is red, and that is what the
-first months of a course look like. What matters is the direction of
-travel, and whether anything is still red in May.
-
-A strand of red in the skills strand usually means something different:
-those expectations are being met in every investigation without being
-cited by code. If that is the case here, it is worth citing a few of them
-where they genuinely apply rather than leaving the record silent.
-"""
+{notes}"""
     (content_root / f"{COVERAGE_PAGE_TITLE}.md").write_text(body, encoding="utf-8")
     print(f"🗺️  Curriculum Coverage: {total} expectations, {len(uncovered)} not yet addressed, "
           f"{len(unevaluated)} overall expectation(s) without assessed work.")
@@ -3475,7 +3492,11 @@ def build_section_site(
     # section will publish. Default is ON: a course with curriculum pages
     # gets the map unless the teacher turned it off in the wizard.
     if bool(config.get("include_curriculum_coverage", True)):
-        if build_curriculum_coverage(content_root, course_code):
+        # The explanatory sections are a separate choice, and one that only
+        # exists while the map does.
+        if build_curriculum_coverage(
+                content_root, course_code,
+                include_notes=bool(config.get("include_coverage_notes", True))):
             link_coverage_from_key_links(content_root)
     else:
         print("ℹ️ Curriculum Coverage page is switched off for this course.")
