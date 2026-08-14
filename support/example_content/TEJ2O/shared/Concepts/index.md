@@ -12,6 +12,7 @@ bench — read them after a lab, not instead of one.
 
 - [[What a Computer Is]]
 - [[The CPU and Memory]]
+- [[How Computers Got Faster]]
 - [[Storage and Drives]]
 - [[Peripherals and Ports]]
 - [[Software and Operating Systems]]
@@ -32,6 +33,7 @@ bench — read them after a lab, not instead of one.
 - [[E-Waste and the Environment]]
 - [[Security and Ethics]]
 - [[Careers in Computer Technology]]
+- [[Computers in Every Job]]
 
 Every page ends with the curriculum expectations it serves and links
 onward to the practice, warm-ups, and projects that use the idea.

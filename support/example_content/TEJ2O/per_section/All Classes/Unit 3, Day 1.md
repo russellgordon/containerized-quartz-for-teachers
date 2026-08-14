@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 1
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_40__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true

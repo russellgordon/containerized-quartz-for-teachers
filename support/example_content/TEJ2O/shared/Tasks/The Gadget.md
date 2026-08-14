@@ -77,4 +77,8 @@ now because of it? [[What a Strong Entry Looks Like]] shows the way.
 ![[B2.4]]
 
 ![[B5.4]]
+
+![[A3.3]]
+
+![[D1.1]]
 %%curriculum-end%%

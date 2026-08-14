@@ -1,0 +1,20 @@
+---
+title: Unit 2, Day 11
+draft: false
+created: __CREATED_CLASS_30__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. Warm-up: [[Spot the Hazard]] — a live network cabinet
+2. Bench time: [[Share Files Across the Network]] — a share, permissions,
+   and the errors when they are wrong
+3. Break it on purpose, and record the exact message
+
+## Things to do before our next class
+
+- [ ] Permission table and error text in your binder.

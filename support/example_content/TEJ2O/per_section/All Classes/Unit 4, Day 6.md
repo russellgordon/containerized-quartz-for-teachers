@@ -1,27 +1,20 @@
 ---
 title: Unit 4, Day 6
-draft: true
-created: __CREATED_CLASS_26__
+draft: false
+created: __CREATED_CLASS_70__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-4
 ---
-%% This page is an example of a DRAFT: `draft: true` in the frontmatter
-means it is never published to the site. Plan tomorrow today, publish it
-when class ends — just flip draft to false. Delete this comment when you
-reuse the page; comments never appear on the site either. %%
-
 ## Agenda
 
-1. Celebrate: the semester's best saves — the re-crimps, revivals, and
-   rescues, chosen by you
-2. Launch: [[Final Reflection]] — begin it in class
-3. Journal collection: [[Journal Checklist]] and [[Showing Growth]] are
-   your last look before handing it in
-4. Circle up — tools away, shop closed, one final log
+1. Warm-up: [[Spot the Hazard]] — an unknown donated machine
+2. Bench time: [[The Refurb Report]], day 3 — full assessment, using
+   [[Maintenance Utilities]] before any tools come out
+3. Record what the machine tells you, not what you assume
 
 ## Things to do before our next class
 
-- [ ] Finish [[Final Reflection]] and hand in your [[Tech Journal]].
+- [ ] Assessment recorded.

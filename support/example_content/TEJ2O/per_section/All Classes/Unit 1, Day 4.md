@@ -10,15 +10,15 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Spot the Hazard]] — one open case, five things wrong
-2. Safety notes: [[Anti-Static Habits]] — straps on before parts come out
-3. Bench time: [[Build a Workstation]] — the teardown, in reverse
-4. Compare: tour the benches — whose [[Cable Habits]] would a working
-   technician praise?
+1. Warm-up: [[Name That Part]] — parts pulled from yesterday's benches
+2. Safety notes, then bench time: [[Take It Apart]] finishes — every
+   part out, laid out, labelled in your own words
+3. Compare and name it: [[What a Computer Is]] and [[The CPU and Memory]]
+4. Launch our first task: [[The Build Sheet]]
 5. Tools away, log it in your [[Tech Journal]]
 
 ## Things to do before our next class
 
-- [ ] Re-read [[Anti-Static Habits]] — tomorrow we power these builds on.
-- [ ] Note two things your build-sheet client will use their machine for.
-- [ ] Journal: the step where your bench slowed down, and why.
+- [ ] Read [[The Build Sheet]] and start thinking about your client.
+- [ ] Try [[Component Identification Practice]], first block.
+- [ ] Journal: one part you can now name that you could not on Day 1.

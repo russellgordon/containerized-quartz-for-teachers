@@ -10,15 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Spot the Hazard]] — unit-one finale round
-2. Defend: [[The Build Sheet]] presented to a client bench — they push
-   back on any line that is not justified
-3. Compare: the strongest justification the room heard, and why it held
-4. Journal collection: check yours against the [[Journal Checklist]]
-   before handing it in
+1. Warm-up: [[Which One Doesn't Belong]] — storage edition
+2. Compare and name it: [[Storage and Drives]] — what spins, what does
+   not, and why it matters to a customer
+3. Practise: [[Component Identification Practice]]
 
 ## Things to do before our next class
 
-- [ ] Hand in [[The Build Sheet]] with your client bench's questions
-      answered.
-- [ ] Rest your screwdriver hand — next unit, we wire benches together.
+- [ ] Finish the practice set.

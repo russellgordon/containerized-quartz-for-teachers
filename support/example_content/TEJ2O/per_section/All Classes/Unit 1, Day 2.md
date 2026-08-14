@@ -10,16 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up debut: [[Name That Part]] — mystery hardware at the door
-2. Safety notes: today's teardown hazards, read together — power off,
-   case edges, screws bagged
-3. Bench time: [[Take It Apart]] begins — photos as you go, nothing
-   named yet
-4. Launch your [[Tech Journal]] and write [[Your First Entry]] before
-   tools away
+1. Warm-up debut: [[Which One Doesn't Belong]] — four ports on the board
+2. Tour of the site: [[Using This Site]] and [[How This Site Is Organised]]
+3. Set up your [[Tech Journal]]: [[Your First Entry]], and
+   [[What a Strong Entry Looks Like]] read together
 
 ## Things to do before our next class
 
-- [ ] Finish [[Your First Entry]] if bench time ran long.
-- [ ] Read [[What a Strong Entry Looks Like]] and compare it to yours.
-- [ ] Journal: the part that surprised you most when the case opened.
+- [ ] First journal entry written.

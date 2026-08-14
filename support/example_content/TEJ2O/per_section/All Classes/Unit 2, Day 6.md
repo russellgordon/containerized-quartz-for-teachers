@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_12__
+created: __CREATED_CLASS_25__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Name That Part]] — unit-two finale, networking gear only
-2. Deliver: [[The Network Job]] handover documents — walk a client
-   bench through your network as if you were leaving the job site
-3. Compare: what made a handover document trustworthy enough to work
-   from without you in the room
-4. Journal collection: last check against the [[Journal Checklist]]
-   and [[What a Strong Entry Looks Like]]
+1. Warm-up: [[Spot the Hazard]] — cables across a walkway
+2. Safety notes, then bench time: [[Build a Small Network]] — your
+   tested cables, the switch, and file sharing between benches
+3. Compare: whose bench reached whose, and what the first failure was
+4. Launch: [[The Network Job]] — a client brief for this very lab
+5. Tools away, log it in your [[Tech Journal]]
 
 ## Things to do before our next class
 
-- [ ] Hand in [[The Network Job]] documentation.
-- [ ] Bring nimble fingers — next unit starts with counting to 31 on
-      one hand.
+- [ ] Read [[The Network Job]] and mark anything unclear in the brief.
+- [ ] Journal: the moment two machines first saw each other.

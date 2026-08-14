@@ -77,4 +77,10 @@ got remade is better evidence of learning than one that worked first.
 ![[A2.3]]
 
 ![[A2.4]]
+
+![[D2.1]]
+
+![[D2.2]]
+
+![[B3.3]]
 %%curriculum-end%%

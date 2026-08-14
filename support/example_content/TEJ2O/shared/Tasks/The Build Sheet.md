@@ -77,4 +77,8 @@ sheet where every choice was easy was not listening to its client.
 ![[B1.2]]
 
 ![[B4.3]]
+
+![[A1.4]]
+
+![[D1.2]]
 %%curriculum-end%%

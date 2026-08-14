@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_44__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Binary Bites]] — ASCII round: decode the mystery word
-2. Keyboard bench time: [[First Programs]] — Python says hello, takes
-   your name, and says it back
-3. Then: [[Decisions and Loops]] — build the high-low guessing game
-4. Compare: play a neighbouring bench's game — what did they handle
-   that yours does not?
-5. Log it in your [[Tech Journal]]
+1. Warm-up: [[Predict the Circuit]] — three resistors, one prediction
+2. Bench time: [[Breadboard a Circuit]] — a second circuit, built from a
+   schematic you have not seen before
+3. What a schematic assumes you already know
 
 ## Things to do before our next class
 
-- [ ] Try the first block of [[Programming Practice]].
-- [ ] Journal: the first error message Python gave you, and what it
-      actually meant.
+- [ ] Journal: the symbol you had to look up.

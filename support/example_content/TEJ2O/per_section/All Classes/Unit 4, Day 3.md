@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 3
 draft: false
-created: __CREATED_CLASS_23__
+created: __CREATED_CLASS_67__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Spot the Hazard]] — retrospective round: hazards this
-   class actually met, and how the agreement held
-2. Safety notes, then bench time: [[The Refurb Report]] workday —
-   repairs in, drives wiped, operating system refreshed
-3. Compare and name it: [[Storage and Drives]] — the drive you just
-   wiped finally gets its page
-4. Tools away, log it in your [[Tech Journal]]
+1. Warm-up: [[Tech Headlines]] — where the metals come from
+2. Concept: [[E-Waste and the Environment]] — the whole path, not just
+   the bin
+3. In groups: one device, traced from mine to landfill
 
 ## Things to do before our next class
 
-- [ ] Bring [[The Refurb Report]] draft to a working state.
-- [ ] Journal: what wiping a stranger's drive made you think about.
+- [ ] Journal: the stage of that path you had never thought about.

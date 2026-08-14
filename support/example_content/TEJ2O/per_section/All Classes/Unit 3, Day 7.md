@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 7
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_46__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,19 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Name That Part]] — components from your own gadgets
-2. Safety notes, then bench time: [[The Gadget]] workday — build,
-   wire, test, repeat
-3. When it fights back: [[Debugging Basics]] and [[Getting Unstuck]] —
-   diagnose before you rebuild
-4. [[Programming Practice]] for benches waiting on parts
-5. Tools away, log it in your [[Tech Journal]]
+1. Warm-up: [[Predict the Circuit]] — measure before you claim
+2. Bench time: measure every value in your own circuit and compare with
+   the calculation
+3. Practise: [[Electronics Calculations Practice]] to the end
 
 ## Things to do before our next class
 
-- [ ] Stuck on your gadget? [[Finding Answers Online]] is the
-      technician's search method — use it, and credit what you follow.
-- [ ] Have [[The Gadget]] demo-ready — working, or with a diagnosed
-      failure you can explain.
-- [ ] Journal: the bug that fought hardest today, and how you cornered
-      it.
+- [ ] Finish the practice set.

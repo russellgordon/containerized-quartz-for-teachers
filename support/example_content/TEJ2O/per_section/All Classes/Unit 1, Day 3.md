@@ -10,15 +10,16 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Name That Part]] — parts pulled from yesterday's benches
-2. Safety notes, then bench time: [[Take It Apart]] finishes — every
-   part out, laid out, labelled in your own words
-3. Compare and name it: [[What a Computer Is]] and [[The CPU and Memory]]
-4. Launch our first task: [[The Build Sheet]]
-5. Tools away, log it in your [[Tech Journal]]
+1. Warm-up debut: [[Name That Part]] — mystery hardware at the door
+2. Safety notes: today's teardown hazards, read together — power off,
+   case edges, screws bagged
+3. Bench time: [[Take It Apart]] begins — photos as you go, nothing
+   named yet
+4. Launch your [[Tech Journal]] and write [[Your First Entry]] before
+   tools away
 
 ## Things to do before our next class
 
-- [ ] Read [[The Build Sheet]] and start thinking about your client.
-- [ ] Try [[Component Identification Practice]], first block.
-- [ ] Journal: one part you can now name that you could not on Day 1.
+- [ ] Finish [[Your First Entry]] if bench time ran long.
+- [ ] Read [[What a Strong Entry Looks Like]] and compare it to yours.
+- [ ] Journal: the part that surprised you most when the case opened.

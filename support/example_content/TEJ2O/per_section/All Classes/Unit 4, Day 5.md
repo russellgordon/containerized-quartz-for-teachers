@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 5
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_69__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,16 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Benches staged: builds powered on, gadgets blinking, refurb
-   machines ready to hand over
-2. [[The Shop Showcase]] — invited guests tour the shop, bench by bench
-3. You are the technician: demonstrate, explain, and answer questions
-   from people who were not here for the build
-4. Tools away one more time, then log it — one entry about explaining
-   your work to a stranger
+1. Warm-up: [[Name That Part]] — what came out of the donated machines
+2. Bench time: the refurb machines opened, cleaned, and inventoried
+3. What is worth keeping, what is worth recycling, and who decides
 
 ## Things to do before our next class
 
-- [ ] Journal: the question a guest asked that you want a better
-      answer to.
-- [ ] Bring your [[Tech Journal]] — final collection is next class.
+- [ ] Inventory recorded with photographs.

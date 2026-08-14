@@ -19,6 +19,7 @@ simply link here instead of re-explaining it.
 | [[Cable Habits]] | A bench you can trace at a glance |
 | [[Getting Unstuck]] | Being stuck well instead of spinning |
 | [[Finding Answers Online]] | Searching, judging, and crediting |
+| [[Maintenance Utilities]] | Checking, repairing, and backing up before you open anything |
 
 Skim them all early; return to each when it becomes urgent.
 [[Anti-Static Habits]] earns its keep the first time [[Take It Apart]]

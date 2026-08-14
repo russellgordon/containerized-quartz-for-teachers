@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_9__
+created: __CREATED_CLASS_22__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Spot the Hazard]] — cables across a walkway
-2. Safety notes, then bench time: [[Build a Small Network]] — your
-   tested cables, the switch, and file sharing between benches
-3. Compare: whose bench reached whose, and what the first failure was
-4. Launch: [[The Network Job]] — a client brief for this very lab
-5. Tools away, log it in your [[Tech Journal]]
+1. Warm-up: [[Which One Doesn't Belong]] — four cable faults
+2. Bench time: the tester's verdicts, diagnosed one by one — which pin,
+   which end, which mistake
+3. Re-crimp until two cables pass in a row
 
 ## Things to do before our next class
 
-- [ ] Read [[The Network Job]] and mark anything unclear in the brief.
-- [ ] Journal: the moment two machines first saw each other.
+- [ ] Two passing cables, labelled with your bench number.

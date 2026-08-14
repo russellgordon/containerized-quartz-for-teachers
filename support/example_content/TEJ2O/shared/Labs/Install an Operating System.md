@@ -77,4 +77,6 @@ system on a spare drive and compare the choices its installer made.
 ![[B1.1]]
 
 ![[B4.2]]
+
+![[B4.4]]
 %%curriculum-end%%

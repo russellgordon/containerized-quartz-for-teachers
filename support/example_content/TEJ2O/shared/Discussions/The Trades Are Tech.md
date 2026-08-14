@@ -48,4 +48,8 @@ rungs of several of them.
 ![[D3.1]]
 
 ![[D3.4]]
+
+![[D3.2]]
+
+![[D3.3]]
 %%curriculum-end%%

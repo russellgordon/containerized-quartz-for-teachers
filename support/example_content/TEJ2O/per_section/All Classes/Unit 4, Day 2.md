@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 2
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_66__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Spot the Hazard]] — a donated machine of unknown history
-2. Safety notes, then bench time: assess your refurb machine — what
-   works, what fails, what is missing
-3. Discussion: [[Repair or Replace]] — argue it for your own machine,
-   with evidence from the bench
-4. [[Troubleshooting Practice]] — the diagnosis habits your assessment
-   just used, made explicit
-5. Tools away, log it in your [[Tech Journal]]
+1. Warm-up: [[Tech Headlines]] — a recycling programme, examined
+2. Audit: what this school does with its old equipment, found out rather
+   than assumed
+3. Discussion: [[Where Does Old Tech Go]] — with the audit on the table
 
 ## Things to do before our next class
 
-- [ ] Draft the parts-and-labour list for [[The Refurb Report]].
-- [ ] Journal: your machine's most surprising symptom, and your first
-      theory about it.
+- [ ] Journal: one thing the audit found that you would change.

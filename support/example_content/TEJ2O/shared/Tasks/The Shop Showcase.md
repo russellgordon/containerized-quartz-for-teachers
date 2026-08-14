@@ -4,6 +4,7 @@ draft: false
 created: __CREATED__
 tags:
   - tasks
+  - final-evaluation
 enableToc: true
 ---
 > [!abstract] At a glance
@@ -77,4 +78,8 @@ one day ask to see.
 ![[D3.6]]
 
 ![[B1.3]]
+
+![[D3.5]]
+
+![[D3.1]]
 %%curriculum-end%%
