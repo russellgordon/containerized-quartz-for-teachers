@@ -10,18 +10,21 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Spot the Hazard]] — a bench supply wired by somebody in
-   a hurry
-2. Bench: [[Build a Regulated Supply]]. Predict the regulator's
-   dissipation before you connect anything, and set the current limit
-   first — [[Bench Power Supply Habits]] is the standing procedure
-3. Scope across the reservoir capacitor and see the ripple the
-   regulator is hiding: [[Using an Oscilloscope Properly]]
-4. Name it: [[Power Supplies and Regulation]] — headroom, dropout,
-   dissipation, and the current budget that decides all three
-5. Launch: [[The Specification]], criteria read beside
-   [[How Marks Work]]
+1. Warm-up: [[Read the Schematic]] — the whole-page round. Find the
+   power section, the signal path, and the part you cannot identify
+2. The autopsy board comes back out, and this time you draw it as
+   boxes and arrows rather than components. Five boxes maximum. Argue
+   about where the boundaries go
+3. Compare drawings across benches: every disagreement is about where
+   one job ends and the next begins. Name it: [[System Block Diagrams]]
+4. Redraw your specification as a block diagram, and label every arrow
+   with what actually travels along it — volts, bits, or watts
+5. Journals open: [[What a Strong Entry Looks Like]] sets this year's
+   bar, and it is higher than a photograph and a sentence
 
 ## Things to do before our next class
 
-- [ ] Draft the one-sentence job your specified device does.
+- [ ] Block diagram finished, every arrow labelled with a real
+      quantity.
+- [ ] Journal: the boundary your bench argued hardest about, and how
+      you settled it.

@@ -126,3 +126,13 @@ product claim: a security claim without conditions is not a claim. And
 bring the standard from [[Our Classroom Norms]] — the strongest
 position in this discussion is usually held by the person willing to
 name the cost of their own proposal.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D2.1]]
+
+![[D2.3]]
+
+![[B4.2]]
+%%curriculum-end%%

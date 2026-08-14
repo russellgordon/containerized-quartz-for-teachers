@@ -107,4 +107,10 @@ we assess it as one.
 ![[B5.2]]
 
 ![[B5.3]]
+
+![[A5.3]]
+
+![[D1.1]]
+
+![[D1.2]]
 %%curriculum-end%%

@@ -161,3 +161,13 @@ Take a real requirement from your own [[The Specification]] draft and run
 question 3's treatment on it. If you cannot write the acceptance test,
 the requirement is not finished — and finding that out now is the whole
 reason this set exists.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B2.2]]
+
+![[A3.1]]
+
+![[D3.3]]
+%%curriculum-end%%

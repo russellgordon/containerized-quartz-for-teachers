@@ -149,3 +149,11 @@ Take question 7's filter to [[Sample a Signal]], capture the same tone
 with the filter fitted and removed, and put both traces in your
 [[Tech Journal]]. Seeing the alias appear and disappear on demand is the
 one demonstration that makes this permanent.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A5.5]]
+
+![[A5.6]]
+%%curriculum-end%%

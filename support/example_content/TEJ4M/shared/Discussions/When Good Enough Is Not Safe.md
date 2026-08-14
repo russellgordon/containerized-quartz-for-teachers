@@ -120,3 +120,13 @@ somebody else could safely service what you made. Decide here what you
 think you owe the person who plugs it in, because
 [[The Engineering Review]] will ask you to defend that answer in front
 of the room.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D1.1]]
+
+![[D1.2]]
+
+![[C1.1]]
+%%curriculum-end%%

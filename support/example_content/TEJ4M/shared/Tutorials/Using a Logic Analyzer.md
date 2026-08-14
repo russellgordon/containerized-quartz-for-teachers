@@ -169,3 +169,11 @@ discipline as [[Getting Unstuck]].
 > of requiring you to remember what correct looks like — and it goes
 > straight into your [[Tech Journal]] as evidence with the sample
 > rate, threshold, and protocol settings written beside it.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A5.1]]
+
+![[B2.3]]
+%%curriculum-end%%

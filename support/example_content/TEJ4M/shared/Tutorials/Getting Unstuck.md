@@ -117,3 +117,11 @@ ladder in [[Getting Help]].
 > plugged into the wall is ask-first, immediately, every time. That is
 > the standing agreement in [[Safety in the Lab]], and no amount of
 > diagnostic cleverness outranks it.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B2.1]]
+
+![[B2.2]]
+%%curriculum-end%%

@@ -166,3 +166,11 @@ or supply choice will be defended with.
 > run. Use the output button. It exists for exactly this reason, and
 > it makes your power-up repeatable — which matters the day you are
 > trying to reproduce a fault that only happens at start-up.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D1.1]]
+
+![[D1.2]]
+%%curriculum-end%%

@@ -106,4 +106,8 @@ habit is the whole of [[Reading a Datasheet Like an Engineer]].
 ![[B3.1]]
 
 ![[D3.3]]
+
+![[B2.1]]
+
+![[D2.2]]
 %%curriculum-end%%

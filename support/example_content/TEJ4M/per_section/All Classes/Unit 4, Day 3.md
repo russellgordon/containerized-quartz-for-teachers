@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 3
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_57__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,20 +10,20 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Spot the Hazard]] — the network round: a default
-   password and a device nobody remembers installing
-2. Bench, on our isolated lab network and nowhere else: find the
-   weaknesses in the network you built last week. Predict your top
-   three findings before you start looking
-3. Name it: [[Security by Design]] — asset, threat, control, and the
-   honest limits of every control you just added
-4. Discussion: [[Security Is a Trade-Off]] — every lock costs somebody
-   time, and usually it is the legitimate user who pays
-5. Log the finding you are least comfortable with, and what it would
-   take to close it properly
+1. Warm-up: [[Which One Doesn't Belong]] — three network diagrams and
+   one set of requirements
+2. Bench: [[Design and Test a Network]]. A written requirement first,
+   an address plan second, cable and configuration last — in that
+   order, and we will notice if you skip ahead
+3. Name it: [[Network Design]] — requirements, addressing, and the
+   difference between a diagram and a design
+4. Prove it: every claim in your requirement gets a test another bench
+   can run without asking you a single question
+5. Log the address plan itself into your [[Tech Journal]] — it is the
+   part you will need again in the capstone
 
 ## Things to do before our next class
 
-- [ ] Write the one-page hardening plan for your own network, in the
-      order you would actually do the work.
-- [ ] Journal: a control you chose not to add, and your reasoning.
+- [ ] Finish the subnet plan, including the addresses you deliberately
+      left unused, and say what they are reserved for.
+- [ ] Journal: the requirement that was hardest to turn into a test.

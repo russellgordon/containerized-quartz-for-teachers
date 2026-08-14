@@ -10,21 +10,21 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Read the Schematic]] — the whole-page round. Find the
-   power section, the signal path, and the part you cannot identify
-2. The autopsy board comes back out, and this time you draw it as
-   boxes and arrows rather than components. Five boxes maximum. Argue
-   about where the boundaries go
-3. Compare drawings across benches: every disagreement is about where
-   one job ends and the next begins. Name it: [[System Block Diagrams]]
-4. Redraw your specification as a block diagram, and label every arrow
-   with what actually travels along it — volts, bits, or watts
-5. Journals open: [[What a Strong Entry Looks Like]] sets this year's
-   bar, and it is higher than a photograph and a sentence
+1. Warm-up: [[Tech Headlines]] — this week's recall notice. Which
+   requirement was missing, and who found out the hard way?
+2. Same request, six benches: *build me a light that comes on when it
+   gets dark*. Twenty minutes, no questions allowed. Then we set the
+   six results side by side and count the ways they disagree
+3. Every disagreement was a decision somebody made silently. Name it:
+   [[Writing a Specification]] — constraints, interfaces, and the
+   acceptance test that settles an argument before it starts
+4. Rewrite the request as a specification another bench could build
+   from, then trade and hunt for the holes
+5. Practise: [[Specification Practice]]. Then today's entry — start
+   from [[Your First Entry]] if last year feels far away
 
 ## Things to do before our next class
 
-- [ ] Block diagram finished, every arrow labelled with a real
-      quantity.
-- [ ] Journal: the boundary your bench argued hardest about, and how
-      you settled it.
+- [ ] Finish the rewritten specification and bring it on paper.
+- [ ] Skim [[Getting Help]] so you know how to reach me before the
+      first task, not after it.

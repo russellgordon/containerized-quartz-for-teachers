@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 7
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_25__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,20 +10,20 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Read the Waveform]] — the ringing round, and what the
-   ringing frequency says about the wire that caused it
-2. Bench: lengthen the ground lead on a working interface until it
-   stops working. Predict the length that will break it, then find the
-   real one and photograph the trace at the moment it fails
-3. Put the two ideas together — [[Filters and Noise]] and
-   [[Communication Buses]] — and say precisely why the fault was in
-   the wiring and not in the code
-4. Discussion: [[When Good Enough Is Not Safe]]. It passed on the
-   bench, and you are the one signing for it
-5. Interfaces in, with evidence. Journals too: [[Journal Checklist]]
-   is the list I mark against, so read it first
+1. Warm-up: [[Which One Doesn't Belong]] — three sampling rates and
+   one signal
+2. Bench: [[Sample a Signal]]. Predict what your readings will do as
+   the signal speeds up past your sampling rate, then watch a fast
+   signal come back as a slow one that is not there at all
+3. Name it: [[Sampling and Resolution]] — the smallest change your
+   system can see, and the fastest change it can honestly report
+4. Apply it to your own specification: how many millivolts is one
+   count, and is that fine enough for the thing you promised?
+5. Practise: [[Sampling and Resolution Practice]]
 
 ## Things to do before our next class
 
-- [ ] Journal: the shortest ground return in your build, and the
-      longest, and which one you would fix first.
+- [ ] Work out the sampling rate your specified device needs, and the
+      anti-alias filter that rate implies.
+- [ ] Journal: the alias frequency you predicted, the one you
+      measured, and why they differ.

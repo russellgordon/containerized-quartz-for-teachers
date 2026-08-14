@@ -189,3 +189,15 @@ Take the subnet plan to [[Design and Test a Network]] and build it, then
 prove each claim with a command whose output you paste into your
 [[Tech Journal]]. A design defended with captured output is an
 engineering document; the same design defended from memory is a story.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A4.1]]
+
+![[A4.2]]
+
+![[A4.4]]
+
+![[B4.1]]
+%%curriculum-end%%

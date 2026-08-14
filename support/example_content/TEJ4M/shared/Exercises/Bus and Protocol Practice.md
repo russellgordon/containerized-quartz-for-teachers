@@ -161,3 +161,13 @@ Bring the pull-up calculation to [[Talk on a Bus]] and capture the rising
 edge on a scope with two different resistor values. The difference
 between 4.7 kΩ and 1.2 kΩ on a real bus is visible in one screenshot, and
 it is worth more in your [[Tech Journal]] than a page of description.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A2.4]]
+
+![[A5.1]]
+
+![[B1.3]]
+%%curriculum-end%%

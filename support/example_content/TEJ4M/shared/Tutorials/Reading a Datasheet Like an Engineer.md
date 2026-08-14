@@ -170,3 +170,11 @@ you — that is a design decision in the form
 [[Writing Documentation Somebody Can Build From]] expects, and it is
 the thing somebody will ask you about at
 [[The Engineering Review]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A3.1]]
+
+![[B2.1]]
+%%curriculum-end%%

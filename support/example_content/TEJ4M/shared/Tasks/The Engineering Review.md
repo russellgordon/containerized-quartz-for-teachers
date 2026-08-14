@@ -4,6 +4,7 @@ draft: false
 created: __CREATED__
 tags:
   - tasks
+  - final-evaluation
 enableToc: true
 ---
 > [!abstract] At a glance
@@ -128,4 +129,12 @@ thought of — that is the most valuable thing one engineer gives another.
 ![[D3.4]]
 
 ![[D3.5]]
+
+![[C2.1]]
+
+![[C2.2]]
+
+![[D3.1]]
+
+![[C1.2]]
 %%curriculum-end%%

@@ -149,3 +149,11 @@ task, and it is what earns most of the marks described in
 Write it in the language [[Writing About Technology]] describes:
 specific, quantified, imperative in procedures, and addressed to the
 next technician, who might very well be you.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D3.3]]
+
+![[D3.4]]
+%%curriculum-end%%

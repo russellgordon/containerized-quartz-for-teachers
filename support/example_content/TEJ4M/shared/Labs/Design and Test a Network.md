@@ -172,4 +172,8 @@ Then the design-margin questions:
 ![[B4.1]]
 
 ![[B4.5]]
+
+![[A4.4]]
+
+![[B4.2]]
 %%curriculum-end%%

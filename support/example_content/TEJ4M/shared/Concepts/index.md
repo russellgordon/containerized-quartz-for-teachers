@@ -21,6 +21,7 @@ one off a page.
 **Unit 1 — Systems and specifications**
 
 - [[Writing a Specification]]
+- [[Storage Systems and Arrays]]
 - [[System Block Diagrams]]
 - [[Component Selection and Tolerances]]
 - [[Power Supplies and Regulation]]
@@ -43,6 +44,9 @@ one off a page.
 **Unit 4 — Networks, security, and the profession**
 
 - [[Network Design]]
+- [[Addressing at Scale]]
+- [[Firmware and System Optimisation]]
+- [[Buying, Recycling, and Responsibility]]
 - [[Security by Design]]
 - [[Standards and Professional Practice]]
 

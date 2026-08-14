@@ -114,3 +114,13 @@ later.[^1]
     with you if the work does — which matters more than it sounds like
     it should when you are twenty-three and the work is somewhere
     else.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D3.1]]
+
+![[D3.2]]
+
+![[D3.5]]
+%%curriculum-end%%

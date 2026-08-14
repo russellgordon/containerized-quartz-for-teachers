@@ -1,0 +1,21 @@
+---
+title: Unit 4, Day 26
+draft: false
+created: __CREATED_CLASS_80__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. Warm-up: [[Spot the Hazard]] — the integration round
+2. [[The Engineering Design Project]], day 6 — integration, and the review
+   findings closed out one by one
+3. Discussion: [[When Good Enough Is Not Safe]] — with your own project
+   on the bench
+
+## Things to do before our next class
+
+- [ ] Review findings closed.

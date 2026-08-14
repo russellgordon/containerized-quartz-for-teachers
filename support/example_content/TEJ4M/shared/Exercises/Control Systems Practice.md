@@ -152,3 +152,13 @@ Take the tuning log to [[Close the Loop]] and keep every run, including
 the ones that oscillated. A record of what did not work, with the gain
 written beside it, is the most convincing evidence in the report — see
 [[Tech Journal]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A3.2]]
+
+![[A3.4]]
+
+![[B5.3]]
+%%curriculum-end%%

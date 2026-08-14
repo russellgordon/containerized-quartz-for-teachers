@@ -113,3 +113,13 @@ the form [[Writing Documentation Somebody Can Build From]] describes is
 repairable by construction, regardless of what anybody's licence says —
 and the argument about whether it *should* be secured against you is
 one you are now qualified to have.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D2.2]]
+
+![[C2.2]]
+
+![[D2.1]]
+%%curriculum-end%%

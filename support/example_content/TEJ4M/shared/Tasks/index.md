@@ -26,7 +26,7 @@ in Grade 12 they are what "finished" means:
   matches the board, code somebody else could maintain, and a log of
   what went wrong and what you decided about it.
 
-## The five jobs
+## The six jobs
 
 - [[The Specification]] — write the document a manufacturer would need,
   with testable requirements and acceptance tests somebody else can run.
@@ -36,6 +36,8 @@ in Grade 12 they are what "finished" means:
   in advance, with logged tuning evidence and a tested safety limit.
 - [[The Engineering Design Project]] — the capstone: a device nobody
   specified for you, designed, built, documented, and handed over.
+- [[The Deployment]] — specify, buy, build, configure, secure, and
+  hand over a whole organisation's equipment, then defend the bill.
 - [[The Engineering Review]] — the finale: demonstrate it, defend it
   against published questions, and give three other projects a real
   critique.

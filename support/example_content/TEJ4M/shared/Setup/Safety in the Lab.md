@@ -133,3 +133,11 @@ rather than a footnote.
 - [ ] Bring one question about anything above. We walk the lab and
       finalise our routines together in the first week, and this page
       stays linked from every lab for the rest of the semester.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D1.1]]
+
+![[D1.2]]
+%%curriculum-end%%

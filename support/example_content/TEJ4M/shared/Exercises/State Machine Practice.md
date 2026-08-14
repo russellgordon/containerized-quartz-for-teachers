@@ -186,3 +186,13 @@ Draw your own device's machine before you write its code, bring the
 diagram and the completed table to the design review for
 [[The Control System]], and check that every state has a way out. The
 table is the deliverable, not a rough draft of one.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A5.4]]
+
+![[A3.4]]
+
+![[B5.2]]
+%%curriculum-end%%

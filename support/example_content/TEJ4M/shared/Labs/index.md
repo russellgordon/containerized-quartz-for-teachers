@@ -15,7 +15,7 @@ so that this survives?** A hot day in a closed enclosure, one reversed
 connection, a year of being switched on and off — every lab below ends by
 asking you to name a specific change and the number that justifies it.
 
-So each of the eight runs the same three-part shape:
+So each of the ten runs the same three-part shape:
 
 1. **Predict** — in writing, in units, before anything is powered.
 2. **Reconcile** — measured against predicted, with a named cause for
@@ -24,7 +24,7 @@ So each of the eight runs the same three-part shape:
 
 Every lab opens with the safety notes that genuinely apply to that bench,
 not a generic list, and we read them together before tools move. That is
-the agreement in [[Safety in the Lab]], and it holds in all eight.
+the agreement in [[Safety in the Lab]], and it holds in all ten.
 
 | Lab | What you build, and what you prove |
 | --- | --- |
@@ -35,6 +35,8 @@ the agreement in [[Safety in the Lab]], and it holds in all eight.
 | [[Sample a Signal]] | A fast signal caught lying, and the hardware that stops it |
 | [[Talk on a Bus]] | Rise times you calculated, on a scope, in microseconds |
 | [[Close the Loop]] | A setpoint held, with the tuning evidence to prove it |
+| [[Design and Build a Logic Block]] | A specification turned into gates, verified row by row |
+| [[Stand Up a Service]] | Services, users, and a permission matrix tested from the next bench |
 | [[Design and Test a Network]] | A requirement, an address plan, and tests a stranger can run |
 
 > [!tip] The results table is the lab

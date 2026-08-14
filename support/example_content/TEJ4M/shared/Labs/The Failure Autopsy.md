@@ -136,4 +136,8 @@ better parts", you have not answered yet.
 ![[B3.4]]
 
 ![[D1.1]]
+
+![[B2.1]]
+
+![[A3.5]]
 %%curriculum-end%%

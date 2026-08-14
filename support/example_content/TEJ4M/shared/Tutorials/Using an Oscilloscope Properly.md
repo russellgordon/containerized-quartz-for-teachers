@@ -207,3 +207,11 @@ can reproduce or dispute, which is the standard
 > answer with three decimal places on it, and only the person who can
 > count divisions will notice. Read the grid first. Then let the
 > instrument do the arithmetic.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B3.2]]
+
+![[B2.3]]
+%%curriculum-end%%

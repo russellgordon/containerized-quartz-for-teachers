@@ -152,3 +152,13 @@ Take the winning design from question 3 to
 [[Switch a Load with a Transistor]] and measure the base current, the
 saturation voltage, and the case temperature. A calculation that survives
 a meter is evidence; one that has never met a meter is homework.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A3.2]]
+
+![[A3.3]]
+
+![[B3.2]]
+%%curriculum-end%%

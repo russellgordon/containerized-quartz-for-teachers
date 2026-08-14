@@ -172,3 +172,11 @@ Bring the thermal arithmetic to [[Build a Regulated Supply]] before you
 switch anything on, and put the calculated junction temperature next to
 the measured case temperature in your [[Tech Journal]]. When those two
 disagree, one of them is teaching you something.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A3.3]]
+
+![[B3.2]]
+%%curriculum-end%%

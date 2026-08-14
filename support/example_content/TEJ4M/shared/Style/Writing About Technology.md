@@ -145,3 +145,11 @@ Strong technical writing — in a journal, a specification, a build
 record, or an argument — reads like a good service log. Symptom,
 evidence, decision, verification, and an honest note about what you do
 not yet know.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D3.3]]
+
+![[D3.4]]
+%%curriculum-end%%

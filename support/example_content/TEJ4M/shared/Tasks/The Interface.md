@@ -100,4 +100,8 @@ relax because the voltages are small.
 ![[B1.3]]
 
 ![[B3.4]]
+
+![[A5.1]]
+
+![[D1.1]]
 %%curriculum-end%%

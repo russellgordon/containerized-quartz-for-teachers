@@ -132,3 +132,11 @@ does not work now, and you can recover last week exactly, see the
 seventeen lines that changed, and know within minutes which one did it.
 That is not tidiness. That is the difference between a bad afternoon
 and a lost project.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B5.1]]
+
+![[D3.4]]
+%%curriculum-end%%

@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_9__
+created: __CREATED_CLASS_21__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,21 +10,21 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up debut: [[Read the Waveform]] — a trace on the board, and
-   the first question is always what the timebase is telling you
-2. Bench: put last class's amplifier output on the scope and watch the
-   last digit refuse to settle. Predict what an RC filter will do to
-   the trace, fit one, and find out how wrong you were
-3. Name it: [[Filters and Noise]] — cutoff frequency, what filtering
-   costs you in response time, and where the noise came from
-4. When it is still wrong and the ideas have run out,
-   [[Getting Unstuck]] is a procedure, not a mood
-5. Log the trace before, the trace after, and the one number that
-   changed — [[Tech Journal]]
+1. Warm-up: [[Name That Part]] — eight pins and markings nobody can
+   read from their seat
+2. Bench: [[Amplify a Sensor]]. The sensor's entire output swing is a
+   sliver of what your converter can see. Predict the gain you need,
+   and the gain you are allowed, before you build anything
+3. Name it: [[Operational Amplifiers]] — gain set by two resistors, and
+   the supply rails that decide what gain you may want
+4. Break it deliberately: raise the gain until the output flattens
+   against the rail, then describe the flat part in words a stranger
+   would understand
+5. Practise: [[Transistor and Op-Amp Practice]]
 
 ## Things to do before our next class
 
-- [ ] Calculate the cutoff frequency you actually built, from your
-      measured resistor and capacitor values.
-- [ ] Journal: the fastest change your filtered signal can still
-      report honestly.
+- [ ] Compute the gain that would put your sensor's hottest reading
+      exactly at the rail, then explain why you would not use it.
+- [ ] Journal: your measured gain against your predicted gain, with
+      the resistor tolerances that explain the gap.

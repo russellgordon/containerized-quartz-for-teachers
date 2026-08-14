@@ -80,3 +80,11 @@ direction.
 - [ ] Bring one norm you would add. We finalise the list together in
       the first week, and it stays linked from every task page for the
       rest of the semester.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D2.1]]
+
+![[D3.5]]
+%%curriculum-end%%

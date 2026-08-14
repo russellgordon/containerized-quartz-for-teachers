@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_12__
+created: __CREATED_CLASS_24__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Predict the Circuit]] — a 5 V sensor wired to a 3.3 V pin
-2. Bench: bring up a real peripheral from its datasheet alone. No
-   tutorial and no example code — the datasheet, the scope, and the
-   logic analyzer
-3. Code that survives a bring-up: [[Talking to a Peripheral]], kept in
-   a repository from the first line — [[Version Control for Firmware]]
-4. Launch: [[The Interface]]. Scope evidence is part of what you hand
-   in, not a bonus
-5. Log the first transaction that worked and the thing you changed to
-   get it
+1. Warm-up: [[Read the Waveform]] — filter round
+2. Bench: measure your filter's response at six frequencies and plot it
+3. Where the cutoff actually landed, and why it is not where you
+   calculated
 
 ## Things to do before our next class
 
-- [ ] Commit today's working code with a message a stranger could use.
+- [ ] Response plotted with the calculated cutoff marked.
