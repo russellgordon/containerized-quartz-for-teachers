@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 5
 draft: false
-created: __CREATED_CLASS_12__
+created: __CREATED_CLASS_25__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,19 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Which One Doesn't Belong]] — four histograms: one
-   symmetric, one skewed, one bimodal, one with a hole in it
-2. Random groups: three tables measure three unrelated things —
-   reaction times, heights, dice totals. Post the histograms and stare
-3. Name it: [[The Normal Distribution]] — one shape, two numbers, and
-   the rule your wall just predicted before it was stated
-4. Launch: [[The Culminating Investigation]] — it runs to the last day
-   of the course; [[Choosing a Data Set]] makes a question answerable
-5. Practise: [[Normal Distribution Practice]], first set
+1. Number talk: [[Graph Talks]] — a probability histogram with its
+   labels stripped off: what experiment could have produced it?
+2. Random groups: a player sinks $70\%$ of free throws and takes ten.
+   Which number of makes is most likely — and is it anywhere near as
+   likely as the room assumes?
+3. Discuss: the combinations came back. Find where they entered, and
+   say what each one is counting
+4. Name it: [[The Binomial Distribution]] — fixed trials, a fixed
+   chance, and outcomes that ignore each other
+5. Practise: [[Distributions Practice]], second set, with
+   [[Using a Spreadsheet for Statistics]] doing the arithmetic
 
 ## Things to do before our next class
 
-- [ ] Investigation milestone: bring two candidate questions, with the
-      variables each needs and where that data might plausibly live.
+- [ ] Journal: one situation from your own life that is binomial, and
+      one that fails exactly one of the conditions — name which.

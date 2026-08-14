@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 2
 draft: false
-created: __CREATED_CLASS_15__
+created: __CREATED_CLASS_42__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,20 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Would You Rather]] — two wordings of one question:
-   which gets the answer the person writing it was hoping for?
-2. Random groups: one topic, four question wordings. Predict each set
-   of results *before* a single person is asked, then ask
-3. Name it: [[Bias]] — response, non-response, measurement, sampling,
-   and the cultural bias nobody adds on purpose
-4. Launch: [[The Survey Autopsy]] — take a real survey apart: who was
-   asked, who was missed, and what the wording pushed people toward
-5. Journal check: [[Journal Checklist]] — entries collected midway
+1. Number talk: [[Estimation Duels]] — how many students are inside
+   this building right now? Estimate, then say what would make you
+   wrong
+2. Random groups: [[The Sampling Frame]] — sample this school
+   honestly in twenty minutes, then work out who your method could
+   never have reached
+3. Discuss: every method missed somebody. Do the missing people
+   differ from the found ones in a way that would bend the answer?
+4. Name it: [[Sampling Techniques]] — simple random, systematic,
+   stratified, convenience, voluntary, and what each one costs
+5. Investigation: hold your own data plan to the standard you just
+   set for everyone else's
 
 ## Things to do before our next class
 
-- [ ] Bring the survey you intend to dissect: the real questions, in
-      the real order, from a source you can name out loud.
+- [ ] Journal: name the group your method missed, and predict the
+      direction — not just the size — of the error it caused.

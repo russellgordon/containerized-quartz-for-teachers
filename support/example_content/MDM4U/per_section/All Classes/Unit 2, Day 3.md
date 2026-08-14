@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_23__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,19 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Graph Talks]] — a probability histogram with its
-   labels stripped off: what experiment could have produced it?
-2. Random groups: a player sinks $70\%$ of free throws and takes ten.
-   Which number of makes is most likely — and is it anywhere near as
-   likely as the room assumes?
-3. Discuss: the combinations came back. Find where they entered, and
-   say what each one is counting
-4. Name it: [[The Binomial Distribution]] — fixed trials, a fixed
-   chance, and outcomes that ignore each other
-5. Practise: [[Distributions Practice]], second set, with
-   [[Using a Spreadsheet for Statistics]] doing the arithmetic
+1. Number talk: [[Number Strings]] — a weighted average
+2. Random groups — build the probability distribution of a small game,
+   then find its expected value from the table
+3. Consolidate: expected value as the mean of a distribution, not a
+   prediction of any single outcome
+4. Practise: [[Distributions Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Journal: one situation from your own life that is binomial, and
-      one that fails exactly one of the conditions — name which.
+- [ ] Finish the first section.

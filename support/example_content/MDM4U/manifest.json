@@ -46,5 +46,6 @@
     "Style",
     "Tasks"
   ],
-  "curriculum_folder": "Curriculum"
+  "curriculum_folder": "Curriculum",
+  "class_weekday_step": 1
 }

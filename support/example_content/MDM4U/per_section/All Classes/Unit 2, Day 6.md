@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_26__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,18 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Always, Sometimes, Never]] — "a $z$-score of $0$
-   means the measurement itself was zero"
-2. Random groups: two students, two different tests, two different
-   classes. Who did better? You may not compare the raw marks
-3. Consolidate: the $z$-score as a common currency — and why a
-   binomial histogram starts looking normal as the trials pile up
-4. Investigation checkpoint: questions approved today, one group at a
-   time, with [[Where to Find Real Data]] open beside you
-5. Practise: [[Normal Distribution Practice]], second set
+1. Number talk: [[Graph Talks]] — three binomial shapes
+2. Random groups — vary $n$ and $p$ and predict the shape before
+   plotting. Where does it become symmetric?
+3. Clinic: [[Distributions Practice]] to the end
 
 ## Things to do before our next class
 
-- [ ] Investigation milestone: your approved question written out in a
-      single sentence, with a named, real source for the data — not
-      "the internet".
+- [ ] Finish the practice set.

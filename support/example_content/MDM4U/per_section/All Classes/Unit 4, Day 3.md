@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 3
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_65__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[True or False]] — "every number on that chart is
-   correct, so the chart is honest"
-2. Random groups: [[The Graph Gallery]] — twelve charts, twelve tricks
-3. Consolidate: the catalogue your groups just wrote — truncated
-   axes, cherry-picked windows, missing denominators, doubled areas
-4. Launch: [[The Statistical Claim Report]] — take a claim from the
-   news and find out whether its data can carry it
-5. Assessed per [[How Marks Work]] — an honest "not proven" is a
-   verdict, and it earns as much as "true" does
+1. Number talk: [[Which One Doesn't Belong]] — four claims
+2. Random groups — the reading checklist applied to a claim nobody has
+   seen, in ten minutes flat
+3. Consolidate: the four questions, in the order that saves the most
+   time
 
 ## Things to do before our next class
 
-- [ ] Bring the claim you will investigate *and* the original source
-      the reporter used — not a second article about the source.
+- [ ] Apply the checklist to one claim you meet this week.

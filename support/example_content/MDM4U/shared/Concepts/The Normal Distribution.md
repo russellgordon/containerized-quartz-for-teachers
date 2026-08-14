@@ -77,8 +77,37 @@ and treating them as though they were is a classic way to be
 confidently wrong. Look at the histogram before you reach for the
 curve — a habit [[Normal Distribution Practice]] drills deliberately.
 
+## Reading "plus or minus three points, 19 times out of 20"
+
+Every published poll carries a sentence like that, and it is a normal
+distribution talking. Unpacked, it says two things:
+
+- **The margin of error** — the poll's figure is an estimate, and the
+  true value is probably within three percentage points either side of
+  it.
+- **The confidence level** — "19 times out of 20" is 95%, which is two
+  standard deviations. If the same poll were run twenty times, about
+  nineteen of those intervals would contain the true value and about one
+  would not.
+
+Three consequences worth knowing before you argue about a poll:
+
+1. **A lead inside the margin is not a lead.** 46% against 44% with a
+   margin of three means the two are not distinguishable. Reporting it
+   as "ahead" is the single most common misuse of this sentence.
+2. **The margin covers sampling error only.** It says nothing about a
+   badly worded question, a sample that missed a group, or people who
+   did not answer honestly — the failures in [[Bias]], none of which
+   shrink when the sample grows.
+3. **Halving the margin costs four times the sample**, because the
+   margin depends on the square root of the sample size. That is why
+   national polls stop at about a thousand people rather than ten
+   thousand.
+
 %%curriculum-start%%
 ## Curriculum connection
+
+![[D1.4]]
 
 ![[B2.6]]
 

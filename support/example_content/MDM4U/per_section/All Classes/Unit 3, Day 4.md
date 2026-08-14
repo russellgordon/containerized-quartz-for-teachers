@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_44__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,19 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Visual Patterns]] — a scatter of points that grows
-   one step at a time: what will step $10$ look like?
-2. Random groups: measure height and arm span around the room, plot
-   the pairs, and write your guess for the correlation on the board
-   before any technology gets to tell you
-3. Name it: [[Two-Variable Statistics]] — direction, strength, form,
-   and the single number that summarizes only one of the three
-4. Tool: [[Using Desmos]] — a scatter plot and a fitted line in about
-   two minutes
-5. Reality: [[Cleaning Messy Data]] — blank cells, impossible values,
-   and decisions you must be able to defend later
+1. Number talk: [[Would You Rather]] — two question wordings
+2. Random groups — audit each other's investigation plans for the four
+   kinds of bias. Every plan has at least one
+3. Consolidate: which biases you can design out, and which you can only
+   declare
 
 ## Things to do before our next class
 
-- [ ] Journal: one decision you made while cleaning data today, and
-      the argument you would give if somebody challenged it.
+- [ ] Plan revised; the bias you cannot remove named in writing.

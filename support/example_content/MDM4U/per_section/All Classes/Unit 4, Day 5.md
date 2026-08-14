@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 5
 draft: false
-created: __CREATED_CLASS_24__
+created: __CREATED_CLASS_67__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,17 +10,17 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Would You Rather]] — two summaries of the same
-   study: which one survives a question period?
-2. [[The Statistical Claim Report]] due — verdicts delivered in three
-   minutes, evidence before opinion
-3. Random groups: two report excerpts, same data, opposite tone.
-   Mark every sentence the data actually supports
-4. Consolidate: what a defensible report contains — question, method,
-   evidence, limitations, and the follow-up you would run next
-5. Investigation: written reports are handed in at the end of today
+1. Number talk: [[True or False]] — "every number on that chart is
+   correct, so the chart is honest"
+2. Random groups: [[The Graph Gallery]] — twelve charts, twelve tricks
+3. Consolidate: the catalogue your groups just wrote — truncated
+   axes, cherry-picked windows, missing denominators, doubled areas
+4. Launch: [[The Statistical Claim Report]] — take a claim from the
+   news and find out whether its data can carry it
+5. Assessed per [[How Marks Work]] — an honest "not proven" is a
+   verdict, and it earns as much as "true" does
 
 ## Things to do before our next class
 
-- [ ] Prepare your presentation: six minutes, no more. The format and
-      the peer-critique protocol are both on [[The Data Symposium]].
+- [ ] Bring the claim you will investigate *and* the original source
+      the reporter used — not a second article about the source.

@@ -10,19 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[True or False]] — "drawing two green marbles in a
-   row is twice as unlikely as drawing one." Decide, then defend
-2. Random groups: a bag holds $12$ green marbles and $16$ red. Two
-   draws. Work it with the first marble replaced, then without —
-   and predict which probability is larger before computing either
-3. Discuss: [[Mistakes Are Data]] — the same multiplication went wrong
-   at three boards at once, and that taught the room more than the
-   right answer would have
-4. Name it: [[Probability Basics]] — sample space, event, complement,
-   mutually exclusive, independent
-5. Practise: [[Probability Practice]]
+1. Number talk: [[Number Strings]]
+2. Random groups — arrangements of a word with repeated letters, then
+   arrangements where two people must sit together
+3. Consolidate: why dividing by the repeats is the same idea as
+   counting the ways they could be swapped
+4. Practise: [[Counting Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Journal: which version came out larger, with replacement or
-      without, and what in the situation made it so?
+- [ ] Finish the first section.

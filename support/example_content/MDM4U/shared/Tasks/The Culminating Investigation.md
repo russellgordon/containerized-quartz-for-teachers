@@ -4,6 +4,7 @@ draft: false
 created: __CREATED__
 tags:
   - tasks
+  - final-evaluation
 enableToc: true
 ---
 > [!abstract] At a glance
@@ -84,7 +85,13 @@ one.
 - **The analysis**: numerical and graphical summaries, each chosen for
   a reason you can state — a probability model, a normal model, a
   regression, a correlation, an expected value, as the question
-  demands.
+  demands. Two are required whatever your question: a **measure of
+  spread** as well as a measure of centre, because a mean alone hides
+  the story; and, where you have two attributes, a **scatter plot with
+  the relationship named** — linear or non-linear, strong or weak,
+  positive or negative — before any line is fitted to it. If your
+  variable is continuous, the interval width of your histogram is a
+  decision you state and defend.
 - **The conclusion**: what the data supports, in a sentence the data
   can carry.
 - **The limitations**: sample size, bias, missing groups, confounding
@@ -136,4 +143,14 @@ plan, the analysis that surprised you. That record is evidence, and
 ![[E1.4]]
 
 ![[E1.5]]
+
+![[B2.2]]
+
+![[B2.4]]
+
+![[D2.1]]
+
+![[D2.2]]
+
+![[D2.3]]
 %%curriculum-end%%

@@ -10,17 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Would You Rather]] — two carnival games, same price,
-   different prizes. No calculating yet; argue from the structure
-2. Random groups: a spinner game charges \$3 a play. Build its outcome
-   table, check the probabilities sum to $1$, and name who is robbed
-3. Consolidate: the unit in one line — counting builds the sample
-   space, and probability reads it
-4. Launch: [[The Fair Game Audit]] — you will design or dismantle a
-   game of chance, and defend the verdict with numbers
-5. How it is assessed: [[How Marks Work]] — the argument is the product
+1. Number talk: [[Which One Doesn't Belong]] — four counting problems
+2. Random groups — permutation or combination? Twelve problems, decided
+   before any arithmetic. Deciding WHICH is the whole skill
+3. Clinic: [[Counting Practice]] to the end
 
 ## Things to do before our next class
 
-- [ ] Read [[The Fair Game Audit]] with your partner and bring one
-      game you actually want to put on trial.
+- [ ] Finish the practice set.

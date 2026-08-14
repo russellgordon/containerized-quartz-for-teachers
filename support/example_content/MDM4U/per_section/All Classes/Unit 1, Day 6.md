@@ -10,21 +10,20 @@ tags:
 ---
 ## Agenda
 
-1. Number talk: [[Always, Sometimes, Never]] — "the chance of $A$ given
-   $B$ is the same as the chance of $B$ given $A$"
-2. Random groups: a test is $99\%$ accurate; one person in $100$
-   actually has the condition; your result comes back positive. Build
-   the table for $10\,000$ people *before* anyone answers
-3. Discuss: the answer nobody in the room expected — and the base rate
-   that explains it
-4. Name it: [[Conditional Probability]] — and why swapping which event
-   is the condition changes everything
-5. Practise: [[Conditional Probability Practice]]
+1. Number talk: [[Number Strings]] — a string of products where each
+   line is the one before it, halved. What is the halving undoing?
+2. Random groups: seven people meet and everyone shakes hands exactly
+   once — how many handshakes? Then: home is five blocks west and
+   three blocks south of school; how many shortest routes?
+3. Discuss: two unrelated-looking problems, $21$ and $56$, and the
+   same move in both. Where did order stop mattering?
+4. Name it: [[Combinations]] — and the pattern they have been hiding
+   in all along, [[Pascal's Triangle]]
+5. Practise: [[Permutations and Combinations Practice]], second set
 
 ## Things to do before our next class
 
-- [ ] Journal: your positive test leaves about a $50\%$ chance you
-      actually have the condition. Explain that to someone at home and
-      write down where they pushed back.
-- [ ] Unit review starts now: [[How to Study for Math]] has the method,
-      and [[Getting Help]] has this week's sessions.
+- [ ] Journal: explain to your future forgetful self why the handshake
+      count divided and the seating count did not.
+- [ ] Run [[Checking Your Own Work]] on tonight's practice before you
+      look at a single answer.
