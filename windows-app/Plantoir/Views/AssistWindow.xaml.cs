@@ -428,6 +428,7 @@ public sealed partial class AssistWindow : Window
     {
         Input.IsEnabled = false;
         SendButton.IsEnabled = false;
+        _workLog = null;    // each turn narrates into its own bubble
         ShowThinking();
         try
         {
@@ -577,21 +578,23 @@ public sealed partial class AssistWindow : Window
     private DateTime _thinkingSince;
 
     /// <summary>
-    /// Put a running tool's own words on the thinking indicator.
+    /// Put a running tool's own words in the transcript, step by step.
     ///
-    /// "Thinking" is the right label while the model is choosing; it is the
-    /// wrong one for the minutes a rebuild can spend recreating its container
-    /// and reinstalling the toolchain. The toolchain narrates those minutes
-    /// in plain words, the server relays them, and this shows them — so the
-    /// teacher reads "Building the section…" with a climbing count instead of
-    /// deciding the window is stuck. Called from whatever thread the tool's
-    /// reply arrives on, hence the dispatch.
+    /// One bubble per turn, growing a line at a time — "Backing up VVH2O
+    /// first…", "Editing “Unit 4, Day 5”…" — so the teacher watches the work
+    /// go by AND keeps the record afterwards. The thinking indicator carries
+    /// the latest line too, so the working row and the log agree. Called
+    /// from whatever thread the tool's reply arrives on, hence the dispatch.
     /// </summary>
+    private TextBlock? _workLog;
+
     private void NoteToolProgress(string message)
     {
         DispatcherQueue.TryEnqueue(() =>
         {
             if (_thinkingLabel is not null) _thinkingLabel.Text = message;
+            if (_workLog is null) _workLog = Say("Assistant", message);
+            else _workLog.Text += "\n" + message;
         });
     }
 

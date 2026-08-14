@@ -951,6 +951,10 @@ public sealed class AssistWorkspace
         var changed = new List<string>();
         foreach (var page in plan.Changing)
         {
+            // Named as it happens, so a teacher watching the conversation
+            // sees the work go by page by page rather than a silence with
+            // a count at the end.
+            progress?.Report($"Editing “{page.Title}”…");
             string full = PagePaths.ResolveInside(_folder, page.RelativePath);
             string text = File.ReadAllText(full);
             var (updated, edit) = PageFrontmatter.SetDraft(text, page.FrontmatterKey, page.Draft);
