@@ -45,7 +45,11 @@ public sealed class LocalModel
     private const string ContainerName = "plantoir-assistant";
     private const int Port = 8099;
 
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(5) };
+    // Fifteen minutes, not five. A cold prompt cache means ~6,200 tokens of
+    // tool definitions evaluated at some 21 tokens/second, which is five
+    // minutes on its own — a timeout set to the same figure would fail exactly
+    // when the machine is slowest, and report it as a network error.
+    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(15) };
 
     /// <summary>Where the model lives inside WSL, beside the toolchain's own data.</summary>
     private const string ModelDirectoryInWsl = "/var/lib/plantoir/models";
@@ -177,8 +181,14 @@ public sealed class LocalModel
                 $"-p {Port}:8080 -v {ModelDirectoryInWsl}:/models:ro {Image} " +
                 // One slot, not the four this image now defaults to: one window
                 // is one conversation, and four slots multiply the KV cache by
-                // four for no benefit here.
-                $"-m /models/{ModelFile} --no-mmap --parallel 1 -c 8192 " +
+                // four for no benefit here. That saving is what pays for the
+                // context below.
+                //
+                // 16384, not 8192, because the tool definitions alone measured
+                // ~6,200 tokens — three quarters of an 8k context before the
+                // teacher has said anything, leaving a conversation that would
+                // run out of room within a few turns.
+                $"-m /models/{ModelFile} --no-mmap --parallel 1 -c 16384 " +
                 "--jinja --host 0.0.0.0 --port 8080"), cancellation);
         }
 

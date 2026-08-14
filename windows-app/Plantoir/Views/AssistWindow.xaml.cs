@@ -148,23 +148,56 @@ public sealed partial class AssistWindow : Window
 
         var schemas = await _tools.Tools(_closing.Token);
         _agent = new AssistAgent(_model, _tools, schemas, _course.Code, _section);
-
-        // NOT "Ready." yet, and the input stays disabled. The briefing runs
-        // first, and the first answer is the slow one — the tool definitions
-        // are some six hundred tokens and are only cached after that. Saying
-        // Ready and enabling the box in front of a turn that immediately
-        // disables it again produced a window that invited typing and then
-        // ignored it, which reads as a hang rather than as a wait.
-        starting.Text = "Getting your bearings — the first answer takes a little longer than the rest.";
-
-        // The briefing itself — what makes "publish" and "deploy" mean the same
-        // thing to both parties for the rest of the conversation. The tool
-        // decides whether it is still needed.
-        await Turn(() => _agent.Say(
-            "Explain publishing for this section if that has not been done, then wait for me.",
-            _closing.Token));
-
         starting.Text = "Ready.";
+
+        // The briefing is fetched from the tool DIRECTLY, with no model in the
+        // loop. It used to be a conversational turn, and that turn was the
+        // slowest thing in the session: the 22 tool definitions come to some
+        // 6,200 tokens, and at the 21 tokens/second this hardware manages that
+        // is five minutes of prompt evaluation before the teacher sees a word.
+        // Nothing about it needed a model — the text is fixed, and the tool
+        // already decides whether this section has heard it.
+        string briefing = await _tools.CallTool("explain_publishing", new JsonObject
+        {
+            ["course"] = _course.Code,
+            ["section"] = _section,
+        }, _closing.Token);
+        if (briefing.Trim().Length > 0) Say("Plantoir", briefing.Trim());
+
+        // Typing is available from here. The teacher reads the briefing while
+        // the model quietly evaluates that same 6,200-token prefix in the
+        // background; llama.cpp caches it, so their first real question pays
+        // only for the sentence they typed. Waiting once per session was
+        // always the plan — this puts the wait somewhere it costs nothing.
+        Input.IsEnabled = true;
+        SendButton.IsEnabled = true;
+        Input.Focus(FocusState.Programmatic);
+        _ = WarmUp(schemas);
+    }
+
+    /// <summary>
+    /// Make the model read the tool definitions once, in its own time.
+    ///
+    /// llama.cpp caches the prompt prefix, and every turn in this window shares
+    /// the same one: the system prompt and the 22 tool schemas. Paying for it
+    /// here, while the teacher is reading the briefing, is the difference
+    /// between a five-minute wait on their first question and a few seconds.
+    ///
+    /// Failure is ignored on purpose. Nothing depends on this — if it does not
+    /// finish, or the model is not ready, the teacher's own request simply pays
+    /// the cost it would have paid anyway.
+    /// </summary>
+    private async Task WarmUp(JsonArray schemas)
+    {
+        try
+        {
+            var priming = new JsonArray
+            {
+                new JsonObject { ["role"] = "user", ["content"] = "Say ready." },
+            };
+            await _model.Ask(priming, schemas, _closing.Token);
+        }
+        catch { /* a cold cache is slow, not broken */ }
     }
 
     // ---- One turn --------------------------------------------------------
