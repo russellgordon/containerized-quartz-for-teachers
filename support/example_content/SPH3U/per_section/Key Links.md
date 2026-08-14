@@ -5,13 +5,16 @@ created: __CREATED__
 transcludeTitleSize: h2
 excludeBacklinks: true
 ---
+
+- [[How Physics Class Works]]
+- [[Safety in the Lab]]
+- [[How Marks Work]]
+- [[Getting Help]]
+- [[What to Bring]]
+- [[Help Sessions]]
+- [[Learning Goals]]
+- [[How This Site Is Organised]]
+- [[What This Site Can Do]]
 %%curriculum-start%%
 - [[Curriculum/index|Curriculum Expectations]]
 %%curriculum-end%%
-- [[Formula Reference]]
-- [[Safety in the Lab]]
-- [[Writing a Lab Report]]
-- [[Uncertainty and Error]]
-- [[How Marks Work]]
-- [[Getting Help]]
-- [[What This Site Can Do]]

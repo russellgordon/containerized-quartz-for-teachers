@@ -231,6 +231,20 @@ from Phase 5 apply here too.
   it, with a ring on the ones addressed by a page in `Tasks` and a chip per
   overall expectation showing whether assessed work covers it. It is built
   from the site's own links, so a payload's curriculum blocks ARE the map.
+  **A page counts only if the course teaches it** — that is, if it is
+  linked from a class page, or from a page a class page links to. A page
+  written but never put into a class has addressed nothing yet, and the
+  map says so.
+- **Any task that substantively addresses an expectation must list it in
+  its `Curriculum connection`.** This is the rule that keeps the map
+  honest at the top end: tasks are where expectations are *evaluated*,
+  the ring and the strand chips are drawn from tasks specifically, and an
+  unlisted expectation on a task is work a student did that the course
+  cannot show it assessed. Read each task's own requirements and list
+  what it genuinely demands — not the whole strand, and not a code the
+  task merely brushes past. If a task requires it, name it; if naming it
+  feels like a stretch, the honest fix is to change the task so it really
+  does ask for that, or to leave the code off.
   Two consequences when authoring: spread the transclusions across the
   pages that genuinely address each expectation rather than piling them on
   one page, and make sure each strand's overall expectations are reachable
@@ -343,15 +357,42 @@ page — `title: Section __SECTION_NUMBER__`, "# Most Recent Class"
 transcluding the NEWEST PUBLISHED class page of the payload's semester
 (not Day 1, and not the draft finale) + a `%%` teacher comment about
 advancing it + `![[Help Sessions]]` + `![[Key Links]]`) and a populated
-`Key Links.md`, whose FIRST entry is
-`[[Curriculum/index|Curriculum Expectations]]` wrapped in curriculum
-markers — this link is a must in every payload (the linter enforces it),
-and it is easy to lose when adapting a previous payload's pages, because
-stripping curriculum blocks wholesale deletes it. Its LAST entry is
-`[[What This Site Can Do]]` — also enforced — so a teacher evaluating the
-course meets the site tour early instead of hunting for it. Every folder's
-`index.md` MUST have `title: <Folder Name>` — a literal `title: index`
-shows "index" as the page name on the built site.
+`Key Links.md`. Every folder's `index.md` MUST have
+`title: <Folder Name>` — a literal `title: index` shows "index" as the
+page name on the built site.
+
+**Key Links is the course's orientation panel, not an index of its
+content.** It holds the things that set the tone and answer a newcomer's
+first questions — how the class runs, the class agreement, how marks
+work, where to get help, what to bring, the help-session times, the
+learning goals, how the site is organised, the site tour — plus, at the
+end, the curriculum. It links to **nothing a student reaches by
+following the schedule**: no tasks, no lessons, no concepts, exercises,
+investigations, tutorials, portfolios, or discussions. Those pages are
+reached from the class page for the day they are used, which is what
+makes the schedule the spine of the course; listing one here competes
+with that, and it dates the panel the moment the unit ends. A real
+teacher's Key Links is short and almost entirely course-level — theirs
+reads: Notion, Student Course Outline, Ministry Course of Study,
+Learning Goals, Ontario Curriculum, College Board Curriculum. The linter
+fails any link into a content folder.
+
+**The two curriculum links close the list**, in this order:
+
+```
+- [[What This Site Can Do]]
+%%curriculum-start%%
+- [[Curriculum/index|Curriculum Expectations]]
+%%curriculum-end%%
+```
+
+The `Curriculum Expectations` link is a must in every payload and must
+be the LAST bullet, wrapped in curriculum markers so that declining the
+curriculum removes it cleanly — it is easy to lose when adapting a
+previous payload, because stripping curriculum blocks wholesale deletes
+it. The build inserts `Curriculum Coverage` directly beneath it, so the
+two curriculum links end the panel together, and the site tour sits
+immediately above them. All three positions are enforced.
 
 **The Concepts `index.md` lists every concept page, grouped by unit, as a
 bulleted list — one link per line.** Reference:
@@ -511,7 +552,8 @@ than hand-written:
   `%SAFETY%`…) resolved to whichever folder the family actually has, so a
   class page never links to a folder that does not exist.
 - The payload rules apply: sentinels, `__CREATED_CLASS_K__` on twelve class
-  pages, Key Links ending with the site tour, per-section keys added by the
+  pages, Key Links holding only course-level orientation and ending with
+  the curriculum links, per-section keys added by the
   installer. Skeleton pages may also use `__COURSE_CODE__` and
   `__COURSE_NAME__`.
 - `lint_skeletons.py` is the gate — every link resolves, every page is

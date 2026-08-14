@@ -189,18 +189,73 @@ def lint(course_code: str) -> int:
         elif "%%curriculum-start%%" not in key_links_text.split(expected_link)[0]:
             problems.append("per_section/Key Links.md: Curriculum Expectations link is not inside curriculum markers")
 
-    # ...and the site tour must be its LAST entry, so a teacher evaluating
-    # the course meets it without hunting for it.
+    # Key Links is the course's orientation panel, not an index of its
+    # content. It holds the things that set the tone — how the class runs,
+    # how marks work, where to get help, the learning goals, the site
+    # tour, and the curriculum — and NOTHING a student reaches by
+    # following the schedule. A task or a concept page listed here
+    # competes with the class pages that are supposed to lead students to
+    # it, and dates it the moment the unit ends.
     if key_links.exists():
         bullets = []
         for line in key_links.read_text(encoding="utf-8").splitlines():
             if line.startswith("- "):
                 bullets.append(line.strip())
+
+        # Which folder does each linked page live in?
+        folder_of = {}
+        for page in pages:
+            relative = page.relative_to(root).as_posix()
+            parts = relative.split("/")
+            if len(parts) >= 3:                       # shared/<Folder>/<page>.md
+                folder_of[page.stem] = parts[1]
+        content_folders = {
+            f for f in folder_of.values()
+            if f not in {"Setup", "Style", curriculum_folder}
+        }
+        for bullet in bullets:
+            match = re.search(r"\[\[([^\]|#]+)", bullet)
+            if not match:
+                continue
+            raw = match.group(1).strip()
+            # A link written with a folder says which folder it means;
+            # every folder has an index.md, so the stem alone cannot.
+            if "/" in raw:
+                folder = raw.split("/")[0]
+                target = raw
+            else:
+                target = raw
+                folder = folder_of.get(target)
+            if folder in content_folders:
+                problems.append(
+                    f"per_section/Key Links.md: links to {target} in {folder}/ — "
+                    f"Key Links is for course-level orientation only, never "
+                    f"tasks, lessons, or content pages"
+                )
+
         tour = "- [[What This Site Can Do]]"
         if tour not in bullets:
             problems.append(f"per_section/Key Links.md: missing {tour}")
-        elif bullets[-1] != tour:
-            problems.append("per_section/Key Links.md: What This Site Can Do must be the LAST entry")
+
+        # The curriculum links close the list: the expectations, then the
+        # coverage map that the build inserts directly beneath them.
+        if curriculum_folder:
+            expected_link = f"- [[{curriculum_folder}/index|Curriculum Expectations]]"
+            if expected_link in bullets and bullets[-1] != expected_link:
+                problems.append(
+                    "per_section/Key Links.md: Curriculum Expectations must be the "
+                    "LAST entry — the build inserts Curriculum Coverage below it, "
+                    "so the two curriculum links end the list together"
+                )
+            if expected_link in bullets and len(bullets) >= 2 and bullets[-2] != tour:
+                problems.append(
+                    "per_section/Key Links.md: What This Site Can Do must come "
+                    "immediately before the curriculum links"
+                )
+        elif bullets and bullets[-1] != tour:
+            problems.append(
+                "per_section/Key Links.md: with no curriculum folder, What This "
+                "Site Can Do must be the LAST entry")
 
     # The section landing page's "Most Recent Class" must transclude the
     # newest PUBLISHED class page — the point of that heading.

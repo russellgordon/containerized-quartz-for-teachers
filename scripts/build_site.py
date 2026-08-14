@@ -2122,7 +2122,7 @@ def append_coverage_styles(base_scss_path: Path):
 .coverage-strand {{
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.75rem;
   min-width: 4.6rem;
 }}
 .coverage-letter {{
@@ -2169,16 +2169,17 @@ a.coverage-chip:hover {{ filter: brightness(1.15); }}
 .coverage-2 {{ background: #eab308; color: #1f2937; }}
 .coverage-3 {{ background: #16a34a; }}
 .coverage-4 {{ background: #14532d; }}
-/* The assessed ring is TWO rings — a light one inside a dark one — so it
-   is legible on every cell colour and in every colour scheme. The cell
-   colours are fixed, but a single-tone ring still failed: white
-   disappeared on yellow and dark grey disappeared on the darkest green.
-   With both tones present, whichever one matches the cell recedes and the
-   other carries the shape. Rings sit INSIDE the cell, so the page's own
-   background never affects them. */
+/* Assessed work is marked by a ring OUTSIDE the cell, with a gap.
+   Inset rings were tried twice and failed both times: drawn on top of the
+   cell's own colour they read as a hairline, and no single tone works
+   against five fixed colours. Moving the ring outside solves both — the
+   gap separates it from the cell colour entirely, and `var(--dark)` is
+   the theme's own text colour, so it contrasts with the page background
+   in every Plantoir colour scheme, light or dark, by construction. */
 .coverage-cell[data-assessed="true"],
 .coverage-key[data-assessed="true"] {{
-  box-shadow: inset 0 0 0 2px #ffffff, inset 0 0 0 4px #111827;
+  outline: 3px solid var(--dark);
+  outline-offset: 2px;
 }}
 .coverage-rule {{
   border: none;
@@ -2836,6 +2837,49 @@ def _is_draft(text: str) -> bool:
     return False
 
 
+def _pages_the_course_teaches(content_root: Path) -> set | None:
+    """
+    The pages a student actually reaches by following the schedule.
+
+    A curriculum connection only counts when the page carrying it is
+    taught: linked from a class page, or from a page a class page links
+    to. That second hop is not a loophole — it is how courses are built.
+    A class page's agenda links to the task; the task links to the
+    reference page that carries the expectation, and the expectation was
+    genuinely met by doing the task.
+
+    Returns None when the course has no class pages at all, in which case
+    the caller counts every published page — a map that hid everything
+    would be worse than one that is slightly generous.
+    """
+    class_pages = {}
+    for page in content_root.rglob("*.md"):
+        if any(part.lower() in ("all classes", "classes") for part in page.parts):
+            class_pages[page.stem] = page
+    if not class_pages:
+        return None
+
+    by_stem = {page.stem: page for page in content_root.rglob("*.md")}
+
+    def links_from(page: Path) -> set:
+        try:
+            text = page.read_text(encoding="utf-8")
+        except Exception:
+            return set()
+        outside_fences = re.sub(r"```[\s\S]*?```", "", text)
+        return {match.group(1).strip().rstrip("\\").split("/")[-1]
+                for match in BLOCK_LINK.finditer(outside_fences)}
+
+    first_hop = set()
+    for page in class_pages.values():
+        first_hop |= links_from(page)
+    second_hop = set()
+    for stem in first_hop:
+        if stem in by_stem:
+            second_hop |= links_from(by_stem[stem])
+    return set(class_pages) | first_hop | second_hop
+
+
 def _coverage_counts(content_root: Path, curriculum_dir: Path, specific: dict):
     """
     How many pages address each expectation, and which of those are assessed.
@@ -2860,10 +2904,18 @@ def _coverage_counts(content_root: Path, curriculum_dir: Path, specific: dict):
     and counted in the other's, which is the honest answer for each.
 
     A page counts once per expectation however many times it names it.
+
+    And the page must be one the course actually TEACHES — reachable from
+    a class page, directly or through one page a class page links to. A
+    concept page written in August and never put in a class has not
+    addressed anything yet, and the map should say so.
     """
     covered_by = {code: set() for code in specific}
     assessed_by = {code: set() for code in specific}
+    taught = _pages_the_course_teaches(content_root)
     for page in sorted(content_root.rglob("*.md")):
+        if taught is not None and page.stem not in taught:
+            continue
         if page.parent == curriculum_dir or curriculum_dir in page.parents:
             continue
         if page.name == f"{COVERAGE_PAGE_TITLE}.md":
@@ -3026,7 +3078,14 @@ A passing mention in prose does not count. A concept page can discuss an
 idea, and even link to the expectation behind it in a sentence, without
 claiming to have addressed it — which is why the number here is usually
 lower than the backlinks count on the expectation's own page, and why it
-means more.
+means more. If a page genuinely covers an expectation, put it in that
+page's *Curriculum connection* rather than leaving it as a mention.
+
+**Only pages this course teaches count.** The page carrying the
+connection has to be reachable from a class page — linked from one
+directly, or from a page a class page links to. A page written in August
+and never put into a class has addressed nothing yet, and a page reached
+only from Key Links is a reference, not a lesson.
 
 **Only published pages count.** A page still marked `draft: true` is not on
 the site yet, so it cannot have addressed anything — next week's lesson,

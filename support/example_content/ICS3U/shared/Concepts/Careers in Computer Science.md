@@ -109,5 +109,7 @@ nobody asked for.
 
 ![[D3.3]]
 
+![[D3.4]]
+
 ![[D3.5]]
 %%curriculum-end%%

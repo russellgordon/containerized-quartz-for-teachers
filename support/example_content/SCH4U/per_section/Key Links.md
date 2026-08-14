@@ -5,14 +5,16 @@ created: __CREATED__
 transcludeTitleSize: h2
 excludeBacklinks: true
 ---
+
+- [[How Chemistry Class Works]]
+- [[Safety in the Lab]]
+- [[How Marks Work]]
+- [[Getting Help]]
+- [[What to Bring]]
+- [[Help Sessions]]
+- [[Learning Goals]]
+- [[How This Site Is Organised]]
+- [[What This Site Can Do]]
 %%curriculum-start%%
 - [[Curriculum/index|Curriculum Expectations]]
 %%curriculum-end%%
-- [[Safety in the Lab]]
-- [[Writing a Lab Report]]
-- [[Significant Figures and Units]]
-- [[Functional Groups at a Glance]]
-- [[Reading a Reduction Potential Table]]
-- [[How Marks Work]]
-- [[Getting Help]]
-- [[What This Site Can Do]]
