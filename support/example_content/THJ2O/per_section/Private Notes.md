@@ -60,3 +60,39 @@ students are told they do not operate chainsaws, tractors, skid-steers,
 ride-on mowers, or harvesting equipment, and no page names a pesticide
 product or an application rate — pest control products are federally
 regulated and application is licensed work.
+
+## Site checks before each kind of practical day
+
+Separate from the decisions above, these are the ones tied to a
+particular place or job. The pages defer each of them to you on purpose.
+
+- **Walk the woodlot route first**, on the day or the day before, for
+  dead and leaning trees. Cancel on a windy day.
+- **Ticks.** Confirm the current local risk-area status and your board's
+  repellent policy. The page tells students to save the tick and report
+  to you rather than deal with it themselves.
+- **Giant hogweed and wild parsnip.** Students mark and report; nobody
+  is asked to clear them. Check that holds for your site.
+- **Utility locates before digging.** Required by law on school
+  property. Confirm your board's process and who places the call — it is
+  not the students.
+- **Working near water.** Lifejacket policy, how close to the edge, no
+  pairs working alone, and conservation authority approval for anything
+  planted in the bank. Settle all four before the shoreline trip.
+- **Soil-borne and dust hazards.** Tetanus immunisation, cuts covered,
+  and dry peat or compost damped before it is moved.
+- **Water and electricity in the greenhouse.** Cord routing, outlet
+  placement, hose runs, wet floors.
+- **Food safety at harvest.** Potable wash water, clean containers,
+  produce off bare ground, and nobody harvesting while unwell.
+- **Knives for cuttings.** Cut away from the body and the other hand.
+  The page is blunt that a slip here is a stitches injury.
+- **Machinery at the farm.** Students never approach equipment without
+  the operator knowing where they are. Confirm this with the host as
+  well as the class.
+
+One thing the pages did NOT do, deliberately: several plausible pests
+and diseases were left out because they could not be verified — oak
+wilt, beech leaf disease, spotted lanternfly, hemlock woolly adelgid,
+and spongy moth among them. If any of those are live in your area, they
+are worth adding yourself, with a current source.
