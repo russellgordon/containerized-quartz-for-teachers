@@ -34,3 +34,17 @@ $532\ \text{nm}$ light. Find the angle of the first-order maximum.
 > The film's thickness is comparable to the wavelength of light, so the
 > reflections from its two surfaces interfere. A pane is thousands of
 > wavelengths thick, so the effect washes out.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[E2.2]]
+
+![[E2.3]]
+
+![[E2.4]]
+
+![[E3.1]]
+
+![[E3.2]]
+%%curriculum-end%%

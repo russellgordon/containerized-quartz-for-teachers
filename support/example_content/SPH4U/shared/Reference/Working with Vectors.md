@@ -39,3 +39,9 @@ You may point the axes anywhere, and choosing well is most of the work:
 
 Sketch the resultant before computing it. If your arithmetic gives a
 direction the sketch does not, believe the sketch and find the error.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.12]]
+%%curriculum-end%%

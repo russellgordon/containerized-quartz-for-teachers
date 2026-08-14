@@ -33,3 +33,17 @@ to a $0.30\ \text{T}$ field. Find the radius of its path.
 
 > [!success]- Answer 4
 > $r = mv/(qB) = (9.11\times10^{-31})(2.0\times10^6)/((1.60\times10^{-19})(0.30)) = 3.8 \times 10^{-5}\ \text{m}$.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D2.2]]
+
+![[D2.3]]
+
+![[D2.4]]
+
+![[D3.1]]
+
+![[D3.3]]
+%%curriculum-end%%

@@ -40,4 +40,6 @@ return to its starting height.
 ![[C2.2]]
 
 ![[C3.4]]
+
+![[C2.1]]
 %%curriculum-end%%

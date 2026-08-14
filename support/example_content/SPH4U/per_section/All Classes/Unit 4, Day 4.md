@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 4
 draft: false
-created: __CREATED_CLASS_21__
+created: __CREATED_CLASS_58__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. [[Electromagnetic Radiation]]: one spectrum, one physics
-2. Maxwell's coincidence, and what it started
-3. Launch: [[Optics Investigation Report]] — you design this one
-4. Procedure drafting, checked before anything is switched on
+1. Analysis period: [[Double Slit with a Laser]] — 600 nanometres,
+   measured with a metre stick
+2. The small-angle approximation: when it is safe, and when it is not
+3. Uncertainty in a wavelength, propagated properly
 
 ## Things to do before our next class
 
-- [ ] Draft your procedure for [[Optics Investigation Report]].
-- [ ] Bring a prediction with an uncertainty.
+- [ ] Double-slit analysis finished.

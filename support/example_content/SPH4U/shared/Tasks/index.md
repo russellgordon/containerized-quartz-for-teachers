@@ -13,5 +13,6 @@ start.
 - [[Fields Technology Report]] — Unit 3
 - [[Optics Investigation Report]] — Unit 4
 - [[Modern Physics Seminar]] — Unit 5, and the culminating task
+- [[Final Examination]] — the final evaluation, in the examination period
 
 [[How Marks Work]] explains the four categories these are judged in.

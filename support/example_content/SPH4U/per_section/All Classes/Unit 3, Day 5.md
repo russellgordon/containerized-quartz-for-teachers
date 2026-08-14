@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_42__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. The magnetic force: sideways, and only when moving
-2. [[Magnetic Force on Moving Charges]] and the mass spectrometer
-3. [[Comparing the Three Fields]] — the table that ties the unit together
-4. Launch: [[Fields Technology Report]]
+1. Charged tape, a balloon, and forces you cannot see
+2. [[Coulomb's Law]] and superposition
+3. [[Mapping an Electric Field]] on conductive paper
+4. Equipotentials first, then field lines
 
 ## Things to do before our next class
 
-- [ ] Choose your technology for [[Fields Technology Report]].
-- [ ] Journal: which row of the comparison table surprised you?
+- [ ] Finish your field map for both electrode arrangements.
+- [ ] Journal: why do field lines meet a conductor at right angles?

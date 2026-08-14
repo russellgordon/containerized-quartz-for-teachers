@@ -38,4 +38,6 @@ it. "I read that…" is where this discussion starts, not where it ends.
 ![[D1.2]]
 
 ![[E1.2]]
+
+![[A1.9]]
 %%curriculum-end%%

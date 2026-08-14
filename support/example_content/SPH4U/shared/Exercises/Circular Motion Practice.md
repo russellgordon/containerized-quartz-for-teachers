@@ -35,3 +35,13 @@ $8.0\ \text{m}$ for a cart to maintain contact?
 > [!success]- Answer 4
 > $v = \sqrt{gr} = 8.9\ \text{m/s}$. Below that, the track would need to
 > pull the cart inward, which a track cannot do.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B2.6]]
+
+![[B2.7]]
+
+![[B3.3]]
+%%curriculum-end%%

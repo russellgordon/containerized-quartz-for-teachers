@@ -33,3 +33,17 @@ $1.5 \times 10^6\ \text{m/s}$.
 > $\lambda = h/(mv) = (6.63\times10^{-34})/((9.11\times10^{-31})(1.5\times10^6)) = 4.9 \times 10^{-10}\ \text{m}$
 > — comparable to atomic spacing, which is why crystals diffract
 > electrons.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[F2.2]]
+
+![[F2.3]]
+
+![[F3.1]]
+
+![[F3.2]]
+
+![[F3.3]]
+%%curriculum-end%%

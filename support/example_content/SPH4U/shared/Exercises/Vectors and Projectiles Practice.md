@@ -37,3 +37,13 @@ impact?
 > [!success]- Answer 4
 > Because no horizontal force acts. Gravity is vertical, and the two
 > directions are independent — the point of [[Projectile Motion]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B2.2]]
+
+![[B2.3]]
+
+![[B3.2]]
+%%curriculum-end%%

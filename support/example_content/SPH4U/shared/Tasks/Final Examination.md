@@ -1,0 +1,99 @@
+---
+title: Final Examination
+draft: false
+created: __CREATED__
+enableToc: true
+tags:
+  - tasks
+  - final-evaluation
+---
+> [!abstract] At a glance
+> Individual · three hours, in the examination period · written, with a
+> calculator and the [[Formula Reference]] provided · all five units,
+> weighted roughly as the course spent its time on them
+
+## What it is for
+
+Almost everything else this semester was done with a partner, a bench, and
+the ability to look things up. This is the one piece of evidence that is
+unambiguously yours, and it is the closest thing in this course to how a
+first-year physics course will assess you.
+
+## What is on it
+
+| Part | Roughly | What it asks you to do |
+| --- | --- | --- |
+| A. Dynamics in two dimensions | 20% | Vectors and components; projectiles; forces on inclines and in systems; circular motion |
+| B. Energy and momentum | 20% | Work–energy theorem; conservation of momentum in one and two dimensions; collisions; simple harmonic motion |
+| C. Gravitational, electric, and magnetic fields | 20% | Field and potential; Coulomb's law and Newton's law of gravitation; charged particles in fields; the three fields compared |
+| D. The wave nature of light | 20% | Interference, diffraction, polarization; the double-slit and grating equations; why light separates into colours |
+| E. Revolutions in modern physics | 20% | Special relativity; the photoelectric effect; matter waves; mass–energy equivalence; the Standard Model |
+
+Woven through every part: **the skills strand**. One question gives you
+data you have not seen and asks you to graph it, state a conclusion, and
+say what its uncertainty allows you to claim. Another asks you to work in
+symbols and only substitute at the end. A third asks for a diagram drawn
+to convention.
+
+## What to expect, precisely
+
+- **Symbols before numbers.** Deriving an expression and substituting once
+  earns more than a page of arithmetic, and it is far easier to mark and
+  to check.
+- **State your frame and your positive directions**, and hold them. Most
+  lost marks in the dynamics and momentum questions are sign errors that a
+  stated convention would have prevented.
+- **Vector questions want vector answers** — magnitude AND direction,
+  with the direction stated unambiguously.
+- **Units and significant figures are marked**, per
+  [[Units and Significant Figures]].
+- **Terminology is expected to be exact**: elastic and inelastic, field
+  and potential, energy and power, frequency and angular frequency.
+
+## How to prepare
+
+1. **Redo questions, do not reread them.** Five from each set, cold:
+   [[Vectors and Projectiles Practice]], [[Circular Motion Practice]],
+   [[Momentum and Collisions Practice]], [[Fields Practice]],
+   [[Wave Optics Practice]], [[Relativity and Quanta Practice]].
+2. **Redraw the standard diagrams from memory** — components of a vector
+   on an incline, a free-body diagram at the top of a loop, field lines
+   between two charges, the double-slit path difference, an energy-level
+   diagram. If you cannot draw it, you cannot yet explain it.
+3. **Re-read your own investigations.** What you wrote about what went
+   wrong at the bench is the most efficient revision there is.
+4. **Say the explanations out loud.** Every explanation mark on this paper
+   is a sentence you could have said to somebody.
+5. **Bring questions to the review classes.** There are four of them, and
+   this page is what is on the examination.
+
+> [!tip] In the three hours
+> Budget by the weightings above. Do the multi-step dynamics and fields
+> questions while you are fresh. If a problem stalls, draw the diagram
+> and name the principle you would apply — partial reasoning earns
+> partial marks and a blank space earns none.
+
+## How this is assessed
+
+Against the same expectations as everything else. Per [[How Marks Work]],
+this examination is part of the final 30% of the course mark alongside
+[[Modern Physics Seminar]], so that neither one afternoon nor one seminar
+decides your grade alone.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.12]]
+
+![[A1.13]]
+
+![[B2.3]]
+
+![[C2.1]]
+
+![[D2.1]]
+
+![[E3.2]]
+
+![[F2.1]]
+%%curriculum-end%%

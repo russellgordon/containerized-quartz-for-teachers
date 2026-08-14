@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 2
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_56__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Why a particle model of light fails
-2. [[Young's Double-Slit Experiment]] — the geometry
-3. [[Double Slit with a Laser]]: measuring 600 nanometres with a metre stick
-4. Practise: [[Wave Optics Practice]], first two
+1. Analysis period: [[Ripple Tank Interference]] — nodal lines measured,
+   wavelength extracted
+2. Path difference, in half-wavelengths, from your own tray
+3. Practise: [[Wave Optics Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Finish the wavelength calculation with an uncertainty.
-- [ ] Read [[Diffraction Gratings and Thin Films]].
+- [ ] Finish the first section.

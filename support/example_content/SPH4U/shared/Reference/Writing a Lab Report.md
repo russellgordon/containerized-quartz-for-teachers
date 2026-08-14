@@ -42,3 +42,11 @@ The sentence-level habits — units, directions, precise words — are on
 > If you cannot write one honest sentence answering the purpose, the
 > analysis is not finished — and you have found that out before spending
 > two hours formatting.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.11]]
+
+![[A1.10]]
+%%curriculum-end%%

@@ -1,7 +1,7 @@
 ---
 title: Unit 5, Day 3
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_72__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. [[Emission Spectra]] through a grating — quantised levels, seen
-2. [[The Standard Model]] and what it leaves out
-3. Discussion: [[What a Collider Costs]]
-4. Seminar preparation: [[Modern Physics Seminar]]
+1. Two postulates, and everything strange that follows
+2. [[Special Relativity]]: time dilation and length contraction
+3. [[Mass–Energy Equivalence]] and where the Sun's light comes from
+4. Practise: the rest of [[Relativity and Quanta Practice]]
 
 ## Things to do before our next class
 
-- [ ] Choose your seminar topic and find one primary source.
-- [ ] Read ahead for [[When Physics Changed Its Mind]].
+- [ ] Finish the practice set.
+- [ ] Journal: the muon argument, in your own words.

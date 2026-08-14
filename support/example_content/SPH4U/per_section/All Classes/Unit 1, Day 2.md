@@ -10,12 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. A ball rolled off the bench, and the argument about whether it falls slower
-2. [[Projectile Motion]] — independence of the two directions
-3. Predict, then fire: [[Projectile Range]]
-4. Practise: [[Vectors and Projectiles Practice]], first two
+1. Skill: [[Working with Vectors]] — components, and why every question
+   in this unit starts by resolving something
+2. Practise: [[Vectors and Projectiles Practice]], first section, at the
+   boards
+3. Convention: [[Units and Significant Figures]], which is marked all
+   semester
 
 ## Things to do before our next class
 
-- [ ] Finish the range predictions with uncertainties.
-- [ ] Set up your [[Physics Journal]].
+- [ ] Finish the first section. [[Your First Entry]] in the portfolio.

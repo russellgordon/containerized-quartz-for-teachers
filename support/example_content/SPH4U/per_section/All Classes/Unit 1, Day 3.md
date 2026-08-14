@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Consolidate the range data — was 45° really best?
-2. [[Relative Motion]] and the river crossing
-3. Forces on a plane, resolved: [[Forces in Two Dimensions]]
-4. Practise: the rest of [[Vectors and Projectiles Practice]]
+1. A ball rolled off the bench, and the argument about whether it falls slower
+2. [[Projectile Motion]] — independence of the two directions
+3. Predict, then fire: [[Projectile Range]]
+4. Practise: [[Vectors and Projectiles Practice]], first two
 
 ## Things to do before our next class
 
-- [ ] Finish the practice set.
-- [ ] Journal: why the two directions never talk to each other.
+- [ ] Finish the range predictions with uncertainties.
+- [ ] Set up your [[Physics Journal]].

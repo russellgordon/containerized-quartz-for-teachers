@@ -50,4 +50,10 @@ that produced the textbook number.
 ![[E2.4]]
 
 ![[A1.1]]
+
+![[E1.1]]
+
+![[E3.3]]
+
+![[A1.10]]
 %%curriculum-end%%

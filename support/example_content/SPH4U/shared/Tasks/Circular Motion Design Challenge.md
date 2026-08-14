@@ -47,4 +47,8 @@ change — this is a test of physics, not of retrofitting.
 ![[B1.1]]
 
 ![[B3.3]]
+
+![[B1.2]]
+
+![[A1.13]]
 %%curriculum-end%%

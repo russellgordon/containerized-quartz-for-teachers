@@ -65,4 +65,8 @@ what is assumed to be conserved and over what interval.
 ![[B2.6]]
 
 ![[C3.4]]
+
+![[C1.2]]
+
+![[C2.1]]
 %%curriculum-end%%

@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Swing a mass on a string and ask what pulls it inward
-2. [[Uniform Circular Motion]] — deriving the centripetal acceleration
-3. Name the misconception: [[Centripetal Force]] and [[Inertial and Non-inertial Frames]]
-4. Practise: [[Circular Motion Practice]], first two
+1. Analysis period: [[Projectile Range]] worked up in class
+2. Symbols before numbers: derive the range equation, then substitute
+   once
+3. Where the 45° result comes from, and where air resistance breaks it
 
 ## Things to do before our next class
 
-- [ ] Read [[The Flying Pig]] before next class — including the derivation.
-- [ ] Journal: what is wrong with saying a centrifugal force throws it outward?
+- [ ] Analysis finished with a linearised graph.

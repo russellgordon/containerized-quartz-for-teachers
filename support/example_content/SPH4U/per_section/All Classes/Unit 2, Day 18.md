@@ -1,0 +1,19 @@
+---
+title: Unit 2, Day 18
+draft: false
+created: __CREATED_CLASS_37__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. Warm-up: one interaction, analysed both ways
+2. Consolidation: the unit on one page, built by the room
+3. Look ahead: forces that act with nothing in between
+
+## Things to do before our next class
+
+- [ ] Bring one thing you think acts at a distance.

@@ -35,4 +35,6 @@ are the same idea three times is the point of this unit — see
 ![[D3.2]]
 
 ![[D3.3]]
+
+![[D2.1]]
 %%curriculum-end%%

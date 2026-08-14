@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 3
 draft: false
-created: __CREATED_CLASS_15__
+created: __CREATED_CLASS_40__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Charged tape, a balloon, and forces you cannot see
-2. [[Coulomb's Law]] and superposition
-3. [[Mapping an Electric Field]] on conductive paper
-4. Equipotentials first, then field lines
+1. Orbits as circular motion with gravity as the centripetal force
+2. [[Gravitational Fields and Orbits]] — and why higher is slower
+3. GPS, and the relativity correction it needs
+4. Practise: orbital questions
 
 ## Things to do before our next class
 
-- [ ] Finish your field map for both electrode arrangements.
-- [ ] Journal: why do field lines meet a conductor at right angles?
+- [ ] Finish the orbit calculations.
+- [ ] Read [[Coulomb's Law]].

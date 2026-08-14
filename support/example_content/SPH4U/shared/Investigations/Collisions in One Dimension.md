@@ -52,4 +52,8 @@ kinetic energy before and after.
 ![[C2.7]]
 
 ![[C3.3]]
+
+![[A1.10]]
+
+![[C1.2]]
 %%curriculum-end%%

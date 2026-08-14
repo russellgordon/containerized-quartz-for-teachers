@@ -10,6 +10,7 @@ One page per idea, written once and linked from every class that uses it.
 **Unit 1 — Dynamics**
 
 - [[Vectors in Two Dimensions]]
+- [[Where This Physics Leads]]
 - [[Projectile Motion]]
 - [[Relative Motion]]
 - [[Forces in Two Dimensions]]
@@ -54,6 +55,7 @@ One page per idea, written once and linked from every class that uses it.
 - [[The Photoelectric Effect]]
 - [[Wave–Particle Duality]]
 - [[The Standard Model]]
+- [[Predicting the Neutrino]]
 
 Conservation turns up three times in this course wearing three coats —
 energy, momentum, charge. Noticing that is most of Grade 12 physics.

@@ -43,4 +43,14 @@ Ministry's reason this strand exists.
 ![[D1.2]]
 
 ![[D2.2]]
+
+![[D3.1]]
+
+![[D2.1]]
+
+![[A1.3]]
+
+![[A1.7]]
+
+![[A1.9]]
 %%curriculum-end%%

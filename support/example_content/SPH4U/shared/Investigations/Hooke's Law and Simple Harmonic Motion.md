@@ -52,4 +52,8 @@ Quadruple it? Change the amplitude?
 ![[C3.2]]
 
 ![[C2.4]]
+
+![[A1.2]]
+
+![[A1.5]]
 %%curriculum-end%%

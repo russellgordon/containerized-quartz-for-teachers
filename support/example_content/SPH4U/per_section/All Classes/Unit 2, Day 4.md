@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 4
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_23__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. [[Collisions in One Dimension]] — four collisions, two conservation laws
-2. Which quantity survived every time?
-3. Consolidate: [[Elastic and Inelastic Collisions]]
-4. Start the analysis
+1. Warm-up: predict the period when the mass doubles, then when the
+   spring constant doubles
+2. Practise: SHM and energy questions at the boards
+3. Where it returns: every oscillation in the last three units is this
 
 ## Things to do before our next class
 
-- [ ] Finish the momentum and energy tables.
-- [ ] Journal: where did the kinetic energy go in the sticky collision?
+- [ ] Finish the practice questions.

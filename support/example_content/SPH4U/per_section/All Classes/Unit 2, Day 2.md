@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 2
 draft: false
-created: __CREATED_CLASS_8__
+created: __CREATED_CLASS_21__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Test the period prediction — twenty oscillations
-2. [[Simple Harmonic Motion]]: why amplitude does not matter
-3. Damping, and what a car suspension is for
-4. Practise: energy in oscillation
+1. Analysis period: [[Hooke's Law and Simple Harmonic Motion]] — the
+   spring constant from a slope, with an uncertainty
+2. Elastic potential energy as the area under the graph
+3. Practise: work, energy, and springs at the boards
 
 ## Things to do before our next class
 
-- [ ] Journal: why does the period not depend on amplitude?
-- [ ] Read [[Momentum and Impulse]].
+- [ ] Report drafted.

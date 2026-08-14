@@ -13,3 +13,4 @@ The pages you look things up in, rather than read once.
 - [[Uncertainty and Error]]
 - [[Graphing Data]]
 - [[Writing a Lab Report]]
+- [[Asking and Researching Well]]

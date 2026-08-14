@@ -40,4 +40,6 @@ physics.
 ![[F3.2]]
 
 ![[F2.2]]
+
+![[F2.1]]
 %%curriculum-end%%

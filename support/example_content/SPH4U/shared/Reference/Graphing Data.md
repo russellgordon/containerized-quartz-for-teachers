@@ -41,3 +41,9 @@ that is not linear. Plotting against $x^2$, or $1/x$, and getting a
 straight line tells you what the relationship IS. Plotting the period of
 an oscillator against $\sqrt{m}$ is exactly that trick — see
 [[Simple Harmonic Motion]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.12]]
+%%curriculum-end%%

@@ -42,4 +42,8 @@ light version is a change of scale rather than a new idea.
 ![[E2.2]]
 
 ![[E3.1]]
+
+![[A1.2]]
+
+![[A1.5]]
 %%curriculum-end%%

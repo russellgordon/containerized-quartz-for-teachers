@@ -38,3 +38,17 @@ Find the velocity just after.
 > $p_x = 18000$, $p_y = 18000$, total mass $3000\ \text{kg}$, so
 > $v = \sqrt{2} \times 6.0 = 8.5\ \text{m/s}$ at $45^\circ$ north of
 > east.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[C2.5]]
+
+![[C2.6]]
+
+![[C2.7]]
+
+![[C3.3]]
+
+![[C3.4]]
+%%curriculum-end%%

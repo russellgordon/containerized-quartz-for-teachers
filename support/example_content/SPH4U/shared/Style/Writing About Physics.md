@@ -44,3 +44,9 @@ the last row for most of the loose talk in Unit 5.
 > [!tip] The test for a good sentence
 > Could a classmate reproduce your reasoning from what you wrote — not
 > your arithmetic, your reasoning? That is the standard here.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.11]]
+%%curriculum-end%%

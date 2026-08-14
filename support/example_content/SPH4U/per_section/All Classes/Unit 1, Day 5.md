@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Draw the free-body diagram BEFORE the power goes on
-2. [[The Flying Pig]] — radius, angle, and ten revolutions
-3. Two routes to the speed, compared on the board
-4. Begin the analysis while the numbers are fresh
+1. Consolidate the range data — was 45° really best?
+2. [[Relative Motion]] and the river crossing
+3. Forces on a plane, resolved: [[Forces in Two Dimensions]]
+4. Practise: the rest of [[Vectors and Projectiles Practice]]
 
 ## Things to do before our next class
 
-- [ ] Finish [[Your First Entry]] in your journal.
-- [ ] [[The Flying Pig]] analysis due in three classes.
+- [ ] Finish the practice set.
+- [ ] Journal: why the two directions never talk to each other.

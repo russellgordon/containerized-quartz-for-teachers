@@ -1,7 +1,7 @@
 ---
 title: Unit 5, Day 2
 draft: false
-created: __CREATED_CLASS_24__
+created: __CREATED_CLASS_71__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Two postulates, and everything strange that follows
-2. [[Special Relativity]]: time dilation and length contraction
-3. [[Mass–Energy Equivalence]] and where the Sun's light comes from
-4. Practise: the rest of [[Relativity and Quanta Practice]]
+1. Warm-up: the photoelectric graph, read three ways
+2. Practise: [[Relativity and Quanta Practice]], quantum section
+3. Work function, threshold frequency, and why intensity does not help
 
 ## Things to do before our next class
 
-- [ ] Finish the practice set.
-- [ ] Journal: the muon argument, in your own words.
+- [ ] Finish the quantum questions.

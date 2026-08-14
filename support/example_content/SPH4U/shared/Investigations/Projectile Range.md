@@ -44,4 +44,8 @@ instructor's word, and never look into the barrel.
 ![[B2.2]]
 
 ![[A1.1]]
+
+![[A1.5]]
+
+![[A1.13]]
 %%curriculum-end%%
