@@ -88,7 +88,7 @@ SUPERSAMPLE = 4  # the path is filled at 1-bit, so we oversample for smooth edge
 _TOKEN = re.compile(r"[MmLlHhVvCcSsQqTtAaZz]|[-+]?(?:\d*\.\d+|\d+)(?:[eE][-+]?\d+)?")
 
 
-class Path:
+class SvgPath:
     """A minimal SVG path parser that flattens to polylines.
 
     Supports every command the Phosphor icons use (M L H V C S Q T A Z, both
@@ -272,12 +272,12 @@ def _viewbox(svg_text: str) -> tuple[float, float]:
     return parts[2], parts[3]
 
 
-def load_glyph_path() -> tuple[Path, float]:
+def load_glyph_path() -> tuple[SvgPath, float]:
     """Return the plant path and the side of its (square) viewBox."""
     svg = (ICON_DIR / "Assets" / "plant.svg").read_text(encoding="utf-8")
     d = re.search(r'\sd="([^"]+)"', svg).group(1)
     w, _ = _viewbox(svg)
-    return Path(d), w
+    return SvgPath(d), w
 
 
 def render_glyph(px: float, color, bold_units: float = 0.0):
@@ -348,14 +348,23 @@ def paste_with_shadow(base, layer, xy, dy, blur, opacity):
 
 
 def font(weight: str, size: float) -> ImageFont.FreeTypeFont:
-    files = {"regular": "Poppins.ttf", "medium": "Poppins-Medium.ttf", "semibold": "Poppins-SemiBold.ttf"}
+    """Poppins Regular or Medium.
+
+    The brand uses exactly these two weights -- no SemiBold anywhere. That is
+    measured, not assumed: matching the original card's ink coverage pins the
+    wordmark to Medium 96 and the domain line to Medium 26. (The site's CSS
+    sets h1 to weight 600, which is misleading here; the card is its own
+    artifact and was not rendered from that stylesheet.)
+    """
+    files = {"regular": "Poppins.ttf", "medium": "Poppins-Medium.ttf"}
     p = FONTS / files[weight]
     if not p.is_file():
         sys.exit(
             f"Missing {p.name} in support/fonts/.\n"
-            "The bundled Poppins.ttf is Regular only; the wordmark needs SemiBold\n"
-            "and the domain line needs Medium. Add them from the Google Fonts\n"
-            "Poppins family (OFL, same licence as the fonts already here)."
+            "The bundled Poppins.ttf is Regular only; the wordmark, the domain\n"
+            "line and the banner's emphasised verbs all need Medium. Add it from\n"
+            "the Google Fonts Poppins family (OFL, same licence as the fonts\n"
+            "already here)."
         )
     return ImageFont.truetype(str(p), size)
 
@@ -370,8 +379,15 @@ def draw_runs(draw, x, y, runs, anchor="ls"):
     return total
 
 
-def icon_tile(side, radius_frac=0.2258):
-    """The rounded app-icon tile: ramp, mark, and the mark's own shadow."""
+def icon_tile(side, radius_frac=0.295):
+    """The rounded app-icon tile: ramp, mark, and the mark's own shadow.
+
+    ``radius_frac`` is an empirical best fit to the original card, not the
+    icon's true geometry. Apple's tile is a superellipse; approximating it with
+    a circular-arc rounded rectangle needs a noticeably larger radius than the
+    ~0.2258 a squircle nominally corresponds to. Fitting it properly would mean
+    drawing the superellipse -- worth doing if the tile ever needs to be exact.
+    """
     tile = Image.new("RGBA", (side, side), (0, 0, 0, 0))
     bg = vertical_gradient((side, side), TILE_TOP, TILE_BOTTOM).convert("RGBA")
     bg.putalpha(rounded_mask((side, side), int(round(side * radius_frac))))
@@ -379,7 +395,7 @@ def icon_tile(side, radius_frac=0.2258):
 
     g = side * 0.703  # the plant layer's own scale in icon.json (22.5 x 32pt / 1024)
     glyph = render_glyph(g, GLYPH)
-    off = int(round((side - g) / 2))
+    off = int((side - g) / 2)  # floor, which lands the mark exactly as the original card has it
     paste_with_shadow(tile, glyph, (off, off), dy=max(1, int(side * 0.008)),
                       blur=side * 0.009, opacity=0.30)
     return tile
@@ -399,10 +415,10 @@ def build_social_card() -> Image.Image:
     paste_with_shadow(img, tile, (108, 185), dy=10, blur=14, opacity=0.20)
 
     x = 444
-    d.text((x, 260), WORDMARK, font=font("semibold", 94), fill=GREEN_DEEP, anchor="ls")
+    d.text((x, 260), WORDMARK, font=font("medium", 96), fill=GREEN_DEEP, anchor="ls")
     ft = font("regular", 33)
     for i, line in enumerate(TAGLINE_CARD):
-        d.text((x, 321 + i * 46), line, font=ft, fill=INK_SOFT, anchor="ls")
+        d.text((x, 322 + i * 46), line, font=ft, fill=INK_SOFT, anchor="ls")
     d.text((x, 431), DOMAIN, font=font("medium", 26), fill=GREEN, anchor="ls")
 
     d.rectangle([0, 622, W, H], fill=GREEN)
@@ -433,15 +449,15 @@ def build_banner() -> Image.Image:
     img = Image.new("RGBA", (W, H), PAPER + (255,))
     d = ImageDraw.Draw(img)
 
-    f_word = font("semibold", 94)
+    f_word = font("medium", 96)
     f_tag = font("regular", 40)
-    f_verb = font("semibold", 40)
+    f_verb = font("medium", 40)
     f_link = font("medium", 30)
 
     asc, desc = 0.73, 0.21  # Poppins ascender / descender as a fraction of em
     gap_tag, line_h, gap_link = 28, 56, 30
 
-    top_to_first = asc * 94
+    top_to_first = asc * 96
     block = (top_to_first + gap_tag + asc * 40 + line_h + gap_link + asc * 30 + desc * 30)
     y = (H - block) / 2 - 13 + top_to_first  # lifted clear of the rule
 

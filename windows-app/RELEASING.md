@@ -109,11 +109,18 @@ Two things worth knowing before you run it with `--install-card`, which
 overwrites the deployed `site/social-card.png`:
 
 - The original card was hand-made and has no source. The generated one
-  is measured to match it (tile 260&nbsp;px at 108,185; wordmark Poppins
-  SemiBold 94&nbsp;px; tagline Regular 33&nbsp;px on a 46&nbsp;px
-  leading; rule 8&nbsp;px) but it will **not** be byte-identical, and
-  small differences in text rasterisation are expected. Look at both
-  before you commit.
+  is measured to match it — tile 260&nbsp;px at 108,185; wordmark Poppins
+  **Medium 96**&nbsp;px; tagline Regular 33&nbsp;px on a 46&nbsp;px
+  leading; domain line Medium 26&nbsp;px; rule 8&nbsp;px — and every text
+  element now matches the original's ink coverage exactly. It is still
+  **not** byte-identical: glyph advance widths accumulate slightly
+  differently, so letters drift a pixel or two toward the end of a line.
+  Background and rule are pixel-identical. Look at both before you commit.
+
+  The brand uses Poppins **Regular and Medium only — no SemiBold**. That
+  is measured from the original card, not assumed. Do not "correct" it to
+  600 because `site/index.html` sets `h1 { font-weight: 600 }`; the card
+  is a separate artifact and was not rendered from that stylesheet.
 - That file is public and every social platform that has scraped
   plantoir.app has it cached. Replacing it is an outward-facing change,
   not a refactor.
