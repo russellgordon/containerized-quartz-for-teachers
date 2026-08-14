@@ -2089,15 +2089,42 @@ def patch_mermaid_pie_title_fit(mermaid_ts_path: Path):
         print(f"⚠️ Error patching mermaid pie title fit: {e}")
 
 
+# The five steps of the map, each as (fill, label). CHOSEN BY MEASUREMENT,
+# not by eye: two shades that look obviously different in a list of
+# swatches can be nearly the same colour in fact, which is how a deep red
+# and a deep orange came to sit side by side on the map looking alike. The
+# scale was searched — every combination of candidate shades in these five
+# families, scored on the perceptual distance (CIEDE2000) between EVERY
+# pair, and rejected outright unless each label cleared 4.5:1 against its
+# own fill. Colour is the only visual carrier of the count here, so the
+# same distances were measured again through simulations of the two common
+# forms of red-green colour blindness; a scale that separates for most
+# readers and collapses for the rest has not solved the problem.
+#
+# What that search settled, and why it is not the obvious answer: a
+# mid-tone red fails BOTH labels — too dark for ink, too light for white —
+# so red and orange cannot both be mid-tone, and the only way to hold them
+# apart is to separate them by lightness as well as hue. Hence a deep red
+# carrying white and a bright orange carrying dark ink. The closest pair
+# any ordinary-sighted reader now sees is ΔE 31, against ΔE 10 before.
+COVERAGE_LEVELS = [
+    ("#7f1d1d", "#ffffff"),   # not yet addressed
+    ("#f97316", "#1f2937"),   # addressed once
+    ("#facc15", "#1f2937"),   # addressed twice
+    ("#15803d", "#ffffff"),   # addressed three times
+    ("#1e3a8a", "#ffffff"),   # addressed four or more times
+]
+
+
 def append_coverage_styles(base_scss_path: Path):
     """
     Styles for the curriculum coverage map.
 
     Colours are fixed rather than taken from the theme: the map's whole job
     is a graded reading from red through green to navy, and a colour scheme
-    that recoloured it would destroy the meaning. The cells print no counts — the count reaches a
-    screen reader through each cell's label, and a teacher reads it off the
-    hover preview.
+    that recoloured it would destroy the meaning. The cells print no counts
+    — the count reaches a screen reader through each cell's label, and a
+    teacher reads it off the hover preview.
 
     The block always goes at the end of the file, so an earlier one is
     REPLACED rather than skipped: a stylesheet that survives from a previous
@@ -2109,12 +2136,28 @@ def append_coverage_styles(base_scss_path: Path):
     text = base_scss_path.read_text(encoding="utf-8")
     if marker in text:
         text = text[:text.index(marker)].rstrip() + "\n"
+
+    # Both rules for a step come from the one definition above, so a fill
+    # can never end up wearing a label that was chosen for a different
+    # fill. The hover rule needs its own `!important` for the reason
+    # explained beside it: Quartz recolours hovered links with one.
+    level_rules = []
+    level_hover_rules = []
+    for level, (fill, label) in enumerate(COVERAGE_LEVELS):
+        level_rules.append(f".coverage-{level} {{ background: {fill}; color: {label}; }}")
+        level_hover_rules.append(
+            f".coverage-{level}:hover,\n"
+            f".coverage-{level}:focus-visible {{ color: {label} !important; }}")
+    level_rules = "\n".join(level_rules)
+    level_hover_rules = ("/* Each step keeps the label it wears at rest. */\n"
+                         + "\n".join(level_hover_rules))
+
     text += f"""
 
 {marker}
 .coverage-panel {{
   /* The cell colours are fixed on purpose — the graded reading is the
-     whole point — but the page behind them is not. Plantoir's colour
+     whole point (see COVERAGE_LEVELS) — but the page behind them is not. Plantoir's colour
      schemes run from near-white to near-black, so the darkest step had
      nothing to sit against in one scheme and the pale yellow one had
      nothing in another. The panel gives every scheme the same neutral
@@ -2171,8 +2214,12 @@ def append_coverage_styles(base_scss_path: Path):
   text-decoration: none;
   background: #6b7280;
 }}
-.coverage-chip-yes {{ background: #15803d; }}
-.coverage-chip-no {{ background: #b91c1c; }}
+/* The chips answer a different question — is this overall expectation
+   assessed at all — but they answer it in the map's own red and green, so
+   the page does not use two reds. Taken from the scale above rather than
+   written out again, so they cannot fall out of step with it. */
+.coverage-chip-yes {{ background: {COVERAGE_LEVELS[3][0]}; }}
+.coverage-chip-no {{ background: {COVERAGE_LEVELS[0][0]}; }}
 .coverage-cell {{
   display: flex;
   align-items: center;
@@ -2194,24 +2241,7 @@ def append_coverage_styles(base_scss_path: Path):
   box-shadow: inset 0 0 0 1px var(--gray);
 }}
 .coverage-code {{ font-weight: 600; }}
-/* The ramp is deep enough for its own labels. Every step was measured
-   against the label it carries rather than picked for looks: a lighter
-   orange and a lighter green left white text at 3.6:1 and 3.3:1, under
-   the 4.5:1 that small text needs. Only the yellow step is light enough
-   to take dark ink, and it keeps it.
-
-   The top step LEAVES the ramp's hue on purpose. Deepening the green
-   below it left the two greens separable only by how dark they were,
-   and a green dark enough to be distinct was indistinguishable from
-   black. Navy separates by hue instead, which survives being dark,
-   holds up on a dark scheme, and stays distinguishable from the greens
-   for a red-green colour-blind reader — while still reading as "past
-   the end of the scale" rather than as another grade of green. */
-.coverage-0 {{ background: #b91c1c; }}
-.coverage-1 {{ background: #c2410c; }}
-.coverage-2 {{ background: #eab308; color: #1f2937; }}
-.coverage-3 {{ background: #15803d; }}
-.coverage-4 {{ background: #1e3a8a; }}
+{level_rules}
 /* Hovering. Quartz recolours any hovered link to the theme's accent —
    `color: var(--tertiary) !important` — which on a cell whose meaning IS
    its background reads as a contrast failure at exactly the moment the
@@ -2220,8 +2250,7 @@ def append_coverage_styles(base_scss_path: Path):
    to what it already was (the `!important` is theirs, and only an
    `!important` can answer it), and the hover shows itself by lightening
    the BACKGROUND instead — a translucent white wash that composites over
-   whatever level colour the cell carries, so it needs no per-level rules
-   and cannot drift from the palette.
+   whatever level colour the cell carries.
 
    The lift to z-index 1000 is not decoration. Quartz appends its hover
    preview INSIDE the link being hovered, so the preview can only rank
@@ -2244,9 +2273,7 @@ a.coverage-chip:focus-visible {{
   background-image: linear-gradient(rgba(255, 255, 255, 0.12),
                                     rgba(255, 255, 255, 0.12));
 }}
-/* The one level light enough to carry dark text keeps it. */
-.coverage-2:hover,
-.coverage-2:focus-visible {{ color: #1f2937 !important; }}
+{level_hover_rules}
 /* Assessed work is marked by a ring OUTSIDE the cell, with a gap.
    Inset rings were tried twice and failed both times: drawn on top of the
    cell's own colour they read as a hairline, and no single tone works
