@@ -10,12 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Pendulum timing: [[Measuring g]], part B
-2. Compare the two methods — which was closer, which was steadier?
-3. Derive the equations from the graph — [[The Kinematic Equations]]
-4. Practise: [[Kinematic Equation Practice]]
+1. Warm-up: three graphs on the board — describe each motion in words
+2. Practise: [[Motion Graph Practice]], in groups, at the boards
+3. Consolidate from the room: the slope-and-area pair, stated by you
 
 ## Things to do before our next class
 
-- [ ] Analysis section of [[Measuring g]], due next class.
-- [ ] Finish [[Kinematic Equation Practice]].
+- [ ] Finish the practice set.

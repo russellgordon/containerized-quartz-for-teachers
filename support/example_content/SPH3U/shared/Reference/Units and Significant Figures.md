@@ -42,3 +42,11 @@ places is a claim you cannot support.
 > $2.0\ \text{m} \div 3.0\ \text{s} = 0.67\ \text{m/s}$, not
 > $0.6666667\ \text{m/s}$. The calculator does not know how carefully you
 > measured; you do.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.12]]
+
+![[A1.13]]
+%%curriculum-end%%

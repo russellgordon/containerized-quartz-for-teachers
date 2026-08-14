@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Film a fall: [[Measuring g]], part A
-2. Building the velocity–time graph from your own frames — [[Analysing Video of Motion]]
-3. Name it: [[Acceleration]], and why it is not speed
-4. Set up the pendulum for part B
+1. A graph on the board, and three groups who disagree about it
+2. Slope as velocity, tangent as instantaneous velocity — [[Velocity]]
+3. Area under a velocity–time graph — [[Motion Graphs]]
+4. Practise reading both directions
 
 ## Things to do before our next class
 
-- [ ] Finish extracting your position and time data.
-- [ ] Read [[Uncertainty and Error]] before writing any conclusion.
+- [ ] Journal: what does the AREA under a velocity–time graph mean?
+- [ ] Bring a phone or borrow one for next class's filming.

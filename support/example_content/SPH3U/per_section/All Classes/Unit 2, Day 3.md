@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_9__
+created: __CREATED_CLASS_23__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. [[Newton's Second Law]] — part 2, varying the mass
-2. Graphing $a$ against $F$ and against $1/m$ — [[Graphing Data]]
-3. Consolidate: $F_{net} = ma$, and what the slopes mean
-4. Hand in [[Motion Story]]
+1. Predict: does a heavier cart accelerate more?
+2. [[Newton's Second Law]] — part 1, varying the force
+3. The trap: changing two variables at once
+4. Begin the analysis while the data is fresh
 
 ## Things to do before our next class
 
-- [ ] Full lab report for [[Newton's Second Law]], due in three classes — see [[Writing a Lab Report]].
-- [ ] Read [[Friction]] before the next class.
+- [ ] Journal: why does the total mass have to stay constant in part 1?
+- [ ] Bring your data table next class.

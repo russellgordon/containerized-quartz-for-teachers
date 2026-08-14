@@ -47,3 +47,9 @@ conclusion says where it went. See [[Conservation of Energy]].
 > Could a classmate who missed that class reproduce your reasoning from
 > what you wrote? If not, something is in your head that never made it to
 > the page.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.11]]
+%%curriculum-end%%

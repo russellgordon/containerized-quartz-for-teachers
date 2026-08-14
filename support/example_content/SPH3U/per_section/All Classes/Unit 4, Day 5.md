@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 5
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_60__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Discussion: [[Noise and the Right to Quiet]]
-2. Work time on [[Sound in a Space]] with the sound meters
-3. Unit 4 consolidation: one wave idea explains all four labs
-4. Hand in [[Sound in a Space]]
+1. Resonance: a tuning fork over a tube, and a sound that swells
+2. [[Measuring the Speed of Sound]], method B
+3. Name it: [[Resonance and Standing Waves]]
+4. Compare the two methods' uncertainties
 
 ## Things to do before our next class
 
-- [ ] Journal: the three things you would tell someone starting Unit 4.
-- [ ] Read [[Electric Current and Circuits]] before next class.
+- [ ] Analysis of [[Measuring the Speed of Sound]], due next class.
+- [ ] Journal: which method would you trust, and why?

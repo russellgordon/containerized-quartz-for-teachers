@@ -41,3 +41,13 @@ is never zero.
 > Any graph with equal areas above and below the axis — for example
 > $+3\ \text{m/s}$ for 4 s then $-3\ \text{m/s}$ for 4 s. The object
 > moved the whole time and finished where it started.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B2.2]]
+
+![[B3.3]]
+
+![[B2.5]]
+%%curriculum-end%%

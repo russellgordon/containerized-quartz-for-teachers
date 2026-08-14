@@ -13,6 +13,7 @@ it without me standing beside you.
 
 - [[Walking a Graph]]
 - [[Measuring g]]
+- [[Projectile Investigation]]
 
 **Unit 2 — Forces**
 
@@ -32,6 +33,7 @@ it without me standing beside you.
 **Unit 5 — Electricity and Magnetism**
 
 - [[Ohm's Law and Resistance]]
+- [[Mapping Magnetic Fields]]
 - [[Building a Simple Motor]]
 
 Read [[Safety in the Lab]] before the first one, and again before anything

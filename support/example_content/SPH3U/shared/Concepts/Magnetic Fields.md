@@ -41,4 +41,6 @@ it returns in Grade 12 for gravity and electricity too.
 ![[F2.5]]
 
 ![[F3.1]]
+
+![[F3.2]]
 %%curriculum-end%%

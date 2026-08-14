@@ -37,3 +37,9 @@ If a graph curves, you have not failed — you have found a relationship
 that is not linear. Plotting against $x^2$, or $1/x$, and getting a
 straight line tells you what the relationship IS. That is how
 [[The Kinematic Equations]] were found in the first place.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.12]]
+%%curriculum-end%%

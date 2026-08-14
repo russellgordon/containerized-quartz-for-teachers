@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 4
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_24__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Drag a shoe across the bench and predict what changes $\mu$
-2. [[Coefficients of Friction]] — tilt method and drag method
-3. Static versus kinetic, and why anti-lock brakes exist
-4. Practise: [[Force and Acceleration Practice]], first two
+1. [[Newton's Second Law]] — part 2, varying the mass
+2. Graphing $a$ against $F$ and against $1/m$ — [[Graphing Data]]
+3. Consolidate: $F_{net} = ma$, and what the slopes mean
+4. Hand in [[Motion Story]]
 
 ## Things to do before our next class
 
-- [ ] Finish your coefficient table.
-- [ ] Journal: does $\mu$ depend on area? What did your data say?
+- [ ] Full lab report for [[Newton's Second Law]], due in three classes — see [[Writing a Lab Report]].
+- [ ] Read [[Friction]] before the next class.

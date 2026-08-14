@@ -1,7 +1,7 @@
 ---
 title: Unit 5, Day 3
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_73__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Iron filings, a compass, and a wire that deflects it
-2. [[Magnetic Fields]] and the right-hand rule
-3. [[Building a Simple Motor]] — and the half-stripped wire
-4. Name it: [[The Motor Principle]]
+1. Consolidate the lamp's curve — why does resistance rise?
+2. [[Series and Parallel Circuits]], predicted then measured
+3. Practise: the rest of [[Circuit Practice]]
+4. Discussion: [[Where Our Electricity Comes From]]
 
 ## Things to do before our next class
 
-- [ ] Get your motor running if it is not yet.
-- [ ] Read [[Electromagnetic Induction]] before the last class.
+- [ ] Finish [[Circuit Practice]].
+- [ ] Journal: why is house wiring parallel?

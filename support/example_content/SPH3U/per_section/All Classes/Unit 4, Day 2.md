@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 2
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_57__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Sound in a bell jar, and what happens as the air leaves
-2. [[Sound Waves]] — longitudinal, and what we hear as what
-3. Echo timing outside: [[Measuring the Speed of Sound]], method A
-4. Practise: [[Waves and Sound Practice]], first two
+1. Analysis period: [[Waves in a Spring]] — measurements worked up
+2. Practise: [[Waves and Sound Practice]], the $v = f\lambda$ questions
+3. The universal wave equation, used three ways
 
 ## Things to do before our next class
 
-- [ ] Finish the echo timing table.
-- [ ] Bring a tuning fork frequency you would like to test.
+- [ ] Finish the first section of the practice set.

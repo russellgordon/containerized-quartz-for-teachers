@@ -54,4 +54,6 @@ acceleration against $1/m$.
 ![[A1.5]]
 
 ![[A1.10]]
+
+![[A1.1]]
 %%curriculum-end%%

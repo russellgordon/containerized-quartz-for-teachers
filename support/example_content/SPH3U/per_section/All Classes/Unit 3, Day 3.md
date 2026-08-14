@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 3
 draft: false
-created: __CREATED_CLASS_15__
+created: __CREATED_CLASS_39__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Build day one: [[Model Roller Coaster]]
-2. Loop geometry and the minimum speed at the top
-3. Measure as you go — release height, loop radius
-4. Clean-up and tape-down: nothing stays up overnight
+1. Analysis period: [[The Energy Audit of a Bouncing Ball]] worked up
+2. Where did the energy go? Name the form, not just the loss
+3. Practise: [[Energy Practice]], the rest
 
 ## Things to do before our next class
 
-- [ ] Bring any extra materials your group wants.
-- [ ] Journal: what is your loop's theoretical minimum release height?
+- [ ] Audit finished; practice set finished.

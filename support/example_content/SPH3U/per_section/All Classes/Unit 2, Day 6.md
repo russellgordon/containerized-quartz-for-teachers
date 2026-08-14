@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 6
 draft: false
-created: __CREATED_CLASS_12__
+created: __CREATED_CLASS_26__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Hand in the [[Newton's Second Law]] report
-2. [[Force of Gravity and Weight]] — mass, weight, and the lift
-3. Launch: [[Forces in a Real Situation]]
-4. Discussion: [[Speed Limiters and Highway Safety]]
+1. Warm-up: predict the acceleration in four systems, in writing
+2. Practise: [[Force and Acceleration Practice]] to the end
+3. Consolidate: $F_{net} = ma$ is a vector equation — the net matters
 
 ## Things to do before our next class
 
-- [ ] Choose your situation for [[Forces in a Real Situation]].
-- [ ] Journal: the difference between mass and weight, in your own words.
+- [ ] Finish the practice set.

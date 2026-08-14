@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_41__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Heat as the place energy goes — [[Thermal Energy and Heat]]
-2. [[Specific Heat of a Metal]]
-3. [[Nuclear Energy]] and where Ontario's power comes from
-4. Discussion: [[Nuclear Power in Ontario]]
+1. Build day one: [[Model Roller Coaster]]
+2. Loop geometry and the minimum speed at the top
+3. Measure as you go — release height, loop radius
+4. Clean-up and tape-down: nothing stays up overnight
 
 ## Things to do before our next class
 
-- [ ] Finish [[Energy Practice]].
-- [ ] [[Model Roller Coaster]] analysis due next class.
+- [ ] Bring any extra materials your group wants.
+- [ ] Journal: what is your loop's theoretical minimum release height?

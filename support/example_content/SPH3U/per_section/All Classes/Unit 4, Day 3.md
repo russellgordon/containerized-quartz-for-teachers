@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 3
 draft: false
-created: __CREATED_CLASS_20__
+created: __CREATED_CLASS_58__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Resonance: a tuning fork over a tube, and a sound that swells
-2. [[Measuring the Speed of Sound]], method B
-3. Name it: [[Resonance and Standing Waves]]
-4. Compare the two methods' uncertainties
+1. Sound in a bell jar, and what happens as the air leaves
+2. [[Sound Waves]] — longitudinal, and what we hear as what
+3. Echo timing outside: [[Measuring the Speed of Sound]], method A
+4. Practise: [[Waves and Sound Practice]], first two
 
 ## Things to do before our next class
 
-- [ ] Analysis of [[Measuring the Speed of Sound]], due next class.
-- [ ] Journal: which method would you trust, and why?
+- [ ] Finish the echo timing table.
+- [ ] Bring a tuning fork frequency you would like to test.

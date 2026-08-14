@@ -50,4 +50,6 @@ is a mark lost.
 ![[C2.4]]
 
 ![[C3.4]]
+
+![[C1.2]]
 %%curriculum-end%%

@@ -40,3 +40,19 @@ $20^\circ\text{C}$ to boiling? ($c = 4180\ \text{J/kg}^\circ\text{C}$)
 
 > [!success]- Answer 5
 > $Q = mc\Delta T = 0.50 \times 4180 \times 80 = 1.7 \times 10^5\ \text{J}$.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[D2.2]]
+
+![[D2.3]]
+
+![[D2.4]]
+
+![[D3.1]]
+
+![[D3.3]]
+
+![[D3.4]]
+%%curriculum-end%%

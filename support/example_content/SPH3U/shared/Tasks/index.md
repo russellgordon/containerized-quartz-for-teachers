@@ -11,8 +11,10 @@ you start it.
 - [[Motion Story]] — Unit 1
 - [[Forces in a Real Situation]] — Unit 2
 - [[Model Roller Coaster]] — Unit 3
+- [[The Energy Report]] — Unit 3
 - [[Sound in a Space]] — Unit 4
 - [[Motor and Generator Report]] — Unit 5, and the culminating task
+- [[Final Examination]] — the final evaluation, in the examination period
 
 [[How Marks Work]] explains the four categories these are judged in. If a
 task page does not say how it will be marked, tell me — that is a page

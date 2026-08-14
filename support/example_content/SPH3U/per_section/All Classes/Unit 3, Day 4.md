@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_16__
+created: __CREATED_CLASS_40__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Build day two, then test runs and filming
-2. [[Efficiency and Power]] — the accounting language for what you saw
-3. Start the energy table with real numbers
-4. One change, predicted then tested
+1. Warm-up: three situations — where does the energy start and end?
+2. In groups: an energy bar chart for each, before any equation
+3. Consolidate: [[Conservation of Energy]] is an accounting rule you can
+   check
 
 ## Things to do before our next class
 
-- [ ] Finish your video analysis for two checkpoints.
-- [ ] [[Model Roller Coaster]] analysis due in one week.
+- [ ] Journal: the transformation you keep leaving out.

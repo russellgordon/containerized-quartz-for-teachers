@@ -22,6 +22,7 @@ follows the class that introduced the idea.
 
 - [[Motion Graph Practice]]
 - [[Kinematic Equation Practice]]
+- [[Projectile Practice]]
 
 **Unit 2 — Forces**
 

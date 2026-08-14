@@ -10,12 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. A graph on the board, and three groups who disagree about it
-2. Slope as velocity, tangent as instantaneous velocity — [[Velocity]]
-3. Area under a velocity–time graph — [[Motion Graphs]]
-4. Practise reading both directions
+1. Warm-up: sketch what you walked yesterday
+2. Consolidate what the sensor drew — [[Position–Time Graphs]]
+3. Name it: the four quantities — [[Describing Motion]] and
+   [[Position and Displacement]]
+4. Practise: [[Motion Graph Practice]], first two questions
+5. Set up your [[Physics Journal]] — [[Your First Entry]]
 
 ## Things to do before our next class
 
-- [ ] Journal: what does the AREA under a velocity–time graph mean?
-- [ ] Bring a phone or borrow one for next class's filming.
+- [ ] Finish [[Your First Entry]].
+- [ ] Try the rest of [[Motion Graph Practice]].

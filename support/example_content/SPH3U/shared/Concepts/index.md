@@ -16,7 +16,9 @@ One page per idea, written once and linked from every class that uses it.
 - [[Position–Time Graphs]]
 - [[Motion Graphs]]
 - [[The Kinematic Equations]]
+- [[Projectile Motion]]
 - [[Solving Physics Problems]]
+- [[Where This Physics Leads]]
 
 **Unit 2 — Forces**
 
@@ -35,6 +37,7 @@ One page per idea, written once and linked from every class that uses it.
 - [[Conservation of Energy]]
 - [[Efficiency and Power]]
 - [[Thermal Energy and Heat]]
+- [[Heating and Cooling Curves]]
 - [[Nuclear Energy]]
 
 **Unit 4 — Waves and Sound**

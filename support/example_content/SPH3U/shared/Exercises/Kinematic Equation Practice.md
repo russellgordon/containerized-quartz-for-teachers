@@ -39,3 +39,11 @@ moving on impact?
 > [!success]- Answer 4
 > $\Delta d = \tfrac{1}{2}(9.8)(2.4)^2 = 28\ \text{m}$;
 > $v_2 = 9.8 \times 2.4 = 24\ \text{m/s}$ downward.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[B2.3]]
+
+![[B2.7]]
+%%curriculum-end%%

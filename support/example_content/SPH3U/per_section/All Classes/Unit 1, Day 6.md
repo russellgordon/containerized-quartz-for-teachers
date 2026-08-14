@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Hand in the [[Measuring g]] analysis
-2. How to attack a problem you have not seen — [[Solving Physics Problems]]
-3. Launch the unit task: [[Motion Story]]
-4. Unit 1 consolidation: the three graphs, one motion
+1. Film a fall: [[Measuring g]], part A
+2. Building the velocity–time graph from your own frames — [[Analysing Video of Motion]]
+3. Name it: [[Acceleration]], and why it is not speed
+4. Set up the pendulum for part B
 
 ## Things to do before our next class
 
-- [ ] Choose your motion for [[Motion Story]] and film it this week.
-- [ ] Journal: one thing about motion that still does not sit right.
+- [ ] Finish extracting your position and time data.
+- [ ] Read [[Uncertainty and Error]] before writing any conclusion.

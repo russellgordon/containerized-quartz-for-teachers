@@ -35,3 +35,13 @@ minimum coefficient of static friction?
 
 > [!success]- Answer 4
 > $\mu_s \ge \tan 20^\circ = 0.36$.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[C2.5]]
+
+![[C2.6]]
+
+![[C3.3]]
+%%curriculum-end%%

@@ -56,4 +56,6 @@ because the equation already says one gained and one lost.
 ![[D2.10]]
 
 ![[A1.4]]
+
+![[A1.2]]
 %%curriculum-end%%

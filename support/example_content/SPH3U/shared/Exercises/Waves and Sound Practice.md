@@ -34,3 +34,17 @@ sound.
 > First resonance is a quarter wavelength, so
 > $\lambda = 4(0.19) = 0.76\ \text{m}$ and
 > $v = 440 \times 0.76 = 334\ \text{m/s}$.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[E2.2]]
+
+![[E2.4]]
+
+![[E3.2]]
+
+![[E3.5]]
+
+![[E2.6]]
+%%curriculum-end%%

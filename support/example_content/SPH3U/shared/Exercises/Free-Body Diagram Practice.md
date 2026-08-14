@@ -36,3 +36,11 @@ exerts it — the rule from [[Forces and Free-Body Diagrams]].
 > Gravity down, normal perpendicular to the ramp surface, friction UP the
 > slope (opposing the sliding). Friction must exceed the component of
 > gravity along the slope for it to be slowing.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[C2.1]]
+
+![[C3.1]]
+%%curriculum-end%%

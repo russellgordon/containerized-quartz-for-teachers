@@ -57,4 +57,8 @@ in words, in graphs, and in numbers.
 ![[B2.6]]
 
 ![[B3.3]]
+
+![[B1.1]]
+
+![[B1.2]]
 %%curriculum-end%%

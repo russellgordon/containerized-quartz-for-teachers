@@ -42,4 +42,6 @@ graph gives the work, signs included — see [[Graphing Data]].
 ![[D2.2]]
 
 ![[D3.1]]
+
+![[D2.1]]
 %%curriculum-end%%

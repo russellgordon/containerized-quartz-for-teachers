@@ -35,4 +35,6 @@ land, in risk, and in whose backyard?
 ![[F1.1]]
 
 ![[D1.2]]
+
+![[D2.7]]
 %%curriculum-end%%

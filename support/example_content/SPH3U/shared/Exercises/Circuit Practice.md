@@ -33,3 +33,15 @@ and what does it cost to run for 10 minutes at 13 cents per kWh?
 > [!success]- Answer 4
 > $P = IV = 1500\ \text{W}$. In 10 minutes that is $0.25\ \text{kWh}$,
 > so about 3 cents.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[F2.3]]
+
+![[F3.4]]
+
+![[F3.5]]
+
+![[F3.6]]
+%%curriculum-end%%

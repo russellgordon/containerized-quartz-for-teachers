@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 5
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_25__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. A crate on a ramp, and a class that cannot agree on the normal force
-2. Tilting the axes — [[Inclined Planes]]
-3. Two masses and a string — [[Systems and Pulleys]]
-4. Practise: the rest of [[Force and Acceleration Practice]]
+1. Analysis period: [[Newton's Second Law]] worked up — both graphs, both
+   slopes, and what each slope is physically
+2. Why $a$ against $1/m$ is the graph that goes straight
+3. Practise: [[Force and Acceleration Practice]], first half
 
 ## Things to do before our next class
 
-- [ ] Finish the practice set.
-- [ ] [[Newton's Second Law]] report due next class.
+- [ ] Report drafted; graphs finished.

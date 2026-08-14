@@ -44,4 +44,6 @@ than under Energy alone.
 ![[D2.6]]
 
 ![[D3.7]]
+
+![[D3.2]]
 %%curriculum-end%%

@@ -10,14 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: sketch what you walked yesterday
-2. Consolidate what the sensor drew — [[Position–Time Graphs]]
-3. Name it: the four quantities — [[Describing Motion]] and
-   [[Position and Displacement]]
-4. Practise: [[Motion Graph Practice]], first two questions
-5. Set up your [[Physics Journal]] — [[Your First Entry]]
+1. Skill: [[Units and Significant Figures]] — the conventions this course
+   marks all semester
+2. In pairs: six measurements, each written to the precision the
+   instrument actually has
+3. Reference tour: [[Formula Reference]], and why you will not memorise it
 
 ## Things to do before our next class
 
-- [ ] Finish [[Your First Entry]].
-- [ ] Try the rest of [[Motion Graph Practice]].
+- [ ] Journal: [[Your First Entry]], and read [[Physics Journal]] if you have not.

@@ -1,0 +1,20 @@
+---
+title: Unit 1, Day 9
+draft: false
+created: __CREATED_CLASS_9__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Analysis period: [[Measuring g]] part B, and the two methods compared
+2. Skill: [[Writing a Lab Report]] — the sections, and where the marks
+   actually are
+3. The analysis section is the report; the procedure is not
+
+## Things to do before our next class
+
+- [ ] [[Measuring g]] report finished for next class.
