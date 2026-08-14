@@ -95,6 +95,16 @@ requirement.
   wizard re-reads it as saved defaults, so a plain Return accepts each
   prompt. The one exception — the course-code prompt — is answered
   explicitly.
+- What a new course STARTS as is decided from bundled resources too:
+  `ExampleContentCatalog` looks for `support/example_content/<CODE>/`, and
+  failing that `SkeletonCatalog` maps the code's three-letter prefix through
+  `support/skeletons/families.json` to one of fifty subject families. The
+  sheet then offers that subject's folders as the default list — a music
+  course opens with Repertoire, a chemistry course with Investigations. Two
+  pure functions carry the rules worth knowing:
+  `SkeletonCatalog.structureToAdopt` (never overwrite a list the teacher has
+  edited) and `SkeletonCatalog.sidebar` (curriculum hidden, every other
+  shared folder gets a chevron, per-section folders stay plain links).
 - The colour scheme picker's choices come from the repository's own
   `support/colour_schemes.json`, bundled as a resource at build time — and
   the font previews register the TTFs from `support/fonts/`, the same

@@ -35,8 +35,9 @@ toolchain_hash() {
   # this walked (and checksummed) courses/, node_modules, and the app
   # sources: many minutes of hashing, and a tag that changed on every
   # build because build outputs were part of it.
-  # One shasum per file meant one PROCESS per file. With eighteen
-  # example-content payloads inside the recipe that is ~3,500 files, and
+  # One shasum per file meant one PROCESS per file. With the example
+  # content and the subject skeletons inside the recipe that is ~5,700
+  # files (and growing), and
   # the spawning alone took 35 seconds before anything appeared on screen.
   # xargs batches them into a handful of invocations: same lines, same
   # order, byte-identical hash, under a fifth of a second.

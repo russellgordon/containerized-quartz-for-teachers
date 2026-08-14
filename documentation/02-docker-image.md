@@ -84,6 +84,17 @@ The image is layered as follows (in order):
    - `example_course/EXC2O/` — the complete example course installable from
      the setup wizard (it, too, receives the `.obsidian` defaults on
      install).
+   - `example_content/<CODE>/` — ready-made course content for eighteen
+     Ontario course codes, poured into a new course of that code
+     ([course setup §0b](04-course-setup.md#0b-starting-content-for-the-course-code)).
+   - `skeletons/<family>/` plus `families.json` — the starting shape for
+     every OTHER course code: fifty subject families mapped from the code's
+     three-letter prefix. Generated output; the generator and its linter
+     live in `.claude/skills/example-content/`.
+
+   Together these are most of the recipe's file count (5,694 files as of
+   August 2026), which is why the launchers' image-tag hash has to batch
+   its work — see [launcher scripts](03-launcher-scripts.md).
 9. **Bake the launcher scripts into `/opt/export/`** and register an
    `export-scripts` command:
    ```bash

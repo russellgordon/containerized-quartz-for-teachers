@@ -167,8 +167,44 @@ relies on:
   generated once from researched wording — cite the source document on the
   payload's "About These Expectations" page.
 
+Two more conventions, added since:
+
+- course-level pages arrive with `createdSectionN`/`draftSectionN` — one
+  pair per section — because two sections are never quite in step. The
+  payload keeps the plain sentinel; `install_payload_file` does the split,
+  since a payload cannot know how many sections the teacher will choose,
+  and the linter rejects per-section keys written by hand;
+- `Key Links` ends with `[[What This Site Can Do]]`, so a teacher
+  evaluating the software meets the site tour from the sidebar;
+- chemistry is written with mhchem (`$\ce{H2O}$`), never built by hand out
+  of `\text{}` — `build_site.py` enables the extension.
+
 Adding a new course code is pure content: drop in a payload, no code
-changes. The wizard (CLI and app) discovers it by the manifest's existence.
+changes. The wizard (CLI and app) discovers it by the manifest's existence,
+and the payload automatically retires that code's skeleton (below).
+
+## Skeletons: what every other course code starts as
+
+Eighteen codes have payloads. The other ~1,900 Ontario codes get a
+**skeleton** from `support/skeletons/<family>/` — the same shape with
+placeholder content: folders that suit the subject, four units of three
+class pages, a landing page with Most Recent Class, `Key Links`, a site
+tour, and a `Curriculum` folder explaining how to fill itself in.
+
+- `support/skeletons/families.json` maps each three-letter course-code
+  prefix to one of fifty families, with a generic fallback. `SkeletonCatalog`
+  (app) and `find_skeleton_dir()` (Python) both read it.
+- The skeletons are **generated, never hand-edited**:
+  `.claude/skills/example-content/generate_skeletons.py` holds eleven shapes
+  and the family table and writes ~2,000 pages. Change a shape, re-run it,
+  and every family gets the fix.
+- `lint_skeletons.py` is the gate — every link resolves, every page is
+  titled, no template token survived, and the sidebar rule holds (curriculum
+  hidden, every other shared folder expandable, per-section folders plain).
+  A mistake here is a mistake in nineteen hundred courses.
+- The sidebar rule is structural, not a list: see
+  `SkeletonCatalog.sidebar(for:…)`, mirrored in the wizard's prompt defaults.
+  A folder the teacher invents gets a chevron like any other.
 
 ## Colima is shared — handle with care
 

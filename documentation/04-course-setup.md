@@ -46,6 +46,41 @@ so a caller knows which code it received. `setup.sh -- --install-example`
 reaches it from the host; the macOS app uses exactly that to offer the example
 course from the top of its New Course sheet.
 
+### 0b. Starting content for the course code
+
+Once a code has been entered (step 1), the wizard offers ONE of two kinds
+of starting content, and never both:
+
+- **Example content**, when `support/example_content/<CODE>/` exists —
+  eighteen course codes as of August 2026. A payload is a complete working
+  course written for that code: a semester of class pages, concept and task
+  pages, and (optionally) every Ministry expectation as its own page. The
+  payload's `manifest.json` is the course's ENTIRE structure, so step 5's
+  questions are skipped: the pages were written for exactly those folders.
+- **A skeleton**, for every other Ontario code — around 1,900 of them.
+  `support/skeletons/families.json` maps the code's three-letter prefix to
+  one of fifty subject families (ADA drama, AMU music, SCH chemistry, MCV
+  calculus, TXJ hairstyling…), falling back to a generic skeleton for club
+  and custom codes. The skeleton fills the course with the SHAPE of a
+  course — folders that suit the subject, four units of three class pages
+  to rename, a landing page with Most Recent Class, `Key Links`, a site
+  tour, and placeholder pages saying what belongs where — and its folders
+  become the DEFAULT answers to step 5's questions rather than replacing
+  them.
+
+Both are poured in by the same `install_example_content()`, which replaces
+the payload's sentinels: `__CREATED__`, `__CREATED_CLASS_K__` (spread
+across the semester), `__SECTION_NUMBER__`, and — for skeletons —
+`__COURSE_CODE__` and `__COURSE_NAME__`. Course-level pages have their
+`created`/`draft` split into `createdSectionN`/`draftSectionN`, one pair per
+section, so two sections can publish the same page on different days
+([mechanism](05-build-pipeline.md#frontmatter-processing)).
+
+The skeletons are GENERATED from eleven shapes plus a family table by
+`.claude/skills/example-content/generate_skeletons.py`, and checked by
+`lint_skeletons.py`; the payloads are hand-written and checked by
+`lint_payload.py`.
+
 ### 1. Course identity
 
 - Prompts for the **course code** (default `ICS3U`), uppercased.
@@ -110,11 +145,17 @@ any mutation*, excluding caches and generated output (`node_modules`,
 
 ### 5. Content structure
 
-The wizard then asks which folders/files exist and how they behave:
+The wizard then asks which folders/files exist and how they behave. When a
+skeleton applies (step 0b), every default below comes from that subject's
+manifest instead of the factory list, and a folder the teacher adds at the
+prompt is treated like any other section — visible, with a chevron. When
+example content is being installed, this whole step is skipped.
 
-- **Shared folders** (default: Concepts, Discussions, Examples, Exercises,
-  Ontario Curriculum, Recaps, Setup, Style, Tasks, Tutorials, …) — content
-  common to all sections.
+- **Shared folders** (factory default: Concepts, Discussions, Examples,
+  Exercises, Ontario Curriculum, Recaps, Setup, Style, Tasks, Tutorials, …;
+  a music skeleton instead offers Concepts, Repertoire, Warm-Ups, Listening,
+  Portfolios, Tasks, Setup, Style, Tutorials, Curriculum) — content common
+  to all sections.
 - **Shared files** — loose Markdown files common to all sections.
 - **Per-section folders** (default: "All Classes" — the day-by-day lesson
   log) and **per-section files** (e.g. "Key Links.md") — these exist
@@ -122,7 +163,9 @@ The wizard then asks which folders/files exist and how they behave:
 - **Hidden items** — folders/files to omit from the site's sidebar
   (Explorer). Hidden ≠ unpublished: pages in hidden folders still build and
   are reachable via links and search; they just do not clutter navigation.
-  Curriculum folders and private notes default to hidden.
+  Curriculum folders and private notes default to hidden. A skeleton course
+  hides its `Curriculum` folder and the utility files, and gives every other
+  visible shared folder a chevron — `All Classes` stays a plain link.
 - **Expandable items** — folders that behave as *expandable trees* in the
   sidebar. Non-expandable folders render as plain links to the folder's
   index page. This distinction drives the patched Explorer component

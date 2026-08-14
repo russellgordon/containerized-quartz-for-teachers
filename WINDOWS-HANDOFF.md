@@ -159,7 +159,10 @@ Windows needs exactly three UI behaviours:
 - **Starting Content section** in the new-course wizard: "Pre-populate
   course with example content" (default ON) with "Include Ontario
   curriculum pages" beneath it (default ON, disabled when the first is
-  off); a quiet caption instead when no content exists for the code.
+  off). When no content exists for the code, this is where the SKELETON
+  toggle goes instead (entry 123) — "Start from a <subject> skeleton" —
+  and the quiet "empty folders" caption is now the last resort, for a code
+  with neither.
 - **Structure lock**: when pre-populating, HIDE the folders/files
   editor behind a caption — the payload's manifest is the entire
   structure authority and the Python wizard skips all structure
@@ -167,7 +170,14 @@ Windows needs exactly three UI behaviours:
 
 Authoring new payloads is content work, governed by the repo-local
 skill `.claude/skills/example-content/` and checked by its
-`lint_payload.py` — no app code changes on either platform.
+`lint_payload.py` — no app code changes on either platform. The same skill
+holds the skeleton generator and `lint_skeletons.py`; the skeletons are
+generated output, so never hand-edit `support/skeletons/`.
+
+Two payload conventions have changed since these entries, both handled by
+shared Python: course-level pages now arrive with
+`createdSectionN`/`draftSectionN` (one pair per section — entry 122), and
+`Key Links` ends with the site tour (entry 121).
 
 ## Behaviours with platform-specific mechanics
 
@@ -209,16 +219,19 @@ skill `.claude/skills/example-content/` and checked by its
   font path probed is Debian's; it is inside the image, not on Windows.
 - **The recipe hash is on the hot path** (entry 118) — and it was slow
   on BOTH platforms, for the same reason in two dialects. The image tag
-  is a SHA-256 over every file in `.toolchain/`, and the recipe now
-  carries eighteen example-content payloads: **3,536 files**. The `.sh`
+  is a SHA-256 over every file in `.toolchain/`, and the recipe carries
+  the eighteen example-content payloads and the fifty subject skeletons:
+  **5,694 files** as of 2026-08-13, and still growing. The `.sh`
   launchers spawned one `shasum` process per file (36s of a 36.75s
   preview startup on an M4 Pro); they now pipe
   `find -print0 | sort -z | xargs -0 shasum` and take 0.16s.
   `Get-ToolchainHash` in the three `.ps1` launchers had the quadratic
   version of the same bug: `$combined += (Get-FileHash …).Hash` inside
-  the loop, and PowerShell strings are immutable, so every one of 3,500
-  appends reallocated a string heading for 226 KB. They now collect into
-  `$hashes` and `-join` once.
+  the loop, and PowerShell strings are immutable, so every one of those
+  thousands of appends reallocated a string heading for a third of a
+  megabyte. They now collect into `$hashes` and `-join` once. Measure this
+  when you test: on macOS the batched version hashes 5,694 files in 0.25s,
+  so anything near a second on Windows means the fix did not take.
   **This change is committed but never executed — there is no PowerShell
   on the Mac it was written on.** Please run it early and confirm two
   things: that a preview still starts promptly, and that the tag it

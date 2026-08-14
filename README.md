@@ -96,7 +96,15 @@ This will:
 - Offer to install an example course (recommended for first-time users)
 - If you do not install the example course, it will:
    - Prompt you for the course code, name, and number of sections
-   - Let you select shared folders (e.g., “Exercises”, “Examples”)
+   - Offer **ready-made content for that course code** where it exists —
+     eighteen Ontario codes ship with a full working course, including the
+     Ministry's expectations as linkable pages
+   - Otherwise offer a **starting skeleton shaped for the subject** — a
+     drama course opens with Conventions and Warm-Ups, a chemistry course
+     with Investigations and lab safety — with four units of class pages to
+     rename and placeholder pages saying what belongs where
+   - Let you adjust the shared folders it suggests (e.g., “Exercises”,
+     “Examples”)
    - Let you choose a colour scheme for each section with a live swatch preview
    - Create everything under `./courses/<CourseCode>` ready for editing
 
