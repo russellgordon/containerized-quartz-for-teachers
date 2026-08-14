@@ -115,6 +115,23 @@ def check(family: str) -> list:
     if landing.exists() and "![[Unit 1, Day 1]]" not in landing.read_text(encoding="utf-8"):
         problems.append("per_section/index.md: Most Recent Class transcludes nothing")
 
+    # The sidebar rule: the curriculum folder is never visible, every other
+    # shared folder carries a chevron, and All Classes stays a plain link.
+    hidden = manifest.get("hidden", [])
+    expandable = manifest.get("expandable", [])
+    if curriculum not in hidden:
+        problems.append(f"manifest: {curriculum!r} must be hidden from the sidebar")
+    if curriculum in expandable:
+        problems.append(f"manifest: {curriculum!r} is hidden, so it cannot be expandable")
+    for name in manifest.get("shared_folders", []):
+        if name == curriculum or name in hidden:
+            continue
+        if name not in expandable:
+            problems.append(f"manifest: shared folder {name!r} has no chevron")
+    for name in manifest.get("per_section_folders", []):
+        if name in expandable:
+            problems.append(f"manifest: {name!r} is a per-section folder and stays a plain link")
+
     for name in manifest.get("shared_folders", []):
         if not (root / "shared" / name).is_dir():
             problems.append(f"manifest lists shared folder {name!r}, which was never written")

@@ -635,45 +635,47 @@ struct NewCourseWizardView: View {
         var chosenPerSectionFolders: [String] = perSectionFolders
         var chosenPerSectionFiles: [String] = perSectionFiles
         var skeleton: SkeletonCatalog.Family? = nil
-        if startsFromSkeleton {
+        if startsFromSkeleton && SkeletonCatalog.hasSkeleton(forCode: code) {
+            skeleton = SkeletonCatalog.family(forCode: code)
             if let adopted = SkeletonCatalog.structureToAdopt(
                 forCode: code, currentSharedFolders: sharedFolders
             ) {
-                skeleton = adopted
                 chosenSharedFolders = adopted.sharedFolders
                 chosenSharedFiles = adopted.sharedFiles
                 chosenPerSectionFolders = adopted.perSectionFolders
                 chosenPerSectionFiles = adopted.perSectionFiles
-            } else if SkeletonCatalog.hasSkeleton(forCode: code),
-                      let current = SkeletonCatalog.family(forCode: code),
-                      current.sharedFolders == sharedFolders {
-                skeleton = current
             }
         }
-
-        // A skeleton knows which of its own folders should be hidden and
-        // which should expand — a music course's Repertoire is not in the
-        // app's generic list, and its Curriculum folder is.
-        let hiddenCandidates: [String] = skeleton.map { ["Media"] + $0.hidden }
-            ?? WizardDefaults.hiddenItems
-        let expandableCandidates: [String] = skeleton?.expandable ?? WizardDefaults.expandableItems
 
         var hiddenItems: [String] = []
-        for item in hiddenCandidates {
-            let isKnown: Bool = chosenSharedFolders.contains(item)
-                || chosenSharedFiles.contains(item)
-                || chosenPerSectionFolders.contains(item)
-                || chosenPerSectionFiles.contains(item)
-                || item == "Media"
-            if isKnown {
-                hiddenItems.append(item)
-            }
-        }
-
         var expandableItems: [String] = []
-        for item in expandableCandidates {
-            if chosenSharedFolders.contains(item) || chosenPerSectionFolders.contains(item) {
-                expandableItems.append(item)
+        if let skeleton {
+            // The skeleton decides its own sidebar, whatever the teacher
+            // has since done to the folder list.
+            let plan = SkeletonCatalog.sidebar(
+                for: skeleton,
+                sharedFolders: chosenSharedFolders,
+                sharedFiles: chosenSharedFiles,
+                perSectionFolders: chosenPerSectionFolders,
+                perSectionFiles: chosenPerSectionFiles
+            )
+            hiddenItems = plan.hidden
+            expandableItems = plan.expandable
+        } else {
+            for item in WizardDefaults.hiddenItems {
+                let isKnown: Bool = chosenSharedFolders.contains(item)
+                    || chosenSharedFiles.contains(item)
+                    || chosenPerSectionFolders.contains(item)
+                    || chosenPerSectionFiles.contains(item)
+                    || item == "Media"
+                if isKnown {
+                    hiddenItems.append(item)
+                }
+            }
+            for item in WizardDefaults.expandableItems {
+                if chosenSharedFolders.contains(item) || chosenPerSectionFolders.contains(item) {
+                    expandableItems.append(item)
+                }
             }
         }
 

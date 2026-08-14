@@ -89,6 +89,53 @@ final class SkeletonCatalogTests: XCTestCase {
                        "A hidden folder cannot also be expandable")
     }
 
+    /// Editing the folder list must not cost the teacher the skeleton's
+    /// sidebar choices — that was the bug: one added folder and the
+    /// curriculum folder reappeared while the subject folders lost their
+    /// chevrons.
+    @MainActor
+    func testAnAddedFolderKeepsTheSidebarRulesAndGetsItsOwnChevron() throws {
+        let music: SkeletonCatalog.Family = try XCTUnwrap(SkeletonCatalog.family(forCode: "AMU3M"))
+        let plan = SkeletonCatalog.sidebar(
+            for: music,
+            sharedFolders: music.sharedFolders + ["Field Trips"],
+            sharedFiles: music.sharedFiles,
+            perSectionFolders: music.perSectionFolders,
+            perSectionFiles: music.perSectionFiles
+        )
+        XCTAssertTrue(plan.hidden.contains("Curriculum"))
+        XCTAssertTrue(plan.hidden.contains("Media"))
+        XCTAssertTrue(plan.expandable.contains("Repertoire"))
+        XCTAssertTrue(plan.expandable.contains("Field Trips"),
+                      "A folder the teacher added is a section like any other")
+        XCTAssertFalse(plan.expandable.contains("Curriculum"),
+                       "A hidden folder cannot also be expandable")
+        XCTAssertFalse(plan.expandable.contains("All Classes"),
+                       "All Classes stays a plain link to its listing")
+    }
+
+    /// Every family, not just the one this test happened to name.
+    @MainActor
+    func testEveryFamilyHidesItsCurriculumAndExpandsEverythingElse() throws {
+        for name in SkeletonCatalog.everyFamilyName() {
+            let family: SkeletonCatalog.Family = try XCTUnwrap(SkeletonCatalog.family(named: name))
+            let plan = SkeletonCatalog.sidebar(
+                for: family,
+                sharedFolders: family.sharedFolders,
+                sharedFiles: family.sharedFiles,
+                perSectionFolders: family.perSectionFolders,
+                perSectionFiles: family.perSectionFiles
+            )
+            XCTAssertTrue(plan.hidden.contains("Curriculum"), "\(name) shows its curriculum folder")
+            for folder in family.sharedFolders where folder != "Curriculum" {
+                XCTAssertTrue(plan.expandable.contains(folder), "\(name): \(folder) has no chevron")
+            }
+            for folder in family.perSectionFolders {
+                XCTAssertFalse(plan.expandable.contains(folder), "\(name): \(folder) should stay a plain link")
+            }
+        }
+    }
+
     @MainActor
     func testACodeWithExampleContentKeepsItsOwnStructure() {
         XCTAssertNil(SkeletonCatalog.structureToAdopt(

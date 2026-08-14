@@ -1940,7 +1940,12 @@ def setup_course(no_backup: bool = False):
         hidden_items = prompt_select_multiple("Select folders/files to HIDE from the sidebar:", all_selected, default_hidden)
         visible_items = [item for item in all_selected if item not in hidden_items]
 
-        factory_expandable = list(skeleton_manifest.get("expandable", [])) if skeleton_manifest else [
+        # Every visible shared folder gets a chevron, including one the
+        # teacher added at the prompt above — the curriculum folder and the
+        # per-section All Classes are the deliberate exceptions.
+        factory_expandable = [
+            name for name in shared_folders if name not in hidden_items
+        ] if skeleton_manifest else [
             "Concepts", "Discussions", "Examples", "Exercises", "Portfolios",
             "Recaps", "Setup", "Style", "Tasks", "Tutorials"
         ]

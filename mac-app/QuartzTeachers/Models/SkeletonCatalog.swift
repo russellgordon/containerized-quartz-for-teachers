@@ -167,6 +167,37 @@ enum SkeletonCatalog {
         return false
     }
 
+    /// The sidebar for a course built from a skeleton: what stays out of
+    /// the explorer, and what carries a chevron.
+    ///
+    /// Expandability is structural rather than a fixed list, so a folder
+    /// the teacher adds is a section like any other — every visible SHARED
+    /// folder gets a chevron. The curriculum folder is never visible (the
+    /// courses with real content hide it too, and a wall of expectation
+    /// codes is not navigation), and the per-section All Classes stays a
+    /// plain link to its listing.
+    static func sidebar(for family: Family,
+                        sharedFolders: [String],
+                        sharedFiles: [String],
+                        perSectionFolders: [String],
+                        perSectionFiles: [String]) -> (hidden: [String], expandable: [String]) {
+        var hidden: [String] = ["Media"]
+        for item in family.hidden {
+            let exists: Bool = sharedFolders.contains(item)
+                || sharedFiles.contains(item)
+                || perSectionFolders.contains(item)
+                || perSectionFiles.contains(item)
+            if exists && !hidden.contains(item) {
+                hidden.append(item)
+            }
+        }
+        var expandable: [String] = []
+        for item in sharedFolders where !hidden.contains(item) {
+            expandable.append(item)
+        }
+        return (hidden, expandable)
+    }
+
     /// True when a skeleton would be offered for this code — which is only
     /// when there is no example content, since example content is better.
     static func hasSkeleton(forCode code: String) -> Bool {

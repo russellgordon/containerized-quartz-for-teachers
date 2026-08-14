@@ -288,10 +288,15 @@ family (falling back to `default`), read that family's `manifest.json`, and
 seed the four structure lists from it when the code changes. Show a toggle
 naming the subject ("Start from a music skeleton"), and write
 `use_skeleton` into `course_config.json` so the wizard's own prompt agrees.
-Two rules matter: a code WITH example content is never offered a skeleton,
-and a folder list the teacher has edited is never overwritten — macOS
-decides both in one pure function, `SkeletonCatalog.structureToAdopt`,
-which is the piece worth copying.
+Three rules matter: a code WITH example content is never offered a
+skeleton; a folder list the teacher has edited is never overwritten; and
+the sidebar is decided structurally rather than by a fixed list — hidden is
+`Media` plus the family's own `hidden` entries that the course actually
+has, and expandable is every shared folder that is not hidden, so a folder
+the teacher invents gets a chevron like any other. Per-section folders
+(All Classes) are never expandable. macOS decides all three in two pure
+functions, `SkeletonCatalog.structureToAdopt` and `SkeletonCatalog.sidebar`
+— those are the pieces worth copying.
 
 **2. Adding a section must extend the course-level pages (entry 122).** The section
 folder is only half the job: every page at the course level — the shared
