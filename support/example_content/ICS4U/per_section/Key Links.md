@@ -11,7 +11,7 @@ excludeBacklinks: true
 - [[The Software Project]]
 - [[Using Version Control]]
 - [[Working in a Team]]
-- [[What This Site Can Do]]
 - [[How Marks Work]]
 - [[Getting Help]]
 - [[Journal Checklist]]
+- [[What This Site Can Do]]

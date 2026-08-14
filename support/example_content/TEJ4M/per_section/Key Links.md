@@ -10,7 +10,7 @@ excludeBacklinks: true
 %%curriculum-end%%
 - [[Safety in the Lab]]
 - [[The Engineering Design Project]]
-- [[What This Site Can Do]]
 - [[How Marks Work]]
 - [[Getting Help]]
 - [[Journal Checklist]]
+- [[What This Site Can Do]]

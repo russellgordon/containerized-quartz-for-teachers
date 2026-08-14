@@ -134,6 +134,19 @@ def lint(course_code: str) -> int:
         elif "%%curriculum-start%%" not in key_links_text.split(expected_link)[0]:
             problems.append("per_section/Key Links.md: Curriculum Expectations link is not inside curriculum markers")
 
+    # ...and the site tour must be its LAST entry, so a teacher evaluating
+    # the course meets it without hunting for it.
+    if key_links.exists():
+        bullets = []
+        for line in key_links.read_text(encoding="utf-8").splitlines():
+            if line.startswith("- "):
+                bullets.append(line.strip())
+        tour = "- [[What This Site Can Do]]"
+        if tour not in bullets:
+            problems.append(f"per_section/Key Links.md: missing {tour}")
+        elif bullets[-1] != tour:
+            problems.append("per_section/Key Links.md: What This Site Can Do must be the LAST entry")
+
     # The section landing page's "Most Recent Class" must transclude the
     # newest PUBLISHED class page — the point of that heading.
     landing = root / "per_section" / "index.md"

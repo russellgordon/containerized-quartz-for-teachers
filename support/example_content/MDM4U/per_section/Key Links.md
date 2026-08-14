@@ -10,8 +10,8 @@ excludeBacklinks: true
 %%curriculum-end%%
 - [[The Culminating Investigation]]
 - [[Choosing a Data Set]]
-- [[What This Site Can Do]]
 - [[How Marks Work]]
 - [[Getting Help]]
 - [[Journal Checklist]]
 - [[Our Classroom Norms]]
+- [[What This Site Can Do]]

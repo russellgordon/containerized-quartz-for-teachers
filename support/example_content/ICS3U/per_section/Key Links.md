@@ -11,7 +11,7 @@ excludeBacklinks: true
 - [[The Community App]]
 - [[Setting Up Python]]
 - [[Reading an Error Message]]
-- [[What This Site Can Do]]
 - [[How Marks Work]]
 - [[Getting Help]]
 - [[Journal Checklist]]
+- [[What This Site Can Do]]

@@ -15,3 +15,4 @@ excludeBacklinks: true
 - [[Solubility Rules]]
 - [[How Marks Work]]
 - [[Getting Help]]
+- [[What This Site Can Do]]

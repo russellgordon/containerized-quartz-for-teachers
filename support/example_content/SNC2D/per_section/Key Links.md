@@ -10,7 +10,7 @@ excludeBacklinks: true
 %%curriculum-end%%
 - [[Safety in the Lab]]
 - [[Writing a Lab Report]]
-- [[What This Site Can Do]]
 - [[How Marks Work]]
 - [[Getting Help]]
 - [[Journal Checklist]]
+- [[What This Site Can Do]]
