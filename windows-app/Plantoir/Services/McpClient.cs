@@ -99,6 +99,11 @@ public sealed class McpClient : IAsyncDisposable
             tools.Add(new JsonObject
             {
                 ["type"] = "function",
+                // Carried through unchanged, because the agent decides what
+                // needs the teacher's approval from `readOnlyHint` rather
+                // than from a second list of tool names that could drift out
+                // of step with this one. The model never sees it.
+                ["annotations"] = entry["annotations"]?.DeepClone(),
                 ["function"] = new JsonObject
                 {
                     ["name"] = entry["name"]?.DeepClone(),

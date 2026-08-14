@@ -32,13 +32,45 @@ public sealed class AssistAgent
     private readonly JsonArray _schemas;
     private readonly JsonArray _messages = new();
 
-    /// <summary>Tools that change files. Everything else runs without asking.</summary>
-    private static readonly HashSet<string> Writes = new(StringComparer.OrdinalIgnoreCase)
+    /// <summary>
+    /// The one tool that changes something and still needs no permission:
+    /// explaining what publishing means. All it writes is Plantoir's own note
+    /// that this section has been briefed — nothing of the teacher's — and
+    /// asking "may I explain how this works?" before the first sentence of the
+    /// first conversation would be absurd.
+    ///
+    /// A single name, rather than the list of writes this used to keep. That
+    /// list had already drifted: it named <c>hide_pages</c> and
+    /// <c>republish_section</c>, neither of which exists any more, so both
+    /// silently fell OUT of the set — and a renamed write tool that falls out
+    /// of the set runs unannounced, which is the one failure this class exists
+    /// to prevent. Approval is decided from the server's own
+    /// <c>readOnlyHint</c> now (see <see cref="NeedsApproval"/>), so there is
+    /// no second list to fall out of.
+    /// </summary>
+    private const string Briefing = "explain_publishing";
+
+    /// <summary>
+    /// Whether this call has to be shown to the teacher before it runs.
+    ///
+    /// Read-only tools — every list, read, check and plan — run freely. Anything
+    /// else waits. Note which way the unknown case falls: a tool this app has
+    /// never heard of, or one whose annotations went missing, needs approval.
+    /// The cost of being wrong that way is one extra question; the cost of being
+    /// wrong the other way is a teacher's course changing without being asked.
+    /// </summary>
+    private bool NeedsApproval(string name)
     {
-        "publish_pages", "hide_pages", "publish_class_on", "republish_section",
-        "re_date_classes", "roll_over_section", "sync_page_dates", "back_up_course",
-        "undo_last_change",
-    };
+        if (string.Equals(name, Briefing, StringComparison.OrdinalIgnoreCase)) return false;
+
+        foreach (var tool in _schemas)
+        {
+            if (tool?["function"]?["name"]?.GetValue<string>() is not { } listed) continue;
+            if (!string.Equals(listed, name, StringComparison.OrdinalIgnoreCase)) continue;
+            return tool["annotations"]?["readOnlyHint"]?.GetValue<bool>() is not true;
+        }
+        return true;
+    }
 
     /// <summary>
     /// How many tool calls one turn may make before the loop stops.
@@ -63,7 +95,17 @@ public sealed class AssistAgent
                 "Before anything that changes files, call the matching plan tool first and show the teacher " +
                 "exactly what it said, word for word, then wait. Never guess a course, a section, a page title " +
                 "or a date — if you are not certain, look it up or ask. " +
-                "If no tool fits, say so plainly instead of inventing one.",
+                "If no tool fits, say so plainly instead of inventing one.\n" +
+                // Two words that sound alike and are not. The teacher gets this
+                // explained once per section by explain_publishing; the model
+                // needs it every turn, because it is the distinction it is
+                // likeliest to collapse.
+                "PUBLISHING a page decides whether students can see it in the site. " +
+                "DEPLOYING sends the whole site to the web. They are different acts. " +
+                "After a change, rebuild the preview so the teacher can look it over. " +
+                "Do not offer to deploy unless they ask; when they do ask, say plainly that " +
+                "deploying puts the change in front of students immediately and that reviewing " +
+                "the preview first is the safer order — then do as they decide.",
         });
     }
 
@@ -135,7 +177,7 @@ public sealed class AssistAgent
             if (call is null) return lines;
 
             string name = call["function"]?["name"]?.GetValue<string>() ?? "";
-            if (Writes.Contains(name))
+            if (NeedsApproval(name))
             {
                 // The one rule this loop owns. A plan the teacher has not read
                 // is not a confirmation, and the measurements say the model
