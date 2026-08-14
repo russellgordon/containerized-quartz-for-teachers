@@ -1,0 +1,22 @@
+# Prompt-cache save/restore experiment, 2026-08-14
+# Same container config as the app (LocalModel.Start). Real narrowed surface, 3,411 prompt tokens.
+# Question: does /slots/0?action=restore actually skip the cold read? Answer: yes - 30 ms, then 11.7 s vs 175 s.
+
+=== session 1: cold prime, save ===
+container fresh and healthy
+prime (cold)                  178.9s wall | prompt_n=3411 prompt_ms=171907 | predicted_n=18 | -> (no tool)
+slot save -> {"id_slot":0,"filename":"prefix-qwen2.5-1.5b.bin","n_saved":3428,"n_written":98343180,"timings":{"save_ms":140.033}}
+real turn (same session)       11.8s wall | prompt_n=35 prompt_ms=3040 | predicted_n=49 | -> publish_class_on
+                             args: {"course": "ICS3U", "section": 1, "date": "2023-09-15", "preview": false}
+
+=== session 2: fresh container, restore, same turn ===
+container fresh and healthy
+slot restore -> {"id_slot":0,"filename":"prefix-qwen2.5-1.5b.bin","n_restored":3428,"n_read":98343180,"timings":{"restore_ms":29.683}}
+real turn (after restore)      11.7s wall | prompt_n=35 prompt_ms=2924 | predicted_n=47 | -> publish_pages
+                             args: {"course": "ICS3U", "section": 1, "includeLinked": true, "pages": ["Unit 1, Day 2"]}
+
+=== session 3: fresh container, NO restore (control) ===
+container fresh and healthy
+real turn (no restore)        175.0s wall | prompt_n=3439 prompt_ms=156032 | predicted_n=57 | -> publish_pages
+                             args: {"course": "ICS3U", "section": 1, "includeLinked": true, "pages": ["Unit 1, Day 2"], "onOrAfter": "", "before": ""}
+
