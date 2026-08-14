@@ -151,6 +151,35 @@ public static class PageFrontmatter
     /// The time-and-offset to use when the page has no date yet — taken from a
     /// sibling class page, so a course keeps one convention.
     /// </param>
+    /// <summary>
+    /// Rewrite a page's <c>title:</c>, leaving every other line untouched.
+    ///
+    /// Needed when a class is renumbered: the file becomes "Unit 2, Day 4"
+    /// and a title still reading "Unit 2, Day 3" would show the old name on
+    /// the site, in the sidebar, and in every listing — a page whose name and
+    /// title disagree is worse than either being wrong on its own.
+    ///
+    /// A page with no title line is returned unchanged: Quartz falls back to
+    /// the file name, which is already correct after a rename, and inserting a
+    /// key the teacher never had is not this method's business.
+    /// </summary>
+    public static string SetTitle(string pageText, string title)
+    {
+        var block = Block.Parse(pageText);
+        if (block?.RawValue("title") is null) return pageText;
+
+        string[] lines = pageText.Split('\n');
+        for (int i = block.Open + 1; i < block.Close && i < lines.Length; i++)
+        {
+            string bare = lines[i].TrimEnd('\r');
+            // Top level only: an indented title: belongs to some other mapping.
+            if (!bare.StartsWith("title:", StringComparison.Ordinal)) continue;
+            lines[i] = "title: " + title + (lines[i].EndsWith('\r') ? "\r" : "");
+            return string.Join("\n", lines);
+        }
+        return pageText;
+    }
+
     public static (string Text, bool Changed) SetCreated(
         string pageText, string key, DateOnly date, string fallbackTail = "T07:00:00.000-0400")
     {

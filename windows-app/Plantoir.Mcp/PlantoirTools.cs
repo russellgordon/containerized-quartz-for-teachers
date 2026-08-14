@@ -233,6 +233,43 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     private const string UnitHelp = "The unit number these classes belong to, for example 2.";
 
+    [McpServerTool(Name = "plan_make_room_for_classes", Title = "Plan making room for classes",
+                   ReadOnly = true, Destructive = false)]
+    [Description("Work out what would happen if a class were inserted part-way through a unit, changing nothing. " +
+                 "Use this for \"duplicate Unit 2, Day 2 and make it the third class, pushing everything back\", " +
+                 "or \"give this unit another day\". Later days of the SAME unit are renamed; every class after " +
+                 "the insertion point, later units included, moves onto a later day the class actually meets. " +
+                 "\n\nThis is the most far-reaching change there is — it renames pages other pages link to — so " +
+                 "read the whole plan to the teacher, word for word, and wait. The link count especially: they " +
+                 "cannot check that themselves without opening every page in the course.")]
+    public string PlanMakeRoomForClasses(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description(UnitHelp)] int unit,
+        [Description("The day number the new class takes. Existing days from here on are renumbered.")] int atDay,
+        [Description("How many classes to make room for. 1 unless the teacher asked for more.")] int howMany = 1)
+        => Guarded(() => workspace.PlanInsertClasses(course, section, unit, atDay, howMany).Describe());
+
+    [McpServerTool(Name = "make_room_for_classes", Title = "Make room for classes",
+                   Destructive = false, Idempotent = false)]
+    [Description("Insert one or more classes part-way through a unit: rename the later days of that unit, " +
+                 "update every link that pointed at them, move the classes that follow onto later class days, " +
+                 "and create the new pages unpublished. " +
+                 "\n\nCall plan_make_room_for_classes FIRST and show the teacher what it said. The course is " +
+                 "backed up first and undo_last_change reverses the whole thing. Afterwards, tell them to look " +
+                 "the section over in Plantoir before deploying — many pages moved at once.")]
+    public string MakeRoomForClasses(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description(UnitHelp)] int unit,
+        [Description("The day number the new class takes. Existing days from here on are renumbered.")] int atDay,
+        [Description("How many classes to make room for. 1 unless the teacher asked for more.")] int howMany = 1)
+        => Guarded(() =>
+        {
+            var plan = workspace.PlanInsertClasses(course, section, unit, atDay, howMany);
+            return workspace.ApplyInsertClasses(plan).Message;
+        });
+
     [McpServerTool(Name = "plan_add_classes", Title = "Plan adding class pages",
                    ReadOnly = true, Destructive = false)]
     [Description("Work out which class pages would be created for a unit and what dates they would fall on, " +

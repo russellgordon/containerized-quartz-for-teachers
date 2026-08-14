@@ -1520,6 +1520,282 @@ public sealed class AssistWorkspace
     /// The one place anything here writes a page, so the session's undo
     /// history sees every change without each caller having to remember.
     /// </summary>
+    // ---- Making room in a course that is already built out -----------------
+
+    /// <summary>A class page, understood as a numbered day of a numbered unit.</summary>
+    private sealed record ClassRef(int Unit, int Day, string Path, DateOnly? Date, string Title);
+
+    /// <summary>
+    /// Read a section's class pages as "Unit U, Day D".
+    ///
+    /// Anything not named that way is left out entirely rather than guessed
+    /// at: a teacher's "Field Trip" or "Exam Review" has no unit and no day,
+    /// and shuffling it by inventing one would be worse than not touching it.
+    /// Those pages keep their dates, which is the honest outcome — the plan
+    /// says how many were skipped so nobody is surprised.
+    /// </summary>
+    private List<ClassRef> NumberedClasses(Course course, int section, out int unnumbered)
+    {
+        var found = new List<ClassRef>();
+        unnumbered = 0;
+
+        foreach (string path in ClassPages(course, section))
+        {
+            string title = Path.GetFileNameWithoutExtension(path);
+            var match = System.Text.RegularExpressions.Regex.Match(
+                title, @"^Unit\s+(\d+),\s*Day\s+(\d+)$",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (!match.Success) { unnumbered++; continue; }
+
+            found.Add(new ClassRef(
+                int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value),
+                path, DateOf(course, section, path), title));
+        }
+
+        return found.OrderBy(c => c.Unit).ThenBy(c => c.Day).ToList();
+    }
+
+    /// <summary>
+    /// Plan making room for one or more classes part-way through a unit.
+    ///
+    /// Two separate things happen, and the plan keeps them apart because they
+    /// read differently to a teacher. Later days IN THE SAME UNIT are
+    /// RENAMED — Day 3 becomes Day 4 — and every class from the insertion
+    /// point onwards, later units included, MOVES to a later meeting day
+    /// without changing its name.
+    /// </summary>
+    public InsertPlan PlanInsertClasses(string courseCode, int sectionNumber, int unit, int atDay, int count)
+    {
+        var course = Course(courseCode);
+        int section = Section(course, sectionNumber);
+
+        if (unit < 1 || atDay < 1) throw new AssistRefusal("Unit and day numbers start at 1.");
+        if (count < 1) throw new AssistRefusal("Ask for at least one class.");
+
+        var remembered = TimetableMemory.Read(_folder, course.Code, section)
+            ?? throw new AssistRefusal(
+                $"I don't know when {course.Code} Section {section} meets, so I can't move classes onto real " +
+                "days. Ask the teacher for their class dates, then record them with remember_timetable.");
+
+        var classes = NumberedClasses(course, section, out int unnumbered);
+        if (classes.Count == 0)
+            throw new AssistRefusal(
+                $"{course.Code} Section {section} has no pages named “Unit N, Day N”, so there is nothing " +
+                "to make room in.");
+
+        var problems = new List<string>();
+        if (unnumbered > 0)
+            problems.Add($"{unnumbered} class page{(unnumbered == 1 ? " is" : "s are")} not named " +
+                         "“Unit N, Day N”, so I left it where it is — including its date.");
+
+        // Everything at or after the insertion point moves along: later days
+        // of this unit, and every class of every later unit.
+        var shifted = classes.Where(c => c.Unit > unit || (c.Unit == unit && c.Day >= atDay)).ToList();
+        var untouched = classes.Except(shifted).ToList();
+
+        // The days already spoken for by classes that are NOT moving.
+        var held = untouched.Where(c => c.Date is not null).Select(c => c.Date!.Value).ToHashSet();
+        var available = remembered.Dates.Where(date => !held.Contains(date)).OrderBy(d => d).ToList();
+
+        // The first day the new classes may take: where the insertion point
+        // sits today, or the next free day if this unit ends here.
+        DateOnly firstFree = shifted.FirstOrDefault()?.Date
+            ?? available.FirstOrDefault(d => d > (untouched.LastOrDefault()?.Date ?? DateOnly.MinValue));
+        var runway = available.Where(date => date >= firstFree).ToList();
+
+        int needed = count + shifted.Count;
+        if (runway.Count < needed)
+        {
+            int short_ = needed - runway.Count;
+            problems.Add($"This needs {needed} class days from {firstFree:yyyy-MM-dd} onwards and the " +
+                         $"timetable only has {runway.Count}. Add {short_} more class " +
+                         $"date{(short_ == 1 ? "" : "s")} and ask again.");
+            return new InsertPlan
+            {
+                CourseCode = course.Code, SectionNumber = section, Unit = unit, AtDay = atDay,
+                Added = Array.Empty<NewClass>(), Renames = Array.Empty<Rename>(),
+                Moves = Array.Empty<DateMove>(), LinksToRewrite = 0, Problems = problems,
+            };
+        }
+
+        string folder = ClassFolder(course, section);
+        var added = new List<NewClass>();
+        for (int i = 0; i < count; i++)
+        {
+            string title = $"Unit {unit}, Day {atDay + i}";
+            added.Add(new NewClass(title, Relative(Path.Combine(folder, title + ".md")),
+                                   runway[i], atDay + i));
+        }
+
+        // Renames: only within the unit being changed. A later unit's Day 1 is
+        // still its Day 1 — it simply happens later in the year.
+        var renames = new List<Rename>();
+        foreach (var moving in shifted.Where(c => c.Unit == unit).OrderByDescending(c => c.Day))
+        {
+            string to = $"Unit {unit}, Day {moving.Day + count}";
+            renames.Add(new Rename(moving.Title, to, moving.Path, Path.Combine(folder, to + ".md")));
+        }
+
+        // Dates: the new classes take the first slots, then everything shifted
+        // follows in its existing order.
+        var moves = new List<DateMove>();
+        for (int i = 0; i < shifted.Count; i++)
+        {
+            var moving = shifted[i];
+            var to = runway[count + i];
+            if (moving.Date == to) continue;
+
+            string name = moving.Unit == unit ? $"Unit {unit}, Day {moving.Day + count}" : moving.Title;
+            moves.Add(new DateMove(name, Relative(moving.Path), moving.Date ?? to, to));
+        }
+
+        return new InsertPlan
+        {
+            CourseCode = course.Code,
+            SectionNumber = section,
+            Unit = unit,
+            AtDay = atDay,
+            Added = added,
+            Renames = renames,
+            Moves = moves,
+            LinksToRewrite = CountLinksTo(course, section, renames.Select(r => r.From)),
+            Problems = problems,
+        };
+    }
+
+    /// <summary>How many links across the section point at any of these page names.</summary>
+    private int CountLinksTo(Course course, int section, IEnumerable<string> titles)
+    {
+        var names = titles.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (names.Count == 0) return 0;
+
+        int total = 0;
+        foreach (string path in Pages(course, section))
+        {
+            string text;
+            try { text = File.ReadAllText(PagePaths.ResolveInside(_folder, path)); }
+            catch { continue; }
+
+            foreach (var match in System.Text.RegularExpressions.Regex
+                         .Matches(text, @"!?\[\[([^\]|#]+)").Cast<System.Text.RegularExpressions.Match>())
+                if (names.Contains(match.Groups[1].Value.Trim())) total++;
+        }
+        return total;
+    }
+
+    /// <summary>Carry out the insertion: rename, re-date, relink, then create the blanks.</summary>
+    public AssistResult ApplyInsertClasses(InsertPlan plan, IProgress<string>? progress = null)
+    {
+        var course = Course(plan.CourseCode);
+        int section = Section(course, plan.SectionNumber);
+        if (plan.ChangesNothing)
+            return new AssistResult(true, "Nothing needed moving.", null);
+        if (plan.Added.Count == 0)
+            throw new AssistRefusal(string.Join(" ", plan.Problems));
+
+        RefuseIfPlantoirIsBuilding(course);
+
+        string backup;
+        progress?.Report($"Backing up {course.Code} first…");
+        try { backup = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory(_folder)); }
+        catch (Exception error)
+        {
+            throw new AssistRefusal(
+                $"{course.Code} couldn’t be backed up, so nothing was moved: {error.Message}");
+        }
+
+        _undo?.Begin($"making room for {plan.Added.Count} classes at Unit {plan.Unit}, Day {plan.AtDay} " +
+                     $"in {course.Code} Section {section}");
+
+        // Highest day first, so a rename never lands on a name still in use.
+        progress?.Report("Renaming the classes that come after…");
+        foreach (var rename in plan.Renames)
+        {
+            try
+            {
+                if (!File.Exists(rename.FromPath) || File.Exists(rename.ToPath)) continue;
+                string text = File.ReadAllText(rename.FromPath);
+                Save(rename.ToPath, PageFrontmatter.SetTitle(text, rename.To));
+                _undo?.Touch(rename.FromPath, text);
+                File.Delete(rename.FromPath);
+                _undo?.Wrote(rename.FromPath, null);
+            }
+            catch { }
+        }
+
+        progress?.Report("Following the links that pointed at them…");
+        RewriteLinks(course, section, plan.Renames);
+
+        progress?.Report("Moving the dates…");
+        string tail = SiblingTimeAndOffset(course, section, ClassPages(course, section));
+        foreach (var move in plan.Moves)
+        {
+            try
+            {
+                // Renamed pages are found under their NEW name by now.
+                string full = Path.Combine(ClassFolder(course, section), move.Title + ".md");
+                if (!File.Exists(full)) full = PagePaths.ResolveInside(_folder, move.RelativePath);
+                if (!File.Exists(full)) continue;
+
+                bool sectionLocal = PagePaths.IsSectionLocal(course.DirectoryPath, full);
+                string key = sectionLocal ? "created" : "createdSection" + section;
+                var (updated, changed) = PageFrontmatter.SetCreated(
+                    File.ReadAllText(full), key, move.To, tail);
+                if (changed) Save(full, updated);
+            }
+            catch { }
+        }
+
+        progress?.Report("Adding the new classes…");
+        Directory.CreateDirectory(ClassFolder(course, section));
+        foreach (var added in plan.Added)
+        {
+            string path = Path.Combine(ClassFolder(course, section), added.Title + ".md");
+            if (File.Exists(path)) continue;
+            Save(path, ClassSkeleton(added, plan.Unit, plan.Added.Count, tail));
+        }
+
+        return new AssistResult(true,
+            $"Made room for {plan.Added.Count} class{(plan.Added.Count == 1 ? "" : "es")} at Unit " +
+            $"{plan.Unit}, Day {plan.AtDay}. Renamed {plan.Renames.Count}, moved {plan.Moves.Count} onto " +
+            $"later class days, and updated {plan.LinksToRewrite} link" +
+            $"{(plan.LinksToRewrite == 1 ? "" : "s")}. The new pages are unpublished until you write them. " +
+            "Look the section over in Plantoir before you deploy it.",
+            backup);
+    }
+
+    /// <summary>Point every link at a renamed page's new name.</summary>
+    private void RewriteLinks(Course course, int section, IReadOnlyList<Rename> renames)
+    {
+        if (renames.Count == 0) return;
+        var byName = renames.ToDictionary(r => r.From, r => r.To, StringComparer.OrdinalIgnoreCase);
+
+        foreach (string relative in Pages(course, section))
+        {
+            string full;
+            string text;
+            try
+            {
+                full = PagePaths.ResolveInside(_folder, relative);
+                text = File.ReadAllText(full);
+            }
+            catch { continue; }
+
+            // Only the TARGET is rewritten; an alias after "|" is the
+            // teacher's own words and stays exactly as written.
+            string updated = System.Text.RegularExpressions.Regex.Replace(
+                text, @"(!?\[\[)([^\]|#]+)", match =>
+                {
+                    string target = match.Groups[2].Value;
+                    return byName.TryGetValue(target.Trim(), out string? renamed)
+                        ? match.Groups[1].Value + renamed
+                        : match.Value;
+                });
+
+            if (updated != text) Save(full, updated);
+        }
+    }
+
     // ---- Laying down a unit that has not been written yet ------------------
 
     /// <summary>
