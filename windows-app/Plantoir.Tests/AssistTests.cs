@@ -1316,12 +1316,45 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Contains("stays yours to edit", words);
         Assert.DoesNotContain("Unpublished pages stay in your folder", words);
 
-        // Deploying is the only thing students ever see, and it is the
-        // teacher's own act.
+        // Deploying is the only thing students ever see, and the briefing must
+        // describe what the assistant ACTUALLY does. It said "I never do it",
+        // which was true until deploy_section went back into the local tool
+        // set — a promise the tools no longer kept, and worse than the jargon
+        // this exists to explain.
         Assert.Contains("Deploying", words);
         Assert.Contains("Netlify", words);
-        Assert.Contains("Students see nothing until you deploy", words);
-        Assert.Contains("deploy button stays yours, in Plantoir", words);
+        Assert.DoesNotContain("I never do it", words);
+        Assert.Contains("only if you ask me to", words);
+        Assert.Contains("never deploy without being asked", words);
+        Assert.Contains("Nothing reaches students until you say so", words);
+    }
+
+    [Fact]
+    public void TheBriefingNamesWhereThisCourseActuallyDeploys()
+    {
+        // Not "the folder you publish into", which describes rather than names
+        // and tells a teacher with two courses going to two places nothing.
+        string directory = Path.Combine(_folder, "courses", "TEJ2O");
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(Path.Combine(directory, "course_config.json"),
+            """
+            {
+              "course_code": "TEJ2O",
+              "course_name": "Technology",
+              "deploy_target": "local_folder",
+              "deploy_folder_path": "C:\\Sites\\tej2o",
+              "num_sections": 1,
+              "section_numbers": [1]
+            }
+            """);
+
+        string toFolder = AssistWorkspace.DestinationOf(Open().Course("TEJ2O"));
+        Assert.Equal(@"C:\Sites\tej2o", toFolder);
+        Assert.Contains(@"C:\Sites\tej2o", Briefing.Words("TEJ2O", 1, toFolder));
+
+        // And the other two destinations say their own names.
+        Assert.Contains("Cloudflare Pages", Briefing.Words("ICS3U", 1, "Cloudflare Pages"));
+        Assert.Contains("Netlify", Briefing.Words("ICS3U", 1, "Netlify"));
     }
 
     // ---- Applying --------------------------------------------------------

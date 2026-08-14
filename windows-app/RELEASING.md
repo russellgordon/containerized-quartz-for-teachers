@@ -71,6 +71,7 @@ one GitHub release carrying both platforms' assets.
    Netlify UI, link the site to the GitHub repo, publish directory
    `site/`, no build command). Cutting the release edits the
    version-note line in `site/index.html` and pushes — nothing manual.
+   The brand images are NOT touched by that — see **Brand images** below.
 7. **Update the WinSparkle appcast** once in-app updates land (see
    below): add an `<item>` for the new version to `appcast.xml` on
    plantoir.app, pointing at the GitHub release asset URL.
@@ -85,6 +86,44 @@ auto-updates pairs naturally with an Inno Setup installer
 update it fetches, which a zip cannot do. When that lands, `publish.ps1`
 gains an installer step after signing (and the installer itself gets
 signed too); the zip can remain as a portable alternative.
+
+## Brand images
+
+Everything that carries the Plantoir mark — the `og:image` served at
+plantoir.app, the Bluesky and Instagram profile photos, the Bluesky
+banner — is drawn by one script from one source:
+
+    python scripts/brand_images.py
+
+It reads the artwork straight out of `mac-app/Plantoir.icon` (the same
+bundle Icon Composer edits) and the palette out of the constants at the
+top of the script, which mirror the CSS custom properties in
+`site/index.html`. Output lands in `brand/`. Nothing is fetched at run
+time; the Poppins weights it needs are committed in `support/fonts/`.
+
+**This is not a per-release step.** Re-run it only when the icon, the
+palette, or the tagline actually changes — then eyeball the output and
+commit it. Most releases should not touch these files at all.
+
+Two things worth knowing before you run it with `--install-card`, which
+overwrites the deployed `site/social-card.png`:
+
+- The original card was hand-made and has no source. The generated one
+  is measured to match it (tile 260&nbsp;px at 108,185; wordmark Poppins
+  SemiBold 94&nbsp;px; tagline Regular 33&nbsp;px on a 46&nbsp;px
+  leading; rule 8&nbsp;px) but it will **not** be byte-identical, and
+  small differences in text rasterisation are expected. Look at both
+  before you commit.
+- That file is public and every social platform that has scraped
+  plantoir.app has it cached. Replacing it is an outward-facing change,
+  not a refactor.
+
+The two greens are not interchangeable and both appear on the card:
+`--green-deep` (#2D6620) sets the wordmark, `--green` (#3E8C26) sets the
+rule, the link, and the mark itself. The mark reads #3E8D26 rather than
+the pure green in `icon.json` because the layer's translucency blends it
+into the background — a rendering behaviour that cannot be recovered
+from the JSON, so it is pinned as a constant in the script.
 
 ## Notes
 

@@ -896,7 +896,15 @@ public sealed class AssistWorkspace
             : new AssistResult(false, $"Nothing was changed, and the preview couldn’t be built. {build.Message}", null);
     }
 
-    private static string DestinationOf(Course course) =>
+    /// <summary>
+    /// Where this course's site goes, named the way a teacher would name it.
+    ///
+    /// Public because the briefing needs the same answer: it used to say "the
+    /// folder you publish into", which is a description rather than a
+    /// destination — a teacher with two courses going to two different folders
+    /// learns nothing from it. The folder is named.
+    /// </summary>
+    public static string DestinationOf(Course course) =>
         course.Configuration.DeploysToLocalFolder ? course.Configuration.DeployFolderPath
         : course.Configuration.DeploysToCloudflare ? "Cloudflare Pages"
         : "Netlify";
@@ -975,14 +983,18 @@ public sealed class AssistWorkspace
         if (!plan.Publishes)
             return new AssistResult(true, Summary(changed, previewed: false, course.Code, section), backup);
 
-        // An assistant builds a PREVIEW. It never deploys.
+        // Publishing builds a PREVIEW, and stops there.
         //
-        // Making something visible to students is the one action a teacher
-        // should always take themselves, in front of the site they are about
-        // to change. Every remaining sharp edge lived on the far side of that
-        // line too — the site-name prompt, the Cloudflare account, the first
-        // publish, the multi-minute deploy — so the safety valve and the
-        // simplification are the same decision.
+        // Deploying is a separate request with its own tool and its own yes —
+        // it is not something publishing does on the way past. That
+        // separation is the point: a teacher who asked for tomorrow's class to
+        // be published has not asked for it to be put in front of students,
+        // and the two should never be one keystroke apart.
+        //
+        // Every remaining sharp edge lives on the far side of that line too —
+        // the site-name prompt, the Cloudflare account, the first publish, the
+        // multi-minute upload — so the safety valve and the simplification are
+        // the same decision.
         progress?.Report($"Building a preview of Section {section} of {course.Code}…");
         var build = await _launcher.Run("preview", new[] { course.Code, section.ToString(), "--build-only" },
                                         _folder, progress, cancellation);

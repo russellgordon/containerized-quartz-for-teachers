@@ -11,8 +11,10 @@ namespace Plantoir.Core.Assist;
 /// * **Publish / unpublish** is about a page's <c>publish</c> flag — whether
 ///   the page is built into the site, and so whether it appears in the
 ///   teacher's own preview. It says nothing about who can edit it.
-/// * **Deploy** is putting the built site where students can reach it, and
-///   that is always the teacher's own action, taken in Plantoir.
+/// * **Deploy** is putting the built site where students can reach it. The
+///   assistant CAN do it, on request and never otherwise, and says so —
+///   claiming it never deploys would be a promise the tools do not keep,
+///   which is worse than the jargon this exists to explain.
 ///
 /// A teacher who has not been told that will reasonably hear "I've published
 /// tomorrow's class" as "students can see it now" — and act, or fail to act,
@@ -66,7 +68,9 @@ public static class Briefing
         "Either way it stays in your folder and stays yours to edit — publishing a page doesn’t " +
         "put it beyond your reach, and it doesn’t show it to anybody yet.\n\n" +
         $"**Deploying** is sending the built site to {destination}, and it is the only thing students " +
-        "ever see. I never do it. When I finish a change I rebuild your preview so you can look it " +
-        "over, and the deploy button stays yours, in Plantoir.\n\n" +
-        "So: I publish pages and rebuild the preview. Students see nothing until you deploy.";
+        "ever see. I can do that, but only if you ask me to — and I'll want you to look at the preview " +
+        "first, because deploying is the step students notice. You can always do it yourself instead: " +
+        "the button is there in Plantoir.\n\n" +
+        "So: I publish pages and rebuild your preview, and I never deploy without being asked. " +
+        "Nothing reaches students until you say so.";
 }

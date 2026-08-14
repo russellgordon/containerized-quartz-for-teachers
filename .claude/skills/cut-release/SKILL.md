@@ -78,3 +78,12 @@ and the evergreen download links now serve the new assets — nothing
 manual remains for the site. Remind the user only of: the mac asset (if
 it attaches separately, named exactly `Plantoir-macOS.zip`), and — once
 WinSparkle lands — the appcast entry.
+
+**Do not regenerate the brand images as part of cutting a release.**
+`scripts/brand_images.py` draws the og:image, the profile photos and the
+Bluesky banner from `mac-app/Plantoir.icon`, but it is a standalone tool,
+not a release step — the version line in `site/index.html` is the only
+thing in `site/` a release touches. Run it only if this release actually
+changed the icon, the palette, or the tagline, and say so before you do,
+because `--install-card` overwrites a public, widely-cached og:image.
+See "Brand images" in `windows-app/RELEASING.md`.

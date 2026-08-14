@@ -161,11 +161,12 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
                 return $"{found.Code} Section {number} has had this explained already. " +
                        "Don’t repeat it — carry on with what the teacher asked.";
 
-            var configuration = found.Configuration;
-            string destination = configuration.DeploysToLocalFolder ? "the folder you publish into"
-                : configuration.DeploysToCloudflare ? "Cloudflare Pages" : "Netlify";
+            // The SAME answer a deploy gives, so the briefing cannot promise
+            // one destination while the deploy uses another — and a folder is
+            // named rather than described, since "the folder you publish into"
+            // tells a teacher with two courses nothing at all.
             Briefing.MarkExplained(workspace.FolderPath, found.Code, number);
-            return Briefing.Words(found.Code, number, destination);
+            return Briefing.Words(found.Code, number, AssistWorkspace.DestinationOf(found));
         });
 
     /// <summary>How many of each kind to name before summarising.</summary>
