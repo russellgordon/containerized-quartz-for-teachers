@@ -32,6 +32,11 @@ struct NewCourseWizardView: View {
     /// written for its course code (when the app has some).
     @State var prepopulatesExampleContent: Bool = true
 
+    /// Whether a course code with no example content starts from its
+    /// subject skeleton — folders that suit the subject, a semester of
+    /// class pages to rename, and placeholders saying what belongs where.
+    @State var startsFromSkeleton: Bool = true
+
     /// Whether the example content brings the official curriculum pages
     /// along with it.
     @State var includesCurriculumPages: Bool = true
@@ -273,6 +278,7 @@ struct NewCourseWizardView: View {
                         .accessibilityIdentifier("wizardCourseCodeField")
                         .onChange(of: courseCode) {
                             autoFillCourseName()
+                            adoptSkeletonStructure()
                         }
                     if let problem = courseCodeProblem {
                         // The same orange every other inline warning
@@ -357,6 +363,12 @@ struct NewCourseWizardView: View {
                                 .accessibilityIdentifier("curriculumToggle")
                             ExampleCaption("Every expectation as its own page, so lessons and tasks can link to exactly what they address")
                         }
+                    }
+                } else if let skeleton = SkeletonCatalog.family(forCode: courseCode) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Toggle("Start from a \(skeleton.label.lowercased()) skeleton", isOn: $startsFromSkeleton)
+                            .accessibilityIdentifier("skeletonToggle")
+                        ExampleCaption("There is no ready-made course for this code, but there is a starting point shaped for the subject: folders that suit it, four units of class pages to rename, a page explaining what the site can do, and placeholders saying what belongs where.")
                     }
                 } else {
                     Text("Example content isn’t available for this course code yet, so the course will start with empty folders ready for your own pages.")
@@ -481,6 +493,24 @@ struct NewCourseWizardView: View {
     }
 
     // MARK: - Functions
+
+    /// When a course code with no example content is entered, offer the
+    /// folders its SUBJECT wants rather than the school-neutral factory
+    /// list — a music course opens with Repertoire and Warm-Ups, a
+    /// chemistry course with Investigations and Safety in the Lab. The
+    /// lists stay editable; a list the teacher has already changed is left
+    /// alone (see `SkeletonCatalog.structureToAdopt`).
+    func adoptSkeletonStructure() {
+        guard let skeleton = SkeletonCatalog.structureToAdopt(
+            forCode: courseCode, currentSharedFolders: sharedFolders
+        ) else {
+            return
+        }
+        sharedFolders = skeleton.sharedFolders
+        sharedFiles = skeleton.sharedFiles
+        perSectionFolders = skeleton.perSectionFolders
+        perSectionFiles = skeleton.perSectionFiles
+    }
 
     /// When a known course code is entered, pre-fill the name with the
     /// formal name — but only if the name field is empty or still holds a
@@ -636,6 +666,7 @@ struct NewCourseWizardView: View {
             // The real wizard reads these as its defaults, exactly like
             // every other answer here. False when no content exists for
             // the code, so a stale true can never mean anything.
+            "use_skeleton": SkeletonCatalog.hasSkeleton(forCode: code) && startsFromSkeleton,
             "prepopulate_example_content": ExampleContentCatalog.hasContent(forCode: code)
                 && prepopulatesExampleContent,
             "include_curriculum_pages": ExampleContentCatalog.hasContent(forCode: code)

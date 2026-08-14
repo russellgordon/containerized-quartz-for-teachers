@@ -355,6 +355,37 @@ the linter.
 8. No GUI-IMPROVEMENTS entry for a content-only payload (the spec tracks
    behaviour); commit with a message naming the course code.
 
+## Skeletons: what every OTHER course code starts as
+
+Eighteen codes have payloads. The other ~1,900 Ontario codes get a
+**skeleton** — the same shape with placeholder content, generated rather
+than hand-written:
+
+- `.claude/skills/example-content/generate_skeletons.py` holds the tables
+  and writes `support/skeletons/<family>/` plus `families.json` (prefix →
+  family). Edit the tables, re-run it, never edit the output by hand.
+- A **shape** is the folder set and class-agenda vocabulary for a kind of
+  course (science, mathematics, performance-arts, workshop, humanities,
+  language, computing, business, studio-arts, physical-education,
+  general). A **family** picks a shape and names things its own way — music
+  rehearses Repertoire, drama has Conventions, a kitchen has Kitchen Safety.
+  Fifty families cover 499 prefixes; unknown codes fall back to `general`.
+- Agenda lines carry `%SLOT%` tokens (`%DOING%`, `%IDEA%`, `%PRACTICE%`,
+  `%SAFETY%`…) resolved to whichever folder the family actually has, so a
+  class page never links to a folder that does not exist.
+- The payload rules apply: sentinels, `__CREATED_CLASS_K__` on twelve class
+  pages, Key Links ending with the site tour, per-section keys added by the
+  installer. Skeleton pages may also use `__COURSE_CODE__` and
+  `__COURSE_NAME__`.
+- `lint_skeletons.py` is the gate — every link resolves, every page is
+  titled, no template token survived. Run it after every generation.
+- The wizard offers the skeleton's folders as the DEFAULT answers to its
+  structure questions; the app's New Course sheet does the same through
+  `SkeletonCatalog`. A teacher's own edits are never overwritten.
+
+**A new payload retires its skeleton automatically** — example content
+always wins for a code that has it. Nothing to remove.
+
 ## Converting an existing complete course into a payload
 
 The SNC1W payload was made by CONVERTING the EXC2O example course rather

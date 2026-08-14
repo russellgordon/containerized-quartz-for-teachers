@@ -1,0 +1,46 @@
+{
+  "shared_folders": [
+    "Concepts",
+    "Placements",
+    "Reflections",
+    "Portfolios",
+    "Tasks",
+    "Setup",
+    "Style",
+    "Tutorials",
+    "Ontario Curriculum"
+  ],
+  "shared_files": [
+    "Learning Goals.md",
+    "Help Sessions.md"
+  ],
+  "per_section_folders": [
+    "All Classes"
+  ],
+  "per_section_files": [
+    "Key Links.md",
+    "Private Notes.md",
+    "Scratch Page.md"
+  ],
+  "hidden": [
+    "Ontario Curriculum",
+    "Learning Goals.md",
+    "Help Sessions.md",
+    "Key Links.md",
+    "Private Notes.md",
+    "Scratch Page.md"
+  ],
+  "expandable": [
+    "Concepts",
+    "Placements",
+    "Reflections",
+    "Portfolios",
+    "Tasks",
+    "Setup",
+    "Style",
+    "Tutorials"
+  ],
+  "curriculum_folder": "Ontario Curriculum",
+  "skeleton": true,
+  "label": "Cooperative Education"
+}

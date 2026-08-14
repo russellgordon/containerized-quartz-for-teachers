@@ -1,0 +1,21 @@
+---
+title: Conversations
+draft: false
+created: __CREATED__
+tags:
+  - conversations
+---
+What to say, and how to keep going.
+
+One page per situation, with the phrases that carry it and the ones that
+rescue it.
+
+%%
+Delete this comment once the folder has real pages in it. Anything between
+double percent marks is invisible on the site — see [[What This Site Can Do]].
+%%
+
+> [!tip] How this folder behaves
+> Quartz lists every page in this folder automatically, newest first. You
+> never maintain that list. If you delete this `index.md`, the folder still
+> works — the listing simply appears without an introduction.

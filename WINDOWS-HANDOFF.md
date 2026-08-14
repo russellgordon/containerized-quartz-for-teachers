@@ -275,9 +275,25 @@ diffs, and so nobody re-fixes them:
   sentinel — the split happens at install time, because a payload cannot
   know the section count.
 
-## One thing that DOES need porting (entry 122)
+## Two things that DO need porting (entries 122–123)
 
-**Adding a section must extend the course-level pages.** The section
+**1. Subject skeletons in the New Course dialog (entry 123).** Every
+Ontario course code that has no example content now starts from a skeleton
+shaped for its subject — 50 families over 499 three-letter prefixes, living
+in `support/skeletons/` with a `families.json` prefix map. The installer
+side is shared Python and comes free, so a course created through the CLI
+wizard already gets it. The dialog needs the macOS `SkeletonCatalog`
+equivalent: read `families.json`, map the code's first three letters to a
+family (falling back to `default`), read that family's `manifest.json`, and
+seed the four structure lists from it when the code changes. Show a toggle
+naming the subject ("Start from a music skeleton"), and write
+`use_skeleton` into `course_config.json` so the wizard's own prompt agrees.
+Two rules matter: a code WITH example content is never offered a skeleton,
+and a folder list the teacher has edited is never overwritten — macOS
+decides both in one pure function, `SkeletonCatalog.structureToAdopt`,
+which is the piece worth copying.
+
+**2. Adding a section must extend the course-level pages (entry 122).** The section
 folder is only half the job: every page at the course level — the shared
 folders and files, everything outside `sectionN/` — carries a
 `createdSectionN` / `draftSectionN` pair per section, and a section added

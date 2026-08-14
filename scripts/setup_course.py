@@ -1289,6 +1289,42 @@ def load_example_content_manifest(payload_dir: Path) -> dict:
         return json.load(handle)
 
 
+SKELETON_ROOTS = [
+    Path("support/skeletons"),
+    Path("/opt/support/skeletons"),
+    Path(__file__).resolve().parent.parent / "support" / "skeletons",
+]
+
+
+def find_skeleton_dir(course_code: str) -> Path | None:
+    """
+    The starting skeleton for this course code.
+
+    Eighteen course codes have real example content; every other Ontario
+    code gets a skeleton shaped for its SUBJECT — a drama course opens with
+    Conventions and Warm-Ups, a chemistry course with Investigations and
+    Safety in the Lab. The mapping is by three-letter prefix (ADA, SCH,
+    MCV…), falling back to the generic skeleton for club and custom codes.
+    """
+    prefix = (course_code or "")[:3].upper()
+    for root in SKELETON_ROOTS:
+        families_file = root / "families.json"
+        if not families_file.exists():
+            continue
+        try:
+            with open(families_file, "r", encoding="utf-8") as handle:
+                families = json.load(handle)
+        except Exception:
+            continue
+        name = families.get("prefixes", {}).get(prefix) or families.get("default")
+        if not name:
+            continue
+        candidate = root / name
+        if candidate.is_dir() and (candidate / "manifest.json").exists():
+            return candidate
+    return None
+
+
 def curriculum_page_names(payload_dir: Path, manifest: dict) -> set:
     """The page names (file stems) of every curriculum page in the payload."""
     folder_name = manifest.get("curriculum_folder")
@@ -1415,7 +1451,9 @@ def install_payload_file(source: Path, destination: Path, now_str: str,
                          section_number: int | None = None,
                          reference=None,
                          first_use_date: str | None = None,
-                         shared_sections: list | None = None) -> bool:
+                         shared_sections: list | None = None,
+                         course_code: str | None = None,
+                         course_name: str | None = None) -> bool:
     """
     One file from payload to course. Markdown is adjusted on the way
     through; everything else is copied as-is. Existing files are never
@@ -1439,6 +1477,10 @@ def install_payload_file(source: Path, destination: Path, now_str: str,
     text = text.replace(EXAMPLE_CONTENT_CREATED_SENTINEL, now_str)
     if section_number is not None:
         text = text.replace("__SECTION_NUMBER__", str(section_number))
+    if course_code:
+        text = text.replace("__COURSE_CODE__", course_code)
+    if course_name:
+        text = text.replace("__COURSE_NAME__", course_name)
     text = strip_curriculum_blocks(text, keep_content=include_curriculum)
     if not include_curriculum:
         text = unlink_curriculum_references(text, page_names)
@@ -1454,7 +1496,9 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
                             include_curriculum: bool,
                             shared_folders: list, shared_files: list,
                             per_section_folders: list, per_section_files: list,
-                            reference=None) -> int:
+                            reference=None,
+                            course_code: str | None = None,
+                            course_name: str | None = None) -> int:
     """
     Pour the payload into the course. Only top-level items the teacher kept
     in the structure lists are installed; the curriculum folder also needs
@@ -1489,7 +1533,9 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
                 if install_payload_file(source, destination, now_str,
                                         include_curriculum, page_names,
                                         first_use_date=class_use_dates.get(source.stem),
-                                        shared_sections=section_numbers):
+                                        shared_sections=section_numbers,
+                                        course_code=course_code,
+                                        course_name=course_name):
                     written += 1
 
     per_section_root = payload_dir / "per_section"
@@ -1507,7 +1553,9 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
                     if install_payload_file(source, destination, now_str,
                                             include_curriculum, page_names,
                                             section_number=sec,
-                                            reference=reference):
+                                            reference=reference,
+                                            course_code=course_code,
+                                            course_name=course_name):
                         written += 1
 
     return written
@@ -1761,6 +1809,31 @@ def setup_course(no_backup: bool = False):
         if prepopulate_example:
             example_manifest = manifest
 
+    # ---------- A starting skeleton for every other course code ------------
+    # No ready-made course exists for this code, but the SHAPE of one does:
+    # folders that suit the subject, a semester of class pages to rename, a
+    # site tour, and placeholder pages that say what belongs in them.
+    skeleton_payload = None
+    skeleton_manifest = None
+    use_skeleton = False
+    if not example_manifest:
+        candidate = find_skeleton_dir(course_code)
+        if candidate:
+            skeleton_manifest = load_example_content_manifest(candidate)
+            label = skeleton_manifest.get("label", "this subject")
+            print(f"\n🧱 There is no ready-made course for {course_code}, but there is a")
+            print(f"starting point shaped for {label.lower()}: folders that suit the")
+            print("subject, four units of class pages to rename, a page explaining what")
+            print("the site can do, and placeholders saying what belongs where.")
+            use_skeleton = prompt_yes_no_default(
+                "Start this course from that skeleton?",
+                bool(saved_config.get("use_skeleton", True))
+            )
+            if use_skeleton:
+                skeleton_payload = candidate
+            else:
+                skeleton_manifest = None
+
     # ---------- Structure: from the example content, or from prompts --------
     if example_manifest:
         # The example content decides the structure WHOLE: which folders and
@@ -1800,6 +1873,24 @@ def setup_course(no_backup: bool = False):
         factory_shared_folders = LCS_SHARED_FOLDERS if use_lcs_terminology else DEFAULT_SHARED_FOLDERS
         factory_shared_files = LCS_SHARED_FILES if use_lcs_terminology else DEFAULT_SHARED_FILES
 
+        # A skeleton knows which folders its own pages were written for, so
+        # it offers those instead of the school-neutral factory list. The
+        # teacher still sees them and can add or drop any of them. Its
+        # shared files come along too: the skeleton's pages transclude
+        # Help Sessions, so dropping it would leave an empty transclusion.
+        factory_per_section_folders = DEFAULT_PER_SECTION_FOLDERS
+        factory_per_section_files = DEFAULT_PER_SECTION_FILES
+        if skeleton_manifest:
+            factory_shared_folders = list(skeleton_manifest.get("shared_folders", factory_shared_folders))
+            skeleton_files = list(skeleton_manifest.get("shared_files", []))
+            if use_lcs_terminology:
+                for name in LCS_SHARED_FILES:
+                    if name not in skeleton_files:
+                        skeleton_files.append(name)
+            factory_shared_files = skeleton_files
+            factory_per_section_folders = list(skeleton_manifest.get("per_section_folders", factory_per_section_folders))
+            factory_per_section_files = list(skeleton_manifest.get("per_section_files", factory_per_section_files))
+
         # ---------- Original prompts (unchanged except for Media handling) ----------
         # Remove 'Media' from defaults so it never appears in the selection prompt
         shared_default_candidates = saved_config.get("shared_folders", factory_shared_folders)
@@ -1817,12 +1908,12 @@ def setup_course(no_backup: bool = False):
         )
         per_section_folders = prompt_type_list(
             "Enter folder names to be duplicated per section – defaults are:",
-            saved_config.get("per_section_folders", DEFAULT_PER_SECTION_FOLDERS),
+            saved_config.get("per_section_folders", factory_per_section_folders),
             forbidden_names=["Media"]  # prevent user from adding 'Media'
         )
         per_section_files = prompt_type_list(
             "Enter Markdown file names to be duplicated per section – defaults are:",
-            saved_config.get("per_section_files", DEFAULT_PER_SECTION_FILES),
+            saved_config.get("per_section_files", factory_per_section_files),
             add_md_extension=True
         )
 
@@ -1840,6 +1931,8 @@ def setup_course(no_backup: bool = False):
                 "Extra Help.md", "Learning Goals.md",
                 "Private Notes.md", "Scratch Page.md", "Key Links.md"
             ]
+        if skeleton_manifest:
+            factory_hidden = ["Media"] + list(skeleton_manifest.get("hidden", []))
         default_hidden = factory_hidden if not saved_config else saved_config.get("hidden", [])
 
         # IMPORTANT: 'Media' will NOT appear in this prompt because it's not in all_selected,
@@ -1847,10 +1940,11 @@ def setup_course(no_backup: bool = False):
         hidden_items = prompt_select_multiple("Select folders/files to HIDE from the sidebar:", all_selected, default_hidden)
         visible_items = [item for item in all_selected if item not in hidden_items]
 
-        default_expandable = [
+        factory_expandable = list(skeleton_manifest.get("expandable", [])) if skeleton_manifest else [
             "Concepts", "Discussions", "Examples", "Exercises", "Portfolios",
             "Recaps", "Setup", "Style", "Tasks", "Tutorials"
-        ] if not saved_config else saved_config.get("expandable", [])
+        ]
+        default_expandable = factory_expandable if not saved_config else saved_config.get("expandable", [])
 
         expandable_items = prompt_select_multiple("Select folders/files that should be EXPANDABLE:", visible_items, default_expandable)
 
@@ -1897,6 +1991,7 @@ def setup_course(no_backup: bool = False):
         "show_section_marker": section_marker_config,
         # NEW: example-content choices, remembered for future re-runs
         "prepopulate_example_content": prepopulate_example,
+        "use_skeleton": use_skeleton,
         "include_curriculum_pages": include_curriculum,
         # NEW: whether the default file names use LCS's own words
         "use_lcs_terminology": use_lcs_terminology,
@@ -1942,7 +2037,9 @@ def setup_course(no_backup: bool = False):
                 section_numbers, now_str, include_curriculum,
                 shared_folders, shared_files,
                 per_section_folders, per_section_files,
-                reference=now_dt
+                reference=now_dt,
+                course_code=course_code,
+                course_name=course_name
             )
             if files_written > 0:
                 print(f"\n📖 Example content installed: {files_written} pages.")
@@ -1950,6 +2047,27 @@ def setup_course(no_backup: bool = False):
                 print("\n📖 Example content: nothing to add (every page already exists).")
         except Exception as e:
             print(f"⚠️ Could not install the example content: {e}")
+
+    # ---------- Install the starting skeleton -------------------------------
+    # Only the folders and files the teacher kept are poured in; the
+    # curriculum folder comes only if they kept that too.
+    if skeleton_payload and skeleton_manifest:
+        try:
+            skeleton_curriculum = skeleton_manifest.get("curriculum_folder")
+            files_written = install_example_content(
+                course_path, skeleton_payload, skeleton_manifest,
+                section_numbers, now_str,
+                bool(skeleton_curriculum and skeleton_curriculum in shared_folders),
+                shared_folders, shared_files,
+                per_section_folders, per_section_files,
+                reference=now_dt,
+                course_code=course_code,
+                course_name=course_name
+            )
+            if files_written > 0:
+                print(f"\n🧱 Starting pages added: {files_written}.")
+        except Exception as e:
+            print(f"⚠️ Could not add the starting pages: {e}")
 
     # ---------- Create shared structure (with createdSectionN + draftSectionN) ----------
     for folder in shared_folders:

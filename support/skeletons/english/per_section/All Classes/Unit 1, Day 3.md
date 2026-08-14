@@ -1,0 +1,22 @@
+---
+title: Unit 1, Day 3
+draft: false
+created: __CREATED_CLASS_3__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Read the source: five minutes, pencil in hand — [[Readings/index|Readings]]
+2. Talk in threes: what is this source claiming, and who made it?
+3. Whole-group discussion — [[Discussions/index|Discussions]]
+4. Name the idea, and where it turns up again — [[Concepts/index|Concepts]]
+5. End of Unit 1 — pull the thread together, and look at what is due
+
+## Things to do before our next class
+
+- [ ] Finish the paragraph you started in class.
+- [ ] Bring one source that complicates today's claim.
