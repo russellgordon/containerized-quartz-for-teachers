@@ -8,8 +8,9 @@ namespace Plantoir.Core.Assist;
 ///
 /// Two words do a lot of work in this app and mean different things:
 ///
-/// * **Publish / unpublish** is about a page's <c>draft</c> flag — whether the
-///   page is part of the site at all.
+/// * **Publish / unpublish** is about a page's <c>publish</c> flag — whether
+///   the page is built into the site, and so whether it appears in the
+///   teacher's own preview. It says nothing about who can edit it.
 /// * **Deploy** is putting the built site where students can reach it, and
 ///   that is always the teacher's own action, taken in Plantoir.
 ///
@@ -49,13 +50,23 @@ public static class Briefing
     /// <summary>
     /// The words themselves, in the app's voice: short, concrete, and about
     /// what the teacher will see rather than about how any of it works.
+    ///
+    /// An earlier wording said unpublished pages "stay in your folder and stay
+    /// yours to edit", which is true and still manages to mislead: it implies
+    /// the opposite of published pages, as though publishing a page hands it
+    /// over. It does not. Every page in the course stays the teacher's to edit,
+    /// always, and the flag decides one thing only — whether the page is built
+    /// into the site. So publishing is described by where it shows up (the
+    /// preview) rather than by who may touch it.
     /// </summary>
     public static string Words(string courseCode, int sectionNumber, string destination) =>
         $"Before we start on {courseCode} Section {sectionNumber}, two words I’ll use:\n\n" +
-        "**Publish** and **unpublish** decide whether a page is part of your site at all. " +
-        "Unpublished pages stay in your folder and stay yours to edit — students simply don’t see them.\n\n" +
-        "**Deploying** is putting the site where students can actually reach it, and I never do that. " +
-        $"When I finish a change I rebuild your preview so you can look it over, and you decide whether " +
-        $"to send it to {destination} — that button is yours, in Plantoir.\n\n" +
-        "So: I change pages and rebuild the preview. Nothing reaches students until you say so.";
+        "**Publish** and **unpublish** decide whether a page is built into your site. " +
+        "A published page shows up in your preview; an unpublished one is left out of the build. " +
+        "Either way it stays in your folder and stays yours to edit — publishing a page doesn’t " +
+        "put it beyond your reach, and it doesn’t show it to anybody yet.\n\n" +
+        $"**Deploying** is sending the built site to {destination}, and it is the only thing students " +
+        "ever see. I never do it. When I finish a change I rebuild your preview so you can look it " +
+        "over, and the deploy button stays yours, in Plantoir.\n\n" +
+        "So: I publish pages and rebuild the preview. Students see nothing until you deploy.";
 }

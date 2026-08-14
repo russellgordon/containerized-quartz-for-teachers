@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Plantoir.Core.Models;
@@ -285,9 +287,49 @@ public sealed partial class AssistWindow : Window
     /// <summary>Add a turn and scroll to it. Returns its text block so slow work can update in place.</summary>
     private TextBlock Say(string speaker, string text)
     {
-        var body = new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true };
+        var body = new TextBlock { TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true };
+        Write(body, text);
         AddCard(speaker, body);
         return body;
+    }
+
+    /// <summary>
+    /// Put text on a TextBlock with <c>**bold**</c> actually bold.
+    ///
+    /// The tools write for a Markdown reader — the briefing emphasises the two
+    /// words it exists to distinguish, and the approval line emphasises the
+    /// tool about to run. Setting <c>.Text</c> renders the asterisks literally,
+    /// so the one visual cue in the most important sentence in the window was
+    /// showing up as punctuation.
+    ///
+    /// This is not a Markdown parser and should not become one. It handles the
+    /// one construct the tools actually emit; anything else is left exactly as
+    /// written, which for a teacher's own page titles is the safer failure.
+    /// </summary>
+    private static void Write(TextBlock block, string text)
+    {
+        block.Inlines.Clear();
+
+        string[] lines = text.Replace("\r\n", "\n").Split('\n');
+        for (int line = 0; line < lines.Length; line++)
+        {
+            if (line > 0) block.Inlines.Add(new LineBreak());
+
+            // Odd-numbered pieces sit between a pair of markers, so they are
+            // the emphasised ones. An unpaired marker leaves a final piece with
+            // an even index, and it stays plain — text, not an error.
+            string[] pieces = lines[line].Split("**");
+            for (int piece = 0; piece < pieces.Length; piece++)
+            {
+                if (pieces[piece].Length == 0) continue;
+                bool emphasised = piece % 2 == 1 && piece < pieces.Length - 1;
+                block.Inlines.Add(new Run
+                {
+                    Text = pieces[piece],
+                    FontWeight = emphasised ? FontWeights.SemiBold : FontWeights.Normal,
+                });
+            }
+        }
     }
 
     /// <summary>The one place a turn is built, so every card is the same card.</summary>
@@ -348,7 +390,9 @@ public sealed partial class AssistWindow : Window
 
     private void ShowApproval(string question)
     {
-        ApprovalText.Text = question;
+        // The tool's name is emphasised in this sentence, and this is the
+        // sentence the teacher is answering yes or no to.
+        Write(ApprovalText, question);
         ApprovalBar.Visibility = Visibility.Visible;
     }
 

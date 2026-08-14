@@ -30,4 +30,19 @@ public static class Glyphs
     public const string Cancel = "\uE711";   // cancelled / failed
     public const string Search = "\uE721";
     public const string QuestionBubble = "\uE897";   // awaiting your answer
+
+    /// <summary>
+    /// Sparkles, for the two "revise with\u2026" items.
+    ///
+    /// This one is an EMOJI and needs <see cref="EmojiFont"/> set on the icon,
+    /// unlike every other glyph here. Segoe Fluent Icons documents a "Sparkle"
+    /// at U+E45E, and it is simply not in the font on Windows 11 \u2014 checked
+    /// against the installed SegoeIcons.ttf, along with the whole U+E45A\u2013E460
+    /// neighbourhood, all absent. Using it would have produced exactly the
+    /// empty boxes this class exists to prevent.
+    /// </summary>
+    public const string Sparkle = "\u2728";
+
+    /// <summary>The font <see cref="Sparkle"/> must be drawn in.</summary>
+    public const string EmojiFont = "Segoe UI Emoji";
 }

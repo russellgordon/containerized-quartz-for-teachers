@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Plantoir.Core.Models;
 using Plantoir.Services;
 using Plantoir.ViewModels;
@@ -395,16 +396,9 @@ public sealed partial class SidebarPane : UserControl
         // Backing up stays available mid-preview — it only reads (row 106).
         menu.Items.Add(MenuItem("Back Up Now", RestoreGlyph, () => _ = BackUpCourse(course)));
 
-        // Only offered when Claude Code AND the tools it would use are both
-        // present. A teacher who has neither should not be shown a door that
-        // opens onto an error message about something they have never heard of.
-        MenuFlyoutItem? reviseItem = null;
-        if (ClaudeCodeLauncher.IsAvailable)
-        {
-            menu.Items.Add(new MenuFlyoutSeparator());
-            reviseItem = MenuItem("Revise with Claude…", AddSectionGlyph, () => ReviseWithClaude(course));
-            menu.Items.Add(reviseItem);
-        }
+        var reviseItems = ReviseItems(course, section: null);
+        if (reviseItems.Count > 0) menu.Items.Add(new MenuFlyoutSeparator());
+        foreach (var item in reviseItems) menu.Items.Add(item);
         // The staleness lesson from the mac (row 104): menu content is built
         // when the ROW renders, not when the teacher opens it — so the busy
         // state is read the moment the menu opens, never captured earlier.
@@ -424,9 +418,8 @@ public sealed partial class SidebarPane : UserControl
             // is looking at while they decide what to ask for next, and gating
             // this on the same reason as Add Section stopped them from opening
             // a conversation about the preview in front of them.
-            if (reviseItem is not null)
-                reviseItem.IsEnabled = Workspace.WorkspacePath is not { } path ||
-                                       !CourseActivity.IsAssisting(path, course.Code);
+            bool canRevise = CanReviseNow(course);
+            foreach (var item in reviseItems) item.IsEnabled = canRevise;
         };
         menu.Items.Add(new MenuFlyoutSeparator());
         menu.Items.Add(MenuItem("Show in File Explorer", ExplorerGlyph, () => FolderActions.ShowInFileExplorer(course.DirectoryPath)));
@@ -464,13 +457,12 @@ public sealed partial class SidebarPane : UserControl
         string sectionDir = course.SectionDirectory(number);
         var menu = new MenuFlyout();
 
-        // "Revise with AI" belongs on the SECTION, not the course: a class is
-        // published for one section at a time, and every question a teacher
-        // brings here ("publish tomorrow's class") is a question about one.
-        // It opens a window of its own so the section's preview can stay on
-        // screen beside the conversation that is changing it.
-        var reviseItem = MenuItem("Revise with AI…", AddSectionGlyph, () => ReviseWithAi(course, number));
-        menu.Items.Add(reviseItem);
+        // Revising from the SECTION is the common case: a class is published
+        // for one section at a time, and "publish tomorrow's class" is always
+        // a question about one. The window opens separately so the section's
+        // preview can stay on screen beside the conversation changing it.
+        var reviseItems = ReviseItems(course, number);
+        foreach (var item in reviseItems) menu.Items.Add(item);
         menu.Items.Add(new MenuFlyoutSeparator());
 
         // The vault is the COURSE folder even for a section — the section is
@@ -482,13 +474,11 @@ public sealed partial class SidebarPane : UserControl
 
         // Read when the menu OPENS, never captured at render — the staleness
         // lesson from row 104, which cost a live debugging session.
-        //
-        // Only another assistant stands in the way. A preview of this very
-        // section running is the normal case, not a conflict: the teacher
-        // watches it to judge what the assistant just did.
         menu.Opening += (_, _) =>
-            reviseItem.IsEnabled = Workspace.WorkspacePath is not { } folder ||
-                                   !CourseActivity.IsAssisting(folder, course.Code);
+        {
+            bool canRevise = CanReviseNow(course);
+            foreach (var item in reviseItems) item.IsEnabled = canRevise;
+        };
         return menu;
     }
 
@@ -539,13 +529,57 @@ public sealed partial class SidebarPane : UserControl
         return item;
     }
 
-    private static MenuFlyoutItem MenuItem(string text, string glyph, Action action)
+    private static MenuFlyoutItem MenuItem(string text, string glyph, Action action, string? fontFamily = null)
     {
         var item = new MenuFlyoutItem { Text = text };
-        if (glyph.Length > 0) item.Icon = new FontIcon { Glyph = glyph };
+        if (glyph.Length > 0)
+        {
+            var icon = new FontIcon { Glyph = glyph };
+            // Only the sparkle needs this; everything else inherits the icon font.
+            if (fontFamily is not null) icon.FontFamily = new FontFamily(fontFamily);
+            item.Icon = icon;
+        }
         item.Click += (_, _) => action();
         return item;
     }
+
+    /// <summary>
+    /// The two ways to revise, built once for both the course menu and every
+    /// section menu.
+    ///
+    /// Built in one place because they were drifting apart the moment there
+    /// were two of them: the course offered Claude and the section offered the
+    /// built-in assistant, so which help a teacher could reach depended on
+    /// which row they happened to right-click. Both belong in both.
+    ///
+    /// <paramref name="section"/> is null on a course menu. Claude Code is
+    /// locked to the COURSE either way — its session covers every section —
+    /// so the section only changes which one the built-in assistant opens on.
+    /// </summary>
+    private List<MenuFlyoutItem> ReviseItems(Course course, int? section)
+    {
+        var items = new List<MenuFlyoutItem>();
+
+        // Offered only when Claude Code and the tools it drives are both
+        // present. A teacher who has neither should not be shown a door that
+        // opens onto an error about something they have never heard of.
+        if (ClaudeCodeLauncher.IsAvailable)
+            items.Add(MenuItem("Revise with Claude…", Glyphs.Sparkle,
+                () => ReviseWithClaude(course), Glyphs.EmojiFont));
+
+        items.Add(MenuItem("Revise with AI…", Glyphs.Sparkle,
+            () => ReviseWithAi(course, section ?? course.SectionNumbers.First()), Glyphs.EmojiFont));
+
+        return items;
+    }
+
+    /// <summary>
+    /// Whether a revise item may be clicked: only another assistant on the
+    /// same course stands in the way. A preview running is not a conflict —
+    /// it is what the teacher is reading while they decide what to ask for.
+    /// </summary>
+    private bool CanReviseNow(Course course) =>
+        Workspace.WorkspacePath is not { } folder || !CourseActivity.IsAssisting(folder, course.Code);
 
     // ---- Footer actions --------------------------------------------------
 

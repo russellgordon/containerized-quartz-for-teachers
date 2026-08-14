@@ -1304,10 +1304,24 @@ public class AssistWorkspaceTests : IDisposable
     public void TheBriefingSeparatesPublishingFromDeploying()
     {
         string words = Briefing.Words("ICS3U", 1, "Netlify");
-        Assert.Contains("Unpublished pages stay in your folder", words);
+
+        // Publishing is explained by WHERE THE PAGE APPEARS — the teacher's own
+        // preview — because that is what it actually does.
+        Assert.Contains("built into your site", words);
+        Assert.Contains("shows up in your preview", words);
+
+        // And never by who may edit it. An earlier wording said unpublished
+        // pages "stay yours to edit", which is true of every page and so
+        // implied, wrongly, that publishing one gives it away.
+        Assert.Contains("stays yours to edit", words);
+        Assert.DoesNotContain("Unpublished pages stay in your folder", words);
+
+        // Deploying is the only thing students ever see, and it is the
+        // teacher's own act.
         Assert.Contains("Deploying", words);
-        Assert.Contains("that button is yours, in Plantoir", words);
         Assert.Contains("Netlify", words);
+        Assert.Contains("Students see nothing until you deploy", words);
+        Assert.Contains("deploy button stays yours, in Plantoir", words);
     }
 
     // ---- Applying --------------------------------------------------------
