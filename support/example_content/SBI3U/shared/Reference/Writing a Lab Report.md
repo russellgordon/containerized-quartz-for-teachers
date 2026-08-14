@@ -42,3 +42,11 @@ on [[Writing About Biology]].
 > If you cannot write one honest sentence answering the purpose, the
 > analysis is not finished — and you have found that out before spending
 > two hours formatting.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.10]]
+
+![[A1.11]]
+%%curriculum-end%%

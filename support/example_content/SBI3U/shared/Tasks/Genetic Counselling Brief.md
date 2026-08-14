@@ -40,6 +40,14 @@ stops it being read as "one of our four children".
 > your own family, say so privately and we will handle the task
 > differently — that is a normal request, not a favour.
 
+## Whose work this rests on
+
+Name the researchers or clinicians whose work made the test or treatment
+you describe possible, and say what each contributed. Where the work is
+Canadian, say so — the gene behind cystic fibrosis was identified by a
+team led from Toronto, and students routinely assume this kind of
+research happens somewhere else. One short paragraph, sourced.
+
 %%curriculum-start%%
 ## Curriculum connection
 
@@ -48,4 +56,8 @@ stops it being read as "one of our four children".
 ![[D3.5]]
 
 ![[D1.2]]
+
+![[A2.2]]
+
+![[A1.9]]
 %%curriculum-end%%

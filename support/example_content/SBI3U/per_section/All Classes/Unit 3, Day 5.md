@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 5
 draft: false
-created: __CREATED_CLASS_15__
+created: __CREATED_CLASS_37__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Count day: [[A Monohybrid Cross]], every offspring
-2. Chi-square: is the deviation within chance?
-3. Launch: [[Genetic Counselling Brief]]
-4. Practise: the rest of [[Genetics Practice]]
+1. Why peas, and why blending was wrong
+2. [[Mendelian Genetics]] and the vocabulary that has to be exact
+3. [[Punnett Squares and Probability]]
+4. Practise: [[Genetics Practice]], first three
 
 ## Things to do before our next class
 
-- [ ] Complete the chi-square calculation.
-- [ ] Read your assigned pedigree for the counselling brief.
+- [ ] Finish [[Genetics Practice]].
+- [ ] Set up [[A Monohybrid Cross]] — the count is in two weeks.

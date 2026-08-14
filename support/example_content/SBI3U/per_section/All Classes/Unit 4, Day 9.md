@@ -1,0 +1,20 @@
+---
+title: Unit 4, Day 9
+draft: false
+created: __CREATED_CLASS_60__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. [[Body Systems Report]], day 2 — working period: your condition chosen,
+   normal structure and function drawn by you
+2. Conference: which two systems will you trace the consequences
+   through?
+
+## Things to do before our next class
+
+- [ ] Diagram drawn; systems chosen.

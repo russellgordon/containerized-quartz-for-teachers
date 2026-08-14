@@ -29,3 +29,9 @@ copied from the textbook scores nothing.
 Drawing what you know is there rather than what you can see. If the cell
 walls are clear and the nuclei are not, draw the walls and note that the
 nuclei were not visible at that magnification.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.12]]
+%%curriculum-end%%

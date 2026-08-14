@@ -7,7 +7,7 @@ excludeBacklinks: true
 ---
 # Most Recent Class
 
-![[Unit 5, Day 4]]
+![[Unit 5, Day 18]]
 
 %%
 Change the transclusion above to the class you have just taught. That one

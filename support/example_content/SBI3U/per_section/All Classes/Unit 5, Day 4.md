@@ -1,7 +1,7 @@
 ---
 title: Unit 5, Day 4
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_71__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. [[Plant Reproduction]]: flowers dissected, parts identified
-2. Asexual propagation, and the banana problem
-3. [[Plants and Agriculture]]: yield, runoff, and time horizons
-4. Practise: [[Plants Practice]]
+1. Bench: write up [[Measuring Photosynthesis]] in class
+2. The limiting-factor graph, and what its plateau means
+3. Skill: [[Uncertainty and Error]] — how repeatable was your rate,
+   really?
 
 ## Things to do before our next class
 
-- [ ] Finish the practice set.
-- [ ] Take your week-two measurements on schedule.
+- [ ] Report finished with the uncertainty stated.

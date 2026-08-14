@@ -38,3 +38,9 @@ like a cell to a hopeful eye.
 > [!warning] The two ways slides get broken
 > Coarse focus on high power, and carrying a microscope one-handed. Both
 > avoidable; both happen every year.
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.2]]
+%%curriculum-end%%

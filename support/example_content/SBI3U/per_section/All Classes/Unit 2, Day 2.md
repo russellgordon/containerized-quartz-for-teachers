@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 2
 draft: false
-created: __CREATED_CLASS_7__
+created: __CREATED_CLASS_18__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Dots on fabric, ten seconds, five generations
-2. [[Simulating Natural Selection]]
-3. Name it: [[Natural Selection]], as four observations and a conclusion
-4. Where the model lies — and what it cannot show
+1. Bench: write up [[Comparative Anatomy]] in class
+2. Homologous against analogous, decided from structure rather than
+   function
+3. Skill: [[Writing a Lab Report]] — the analysis section, where the
+   marks are
 
 ## Things to do before our next class
 
-- [ ] Finish the generation graph.
-- [ ] Read [[Adaptation]].
+- [ ] Report finished.

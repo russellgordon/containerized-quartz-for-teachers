@@ -1,7 +1,7 @@
 ---
 title: Unit 5, Day 2
 draft: false
-created: __CREATED_CLASS_23__
+created: __CREATED_CLASS_69__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Leaf discs that sink, then float
-2. [[Measuring Photosynthesis]] — rate against light intensity
-3. Name it: [[Photosynthesis]], in two stages
-4. Limiting factors: which one is scarce here?
+1. Warm-up: the leaf cross-section, drawn from memory
+2. Random groups — match each tissue to the job it does, then predict
+   what a leaf in shade would look like differently
+3. Skill: [[Biological Drawing]] again, at Grade 11 standard
+4. Practise: [[Plants Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Plot rate against intensity and find where it flattens.
-- [ ] Journal: where does the oxygen come from, and how do we know?
+- [ ] Finish the first section.

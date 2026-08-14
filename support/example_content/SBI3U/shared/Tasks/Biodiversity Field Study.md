@@ -24,7 +24,10 @@ that another group could check.
    the same as convenient placement.
 3. **Identify** what you find to the finest level you can support, using
    the key from [[Using a Dichotomous Key]]. "Unknown grass B" recorded
-   consistently is honest and usable; a wrong species name is not.
+   consistently is honest and usable; a wrong species name is not. For
+   three of your organisms, give the full taxonomic rank as far as you
+   can defend it, and say which characteristic put it in each group —
+   that is what a key is actually doing.
 4. **Calculate** species richness and a diversity index for each site.
 5. **Compare**, and account for the difference with one abiotic factor you
    measured.
@@ -48,4 +51,8 @@ method beats one that claims twenty without saying how it looked.
 ![[B2.1]]
 
 ![[B1.2]]
+
+![[B3.1]]
+
+![[A1.10]]
 %%curriculum-end%%

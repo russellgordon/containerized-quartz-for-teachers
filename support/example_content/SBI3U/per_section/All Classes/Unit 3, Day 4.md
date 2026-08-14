@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_14__
+created: __CREATED_CLASS_36__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. [[Reading a Karyotype]] — sort, count, and interpret
-2. Non-disjunction, traced back to [[Meiosis]]
-3. [[Beyond Mendel]]: codominance, sex linkage, polygenic traits
-4. Practise: [[Pedigree Practice]]
+1. Warm-up: mitosis or meiosis — six micrographs, sorted
+2. Random groups — build both processes with chromosome models, side by
+   side, and find the two differences that matter
+3. Consolidate: why meiosis produces variation and mitosis must not
 
 ## Things to do before our next class
 
-- [ ] Finish the pedigree questions.
-- [ ] Journal: why is 'the gene for' usually a misleading phrase?
+- [ ] Both processes drawn from memory.

@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 5
 draft: false
-created: __CREATED_CLASS_10__
+created: __CREATED_CLASS_21__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Case study workshop: swap drafts, find the weakest claim
-2. Consolidate the strand: six lines of evidence, one conclusion
-3. Hand in [[An Evolution Case Study]]
-4. Preview: the molecule all of this depends on
+1. Consolidate: what changed, the individuals or the population?
+2. [[Adaptation]] and the trade-off in every example
+3. [[Speciation]]: how one becomes two
+4. Practise: [[Evolution Practice]]
 
 ## Things to do before our next class
 
-- [ ] Read [[DNA Structure and Replication]].
-- [ ] Journal: the three things you would tell someone starting Unit 2.
+- [ ] Finish the practice set.
+- [ ] Choose your case for [[An Evolution Case Study]].

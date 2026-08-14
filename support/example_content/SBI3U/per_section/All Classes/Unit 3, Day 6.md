@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 6
 draft: false
-created: __CREATED_CLASS_16__
+created: __CREATED_CLASS_38__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. [[Genetic Technologies]]: reading and altering genomes
-2. Discussion: [[Editing the Germline]]
-3. Discussion: [[Whose Genome Is It?]]
-4. Work time: [[Genetic Counselling Brief]]
+1. Warm-up: one monohybrid cross, cold
+2. Clinic: [[Genetics Practice]], first section — Punnett squares until
+   they are boring
+3. The probability question students get wrong: each birth is
+   independent
 
 ## Things to do before our next class
 
-- [ ] Hand in [[Genetic Counselling Brief]] next class.
-- [ ] Journal: where would you draw the line on germline editing?
+- [ ] Finish the first section.

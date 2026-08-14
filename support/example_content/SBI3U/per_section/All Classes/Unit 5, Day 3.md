@@ -1,7 +1,7 @@
 ---
 title: Unit 5, Day 3
 draft: false
-created: __CREATED_CLASS_24__
+created: __CREATED_CLASS_70__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. [[Transpiration]] with the potometer, one variable each
-2. Pooling the class data across four conditions
-3. [[Transport in Plants]]: pulled, not pumped
-4. Launch: [[Plant Growth Investigation]] — plant this week
+1. Leaf discs that sink, then float
+2. [[Measuring Photosynthesis]] — rate against light intensity
+3. Name it: [[Photosynthesis]], in two stages
+4. Limiting factors: which one is scarce here?
 
 ## Things to do before our next class
 
-- [ ] Submit your investigation question and procedure for approval.
-- [ ] Plant your seeds — the biology will not wait for you.
+- [ ] Plot rate against intensity and find where it flattens.
+- [ ] Journal: where does the oxygen come from, and how do we know?

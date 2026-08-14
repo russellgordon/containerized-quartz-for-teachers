@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Consolidate: which kingdom, and on what evidence?
-2. [[Bacteria and Archaea]] and [[Protists and Fungi]]
-3. [[Viruses]] — and whether they are alive
-4. Practise: [[Classification Practice]]
+1. [[Using a Microscope]] — the routine, then practice
+2. [[Microscopy of Microorganisms]]: pond water and prepared slides
+3. Drawing conventions: [[Biological Drawing]]
+4. Write [[Your First Entry]]
 
 ## Things to do before our next class
 
-- [ ] Finish the practice set.
-- [ ] Read [[Biodiversity and Why It Matters]] before the field work.
+- [ ] Finish four labelled drawings.
+- [ ] Journal entry due next class.

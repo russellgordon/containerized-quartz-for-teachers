@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 4
 draft: false
-created: __CREATED_CLASS_20__
+created: __CREATED_CLASS_55__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Consolidate the dissection: two pumps, one organ
-2. [[Keeping Conditions Steady]] — receptor, control centre, effector
-3. Negative feedback, with temperature as the worked example
-4. Practise: the rest of [[Animal Systems Practice]]
+1. Warm-up: label a respiratory diagram from memory
+2. Clinic: [[Animal Systems Practice]], first section
+3. Gas exchange as diffusion down a gradient — the same physics as the
+   leaf you will meet in Unit 5
 
 ## Things to do before our next class
 
-- [ ] Finish the practice set.
-- [ ] Choose your disorder for [[Body Systems Report]].
+- [ ] Finish the first section.

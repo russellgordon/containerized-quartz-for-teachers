@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 3
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_54__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. [[Heart Structure]] — the wall thickness you can feel before you cut
-2. Tracing the double circuit with a probe
-3. [[The Circulatory System]]: vessels and what each is for
-4. Labelled diagram started in class
+1. Lung volume measurements, and what limits gas exchange
+2. [[The Respiratory System]]: ventilation is not exchange
+3. Why carbon dioxide, not oxygen, sets your breathing rate
+4. Practise: [[Animal Systems Practice]], first two
 
 ## Things to do before our next class
 
-- [ ] Finish the labelled heart diagram.
-- [ ] Journal: why does a muscle surrounded by blood need its own supply?
+- [ ] Finish the practice questions.
+- [ ] Read [[The Circulatory System]] before the dissection.

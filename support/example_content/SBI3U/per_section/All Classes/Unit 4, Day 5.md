@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 5
 draft: false
-created: __CREATED_CLASS_21__
+created: __CREATED_CLASS_56__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Work time: [[Body Systems Report]], with the diagrams drawn in class
-2. Systems interact — tracing one failure through two systems
-3. Consolidate the strand
-4. Hand in [[Body Systems Report]]
+1. [[Heart Structure]] — the wall thickness you can feel before you cut
+2. Tracing the double circuit with a probe
+3. [[The Circulatory System]]: vessels and what each is for
+4. Labelled diagram started in class
 
 ## Things to do before our next class
 
-- [ ] Read [[Plant Structure]].
-- [ ] Journal: which body system surprised you most, and why?
+- [ ] Finish the labelled heart diagram.
+- [ ] Journal: why does a muscle surrounded by blood need its own supply?

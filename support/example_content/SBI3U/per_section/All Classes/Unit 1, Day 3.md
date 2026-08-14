@@ -10,12 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. [[Using a Microscope]] — the routine, then practice
-2. [[Microscopy of Microorganisms]]: pond water and prepared slides
-3. Drawing conventions: [[Biological Drawing]]
-4. Write [[Your First Entry]]
+1. Warm-up: five organisms on the board — sort them, then defend the
+   sort
+2. Random groups — WRITE a dichotomous key for eight objects, then swap
+   and try to use somebody else's
+3. Consolidate: back to [[Classification and Taxonomy]] — why a key asks
+   about characteristics rather than names
+4. Practise: [[Classification Practice]], first section
 
 ## Things to do before our next class
 
-- [ ] Finish four labelled drawings.
-- [ ] Journal entry due next class.
+- [ ] Finish the first section.

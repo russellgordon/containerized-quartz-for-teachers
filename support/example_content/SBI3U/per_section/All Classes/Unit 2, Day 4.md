@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 4
 draft: false
-created: __CREATED_CLASS_9__
+created: __CREATED_CLASS_20__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. [[Humans and Evolution]] — artificial selection, in a bowl of vegetables
-2. Antibiotic resistance as evolution you can date
-3. Work time: [[An Evolution Case Study]]
-4. What evidence would falsify your case?
+1. Warm-up: predict what five more generations would do
+2. Random groups — run [[Simulating Natural Selection]] again with a
+   changed environment, and graph both runs
+3. Consolidate: selection acts on populations, not on individuals — the
+   sentence students most often get backwards
+4. Skill: [[Graphing Data]] applied to your two runs
 
 ## Things to do before our next class
 
-- [ ] Draft the evidence section of your case study.
-- [ ] Journal: why is 'survival of the fittest' a misleading phrase?
+- [ ] Both runs graphed on one set of axes.

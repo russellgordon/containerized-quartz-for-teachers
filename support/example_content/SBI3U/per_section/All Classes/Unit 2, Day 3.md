@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 3
 draft: false
-created: __CREATED_CLASS_8__
+created: __CREATED_CLASS_19__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Consolidate: what changed, the individuals or the population?
-2. [[Adaptation]] and the trade-off in every example
-3. [[Speciation]]: how one becomes two
-4. Practise: [[Evolution Practice]]
+1. Dots on fabric, ten seconds, five generations
+2. [[Simulating Natural Selection]]
+3. Name it: [[Natural Selection]], as four observations and a conclusion
+4. Where the model lies — and what it cannot show
 
 ## Things to do before our next class
 
-- [ ] Finish the practice set.
-- [ ] Choose your case for [[An Evolution Case Study]].
+- [ ] Finish the generation graph.
+- [ ] Read [[Adaptation]].

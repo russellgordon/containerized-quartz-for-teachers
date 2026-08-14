@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Outside: quadrats, sampling design, and what counts as random
-2. [[Biodiversity and Why It Matters]] — the three levels
-3. Launch: [[Biodiversity Field Study]]
-4. Discussion: [[What Do We Owe Other Species?]]
+1. Bench: write up [[Microscopy of Microorganisms]] in class
+2. Skill: [[Biological Drawing]] — the conventions, and why a drawing is
+   a record rather than a picture
+3. Every drawing gets a magnification, a title, and label lines that do
+   not cross
 
 ## Things to do before our next class
 
-- [ ] Collect your second site's data with your group this week.
-- [ ] [[Biodiversity Field Study]] due at the end of the unit.
+- [ ] Drawings finished to the standard on that page.

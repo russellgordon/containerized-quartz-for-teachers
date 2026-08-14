@@ -1,7 +1,7 @@
 ---
 title: Unit 4, Day 2
 draft: false
-created: __CREATED_CLASS_18__
+created: __CREATED_CLASS_53__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,12 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Lung volume measurements, and what limits gas exchange
-2. [[The Respiratory System]]: ventilation is not exchange
-3. Why carbon dioxide, not oxygen, sets your breathing rate
-4. Practise: [[Animal Systems Practice]], first two
+1. Warm-up: surface area and volume, with cubes
+2. Random groups — why a large organism needs transport systems and a
+   small one does not, argued from the arithmetic
+3. Consolidate: back to [[Animal Systems Overview]] — the constraint
+   that makes every system necessary
 
 ## Things to do before our next class
 
-- [ ] Finish the practice questions.
-- [ ] Read [[The Circulatory System]] before the dissection.
+- [ ] Journal: the ratio, and what it forces.
