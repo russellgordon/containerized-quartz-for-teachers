@@ -251,6 +251,7 @@ public sealed partial class AssistWindow : Window
     {
         Input.IsEnabled = false;
         SendButton.IsEnabled = false;
+        ShowThinking();
         try
         {
             foreach (var line in await exchange())
@@ -266,6 +267,7 @@ public sealed partial class AssistWindow : Window
         }
         finally
         {
+            HideThinking();
             // Never re-enable typing under a question that is still waiting —
             // the answer to "shall I go ahead?" is a button, not a sentence.
             bool waiting = _agent?.IsAwaitingApproval == true;
@@ -354,6 +356,73 @@ public sealed partial class AssistWindow : Window
         });
         TranscriptScroller.UpdateLayout();
         TranscriptScroller.ChangeView(null, TranscriptScroller.ScrollableHeight, null);
+    }
+
+    // ---- "It is still thinking" -------------------------------------------
+
+    private Border? _thinking;
+    private DispatcherTimer? _tick;
+    private DateTime _thinkingSince;
+
+    /// <summary>
+    /// Show that the assistant is working, and for how long.
+    ///
+    /// Without this the window sits perfectly still while the model chews
+    /// through a six-thousand-token prompt at twenty-one tokens a second,
+    /// which on the first question of a session is minutes. Silence and a
+    /// crash look identical, and a teacher who cannot tell them apart will
+    /// reasonably close the window.
+    ///
+    /// The elapsed count is deliberate rather than decorative. Animated dots
+    /// alone say "something is happening"; a number climbing past thirty
+    /// seconds also says "this one is slow, and it is not stuck", which is the
+    /// honest description of a first answer on two CPU cores.
+    /// </summary>
+    private void ShowThinking()
+    {
+        HideThinking();
+        _thinkingSince = DateTime.Now;
+
+        var label = new TextBlock { Text = "Thinking", Opacity = 0.8 };
+        var dots = new TextBlock { Text = "", Opacity = 0.8, MinWidth = 24 };
+        var elapsed = new TextBlock { Text = "", Opacity = 0.55 };
+
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
+        row.Children.Add(label);
+        row.Children.Add(dots);
+        row.Children.Add(elapsed);
+
+        _thinking = new Border
+        {
+            Padding = new Thickness(12),
+            CornerRadius = new CornerRadius(6),
+            Background = (Brush)Application.Current.Resources["CardBackgroundFillColorDefaultBrush"],
+            Child = row,
+        };
+        Transcript.Children.Add(_thinking);
+        TranscriptScroller.UpdateLayout();
+        TranscriptScroller.ChangeView(null, TranscriptScroller.ScrollableHeight, null);
+
+        int step = 0;
+        _tick = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
+        _tick.Tick += (_, _) =>
+        {
+            step++;
+            dots.Text = new string('.', step % 4);
+            int seconds = (int)(DateTime.Now - _thinkingSince).TotalSeconds;
+            // Quiet for the first few seconds; a stopwatch on every quick
+            // answer would make the app feel slower than it is.
+            elapsed.Text = seconds >= 5 ? $"  {seconds}s" : "";
+        };
+        _tick.Start();
+    }
+
+    private void HideThinking()
+    {
+        _tick?.Stop();
+        _tick = null;
+        if (_thinking is not null) Transcript.Children.Remove(_thinking);
+        _thinking = null;
     }
 
     /// <summary>A turn that carries a progress bar as well as words.</summary>
