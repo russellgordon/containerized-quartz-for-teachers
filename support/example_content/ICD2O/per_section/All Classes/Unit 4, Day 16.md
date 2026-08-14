@@ -1,0 +1,19 @@
+---
+title: Unit 4, Day 16
+draft: false
+created: __CREATED_CLASS_80__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. Reset the room together
+2. Circle up: first responses while they are still raw
+3. Begin [[Final Reflection]] in class
+
+## Things to do before our next class
+
+- [ ] Reflection drafted.

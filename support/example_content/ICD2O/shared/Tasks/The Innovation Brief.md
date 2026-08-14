@@ -25,9 +25,12 @@ genuinely informed. Choose from the menu:
   repair, agriculture
 - an emerging innovation you spotted through [[Tech Headlines]]
 
-Whatever you choose, the brief answers five things: what it does in
-plain language, who benefits, who bears the costs, its benefits and
-limits, and **one open question** nobody has settled yet. Every
+Whatever you choose, the brief answers six things: what it does in
+plain language, **who built it** — the people, communities, or countries
+behind it, named — who benefits, who bears the costs, its benefits and
+limits, and **one open question** nobody has settled yet. The
+who-built-it line matters: innovation gets credited to a handful of
+famous names, and [[Whose Innovations Count]] is about everybody else. Every
 borrowed claim is credited, following [[Finding Answers Online]].
 
 ## How to work
@@ -77,4 +80,8 @@ kind — and "same impression, better reasons" counts as change too.
 ![[B4.3]]
 
 ![[A3.2]]
+
+![[A2.1]]
+
+![[A2.3]]
 %%curriculum-end%%

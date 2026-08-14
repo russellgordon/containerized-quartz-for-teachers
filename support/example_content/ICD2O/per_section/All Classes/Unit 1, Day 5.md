@@ -10,16 +10,12 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Which One Doesn't Belong]] — four apps
-2. Explore, then name it: [[Software and Operating Systems]] and
-   [[Files and the Cloud]]
-3. Discussion: [[Who Owns Your Data]] — where your files actually live
-4. Workday: [[The Algorithm Field Guide]] in pairs, driver and navigator
-5. Log it in your [[Dev Journal]]
+1. Warm-up: [[Tech Headlines]]
+2. [[The Algorithm Field Guide]], day 2 — working period: three algorithms
+   found in this building, written down as steps
+3. Conference with me: which of your three is genuinely an algorithm,
+   and which is a habit
 
 ## Things to do before our next class
 
-- [ ] Bring your field guide ready to present — a classmate will run your
-      designed algorithm exactly as written.
-- [ ] Journal: one thing about the cloud you believed yesterday but not
-      today.
+- [ ] Three candidates written up as numbered steps.

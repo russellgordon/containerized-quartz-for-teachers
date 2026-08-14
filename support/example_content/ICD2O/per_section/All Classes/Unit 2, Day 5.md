@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 5
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_24__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,15 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Spot the Bug]]
-2. Pairs: [[Operators Practice]] — arithmetic, comparison, and Boolean
-3. Read together: [[Debugging Step by Step]] — a method, not a mood
-4. Apply the method: revisit today's warm-up bug and narrate the diagnosis
-5. Log it in your [[Dev Journal]]
+1. Warm-up: [[Predict the Output]]
+2. Pairs: [[Variables and Expressions Practice]] to the end
+3. Naming pass: rename every variable in your last program so a
+   stranger could tell what it holds
 
 ## Things to do before our next class
 
-- [ ] Sketch your quiz machine on paper — questions, answers, and the
-      branches between them.
-- [ ] Finish the remaining blocks of [[Operators Practice]].
-- [ ] Journal: the step of [[Debugging Step by Step]] you skip most.
+- [ ] Practice set finished; names fixed.

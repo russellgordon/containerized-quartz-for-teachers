@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 7
 draft: false
-created: __CREATED_CLASS_20__
+created: __CREATED_CLASS_49__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,14 +10,13 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Which One Doesn't Belong]] — four snippets from your remixes
-2. Demo: remixes — the original behaviour, then what you made it do
-3. Compare: the smallest change with the biggest effect, chosen by you
-4. Journal collection: check [[Journal Checklist]] before handing it in
-5. Looking ahead: Unit 4 steps back from the keyboard — mostly
+1. Warm-up: [[Predict the Output]]
+2. Read together: [[The Text Adventure]] — the biggest program we have met
+3. Map it in pairs: which subprogram does what, before changing anything
+4. Launch our next task: [[The Remix Project]]
+5. Log it in your [[Dev Journal]]
 
 ## Things to do before our next class
 
-- [ ] Bring one suspicious message you or your family have received —
-      screenshots welcome, names removed.
-- [ ] Check [[What to Bring]] — Unit 4 mixes unplugged and keyboard days.
+- [ ] Read [[The Remix Project]] and pick the program you will remix.
+- [ ] Journal: the change you want your remix to make, in one sentence.

@@ -10,13 +10,14 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Human Robot]] — today it is the test
-2. Present: field guides, with a classmate as the very literal robot
-3. Compare: which instructions survived contact with a human processor?
-4. Journal collection: check [[Journal Checklist]] before handing it in
-5. Looking ahead: next class we say the same things to an actual computer
+1. Warm-up: [[Tech Headlines]] — one story, one minute
+2. Explore: [[Inside the Box]] — a computer, opened and labelled by you
+3. Compare and name it: [[Hardware Inside the Box]]
+4. Notes to your future self
+5. Log it in your [[Dev Journal]]
 
 ## Things to do before our next class
 
-- [ ] Skim [[Setting Up Python]] — we do it together, but a preview helps.
-- [ ] Check [[What to Bring]] — keyboard days begin now.
+- [ ] Document your first field-guide algorithm —
+      [[The Algorithm Field Guide]] shows the format.
+- [ ] Journal: what you expected inside the box versus what you found.

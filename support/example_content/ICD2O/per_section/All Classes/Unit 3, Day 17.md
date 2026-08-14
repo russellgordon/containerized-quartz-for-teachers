@@ -1,0 +1,21 @@
+---
+title: Unit 3, Day 17
+draft: false
+created: __CREATED_CLASS_59__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-3
+---
+## Agenda
+
+1. Warm-up: [[Tech Headlines]] — who gets written about, and who does
+   not
+2. Discussion: [[Whose Innovations Count]]
+3. Launch, day 1 of 9: [[The Innovation Brief]] — including who built
+   it, named
+
+## Things to do before our next class
+
+- [ ] Innovation chosen and registered.

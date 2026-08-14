@@ -1,0 +1,20 @@
+---
+title: Unit 3, Day 13
+draft: false
+created: __CREATED_CLASS_55__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-3
+---
+## Agenda
+
+1. Warm-up: [[Predict the Output]]
+2. [[The Remix Project]], day 7 — working period: a play-test by somebody who
+   has never seen it. Watch; say nothing
+3. Fix the two things you watched them stumble over
+
+## Things to do before our next class
+
+- [ ] Both fixed. Comments written for the next reader.

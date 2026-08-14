@@ -1,27 +1,20 @@
 ---
 title: Unit 4, Day 6
-draft: true
-created: __CREATED_CLASS_26__
+draft: false
+created: __CREATED_CLASS_70__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-4
 ---
-%% This page is an example of a DRAFT: `draft: true` in the frontmatter
-means it is never published to the site. Plan tomorrow today, publish it
-when class ends — just flip draft to false. Delete this comment when you
-reuse the page; comments never appear on the site either. %%
-
 ## Agenda
 
-1. Celebrate: the semester's best bugs, and the demos that beat them —
-   chosen by you
-2. Launch: [[Final Reflection]] — begin it in class
-3. Journal collection: [[Journal Checklist]] and [[Showing Growth]] are
-   your last look before handing it in
-4. Circle up one final time
+1. Warm-up: [[Which One Doesn't Belong]] — four connected devices
+2. Back to [[Connected Devices]] and [[Networks and Connectivity]]: what
+   each device sends, to whom, and how often
+3. [[The Innovation Brief]], day 6 — working period
 
 ## Things to do before our next class
 
-- [ ] Finish [[Final Reflection]] and hand in your [[Dev Journal]].
+- [ ] Brief finished. It is presented over the next two classes.

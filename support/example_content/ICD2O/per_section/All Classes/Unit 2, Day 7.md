@@ -1,7 +1,7 @@
 ---
 title: Unit 2, Day 7
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_26__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,11 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Spot the Bug]] — one last rep before the play-test
-2. Play-test: quiz machines around the room — every pair plays every quiz
-3. Compare: the cleverest conditional, chosen by you
-4. Journal collection: check [[Journal Checklist]] before handing it in
-5. Looking ahead: what our programs still cannot do — repeat themselves
+1. Warm-up: [[Predict the Output]] — a condition that is never true
+2. [[The Quiz Machine]], day 2 — working period: your questions written and
+   the marking rule decided before any code
+3. Conference: what happens when the answer is nearly right?
 
 ## Things to do before our next class
 
-- [ ] Skim [[The Dice Roller]] — we read it together next class.
-- [ ] Check [[How Marks Work]] — task feedback lands there first.
+- [ ] Questions and answers written down, with the rule for each.

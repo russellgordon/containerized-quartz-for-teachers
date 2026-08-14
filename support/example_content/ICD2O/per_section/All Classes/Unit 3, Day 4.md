@@ -1,7 +1,7 @@
 ---
 title: Unit 3, Day 4
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_46__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
@@ -10,13 +10,10 @@ tags:
 ---
 ## Agenda
 
-1. Warm-up: [[Predict the Output]]
-2. Read together: [[The Text Adventure]] — the biggest program we have met
-3. Map it in pairs: which subprogram does what, before changing anything
-4. Launch our next task: [[The Remix Project]]
-5. Log it in your [[Dev Journal]]
+1. Warm-up: [[Twenty Questions]]
+2. Pairs: [[Loops Practice]] to the end
+3. Clinic: the loop the room found hardest, worked on the board
 
 ## Things to do before our next class
 
-- [ ] Read [[The Remix Project]] and pick the program you will remix.
-- [ ] Journal: the change you want your remix to make, in one sentence.
+- [ ] Finish [[Loops Practice]].

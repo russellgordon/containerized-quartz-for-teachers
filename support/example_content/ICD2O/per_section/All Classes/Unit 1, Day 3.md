@@ -11,13 +11,12 @@ tags:
 ## Agenda
 
 1. Warm-up: [[Which One Doesn't Belong]] — four sets of instructions
-2. Pairs: [[Algorithm Hunt]] — find the algorithms hiding in your day
-3. Compare and name it: [[Algorithms in Everyday Life]]
-4. Notes to your future self, then log it in your [[Dev Journal]]
-5. Launch our first task: [[The Algorithm Field Guide]]
+2. Rebuild: your sandwich algorithm, run by a group that did not write
+   it and will not be generous
+3. Compare and name it: precision, ambiguity, and the assumption you did
+   not know you made
+4. Log it in your [[Dev Journal]]
 
 ## Things to do before our next class
 
-- [ ] Read [[The Algorithm Field Guide]] and shortlist three algorithms.
-- [ ] Try [[Algorithms Practice]], first block.
-- [ ] Journal: the strangest algorithm your hunt turned up.
+- [ ] Journal: the instruction that failed, and the word that caused it.
