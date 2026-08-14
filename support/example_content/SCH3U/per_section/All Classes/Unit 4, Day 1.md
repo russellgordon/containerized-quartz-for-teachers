@@ -1,16 +1,13 @@
 ---
 title: Unit 4, Day 1
 draft: false
-created: __CREATED_CLASS_17__
+created: __CREATED_CLASS_52__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-4
 ---
-Eight solids, three solvents, and a written prediction from each of you
-before anything goes anywhere near the water.
-
 ## Agenda
 
 1. Predict which of the eight will dissolve, and commit it to paper

@@ -1,26 +1,22 @@
 ---
 title: Unit 4, Day 3
 draft: false
-created: __CREATED_CLASS_19__
+created: __CREATED_CLASS_54__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-4
 ---
-Today the number has to be right, because later in the unit someone else
-will rely on it. Volumetric glassware, and no shortcuts.
-
 ## Agenda
 
-1. Calculate the mass you need before touching any glassware
-2. Investigation: [[Preparing a Standard Solution]] — flask, meniscus, mixing
-3. Swap with another group and check the concentration they claim
-4. Where the uncertainty actually came from — balance, flask, or technique
-5. If the calculation stalls: [[Getting Unstuck]]
+1. Mix a solution to a strength you like, then describe it numerically
+2. Compare descriptions — grams per litre, scoops, mol/L — and who can check you
+3. Dilute yours by half and predict the new number before measuring it
+4. Name it: [[Concentration]] — mol/L, and why chemists settled there
+5. Practise: [[Concentration Practice]] using your own dilution
 
 ## Things to do before our next class
 
-- [ ] Label and store your solution properly — you will titrate with it.
-- [ ] Journal: your concentration with its uncertainty, and which step of
-      the preparation contributed most of it.
+- [ ] [[Concentration Practice]], questions 1–10.
+- [ ] Journal: why "one scoop" is not a concentration, in two sentences.

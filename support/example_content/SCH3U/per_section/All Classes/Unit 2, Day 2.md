@@ -1,16 +1,13 @@
 ---
 title: Unit 2, Day 2
 draft: false
-created: __CREATED_CLASS_7__
+created: __CREATED_CLASS_19__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-2
 ---
-Your families from last class go on the board beside the five that
-chemists use. Some of yours are sharper than theirs.
-
 ## Agenda
 
 1. Post every group's families and find the ones that keep recurring

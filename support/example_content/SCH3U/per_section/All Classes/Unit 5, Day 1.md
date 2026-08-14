@@ -1,16 +1,13 @@
 ---
 title: Unit 5, Day 1
 draft: false
-created: __CREATED_CLASS_22__
+created: __CREATED_CLASS_69__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-5
 ---
-A sealed syringe, a weight on top, and a beaker of warm water. Every gas
-law in this course is somewhere in the numbers you take today.
-
 ## Agenda
 
 1. Investigation: [[Measuring a Gas Law]] — volume against pressure, then heat

@@ -8,19 +8,16 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-Model kits on the bench and eight formulas on a card. Build first, then
-find out which of your structures a chemist would accept.
-
 ## Agenda
 
-1. Build all eight from the kits, using the electron counts given
-2. Compare builds — find two groups who built one formula differently
-3. Name it: [[Lewis Structures and Models]] — conventions, against your builds
-4. Names and formulas as a system, not a list: [[Naming and Formulas]]
-5. Keep beside you: [[Polyatomic Ions]] and [[Naming Rules at a Glance]]
-6. Practise: [[Naming Practice]], first section, in pairs
+1. Investigation: [[Testing for Bond Type]] — melting, dissolving, conducting
+2. Group the six by how they behaved, not by what you expected
+3. Compare groupings across the room — which solid split the room?
+4. Name it: [[Ionic and Covalent Bonding]] — read against your groups
+5. How results get written up here: [[Writing a Lab Report]]
+6. Where the reference pages live: [[Key Links]]
 
 ## Things to do before our next class
 
-- [ ] [[Naming Practice]], questions 1–12.
-- [ ] Journal: one naming rule that still feels arbitrary, and why.
+- [ ] Draft the observations and analysis for [[Testing for Bond Type]].
+- [ ] Journal: a property your grouping predicted well, and one it missed.

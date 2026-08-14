@@ -1,16 +1,13 @@
 ---
 title: Unit 3, Day 1
 draft: false
-created: __CREATED_CLASS_11__
+created: __CREATED_CLASS_34__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-3
 ---
-A paperclip, a balance, and a question nobody can finish today: how many
-atoms is that? We leave it unsolved on purpose.
-
 ## Agenda
 
 1. Estimate the atoms in one paperclip — any method, defended out loud

@@ -1,26 +1,23 @@
 ---
 title: Unit 4, Day 5
 draft: false
-created: __CREATED_CLASS_21__
+created: __CREATED_CLASS_56__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-4
 ---
-Your standard solution finally does some work. One drop decides the
-answer, which is exactly why the technique matters this much.
-
 ## Agenda
 
-1. Investigation: [[Titrating an Acid]] — three trials that agree, then average
-2. Compare the room's concentrations — that spread is your uncertainty
-3. Task launch: [[The Water Report]] — read the criteria before planning
-4. Decide which measurements your report genuinely needs
-5. Bench time: begin sampling and your first trials
+1. Calculate the mass you need before touching any glassware
+2. Investigation: [[Preparing a Standard Solution]] — flask, meniscus, mixing
+3. Swap with another group and check the concentration they claim
+4. Where the uncertainty actually came from — balance, flask, or technique
+5. If the calculation stalls: [[Getting Unstuck]]
 
 ## Things to do before our next class
 
-- [ ] Finish three titration trials that agree to within 0.2 mL.
-- [ ] Journal: the step in the titration you least trust, and one change
-      that would tighten it.
+- [ ] Label and store your solution properly — you will titrate with it.
+- [ ] Journal: your concentration with its uncertainty, and which step of
+      the preparation contributed most of it.

@@ -8,20 +8,15 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-You get an unlabelled substance and the run of the bench. Everything
-from this unit is now a tool for working out what it is.
-
 ## Agenda
 
-1. Task launch: [[The Unknown Substance]] — read the criteria before planning
-2. Plan your tests and justify the order — safest and cheapest first
-3. Bench time: run your plan, record everything, revise as you go
-4. How this is judged: [[How Marks Work]], [[What a Strong Entry Looks Like]]
-5. Discuss: [[Chemicals We Live With]] — what a label does not tell you
-6. If you want more bench time: [[Help Sessions]]
+1. Bench safety refresher: [[Lab Safety and WHMIS]] — the symbols on
+   today's bottles, before today's bottles
+2. Writing it up: [[Writing a Lab Report]] — the sections, and what
+   belongs in each
+3. Write the bond-type investigation up IN class, with me reading over
+   shoulders
 
 ## Things to do before our next class
 
-- [ ] Finish [[The Unknown Substance]] — evidence for your identification,
-      with units and sensible significant figures.
-- [ ] Journal: a test you would drop, and what you would run instead.
+- [ ] Report finished to the standard on the page.

@@ -8,9 +8,6 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-First class, and there are twenty element cards on your bench before you
-have opened a notebook. Nobody tells you what order they belong in.
-
 ## Agenda
 
 1. Bench rules first, and we mean them: [[Lab Safety and WHMIS]]

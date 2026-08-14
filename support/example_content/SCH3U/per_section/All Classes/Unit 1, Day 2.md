@@ -8,9 +8,6 @@ excludeBacklinks: true
 tags:
   - unit-1
 ---
-A table of numbers with the element names stripped out — radius, melting
-point, ionisation energy. Find the pattern before it is given a name.
-
 ## Agenda
 
 1. Plot your assigned property against atomic number, by hand

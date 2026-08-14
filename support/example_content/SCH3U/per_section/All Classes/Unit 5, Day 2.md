@@ -1,16 +1,13 @@
 ---
 title: Unit 5, Day 2
 draft: false
-created: __CREATED_CLASS_23__
+created: __CREATED_CLASS_70__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-5
 ---
-Your two graphs go on the board beside measurements taken three hundred
-years ago. The names get attached to relationships you already found.
-
 ## Agenda
 
 1. Post every group's graphs — where do they agree, and where not?

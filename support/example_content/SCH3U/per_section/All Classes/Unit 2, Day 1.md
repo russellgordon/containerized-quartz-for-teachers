@@ -1,16 +1,13 @@
 ---
 title: Unit 2, Day 1
 draft: false
-created: __CREATED_CLASS_6__
+created: __CREATED_CLASS_18__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-2
 ---
-Five reactions at five stations, and no categories offered. You invent
-the families today; the ones chemists use turn up next class.
-
 ## Agenda
 
 1. Investigation: [[Sorting Five Reactions]] — run all five, record everything

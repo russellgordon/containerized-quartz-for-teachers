@@ -1,16 +1,13 @@
 ---
 title: Unit 3, Day 3
 draft: false
-created: __CREATED_CLASS_13__
+created: __CREATED_CLASS_36__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-3
 ---
-You can convert for elements now. Compounds are the same move made
-twice, and today is where it stops needing thought.
-
 ## Agenda
 
 1. Weigh out what you believe is one mole of three different substances

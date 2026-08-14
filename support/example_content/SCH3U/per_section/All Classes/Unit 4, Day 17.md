@@ -1,0 +1,21 @@
+---
+title: Unit 4, Day 17
+draft: false
+created: __CREATED_CLASS_68__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. Warm-up: four solutions on the board — which one does not belong,
+   and on what grounds?
+2. Unit 4 consolidation: from a solid and a target concentration, plan
+   the whole preparation and predict a precipitation
+3. Look ahead: the last unit is the one substance we cannot see
+
+## Things to do before our next class
+
+- [ ] Bring one question about air you have never been able to answer.

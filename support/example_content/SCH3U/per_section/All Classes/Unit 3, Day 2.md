@@ -1,16 +1,13 @@
 ---
 title: Unit 3, Day 2
 draft: false
-created: __CREATED_CLASS_12__
+created: __CREATED_CLASS_35__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-3
 ---
-Last class ended unfinished. Today you build the bridge from mass to
-count with rice, then walk back across it and answer the paperclip.
-
 ## Agenda
 
 1. Count rice by weighing — twenty grains first, then a full beaker

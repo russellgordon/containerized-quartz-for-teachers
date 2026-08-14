@@ -1,27 +1,23 @@
 ---
 title: Unit 3, Day 6
 draft: false
-created: __CREATED_CLASS_16__
+created: __CREATED_CLASS_39__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-3
 ---
-Two groups run the same reaction with different amounts and recover the
-same mass of solid. Work out why before anyone names it.
-
 ## Agenda
 
-1. Investigation: [[Percentage Yield of a Precipitate]] — filter, dry, weigh
-2. Compare yields across the room, including anyone who cleared 100%
-3. Name it: [[Limiting Reagent and Yield]] — and why over 100% is information
-4. Task launch: [[The Yield Investigation]] — read the criteria first
-5. Practise: [[Limiting Reagent Practice]] using the room's leftover data
-6. Before you submit anything: [[Journal Checklist]]
+1. Investigation: [[Finding an Empirical Formula]] — mass before, mass after
+2. Convert both masses to moles and take the simplest whole-number ratio
+3. Post every group's ratio — the spread across the room is the point
+4. Name it: [[Empirical and Molecular Formulas]] — and where the two differ
+5. Practise: [[Empirical Formula Practice]], starting from your own numbers
 
 ## Things to do before our next class
 
-- [ ] [[Limiting Reagent Practice]], first set.
-- [ ] Journal: your percentage yield, and three procedural reasons it is
-      not exactly 100%.
+- [ ] [[Empirical Formula Practice]], first set.
+- [ ] Journal: why your ratio landed above or below the whole number, with
+      a procedural reason rather than "measurement error".

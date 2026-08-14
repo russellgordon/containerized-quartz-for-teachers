@@ -1,27 +1,23 @@
 ---
 title: Unit 5, Day 4
 draft: false
-created: __CREATED_CLASS_25__
+created: __CREATED_CLASS_72__
 transcludeTitleSize: h2
 enableToc: false
 excludeBacklinks: true
 tags:
   - unit-5
 ---
-A gas is a product like any other, and it can be measured. Then we take
-the same chemistry outdoors, where the container is the atmosphere.
-
 ## Agenda
 
-1. Predict the volume of gas a measured mass of reactant will produce
-2. Run it and collect the gas — never in a sealed rigid container
-3. Compare predicted with collected, and account for the difference
-4. Back to the reading: [[Gases and the Atmosphere]] — air quality at scale
-5. Discuss: [[The Air We Share]] — whose emissions, and whose air
+1. Combine your own relationships into one expression and find the constant
+2. Compare the constants the room calculated — how close counts as close?
+3. Where the model fails: very cold, very compressed, and what changes
+4. Read after: [[Gases and the Atmosphere]] — real gases in a real mixture
+5. What this site can do for your notes: [[What This Site Can Do]]
 
 ## Things to do before our next class
 
-- [ ] Journal: one air quality claim you have heard, and the measurement
-      you would want standing behind it.
-- [ ] Choose the investigation you will present next class, and bring the
-      data you actually recorded for it.
+- [ ] Redo one earlier gas problem with $PV = nRT$ and compare the answers.
+- [ ] Journal: a condition under which you would not trust the ideal gas
+      model, and what you would use instead.
