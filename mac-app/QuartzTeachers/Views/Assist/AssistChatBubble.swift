@@ -115,8 +115,8 @@ struct AssistChatBubbleShape: Shape {
 
     func path(in rect: CGRect) -> Path {
         // Every bubble gives up the same strip beneath it, tail or no tail, so
-        // a run of them sits on one rhythm rather than jumping by four points
-        // wherever a turn ends.
+        // a run of them sits on one rhythm rather than jumping wherever a turn
+        // ends.
         var body: CGRect = rect
         body.size.height -= AssistChatBubbleShape.drop
 
@@ -134,34 +134,59 @@ struct AssistChatBubbleShape: Shape {
             return CGPoint(x: flip ? (rect.maxX - (x - rect.minX)) : x, y: y)
         }
 
-        // Measured, expressed against the radius so it all scales together.
-        let dropBelow: CGFloat = radius * 0.375     // 4.5 at r = 12
-        let tipInset: CGFloat = radius * 0.458      // 5.5 at r = 12
-        let hookBase: CGFloat = radius * 1.25       // where the underside rejoins
+        // Measured off Messages, expressed against the radius so it all scales
+        // together. The silhouette is the fussy part, and it was measured a
+        // SECOND time after a first pass got the tip in the right place and
+        // the shape wrong:
+        //
+        //   base of the tail   about 5.5pt wide — a sliver, not a wedge
+        //   outer edge         drifts OUTWARD as it descends, ending in a
+        //                      small flick. Curling inward is what made ours
+        //                      read as a fin rather than a tail.
+        //   hook rejoins       about 11.5pt inside the bubble's edge
+        // Straight off the measurements, at r = 12:
+        //
+        //   the corner meets the bottom edge   6.5pt inside the right edge
+        //   the tip                            5pt inside, 4pt below
+        //   the hook rejoins the bottom edge   11.5pt inside
+        //
+        // The tip being LESS inset than the corner is the whole character of
+        // the thing: the outer edge comes in with the corner and then flicks
+        // back out and down. An outer edge that keeps curving inward gives a
+        // fin, which is what two earlier attempts drew.
+        let dropBelow: CGFloat = radius * 0.333    // 4
+        let cornerEnd: CGFloat = radius * 0.542    // 6.5
+        let tipInset: CGFloat = radius * 0.417     // 5
+        let hookBase: CGFloat = radius * 0.958     // 11.5
 
         let tip: CGPoint = at(body.maxX - tipInset, body.maxY + dropBelow)
 
         var path: Path = Path()
+
+        // Top edge, left to right.
         path.move(to: at(body.minX + radius, body.minY))
         path.addLine(to: at(body.maxX - radius, body.minY))
         path.addQuadCurve(to: at(body.maxX, body.minY + radius),
                           control: at(body.maxX, body.minY))
 
-        // Down the right edge, then the corner dips into the tail instead of
-        // turning. Keeping the first control ON the edge is what makes the
-        // tail grow out of the bubble rather than sit against it.
+        // Down the right edge and round the corner, stopping where the bottom
+        // edge would begin.
         path.addLine(to: at(body.maxX, body.maxY - radius))
-        path.addCurve(
+        path.addQuadCurve(to: at(body.maxX - cornerEnd, body.maxY),
+                          control: at(body.maxX, body.maxY))
+
+        // The flick: down and slightly back OUT to the tip.
+        path.addQuadCurve(
             to: tip,
-            control1: at(body.maxX, body.maxY - radius * 0.15),
-            control2: at(body.maxX - radius * 0.1, body.maxY + dropBelow * 0.75)
+            control: at(body.maxX - cornerEnd * 0.55, body.maxY + dropBelow * 0.5)
         )
 
-        // The hook: back up and in, concave, rejoining the bottom edge.
+        // The hook: back up and in, concave, rejoining the bottom edge. This
+        // curve — not the tip — is what makes the shape read as a tail.
         path.addCurve(
             to: at(body.maxX - hookBase, body.maxY),
-            control1: at(body.maxX - tipInset - radius * 0.15, body.maxY + dropBelow * 0.55),
-            control2: at(body.maxX - hookBase * 0.55, body.maxY)
+            control1: at(body.maxX - tipInset - radius * 0.2, body.maxY + dropBelow * 0.6),
+            control2: at(body.maxX - hookBase * 0.6, body.maxY)
         )
 
         // Bottom edge back to the far side, and up.
