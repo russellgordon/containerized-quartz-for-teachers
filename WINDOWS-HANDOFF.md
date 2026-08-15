@@ -723,6 +723,60 @@ Section 1 meets…"), and a timetable that has run out ("…has 40 class pages
 and 40 dates, so there is no date left. Add more class dates."). "Index out
 of range" helps nobody.
 
+### The section index follows its newest class — the invariant, and its limit
+
+A section's `index.md` is what a student lands on, and it opens by
+transcluding one class page under "Most Recent Class". Every example course
+used to carry a note telling the teacher to repoint it by hand after each
+lesson. It is now maintained, and the rule is stated as an INVARIANT rather
+than as a fix to the case that revealed it:
+
+> **The section index transcludes the most recent class page students can
+> see, and carries that class's date.**
+
+Written that way, publishing a newer class is covered by the same sentence as
+unpublishing the current one. Written as "unpublishing repoints the index",
+the publish direction stays broken and nobody notices until a teacher
+publishes tomorrow's class and the front page still shows last week's.
+
+Three implementation points that will bite otherwise:
+
+- **Match the transclusion by class TITLE, not by position.** The same index
+  transcludes Help Sessions and Key Links. Repointing one of those at a lesson
+  is a far worse bug than the one being fixed.
+- **Read "which class is newest now" back from the section on disk**, after
+  the pages are written — not from the plan. A second calculation is a second
+  thing to get wrong.
+- **Write the index inside whatever your undo records.** Ours goes into the
+  same change object as the pages, so "Undo that" takes the landing page back
+  with them. An undo that restores the lessons and leaves the front page
+  pointing at the wrong one is a worse state than either of the two it was
+  between.
+
+A section with no dated visible class is left alone rather than pointed
+somewhere arbitrary.
+
+#### The road not taken: do NOT do this at build time
+
+The obvious extension is to have the site builder repoint the index, which
+would also cover a teacher who edits `publish:` by hand in Obsidian rather
+than asking the assistant. **Considered and rejected, deliberately.**
+
+It breaks the contract the whole toolchain rests on: **what is in the vault is
+what gets published.** The builder works on a merged COPY, so it would not
+rewrite the teacher's files — which sounds like it escapes the objection, and
+is actually worse. The published site would then show a page the vault does
+not contain, and the teacher would have no way to find where it came from:
+they would read their own `index.md`, see it pointing at Unit 4, Day 12, look
+at the live site showing Unit 4, Day 19, and have nothing to blame.
+
+So the automation fires only where a teacher can see it fire: when the
+assistant changes a class's visibility. Editing frontmatter by hand leaves the
+index exactly as written, which is the correct behaviour for a tool whose
+promise is that the vault is the truth. **This is a live constraint, not a
+historical note** — the same argument applies to any future "the builder could
+just fix it up" idea, and there will be more of them.
+
 ## Plan mode, undo, and how often to back up
 
 Three decisions taken on the macOS side on 2026-08-15 that Windows should
