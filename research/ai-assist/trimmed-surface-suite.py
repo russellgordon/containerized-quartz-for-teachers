@@ -42,9 +42,11 @@ PORT = args[args.index("--port") + 1] if "--port" in args else "8099"
 DATE_APPENDED = "--date-appended" in args
 DATE_PREPENDED = "--date-prepended" in args
 REAL_COURSE = "--real-course" in args
+# --course VVH2O swaps the course everywhere (prompts, system message,
+# example replacement) — matching a saved cache's course skips the cold read.
+COURSE = args[args.index("--course") + 1] if "--course" in args else "EXC2O"
 
 ENDPOINT = "http://127.0.0.1:%s/v1/chat/completions" % PORT
-COURSE = "EXC2O"
 
 def replace_examples(node):
     if isinstance(node, dict):
@@ -68,7 +70,7 @@ DATELINE = "(Today is %s, a %s.)" % (TODAY.isoformat(), TODAY.strftime("%A"))
 # wait removed); the 94% in trimmed-surface-results.txt was measured with the
 # PREVIOUS wording and has not been re-run against this one.
 SYSTEM = (
-    "You are Plantoir's assistant, helping a teacher with EXC2O section 1. "
+    f"You are Plantoir's assistant, helping a teacher with {COURSE} section 1. "
     "Choose exactly one tool at a time and fill in its arguments from what the teacher said. "
     "Publishing and unpublishing are safe to do straight away - every change is backed up "
     "and undo_last_change takes it back - so do what was asked without asking permission first. "
@@ -88,8 +90,62 @@ WRITES = {"publish_class_on", "publish_pages", "unpublish_pages", "deploy_sectio
 PUBLISHERS = {"publish_class_on", "plan_publish_class_on", "publish_pages", "plan_publish_pages"}
 
 # (acceptable tool names, prompt, probe label, needs_date)
-# None in the tuple means declining is acceptable.
-CASES = [
+# None in the tuple means declining is acceptable. "EXC2O" in a prompt is
+# replaced by --course at run time.
+#
+# THE PROMISE CARD, verbatim. These eleven are what the assistant window
+# tells a teacher it is good at (AssistAgent.ExampleRequests), so they are
+# measured exactly as written — no course named, because the window names
+# it in the system prompt. "Rebuild the preview" never reaches the model in
+# the app (the fast path answers it); it is measured anyway for the
+# bring-your-own-assistant path.
+PROMISED = [
+    (("plan_publish_pages", "publish_pages"),
+     "Publish Unit 2, Day 3, and everything it links to",
+     "card: publish by name", False),
+
+    (("plan_publish_class_on", "publish_class_on"),
+     "Publish tomorrow's class",
+     "card: publish tomorrow", True),
+
+    (("plan_unpublish_pages", "unpublish_pages"),
+     "Unpublish Unit 2, Day 3",
+     "card: unpublish by name", False),
+
+    (("plan_unpublish_pages", "unpublish_pages"),
+     "I published Unit 4, Day 1 by mistake — unpublish it",
+     "card: unpublish, mistake", False),
+
+    (("plan_publish_pages", "publish_pages"),
+     "What would publishing Unit 3, Day 1 change?",
+     "card: plan a publish", False),
+
+    (("check_section",),
+     "What would students see in this section right now?",
+     "card: check the section", False),
+
+    (("rebuild_preview",),
+     "Rebuild the preview",
+     "card: rebuild preview", False),
+
+    (("undo_last_change",),
+     "Undo that",
+     "card: undo", False),
+
+    (("deploy_section",),
+     "Deploy this section now",
+     "card: deploy now", False),
+
+    (("plan_scheduled_deploy", "schedule_deploy"),
+     "Deploy tomorrow's class at 6:30 AM",
+     "card: schedule a deploy", True),
+
+    (("cancel_scheduled_deploy",),
+     "Cancel that scheduled deploy",
+     "card: cancel the deploy", False),
+]
+
+CASES = PROMISED + [
     (("plan_publish_class_on", "publish_class_on"),
      "Publish tomorrow's class for EXC2O section 1, and make sure every page it "
      "links to is published rather than left as a draft.",
@@ -197,11 +253,11 @@ print("### date-appended=%s date-prepended=%s real-course=%s" % (
 print("%-30s %-24s %-5s %-6s %s" % ("probe", "chose", "ok", "ms", "arguments"))
 print("-" * 118)
 for acceptable, prompt, probe, needs_date in CASES:
-    text = prompt
+    text = prompt.replace("EXC2O", COURSE).replace("exc2o", COURSE.lower())
     if DATE_APPENDED:
-        text = "%s %s" % (prompt, DATELINE)
+        text = "%s %s" % (text, DATELINE)
     elif DATE_PREPENDED:
-        text = "%s %s" % (DATELINE, prompt)
+        text = "%s %s" % (DATELINE, text)
     for _ in range(TRIALS):
         name, arguments, ms = ask(text)
         total += 1
