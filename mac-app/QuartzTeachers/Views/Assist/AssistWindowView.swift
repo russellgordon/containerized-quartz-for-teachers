@@ -98,6 +98,19 @@ struct AssistWindowView: View {
             sectionNumber: session.sectionNumber,
             workingFolder: session.workingFolder
         )
+        // Comes back where it was left, per section. The window group stays
+        // unrestored on purpose — reopening it at launch would load a model
+        // nobody asked for — so this remembers only the PLACEMENT, which is
+        // the part a teacher notices: an assistant that reappears in the
+        // middle of the screen, on top of the section it is meant to sit
+        // beside, gets dragged back every single time.
+        .background(WindowAccessor { window in
+            AssistWindowPlacement.remember(
+                window,
+                courseCode: session.courseCode,
+                sectionNumber: session.sectionNumber
+            )
+        })
         .task {
             history = AssistPromptHistory.read(fromStored: storedHistory)
             await session.prepare()
@@ -208,13 +221,26 @@ struct AssistWindowView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 12) {
-                    ForEach(transcriptLines) { line in
+                    ForEach(Array(transcriptLines.enumerated()), id: \.element.id) { position, line in
                         switch line {
                         case .said(let entry):
-                            AssistEntryView(entry: entry)
+                            AssistEntryView(
+                                entry: entry,
+                                hasTail: AssistChatLayout.showsTail(
+                                    at: position, in: transcriptSpeakers
+                                )
+                            )
                         case .restored(let note):
                             AssistRestoreNoteView(note: note)
                         }
+                    }
+
+                    // Three dots while the model is working. It appears for
+                    // thinking AND for running a tool: both are waits with
+                    // nothing on screen, and a teacher does not care which of
+                    // the two the assistant is busy with.
+                    if session.agent?.isBusy == true, session.agent?.pendingApproval == nil {
+                        AssistTypingIndicator()
                     }
                     if let approval = session.agent?.pendingApproval,
                        let agent = session.agent {
@@ -312,6 +338,23 @@ struct AssistWindowView: View {
         .background(.bar)
     }
 
+    /// Who said each line, in order, with a placeholder for the lines nobody
+    /// said. The tail rule reads this rather than the views.
+    private var transcriptSpeakers: [AssistAgent.Entry.Speaker] {
+        var speakers: [AssistAgent.Entry.Speaker] = []
+        for line in transcriptLines {
+            switch line {
+            case .said(let entry):
+                speakers.append(entry.speaker)
+            case .restored:
+                // A restore is something that HAPPENED, not something said,
+                // so it neither wears a tail nor ends anybody's turn.
+                speakers.append(.problem)
+            }
+        }
+        return speakers
+    }
+
     /// The conversation and the restores, laid together in the order they
     /// happened.
     ///
@@ -357,6 +400,11 @@ struct AssistWindowView: View {
         storedHistory = history.stored
         lastRecalled = nil
         typing = ""
+        // The cursor stays put. A teacher sending two things in a row should
+        // not have to click back into the box between them, and losing focus
+        // after every send also loses the arrow-key history that depends on
+        // the field having it.
+        isComposerFocused = true
         await session.agent?.say(message)
     }
 }
@@ -402,23 +450,48 @@ private struct AssistEntryView: View {
 
     let entry: AssistAgent.Entry
 
+    /// Whether this bubble ends its participant's run, and so wears the tail.
+    let hasTail: Bool
+
     // MARK: - Computed properties
 
     var body: some View {
         switch entry.speaker {
+        // Blue, on the right, the way the person holding the keyboard is
+        // shown in every messaging app a teacher already uses. White text
+        // rather than the label colour: the accent is a strong fill, and
+        // primary text on it fails in one of the two themes.
         case .teacher:
             HStack {
-                Spacer(minLength: 40)
+                Spacer(minLength: 48)
                 Text(entry.text)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.accentColor.opacity(0.15), in: RoundedRectangle(cornerRadius: 12))
+                    .foregroundStyle(.white)
+                    .textSelection(.enabled)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 9)
+                    .background(
+                        AssistChatBubbleShape(side: .teacher, hasTail: hasTail)
+                            .fill(Color.accentColor)
+                    )
             }
+            .padding(.bottom, hasTail ? 6 : 0)
 
+        // Grey, on the left. Softer than the teacher's bubble on purpose:
+        // the assistant talks more than the teacher does, and a column of
+        // strong fills down one side is exhausting to read.
         case .assistant:
-            Text(entry.text)
-                .textSelection(.enabled)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                Text(entry.text)
+                    .textSelection(.enabled)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 9)
+                    .background(
+                        AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
+                            .fill(Color.secondary.opacity(0.16))
+                    )
+                Spacer(minLength: 48)
+            }
+            .padding(.bottom, hasTail ? 6 : 0)
 
         case .toolResult:
             // What ran is said in the teacher's terms, not the tool's name —
@@ -488,9 +561,11 @@ private struct AssistApprovalView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label(title, systemImage: isDeploy ? "hand.raised" : "text.magnifyingglass")
                 .font(.headline)
-            Text(explanation)
-                .textSelection(.enabled)
-                .fixedSize(horizontal: false, vertical: true)
+            // The plan itself is NOT repeated here. It is said in the
+            // conversation above, as a message that stays there after this
+            // card has gone — which is the whole point of moving it. Printing
+            // it twice would give a teacher two copies to compare and a
+            // reason to wonder whether they differ.
             HStack {
                 Button(goTitle, action: approve)
                     .keyboardShortcut(.defaultAction)

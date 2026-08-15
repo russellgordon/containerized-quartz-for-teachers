@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// What the assistant tells a teacher it is good at — kept on screen for
@@ -147,6 +148,18 @@ struct AssistPromptShelfView: View {
                                                         in: RoundedRectangle(cornerRadius: 6))
                                     }
                                     .buttonStyle(.plain)
+                                    // The pointing hand is macOS's own signal
+                                    // that something is clickable. A plain
+                                    // button style keeps the chip looking the
+                                    // way it should and takes the cursor with
+                                    // it, so it is put back by hand.
+                                    .onHover { isInside in
+                                        if isInside {
+                                            NSCursor.pointingHand.push()
+                                        } else {
+                                            NSCursor.pop()
+                                        }
+                                    }
                                     .accessibilityIdentifier("assistSuggestion-\(phrasing)")
                                 }
                             }

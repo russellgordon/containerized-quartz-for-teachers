@@ -178,7 +178,7 @@ final class AssistAgent {
             name: pending.call.function.name,
             text: "The teacher decided not to. Nothing was done."
         ))
-        entries.append(Entry(speaker: .assistant, text: "Left as it was."))
+        entries.append(Entry(speaker: .assistant, text: "Left as it was — nothing was changed."))
     }
 
     /// Ask the model what to do next, then do it.
@@ -221,10 +221,9 @@ final class AssistAgent {
         // Deploying ALWAYS waits for a button: it puts something in front of
         // students immediately and Plantoir cannot take it back for them.
         if definition.needsApproval {
-            pendingApproval = PendingApproval(
-                call: call,
-                explanation: tools.explain(call: call)
-            )
+            let explanation: String = tools.explain(call: call)
+            entries.append(Entry(speaker: .assistant, text: explanation))
+            pendingApproval = PendingApproval(call: call, explanation: explanation)
             activity = .waitingForApproval
             return
         }
@@ -270,9 +269,20 @@ final class AssistAgent {
         )
         let outcome: AssistToolOutcome = await tools.run(call: planCall)
 
-        // `forTheCard`, not `detail`. The detail ends with a sentence written
-        // for whatever is reading a plan on a surface that has no Go and
-        // Cancel of its own — and this surface has them, directly underneath.
+        // The plan is SAID, not shown on a card that is taken away again.
+        //
+        // It used to live only in the approval card, which meant that the
+        // moment a teacher pressed Go or Cancel the description of what they
+        // had just agreed to disappeared — and with it the context for
+        // everything after. A conversation you cannot scroll back through is
+        // not a conversation. So the plan goes into the transcript like any
+        // other thing the assistant says, and the card below it is reduced to
+        // the two buttons.
+        //
+        // `forTheCard`, not `detail`: the detail ends with a sentence written
+        // for whatever reads a plan on a surface with no Go and Cancel of its
+        // own, and this surface has them.
+        entries.append(Entry(speaker: .assistant, text: outcome.forTheCard))
         pendingApproval = PendingApproval(call: call, explanation: outcome.forTheCard)
         activity = .waitingForApproval
     }
