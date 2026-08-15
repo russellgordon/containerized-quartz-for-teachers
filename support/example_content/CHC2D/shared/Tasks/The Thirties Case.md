@@ -54,6 +54,8 @@ sits inside.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[C1.5]]
+
 ![[C1.1]]
 
 ![[C1.3]]

@@ -64,5 +64,9 @@ use [[Continuity and Change]] to say what was different in 1945 from 1918.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[C2.1]]
+
+![[C3.1]]
+
 ![[C2.4]]
 %%curriculum-end%%

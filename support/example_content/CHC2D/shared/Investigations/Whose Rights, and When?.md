@@ -56,6 +56,8 @@ Read the movements behind the dates in
 %%curriculum-start%%
 ## Curriculum connection
 
+![[B3.3]]
+
 ![[D2.1]]
 
 ![[D2.3]]

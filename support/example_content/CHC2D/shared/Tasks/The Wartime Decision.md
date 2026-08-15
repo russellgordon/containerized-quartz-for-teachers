@@ -58,6 +58,10 @@ are worked through first.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[C2.1]]
+
+![[C2.2]]
+
 ![[C2.3]]
 
 ![[C2.4]]

@@ -64,5 +64,7 @@ work in [[Was Conscription Necessary?]].
 
 ![[A1.3]]
 
+![[B3.2]]
+
 ![[B1.4]]
 %%curriculum-end%%

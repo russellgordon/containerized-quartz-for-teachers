@@ -59,6 +59,8 @@ exactly what [[Historical Perspective]] is for.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[D2.6]]
+
 ![[D2.5]]
 
 ![[E2.5]]

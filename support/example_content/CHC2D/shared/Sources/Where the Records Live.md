@@ -15,7 +15,7 @@ searching documents.
 ## The split that costs students the most time
 
 A **finding aid** describes what an archive owns: a box, a fonds, a reel,
-with a summary and a reference number. A **digitised collection** gives you
+with a summary and a reference number. A **digitized collection** gives you
 the page itself. The Archives of Ontario's AIMS database is the first kind,
 and a search there ends with a catalogue entry and a trip to Toronto. Its
 online exhibits and its images on Wikimedia Commons are the second kind.
@@ -26,7 +26,7 @@ Know which door you are opening before you knock.
 | Where | What it holds | What you get from home |
 | --- | --- | --- |
 | Library and Archives Canada | Federal records, census returns, and every service file of the Canadian Expeditionary Force | Full scans of attestation papers; census returns searchable by name |
-| Canadiana and Héritage | Published books, serials and newspapers; digitised archival microfilm | Over 69 million pages free; page images, mostly not full-text searchable |
+| Canadiana and Héritage | Published books, serials and newspapers; digitized archival microfilm | Over 69 million pages free; page images, mostly not full-text searchable |
 | Statistics Canada, 11-516-X | Canadian statistics, 1867 to the mid-1970s | CSV and PDF for every table, no login |
 | Archives of Ontario | Provincial records, wartime posters, Black history collections | Nine online exhibits, free Grade 10 lesson plans, 8,700+ open-licensed images |
 | National Centre for Truth and Reconciliation | The records of the Truth and Reconciliation Commission | All TRC volumes free; a Grade 9–10 teaching set; the Memorial Register |
@@ -34,7 +34,7 @@ Know which door you are opening before you knock.
 | Woodland Cultural Centre | Six Nations of the Grand River, on the site of the former Mohawk Institute | Museum, library and language resources, and the Save the Evidence campaign |
 
 Two of those need a sentence of warning. Héritage is scanned microfilm
-organised by fonds and reel, so it rewards a guided search and punishes
+organized by fonds and reel, so it rewards a guided search and punishes
 browsing — and its Indigenous holdings are the federal government's
 administrative record, not Indigenous-authored material. And the
 restrictions on the NCTR's Survivor statements are not a technicality; read

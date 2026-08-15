@@ -67,6 +67,8 @@ to keep your claims tied to what the sources actually show.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[D3.2]]
+
 ![[D2.2]]
 
 ![[D2.4]]

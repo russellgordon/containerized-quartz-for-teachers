@@ -37,7 +37,7 @@ Government paper survives at a rate that private letters never do, which
 quietly tilts the record towards the people who ran things.
 
 > [!example]- One document, worked through (click to expand)
-> Library and Archives Canada has digitised the roughly 640,000 service
+> Library and Archives Canada has digitized the roughly 640,000 service
 > files of the Canadian Expeditionary Force, free and without an account,
 > reachable from
 > [canada.ca/en/library-archives](https://www.canada.ca/en/library-archives.html)

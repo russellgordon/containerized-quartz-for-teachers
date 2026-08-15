@@ -11,7 +11,8 @@ tags:
 ## Agenda
 
 1. Retrieval; then 1945: soldiers home, and a boom
-2. [[Building the Postwar State]], first half
+2. [[Building the Postwar State]], first half, and what daily life
+   became: [[Postwar Life and Technology]]
 3. Veterans' benefits, and who received them
 
 ## Things to do before our next class

@@ -58,6 +58,8 @@ Say which you are doing. Then check the source that made it with
 %%curriculum-start%%
 ## Curriculum connection
 
+![[B1.3]]
+
 ![[B1.1]]
 
 ![[D1.1]]

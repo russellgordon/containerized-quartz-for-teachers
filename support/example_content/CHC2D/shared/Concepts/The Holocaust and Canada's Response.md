@@ -69,6 +69,8 @@ question of what Canada owed into [[The Wartime Decision]].
 %%curriculum-start%%
 ## Curriculum connection
 
+![[C3.2]]
+
 ![[C2.6]]
 
 ![[C3.3]]

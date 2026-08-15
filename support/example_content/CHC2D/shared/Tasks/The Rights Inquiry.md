@@ -56,6 +56,10 @@ learn from in five minutes.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[D2.1]]
+
+![[D1.4]]
+
 ![[D2.3]]
 
 ![[D2.4]]

@@ -47,7 +47,7 @@ record of protest, and [[Oral History and Testimony]].
 > [!info] Where these records live, and what they will call people
 > Statutes currently in force are at the federal Justice Laws Website; the
 > *Indian Act*, first enacted in 1876 and never repealed, is there today as
-> R.S.C. 1985, c. I-5. Digitised government publications and archival
+> R.S.C. 1985, c. I-5. Digitized government publications and archival
 > microfilm are free at [Canadiana](https://www.canadiana.ca/) and
 > [Héritage](https://heritage.canadiana.ca/), run by the Canadian Research
 > Knowledge Network (accessed August 2026). Both carry warnings that their

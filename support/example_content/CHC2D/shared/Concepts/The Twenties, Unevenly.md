@@ -55,6 +55,8 @@ Set the decade's unevenness against [[The Crash and the Thirties]], and use
 %%curriculum-start%%
 ## Curriculum connection
 
+![[B1.2]]
+
 ![[B1.3]]
 
 ![[B3.2]]

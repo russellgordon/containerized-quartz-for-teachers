@@ -62,6 +62,8 @@ Get the evidence right in [[Using Evidence]], the vocabulary right in
 %%curriculum-start%%
 ## Curriculum connection
 
+![[A2.1]]
+
 ![[A1.6]]
 
 ![[A1.7]]

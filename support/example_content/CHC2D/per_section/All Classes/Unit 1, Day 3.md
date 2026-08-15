@@ -12,7 +12,7 @@ tags:
 
 1. Canada in 1914: who lived here, and under what rules
 2. [[Who Counted as Canadian]] — the country the war arrived at
-3. What we are aiming at: [[Learning Goals]]; where to find me: [[Getting Help]]
+3. What we are aiming at: [[Learning Goals]]; how the marks work: [[How Marks Work]]; where to find me: [[Getting Help]]
 
 ## Things to do before our next class
 

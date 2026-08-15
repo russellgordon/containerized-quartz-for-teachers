@@ -70,6 +70,10 @@ and build a case about it in [[The Recent Past]].
 %%curriculum-start%%
 ## Curriculum connection
 
+![[E1.2]]
+
+![[E3.1]]
+
 ![[E1.1]]
 
 ![[E1.3]]

@@ -69,6 +69,8 @@ records of this history; start there rather than with a summary, read
 %%curriculum-start%%
 ## Curriculum connection
 
+![[B2.5]]
+
 ![[D1.4]]
 
 ![[D3.3]]

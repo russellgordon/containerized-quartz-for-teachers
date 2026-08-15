@@ -60,5 +60,7 @@ flattening them, and take a suffrage pamphlet apart in
 %%curriculum-start%%
 ## Curriculum connection
 
+![[B2.4]]
+
 ![[B3.3]]
 %%curriculum-end%%

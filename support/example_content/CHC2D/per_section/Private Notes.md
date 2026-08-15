@@ -48,3 +48,37 @@ not use "at least 6,000" (a spoken remark, not a finding) or "215 bodies
 found" (ground-penetrating radar anomalies, not identified remains). If
 a student brings those numbers in from elsewhere, that is a teachable
 moment about sourcing rather than an error to correct quietly.
+
+## Two more pages to look at before you teach them
+
+- **Could Canada Have Done More?** — the investigation into the MS *St.
+  Louis* and refugee policy. It is accurate and deliberately unsparing,
+  and it is the page to pair with whatever cultural-safety routine your
+  class uses.
+- **Oral History and Testimony** — carries the NCTR's crisis line and
+  tells students they are witnesses rather than extractors. It also
+  tells them not to file records requests with the NCTR as a class
+  exercise, because that archive serves survivors and families first.
+  Confirm you endorse that framing before assigning it.
+
+## Where the coverage is thin, and why
+
+Twenty of the seventy-five expectations are addressed by exactly one
+page. That is a deliberate stopping point rather than an oversight: this
+course carries 75 specific expectations in 86 periods, and manufacturing
+a second transclusion for each would have meant stapling codes to pages
+that do not really teach them. The ones left at one are mostly the
+narrower context expectations — science and technology in a given
+period, a particular international relationship, a single strand of
+identity.
+
+If you want any of them met twice, the honest way is to add a source or
+an investigation that genuinely does the work, not another code at the
+foot of an existing page.
+
+## Dates the pages do not print, because they were not verified
+
+The head tax and LGBTQ purge apologies, First World War casualty totals,
+and Ontario's fair-employment statute years are all deliberately absent
+or asked of students rather than asserted. Add them once you have
+checked them.

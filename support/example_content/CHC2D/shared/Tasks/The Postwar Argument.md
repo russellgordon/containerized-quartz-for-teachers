@@ -52,6 +52,8 @@ it, in depth.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[D1.3]]
+
 ![[D1.5]]
 
 ![[D1.6]]

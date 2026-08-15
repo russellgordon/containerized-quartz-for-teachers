@@ -57,5 +57,7 @@ independent declaration beside 1914 in [[Canada and the World]].
 %%curriculum-start%%
 ## Curriculum connection
 
+![[C2.2]]
+
 ![[C2.3]]
 %%curriculum-end%%

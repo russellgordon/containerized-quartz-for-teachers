@@ -8,7 +8,7 @@ tags:
 ---
 Precise vocabulary is not decoration on a finished argument. It is how the
 argument gets made, because most mistakes in student history writing are a
-word doing work its author never authorised. The curriculum asks for
+word doing work its author never authorized. The curriculum asks for
 "appropriate terminology," including the vocabulary of the four concepts of
 historical thinking. Here is what the load-bearing words actually mean.
 
@@ -38,7 +38,7 @@ governments used them as legal categories: quote them, as evidence of the
 system that produced them, and never adopt them as your own descriptions.
 
 Be equally careful with **residential school**, **day school** and
-**industrial school** — different institutions, differently recognised in law.
+**industrial school** — different institutions, differently recognized in law.
 
 ## Words that carry a verdict
 

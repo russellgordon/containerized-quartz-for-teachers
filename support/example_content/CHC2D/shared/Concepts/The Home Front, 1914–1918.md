@@ -59,6 +59,8 @@ order-in-council apart in [[Reading a Primary Source]].
 %%curriculum-start%%
 ## Curriculum connection
 
+![[B2.4]]
+
 ![[B1.4]]
 
 ![[B2.3]]

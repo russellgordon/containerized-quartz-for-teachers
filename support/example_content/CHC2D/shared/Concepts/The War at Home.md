@@ -62,5 +62,7 @@ hindsight, in [[The Wartime Decision]]; the material is in [[Sources/index]].
 %%curriculum-start%%
 ## Curriculum connection
 
+![[C1.2]]
+
 ![[C2.5]]
 %%curriculum-end%%

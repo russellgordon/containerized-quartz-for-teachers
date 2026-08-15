@@ -58,6 +58,10 @@ fastest way to see how much sharper you have become.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[A1.1]]
+
+![[A1.9]]
+
 ![[A1.4]]
 
 ![[A1.5]]

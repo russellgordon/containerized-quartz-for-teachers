@@ -56,6 +56,10 @@ survey this essay goes beneath.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[E1.1]]
+
+![[E1.3]]
+
 ![[E1.4]]
 
 ![[E2.3]]

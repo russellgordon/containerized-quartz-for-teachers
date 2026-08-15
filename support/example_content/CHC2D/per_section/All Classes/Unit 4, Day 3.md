@@ -12,7 +12,8 @@ tags:
 
 1. Meech, Charlottetown, and the 1995 referendum
 2. Constitutional politics as lived experience
-3. Regionalism and the West
+3. Regionalism, and Canada's place in the world:
+   [[Regions, Relationships, and the World Since 1982]]
 
 ## Things to do before our next class
 

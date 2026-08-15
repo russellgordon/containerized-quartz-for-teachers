@@ -57,6 +57,8 @@ You may propose your own, agreed with me first.
 %%curriculum-start%%
 ## Curriculum connection
 
+![[B3.1]]
+
 ![[B2.1]]
 
 ![[B2.2]]
