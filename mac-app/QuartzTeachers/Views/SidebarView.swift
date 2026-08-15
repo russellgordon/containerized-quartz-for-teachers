@@ -72,11 +72,18 @@ struct SidebarView: View {
                                     .tag(SidebarSelection.section(course.code, sectionNumber))
                                     .accessibilityIdentifier("sidebar-\(course.code)-section\(sectionNumber)")
                                     .contextMenu {
+                                        // The assistant sits at the TOP, in a
+                                        // group of its own. It is the item a
+                                        // teacher comes to this menu for most
+                                        // often, and burying it under the
+                                        // editing and folder actions made it
+                                        // read as an afterthought.
+                                        reviseWithAIItem(course: course, sectionNumber: sectionNumber)
+                                        Divider()
                                         openInObsidianItem(
                                             revealing: course.sectionDirectoryURL(forSection: sectionNumber),
                                             vaultURL: course.directoryURL
                                         )
-                                        reviseWithAIItem(course: course, sectionNumber: sectionNumber)
                                         Divider()
                                         // One item or the other, never a
                                         // greyed-out line — a menu that
