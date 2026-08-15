@@ -30,18 +30,27 @@ cleaning, clearing stale state — do it and say you did.
      -destination 'platform=macOS' -only-testing:QuartzTeachersTests test
    ```
 
-3. **Tell him it is ready and what he must do.** He launches it from the
-   **Dock**, not from Terminal — his Dock entry points straight at the build
+3. **Confirm the app is actually there, then tell him.** He launches from the
+   **Dock**, not from Terminal. His Dock entry points straight at the build
    path (`~/Library/Developer/Xcode/DerivedData/Plantoir-*/Build/Products/Debug/Plantoir.app`),
-   so a normal build updates what that icon opens. Nothing to copy or
+   so an ordinary build updates what that icon opens — nothing to copy or
    re-point.
 
-   **Check whether a copy is running** (`pgrep -x Plantoir`) and say so: a
-   running copy keeps running the OLD build, and clicking the Dock icon just
-   brings it forward rather than launching the new one. Quitting is his to
-   do. Comparing the running process's start time against the binary's
-   modification time tells you truthfully whether what he is looking at is
-   the change you just made.
+   ```bash
+   APP=$(ls -d ~/Library/Developer/Xcode/DerivedData/Plantoir-*/Build/Products/Debug/Plantoir.app | head -1)
+   [ -d "$APP" ] && echo "ready" || echo "NOT BUILT — do not tell him it is ready"
+   pgrep -x Plantoir >/dev/null && echo "a copy is running (it is the OLD build)"
+   ```
+
+   **Never say "ready" without checking the bundle exists.** See the clean
+   section: a clean DELETES it, and telling him to click an icon that points
+   at nothing is how the Dock entry gets lost.
+
+   **Say whether a copy is running.** Clicking the Dock icon then just brings
+   the old build forward instead of launching the new one, which looks exactly
+   like your change not working. Quitting is his to do. Comparing the running
+   process's start time with the binary's modification time answers it
+   truthfully rather than by guesswork.
 
 The one-line summary is the part that saves him time. It is one of:
 
@@ -66,18 +75,26 @@ Clean when you have changed:
   `../patches`, `../Dockerfile`, the three `../*.sh` launchers. These are
   resources; a stale copy in the bundle is a very confusing hour.
 
+**A clean DELETES the built app, so never stop halfway.** Verified: after
+`xcodebuild clean` the `.app` is gone from `Build/Products/Debug/` while the
+DerivedData folder and its hash survive. The Dock entry therefore still points
+at the right PATH, but at nothing — and if he clicks it in that window, macOS
+can turn the entry into a "?" and drop it. So clean and rebuild in ONE
+command, and check the bundle is back before saying a word:
+
 ```bash
 cd mac-app && xcodebuild -project Plantoir.xcodeproj -scheme Plantoir clean && \
   xcodegen generate && xcodebuild -project Plantoir.xcodeproj -scheme Plantoir \
     -destination 'platform=macOS' build
 ```
 
-If that still misbehaves, removing the project's DerivedData folder is the
-last resort — but **it breaks his Dock icon**, so it is not a free move. The
-folder name carries a per-project hash (`Plantoir-bzuacszrcleopbgiavzdpqasfyky`)
-and Xcode generates a new one, so the Dock entry is left pointing at a path
-that no longer exists. Ask first, and if it is done, tell him to drag the
-freshly built app back to the Dock — or offer to repoint it:
+If that still misbehaves, removing the project's whole DerivedData folder is
+the last resort, and it is a bigger deal than a clean: the folder name carries
+a per-project hash (`Plantoir-bzuacszrcleopbgiavzdpqasfyky`) and Xcode
+generates a NEW one, so the path itself changes and the Dock entry is left
+pointing somewhere that will never exist again. A clean is recoverable by
+rebuilding; this is not. **Ask first**, and afterwards he has to drag the
+freshly built app back to the Dock. To see where the entry currently points:
 
 ```bash
 # The path the Dock entry currently opens
