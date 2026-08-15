@@ -170,6 +170,70 @@ COLIMA_VERSION="v0.10.3"
 LIMA_VERSION="2.2.0"
 DOCKER_CLI_VERSION="29.7.2"
 BUILDX_VERSION="v0.36.1"
+# Colima's size, computed from this Mac rather than pinned.
+#
+# The old fixed 2 CPUs / 4 GB was chosen for an 8 GB machine and then applied
+# to every machine, so a 48 GB Mac built its site with the same sliver as a
+# laptop. These are deliberately NOT the whole machine: the teacher is using
+# the Mac while a build runs, so half the cores and a third of the RAM, with
+# the old values as the floor — an 8 GB Mac gets exactly what it gets today.
+_colima_cpus() {
+  local host_cpu cpus
+  host_cpu=$(sysctl -n hw.ncpu 2>/dev/null || echo 2)
+  cpus=$(( host_cpu / 2 ))
+  [ "$cpus" -lt 2 ] && cpus=2
+  [ "$cpus" -gt 6 ] && cpus=6
+  echo "$cpus"
+}
+
+_colima_memory_gb() {
+  local host_bytes host_gb mem
+  host_bytes=$(sysctl -n hw.memsize 2>/dev/null || echo 8589934592)
+  host_gb=$(( host_bytes / 1073741824 ))
+  mem=$(( host_gb / 3 ))
+  [ "$mem" -lt 4 ] && mem=4
+  [ "$mem" -gt 12 ] && mem=12
+  echo "$mem"
+}
+# Colima may already exist, sized by an earlier Plantoir or by another
+# toolchain that shares it. Two rules keep that civil:
+#
+#   1. Only ever ASK FOR MORE. A teacher (or another tool) who gave Colima
+#      extra room keeps it; we never shrink somebody else's VM.
+#   2. Only while it is STOPPED. Resizing means recreating the VM, which
+#      would take down containers that other toolchains are using.
+#
+# Prints the flags to add to `colima start`, or nothing when it is already
+# big enough.
+_colima_growth_flags() {
+  local current_cpus current_memory_gb wanted_cpus wanted_memory_gb
+  read -r current_cpus current_memory_gb <<< "$(
+    colima list 2>/dev/null | awk '$1=="default" { gsub(/GiB/, "", $5); print $4, $5 }'
+  )"
+
+  # No VM yet: the caller's first-start path handles sizing.
+  [ -z "${current_cpus:-}" ] && return 0
+
+  wanted_cpus=$(_colima_cpus)
+  wanted_memory_gb=$(_colima_memory_gb)
+
+  # Non-numeric memory (a MiB-sized VM, say) counts as smaller than anything.
+  case "$current_memory_gb" in
+    ''|*[!0-9]*) current_memory_gb=0 ;;
+  esac
+  case "$current_cpus" in
+    ''|*[!0-9]*) current_cpus=0 ;;
+  esac
+
+  [ "$wanted_cpus" -le "$current_cpus" ] && wanted_cpus="$current_cpus"
+  [ "$wanted_memory_gb" -le "$current_memory_gb" ] && wanted_memory_gb="$current_memory_gb"
+
+  if [ "$wanted_cpus" -gt "$current_cpus" ] || [ "$wanted_memory_gb" -gt "$current_memory_gb" ]; then
+    echo "--cpu $wanted_cpus --memory $wanted_memory_gb"
+  fi
+}
+
+
 
 _download() {
   local url="$1" destination="$2" label="$3"
@@ -240,14 +304,15 @@ ensure_container_runtime() {
   ensure_local_tools
 
   if [[ ! -d "$HOME/.colima/default" ]]; then
-    echo "🚀 First start: building the virtual machine (2 CPUs · 4 GB RAM)."
+    echo "🚀 First start: building the virtual machine ($(_colima_cpus) CPUs · $(_colima_memory_gb) GB RAM)."
     echo "   Its disk image (~600 MB) is downloaded once; this can take several minutes."
     # vz is macOS's own virtualization — no extra software needed, unlike
     # the qemu default.
-    colima start --cpu 2 --memory 4 --vm-type vz
+    colima start --cpu "$(_colima_cpus)" --memory "$(_colima_memory_gb)" --vm-type vz
   else
     echo "▶️  Starting Colima…"
-    colima start
+    # shellcheck disable=SC2046  # deliberate word splitting: these are flags
+    colima start $(_colima_growth_flags)
   fi
 
   echo "⏳ Waiting for the container runtime to be ready…"

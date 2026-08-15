@@ -41,7 +41,7 @@ final class CourseActivityTests: XCTestCase {
         CourseActivity.beginPublish(folderPath: "/folder", courseCode: "ICS3U", sectionNumber: 2)
         XCTAssertTrue(CourseActivity.courseIsBusy(folderPath: "/folder", courseCode: "ICS3U"))
         XCTAssertEqual(CourseActivity.busyDescription(folderPath: "/folder", courseCode: "ICS3U"),
-                       "Available once publish completed")
+                       "Available once deploy completed")
 
         CourseActivity.endPublish(folderPath: "/folder", courseCode: "ICS3U", sectionNumber: 2)
         XCTAssertFalse(CourseActivity.courseIsBusy(folderPath: "/folder", courseCode: "ICS3U"))

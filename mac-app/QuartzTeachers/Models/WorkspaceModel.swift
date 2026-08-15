@@ -687,7 +687,7 @@ class WorkspaceModel {
         }
         if let workspacePath = workspaceURL?.path {
             if CourseActivity.courseIsBusy(folderPath: workspacePath, courseCode: item.courseCode) {
-                backupProblem = "\(item.courseCode) is previewing or publishing right now. Stop that first, then restore."
+                backupProblem = "\(item.courseCode) is previewing or deploying right now. Stop that first, then restore."
                 return
             }
         }

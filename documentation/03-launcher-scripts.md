@@ -109,8 +109,12 @@ command line. The bash launchers:
 2. `brew install colima docker` for whichever is missing (quietly, with
    Homebrew's output captured and shown only on failure, and
    `HOMEBREW_NO_ASK=1` so dependency prompts cannot stall a teacher).
-3. Start Colima — the first-ever start passes `--cpu 2 --memory 4` so the VM
-   has enough memory for Quartz builds; later starts reuse the saved profile.
+3. Start Colima — sized from the Mac it is running on rather than pinned.
+   `_colima_cpus` takes half the cores (floor 2, cap 6) and
+   `_colima_memory_gb` a third of the RAM (floor 4 GB, cap 12 GB), so an 8 GB
+   laptop gets exactly the old 2 CPU / 4 GB default and a 48 GB desktop gets
+   6 CPUs and 12 GB. Deliberately not the whole machine: the teacher is using
+   it while a site builds.
 4. Poll `docker info` for up to a minute. If the VM claims to be running but
    the daemon never answers (a known Colima state after the Mac sleeps or
    shuts down uncleanly, where a plain `colima start` no-ops), force a clean
@@ -130,10 +134,15 @@ when needed but never shut it down, and the only disruptive action — the
 force-restart in step 4 — happens exclusively when the Docker daemon is
 already dead, i.e. when no Colima-based tool is functional anyway
 (containers with restart policies come back automatically afterwards).
-Whichever toolchain creates the VM first determines its CPU/RAM size; this
-toolchain's `--cpu 2 --memory 4` first-start default is modest, so if a
-heavier toolchain shares the VM, resize it once with
-`colima stop && colima start --cpu 4 --memory 8` (the new size is saved).
+Whichever toolchain creates the VM first determines its CPU/RAM size, so the
+launchers may find a VM somebody else built. `_colima_growth_flags` handles
+that under two rules: it only ever asks for MORE (a VM another toolchain
+sized up keeps its size — we never shrink somebody else's), and it only does
+so on a start of a STOPPED VM, because resizing recreates the VM and would
+take down containers other tools are using. A VM that is already big enough
+is left completely alone. A teacher who wants a different size still sets it
+by hand with `colima stop && colima start --cpu N --memory M`, and the
+launchers will respect anything at or above their own figure.
 
 **Windows: Docker Engine inside WSL2.** Colima does not support Windows, but
 it is not needed there — WSL2 is itself a lightweight, Microsoft-supplied

@@ -36,7 +36,7 @@ struct FailureExplainer {
             return nil
         }
         let wait: String = waitDescription(in: output)
-        return "Netlify is limiting how often websites can be published right now. Try publishing again \(wait)."
+        return "Netlify is limiting how often websites can be deployed right now. Try deploying again \(wait)."
     }
 
     /// "Window resets at: … (in ~59s)." tells us how long the wait is.
@@ -74,11 +74,11 @@ struct FailureExplainer {
     /// The Netlify account is not connected, or no longer accepted.
     static func accountExplanation(in output: String) -> String? {
         if output.contains("Netlify token missing") {
-            return "Your Netlify account isn't connected yet. Add your Netlify access token, then publish again."
+            return "Your Netlify account isn't connected yet. Add your Netlify access token, then deploy again."
         }
         let wasRefused: Bool = output.contains("Netlify API error 401") || output.contains("Netlify API error 403")
         if wasRefused {
-            return "Netlify didn't accept your access token — it may have expired or been removed. Create a new one on Netlify, then publish again."
+            return "Netlify didn't accept your access token — it may have expired or been removed. Create a new one on Netlify, then deploy again."
         }
         return nil
     }
@@ -103,7 +103,7 @@ struct FailureExplainer {
     /// Publishing was asked for before anything had been built.
     static func missingBuildExplanation(in output: String) -> String? {
         if output.contains("Built site not found") {
-            return "This website hasn't been built yet. Preview it once, then publish."
+            return "This website hasn't been built yet. Preview it once, then deploy."
         }
         return nil
     }

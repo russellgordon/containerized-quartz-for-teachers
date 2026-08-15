@@ -10,6 +10,10 @@ picked them up. (Cross-side rebases rewrite commit hashes, so treat the
 hashes as hints from the moment of writing — the file and test
 references are the durable pointers.)
 
+Items are **marked done in place rather than removed**, so the ledger keeps
+its own history: a `✅ DONE` line names what landed on the mac side and
+where. Anything unmarked is still outstanding.
+
 ## To implement
 
 - **The local assistant went from built to trustworthy in one live-tested
@@ -18,6 +22,16 @@ references are the durable pointers.)
   `1961d07`). The short of it: everything measured, five design decisions
   worth inheriting rather than rediscovering, and the conversation loop is
   now **shared C# in `Plantoir.Core`** — port the window, not the logic.
+
+  **✅ DONE (macOS, 2026-08-15) — read, and mostly inherited.** The design
+  decisions were taken across whole: coarse tools, plan_ twins, publish and
+  unpublish as separate verbs, nothing destructive, the gate reading the
+  server, the card phrasings matched in code, the date APPENDED. Two things
+  are deliberately different. **The cache save/restore was not ported** —
+  it exists to avoid a 175-second cold read, and natively that read is 2.1
+  seconds, so the machinery would be pure failure surface; a background
+  warm-up on window open replaces it in a dozen lines. And **there is no 3B
+  rung**: measured here, it inverts polarity. See spec entry 144.
 
   1. **The loop is `Plantoir.Core/Assist/AssistAgent.cs`**, behind
      `IChatModel` (the llama.cpp client) and `IToolServer` (the MCP stdio
@@ -67,6 +81,14 @@ references are the durable pointers.)
   taken when there is no sibling section to copy — was still writing
   `draft: true`. A section added through the app was therefore born in the
   schema everything else had moved off.
+
+  **✅ DONE (macOS, 2026-08-14, `b2a4c0bf`).** Fixed, and the mac had the
+  same bug in a second place Windows had not hit: `SectionAdder` also
+  COPIED `draftSectionN` from the sibling section, so a course installed
+  from a migrated payload would have found no key and published a page the
+  teacher had held back. `publishValue(forSection:in:)` now reads either
+  key and inverts the legacy one, and
+  `testALegacyDraftSectionKeyIsReadAndInverted` pins the inversion.
 
   It was missed because the TEST agreed with the code: it asserted
   `draft: true` and passed. Worth ten minutes on the mac's own section
@@ -165,6 +187,12 @@ references are the durable pointers.)
   equivalent** — it is the full account of what worked and what did not, with
   the measurements. The headlines that will bite whoever ports it:
 
+  **✅ DONE (macOS, 2026-08-15).** Built as `AssistWindowView` +
+  `AssistSession` + `AssistAgent`, reached from "Revise with AI…" on a
+  section's context menu, one window per section. The engine is native
+  llama.cpp with Metal rather than a container — 175 s → 2.1 s on the same
+  model and prompt. Model tier chosen from the Mac's memory.
+
   - **Fewer tools is better routing AND a shorter prompt.** 34 tools is 9,032
     tokens; at ~21 tokens/second on two cores that is 430 seconds of reading
     before a first answer. The local model sees 15.
@@ -188,11 +216,33 @@ references are the durable pointers.)
   with it. Keep them separate binaries: Claude Code launches the server
   itself as a stdio subprocess, so it has to stay a plain console app.
 
+  **✅ DONE (macOS, 2026-08-15) — and cannot recur here.** This is exactly
+  why the macOS server is the app rather than a second binary: there is no
+  packaging step that can forget to build it, and it is signed with the app
+  because it IS the app. Worth considering on Windows if `plantoir-mcp.exe`
+  ever goes missing from a bundle again.
+
 - **The publication flag is `publish:`, not `draft:`** (Windows +
   shared, 2026-08-13, `ai-assist` branch). Commits `2d6c59a` (the
   toolchain and the app) and `7347d2b` (the example content and the
   course-creation wizard). Same caveat as the AI Assist entry below:
   **this lives on `ai-assist`, not `main`, and is not in 1.0.**
+
+  > **Branch note, verified 2026-08-14 (macOS side):** `ai-assist` is now an
+  > ANCESTOR of `origin/main` — `git merge-base --is-ancestor origin/ai-assist
+  > origin/main` succeeds, and `Plantoir.Mcp`, `AI-ASSIST-HANDOFF.md` and
+  > `MCP-PROPOSAL.md` are all present on `main`. The "not on `main`" caveats
+  > below were true when written and are not any more; nothing needs merging
+  > to reach this work.
+
+  **✅ DONE (macOS + shared, 2026-08-14, `b2a4c0bf`).** Completed across the
+  shared content the Windows change had not reached: 5,968 payload pages,
+  108 EXC2O course-level pages, 1,944 skeletons, and the skeleton generator
+  so a regeneration cannot reintroduce the old key. Two further defects
+  came out of it — `per_section_frontmatter` left 493 shared pages UNSPLIT
+  because it matched only `created`/`draft`, and the coverage map's own
+  `_is_draft()` counted a `publish: false` page as published. The payload
+  linter now rejects `draft:` outright. See spec entry 141.
 
   A page inside `section<N>/` now carries `publish:`; a course-level page
   carries `publishForSection<N>:`. Both are the OPPOSITE polarity from
@@ -259,6 +309,14 @@ references are the durable pointers.)
   never takes). One word for both makes "I published tomorrow's class"
   mean a flag to one party and a live site to the other.
 
+  **✅ DONE (macOS, 2026-08-15).** 24 strings across 14 files, following the
+  same rule: the SITE is deployed, a PAGE is published. Internal names kept
+  their spelling, including every automation id, so no launcher, config key
+  or UI test moved. One judgement beyond the Windows sweep: the Netlify
+  failure messages ("Try publishing again" after a failed deploy) were swept
+  too, since that sentence is exactly the confusion being fixed — flagged
+  here in case Windows wants to match. See spec entry 143.
+
   On Windows the sweep covered: the toolbar button and its tooltip, the
   No Preview Running invitation, the progress title, the Publishing
   settings group (now "Deploying") and its "Deploy to" picker, the
@@ -273,11 +331,19 @@ references are the durable pointers.)
 - **AI Assist — an MCP server, on the `ai-assist` branch** (Windows +
   shared, 2026-08-13). Commits `c6b1381` (the feasibility investigation
   and its evidence) and `b3b7fc0` (the server). **Nothing here is on
-  `main`, and none of it is in 1.0** — the branch exists so this can be
+  `main`, and none of it is in 1.0** (see the branch note above — this is
+  no longer accurate) — the branch exists so this can be
   folded into a later release or dropped without touching the impending
   release. Read [`AI-ASSIST.md`](AI-ASSIST.md) first for the measurements,
   then [`windows-app/Plantoir.Mcp/README.md`](windows-app/Plantoir.Mcp/README.md)
   for the tool surface and the reasoning behind its shape.
+
+  **✅ DONE (macOS, 2026-08-15), by a different route.** Rather than a
+  separate executable, the app itself answers `--mcp-stdio <folder>` and
+  serves the same `AssistToolSurface` over JSON-RPC. Verified by handshake:
+  `initialize` and `tools/list` return all 15 tools with their schemas and
+  `readOnlyHint` annotations. Same surface, two clients, no drift possible
+  — and see the note on the entry below for why this route was taken.
 
   **What exists.** `plantoir-mcp`, a stdio MCP server over one working
   folder, built on the official `ModelContextProtocol` 2.2.0 C# SDK. Eight
@@ -479,6 +545,9 @@ references are the durable pointers.)
   no mac code needed, but worth knowing the suggested names changed.
   Existing sites are pinned by their marker files and are unaffected.
 
+  **✅ DONE (shared).** Already present in `scripts/deploy.py` on this side —
+  arrived with the merge and verified: `Côté` → `cote`, not `ct`.
+
 - **About box credits match plantoir.app's footer** (Windows, 2026-08-11).
   The credits section is now: a rounded-rect callout carrying the full
   sponsor message ("Plantoir is a friendly wrapper around [Quartz], which
@@ -495,6 +564,8 @@ references are the durable pointers.)
   coming into the app itself — leaving Email as the only contact row;
   drop the mac About's Support row to match. Mirror in the mac About
   window. Reference: `windows-app/Plantoir/Views/AboutDialog.cs`.
+
+  **✅ DONE (macOS, 2026-08-12).** Mirrored as spec entry 107.
 
 - **Preview builds are never deploy-fresh** (from `94e25f8`, 2026-08-11).
   Deploying right after previewing published the preview's build, whose
@@ -513,6 +584,8 @@ references are the durable pointers.)
   (`BuiltForPreview`) and the `APreviewBuildIsNeverDeployFresh` test in
   `windows-app/Plantoir.Tests/ModelTests.cs`.
 
+  **✅ DONE (macOS, 2026-08-12).** Mirrored as spec entry 108.
+
 - **Font samples show the course's own computed site title** (Windows,
   2026-08-11). The header font sample renders the title the build will
   actually produce — `[Grade X ]Name[, Section N]`, i.e. the course name
@@ -530,6 +603,8 @@ references are the durable pointers.)
   `ComputedSiteTitleMatchesTheBuild` in
   `windows-app/Plantoir.Tests/CourseConfigurationTests.cs`.
 
+  **✅ DONE (macOS, 2026-08-12).** Already on macOS as spec entry 100.
+
 - **Explain a disabled Create button in the wizard** (from `2d10e4c`,
   2026-08-11). On Windows, a filled-in New Course form with a DUPLICATE
   course code left Create greyed with no explanation — the sections
@@ -540,6 +615,8 @@ references are the durable pointers.)
   wizard has the same silent-disable and wants the same inline
   explanation. Reference: `CourseCodeProblem()` / `RefreshCodeValidation()`
   in `windows-app/Plantoir/Views/NewCourseDialog.cs`.
+
+  **✅ DONE (macOS, 2026-08-12).** Mirrored as spec entry 109.
 
 - (Earlier Windows work — About credits + Support-row removal, the
   preview-build deploy-freshness check, the computed-title font samples,

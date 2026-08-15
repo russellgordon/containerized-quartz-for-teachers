@@ -843,9 +843,9 @@ class ScriptRunner {
             ("Pulling", "Downloading components (first time can take a few minutes)…"),
             ("Starting Colima", "Starting up (first time can take a few minutes)…"),
             ("Waiting for the container runtime", "Starting up…"),
-            ("delta deploy", "Publishing your site…"),
-            ("Uploaded", "Publishing your site…"),
-            ("Deploying", "Publishing your site…"),
+            ("delta deploy", "Deploying your site…"),
+            ("Uploaded", "Deploying your site…"),
+            ("Deploying", "Deploying your site…"),
         ]
         // The LAST marker to appear in the output is the current phase.
         var bestLabel: String = "Working…"

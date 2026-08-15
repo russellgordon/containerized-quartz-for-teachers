@@ -59,21 +59,28 @@ PREVIEW_CMD="./preview.sh"
 usage() {
   cat <<USAGE
 🧰 Usage:
-  ${SELF_CMD} <COURSE_CODE> <SECTION_NUMBER> [--diagnose] [--team <TEAM_SLUG>] [--reset-token|--logout] [--image REF]
+  ${SELF_CMD} <COURSE_CODE> <SECTION_NUMBER> [--target netlify|cloudflare] [--account <ACCOUNT_ID>] [--diagnose] [--team <TEAM_SLUG>] [--reset-token|--logout] [--image REF]
 
 Examples:
   ${SELF_CMD} ICS3U 1
   ${SELF_CMD} ICS3U 1 --diagnose
   ${SELF_CMD} ICS3U 1 --team my-org-slug
+  ${SELF_CMD} ICS3U 1 --target cloudflare
 
 Notes:
 - Deploys from /teaching/courses/<COURSE>/.merged_output/section<SECTION> inside the container.
 - You must build first (the static site goes to 'public/' in that section folder).
+- --target chooses where the built site goes: netlify (the default) or cloudflare.
 - With --to-folder <path>, the site is published to <path>/section<N> on THIS
   computer instead of Netlify — an incremental copy (only changed files move),
   for teachers who upload to their own web host (e.g. over SFTP).
 - The Netlify Personal Access Token (PAT) is stored in the macOS Keychain and injected securely at runtime.
-- Use --reset-token (or --logout) to remove the saved PAT and re-link on next run.
+  Netlify and Cloudflare tokens live under separate Keychain entries, so keeping both is fine.
+- A Cloudflare token needs one permission: Account - Cloudflare Pages - Edit.
+  The account is discovered from the token when it can be; --account supplies it
+  when it cannot (a token scoped only to Pages cannot list its own account).
+- Use --reset-token (or --logout) to remove the saved PAT and re-link on next run;
+  combine it with --target cloudflare to clear the Cloudflare one instead.
 - --image REF publishes using a particular already-built image; normally the
   image is built locally from this folder's recipe when missing.
 - If your course code ends with '0' (zero), you'll be prompted to correct it to 'O' for Open-level courses.
@@ -133,8 +140,20 @@ DIAGNOSE=""
 TEAM_SLUG=""
 RESET_TOKEN="false"
 TO_FOLDER=""
+TARGET="netlify"
+ACCOUNT_ARG=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --target)
+      if [[ $# -lt 2 ]]; then echo "❌ Missing value for $1"; echo; usage; exit 1; fi
+      TARGET="$(printf '%s' "$2" | tr '[:upper:]' '[:lower:]')"; shift ;;
+    --target=*)
+      TARGET="$(printf '%s' "${1#*=}" | tr '[:upper:]' '[:lower:]')" ;;
+    --account)
+      if [[ $# -lt 2 ]]; then echo "❌ Missing value for $1"; echo; usage; exit 1; fi
+      ACCOUNT_ARG="$2"; shift ;;
+    --account=*)
+      ACCOUNT_ARG="${1#*=}" ;;
     --to-folder)
       if [[ $# -lt 2 ]]; then echo "❌ Missing value for $1"; echo; usage; exit 1; fi
       TO_FOLDER="$2"; shift ;;
@@ -160,6 +179,13 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+
+if [[ "$TARGET" != "netlify" && "$TARGET" != "cloudflare" ]]; then
+  echo "❌ Unknown deploy target '${TARGET}'. Use netlify or cloudflare."
+  echo
+  usage
+  exit 1
+fi
 
 # Resolve IMAGE (same rules as setup.sh and preview.sh)
 BUILD_CONTEXT=""
@@ -275,6 +301,93 @@ validate_token() {
   curl -fsS -H "Authorization: Bearer $1" https://api.netlify.com/api/v1/user >/dev/null
 }
 
+# ---- Cloudflare credentials ------------------------------------------
+# Cloudflare's token lives under its own Keychain name, so a teacher who
+# deploys some courses to Netlify and others to Cloudflare keeps both
+# without one clobbering the other. The remembered account ID gets its own
+# entry too — a teacher should never be asked for it twice.
+CF_KEYCHAIN_SERVICE="containerized-quartz-cloudflare"
+CF_ACCOUNT_KEYCHAIN_SERVICE="containerized-quartz-cloudflare-account"
+
+get_cf_token_keychain() {
+  /usr/bin/security find-generic-password -s "$CF_KEYCHAIN_SERVICE" -a "$USER" -w 2>/dev/null || true
+}
+set_cf_token_keychain() {
+  /usr/bin/security add-generic-password -U -s "$CF_KEYCHAIN_SERVICE" -a "$USER" -w "$1" >/dev/null
+}
+delete_cf_token_keychain() {
+  /usr/bin/security delete-generic-password -s "$CF_KEYCHAIN_SERVICE" -a "$USER" >/dev/null 2>&1 || true
+}
+get_cf_account_keychain() {
+  /usr/bin/security find-generic-password -s "$CF_ACCOUNT_KEYCHAIN_SERVICE" -a "$USER" -w 2>/dev/null || true
+}
+set_cf_account_keychain() {
+  /usr/bin/security add-generic-password -U -s "$CF_ACCOUNT_KEYCHAIN_SERVICE" -a "$USER" -w "$1" >/dev/null
+}
+delete_cf_account_keychain() {
+  /usr/bin/security delete-generic-password -s "$CF_ACCOUNT_KEYCHAIN_SERVICE" -a "$USER" >/dev/null 2>&1 || true
+}
+
+# Does Cloudflare still recognise this token at all? Kept separate from the
+# account lookup below, because the two can disagree: a token can be
+# perfectly valid and still list no accounts.
+validate_cf_token() {
+  [[ -n "${1:-}" ]] || return 1
+  curl -fsS --max-time 20 -H "Authorization: Bearer $1" \
+    https://api.cloudflare.com/client/v4/user/tokens/verify 2>/dev/null \
+    | grep -q '"success":[[:space:]]*true'
+}
+
+# Best-effort account lookup, so that in the common case a teacher pastes a
+# token and nothing else — the account ID is a 32-character hex string buried
+# in the dashboard, and asking for it loses people.
+#
+# This is deliberately NOT treated as proof of validity. Tested against a real
+# token: /accounts can answer success with an EMPTY list, because listing
+# accounts is its own permission and a token scoped only to Pages need not
+# carry it. Prints nothing to mean "ask", never "bad token".
+discover_cf_account() {
+  [[ -n "${1:-}" ]] || return 0
+  curl -fsS --max-time 20 -H "Authorization: Bearer $1" \
+    https://api.cloudflare.com/client/v4/accounts 2>/dev/null \
+    | python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+if data.get("success"):
+    accounts = data.get("result") or []
+    if accounts:
+        print(accounts[0].get("id", ""), end="")
+' || true
+}
+
+# Only reached when the token cannot name its own account and nothing was
+# remembered. The app collects this in its own window instead, and passes
+# it as --account, because a GUI deploy has no console to answer on.
+prompt_for_cf_account() {
+  cat <<'MSG'
+
+One more thing: this token cannot list your Cloudflare account, so please
+paste your Account ID as well. You only have to do this once.
+
+Where to find it:
+  Open https://dash.cloudflare.com and select Workers and Pages.
+  The Account ID is shown on the right-hand side, and it is also the long
+  code in the address bar just after dash.cloudflare.com/.
+
+MSG
+  command -v open >/dev/null 2>&1 && open "https://dash.cloudflare.com" || true
+  read -rp "Paste Cloudflare Account ID: " entered
+  entered="$(printf '%s' "$entered" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')"
+  if [[ ! "$entered" =~ ^[0-9a-f]{32}$ ]]; then
+    echo "❌ That doesn’t look like an Account ID (it should be 32 letters and digits)."
+    return 1
+  fi
+  printf '%s' "$entered"
+}
+
 # ---- Legacy token readers/migration helpers --------------------------
 
 # Try to decode the XOR+base64 obfuscated token using the per-user key file
@@ -332,6 +445,14 @@ except Exception:
 PY
 }
 
+if [[ "${RESET_TOKEN}" == "true" && "$TARGET" == "cloudflare" ]]; then
+  echo "🔒 Clearing saved Cloudflare token from Keychain…"
+  delete_cf_token_keychain
+  delete_cf_account_keychain
+  echo "Done. Next deploy will ask for a new token."
+  exit 0
+fi
+
 if [[ "${RESET_TOKEN}" == "true" ]]; then
   echo "🔒 Clearing saved Netlify token from Keychain…"
   delete_token_keychain
@@ -343,6 +464,63 @@ if [[ "${RESET_TOKEN}" == "true" ]]; then
   exit 0
 fi
 
+# -------------------- Cloudflare token and account ---------------------
+CF_TOKEN=""
+CF_ACCOUNT=""
+if [[ "$TARGET" == "cloudflare" ]]; then
+  CF_TOKEN="$(get_cf_token_keychain)"
+  if [[ -n "$CF_TOKEN" ]] && ! validate_cf_token "$CF_TOKEN"; then
+    echo "⚠️ The saved Cloudflare token no longer works, so it has been cleared."
+    delete_cf_token_keychain
+    delete_cf_account_keychain
+    CF_TOKEN=""
+  fi
+  if [[ -z "$CF_TOKEN" ]]; then
+    cat <<'MSG'
+
+You need a Cloudflare API token to deploy to Cloudflare Pages.
+1) Open this page: https://dash.cloudflare.com/profile/api-tokens
+2) Select 'Create Token', then 'Create Custom Token'.
+   TIPS:
+   a. Name it something like 'For class website deploys'
+   b. Give it ONE permission: Account - Cloudflare Pages - Edit
+   c. Leave the expiry alone, or set it to never expire
+3) Copy the generated token and paste it here.
+
+MSG
+    command -v open >/dev/null 2>&1 && open "https://dash.cloudflare.com/profile/api-tokens" || true
+    read -rsp "Paste Cloudflare token: " cf_pasted; echo
+    if ! validate_cf_token "$cf_pasted"; then
+      echo "❌ Cloudflare did not accept that token."
+      echo "   Check that it has the 'Cloudflare Pages - Edit' permission, then try again."
+      exit 1
+    fi
+    set_cf_token_keychain "$cf_pasted"
+    CF_TOKEN="$cf_pasted"
+    echo "✅ Saved token to macOS Keychain (service: ${CF_KEYCHAIN_SERVICE})."
+  fi
+
+  # The app collected it from the teacher, which beats any guess made here;
+  # otherwise let the token name its own account, then fall back to what was
+  # remembered last time, and only then ask. An empty discovery is never
+  # treated as a bad token — it just means the question has to be asked once.
+  if [[ -n "$ACCOUNT_ARG" ]]; then
+    CF_ACCOUNT="$(printf '%s' "$ACCOUNT_ARG" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')"
+    set_cf_account_keychain "$CF_ACCOUNT"
+  fi
+  if [[ -z "$CF_ACCOUNT" ]]; then CF_ACCOUNT="$(discover_cf_account "$CF_TOKEN")"; fi
+  if [[ -z "$CF_ACCOUNT" ]]; then CF_ACCOUNT="$(get_cf_account_keychain)"; fi
+  if [[ -z "$CF_ACCOUNT" ]]; then
+    CF_ACCOUNT="$(prompt_for_cf_account)" || exit 1
+    set_cf_account_keychain "$CF_ACCOUNT"
+  fi
+fi
+
+# -------------------- Netlify token ------------------------------------
+# Left unindented, as in deploy.ps1, so this long-standing block stays
+# readable beside its Windows twin.
+TOKEN=""
+if [[ "$TARGET" == "netlify" ]]; then
 TOKEN="$(get_token_keychain || true)"
 
 # If legacy file exists, try to migrate it (XOR+base64 scheme first)
@@ -401,6 +579,7 @@ MSG
   TOKEN="$pasted"
   echo "✅ Saved token to macOS Keychain (service: ${KEYCHAIN_SERVICE})."
 fi
+fi
 
 # ==================== Container runtime (Colima) ====================
 # Docker Desktop is no longer required. This script uses Colima
@@ -432,6 +611,70 @@ COLIMA_VERSION="v0.10.3"
 LIMA_VERSION="2.2.0"
 DOCKER_CLI_VERSION="29.7.2"
 BUILDX_VERSION="v0.36.1"
+# Colima's size, computed from this Mac rather than pinned.
+#
+# The old fixed 2 CPUs / 4 GB was chosen for an 8 GB machine and then applied
+# to every machine, so a 48 GB Mac built its site with the same sliver as a
+# laptop. These are deliberately NOT the whole machine: the teacher is using
+# the Mac while a build runs, so half the cores and a third of the RAM, with
+# the old values as the floor — an 8 GB Mac gets exactly what it gets today.
+_colima_cpus() {
+  local host_cpu cpus
+  host_cpu=$(sysctl -n hw.ncpu 2>/dev/null || echo 2)
+  cpus=$(( host_cpu / 2 ))
+  [ "$cpus" -lt 2 ] && cpus=2
+  [ "$cpus" -gt 6 ] && cpus=6
+  echo "$cpus"
+}
+
+_colima_memory_gb() {
+  local host_bytes host_gb mem
+  host_bytes=$(sysctl -n hw.memsize 2>/dev/null || echo 8589934592)
+  host_gb=$(( host_bytes / 1073741824 ))
+  mem=$(( host_gb / 3 ))
+  [ "$mem" -lt 4 ] && mem=4
+  [ "$mem" -gt 12 ] && mem=12
+  echo "$mem"
+}
+# Colima may already exist, sized by an earlier Plantoir or by another
+# toolchain that shares it. Two rules keep that civil:
+#
+#   1. Only ever ASK FOR MORE. A teacher (or another tool) who gave Colima
+#      extra room keeps it; we never shrink somebody else's VM.
+#   2. Only while it is STOPPED. Resizing means recreating the VM, which
+#      would take down containers that other toolchains are using.
+#
+# Prints the flags to add to `colima start`, or nothing when it is already
+# big enough.
+_colima_growth_flags() {
+  local current_cpus current_memory_gb wanted_cpus wanted_memory_gb
+  read -r current_cpus current_memory_gb <<< "$(
+    colima list 2>/dev/null | awk '$1=="default" { gsub(/GiB/, "", $5); print $4, $5 }'
+  )"
+
+  # No VM yet: the caller's first-start path handles sizing.
+  [ -z "${current_cpus:-}" ] && return 0
+
+  wanted_cpus=$(_colima_cpus)
+  wanted_memory_gb=$(_colima_memory_gb)
+
+  # Non-numeric memory (a MiB-sized VM, say) counts as smaller than anything.
+  case "$current_memory_gb" in
+    ''|*[!0-9]*) current_memory_gb=0 ;;
+  esac
+  case "$current_cpus" in
+    ''|*[!0-9]*) current_cpus=0 ;;
+  esac
+
+  [ "$wanted_cpus" -le "$current_cpus" ] && wanted_cpus="$current_cpus"
+  [ "$wanted_memory_gb" -le "$current_memory_gb" ] && wanted_memory_gb="$current_memory_gb"
+
+  if [ "$wanted_cpus" -gt "$current_cpus" ] || [ "$wanted_memory_gb" -gt "$current_memory_gb" ]; then
+    echo "--cpu $wanted_cpus --memory $wanted_memory_gb"
+  fi
+}
+
+
 
 _download() {
   local url="$1" destination="$2" label="$3"
@@ -502,14 +745,15 @@ ensure_container_runtime() {
   ensure_local_tools
 
   if [[ ! -d "$HOME/.colima/default" ]]; then
-    echo "🚀 First start: building the virtual machine (2 CPUs · 4 GB RAM)."
+    echo "🚀 First start: building the virtual machine ($(_colima_cpus) CPUs · $(_colima_memory_gb) GB RAM)."
     echo "   Its disk image (~600 MB) is downloaded once; this can take several minutes."
     # vz is macOS's own virtualization — no extra software needed, unlike
     # the qemu default.
-    colima start --cpu 2 --memory 4 --vm-type vz
+    colima start --cpu "$(_colima_cpus)" --memory "$(_colima_memory_gb)" --vm-type vz
   else
     echo "▶️  Starting Colima…"
-    colima start
+    # shellcheck disable=SC2046  # deliberate word splitting: these are flags
+    colima start $(_colima_growth_flags)
   fi
 
   echo "⏳ Waiting for the container runtime to be ready…"
@@ -658,7 +902,11 @@ SECTION_DIR_IN_CONTAINER="/teaching/courses/${COURSE_CODE}/.merged_output/sectio
 echo "🚀 Deploying ${COURSE_CODE} S${SECTION_NUM} from: ${SECTION_DIR_IN_CONTAINER}"
 
 # --- Securely inject token into container without exposing on host CLI ---
-printf %s "$TOKEN" | docker exec -i "$CONTAINER_NAME" sh -lc 'umask 077; cat > /tmp/netlify_pat'
+if [[ "$TARGET" == "cloudflare" ]]; then
+  printf %s "$CF_TOKEN" | docker exec -i "$CONTAINER_NAME" sh -lc 'umask 077; cat > /tmp/deploy_pat'
+else
+  printf %s "$TOKEN" | docker exec -i "$CONTAINER_NAME" sh -lc 'umask 077; cat > /tmp/deploy_pat'
+fi
 
 # Ask for a terminal only when there is one: `docker exec -t` refuses to start
 # without a terminal on stdin, which is how this runs from a script or from
@@ -670,12 +918,19 @@ docker exec $_EXEC_TTY \
   -e HOST_TZ_OFFSET="${HOST_TZ_OFFSET}" \
   -e DIAGNOSE="${DIAGNOSE}" \
   -e TEAM_SLUG="${TEAM_SLUG}" \
+  -e TARGET="${TARGET}" \
+  -e CF_ACCOUNT="${CF_ACCOUNT}" \
   "$CONTAINER_NAME" \
   sh -lc '
-    tok=$(cat /tmp/netlify_pat); rm -f /tmp/netlify_pat;
+    tok=$(cat /tmp/deploy_pat); rm -f /tmp/deploy_pat;
     opts="";
     [ -n "$DIAGNOSE" ]  && opts="$opts $DIAGNOSE";
     [ -n "$TEAM_SLUG" ] && opts="$opts --team $TEAM_SLUG";
-    NETLIFY_AUTH_TOKEN="$tok" \
-      python3 /opt/scripts/deploy.py --host-os mac --course '"$COURSE_CODE"' --section '"$SECTION_NUM"' $opts
+    if [ "$TARGET" = "cloudflare" ]; then
+      CLOUDFLARE_API_TOKEN="$tok" CLOUDFLARE_ACCOUNT_ID="$CF_ACCOUNT" \
+        python3 /opt/scripts/deploy.py --host-os mac --target cloudflare --course '"$COURSE_CODE"' --section '"$SECTION_NUM"' $opts
+    else
+      NETLIFY_AUTH_TOKEN="$tok" \
+        python3 /opt/scripts/deploy.py --host-os mac --course '"$COURSE_CODE"' --section '"$SECTION_NUM"' $opts
+    fi
   '

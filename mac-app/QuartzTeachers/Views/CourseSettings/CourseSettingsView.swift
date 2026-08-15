@@ -16,6 +16,7 @@ struct CourseSettingsView: View {
 
     var body: some View {
         @Bindable var configuration = course.configuration
+        @Bindable var settings = AppSettings.shared
 
         VStack(spacing: 0) {
             Form {
@@ -61,10 +62,11 @@ struct CourseSettingsView: View {
                 Section {
                     PublishingChoiceView(
                         deployTarget: $configuration.deployTarget,
-                        deployFolderPath: $configuration.deployFolderPath
+                        deployFolderPath: $configuration.deployFolderPath,
+                        cloudflareAccountID: $settings.cloudflareAccountID
                     )
                 } header: {
-                    FormSectionHeader("Publishing")
+                    FormSectionHeader("Deploying")
                 }
 
                 Section {
@@ -175,12 +177,15 @@ struct CourseSettingsView: View {
 
     // MARK: - Computed properties
 
-    /// Why saving is blocked right now, or nil when it isn't. Folder
-    /// publishing with no usable folder must not reach disk: the deploy
-    /// would quietly have nowhere to go.
+    /// Why saving is blocked right now, or nil when it isn't. A deploy
+    /// destination that cannot be reached must not reach disk: the deploy
+    /// would quietly have nowhere to go, and would only say so much later.
     var savingProblem: String? {
         if course.configuration.deployTarget == "local_folder" {
             return CourseConfiguration.deployFolderProblem(forPath: course.configuration.deployFolderPath)
+        }
+        if course.configuration.deploysToCloudflare {
+            return CourseConfiguration.cloudflareAccountProblem(forID: AppSettings.shared.cloudflareAccountID)
         }
         return nil
     }

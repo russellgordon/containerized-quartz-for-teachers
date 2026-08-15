@@ -91,13 +91,13 @@ enum CourseActivity {
             }
         }
         if isPreviewing && isPublishing {
-            return "Available once preview and publish completed"
+            return "Available once preview and deploy completed"
         }
         if isPreviewing {
             return "Available once preview completed"
         }
         if isPublishing {
-            return "Available once publish completed"
+            return "Available once deploy completed"
         }
         return nil
     }

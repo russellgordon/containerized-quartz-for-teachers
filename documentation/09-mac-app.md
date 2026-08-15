@@ -46,6 +46,64 @@ Beyond the actions, the app owns delivery and resources:
   stopped when the folder's last window closes and at quit; Colima itself
   is stopped at quit only when nothing else is running in it.
 
+## The local assistant
+
+A teacher can open an assistant for one section — a window of its own, so the
+section's preview stays on screen beside the conversation. It runs **entirely
+on the Mac**: nothing a teacher writes leaves the machine, and no account,
+key or subscription is involved.
+
+**The model runs natively, not in Colima, and that decision is the whole
+feature.** Colima is a Linux VM with no access to Metal, so a model inside it
+runs on virtual CPU cores while the GPU sits idle. Measured on an M4 Pro with
+the same model and the same 3,411-token tool surface: **175 seconds to read
+the prompt in a container, 2.1 seconds natively.** `llama-server` therefore
+ships inside the app (25 MB of llama.cpp, MIT-licensed, fetched by
+`mac-app/Vendor/fetch-llama.sh` at build time rather than committed) and is
+started as an ordinary child process.
+
+The weights are downloaded once into
+`~/Library/Application Support/Plantoir/models`, not bundled — that keeps them
+out of every app update, and off the Macs of teachers who never open the
+assistant. Which model depends on the machine:
+
+| Machine | Model | Download | First reply | Later replies |
+|---|---|---|---|---|
+| Under 16 GB | Qwen2.5 1.5B | 1.1 GB | ~2.1 s | ~0.3 s |
+| 16 GB and up | Qwen2.5 7B | 4.7 GB | ~9.5 s | ~1.2 s |
+
+The "first reply" figure is the one-off read of the tool definitions, and the
+window warms it in the background as it opens, so a teacher does not normally
+wait for it at all. Closing the window stops the server and gives the memory
+back.
+
+**There is deliberately no middle rung.** Qwen2.5 3B was measured as the
+obvious step between the two and it inverts polarity — asked to hide a page it
+called publish, in two of three trials — while also scoring below the 1.5B.
+That failure is the exact one the tool design exists to prevent, so the rung
+was removed rather than documented as risky.
+
+Three rules shape what the assistant can do, all inherited from the Windows
+implementation's measurements:
+
+- **The model is a router, not a planner.** Tools are coarse: one call does a
+  whole job, including the parts a model would otherwise have to chain
+  together. Every unit of reasoning moved into ordinary Swift is a unit of
+  reliability bought back.
+- **Nothing destructive exists.** There is no delete, rename or archive tool.
+  Absence is the strongest guardrail available.
+- **Publish and unpublish are separate verbs**, never one tool with a boolean,
+  because a boolean is a coin flip under pressure and a verb is not.
+
+Only deploying waits for a button. Publishing and unpublishing happen when
+asked, because every change is backed up and can be undone — a gate in front
+of every write teaches a teacher to click through gates.
+
+The tool surface is written so it can also be served over MCP — the Windows
+build exposes the same tools to Claude Code that way, which is what keeps the
+safety rules from drifting between the two clients. The macOS side has the
+tools; exposing them over stdio is not built yet.
+
 The complete behavioural specification — every interface decision, with
 the reasoning and a Windows-porting note per entry — is
 [`GUI-IMPROVEMENTS.md`](../GUI-IMPROVEMENTS.md). Architecture, build

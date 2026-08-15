@@ -42,6 +42,16 @@ xcodegen generate
 open Plantoir.xcodeproj    # or: xcodebuild -scheme Plantoir build
 ```
 
+The assistant's engine is not committed — 25 MB of llama.cpp build output.
+Fetch it once before building; `xcodegen` copies it into the bundle:
+
+```bash
+./Vendor/fetch-llama.sh
+```
+
+Without it the app still builds and runs; the assistant reports that its
+engine is missing rather than failing in some less obvious way.
+
 ## Testing
 
 Three layers, matching how much environment each needs:

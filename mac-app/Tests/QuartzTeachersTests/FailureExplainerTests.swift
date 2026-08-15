@@ -14,7 +14,7 @@ final class FailureExplainerTests: XCTestCase {
         Window resets at: 2026-08-09 22:08:56 UTC-04:00 (in ~59s).
         """
         let explanation: String? = FailureExplainer.explanation(in: output)
-        XCTAssertEqual(explanation, "Netlify is limiting how often websites can be published right now. Try publishing again in about a minute.")
+        XCTAssertEqual(explanation, "Netlify is limiting how often websites can be deployed right now. Try deploying again in about a minute.")
     }
 
     @MainActor
@@ -32,7 +32,7 @@ final class FailureExplainerTests: XCTestCase {
     @MainActor
     func testMissingAccountIsExplained() {
         let explanation: String? = FailureExplainer.explanation(in: "❌ Netlify token missing.")
-        XCTAssertEqual(explanation, "Your Netlify account isn't connected yet. Add your Netlify access token, then publish again.")
+        XCTAssertEqual(explanation, "Your Netlify account isn't connected yet. Add your Netlify access token, then deploy again.")
     }
 
     @MainActor
@@ -51,7 +51,7 @@ final class FailureExplainerTests: XCTestCase {
     @MainActor
     func testMissingBuildIsExplained() {
         let explanation: String? = FailureExplainer.explanation(in: "❌ Built site not found at: /teaching/courses/ICS3U/.merged_output/section3/public")
-        XCTAssertEqual(explanation, "This website hasn't been built yet. Preview it once, then publish.")
+        XCTAssertEqual(explanation, "This website hasn't been built yet. Preview it once, then deploy.")
     }
 
     @MainActor

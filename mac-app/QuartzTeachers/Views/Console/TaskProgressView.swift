@@ -197,7 +197,7 @@ struct TaskProgressView: View {
                             }
                         } else if !runner.wasCancelled, exitCode == 0, let folderURL = runner.publishedFolderURL {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Your website was published to a folder — upload it to your web host whenever you're ready.")
+                                Text("Your website was deployed to a folder — upload it to your web host whenever you're ready.")
                                 Text("One thing to know: the pages won’t look right if you open them straight from the folder — your website only displays properly once it’s on your web host.")
                                     .font(.callout)
                                     .foregroundStyle(.secondary)

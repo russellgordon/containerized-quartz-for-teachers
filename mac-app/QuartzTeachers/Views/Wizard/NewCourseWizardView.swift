@@ -49,8 +49,9 @@ struct NewCourseWizardView: View {
     @State var usesLCSTerminology: Bool = false
     @State var fontChoice: FontChoice = FontChoice.systemDefault
 
-    /// Where this course's sections publish: Netlify (the default), or a
-    /// folder on this Mac for teachers who upload to their own web host.
+    /// Where this course's sections deploy: Netlify (the default),
+    /// Cloudflare Pages, or a folder on this Mac for teachers who upload to
+    /// their own web host.
     @State var deployTarget: String = "netlify"
     @State var deployFolderPath: String = ""
 
@@ -80,6 +81,16 @@ struct NewCourseWizardView: View {
     }
 
     // MARK: - Computed properties
+
+    /// The teacher's Cloudflare Account ID, which belongs to the person
+    /// rather than to this new course — so it is read from and written
+    /// straight back to app settings rather than kept as wizard state.
+    var cloudflareAccountIDBinding: Binding<String> {
+        return Binding(
+            get: { AppSettings.shared.cloudflareAccountID },
+            set: { newValue in AppSettings.shared.cloudflareAccountID = newValue }
+        )
+    }
 
     /// The parsed timetable section numbers, e.g. "1,3" → [1, 3].
     /// What is wrong with the timetable sections as typed, or nil when
@@ -457,10 +468,11 @@ struct NewCourseWizardView: View {
             Section {
                 PublishingChoiceView(
                     deployTarget: $deployTarget,
-                    deployFolderPath: $deployFolderPath
+                    deployFolderPath: $deployFolderPath,
+                    cloudflareAccountID: cloudflareAccountIDBinding
                 )
             } header: {
-                FormSectionHeader("Publishing", caption: "Netlify is the usual choice — change any time in Settings")
+                FormSectionHeader("Deploying", caption: "Netlify is the usual choice — change any time in Settings")
             }
 
             Section {
@@ -612,6 +624,12 @@ struct NewCourseWizardView: View {
         }
         if deployTarget == "local_folder" {
             if let problem = CourseConfiguration.deployFolderProblem(forPath: deployFolderPath) {
+                validationProblem = problem
+                return
+            }
+        }
+        if deployTarget == "cloudflare_pages" {
+            if let problem = CourseConfiguration.cloudflareAccountProblem(forID: AppSettings.shared.cloudflareAccountID) {
                 validationProblem = problem
                 return
             }

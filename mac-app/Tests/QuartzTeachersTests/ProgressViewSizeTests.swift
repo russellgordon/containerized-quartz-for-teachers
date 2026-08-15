@@ -37,7 +37,7 @@ final class ProgressViewSizeTests: XCTestCase {
     func testCollapsedProgressViewFitsItsWindow() {
         let runner: ScriptRunner = makeRunnerWithOutput(lineCount: 3000)
         let measured: CGFloat = measuredHeight(
-            of: TaskProgressView(runner: runner, title: "Publishing"),
+            of: TaskProgressView(runner: runner, title: "Deploying"),
             width: 800,
             height: 720
         )
@@ -57,7 +57,7 @@ final class ProgressViewSizeTests: XCTestCase {
         XCTAssertTrue(runner.mayBeWaitingForInput(asOf: Date()), "The notice should be showing for this test to mean anything")
 
         let measured: CGFloat = measuredHeight(
-            of: TaskProgressView(runner: runner, title: "Publishing ICS3U-S4"),
+            of: TaskProgressView(runner: runner, title: "Deploying ICS3U-S4"),
             width: 800,
             height: 720
         )
@@ -76,7 +76,7 @@ final class ProgressViewSizeTests: XCTestCase {
         runner.lastOutputAt = Date(timeIntervalSinceNow: -10)
 
         let measured: CGFloat = measuredHeight(
-            of: TaskProgressView(runner: runner, title: "Publishing ICS3U-S4"),
+            of: TaskProgressView(runner: runner, title: "Deploying ICS3U-S4"),
             width: 120,
             height: 720
         )
@@ -87,7 +87,7 @@ final class ProgressViewSizeTests: XCTestCase {
     func testExpandedDetailsFitTheirWindow() {
         let runner: ScriptRunner = makeRunnerWithOutput(lineCount: 3000)
         let measured: CGFloat = measuredHeight(
-            of: TaskProgressView(runner: runner, title: "Publishing", showingDetailsForTesting: true),
+            of: TaskProgressView(runner: runner, title: "Deploying", showingDetailsForTesting: true),
             width: 800,
             height: 720
         )

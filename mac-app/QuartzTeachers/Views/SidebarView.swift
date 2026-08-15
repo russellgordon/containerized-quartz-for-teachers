@@ -10,6 +10,9 @@ struct SidebarView: View {
 
     @Environment(WorkspaceModel.self) var workspace
 
+    /// Opens the assistant, which is a window of its own rather than a sheet.
+    @Environment(\.openWindow) var openWindow
+
     /// The item the remove button is asking about, if any.
     @State var removalRequest: RemovalRequest?
 
@@ -28,6 +31,21 @@ struct SidebarView: View {
     /// The course "Add Section…" was chosen on, while its sheet is up.
     @State var addSectionCourse: Course?
 
+    /// The section "Schedule Deploy…" was chosen on, while its sheet is up.
+    @State var scheduleRequest: ScheduledDeployRequest?
+
+    /// The scheduled deploy the teacher is being asked about cancelling.
+    @State var cancelScheduleRequest: ScheduledDeployRequest?
+
+    /// Bumped whenever a deploy is scheduled or cancelled. The rows read
+    /// launchd rather than a stored list, and nothing about a file in
+    /// `~/Library/LaunchAgents` is observable, so this is what tells the
+    /// sidebar its answer has gone stale.
+    @State var scheduleGeneration: Int = 0
+
+    /// Why a scheduled deploy could not be cancelled, shown as an alert.
+    @State var scheduleProblem: String?
+
     // MARK: - Body
 
     var body: some View {
@@ -39,7 +57,18 @@ struct SidebarView: View {
                     ForEach(workspace.filteredCourses) { course in
                         DisclosureGroup(isExpanded: expansionBinding(for: course.code)) {
                             ForEach(course.sectionNumbers, id: \.self) { sectionNumber in
-                                Label("Section \(sectionNumber)", systemImage: "doc.richtext")
+                                // Asked of launchd during the row's render,
+                                // not kept as a note of ours: the teacher can
+                                // delete the agent themselves, and a clock
+                                // promising a deploy that will never happen is
+                                // worse than no clock. `scheduleGeneration`
+                                // makes the row read it again after a change.
+                                let scheduledFor: Date? = scheduledDeployTime(
+                                    courseCode: course.code,
+                                    sectionNumber: sectionNumber,
+                                    generation: scheduleGeneration
+                                )
+                                sectionRowLabel(sectionNumber: sectionNumber, scheduledFor: scheduledFor)
                                     .tag(SidebarSelection.section(course.code, sectionNumber))
                                     .accessibilityIdentifier("sidebar-\(course.code)-section\(sectionNumber)")
                                     .contextMenu {
@@ -47,6 +76,31 @@ struct SidebarView: View {
                                             revealing: course.sectionDirectoryURL(forSection: sectionNumber),
                                             vaultURL: course.directoryURL
                                         )
+                                        reviseWithAIItem(course: course, sectionNumber: sectionNumber)
+                                        Divider()
+                                        // One item or the other, never a
+                                        // greyed-out line — a menu that
+                                        // teaches teachers to stop reading it
+                                        // is worse than a shorter menu.
+                                        if let scheduledFor {
+                                            Button("Cancel Deploy at \(ScheduledDeploy.timeText(scheduledFor))…", systemImage: "clock") {
+                                                cancelScheduleRequest = ScheduledDeployRequest(
+                                                    course: course,
+                                                    sectionNumber: sectionNumber,
+                                                    when: scheduledFor
+                                                )
+                                            }
+                                            .accessibilityIdentifier("cancelScheduledDeploy-\(course.code)-section\(sectionNumber)")
+                                        } else {
+                                            Button("Schedule Deploy…", systemImage: "clock") {
+                                                scheduleRequest = ScheduledDeployRequest(
+                                                    course: course,
+                                                    sectionNumber: sectionNumber,
+                                                    when: nil
+                                                )
+                                            }
+                                            .accessibilityIdentifier("scheduleDeploy-\(course.code)-section\(sectionNumber)")
+                                        }
                                         Divider()
                                         folderMenuItems(for: course.sectionDirectoryURL(forSection: sectionNumber))
                                     }
@@ -307,6 +361,54 @@ struct SidebarView: View {
                 workspace.selection = SidebarSelection.section(course.code, sectionNumber)
             }
         }
+        .sheet(item: $scheduleRequest) { request in
+            if let workspaceURL = workspace.workspaceURL {
+                ScheduleDeploySheet(
+                    course: request.course,
+                    sectionNumber: request.sectionNumber,
+                    workspaceURL: workspaceURL
+                ) {
+                    scheduleGeneration += 1
+                }
+            }
+        }
+        .alert(
+            "Cancel this scheduled deploy?",
+            isPresented: cancelScheduleRequestIsPresented,
+            presenting: cancelScheduleRequest
+        ) { request in
+            Button("Cancel It", role: .destructive) {
+                cancelScheduledDeploy(request)
+            }
+            Button("Leave It Scheduled", role: .cancel) {
+            }
+        } message: { request in
+            Text(cancelMessage(for: request))
+        }
+        .alert("Could not change the scheduled deploy", isPresented: scheduleProblemBinding) {
+            Button("OK") {
+                scheduleProblem = nil
+            }
+        } message: {
+            Text(scheduleProblem ?? "")
+        }
+    }
+
+    /// A section's row, wearing a clock when it is set to deploy on its own.
+    @ViewBuilder
+    func sectionRowLabel(sectionNumber: Int, scheduledFor: Date?) -> some View {
+        if let scheduledFor {
+            HStack {
+                Label("Section \(sectionNumber)", systemImage: "doc.richtext")
+                Spacer()
+                Image(systemName: "clock")
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("scheduledDeployBadge-section\(sectionNumber)")
+            }
+            .help(SidebarView.scheduledDeployTooltip(for: scheduledFor))
+        } else {
+            Label("Section \(sectionNumber)", systemImage: "doc.richtext")
+        }
     }
 
     /// How big the footer's +/- targets are. Named so a test can check the
@@ -496,7 +598,64 @@ struct SidebarView: View {
         )
     }
 
+    var cancelScheduleRequestIsPresented: Binding<Bool> {
+        return Binding(
+            get: { cancelScheduleRequest != nil },
+            set: { isPresented in
+                if !isPresented {
+                    cancelScheduleRequest = nil
+                }
+            }
+        )
+    }
+
+    var scheduleProblemBinding: Binding<Bool> {
+        return Binding(
+            get: { scheduleProblem != nil },
+            set: { isPresented in
+                if !isPresented {
+                    scheduleProblem = nil
+                }
+            }
+        )
+    }
+
     // MARK: - Functions
+
+    /// When this section next deploys on its own, or nil when nothing is
+    /// scheduled.
+    ///
+    /// `generation` is not used: it is here so that reading it during the
+    /// row's render makes SwiftUI redraw the row when a deploy is
+    /// scheduled or cancelled. Without it the clock would appear only
+    /// after something else happened to redraw the sidebar.
+    func scheduledDeployTime(courseCode: String, sectionNumber: Int, generation: Int) -> Date? {
+        _ = generation
+        return ScheduledDeploy.nextRun(courseCode: courseCode, sectionNumber: sectionNumber)
+    }
+
+    /// What the clock beside a section means, said in full on hover.
+    static func scheduledDeployTooltip(for when: Date) -> String {
+        return "Deploying on its own at \(ScheduledDeploy.timeText(when)) on \(ScheduledDeploy.dayText(when)). Right-click to cancel. This Mac must be on and awake."
+    }
+
+    /// What cancelling would mean, stated rather than implied.
+    func cancelMessage(for request: ScheduledDeployRequest) -> String {
+        guard let when = request.when else {
+            return "This section will no longer deploy on its own."
+        }
+        return "\(request.course.code) Section \(request.sectionNumber) is set to deploy on its own at \(ScheduledDeploy.timeText(when)) on \(ScheduledDeploy.dayText(when)). Cancelling means it will not go out then, and the site stays as it is until you deploy it yourself."
+    }
+
+    func cancelScheduledDeploy(_ request: ScheduledDeployRequest) {
+        if let problem = ScheduledDeploy.cancelScheduledDeploy(
+            courseCode: request.course.code,
+            sectionNumber: request.sectionNumber
+        ) {
+            scheduleProblem = problem
+        }
+        scheduleGeneration += 1
+    }
 
     /// Why the course is busy — previewing or publishing, in any window
     /// showing this working folder — or nil when it isn't.
@@ -531,6 +690,29 @@ struct SidebarView: View {
             FolderActions.openInObsidian(revealing: folderURL, vaultURL: vaultURL)
         }
         .disabled(!FolderActions.obsidianIsInstalled)
+    }
+
+    /// Opens the assistant for one section, in a window of its own.
+    ///
+    /// Offered per SECTION rather than per course because that is the scope
+    /// the assistant actually works in: its tools take a course and a section,
+    /// and its window names them. A course-level entry point would have to ask
+    /// which section first, which is a question the menu has already answered.
+    ///
+    /// Hidden rather than disabled on a Mac that cannot run it — an Intel Mac
+    /// is not going to grow a Metal GPU, so a permanently greyed item would be
+    /// a standing invitation to wonder what is wrong.
+    @ViewBuilder
+    func reviseWithAIItem(course: Course, sectionNumber: Int) -> some View {
+        if AssistHardwareBudget.current().canRunAssistant, let folder = workspace.workspaceURL {
+            Button("Revise with AI…", systemImage: "sparkles") {
+                openWindow(value: AssistWindowRequest(
+                    courseCode: course.code,
+                    sectionNumber: sectionNumber,
+                    workingFolder: folder
+                ))
+            }
+        }
     }
 
     /// The shared context-menu items for a course or section folder.
@@ -624,6 +806,24 @@ struct SidebarView: View {
 
         workspace.selection = nil
         workspace.reloadCourses()
+    }
+}
+
+/// One section's scheduled deploy, as the sidebar's sheet and alert pass it
+/// around. `when` is nil while asking for a time, and carries the agent's own
+/// moment while asking whether to cancel it.
+struct ScheduledDeployRequest: Identifiable {
+
+    // MARK: - Stored properties
+
+    let course: Course
+    let sectionNumber: Int
+    let when: Date?
+
+    // MARK: - Computed properties
+
+    var id: String {
+        return "\(course.code)-section\(sectionNumber)"
     }
 }
 

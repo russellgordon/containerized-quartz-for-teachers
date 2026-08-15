@@ -1,0 +1,120 @@
+import Foundation
+
+/// One tool, as the model sees it.
+///
+/// The surface is deliberately COARSE. The finding the Windows work rests on,
+/// and it held up under everything since: *the model is a router, not a
+/// planner — every unit of reasoning moved out of the model and into ordinary
+/// code is a unit of reliability bought back.* Given `resolve_links`,
+/// `set_publish` and `publish_section` separately and asked to publish
+/// tomorrow's class **and everything it links to**, the model chose
+/// `publish_section` 8 times out of 8, skipping the link resolution — perfectly
+/// consistent, and wrong. Given one `publish_class_on` that resolves links
+/// itself, it was right 8 out of 8.
+nonisolated struct AssistToolDefinition: Sendable, Equatable {
+
+    // MARK: - Stored properties
+
+    /// The name the model calls.
+    let name: String
+
+    /// What it does, in the shape the model routes best on.
+    let description: String
+
+    /// JSON Schema for the arguments.
+    let parameters: [String: AssistSchemaProperty]
+
+    /// Which arguments must be present.
+    let required: [String]
+
+    /// Whether running this changes anything.
+    let readOnly: Bool
+
+    /// Whether this waits for the teacher to press a button.
+    ///
+    /// Declared BY THE TOOL, not by a list the gate keeps somewhere else. A
+    /// list is a second place to remember, and the day someone adds a tool
+    /// and forgets the list is the day a write runs unapproved.
+    ///
+    /// Only deploying sets this. Publishing and unpublishing are backed up
+    /// and `undo_last_change` takes them back, so they happen when asked — a
+    /// gate in front of every write teaches a teacher to click through gates,
+    /// which is worse than having no gate at all. Deploying is the one act
+    /// that puts something in front of students immediately and that Plantoir
+    /// cannot undo for them.
+    let needsApproval: Bool
+
+    // MARK: - Computed properties
+
+    /// The parameters as a JSON Schema object.
+    var parametersJSON: [String: Any] {
+        var properties: [String: Any] = [:]
+        for (key, property) in parameters {
+            properties[key] = property.json
+        }
+        var schema: [String: Any] = [
+            "type": "object",
+            "properties": properties,
+        ]
+        if !required.isEmpty {
+            schema["required"] = required
+        }
+        return schema
+    }
+
+    // MARK: - Functions
+
+    /// The same tool with every mention of the placeholder course replaced by
+    /// the real one.
+    ///
+    /// Measured on the Windows side and worth inheriting rather than
+    /// rediscovering: with `for example ICS3U` left in the schema examples, a
+    /// request that named no course copied `ICS3U` out of the examples **9
+    /// times out of 9**. The model reads examples as suggestions.
+    func namingTheRealCourse(_ course: String) -> AssistToolDefinition {
+        var rewritten: [String: AssistSchemaProperty] = [:]
+        for (key, property) in parameters {
+            rewritten[key] = property.replacing(placeholder: "ICS3U", with: course)
+        }
+        return AssistToolDefinition(
+            name: name,
+            description: description.replacingOccurrences(of: "ICS3U", with: course),
+            parameters: rewritten,
+            required: required,
+            readOnly: readOnly,
+            needsApproval: needsApproval
+        )
+    }
+}
+
+/// One argument in a tool's schema.
+nonisolated struct AssistSchemaProperty: Sendable, Equatable {
+
+    // MARK: - Types
+
+    enum Kind: String, Sendable {
+        case string
+        case integer
+        case boolean
+    }
+
+    // MARK: - Stored properties
+
+    let kind: Kind
+    let description: String
+
+    // MARK: - Computed properties
+
+    var json: [String: Any] {
+        return ["type": kind.rawValue, "description": description]
+    }
+
+    // MARK: - Functions
+
+    func replacing(placeholder: String, with replacement: String) -> AssistSchemaProperty {
+        return AssistSchemaProperty(
+            kind: kind,
+            description: description.replacingOccurrences(of: placeholder, with: replacement)
+        )
+    }
+}

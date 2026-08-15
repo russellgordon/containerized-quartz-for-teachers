@@ -170,7 +170,7 @@ struct MainWindowView: View {
                 ContentUnavailableView(
                     "Select a Course or Section",
                     systemImage: "sidebar.left",
-                    description: Text("Choose a course to edit its settings, or a section to preview and publish its website.")
+                    description: Text("Choose a course to edit its settings, or a section to preview and deploy its website.")
                 )
             }
         }

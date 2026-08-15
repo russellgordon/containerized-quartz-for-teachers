@@ -78,6 +78,32 @@ enum TaskMilestones {
         TaskMilestone(label: "Finishing up…", marker: "Deploy complete"),
     ]
 
+    /// Deploying a section to Cloudflare Pages. Netlify is never involved,
+    /// so the progress must not mention it. There is no "comparing what
+    /// changed" step: Cloudflare's own tool works out which assets it
+    /// already holds, rather than the manifest exchange Netlify uses.
+    static let deployToCloudflare: [TaskMilestone] = [
+        TaskMilestone(label: "Getting this Mac ready…", marker: "Setting up this Mac"),
+        TaskMilestone(label: "Building your website builder…", marker: "Building your website builder"),
+        TaskMilestone(label: "Starting up…", marker: "Ensuring container is running"),
+        TaskMilestone(label: "Checking your site…", marker: "Deploying from local build"),
+        TaskMilestone(label: "Connecting to Cloudflare…", marker: "Cloudflare project"),
+        TaskMilestone(label: "Uploading your pages…", marker: "Uploading the built site"),
+        TaskMilestone(label: "Finishing up…", marker: "Deploy complete"),
+    ]
+
+    /// Deploying to Cloudflare when the site has to be rebuilt first.
+    static let buildAndDeployToCloudflare: [TaskMilestone] = [
+        TaskMilestone(label: "Getting this Mac ready…", marker: "Setting up this Mac"),
+        TaskMilestone(label: "Building your website builder…", marker: "Building your website builder"),
+        TaskMilestone(label: "Starting up…", marker: "Starting container if needed"),
+        TaskMilestone(label: "Gathering your content…", marker: "Copying shared folders"),
+        TaskMilestone(label: "Building your site…", marker: "Quartz v4"),
+        TaskMilestone(label: "Connecting to Cloudflare…", marker: "Cloudflare project"),
+        TaskMilestone(label: "Uploading your pages…", marker: "Uploading the built site"),
+        TaskMilestone(label: "Finishing up…", marker: "Deploy complete"),
+    ]
+
     /// Publishing a section to a folder on this Mac. Netlify is never
     /// involved, and neither is the container: the built site already
     /// sits on this Mac, so the whole publish is a quick local copy.

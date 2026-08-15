@@ -128,7 +128,7 @@ struct SectionSettingsView: View {
                             .font(.caption)
                             .foregroundStyle(.orange)
                     } else {
-                        ExampleCaption("e.g. ics3u.yourschool.ca — links to your published site will use this domain instead of the Netlify address. Your site must already answer there (set the domain up in Netlify first). Leave empty to use the Netlify address.")
+                        ExampleCaption("e.g. ics3u.yourschool.ca — links to your live site will use this domain instead of the Netlify address. Your site must already answer there (set the domain up in Netlify first). Leave empty to use the Netlify address.")
                     }
                 }
                 .padding(.top, 4)

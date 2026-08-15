@@ -1,0 +1,221 @@
+import Foundation
+import Observation
+
+/// Runs `llama-server` beside the app and keeps it healthy.
+///
+/// **Why not in Colima.** The Windows build runs its model in a container
+/// because that is what it has. Doing the same on a Mac would be the single
+/// worst decision available: Colima is a Linux VM with no access to Metal, so
+/// the model would run on two virtual CPU cores while an idle GPU sat beside
+/// it. Measured on an M4 Pro, the same 1.5B model and the same 3,411-token
+/// prompt: **175 seconds in a container, 2.1 seconds natively.** Everything
+/// good about this feature comes from that one decision.
+@Observable
+final class AssistServerHost {
+
+    // MARK: - Types
+
+    enum State: Equatable {
+        case stopped
+        case starting
+        case ready
+        case failed(reason: String)
+    }
+
+    // MARK: - Stored properties
+
+    /// Where the server is up to.
+    private(set) var state: State = .stopped
+
+    /// The port it answers on, chosen when it starts.
+    private(set) var port: Int = 0
+
+    /// What the machine is allowed to give it.
+    let budget: AssistHardwareBudget
+
+    /// The weights.
+    private let modelURL: URL
+
+    /// The running process, if any.
+    private var process: Process?
+
+    // MARK: - Computed properties
+
+    /// The bundled binary. It ships inside the app so a teacher installs
+    /// nothing: 25 MB of llama.cpp, MIT licensed, signed with the app.
+    ///
+    /// It lives in `Resources/llama/` as a folder reference, with its dylibs
+    /// beside it — the binary carries an `@loader_path` rpath, so it finds
+    /// them itself and needs no `DYLD_LIBRARY_PATH`. That matters beyond
+    /// tidiness: the hardened runtime strips `DYLD_*` from the environment,
+    /// so an env-var arrangement would work here and fail the moment the app
+    /// is notarised.
+    static var executableURL: URL? {
+        if let inFolder = Bundle.main.url(forResource: "llama-server", withExtension: nil, subdirectory: "llama") {
+            return inFolder
+        }
+        return Bundle.main.url(forAuxiliaryExecutable: "llama-server")
+            ?? Bundle.main.url(forResource: "llama-server", withExtension: nil)
+    }
+
+    /// Where the assistant sends requests.
+    var baseURL: URL? {
+        guard port > 0 else {
+            return nil
+        }
+        return URL(string: "http://127.0.0.1:\(port)")
+    }
+
+    // MARK: - Initializer
+
+    init(modelURL: URL, budget: AssistHardwareBudget) {
+        self.modelURL = modelURL
+        self.budget = budget
+    }
+
+    // MARK: - Functions
+
+    /// Start the server and wait until it answers.
+    func start() async {
+        if case .ready = state {
+            return
+        }
+        guard let executable = AssistServerHost.executableURL else {
+            state = .failed(reason: "The assistant's engine is missing from the app. Reinstall Plantoir.")
+            return
+        }
+        guard FileManager.default.fileExists(atPath: modelURL.path) else {
+            state = .failed(reason: "The model has not been downloaded yet.")
+            return
+        }
+
+        state = .starting
+        let chosenPort: Int = AssistServerHost.freePort()
+        port = chosenPort
+
+        let process: Process = Process()
+        process.executableURL = executable
+        process.arguments = [
+            "--model", modelURL.path,
+            "--port", String(chosenPort),
+            "--host", "127.0.0.1",
+            // The tool definitions alone are ~3,400 tokens; 8,192 proved too
+            // small on the Windows side once a conversation had a few tool
+            // results in it.
+            "--ctx-size", "16384",
+            "--threads", String(budget.threadCount),
+            // Every layer on the GPU. This is the whole point of running
+            // natively; a partial offload would leave the slow path in play.
+            "--n-gpu-layers", "999",
+            // Chat templates and tool calls come from the model's own Jinja
+            // template rather than a guess at its format.
+            "--jinja",
+            // One conversation per window, and each window has its own server.
+            "--parallel", "1",
+        ]
+
+        // The server is chatty on stderr and none of it is for the teacher.
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+
+        do {
+            try process.run()
+        } catch {
+            state = .failed(reason: "The assistant's engine would not start: \(error.localizedDescription)")
+            return
+        }
+        self.process = process
+
+        let healthy: Bool = await waitUntilHealthy()
+        if healthy {
+            state = .ready
+        } else {
+            stop()
+            state = .failed(reason: "The assistant's engine did not become ready.")
+        }
+    }
+
+    /// Stop the server. Called when the window closes — a model holding
+    /// gigabytes of a teacher's RAM after they have finished with it is the
+    /// kind of thing that gets an app a reputation.
+    func stop() {
+        if let process, process.isRunning {
+            process.terminate()
+        }
+        process = nil
+        port = 0
+        if case .failed = state {
+            return
+        }
+        state = .stopped
+    }
+
+    /// Poll `/health` until the server answers or we give up.
+    ///
+    /// Loading a 7B from a cold page cache is a few seconds of disk; from a
+    /// warm one it is well under a second. Sixty seconds is generous enough
+    /// that a slow disk never looks like a failure.
+    private func waitUntilHealthy() async -> Bool {
+        guard let baseURL else {
+            return false
+        }
+        let health: URL = baseURL.appendingPathComponent("health")
+        let deadline: Date = Date().addingTimeInterval(60)
+
+        while Date() < deadline {
+            if let process, !process.isRunning {
+                return false
+            }
+            do {
+                let (_, response) = try await URLSession.shared.data(from: health)
+                if let http = response as? HTTPURLResponse, http.statusCode == 200 {
+                    return true
+                }
+            } catch {
+                // Not up yet; that is the normal case for the first second.
+            }
+            try? await Task.sleep(for: .milliseconds(150))
+        }
+        return false
+    }
+
+    /// A free TCP port, by asking the kernel for one and letting it go.
+    ///
+    /// There is a race here in principle — something else could take the port
+    /// between the close and the server's bind — and it is accepted rather
+    /// than papered over: the alternative is a fixed port, which collides
+    /// properly the moment a teacher opens a second section.
+    private static func freePort() -> Int {
+        let handle: Int32 = socket(AF_INET, SOCK_STREAM, 0)
+        if handle < 0 {
+            return 8080
+        }
+        defer { close(handle) }
+
+        var address: sockaddr_in = sockaddr_in()
+        address.sin_family = sa_family_t(AF_INET)
+        address.sin_port = 0
+        address.sin_addr.s_addr = inet_addr("127.0.0.1")
+
+        let bound: Int32 = withUnsafePointer(to: &address) { pointer in
+            return pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { rebound in
+                return bind(handle, rebound, socklen_t(MemoryLayout<sockaddr_in>.size))
+            }
+        }
+        if bound != 0 {
+            return 8080
+        }
+
+        var assigned: sockaddr_in = sockaddr_in()
+        var length: socklen_t = socklen_t(MemoryLayout<sockaddr_in>.size)
+        let named: Int32 = withUnsafeMutablePointer(to: &assigned) { pointer in
+            return pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) { rebound in
+                return getsockname(handle, rebound, &length)
+            }
+        }
+        if named != 0 {
+            return 8080
+        }
+        return Int(UInt16(bigEndian: assigned.sin_port))
+    }
+}

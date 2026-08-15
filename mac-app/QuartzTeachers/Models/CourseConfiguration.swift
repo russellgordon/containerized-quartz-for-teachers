@@ -30,10 +30,14 @@ class CourseConfiguration {
         set { values["course_name"] = newValue }
     }
 
-    /// Where deploys go: "netlify" (the default) or "local_folder" — a
-    /// folder on this computer, for teachers who upload to their own web
-    /// host themselves (e.g. over SFTP). Course-level: every section of
-    /// the course publishes the same way.
+    /// Where deploys go: "netlify" (the default), "cloudflare_pages", or
+    /// "local_folder" — a folder on this computer, for teachers who upload
+    /// to their own web host themselves (e.g. over SFTP). Course-level:
+    /// every section of the course deploys the same way.
+    ///
+    /// These spellings are shared with the Windows app, which reads and
+    /// writes the same `course_config.json`, so they are not ours alone to
+    /// change.
     var deployTarget: String {
         get {
             let stored: String = stringValue(forKey: "deploy_target")
@@ -49,9 +53,42 @@ class CourseConfiguration {
         set { values["deploy_folder_path"] = newValue }
     }
 
-    /// True when this course publishes to a folder rather than Netlify.
+    /// True when this course deploys to a folder rather than to a web host.
     var deploysToLocalFolder: Bool {
         return deployTarget == "local_folder" && !deployFolderPath.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    /// True when this course deploys to Cloudflare Pages.
+    var deploysToCloudflare: Bool {
+        return deployTarget == "cloudflare_pages"
+    }
+
+    /// What is wrong with the Cloudflare Account ID, or nil when it is
+    /// usable.
+    ///
+    /// The ID is asked for in the app rather than discovered, because a
+    /// token scoped only to Cloudflare Pages cannot list its own account:
+    /// `/user/tokens/verify` reports it active while `/accounts` answers
+    /// success with an empty list. Validity and account lookup are
+    /// therefore separate questions, and this one has to be put to the
+    /// teacher — a deploy driven from the app has no console to answer on.
+    ///
+    /// The ID belongs to the teacher rather than to any one course, so it
+    /// lives in app settings (`AppSettings`), not in `course_config.json`.
+    static func cloudflareAccountProblem(forID rawID: String) -> String? {
+        let identifier: String = rawID.trimmingCharacters(in: .whitespacesAndNewlines)
+        if identifier.isEmpty {
+            return "Paste your Cloudflare Account ID."
+        }
+        if identifier.count != 32 {
+            return "That doesn’t look like an Account ID — it’s 32 letters and digits."
+        }
+        for character in identifier {
+            if !character.isHexDigit {
+                return "That doesn’t look like an Account ID — it’s 32 letters and digits."
+            }
+        }
+        return nil
     }
 
     /// What is wrong with a folder chosen for local-folder publishing, or
@@ -61,7 +98,7 @@ class CourseConfiguration {
     static func deployFolderProblem(forPath rawPath: String) -> String? {
         let path: String = rawPath.trimmingCharacters(in: .whitespaces)
         if path.isEmpty {
-            return "Choose the folder this course publishes into."
+            return "Choose the folder this course deploys into."
         }
         let fileManager: FileManager = FileManager.default
         var isDirectory: ObjCBool = false
@@ -70,7 +107,7 @@ class CourseConfiguration {
             return "That folder doesn’t exist — use Choose… to pick or create one."
         }
         if !isDirectory.boolValue {
-            return "That’s a file — publishing needs a folder."
+            return "That’s a file — deploying needs a folder."
         }
         if !fileManager.isWritableFile(atPath: path) {
             return "That folder can’t be written to — choose a different one."

@@ -26,6 +26,12 @@ targets:
     platform: macOS
     sources:
       - path: QuartzTeachers
+      # llama.cpp, run natively so the assistant can reach Metal. A folder
+      # reference: llama-server carries an @loader_path rpath, so it finds its
+      # dylibs beside itself with no environment fiddling. 25 MB, MIT.
+      - path: Vendor/llama
+        buildPhase: resources
+        type: folder
       # The app icon, authored in Icon Composer.
       - path: Plantoir.icon
         buildPhase: resources

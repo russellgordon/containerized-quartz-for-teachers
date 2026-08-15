@@ -22,6 +22,9 @@ struct SectionDetailView: View {
     /// Why a preview could not start, shown as an alert.
     @State var previewRefusal: String?
 
+    /// Why a deploy could not start, shown as an alert.
+    @State var deployRefusal: String?
+
     @Environment(WorkspaceModel.self) var workspace
 
     // MARK: - Computed properties
@@ -51,8 +54,8 @@ struct SectionDetailView: View {
                         "No Preview Running",
                         systemImage: "globe",
                         description: Text(course.configuration.deploysToLocalFolder
-                            ? "Click Preview to build this section's website and see it here, or Publish to copy it to your publishing folder."
-                            : "Click Preview to build this section's website and see it here, or Publish to put it online.")
+                            ? "Click Preview to build this section's website and see it here, or Deploy to copy it to your deploy folder."
+                            : "Click Preview to build this section's website and see it here, or Deploy to put it online.")
                     )
                 }
             }
@@ -122,12 +125,16 @@ struct SectionDetailView: View {
                 .help(previewRunner.isRunning ? "Stop previewing this section" : "Preview this section's website")
                 .accessibilityIdentifier(previewRunner.isRunning ? "stopPreviewButton" : "previewButton")
 
-                Button("Publish", systemImage: "paperplane.fill") {
+                // "Deploy", NOT "Publish" — a page is published (the
+                // `publish:` flag decides whether students see it); the
+                // whole site is deployed. One word for both had the
+                // teacher and the assistant talking past each other.
+                Button("Deploy", systemImage: "paperplane.fill") {
                     startDeploy()
                 }
                 .labelStyle(.titleAndIcon)
                 .disabled(isBusy)
-                .help("Publish this section's website")
+                .help("Deploy this section's website")
                 .accessibilityIdentifier("deployButton")
 
                 Button("Open in Browser", systemImage: "safari") {
@@ -150,6 +157,49 @@ struct SectionDetailView: View {
         } message: {
             Text(previewRefusal ?? "")
         }
+        .alert("Cannot Deploy Yet", isPresented: deployRefusalBinding) {
+            Button("OK") {
+                deployRefusal = nil
+            }
+        } message: {
+            Text(deployRefusal ?? "")
+        }
+    }
+
+    /// Why this section's deploy would not get anywhere, or nil when it
+    /// would. Both destinations that need something from the teacher are
+    /// checked: the folder, and the Cloudflare Account ID.
+    var deployRefusalReason: String? {
+        return SectionDetailView.deployRefusalReason(
+            configuration: course.configuration,
+            cloudflareAccountID: AppSettings.shared.cloudflareAccountID
+        )
+    }
+
+    /// The same check, free of the view, so it can be tested.
+    static func deployRefusalReason(configuration: CourseConfiguration, cloudflareAccountID: String) -> String? {
+        if configuration.deployTarget == "local_folder" {
+            if let folderProblem = CourseConfiguration.deployFolderProblem(forPath: configuration.deployFolderPath) {
+                return "\(folderProblem) Fix it in this course’s settings, under Deploying, then deploy again."
+            }
+        }
+        if configuration.deploysToCloudflare {
+            if let accountProblem = CourseConfiguration.cloudflareAccountProblem(forID: cloudflareAccountID) {
+                return "\(accountProblem) Add it in this course’s settings, under Deploying, then deploy again."
+            }
+        }
+        return nil
+    }
+
+    var deployRefusalBinding: Binding<Bool> {
+        return Binding(
+            get: { deployRefusal != nil },
+            set: { isPresented in
+                if !isPresented {
+                    deployRefusal = nil
+                }
+            }
+        )
     }
 
     var previewRefusalBinding: Binding<Bool> {
@@ -166,7 +216,7 @@ struct SectionDetailView: View {
     var consoleArea: some View {
         VStack(spacing: 0) {
             if showsDeployProgress {
-                TaskProgressView(runner: deployRunner, title: "Publishing \(titleText)")
+                TaskProgressView(runner: deployRunner, title: "Deploying \(titleText)")
             } else {
                 TaskProgressView(runner: previewRunner, title: previewTaskTitle)
             }
@@ -285,11 +335,21 @@ struct SectionDetailView: View {
             return
         }
 
+        // Whatever is wrong with the destination is said here, before a
+        // build starts: discovering it after several minutes of work would
+        // waste the teacher's time and read as a failure of the deploy.
+        if let problem = deployRefusalReason {
+            deployRefusal = problem
+            return
+        }
+
         let needsBuild: Bool = BuildFreshness.needsRebuild(course: course, sectionNumber: sectionNumber)
-        // Folder deploys never touch Netlify, so their progress must not
-        // talk about it either.
+        // A folder or Cloudflare deploy never touches Netlify, so their
+        // progress must not talk about it either.
         if course.configuration.deploysToLocalFolder {
             deployRunner.milestones = needsBuild ? TaskMilestones.buildAndDeployToFolder : TaskMilestones.deployToFolder
+        } else if course.configuration.deploysToCloudflare {
+            deployRunner.milestones = needsBuild ? TaskMilestones.buildAndDeployToCloudflare : TaskMilestones.deployToCloudflare
         } else {
             deployRunner.milestones = needsBuild ? TaskMilestones.buildAndDeploy : TaskMilestones.deploy
         }
@@ -331,15 +391,17 @@ struct SectionDetailView: View {
                 }
             }
 
-            // Publishing to a folder never involves Netlify: the built
-            // site syncs incrementally into the course's chosen folder,
-            // each section in its own subfolder.
-            var deployArguments: [String] = [course.code, String(sectionNumber)]
-            if course.configuration.deploysToLocalFolder {
-                deployArguments.append(contentsOf: ["--to-folder", course.configuration.deployFolderPath])
-            }
+            // What the launcher is asked to do is decided in one place —
+            // shared with the scheduled deploy, so an alarm set for half
+            // six sends the site to the same destination this button does.
+            let deployArguments: [String] = DeployCommand.arguments(
+                courseCode: course.code,
+                sectionNumber: sectionNumber,
+                configuration: course.configuration,
+                cloudflareAccountID: AppSettings.shared.cloudflareAccountID
+            )
             deployRunner.run(
-                scriptNamed: "deploy.sh",
+                scriptNamed: DeployCommand.scriptName,
                 arguments: deployArguments,
                 workingDirectory: workspaceURL,
                 keepingTranscript: needsBuild

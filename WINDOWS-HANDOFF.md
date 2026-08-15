@@ -326,6 +326,87 @@ alone — they already apply to every section — and never read past the
 frontmatter, because the site-tour page shows `draft: true` inside a code
 block as documentation.
 
+## The local assistant: run the model natively, not in a container
+
+**Measured on macOS 2026-08-15, and the numbers are large enough that they are
+worth acting on rather than filing.** `AI-ASSIST-HANDOFF.md` §2 records the
+Windows engine's constraints — 4 GB, 2 cores, no GPU, ~21 tokens/second — and
+observes that "21 tokens/second is the number that governs everything." It
+does govern everything. It is also an artefact of running the model inside a
+container, not a property of the hardware.
+
+The macOS build runs the same model (Qwen2.5-1.5B-Instruct Q4_K_M, byte for
+byte the same 1,117,320,736-byte file) natively, with Metal. Same prompt, the
+same 3,411-token tool surface:
+
+| | Docker-in-WSL2, 2 cores, no GPU | Native, Metal (M4 Pro) |
+|---|---|---|
+| Cold prompt read (3,411 tokens) | **175–179 s** | **2.1 s** |
+| Generation | **5.5 tok/s** in the assist loop | **158 tok/s** |
+| A ~50-token tool call | ~9 s | ~0.3 s |
+
+Two consequences worth having:
+
+1. **The three-minute wait is not inherent.** It is the cost of reading the
+   tool definitions on two virtual CPU cores. Given a GPU it is seconds.
+2. **The whole disk-cache save/restore mechanism becomes unnecessary.** §10.1
+   calls it "the biggest win available" and it is — when the thing being
+   avoided costs 175 seconds. When it costs two, the machinery (per-course and
+   per-section cache files, tool-schema fingerprints in the file name, an
+   empty-save that silently poisons the next session) is more failure surface
+   than it is worth. The macOS build does not have it. It warms the prefix in
+   the background when the window opens instead, which is a dozen lines.
+
+**Windows can almost certainly have this too.** llama.cpp publishes native
+Windows builds beside the macOS one in the same release — as of `b10435`,
+`llama-<build>-bin-win-cuda-13.4-arm64.zip`, `win-cpu-arm64`, and Vulkan
+builds for AMD and Intel GPUs. Running `llama-server.exe` on the host, out of
+WSL2 entirely, should collapse the same two numbers. The rest of the design
+does not care where the server is: it is the same OpenAI-shaped HTTP endpoint
+either way, so `LocalModel` should need little more than a different way of
+starting the process.
+
+Worth measuring before committing to it — a machine with no usable GPU falls
+back to CPU and lands somewhere between the two columns, and that is worth
+knowing rather than assuming. But the container is not buying anything here
+that a host process does not, and it is costing three minutes.
+
+### Your two findings, re-measured natively — one held, one did not
+
+Both were re-run on macOS against the same suite (3B, 3 trials, results in
+`research/ai-assist/macos-native-results.txt`):
+
+- **The date must be appended, not prepended: HELD.** Prepending cost 13–14
+  points, against the 15 you measured. Treat this as a property of the model.
+- **Rewriting the schema examples to the real course: DID NOT reproduce.** You
+  saw `ICS3U` copied out of the examples 9 times out of 9; natively, the 3B
+  copied it **0 times in 87 responses** with `ICS3U` still present in 14 places
+  in the schema, and accuracy barely moved. **This is not grounds to remove the
+  rewriting** — your finding was earned on the 1.5B, which is a different model
+  from the one that failed to reproduce it, and the macOS build keeps the
+  rewriting for exactly that reason. It is grounds to re-test it on whichever
+  model you actually ship.
+
+### And one finding of our own, which matters more than either
+
+**Do not assume a bigger model is a safer one.** Qwen2.5 **3B inverts
+polarity**: asked to hide a page it called `publish_pages`, in two of three
+trials, and answered three separate hide requests with `undo_last_change`. That
+is the one genuinely dangerous failure — the reason publish and unpublish are
+separate verbs rather than one tool with a boolean — and the 3B also scored
+BELOW the 1.5B on the like-for-like probe set (70% against 81%).
+
+The macOS build has no 3B rung as a result; the case was deleted from the enum
+rather than marked risky, on the same reasoning as having no delete tool. If
+Windows ever offers a model choice, measure each candidate for inversions
+specifically, and treat that as a veto rather than a score.
+
+| Model | Routing (like-for-like) | Inversions |
+|---|---|---|
+| 1.5B | 81% | none |
+| 3B | 70% | **2 of 3 trials** |
+| 7B | 94% | none |
+
 ## Testing
 
 - The **PowerShell launchers are written but UNTESTED on real Windows** —
