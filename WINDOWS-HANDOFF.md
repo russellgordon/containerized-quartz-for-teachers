@@ -777,6 +777,164 @@ promise is that the vault is the truth. **This is a live constraint, not a
 historical note** — the same argument applies to any future "the builder could
 just fix it up" idea, and there will be more of them.
 
+## What the conversation looks like, and why
+
+The assistant window is a CHAT, not a form with a log under it. That was a
+deliberate change and it is worth stating why before the numbers: a teacher
+asking for something, being told what would happen, and agreeing to it is a
+conversation, and a window that looks like one is a window they already know
+how to use. Nothing here has to be taught.
+
+**One decision is yours, not ours.** These specs describe macOS Messages,
+because that is the chat every Mac teacher already has open. The Windows
+equivalent may be better served by looking like Windows — Teams and Phone Link
+have their own bubble idiom, and a Mac-shaped chat on Windows can read as
+foreign rather than familiar. What must carry across is the STRUCTURE (who is
+on which side, what counts as a message, when a turn ends); the exact
+curvature is a local decision. If you do choose to mimic your platform's
+chat, measure it the way we measured ours — see the last paragraph.
+
+### The two sides
+
+| | Teacher | Assistant |
+|---|---|---|
+| Side | right | left |
+| Fill | blue, RGB **(20, 147, 255)** | a system grey at ~16% opacity |
+| Text | white | the ordinary label colour |
+
+**Do not use the system accent colour for the teacher's side.** We did, and it
+is a latent bug rather than a shade being slightly off: the accent is whatever
+the user chose in system settings, and set to graphite it makes the teacher's
+bubbles the same grey as the assistant's — at which point the left/right,
+blue/grey distinction the whole window depends on silently disappears. The
+blue is its own constant.
+
+### The bubble
+
+Measured off a screenshot of a real Messages conversation, at 2x, in points:
+
+| | |
+|---|---|
+| Body height, one line of 13pt text | 25.5 |
+| Corner radius | 12 |
+| Text inset, each side | 11 |
+| Text inset, top and bottom | ~5 |
+| Tail drop BELOW the body | 4.5 |
+| Tail tip, INSIDE the body's own edge | 5.5 |
+
+Two of those are the ones to read twice, because both look right the other way
+round and we got both wrong before measuring:
+
+- **The tail hangs below the bubble.** Its lowest point is beneath the bottom
+  edge, not level with it.
+- **The tail stays within the bubble's width.** Its tip is five and a half
+  points INSIDE the side, not outside it. A tail drawn past the edge reads as
+  a wedge stuck onto a corner.
+
+Three more things about drawing it:
+
+- **One continuous outline**, not a rounded rectangle with a triangle added.
+  Overlapping subpaths merge cleanly only under a non-zero fill AND matching
+  winding directions; get either wrong and a seam shows the moment the fill is
+  translucent.
+- **The underside of the tail is CONCAVE**, curving back up into the bottom
+  edge. That curve, not the tip, is what makes the shape read as a tail rather
+  than as something that happens to be pointy.
+- **Draw inside the bounds you are given.** Ours drew past the edge of its own
+  rect at first and was clipped — a clipped tail is severed, not pointed.
+- **Scale the proportions to the corner radius** rather than hard-coding them.
+  Fixed numbers are correct at exactly one bubble height and subtly wrong at
+  every other, and "subtly wrong" is what a person notices without being able
+  to say why.
+
+### Tails mark turns, not messages
+
+One tail per RUN: on the last thing a participant said before the other one
+answered. A tail on every bubble makes three sentences look like three
+separate attempts to get a word in — and it is the kind of thing that looks
+fine in a screenshot of two messages and wrong in a real conversation.
+
+The newest message always has a tail, since its turn has not been answered
+yet. Anything nobody SAID — we have one such item, a note that a restore
+happened — wears no tail and does not end anyone's turn; the rule looks past
+it to the next thing that was actually said.
+
+### What counts as a message
+
+More things than you would first assume, and this is the part that matters
+most for how the window reads:
+
+- **What the assistant says.** Obviously.
+- **What the teacher types.** Obviously.
+- **Tool results.** "The preview is rebuilding now" is the assistant
+  ANSWERING. That it came from a tool is machinery, and the teacher is not the
+  audience for machinery. As plain lines with an icon these read as a log
+  spliced through a conversation.
+- **The plan.** It used to live only in the approval card, so pressing Go or
+  Cancel destroyed the description of what had just been agreed to — and with
+  it the context for everything after. A conversation you cannot scroll back
+  through is not a conversation.
+- **The question.** "Shall I go ahead?" / "Shall I deploy?" is its own
+  message, which is what lets the card below be nothing but buttons.
+- **The teacher's ANSWER.** Pressing Go records "Go" as a teacher message, in
+  their bubble on their side. Reading back a conversation where the assistant
+  asked, nothing answered, and yet something plainly happened is worse than
+  not being able to read it back at all.
+
+The general rule: **anything that is part of the conversation belongs IN the
+conversation, and a control that owns text destroys that text when it
+resolves.** Leave controls the choice and nothing else.
+
+### The typing indicator
+
+Three dots in a grey bubble WITH a tail, on the assistant's side, shown
+whenever the model is thinking or a tool is running — both are waits with
+nothing on screen, and a teacher does not care which.
+
+Proportions matter more than absolute size: **large dots against a small
+bubble.** Ours are 9 points across with 5 between them, and the bubble hugs
+them. A wide flat pill with three specks in it is the shape of a progress
+bar, not of somebody typing. Each dot lags the one before it (about 0.18s) so
+the three read as a wave rather than a blink.
+
+### The box you type in
+
+- A rounded field — continuous rounded rectangle, radius 17 — with the send
+  button INSIDE its right end, rather than a plain field with a button parked
+  beside it.
+- **Never disable it to mean "busy".** A disabled field cannot hold keyboard
+  focus, so the system moves focus to the next thing it can find; ours landed
+  on the first disclosure group in the suggestion shelf, which looks like a
+  bug in something else entirely. Typing and SENDING are separate
+  permissions: the box stays live so a teacher can write their next message
+  while they wait — every messaging app allows this — and only the send waits
+  for the run to finish.
+- **Focus returns to it after every send.** Two commands in a row should not
+  need a click in between. This is also what keeps the arrow-key history
+  usable, since that depends on the field having focus.
+- Up and Down walk the teacher's own previous messages; see the history rules
+  recorded in `GUI-IMPROVEMENTS.md` row 157.
+
+### Two small things that are easy to skip
+
+- **Emphasis has to be rendered.** Plans mark their headings bold, and in
+  SwiftUI `Text(someStringVariable)` does not parse markdown at all — only
+  string literals do — so it reached the teacher as literal asterisks until
+  the text was parsed explicitly. Whatever your toolkit is, check how it
+  treats a runtime string; several style literals only.
+- **The suggestion chips take the pointing-hand cursor.** A plain button style
+  keeps the look and suppresses the cursor, so it has to be put back by hand.
+
+### How to get this right in less time than we did
+
+Measure. Three careful guesses produced three different wrong shapes; one
+screenshot and a twenty-line script that read the pixels produced the right
+one in minutes. Screenshot the chat you are copying, find the bubble's bounding
+box, walk the rows to find where the body ends and the tail begins, and sample
+the fill colour directly. Every number in the table above came out that way,
+and the two assumptions that survived three rounds of eyeballing both died on
+first contact with the measurement.
+
 ## Plan mode, undo, and how often to back up
 
 Three decisions taken on the macOS side on 2026-08-15 that Windows should
