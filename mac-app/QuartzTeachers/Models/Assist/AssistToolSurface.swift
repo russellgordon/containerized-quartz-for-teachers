@@ -1,12 +1,15 @@
 import Foundation
 
-/// The twenty tools, exactly as the local model sees them.
+/// The twenty tools that exist, and the thirteen of them the local model is
+/// shown.
 ///
 /// It was fifteen when routing accuracy was measured, and the five that came
 /// after — reading and recording a section's timetable, and adding the next
 /// class page — were added on purpose, knowing the cost. A small local model
 /// routes worse the more it is shown, so the number is worth re-measuring
-/// rather than assuming the old figure still holds.
+/// rather than assuming the old figure still holds. `localTools` is the answer
+/// to that pressure: seven of the twenty are never NAMED by the model, so they
+/// are not put in front of it.
 ///
 /// The descriptions are the Windows server's own, put through the same
 /// shortening rule the narrowed surface uses there: keep the `TEACHERS SAY:`
@@ -29,10 +32,18 @@ import Foundation
 ///   rebuilds, which is what the assistant's own system prompt promises a
 ///   teacher, and it is one fewer boolean on a surface where booleans are the
 ///   thing that goes wrong.
+///
+/// There is now no boolean anywhere on this surface at all. The last one was
+/// `includeLinked`, and it asked the MODEL how far a publish or an unpublish
+/// should reach — the exact reasoning this design exists to keep out of a
+/// router. The rules live in `AssistPublishPlanner` instead, where they can be
+/// written down once and tested.
 extension AssistToolRunner {
 
     // MARK: - The surface
 
+    /// Every tool either client may call, narrowed from the Windows server's
+    /// much larger surface.
     static let tools: [AssistToolDefinition] = [
         listPagesTool,
         readPageTool,
@@ -56,6 +67,43 @@ extension AssistToolRunner {
         addNextClassTool,
     ]
 
+    /// The tools the LOCAL model is actually shown.
+    ///
+    /// Everything above still RUNS; this is only what the model is asked to
+    /// choose between, and every schema in the list costs it context and
+    /// accuracy. Two kinds are left out, and neither loses a teacher anything:
+    ///
+    /// * **The six `plan_` twins.** Plan mode calls them IN CODE —
+    ///   `AssistAgent.showPlan` builds the call itself from the write the model
+    ///   already chose — so the model never has to name one. They were about a
+    ///   third of the prompt and bought nothing.
+    /// * **`remember_timetable`.** Dates the MODEL supplies are dates it may
+    ///   have invented, and a wrong one silently schedules a class on the wrong
+    ///   day. The schedule sheet owns recording them now.
+    ///   `read_remembered_timetable` stays: reading back what a teacher already
+    ///   said invents nothing.
+    static let localTools: [AssistToolDefinition] = narrowedForTheLocalModel(tools)
+
+    /// Names kept off the local list even though they are not plans.
+    static let hiddenFromTheLocalModel: Set<String> = ["remember_timetable"]
+
+    /// The list above, with the plans and the hidden names taken out.
+    private static func narrowedForTheLocalModel(
+        _ all: [AssistToolDefinition]
+    ) -> [AssistToolDefinition] {
+        var shown: [AssistToolDefinition] = []
+        for tool in all {
+            if tool.name.hasPrefix("plan_") {
+                continue
+            }
+            if hiddenFromTheLocalModel.contains(tool.name) {
+                continue
+            }
+            shown.append(tool)
+        }
+        return shown
+    }
+
     /// The tools the MCP client is offered ON TOP of the local surface.
     ///
     /// Kept apart because the local surface is a MEASUREMENT: routing accuracy
@@ -71,7 +119,13 @@ extension AssistToolRunner {
         addCurriculumMentionsTool,
     ]
 
-    /// Everything the MCP client may call: the local surface, plus the rest.
+    /// Everything the MCP client may call: every tool that exists, plus the
+    /// ones only it is offered.
+    ///
+    /// Wider than the local list on purpose. Claude Code has no plan mode, so
+    /// it needs the `plan_` twins by name to show a teacher what a write would
+    /// do — and it is a model that can be trusted with a date, so
+    /// `remember_timetable` is there too.
     static let mcpTools: [AssistToolDefinition] = tools + mcpOnlyTools
 
     // MARK: - Shared argument wording
@@ -106,14 +160,6 @@ extension AssistToolRunner {
             kind: .string,
             description: "The page titles to \(verb), separated by semicolons — for example "
                        + "\"Unit 2, Day 3; Unit 2, Day 4\". May be empty if you give dates instead."
-        )
-    }
-
-    private static func includeLinkedHelp(_ verb: String) -> AssistSchemaProperty {
-        return AssistSchemaProperty(
-            kind: .boolean,
-            description: "True to also \(verb) every page these pages link to. Choose deliberately; "
-                       + "there is no default."
         )
     }
 
@@ -214,29 +260,40 @@ extension AssistToolRunner {
         parameters: [
             "course": courseHelp,
             "section": sectionHelp,
-            "includeLinked": includeLinkedHelp("publish"),
             "pages": pagesHelp("publish"),
             "onOrAfter": onOrAfterHelp,
             "before": beforeHelp,
         ],
-        required: ["course", "section", "includeLinked"],
+        required: ["course", "section"],
         readOnly: true,
         needsApproval: false
     )
 
     private static let publishPagesTool: AssistToolDefinition = AssistToolDefinition(
         name: "publish_pages",
-        description: "Make pages visible to students, optionally along with every page they link to, then "
-                   + "rebuild the section preview.",
+        // Left deliberately as it is. An attempt to steer a typo'd "publsh
+        // tomorows class" away from here — by adding "NOT for one day's
+        // class, use publish_class_on" — was MEASURED and made things worse:
+        // it fixed that one probe and broke three, sending "Publish Unit 2,
+        // Day 3" (a named page, no date at all) to publish_class_on 10 times
+        // out of 10 and dropping the window's own suggestions from 110/110 to
+        // 90/110. A small model reads a sentence naming another tool as a
+        // recommendation rather than a boundary. The over-publish it was
+        // meant to prevent is handled in code instead — see
+        // `AssistToolRunner`'s refusal of an open-ended range — which cannot
+        // cost accuracy because it changes nothing the model reads.
+        description: "Make pages visible to students, along with every page they link to, then rebuild "
+                   + "the section preview. The linked pages come by themselves — there is nothing to ask "
+                   + "for and no way to leave them out, because a published page whose links lead nowhere "
+                   + "is the one thing this must never make.",
         parameters: [
             "course": courseHelp,
             "section": sectionHelp,
-            "includeLinked": includeLinkedHelp("publish"),
             "pages": pagesHelp("publish"),
             "onOrAfter": onOrAfterHelp,
             "before": beforeHelp,
         ],
-        required: ["course", "section", "includeLinked"],
+        required: ["course", "section"],
         readOnly: false,
         needsApproval: false
     )
@@ -249,12 +306,11 @@ extension AssistToolRunner {
         parameters: [
             "course": courseHelp,
             "section": sectionHelp,
-            "includeLinked": includeLinkedHelp("unpublish"),
             "pages": pagesHelp("unpublish"),
             "onOrAfter": onOrAfterHelp,
             "before": beforeHelp,
         ],
-        required: ["course", "section", "includeLinked"],
+        required: ["course", "section"],
         readOnly: true,
         needsApproval: false
     )
@@ -263,17 +319,17 @@ extension AssistToolRunner {
         name: "unpublish_pages",
         description: "TEACHERS SAY: \"take Unit 4, Day 5 back down\", \"students shouldn't see it yet\", "
                    + "\"hide that page\", \"I posted it by mistake\", \"make it a draft again\", \"pull that "
-                   + "lesson\", \"un-publish it\". Unpublish pages, so students no longer see them, "
-                   + "optionally along with every page they link to, then rebuild the section preview.",
+                   + "lesson\", \"un-publish it\". Unpublish pages, so students no longer see them, along "
+                   + "with any page ONLY they link to; a page another class still links to stays put, and "
+                   + "the result says which stayed and why.",
         parameters: [
             "course": courseHelp,
             "section": sectionHelp,
-            "includeLinked": includeLinkedHelp("unpublish"),
             "pages": pagesHelp("unpublish"),
             "onOrAfter": onOrAfterHelp,
             "before": beforeHelp,
         ],
-        required: ["course", "section", "includeLinked"],
+        required: ["course", "section"],
         readOnly: false,
         needsApproval: false
     )

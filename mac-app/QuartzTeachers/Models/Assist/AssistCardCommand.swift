@@ -47,11 +47,16 @@ nonisolated struct AssistCardCommand: Sendable, Equatable {
         return nil
     }
 
-    /// The eleven, exactly as the window offers them.
+    /// The fixed shapes, worded exactly as the shelf offers them.
     ///
     /// Anything whose arguments depend on what the teacher said — a page
     /// title, a time — is NOT here: those need the model to read them out,
     /// and reading arguments out is the thing it does reliably.
+    ///
+    /// These have to be kept in step with `AssistPromptShelfView` BY HAND: a
+    /// phrasing the shelf offers and this does not match is not broken, it
+    /// simply goes to the model — but it goes to the model on a shape that was
+    /// put here precisely because the model gets it wrong.
     private static let fixedShapes: [(String, AssistCardCommand)] = [
         ("what would students see in this section right now?",
          AssistCardCommand(toolName: "check_section", arguments: [:])),
@@ -64,6 +69,12 @@ nonisolated struct AssistCardCommand: Sendable, Equatable {
 
         ("undo that",
          AssistCardCommand(toolName: "undo_last_change", arguments: [:])),
+
+        // The shelf says "Deploy now". The old, longer wording is kept as
+        // well: a teacher who learned it from an earlier version and types it
+        // should still be answered by the same tool.
+        ("deploy now",
+         AssistCardCommand(toolName: "deploy_section", arguments: [:])),
 
         ("deploy this section now",
          AssistCardCommand(toolName: "deploy_section", arguments: [:])),

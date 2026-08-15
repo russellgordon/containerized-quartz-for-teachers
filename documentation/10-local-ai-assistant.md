@@ -1,0 +1,485 @@
+# 10. The Local AI Assistant
+
+**Audience:** a computer science teacher who is comfortable with processes,
+JSON and HTTP, but has not worked with language models before. This document
+explains what the model in Plantoir actually is, how it is configured, and —
+the part that matters most — exactly how a sentence a teacher types becomes a
+Swift function call.
+
+The short version: **the model never does anything.** It reads a sentence and
+answers with the *name of a Swift function and its arguments*. Every rule,
+every safety check and every file written is ordinary Swift code that would
+behave identically if the model were replaced by a dropdown menu.
+
+---
+
+## Part 1 — Enough background to follow the rest
+
+### What a language model is
+
+A language model is a large mathematical function with a fixed set of
+numbers inside it, called **parameters** (or *weights*). It takes a piece of
+text and produces a probability distribution over what the next fragment of
+text should be. That fragment is called a **token** — roughly a word-piece,
+about four characters of English on average, so "unpublish" might arrive as
+`un` + `publish`.
+
+Generation is a loop:
+
+```
+text so far ──▶ model ──▶ probabilities for the next token ──▶ pick one
+     ▲                                                            │
+     └────────────────── append it and go round again ◀───────────┘
+```
+
+That is the entire mechanism. There is no database lookup, no plan, and no
+execution of anything. A model that "calls a tool" is a model that has been
+trained to *write out* a tool call as text, in a format the surrounding
+program knows how to parse.
+
+Two consequences worth holding onto:
+
+- **The model is a text predictor, so its output is a suggestion, not a
+  decision.** Whether the suggestion is acted on is the host program's
+  choice. In Plantoir the host program is Swift, and it checks.
+- **Everything the model knows about the current situation is in the text you
+  send it.** It has no memory between requests. Each request carries the
+  whole conversation again.
+
+### The context window, and why it costs time
+
+The **context window** is the maximum number of tokens the model can consider
+at once — the conversation, the system instructions, and the descriptions of
+every available tool, all counted together. Plantoir gives the model an 8,192
+or 16,384-token window depending on the Mac.
+
+Before generating a single token of reply, the model must read everything in
+the window. That is called **prompt processing**, and it is why the *first*
+message of a conversation is slower than the rest: about 2,650 tokens of tool
+descriptions have to be read before anything else happens. Afterwards the
+work is cached (the **KV cache**, which is also most of the memory the model
+occupies while running), so later turns only process the new sentence.
+
+### Quantisation, or why 4 billion parameters fits in 2.5 GB
+
+Parameters are natively 16-bit numbers. Storing 4 billion of them would take
+about 8 GB. **Quantisation** stores them at lower precision instead — Plantoir
+uses `Q4_K_M`, roughly 4 bits per parameter — which cuts the file to 2.5 GB
+and costs a small, measurable amount of accuracy. This is what makes running a
+model on a teacher's laptop practical at all. The `.gguf` file extension is
+llama.cpp's container format for quantised weights.
+
+### How a "big" cloud model like Claude differs
+
+Claude, ChatGPT and Gemini are the same *kind* of object — a next-token
+predictor — at a wildly different scale, and operated differently:
+
+| | A cloud model (Claude) | Plantoir's local assistant |
+|---|---|---|
+| **Parameters** | Undisclosed, but far larger — the public estimates are in the hundreds of billions | 1.5 or 4 billion |
+| **Where it runs** | Racks of datacentre GPUs, shared between many users | One process on the teacher's Mac, on the Mac's own GPU |
+| **Where your text goes** | Over the network to the provider | Nowhere. `127.0.0.1`, loopback only |
+| **Cost** | Per token, billed to an account | None after a one-time 1.1–2.5 GB download |
+| **Works offline** | No | Yes |
+| **Context window** | Hundreds of thousands of tokens | 8,192 or 16,384 |
+| **What it is good at** | Open-ended reasoning, writing, multi-step planning, ambiguity | Picking the right item from a short list and filling in its arguments |
+| **What it is bad at** | Nothing relevant here | Anything requiring a chain of inferences, or judgement about meaning |
+
+The last row is the design constraint that shapes everything below. A 4B
+model is not a small Claude — it is a different tool with a much narrower
+competence. **Plantoir is built around what a small model is genuinely
+reliable at, rather than asking it to do less well what a large one does
+well.**
+
+### Tool calling, the mechanism everything rests on
+
+Modern instruction-tuned models are trained on a convention: you send, along
+with the conversation, a list of **tools** — JSON Schema descriptions of
+functions the host program is willing to run. The model may then reply not
+with prose but with a structured **tool call**:
+
+```json
+{ "name": "publish_class_on", "arguments": "{\"course\":\"EXC2O\",\"section\":1,\"date\":\"2026-08-16\"}" }
+```
+
+The host program parses that, runs its own code, and sends the result back as
+another message so the model can describe what happened. **The model has no
+ability to run the function itself** — it can only ask, and Plantoir's Swift
+code decides.
+
+This is the same mechanism Claude Code uses when it edits a file, at a
+different scale. It is also why "prompt injection" is a real concern in
+general: if a model can be persuaded to ask for something dangerous, the
+question becomes whether the host program will do it. Plantoir's answer is
+structural — see *No dangerous tool exists* below.
+
+---
+
+## Part 2 — How the model is configured
+
+### The engine
+
+The model is run by **llama.cpp**, an MIT-licensed C++ inference engine. Its
+HTTP server, `llama-server`, ships inside the app bundle at
+`Plantoir.app/Contents/Resources/llama/` (about 25 MB, fetched at build time
+by `mac-app/Vendor/fetch-llama.sh` rather than committed to the repository).
+The binary carries an `@loader_path` rpath so it finds its own dylibs; an
+environment-variable arrangement would have worked in development and failed
+the moment the app was notarised, because the hardened runtime strips `DYLD_*`.
+
+**It runs natively, not in the Docker container that builds the site, and that
+single decision is the whole feature.** Colima is a Linux VM with no access to
+Metal, so a model inside it runs on virtual CPU cores while the GPU sits idle.
+Measured on an M4 Pro, same model and same prompt: **175 seconds to read the
+prompt in a container, 2.1 seconds natively.**
+
+Swift starts it as an ordinary child process
+(`AssistServerHost.start()`), waits for its health endpoint, and terminates it
+when the window closes.
+
+### The command line, flag by flag
+
+From `AssistServerHost.serverArguments` — the single testable place where the
+engine's configuration lives:
+
+| Flag | Value | Why |
+|---|---|---|
+| `--model` | the `.gguf` path | Downloaded once to `~/Library/Application Support/Plantoir/models`, not bundled — that keeps 2.5 GB out of every app update and off the Macs of teachers who never open the assistant |
+| `--host` | `127.0.0.1` | Loopback only. Nothing on the network can reach it |
+| `--port` | chosen at launch | Each window gets a free port, so nothing collides |
+| `--ctx-size` | `8192` or `16384` | The context window, sized by tier. Most of the model's *running* memory is the cache this implies, so this is the main memory dial |
+| `--n-gpu-layers` | `999` | Put every layer on the GPU. "999" means "all of them, whatever the count". This is the entire reason for running natively; a partial offload would leave the slow path in play |
+| `--threads` | 2–6 | Half the performance cores, capped at six. Generation on Apple silicon is bound by memory bandwidth long before thread count, so taking every core buys almost nothing and makes the machine feel seized while a build may also be running |
+| `--jinja` | — | Use the chat template embedded in the model file (see below) rather than a guess at its format |
+| `--parallel` | `1` | One conversation per server. Each assistant window has its own |
+| `--reasoning` | `off` | **See below — the most consequential flag on the line** |
+| `--reasoning-budget` | `0` | Second line of defence for the same thing |
+
+### The chat template, and why `--jinja` matters
+
+A `.gguf` file contains, alongside the weights, a **Jinja template** that
+defines how a conversation is turned into the exact token sequence the model
+was trained on — where the system prompt goes, how a tool list is rendered,
+what marks the start of an assistant turn. Different model families use
+completely different conventions, and getting it wrong degrades a model
+silently rather than visibly.
+
+`--jinja` tells llama.cpp to use the model's own template. This is also how
+two otherwise attractive candidates were disqualified during selection:
+**Phi-4-mini and Gemma-2 have no branch in their templates for a top-level
+`tools` array at all**, so tool calling could not be expressed to them.
+
+### Thinking must be off, and it takes two flags
+
+Some recent models, Qwen3 among them, are trained to produce a hidden
+*reasoning* passage inside `<think>` tags before answering. For open-ended
+problems that helps. For choosing one function from a list of thirteen it is
+pure cost — and worse, on a long prompt the model can exhaust its token budget
+inside the thinking block and never reach the tool call at all. The same
+weights measured **39% routing accuracy with thinking on and 97% with it off.**
+
+The two flags do different jobs, and only one of them actually stops it:
+
+- `--reasoning off` tells the chat template not to open a thinking block.
+- `--reasoning-budget 0` caps how long it may think *once started*.
+
+Plantoir shipped with the budget alone for several days, on the
+reasonable-sounding assumption that a budget of zero meant no thinking. It
+does not. Measured on one prompt against the same tool surface:
+
+| Flags | Time | Tokens generated | Tool call |
+|---|---|---|---|
+| `--reasoning-budget 0` | 16.1 s | **512** | correct |
+| `--reasoning off` | 8.4 s | **44** | correct |
+| both | 8.4 s | 44 | correct |
+
+The useful reply is 44 tokens; the other 468 were thinking nobody sees. Both
+flags are now passed, and a unit test asserts both — the budget stays as
+insurance against a future model whose template ignores `--reasoning`.
+
+**The instructive part is why this survived review for so long.** The wrong
+flag does not produce a wrong answer, it produces a slow one, and the two
+obvious checks both come back green: a tool call *does* arrive, and there is
+no `<think>` tag in the reply — because llama.cpp parses the thinking out into
+a separate field by default. Absence of the tag proves the parser ran, not
+that the model stayed quiet. The honest signal was the token count and the
+clock.
+
+### Which model, on which Mac
+
+| Machine | Model | Download | Resident while running | Context |
+|---|---|---|---|---|
+| Under 16 GB RAM | Qwen2.5 1.5B | 1.1 GB | 1.75 GB | 8,192 |
+| 16 GB and up | Qwen3 4B | 2.5 GB | 5.04 GB | 16,384 |
+
+Apple silicon only — the whole design rests on Metal.
+
+Every rung was chosen by measurement, and **two candidates were vetoed for a
+specific failure that no accuracy score would have caught**: asked to *hide* a
+page, Qwen2.5 3B called the publish tool in 9 trials out of 10, and
+Llama-3.2 3B in 10 out of 10 — on the same sentence, despite being unrelated
+model families. Publishing something a teacher asked to hide is the one
+mistake that cannot be taken back before students have seen it, so zero
+polarity inversions is treated as a veto rather than a tiebreaker. There is
+no 3B rung in the app as a result.
+
+*(In the interface none of this is ever named. A teacher is told "the small
+assistant" or "the larger assistant" and a download size; model names,
+parameter counts and token budgets say nothing a teacher can act on.)*
+
+---
+
+## Part 3 — The path a command takes
+
+### The one-screen version
+
+```
+Teacher types "Publish tomorrow's class"
+        │
+        ▼
+AssistAgent  (Swift)
+        │   builds ONE HTTP request:
+        │     • system prompt (the rules, in English)
+        │     • the conversation so far
+        │     • 13 tool definitions as JSON Schema
+        ▼
+POST http://127.0.0.1:<port>/v1/chat/completions
+        │
+        ▼
+llama-server ──▶ the model reads ~2,650 tokens, then writes:
+        │            {"name": "publish_class_on",
+        │             "arguments": "{\"course\":\"EXC2O\",\"section\":1,
+        │                            \"date\":\"2026-08-16\"}"}
+        ▼
+AssistAgent parses the call
+        │
+        ├──▶ is this a WRITE? ──▶ yes: plan mode. Show the teacher what
+        │                              will happen. Wait for Go or Cancel.
+        ▼
+AssistToolRunner.run(call:)   ← ordinary Swift from here on
+        │   • resolve "the class dated 2026-08-16" against the section
+        │   • apply the linked-page rules (see below)
+        │   • take a backup if this conversation has not already
+        │   • rewrite the frontmatter
+        │   • rebuild the preview
+        ▼
+Result is appended to the conversation as a tool message
+        │
+        ▼
+The model reads it and writes one plain sentence for the teacher.
+```
+
+The model appears exactly twice: once to choose the function, once to narrate
+the outcome. Everything between those two moments is Swift.
+
+### Step 1 — What Swift sends
+
+`AssistModelClient.encodeTools` turns each Swift tool definition into the
+OpenAI-compatible shape the server expects:
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "publish_class_on",
+    "description": "Publish the class page for one date in a section …",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "course":  { "type": "string",  "description": "The course code, for example EXC2O." },
+        "section": { "type": "integer", "description": "The section number, for example 1." },
+        "date":    { "type": "string",  "description": "The date, as YYYY-MM-DD." }
+      },
+      "required": ["course", "section", "date"]
+    }
+  }
+}
+```
+
+One detail there is a measured finding rather than a style choice. The
+examples in those descriptions name **the teacher's actual course**, not a
+placeholder — `namingTheRealCourse(courseCode)` substitutes it on the way out.
+With a generic `ICS3U` left in the examples, a request that named no course
+copied `ICS3U` out of the example text **9 times out of 9**. A small model
+reads examples as suggestions.
+
+The request also carries `"temperature": 0.1`. Temperature controls how much
+randomness is used when picking each token; near zero, the model takes the
+most probable choice almost every time. For routing you want the boring,
+repeatable answer.
+
+### Step 2 — What comes back
+
+```json
+{ "choices": [ { "message": {
+    "role": "assistant",
+    "tool_calls": [ { "type": "function", "function": {
+        "name": "publish_class_on",
+        "arguments": "{\"course\":\"EXC2O\",\"section\":1,\"date\":\"2026-08-16\"}"
+    } } ]
+} } ] }
+```
+
+Note `arguments` is a **string** containing JSON, not a JSON object — that is
+the OpenAI convention, and it is parsed in `AssistAgent`. A small model
+occasionally emits arguments that do not parse; that is treated as "no call
+was made" rather than guessed at.
+
+### Step 3 — Swift decides what actually happens
+
+`AssistToolRunner.run(call:)` looks the name up in its own table and runs the
+corresponding Swift function. If the name is not in the table, nothing runs.
+This is the security boundary: **the set of things the assistant can do is a
+Swift array**, not something the model can extend by being clever.
+
+---
+
+## Part 4 — Why it is built this way
+
+These are the constraints that keep a 4-billion-parameter model reliable.
+They read like arbitrary restrictions until you have watched a small model
+fail.
+
+### The model is a router, not a planner
+
+Tools are deliberately **coarse**: one call does a whole job, including the
+parts a model might otherwise chain together. `publish_class_on` finds the
+class page for a date, works out which other pages it depends on, backs the
+section up, rewrites the frontmatter and rebuilds the preview — one call.
+
+The alternative was measured. Given fine-grained tools that had to be
+sequenced, an early version got **8 of 8 tasks wrong**; the same tasks with
+coarse tools came out **8 of 8 right**. Every unit of reasoning moved out of
+the model and into ordinary Swift is a unit of reliability bought back.
+
+### Rules live in the tool, never in an argument
+
+Rules are *not* expressed as parameters for the model to set. Instead they are
+implemented in Swift, inside the tool, where they always apply.
+
+The clearest example is what happens to linked pages:
+
+- **Publishing** a page always publishes what it links to. There is no
+  `includeLinked` flag for the model to decide about, because a class page
+  whose linked notes are invisible is broken, always.
+- **Unpublishing** is deliberately *not* the mirror image. A linked page comes
+  down only when the pages being taken down are the **only** ones that link to
+  it — otherwise hiding this week's lesson would strip a page last week's
+  lesson still points at. Three kinds of page never come down this way
+  whatever the link count: a folder's landing page, anything in the section's
+  Key Links, and any curriculum page, each of which is reached from somewhere
+  other than a lesson.
+
+That asymmetry is genuinely subtle. It is exactly the kind of thing a small
+model would get wrong under pressure, and exactly the kind of thing a
+`for`-loop gets right every time.
+
+**A worked example of why the rule goes in the code and not the prompt.**
+`publish_pages` accepts a date range, and the routing suite caught a typo'd
+request — "publsh tomorows class … and the stuff it links to" — choosing it
+10 times out of 10 with no page named and an open-ended start date, which
+would have published the whole rest of the term. The obvious fix is to add a
+sentence to the tool's description: *not for one day's class — use
+`publish_class_on`*. That was tried, and measured: it fixed the typo case and
+**broke three others**, sending "Publish Unit 2, Day 3" — a named page with no
+date in it at all — to `publish_class_on` every time, and dropping the
+window's own suggestions from 110/110 to 90/110. A small model reads a
+sentence naming another tool as a *recommendation*, not a boundary.
+
+So the wording was reverted and the rule became four lines of Swift: an
+open-ended publish is refused, with a message saying what to do instead. A
+refusal changes nothing the model reads, so it cannot cost accuracy, and
+because the refusal comes back as ordinary text the model gets to correct
+itself on the next turn. **Prompt text is a gamble that has to be
+re-measured; a conditional is not.**
+
+### No booleans, and separate verbs
+
+There is no single `set_visibility(publish: true/false)` tool. Publishing and
+unpublishing are **separate verbs** with separate names, because a boolean is
+a coin flip under pressure and a verb is not — which is precisely the failure
+that vetoed both 3B models.
+
+### No dangerous tool exists
+
+There is no delete tool, no rename tool and no archive tool. Not "guarded by a
+confirmation" — **absent**. A capability that does not exist cannot be reached
+by a misrouted sentence, an odd phrasing, or text a model read in a page.
+Asked to delete something, the assistant declines, in 10 trials out of 10,
+because there is nothing in the list to pick.
+
+### Plan mode
+
+Every tool that writes is, by default, wrapped in **plan mode**: the assistant
+states what it understood and what it is about to do, and waits for Go or
+Cancel. This is applied by Swift based on whether the tool writes — the model
+is not asked to decide whether something is risky.
+
+On a Mac running the smaller assistant, plan mode cannot be turned off. On a
+16 GB machine running the larger one, the app offers to stop asking after a
+run of plans the teacher has accepted unchanged.
+
+### The model's list is shorter than the server's
+
+The same tools are also served over **MCP** (the Model Context Protocol), so
+Claude Code can drive exactly what the built-in assistant drives and the
+safety rules cannot drift between the two clients. The app answers this
+itself — `Plantoir.app/Contents/MacOS/Plantoir --mcp-stdio <working-folder>` —
+rather than shipping a second binary.
+
+Claude Code is offered a **longer** list than the local model: 20 tools
+against 13. The extra ones ask for judgement about meaning — reading the
+curriculum and deciding which expectations a page addresses — which a large
+model does well and a 4B model does not. Anything shown to the local model has
+been measured against it, and a unit test pins the count so the list cannot
+grow by accident.
+
+The thirteen the local model sees:
+
+| | |
+|---|---|
+| **Read** | `list_pages`, `read_page`, `check_section`, `read_remembered_timetable` |
+| **Publishing** | `publish_class_on`, `publish_pages`, `unpublish_pages` |
+| **Site** | `rebuild_preview`, `deploy_section`, `schedule_deploy`, `cancel_scheduled_deploy` |
+| **Schedule** | `add_next_class` |
+| **Recovery** | `undo_last_change` |
+
+---
+
+## Part 5 — How it is measured
+
+None of the choices above were made by taste. The routing suite in
+`research/ai-assist/` sends 42 phrasings — including deliberately informal
+ones, typos, out-of-scope requests and every phrasing the assistant's own
+window offers as a suggestion — through the real tool surface, ten trials
+each, and scores what came back.
+
+Most recent run, Qwen3 4B against the shipping 13-tool surface:
+
+| Measure | Result |
+|---|---|
+| Suggestions the window offers, routed correctly | **110 / 110** |
+| Polarity inversions (publish when told to hide) | **0** |
+| Malformed calls, wrong course, invented dates | **0** |
+| Median warm reply | **0.53 s** |
+| Prompt size | ~2,650 tokens |
+
+The suggestion cards in the assistant window are not decoration: they are the
+phrasings that have been *measured*, word for word. A card offering something
+the model is unreliable at would be worse than no card at all, so one was
+removed for exactly that reason.
+
+---
+
+## Further reading in this repository
+
+- [`09-mac-app.md`](09-mac-app.md) — the app the assistant lives in
+- [`GUI-IMPROVEMENTS.md`](../GUI-IMPROVEMENTS.md) — every interface decision,
+  with its reasoning
+- [`WINDOWS-HANDOFF.md`](../WINDOWS-HANDOFF.md) — the same design written for
+  the team building the Windows counterpart
+- `research/ai-assist/` — the raw measurement records behind every number here
+
+---
+
+[◀ Previous: The macOS App](09-mac-app.md) · [Back to index](README.md)

@@ -1,7 +1,8 @@
 import Foundation
 import Observation
 
-/// The twenty tools the local model may call, and what running one does.
+/// The twenty tools that exist — thirteen of them shown to the local model —
+/// and what running one does.
 ///
 /// Four rules shape this surface. They are inherited from the Windows work
 /// rather than rediscovered, and every one of them is measured:
@@ -17,7 +18,9 @@ import Observation
 ///    links to" set. A boolean is a coin flip under pressure; a verb is not. So
 ///    the verb is in the tool NAME, it is fixed at the point the tool is
 ///    routed, and it is carried by the plan all the way to the write — there is
-///    no argument anywhere on this surface that could invert it.
+///    no argument anywhere on this surface that could invert it. That boolean
+///    is gone entirely now: how far each verb reaches is `AssistPublishPlanner`'s
+///    rule, and no tool anywhere takes a boolean.
 ///
 /// 3. **Every write that changes a page has a matching `plan_` tool that
 ///    changes nothing**, and the plan is written to be read aloud.
@@ -89,16 +92,17 @@ final class AssistToolRunner {
 
     /// The tools, as the LOCAL model sees them.
     ///
-    /// Twenty. Routing accuracy was measured at fifteen, and the five since —
-    /// the section's timetable, and the page for the next class — were added
-    /// deliberately: a small local model routes worse the more it is shown, so
-    /// the accuracy figure is worth measuring again rather than inherited.
+    /// Thirteen of the twenty that exist. A small local model routes worse the
+    /// more it is shown, so anything it never has to NAME is kept off the list:
+    /// the six `plan_` twins, which plan mode calls in code, and
+    /// `remember_timetable`, whose dates must come from a teacher rather than
+    /// from a model. All of them still run when they are called.
     var definitions: [AssistToolDefinition] {
-        return AssistToolRunner.tools
+        return AssistToolRunner.localTools
     }
 
-    /// The tools the MCP client sees: the local surface, plus the ones that ask
-    /// for judgement a small local model has no business making.
+    /// The tools the MCP client sees: everything that exists, plus the ones
+    /// that ask for judgement a small local model has no business making.
     var mcpDefinitions: [AssistToolDefinition] {
         return AssistToolRunner.mcpTools
     }
@@ -532,7 +536,30 @@ final class AssistToolRunner {
             return .failure(.nothingNamed)
         }
 
-        let includeLinked: Bool = flag("includeLinked", in: arguments)
+        // An open-ended PUBLISH — no pages named, a start date and no end —
+        // means "everything from this day to the end of the course", which is
+        // not a thing a teacher asks for. It is, however, what a mistyped
+        // request for a single lesson turns into: "publsh tomorows class …
+        // and the stuff it links to" routed here 10 times out of 10 and filled
+        // in `onOrAfter` alone, quietly offering to publish the rest of the
+        // term.
+        //
+        // The rule lives HERE rather than in the tool's description because
+        // the description was tried first and measured worse: naming
+        // publish_class_on in the text fixed that probe and broke three
+        // others, since a small model reads a sentence naming another tool as
+        // a recommendation rather than a boundary. A refusal changes nothing
+        // the model reads, so it cannot cost accuracy — and it comes back as
+        // ordinary text the assistant reads out, so the model gets to correct
+        // itself on the next turn.
+        //
+        // Publishing only. An open-ended UNPUBLISH hides work rather than
+        // exposing it, is undone by the same backup, and a teacher clearing a
+        // section down to a date is a real thing to want.
+        if publishing && titles.isEmpty && before == nil, let from = onOrAfter {
+            return .failure(.openEndedPublish(from))
+        }
+
         let graph: AssistSectionGraph = AssistSectionGraph.read(
             forSection: located.sectionNumber, in: located.course,
             workspaceURL: workspace.workspaceURL
@@ -541,17 +568,20 @@ final class AssistToolRunner {
             forSection: located.sectionNumber, in: located.course
         )
 
+        // How far each verb reaches is the planner's rule, not an argument.
+        // Publishing always takes the pages it links to; unpublishing takes
+        // only the pages nothing else needs.
         let plan: AssistPublishPlan
         if publishing {
             plan = AssistPublishPlanner.planPublishing(
-                titles: titles, includeLinked: includeLinked,
+                titles: titles,
                 onOrAfter: onOrAfter, before: before,
                 graph: graph, classPages: classPages,
                 forSection: located.sectionNumber, in: located.course
             )
         } else {
             plan = AssistPublishPlanner.planUnpublishing(
-                titles: titles, includeLinked: includeLinked,
+                titles: titles,
                 onOrAfter: onOrAfter, before: before,
                 graph: graph, classPages: classPages,
                 forSection: located.sectionNumber, in: located.course
@@ -1358,18 +1388,9 @@ final class AssistToolRunner {
         return nil
     }
 
-    private func flag(_ key: String, in arguments: [String: Any]) -> Bool {
-        guard let value = arguments[key] else {
-            return false
-        }
-        if let number = value as? NSNumber {
-            return number.boolValue
-        }
-        if let string = value as? String {
-            return AssistPageVisibility.isTrue(string)
-        }
-        return false
-    }
+    // No `flag` reader lives here any more, and none should come back. The
+    // last boolean on the surface was `includeLinked`, and reading a boolean
+    // out of the model's arguments is how a verb gets inverted under pressure.
 
     /// A list of page names, however the model chose to send it.
     ///

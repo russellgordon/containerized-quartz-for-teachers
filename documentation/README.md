@@ -23,6 +23,7 @@ static-site generator.
 | 7 | [Publishing a built section](07-deployment.md) | The three destinations — Netlify (delta deploys against its API), Cloudflare Pages (via wrangler), and a folder on the teacher's own machine |
 | 8 | [`course_config.json` Reference](08-course-config-reference.md) | Every key in the per-course configuration file |
 | 9 | [The macOS App — Plantoir](09-mac-app.md) | The native GUI (`mac-app/`), how it drives the same scripts, and how it delivers the toolchain itself |
+| 10 | [The Local AI Assistant](10-local-ai-assistant.md) | What the on-device model is and how it is configured, with enough background on language models to follow it — and how a typed sentence becomes a Swift function call |
 
 ## The one-paragraph summary
 

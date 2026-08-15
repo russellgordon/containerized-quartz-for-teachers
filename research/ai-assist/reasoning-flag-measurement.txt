@@ -1,0 +1,91 @@
+TURNING THINKING OFF TAKES TWO FLAGS, NOT ONE
+=============================================
+
+Date: 2026-08-15
+Engine: llama.cpp b10435, Metal, Apple Silicon
+Model: Qwen3-4B-Q4_K_M (the .large tier)
+Surface: the 20-tool local surface, 4,475 tokens
+Prompt: "Publish tomorrow's class (Today is 2026-08-15, a Saturday.)"
+Sampling: temperature 0, --ctx-size 16384, --threads 6, --n-gpu-layers 999,
+          --jinja, --parallel 1
+
+
+WHAT WAS WRONG
+--------------
+
+The app shipped for several days passing only `--reasoning-budget 0`, on the
+belief that a zero budget meant no thinking. It does not. The two flags are
+different mechanisms and llama.cpp's own help says so:
+
+  --reasoning [on|off|auto]   Use reasoning/thinking in the chat
+                              (default: 'auto' — detect from template)
+  --reasoning-budget N        token budget for thinking: -1 unrestricted,
+                              0 for immediate end, N>0 for a token budget
+
+`--reasoning` decides whether the chat template opens a thinking block at
+all. `--reasoning-budget` only decides how long it may run once opened. With
+the budget alone, Qwen3's template still opens `<think>`, and the model fills
+it up to the cap on every single turn.
+
+
+THE MEASUREMENT
+---------------
+
+Same server, same prompt, same seed conditions; only the flags differ.
+
+  Flags                                Seconds   Completion tokens   Tool call
+  ---------------------------------------------------------------------------
+  --reasoning-budget 0                   16.08                 512   correct
+  --reasoning off                         8.35                  44   correct
+  --reasoning off --reasoning-budget 0    8.40                  44   correct
+
+Nearly HALF the wait, from a flag. 512 tokens is the budget being consumed,
+not a long answer: the useful part of the reply is 44 tokens, and the other
+468 are thinking the teacher never sees and the router never needed.
+
+
+WHY IT WAS MISSED FOR SO LONG
+-----------------------------
+
+Because the budget flag does not break the answer — it only makes it slow.
+The earlier hand probe checked two things, "did a tool call come back" and
+"is there a `<think>` tag in message.content", and both looked fine:
+
+  - the tool call came back, because 512 tokens was enough to think AND
+    still route correctly on a short prompt;
+  - `message.content` was clean, because with the default reasoning-format
+    llama.cpp PARSES the thinking out of the content rather than leaving it
+    there. Absence of `<think>` in the content proves the parser ran, not
+    that the model stayed quiet.
+
+The honest check is the token count and the clock, not the text. A router
+that is thinking looks exactly like a router that is not, only slower — and
+"slower" is precisely the complaint the Windows side started with.
+
+Note the earlier 39% / 97% figure is a different and larger effect: on longer
+prompts and richer surfaces, thinking-on consumes the budget BEFORE reaching
+the call and the tool call never arrives at all. The 16 s above is the mild
+end of the same fault.
+
+
+WHAT SHIPS
+----------
+
+`AssistServerHost.serverArguments` passes both:
+
+    "--reasoning", "off",           // stops the template thinking at all
+    "--reasoning-budget", "0",      // caps any template that ignores the above
+
+`AssistModelTierTests.testThinkingIsTurnedOff` asserts both, for every tier.
+The budget stays as a second line of defence: a future model whose template
+does not honour `--reasoning` would otherwise regress silently, which is how
+this one got shipped in the first place.
+
+
+FOR THE WINDOWS SIDE
+--------------------
+
+Check the flags the Windows launcher passes. If it passes the budget alone,
+it has the same fault, and the fix is the same one word. If the Windows build
+predates b10435, confirm `--reasoning` exists in that build's `--help` before
+adding it — the flag is newer than the budget.

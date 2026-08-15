@@ -1,6 +1,6 @@
 # 9. The macOS App — Plantoir
 
-[◀ Previous: course_config.json Reference](08-course-config-reference.md) · [Back to index](README.md)
+[◀ Previous: course_config.json Reference](08-course-config-reference.md) · [Back to index](README.md) · [Next: The Local AI Assistant ▶](10-local-ai-assistant.md)
 
 `mac-app/` contains **Plantoir**, a native macOS application
 (Swift / SwiftUI, bundle id `ca.russellgordon.Plantoir`; the Xcode project
@@ -67,18 +67,28 @@ The weights are downloaded once into
 out of every app update, and off the Macs of teachers who never open the
 assistant. Which model depends on the machine:
 
-| Machine | Model | Download | Resident | Routing |
+| Machine | Model | Download | Resident | Context |
 |---|---|---|---|---|
-| Under 16 GB | Qwen2.5 1.5B | 1.1 GB | 1.75 GB | 79% |
-| 16 GB and up | Qwen3 4B | 2.5 GB | 5.04 GB | **100%** |
+| Under 16 GB | Qwen2.5 1.5B | 1.1 GB | 1.75 GB | 8,192 |
+| 16 GB and up | Qwen3 4B | 2.5 GB | 5.04 GB | 16,384 |
 
-Replies take about 0.7 s once the conversation is warm. The first reply is
+Routing accuracy is reported against the suite it was measured on rather than
+as one headline number, because both the suite and the tool surface have
+grown. On the shipping 13-tool surface, over 42 phrasings × 10 trials: the 4B
+routes every one of the window's own suggestions correctly (110/110) and 94%
+of the like-for-like Windows probe set; the 1.5B manages 77% and 67% of the
+same two. Neither inverted polarity once in 840 replies. The model-selection
+table below is from the earlier 29-probe suite, which is what the choice of
+model was actually made on.
+
+Replies take about 0.5 s once the conversation is warm. The first reply is
 the one-off read of the tool definitions, which the window warms in the
 background as it opens, so a teacher does not normally wait for it. Closing
 the window stops the server and gives the memory back.
 
 **Every rung was chosen by measurement, and two candidates were vetoed.**
-29 probes × 10 trials each, identical tool surface
+29 probes × 10 trials each, identical tool surface, on the suite as it stood
+when the choice was made
 (`research/ai-assist/macos-native-10-trial-comparison.txt`):
 
 | Model | Routing | Polarity inversions |
@@ -96,11 +106,17 @@ cannot take back before students have seen it. Qwen3 4B then beat the 7B on
 accuracy, latency, download and memory alike, so the 7B is not shipped
 either.
 
-**Thinking must be off.** Qwen3 with reasoning enabled spends its token
-budget inside `<think>` and never reaches the tool call: the same weights
-scored 39% with it on and 97% with it off. `--reasoning-budget 0` is passed
-at startup and a test asserts it, because losing it would make the assistant
-quietly worse rather than visibly broken.
+**Thinking must be off, and it takes two flags.** Qwen3 with reasoning
+enabled spends its token budget inside `<think>` and never reaches the tool
+call: the same weights scored 39% with it on and 97% with it off.
+`--reasoning off` stops the chat template thinking at all;
+`--reasoning-budget 0` only caps it once started, and passing the budget
+alone — which the app did for several days — still cost 512 generated tokens
+and 16.1 s where the switch reaches the same call in 44 tokens and 8.4 s.
+Both are passed at startup and a test asserts both, because losing them makes
+the assistant quietly worse rather than visibly broken. See
+[the assistant's own chapter](10-local-ai-assistant.md) for why the obvious
+check for this comes back green.
 
 **8 GB Macs stay on the 1.5B for now, which is a hold rather than a result.**
 Qwen3 4B at 8k context measured 3.87 GB resident with the same 100% routing —
@@ -121,9 +137,13 @@ implementation's measurements:
 - **Publish and unpublish are separate verbs**, never one tool with a boolean,
   because a boolean is a coin flip under pressure and a verb is not.
 
-Only deploying waits for a button. Publishing and unpublishing happen when
-asked, because every change is backed up and can be undone — a gate in front
-of every write teaches a teacher to click through gates.
+Every tool that writes runs in **plan mode**: the assistant states what it
+understood and what it is about to do, and waits for Go or Cancel. Swift
+decides this from whether the tool writes, so the model is never asked to
+judge whether something is risky. A Mac running the smaller assistant cannot
+turn plan mode off; on a 16 GB machine the app offers to stop asking after a
+run of plans the teacher has accepted unchanged. Behind it, every change is
+backed up once per conversation and can be undone.
 
 The same tool surface is served over MCP, so Claude Code drives exactly what
 the built-in assistant drives and the safety rules cannot drift between the
@@ -132,8 +152,12 @@ two clients. The app itself answers the flag —
 than shipping a second binary, so no packaging step can leave it out. Claude
 Code is offered a slightly LONGER list than the local model: the tools that
 read the curriculum and point a page at the expectations that fit are a
-judgement about meaning, and the local model sees exactly the fifteen its
-routing was measured against.
+judgement about meaning: 20 tools against 13, and the local model sees exactly
+the thirteen its routing was measured against.
+
+How all of that fits together — what the model is, how it is configured, and
+the path a typed sentence takes to become a Swift function call — is
+[chapter 10](10-local-ai-assistant.md).
 
 The complete behavioural specification — every interface decision, with
 the reasoning and a Windows-porting note per entry — is
@@ -143,4 +167,4 @@ instructions (XcodeGen + Xcode), and the test suite are documented in
 
 ---
 
-[◀ Previous: course_config.json Reference](08-course-config-reference.md) · [Back to index](README.md)
+[◀ Previous: course_config.json Reference](08-course-config-reference.md) · [Back to index](README.md) · [Next: The Local AI Assistant ▶](10-local-ai-assistant.md)

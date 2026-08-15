@@ -396,6 +396,202 @@ enum AssistPublishPlanner {
         }
     }
 
+    // MARK: - How far an unpublish reaches
+
+    /// What following an unpublish's links comes to: the pages that go with it,
+    /// and the pages that stay, each with its reason.
+    struct UnpublishSweep {
+
+        // MARK: - Stored properties
+
+        let alsoUnpublished: [AssistSectionPage]
+        let kept: [AssistPublishKept]
+    }
+
+    /// The title of the panel every section carries, and whose entries are
+    /// the section's way around itself.
+    static let keyLinksTitle: String = "Key Links"
+
+    /// The pages that come down alongside the ones the teacher named.
+    ///
+    /// The rule is deliberately NOT the mirror image of publishing. A linked
+    /// page comes down only when the pages being taken down are the only ones
+    /// that link to it; anything another page still points at stays, or hiding
+    /// this week's lesson would leave last week's pointing at nothing.
+    ///
+    /// Three kinds of page never come down this way, whatever the link count:
+    /// a folder's landing page (the way IN to a folder), anything the section's
+    /// Key Links offers, and any curriculum page. Each is reached from
+    /// somewhere other than a lesson, so a link count says nothing useful about
+    /// whether it is still needed.
+    ///
+    /// Worked out to a fixed point rather than in one pass: when a page joins
+    /// the ones coming down, the pages only IT linked to become free to follow
+    /// as well, and stopping after one lap would leave half a chain published.
+    static func pagesTakenDownAlongside(
+        named: [AssistSectionPage],
+        graph: AssistSectionGraph,
+        in course: Course
+    ) -> UnpublishSweep {
+        var goingDown: Set<String> = []
+        for page in named {
+            goingDown.insert(page.lowercasedTitle)
+        }
+
+        let referrers: [String: [String]] = pagesLinkingIn(graph: graph)
+        let mustStay: Set<String> = pagesThisSectionCannotDoWithout(graph: graph)
+
+        var alsoUnpublished: [AssistSectionPage] = []
+        var foundMore: Bool = true
+        while foundMore {
+            foundMore = false
+            for candidate in pagesLinkedFrom(goingDown, graph: graph) {
+                if goingDown.contains(candidate.lowercasedTitle) {
+                    continue
+                }
+                let reason: String? = reasonToKeep(
+                    candidate, mustStay: mustStay, referrers: referrers,
+                    goingDown: goingDown, graph: graph, in: course
+                )
+                if reason != nil {
+                    continue
+                }
+                goingDown.insert(candidate.lowercasedTitle)
+                alsoUnpublished.append(candidate)
+                foundMore = true
+            }
+        }
+
+        var kept: [AssistPublishKept] = []
+        for candidate in pagesLinkedFrom(goingDown, graph: graph) {
+            // Only pages a student can see as things stand. A page already
+            // hidden is not "staying published", and saying it is would be
+            // noise in a plan meant to be read aloud.
+            if !candidate.isVisibleToStudents {
+                continue
+            }
+            guard let reason = reasonToKeep(
+                candidate, mustStay: mustStay, referrers: referrers,
+                goingDown: goingDown, graph: graph, in: course
+            ) else {
+                continue
+            }
+            kept.append(AssistPublishKept(page: candidate, reason: reason))
+        }
+
+        return UnpublishSweep(alsoUnpublished: alsoUnpublished, kept: kept)
+    }
+
+    /// Why this page is being left published, or nil when nothing stands in
+    /// the way of taking it down with the rest.
+    private static func reasonToKeep(
+        _ page: AssistSectionPage,
+        mustStay: Set<String>,
+        referrers: [String: [String]],
+        goingDown: Set<String>,
+        graph: AssistSectionGraph,
+        in course: Course
+    ) -> String? {
+        if page.isFolderIndex {
+            return "it is a folder's landing page, which following links never takes down."
+        }
+        if mustStay.contains(page.lowercasedTitle) {
+            return "it is in this section's Key Links."
+        }
+        // `build_site.py`'s own rule: any FOLDER segment containing
+        // "curriculum", so a course whose folder is called "Ontario
+        // Curriculum" is covered exactly as a plain one is.
+        if AssistCurriculumMentions.isCurriculum(pageAt: page.fileURL, in: course) {
+            return "it is a curriculum page."
+        }
+        if let stillLinking = pageStillLinking(to: page, referrers: referrers,
+                                               goingDown: goingDown, graph: graph) {
+            return "“\(stillLinking)” still links to it."
+        }
+        return nil
+    }
+
+    /// A page outside this unpublish that still links to the given one, named
+    /// as the teacher would see it — or nil when the pages coming down are the
+    /// only ones that point at it.
+    private static func pageStillLinking(
+        to page: AssistSectionPage,
+        referrers: [String: [String]],
+        goingDown: Set<String>,
+        graph: AssistSectionGraph
+    ) -> String? {
+        for referrer in referrers[page.lowercasedTitle] ?? [] {
+            if goingDown.contains(referrer) {
+                continue
+            }
+            guard let linking = graph.page(titled: referrer) else {
+                continue
+            }
+            return linking.title
+        }
+        return nil
+    }
+
+    /// Which pages link to each page, by lowercased title. A page linking to
+    /// itself is not a reason to keep it.
+    private static func pagesLinkingIn(graph: AssistSectionGraph) -> [String: [String]] {
+        var referrers: [String: [String]] = [:]
+        for page in graph.pages {
+            for target in page.linkedTitles {
+                if target == page.lowercasedTitle {
+                    continue
+                }
+                var linking: [String] = referrers[target] ?? []
+                if linking.contains(page.lowercasedTitle) {
+                    continue
+                }
+                linking.append(page.lowercasedTitle)
+                referrers[target] = linking
+            }
+        }
+        return referrers
+    }
+
+    /// The pages a section cannot do without: everything its Key Links panel
+    /// offers, and the panel itself.
+    static func pagesThisSectionCannotDoWithout(graph: AssistSectionGraph) -> Set<String> {
+        var titles: Set<String> = []
+        guard let keyLinks = graph.page(titled: keyLinksTitle) else {
+            return titles
+        }
+        titles.insert(keyLinks.lowercasedTitle)
+        for target in keyLinks.linkedTitles {
+            titles.insert(target)
+        }
+        return titles
+    }
+
+    /// The pages these ones link to, one hop out, leaving out the ones already
+    /// counted in.
+    private static func pagesLinkedFrom(
+        _ titles: Set<String>,
+        graph: AssistSectionGraph
+    ) -> [AssistSectionPage] {
+        var found: [AssistSectionPage] = []
+        var seen: Set<String> = []
+        for page in graph.pages where titles.contains(page.lowercasedTitle) {
+            for target in page.linkedTitles {
+                if titles.contains(target) || seen.contains(target) {
+                    continue
+                }
+                guard let linked = graph.page(titled: target) else {
+                    // A link out of this section, or to a page nobody wrote.
+                    continue
+                }
+                seen.insert(target)
+                found.append(linked)
+            }
+        }
+        return found
+    }
+
+    // MARK: - Dates
+
     /// The pages a class uses that no OTHER class uses, and so should sit on
     /// that class's day.
     ///
@@ -538,6 +734,7 @@ enum AssistToolRefusal: LocalizedError, Equatable {
     case unreadableDate(String, String)
     case unreadableTime(String)
     case nothingNamed
+    case openEndedPublish(CalendarDay)
     case notInThisBuild(String)
 
     var errorDescription: String? {
@@ -562,6 +759,11 @@ enum AssistToolRefusal: LocalizedError, Equatable {
             return "“\(raw)” isn't a time I can read. Use YYYY-MM-DD HH:MM, for example 2026-09-09 06:30."
         case .nothingNamed:
             return "No pages and no dates were given, so there is nothing to change."
+        case .openEndedPublish(let day):
+            return "That asks to publish every class from \(day.text) to the end of the course, which is "
+                 + "almost certainly not what was meant. For ONE day's class, use publish_class_on with "
+                 + "that date. For a stretch of classes, give both onOrAfter and before. To publish "
+                 + "particular pages, name them."
         case .notInThisBuild(let what):
             return what
         }

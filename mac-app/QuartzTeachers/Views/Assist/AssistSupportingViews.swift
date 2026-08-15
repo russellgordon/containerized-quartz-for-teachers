@@ -3,11 +3,13 @@ import SwiftUI
 /// What the assistant tells a teacher it is good at — kept on screen for
 /// the whole conversation, not just at the start.
 ///
-/// These eleven are not decoration. They are measured — the routing suite
-/// probes them word for word — and several are matched in code rather than
-/// routed, precisely so that what the window promises is what the window
-/// delivers. A card offering something the assistant is unreliable at is
-/// worse than a card with nothing on it.
+/// These nine are not decoration. They are measured — the routing suite probes
+/// them word for word — and several are matched in code rather than routed,
+/// precisely so that what the window promises is what the window delivers. A
+/// card offering something the assistant is unreliable at is worse than a card
+/// with nothing on it: "What would publishing Unit 3, Day 1 change?" was
+/// removed for exactly that reason, having gone to the wrong tool on both
+/// models ten times out of ten.
 ///
 /// **Why it stays, and why it folds.** It used to appear only while the
 /// conversation was empty, which meant the teacher saw the list once, at the
@@ -68,23 +70,27 @@ struct AssistPromptShelfView: View {
     private var groups: [(String, [String])] {
         return [
             ("Showing work to students", [
-                "Publish Unit 2, Day 3, and everything it links to",
+                // No "and everything it links to" any more: publishing a page
+                // publishes what it links to by rule, so the short phrasing is
+                // the true one.
+                "Publish Unit 2, Day 3",
                 "Publish tomorrow's class",
-                "What would publishing Unit 3, Day 1 change?",
             ]),
             ("Taking it back", [
                 "Unpublish Unit 2, Day 3",
-                "I published Unit 4, Day 1 by mistake — unpublish it",
                 "Undo that",
             ]),
             ("Checking", [
+                // Kept because `check_section` finds what a preview cannot: a
+                // link into a page students can't see, and a visible page
+                // nothing links to.
                 "What would students see in this section right now?",
                 "Rebuild the preview",
             ]),
             ("Putting the site online", [
-                "Deploy this section now",
-                "Deploy tomorrow's class at 6:30 AM",
-                "Cancel that scheduled deploy",
+                "Deploy now",
+                "Deploy at 6:30 AM",
+                "Cancel scheduled deploy",
             ]),
         ]
     }

@@ -143,12 +143,24 @@ final class AssistServerHost {
             // memory, so an 8 GB Mac and a 32 GB one should not be given the
             // same figure.
             "--ctx-size", String(tier.contextTokens),
-            // THINKING OFF, and this single flag is worth more than any other
-            // on the line. Qwen3 with thinking enabled spends its token budget
-            // inside <think> and never reaches the tool call: the SAME weights
-            // scored 39% with it on and 97% with it off. Dropping this does
-            // not break loudly — it quietly makes the assistant a worse
-            // router, which is why a test asserts it is here.
+            // THINKING OFF, and this is worth more than any other flag on the
+            // line. Qwen3 with thinking enabled spends its token budget inside
+            // <think> and never reaches the tool call: the SAME weights scored
+            // 39% with it on and 97% with it off. Dropping it does not break
+            // loudly — it quietly makes the assistant a worse router, which is
+            // why a test asserts both flags are here.
+            //
+            // TWO flags, because they do different jobs and only the second
+            // one actually stops the thinking. `--reasoning-budget 0` caps the
+            // thinking; it does not prevent it, so the model still opens a
+            // <think> block and fills it until the cap. Measured on the same
+            // prompt and the same 20-tool surface: budget-alone reached the
+            // right tool call in 512 completion tokens and 16.1 s, while
+            // `--reasoning off` — which tells the chat template not to think
+            // at all — reached the SAME call in 44 tokens and 8.4 s. Half the
+            // wait, for a flag. The budget stays as a second line of defence
+            // for any future model whose template ignores `--reasoning`.
+            "--reasoning", "off",
             "--reasoning-budget", "0",
             "--threads", String(threadCount),
             // Every layer on the GPU. This is the whole point of running

@@ -456,6 +456,72 @@ specifically, and treat that as a veto rather than a score.
 | 3B | 70% | **2 of 3 trials** |
 | 7B | 94% | none |
 
+### Turning thinking off takes TWO flags, and we shipped the wrong one
+
+**Check this in your launcher before you read any further** — it is one word,
+it costs half the assistant's response time, and it is invisible in review.
+
+`llama-server` has two separate settings and only one of them stops the model
+thinking:
+
+```
+--reasoning [on|off|auto]   whether the chat template thinks at all
+                            (default: auto — decided by the template)
+--reasoning-budget N        how long it may think once it has started
+                            (0 = stop immediately, -1 = unrestricted)
+```
+
+The macOS app shipped for several days passing `--reasoning-budget 0` alone,
+on the reasonable-sounding belief that a budget of zero meant no thinking. It
+does not. Qwen3's template still opened a `<think>` block on every turn and
+filled it to the cap. Measured on one prompt against the same tool surface,
+same weights, same temperature:
+
+| Flags | Time | Completion tokens | Tool call |
+|---|---|---|---|
+| `--reasoning-budget 0` | 16.1 s | **512** | correct |
+| `--reasoning off` | 8.4 s | **44** | correct |
+| both | 8.4 s | 44 | correct |
+
+The useful reply is 44 tokens. The other 468 were thinking nobody sees. Half
+the wait, for a flag.
+
+**Why it survived review, which is the transferable part.** The budget flag
+does not produce a wrong answer — it produces a slow one, and the two obvious
+checks both come back green:
+
+- *"Did a tool call come back?"* Yes. 512 tokens is enough to think AND still
+  route correctly on a short prompt.
+- *"Is there a `<think>` tag in `message.content`?"* No — because at the
+  default `--reasoning-format`, llama.cpp PARSES the thinking out of the
+  content into `reasoning_content`. Its absence from the content proves the
+  parser ran, not that the model stayed quiet.
+
+The honest check is **the completion-token count and the clock**, not the
+text. A router that is thinking looks exactly like a router that is not, only
+slower — and "slower" is precisely the complaint that started this whole
+piece of work. If the 3-minute Windows wait has any of this in it, this is a
+one-word fix.
+
+The 39%-vs-97% figure quoted above is the same fault at its severe end: on a
+longer prompt the budget is consumed BEFORE the model reaches the call, and
+no tool call arrives at all. Sixteen seconds is the mild end.
+
+We now pass **both**, and a test asserts both for every tier:
+
+```
+"--reasoning", "off",           // stops the template thinking at all
+"--reasoning-budget", "0",      // catches a template that ignores the above
+```
+
+The budget stays deliberately. A future model whose template does not honour
+`--reasoning` would otherwise regress silently — which is exactly how this
+one shipped. Two caveats for your side: `--reasoning` is NEWER than
+`--reasoning-budget`, so confirm it exists in your build's `--help` before
+adding it (ours is b10435); and check the flag against your own engine rather
+than trusting this table, because the behaviour is the template's, not the
+model's.
+
 ## The assistant's division of labour — the rule everything else follows
 
 **The model picks which Swift function to run, and fills in its arguments.
@@ -513,6 +579,44 @@ Day 2 still links to it" — not only what it removed. A teacher needs to see
 the tool reasoned about it, or they will check by hand and the rule has
 bought nothing.
 
+#### A corollary, learned the expensive way: do not fix routing with words
+
+When a probe routes to the wrong tool, the tempting fix is a sentence in the
+tool's description telling the model when NOT to use it. **Measure that
+before you keep it.** We did, and it was worse.
+
+The case: `publish_pages` takes an optional date range, and a typo'd "publsh
+tomorows class … and the stuff it links to" chose it 10/10 with no page named
+and an open-ended start date — one lesson turning into the rest of the term.
+Adding *"NOT for one day's class — for a single day use publish_class_on"* to
+the description fixed that probe and **broke three others**: "Publish Unit 2,
+Day 3", a named page with no date in it whatsoever, went to
+`publish_class_on` 10 times out of 10, and the window's own suggestion cards
+fell from 110/110 to 90/110. A small model reads a sentence naming another
+tool as a recommendation rather than a boundary, and it does not reliably
+notice which half of a sentence applies to it.
+
+The wording was reverted to the byte and the rule became a conditional in the
+tool: an open-ended publish (no pages named, a start date, no end date) is
+REFUSED, with a message saying to use `publish_class_on` for one day or to
+give both dates for a stretch. Three properties make that better than the
+sentence:
+
+- it changes nothing the model reads, so it **cannot** cost routing accuracy
+  and needs no re-measurement;
+- it is exact, where a description is a hint;
+- the refusal comes back as ordinary text, so the model corrects itself on
+  the next turn rather than failing at the teacher.
+
+Applied to publishing only. An open-ended UNPUBLISH hides work rather than
+exposing it, the same backup undoes it, and a teacher clearing a section back
+to a date is a real thing to want.
+
+**The general rule: prompt text is a gamble that has to be re-measured across
+the whole suite; a conditional is not.** If you change any description, re-run
+every probe, not the one you were fixing — that is the only reason we caught
+this instead of shipping a regression that looked like a fix.
+
 ### The model's list is SHORTER than the server's
 
 Two lists, deliberately. `definitions` is what the local model sees;
@@ -528,9 +632,16 @@ same rules — the model is simply shown fewer.
   a wrong one schedules a class on the wrong day silently. The schedule UI
   owns that path. `read_remembered_timetable` stays, because reading is safe.
 
-Result: 20 tools down to 12 for the model. Worth doing on Windows too — the
-routing figures were measured at 15, so a surface that grows past that is
-spending accuracy, and one that shrinks below it should be spending less.
+Result: 20 tools down to **13** for the model — the six `plan_` twins and
+`remember_timetable` are the seven taken off the list. (An earlier draft of
+this note said 12; the cuts named above come to 13, and the code and its
+tests say 13.) The thirteen are `list_pages`, `read_page`, `check_section`,
+`publish_class_on`, `publish_pages`, `unpublish_pages`, `rebuild_preview`,
+`undo_last_change`, `deploy_section`, `schedule_deploy`,
+`cancel_scheduled_deploy`, `read_remembered_timetable`, `add_next_class`.
+Worth doing on Windows too — the routing figures were measured at 15, so a
+surface that grows past that is spending accuracy, and one that shrinks below
+it should be spending less.
 
 ### The class timetable, and the chore it removes
 

@@ -45,6 +45,79 @@ final class AssistToolRunnerTests: XCTestCase {
         XCTAssertEqual(AssistToolRunner.tools.count, 20, "A tool is defined twice.")
     }
 
+    /// What the LOCAL model is shown: thirteen of the twenty.
+    ///
+    /// Seven are left off because the model never has to NAME them, and every
+    /// schema in the prompt costs a small router accuracy. The six `plan_`
+    /// twins are called IN CODE by plan mode, which builds the call from the
+    /// write the model already chose; `remember_timetable` is off because dates
+    /// the model supplies are dates it may have invented, and a wrong one
+    /// silently puts a class on the wrong day. All seven still RUN — they are
+    /// hidden from the list, not removed from the surface.
+    @MainActor
+    func testTheLocalModelIsShownExactlyThirteenToolsAndNoPlans() throws {
+        let expected: Set<String> = [
+            "list_pages", "read_page", "check_section",
+            "publish_class_on", "publish_pages", "unpublish_pages",
+            "rebuild_preview", "undo_last_change",
+            "deploy_section", "schedule_deploy", "cancel_scheduled_deploy",
+            "read_remembered_timetable", "add_next_class",
+        ]
+
+        var shown: Set<String> = []
+        for tool in AssistToolRunner.localTools {
+            shown.insert(tool.name)
+        }
+        XCTAssertEqual(shown, expected)
+        XCTAssertEqual(AssistToolRunner.localTools.count, 13, "A tool is shown twice.")
+
+        for tool in AssistToolRunner.localTools {
+            XCTAssertFalse(
+                tool.name.hasPrefix("plan_"),
+                "\(tool.name) is a plan; plan mode calls those in code, so the model never names one."
+            )
+        }
+
+        // And the runner really hands that list to the model.
+        let runner: AssistToolRunner = try makeRunner().runner
+        var handedOver: Set<String> = []
+        for definition in runner.definitions {
+            handedOver.insert(definition.name)
+        }
+        XCTAssertEqual(handedOver, expected)
+    }
+
+    /// Claude Code, on the other end of the MCP server, has no plan mode: it
+    /// needs the twins by name to show a teacher what a write would do. So the
+    /// seven hidden from the local list are still served there.
+    @MainActor
+    func testTheHiddenToolsAreStillServedToClaudeCode() throws {
+        let runner: AssistToolRunner = try makeRunner().runner
+        var overMCP: Set<String> = []
+        for definition in runner.mcpDefinitions {
+            overMCP.insert(definition.name)
+        }
+
+        let hidden: [String] = [
+            "plan_publish_class_on", "plan_publish_pages", "plan_unpublish_pages",
+            "plan_scheduled_deploy", "plan_remember_timetable", "plan_add_next_class",
+            "remember_timetable",
+        ]
+        for name in hidden {
+            XCTAssertTrue(overMCP.contains(name), "\(name) is missing from the MCP surface.")
+            XCTAssertNotNil(runner.definition(named: name), "\(name) must still be runnable.")
+        }
+
+        // Reading the dates back is not the same act as writing them, and it
+        // invents nothing, so it stays on both surfaces.
+        var localNames: Set<String> = []
+        for tool in AssistToolRunner.localTools {
+            localNames.insert(tool.name)
+        }
+        XCTAssertTrue(localNames.contains("read_remembered_timetable"))
+        XCTAssertTrue(overMCP.contains("read_remembered_timetable"))
+    }
+
     /// Every tool the model may name can be found again by name — the gate
     /// reads `needsApproval` off the definition it looks up, so a name that
     /// does not look up is a write that never meets its gate.
@@ -164,8 +237,9 @@ final class AssistToolRunnerTests: XCTestCase {
     /// dangerous failure ever observed was polarity inversion: asked to HIDE a
     /// page, the model called publish with "include everything it links to"
     /// set. A boolean is a coin flip under pressure; a verb is not — so the
-    /// verb lives in the tool's NAME, and the only boolean anywhere on the
-    /// surface decides how FAR a change reaches, never which way it points.
+    /// verb lives in the tool's NAME, and there is now no boolean anywhere on
+    /// the surface at all. `includeLinked` was the last one, and how far each
+    /// verb reaches is `AssistPublishPlanner`'s rule instead.
     @MainActor
     func testPublishingAndUnpublishingAreSeparateVerbsWithNoFlagBetweenThem() {
         let pairs: [(String, String)] = [
@@ -181,24 +255,208 @@ final class AssistToolRunnerTests: XCTestCase {
             XCTAssertTrue(names.contains(unpublishing))
         }
 
-        // The one boolean allowed to exist, and the words that must never name
-        // a boolean because each of them could invert what a tool does.
-        let inverting: [String] = ["publish", "draft", "hidden", "visible", "hide", "show", "students"]
-        for tool in AssistToolRunner.tools {
-            for (name, property) in tool.parameters where property.kind == .boolean {
-                XCTAssertEqual(
-                    name, "includeLinked",
-                    "\(tool.name) takes a boolean called \(name); the only boolean on this surface "
-                    + "decides how far a change reaches, never which way it points."
+        // No boolean, anywhere — on either surface. Every one of them is an
+        // argument the model has to decide, and deciding is the thing this
+        // design keeps away from it.
+        for tool in AssistToolRunner.mcpTools {
+            for (name, property) in tool.parameters {
+                XCTAssertNotEqual(
+                    property.kind, .boolean,
+                    "\(tool.name) takes a boolean called \(name); no tool on this surface takes one, "
+                    + "because a boolean is what the model gets wrong under pressure."
                 )
-                for word in inverting {
-                    XCTAssertFalse(
-                        name.lowercased().contains(word),
-                        "\(tool.name)'s boolean \(name) could invert the verb."
-                    )
-                }
             }
+            XCTAssertNil(tool.parameters["includeLinked"],
+                         "\(tool.name) still asks the model how far to reach.")
         }
+    }
+
+    /// Publishing takes the pages it links to WITHOUT being asked. There is no
+    /// argument for it any more: a published page whose links lead to pages
+    /// students cannot see is the failure the rule exists to prevent.
+    @MainActor
+    func testPublishingTakesTheLinkedPagesWithNoArgument() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "false", body: "See [[Loops]].", in: made.course)
+        try write(courseLevelPage: "Loops", publishForSection1: "false",
+                  body: "See [[Snippets]].", in: made.course)
+        try write(courseLevelPage: "Snippets", publishForSection1: "false",
+                  body: "Some code.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "publish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+        XCTAssertFalse(outcome.shouldContinue)
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: true"))
+        // Followed all the way along, as publishing a class already was.
+        XCTAssertTrue(text(ofCourseLevelPage: "Loops", in: made.course).contains("publishForSection1: true"))
+        XCTAssertTrue(text(ofCourseLevelPage: "Snippets", in: made.course).contains("publishForSection1: true"))
+    }
+
+    /// A start date with no end date and no pages named means "everything
+    /// from here to the end of the course", which is what a mistyped request
+    /// for ONE lesson turns into — measured at 10 trials out of 10 on
+    /// "publsh tomorows class … and the stuff it links to". It is refused
+    /// rather than planned, and the refusal says what to do instead.
+    @MainActor
+    func testAnOpenEndedPublishIsRefusedRatherThanPlanned() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "false", body: "A lesson.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "publish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "", "onOrAfter": "2026-09-08"]
+        ))
+
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: false"),
+                      "Nothing may be published by an open-ended range")
+        XCTAssertTrue(outcome.detail.contains("publish_class_on"),
+                      "The refusal has to name what to do for one day, or the model cannot correct itself")
+        XCTAssertTrue(outcome.detail.contains("before"),
+                      "…and how to ask for a stretch of classes")
+    }
+
+    /// The same shape is allowed for UNPUBLISHING: hiding work back to a date
+    /// is a real thing to want, it exposes nothing, and the same backup undoes
+    /// it. The asymmetry is deliberate.
+    @MainActor
+    func testAnOpenEndedUnpublishIsStillAllowed() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", body: "A lesson.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "", "onOrAfter": "2020-01-01"]
+        ))
+
+        XCTAssertFalse(outcome.detail.contains("almost certainly not what was meant"),
+                       "Unpublishing must not inherit publishing's refusal")
+    }
+
+    /// Unpublishing is NOT the mirror image. A page the named ones are the only
+    /// link to comes down with them — and so does what only THAT page linked
+    /// to, which is why the rule is worked out to a fixed point.
+    @MainActor
+    func testUnpublishingTakesAPageLinkedOnlyByTheOneComingDown() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", body: "See [[Loops]].", in: made.course)
+        try write(courseLevelPage: "Loops", publishForSection1: "true",
+                  body: "See [[Snippets]].", in: made.course)
+        try write(courseLevelPage: "Snippets", publishForSection1: "true",
+                  body: "Some code.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+        XCTAssertFalse(outcome.shouldContinue)
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: false"))
+        XCTAssertTrue(text(ofCourseLevelPage: "Loops", in: made.course).contains("publishForSection1: false"))
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "Snippets", in: made.course).contains("publishForSection1: false"),
+            "A page only the page only THAT page linked to still comes down."
+        )
+    }
+
+    /// The rule that keeps this from breaking another class: a page something
+    /// else still links to stays published — and the plan SAYS so, naming what
+    /// still links to it.
+    @MainActor
+    func testUnpublishingKeepsAPageAnotherPageStillLinksToAndSaysWhy() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 3, Day 1", publish: "true", body: "See [[Ohm's Law]].", in: made.course)
+        try write(page: "Unit 3, Day 2", publish: "true", body: "See [[Ohm's Law]].", in: made.course)
+        try write(courseLevelPage: "Ohm's Law", publishForSection1: "true",
+                  body: "Voltage over current.", in: made.course)
+
+        let planned: AssistToolOutcome = await made.runner.run(call: call(
+            "plan_unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 3, Day 1"]
+        ))
+        XCTAssertTrue(planned.detail.contains("Ohm's Law"))
+        XCTAssertTrue(
+            planned.detail.contains("“Unit 3, Day 2” still links to it."),
+            "A teacher has to see that the tool thought about it: \(planned.detail)"
+        )
+
+        let done: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 3, Day 1"]
+        ))
+        XCTAssertFalse(done.shouldContinue)
+        XCTAssertTrue(text(ofPage: "Unit 3, Day 1", in: made.course).contains("publish: false"))
+        XCTAssertTrue(text(ofPage: "Unit 3, Day 2", in: made.course).contains("publish: true"))
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "Ohm's Law", in: made.course).contains("publishForSection1: true"),
+            "Hiding this week's lesson must not leave last week's pointing at nothing."
+        )
+    }
+
+    /// Three kinds of page never come down by following a link, whatever the
+    /// link count: a folder's landing page, anything the section's Key Links
+    /// offers, and any curriculum page.
+    ///
+    /// Each is reached from somewhere other than a lesson, so counting links
+    /// says nothing useful about whether it is still wanted. Both pages that
+    /// link to Key Links' entry are taken down here, so the reference rule
+    /// alone would have swept it — the exclusion is what saves it.
+    @MainActor
+    func testAFolderIndexKeyLinksAndCurriculumAreNeverUnpublishedByFollowingLinks() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true",
+                  body: "See [[Concepts/index]], [[Course Outline]], [[A1.1]] and [[Loops]].",
+                  in: made.course)
+        try write(sectionPage: "Key Links", publish: "true",
+                  body: "See [[Course Outline]].", in: made.course)
+        try write(courseLevelPage: "index", inFolder: "Concepts",
+                  publishForSection1: "true", body: "The concepts.", in: made.course)
+        try write(courseLevelPage: "Course Outline", inFolder: "Concepts",
+                  publishForSection1: "true", body: "How the class runs.", in: made.course)
+        try write(courseLevelPage: "A1.1", inFolder: "Curriculum",
+                  publishForSection1: "true", body: "Describe an algorithm. ^text", in: made.course)
+        try write(courseLevelPage: "Loops", publishForSection1: "true",
+                  body: "About loops.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1; Key Links"]
+        ))
+        XCTAssertFalse(outcome.shouldContinue)
+
+        // The pages the teacher named came down, because they asked.
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: false"))
+        // And the page nothing else needs came down with them.
+        XCTAssertTrue(text(ofCourseLevelPage: "Loops", in: made.course).contains("publishForSection1: false"))
+
+        // The three that never do.
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "index", inFolder: "Concepts", in: made.course)
+                .contains("publishForSection1: true"),
+            "A folder's landing page is the way IN to a folder, never an orphan."
+        )
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "Course Outline", inFolder: "Concepts", in: made.course)
+                .contains("publishForSection1: true"),
+            "A page this section's Key Links offers stays."
+        )
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "A1.1", inFolder: "Curriculum", in: made.course)
+                .contains("publishForSection1: true"),
+            "A curriculum page stays — build_site.py's own rule, any folder named for curriculum."
+        )
+
+        XCTAssertTrue(outcome.detail.contains("folder's landing page"), outcome.detail)
+        XCTAssertTrue(outcome.detail.contains("Key Links"), outcome.detail)
+        XCTAssertTrue(outcome.detail.contains("curriculum page"), outcome.detail)
     }
 
     /// The verb reaches the FILE without passing through anything that could
@@ -215,7 +473,7 @@ final class AssistToolRunnerTests: XCTestCase {
 
         let outcome: AssistToolOutcome = await made.runner.run(call: call(
             "unpublish_pages",
-            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1", "includeLinked": true]
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
         ))
 
         XCTAssertFalse(outcome.shouldContinue, "A write ends the turn.")
@@ -304,14 +562,18 @@ final class AssistToolRunnerTests: XCTestCase {
     @MainActor
     func testEveryCardPhrasingNamesARealTool() throws {
         let phrasings: [String] = [
+            "what would students see in this section right now?",
             "what do students see right now?",
             "rebuild the preview",
             "undo that",
+            "deploy now",
             "deploy this section now",
             "publish tomorrow's class",
         ]
+        // Checked against what the LOCAL model is shown, because a card is a
+        // shortcut past the model to a tool the window promises.
         var names: Set<String> = []
-        for tool in AssistToolRunner.tools {
+        for tool in AssistToolRunner.localTools {
             names.insert(tool.name)
         }
         for phrasing in phrasings {
@@ -477,7 +739,7 @@ final class AssistToolRunnerTests: XCTestCase {
 
         let published: AssistToolOutcome = await made.runner.run(call: call(
             "publish_pages",
-            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1", "includeLinked": false]
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
         ))
         XCTAssertFalse(published.shouldContinue)
         let after: String = text(ofPage: "Unit 1, Day 1", in: made.course)
@@ -498,7 +760,7 @@ final class AssistToolRunnerTests: XCTestCase {
 
         let outcome: AssistToolOutcome = await made.runner.run(call: call(
             "unpublish_pages",
-            arguments: ["course": "ICS3U", "section": 1, "includeLinked": false, "onOrAfter": "2026-09-10"]
+            arguments: ["course": "ICS3U", "section": 1, "onOrAfter": "2026-09-10"]
         ))
         XCTAssertFalse(outcome.shouldContinue)
         XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: true"))
@@ -523,7 +785,7 @@ final class AssistToolRunnerTests: XCTestCase {
         _ = await made.runner.run(call: call(
             "publish_pages",
             arguments: ["course": "ICS3U", "section": 1,
-                        "pages": "Unit 1, Day 1; Unit 1, Day 2", "includeLinked": false]
+                        "pages": "Unit 1, Day 1; Unit 1, Day 2"]
         ))
         XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: true"))
 
@@ -536,7 +798,7 @@ final class AssistToolRunnerTests: XCTestCase {
         _ = await made.runner.run(call: call(
             "publish_pages",
             arguments: ["course": "ICS3U", "section": 1,
-                        "pages": "Unit 1, Day 1; Unit 1, Day 2", "includeLinked": false]
+                        "pages": "Unit 1, Day 1; Unit 1, Day 2"]
         ))
         let edited: String = text(ofPage: "Unit 1, Day 2", in: made.course) + "\n\nWritten since.\n"
         try edited.write(
@@ -570,15 +832,15 @@ final class AssistToolRunnerTests: XCTestCase {
 
         _ = await made.runner.run(call: call(
             "publish_pages",
-            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1", "includeLinked": false]
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
         ))
         _ = await made.runner.run(call: call(
             "publish_pages",
-            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 2", "includeLinked": false]
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 2"]
         ))
         let third: AssistToolOutcome = await made.runner.run(call: call(
             "unpublish_pages",
-            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1", "includeLinked": false]
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
         ))
 
         // All three really wrote.
@@ -622,7 +884,7 @@ final class AssistToolRunnerTests: XCTestCase {
         ))
         _ = await made.runner.run(call: call(
             "plan_publish_pages",
-            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1", "includeLinked": false]
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
         ))
 
         XCTAssertEqual(
@@ -876,8 +1138,31 @@ final class AssistToolRunnerTests: XCTestCase {
         )
     }
 
+    /// A page in the section's own folder rather than in its classes folder —
+    /// which is where a real course keeps `Key Links.md`. Section-local, so it
+    /// carries the plain `publish:` key.
+    @MainActor
+    private func write(sectionPage title: String,
+                       publish: String,
+                       body: String,
+                       in course: Course) throws {
+        let text: String = """
+        ---
+        title: \(title)
+        publish: \(publish)
+        ---
+
+        \(body)
+        """
+        try text.write(
+            to: course.sectionDirectoryURL(forSection: 1).appendingPathComponent(title + ".md"),
+            atomically: true, encoding: .utf8
+        )
+    }
+
     @MainActor
     private func write(courseLevelPage title: String,
+                       inFolder folder: String = "Concepts",
                        publishForSection1: String,
                        body: String,
                        in course: Course) throws {
@@ -890,9 +1175,10 @@ final class AssistToolRunnerTests: XCTestCase {
 
         \(body)
         """
+        let folderURL: URL = course.directoryURL.appendingPathComponent(folder)
+        try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
         try text.write(
-            to: course.directoryURL.appendingPathComponent("Concepts")
-                .appendingPathComponent(title + ".md"),
+            to: folderURL.appendingPathComponent(title + ".md"),
             atomically: true, encoding: .utf8
         )
     }
@@ -905,8 +1191,10 @@ final class AssistToolRunnerTests: XCTestCase {
     }
 
     @MainActor
-    private func text(ofCourseLevelPage title: String, in course: Course) -> String {
-        let url: URL = course.directoryURL.appendingPathComponent("Concepts")
+    private func text(ofCourseLevelPage title: String,
+                      inFolder folder: String = "Concepts",
+                      in course: Course) -> String {
+        let url: URL = course.directoryURL.appendingPathComponent(folder)
             .appendingPathComponent(title + ".md")
         return (try? String(contentsOf: url, encoding: .utf8)) ?? ""
     }

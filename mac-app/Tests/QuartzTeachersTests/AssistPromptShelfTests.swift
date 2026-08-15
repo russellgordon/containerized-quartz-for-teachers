@@ -41,6 +41,23 @@ final class AssistPromptShelfTests: XCTestCase {
         XCTAssertTrue(stored.split(separator: "|").isEmpty)
     }
 
+    /// The shelf's wording and the phrasings matched in CODE have to stay in
+    /// step. "Deploy this section now" became "Deploy now" on the shelf, and a
+    /// card whose wording no longer matches is a button that quietly goes to
+    /// the model on a shape the model was measured getting wrong.
+    func testTheShelfsShortcutPhrasingsStillFire() {
+        XCTAssertEqual(AssistCardCommand.matching("Deploy now")?.toolName, "deploy_section")
+        XCTAssertEqual(
+            AssistCardCommand.matching("What would students see in this section right now?")?.toolName,
+            "check_section"
+        )
+        XCTAssertEqual(AssistCardCommand.matching("Rebuild the preview")?.toolName, "rebuild_preview")
+        XCTAssertEqual(AssistCardCommand.matching("Undo that")?.toolName, "undo_last_change")
+        XCTAssertEqual(
+            AssistCardCommand.matching("Publish tomorrow's class")?.toolName, "publish_class_on"
+        )
+    }
+
     /// The separator has to survive the real titles. None contains a "|",
     /// and this fails if somebody adds one that does.
     func testNoGroupTitleContainsTheSeparator() {

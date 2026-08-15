@@ -110,23 +110,39 @@ final class AssistModelTierTests: XCTestCase {
 
     // MARK: - The engine's arguments
 
-    /// The single most consequential flag in the whole feature.
+    /// The single most consequential setting in the whole feature.
     ///
     /// Qwen3 with thinking enabled spends its token budget inside `<think>`
     /// and never reaches the tool call. Measured on identical weights: 39%
-    /// routing with thinking on, 97% with it off. Losing this flag would not
-    /// break anything visibly — the assistant would simply become bad at its
-    /// job — so it is asserted here rather than trusted.
+    /// routing with thinking on, 97% with it off. Losing this would not break
+    /// anything visibly — the assistant would simply become bad at its job —
+    /// so it is asserted here rather than trusted.
+    ///
+    /// BOTH flags, and the order of importance is the reverse of what the
+    /// names suggest. `--reasoning-budget 0` caps the thinking but does not
+    /// prevent it: the model still opens a `<think>` block and fills it to the
+    /// cap. On one prompt against the 20-tool surface that cost 512 completion
+    /// tokens and 16.1 s to reach the right call, where `--reasoning off` —
+    /// which tells the chat template not to think at all — reached the same
+    /// call in 44 tokens and 8.4 s. The app shipped with the budget alone for
+    /// a while, which is exactly the quiet failure this test exists to catch.
     func testThinkingIsTurnedOff() {
         for tier in AssistModelTier.allCases {
             let arguments: [String] = AssistServerHost.serverArguments(
                 modelPath: "/tmp/model.gguf", port: 8080, tier: tier, threadCount: 4
             )
-            guard let flagAt = arguments.firstIndex(of: "--reasoning-budget") else {
-                return XCTFail("\(tier.displayName) starts without --reasoning-budget; thinking would be on")
+
+            guard let switchAt = arguments.firstIndex(of: "--reasoning") else {
+                return XCTFail("\(tier.displayName) starts without --reasoning; the budget alone does not stop thinking")
             }
-            XCTAssertEqual(arguments[arguments.index(after: flagAt)], "0",
-                           "A budget above zero lets the model think instead of calling a tool")
+            XCTAssertEqual(arguments[arguments.index(after: switchAt)], "off",
+                           "Anything but 'off' lets the template think before it routes")
+
+            guard let budgetAt = arguments.firstIndex(of: "--reasoning-budget") else {
+                return XCTFail("\(tier.displayName) starts without --reasoning-budget, the second line of defence")
+            }
+            XCTAssertEqual(arguments[arguments.index(after: budgetAt)], "0",
+                           "A budget above zero lets a template that ignores --reasoning think anyway")
         }
     }
 

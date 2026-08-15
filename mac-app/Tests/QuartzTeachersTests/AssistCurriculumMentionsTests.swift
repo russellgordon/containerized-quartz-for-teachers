@@ -22,12 +22,20 @@ final class AssistCurriculumMentionsTests: XCTestCase {
     /// surface plus the curriculum tools.
     ///
     /// The count moved from fifteen to twenty when the timetable and next-class
-    /// tools were added, each on purpose. The curriculum tools are still not
-    /// among them: which expectations fit a lesson is a judgement about
+    /// tools were added, each on purpose — and what the local model is SHOWN
+    /// came back down to thirteen when the `plan_` twins and
+    /// `remember_timetable` were taken off its list. The curriculum tools are
+    /// on neither: which expectations fit a lesson is a judgement about
     /// meaning, and it is not one to hand a small local model.
     @MainActor
     func testTheLocalModelSurfaceIsNarrowAndTheMcpSurfaceIsLarger() {
         XCTAssertEqual(AssistToolRunner.tools.count, 20)
+        XCTAssertEqual(AssistToolRunner.localTools.count, 13)
+
+        var shownToTheLocalModel: Set<String> = []
+        for tool in AssistToolRunner.localTools {
+            shownToTheLocalModel.insert(tool.name)
+        }
 
         var localNames: Set<String> = []
         for tool in AssistToolRunner.tools {
@@ -43,6 +51,8 @@ final class AssistCurriculumMentionsTests: XCTestCase {
         ]
         for name in added {
             XCTAssertFalse(localNames.contains(name), "\(name) must not reach the local model.")
+            XCTAssertFalse(shownToTheLocalModel.contains(name),
+                           "\(name) must not be shown to the local model.")
             XCTAssertTrue(mcpNames.contains(name), "\(name) is missing from the MCP surface.")
         }
         XCTAssertEqual(mcpNames.count, localNames.count + added.count)
