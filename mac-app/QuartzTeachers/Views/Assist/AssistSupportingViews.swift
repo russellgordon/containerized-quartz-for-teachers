@@ -39,6 +39,14 @@ struct AssistPromptShelfView: View {
     /// simply be forgotten rather than corrupting the rest.
     @AppStorage("AssistPromptShelfOpenGroups") private var openGroupsRaw: String = ""
 
+    /// How tall the groups actually are, measured.
+    @State private var contentHeight: CGFloat = 0
+
+    /// The most the shelf may take. Past this it scrolls, so a teacher who
+    /// opens every group gives up their own scroll position rather than the
+    /// conversation.
+    private static let mostHeight: CGFloat = 240
+
     // MARK: - Computed properties
 
     /// The open groups, read back from the stored string.
@@ -90,10 +98,13 @@ struct AssistPromptShelfView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 4)
 
-            // Capped and scrollable: with every group open this is taller
-            // than the conversation deserves to give up, and a teacher who
-            // opens all four should lose their own scroll position rather
-            // than the transcript.
+            // Hugs its content when shut, caps and scrolls when open.
+            //
+            // A ScrollView takes every point it is offered, so on its own it
+            // reserved the full cap even with all four groups closed — a
+            // stripe of empty space between the shelf and the conversation.
+            // Measuring the content and asking for the SMALLER of the two is
+            // what makes four closed lines occupy four lines.
             ScrollView {
                 VStack(alignment: .leading, spacing: 2) {
                     ForEach(groups, id: \.0) { group in
@@ -125,8 +136,18 @@ struct AssistPromptShelfView: View {
                     }
                 }
                 .padding(.bottom, 8)
+                .background(
+                    GeometryReader { proxy in
+                        Color.clear.preference(
+                            key: AssistShelfHeightKey.self, value: proxy.size.height
+                        )
+                    }
+                )
             }
-            .frame(maxHeight: 220)
+            .frame(height: min(contentHeight, AssistPromptShelfView.mostHeight))
+            .onPreferenceChange(AssistShelfHeightKey.self) { measured in
+                contentHeight = measured
+            }
         }
         .background(.bar)
     }
@@ -252,5 +273,19 @@ struct AssistDownloadProgressView: View {
         }
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// Carries the shelf's measured height out of its content.
+private struct AssistShelfHeightKey: PreferenceKey {
+
+    // MARK: - Stored properties
+
+    static let defaultValue: CGFloat = 0
+
+    // MARK: - Functions
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
