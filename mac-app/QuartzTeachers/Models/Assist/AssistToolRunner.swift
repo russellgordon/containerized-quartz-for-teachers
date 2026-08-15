@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 
 /// The fifteen tools the local model may call, and what running one does.
 ///
@@ -32,6 +33,12 @@ import Foundation
 /// asks for a button: publishing is backed up and `undo_last_change` takes it
 /// back, and a gate in front of every write teaches a teacher to click through
 /// gates, which is worse than having no gate at all.
+///
+/// Observable for one property's sake: `conversationBackupURL` appears part way
+/// through a conversation, the moment the first write saves a copy, and the
+/// window's Restore banner has to appear with it rather than at whatever redraw
+/// happens along next.
+@Observable
 @MainActor
 final class AssistToolRunner {
 

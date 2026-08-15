@@ -481,8 +481,30 @@ Two details that make the backups usable rather than merely present:
 The backup contains the whole course; a conversation is about one section. A
 whole-course restore would silently revert work done in a sibling section
 while the chat was open — a teacher may well have been editing Section 2 in
-Obsidian while talking about Section 1. So Restore puts back only the
-section the conversation was about, and says so on the button.
+Obsidian while talking about Section 1. So Restore puts back only the section
+the conversation was about, and says so on the button.
+
+**Section-scoped means more than the section's folder**, and this is the part
+easy to get wrong. The assistant can publish or unpublish a COURSE-LEVEL
+shared page for one section, and that lives in the shared file's frontmatter
+as `publishForSection<N>` — outside the section folder entirely. Restoring
+only `section<N>/` would leave that half of the conversation's work in place.
+
+The macOS build restores both: the section folder's contents, and — in every
+shared page — only the keys carrying THIS section's number, spliced back from
+the backup's own lines rather than re-derived. Copying the lines verbatim has
+three consequences worth keeping: the older `draftSection<N>` spelling
+survives untouched where a course still uses it, a key the conversation ADDED
+is removed again, and every other section's keys plus the whole page body stay
+byte for byte.
+
+The section folder is emptied and refilled rather than swapped, for the same
+reason `restoreBackup` documents: Obsidian holds the folder open.
+
+**Say the surprising part in the confirmation, not in a doc.** Anything the
+teacher changed in that section during the conversation goes back too,
+including work done in Obsidian, and Plantoir cannot bring that part back.
+That sentence belongs in the alert.
 
 ## Testing
 

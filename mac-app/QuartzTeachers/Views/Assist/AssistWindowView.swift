@@ -20,6 +20,9 @@ struct AssistWindowView: View {
     /// Keeps the newest line in view as the conversation grows.
     @Namespace private var bottom
 
+    /// Whether the Restore question is on screen.
+    @State private var isConfirmingRestore: Bool = false
+
     // MARK: - Initializer
 
     init(courseCode: String, sectionNumber: Int, workingFolder: URL) {
@@ -34,6 +37,10 @@ struct AssistWindowView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if session.canRestoreSection {
+                restoreBanner
+                Divider()
+            }
             transcript
             Divider()
             composer
@@ -45,6 +52,66 @@ struct AssistWindowView: View {
         }
         .onDisappear {
             session.finish()
+        }
+    }
+
+    /// The way back to how this section was when the conversation started.
+    ///
+    /// A banner across the top rather than a line in the transcript, because
+    /// the moment it is wanted is the moment something has gone wrong, and a
+    /// teacher scrolling a long chat for the way out is a teacher already
+    /// having a bad time. It appears only once the conversation has actually
+    /// changed something, so it is never furniture.
+    ///
+    /// Hard to press by accident, in three ways: it is a bordered button rather
+    /// than a tap target in the flow of the text, its title ends in an ellipsis
+    /// promising a question, and the question that follows makes Cancel the
+    /// default — a Return pressed out of habit leaves the section alone.
+    private var restoreBanner: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "clock.arrow.circlepath")
+                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(AssistSectionRestore.bannerTitle(sectionNumber: session.sectionNumber))
+                    .font(.callout)
+                Text(AssistSectionRestore.bannerDetail())
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 12)
+            Button(AssistSectionRestore.buttonTitle(sectionNumber: session.sectionNumber)) {
+                isConfirmingRestore = true
+            }
+            .disabled(session.agent?.isBusy ?? false)
+            .accessibilityIdentifier("assistRestoreSectionButton")
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.bar)
+        .alert(
+            AssistSectionRestore.confirmationTitle(
+                courseCode: session.courseCode, sectionNumber: session.sectionNumber
+            ),
+            isPresented: $isConfirmingRestore
+        ) {
+            Button("Cancel", role: .cancel) {
+                isConfirmingRestore = false
+            }
+            .keyboardShortcut(.defaultAction)
+            .accessibilityIdentifier("assistCancelRestoreButton")
+
+            Button(
+                AssistSectionRestore.goAheadTitle(sectionNumber: session.sectionNumber),
+                role: .destructive
+            ) {
+                session.restoreSection()
+            }
+            .accessibilityIdentifier("assistConfirmRestoreButton")
+        } message: {
+            Text(AssistSectionRestore.confirmationMessage(
+                courseCode: session.courseCode, sectionNumber: session.sectionNumber
+            ))
         }
     }
 
@@ -94,8 +161,13 @@ struct AssistWindowView: View {
                             Task { await send(phrasing) }
                         }
                     }
-                    ForEach(session.agent?.entries ?? []) { entry in
-                        AssistEntryView(entry: entry)
+                    ForEach(transcriptLines) { line in
+                        switch line {
+                        case .said(let entry):
+                            AssistEntryView(entry: entry)
+                        case .restored(let note):
+                            AssistRestoreNoteView(note: note)
+                        }
                     }
                     if let approval = session.agent?.pendingApproval,
                        let agent = session.agent {
@@ -119,7 +191,7 @@ struct AssistWindowView: View {
                 }
                 .padding()
             }
-            .onChange(of: session.agent?.entries.count ?? 0) {
+            .onChange(of: transcriptLines.count) {
                 withAnimation {
                     proxy.scrollTo(bottom, anchor: .bottom)
                 }
@@ -152,6 +224,33 @@ struct AssistWindowView: View {
         .background(.bar)
     }
 
+    /// The conversation and the restores, laid together in the order they
+    /// happened.
+    ///
+    /// A restore is not something either side said, so it is not among the
+    /// agent's own entries — but it IS something that happened during this
+    /// conversation, and a teacher reading back afterwards needs to find it at
+    /// the point where the section changed under them, not tacked on the end.
+    private var transcriptLines: [AssistTranscriptLine] {
+        let entries: [AssistAgent.Entry] = session.agent?.entries ?? []
+        let notes: [AssistSession.RestoreNote] = session.restoreNotes
+
+        var lines: [AssistTranscriptLine] = []
+        var notesPlaced: Int = 0
+        for (index, entry) in entries.enumerated() {
+            while notesPlaced < notes.count && notes[notesPlaced].saidSoFar <= index {
+                lines.append(AssistTranscriptLine.restored(notes[notesPlaced]))
+                notesPlaced += 1
+            }
+            lines.append(AssistTranscriptLine.said(entry))
+        }
+        while notesPlaced < notes.count {
+            lines.append(AssistTranscriptLine.restored(notes[notesPlaced]))
+            notesPlaced += 1
+        }
+        return lines
+    }
+
     // MARK: - Functions
 
     private func send(_ text: String) async {
@@ -161,6 +260,40 @@ struct AssistWindowView: View {
         }
         typing = ""
         await session.agent?.say(message)
+    }
+}
+
+/// One line of what a teacher reads back: something said, or a restore.
+private enum AssistTranscriptLine: Identifiable {
+    case said(AssistAgent.Entry)
+    case restored(AssistSession.RestoreNote)
+
+    var id: UUID {
+        switch self {
+        case .said(let entry):
+            return entry.id
+        case .restored(let note):
+            return note.id
+        }
+    }
+}
+
+/// A restore, written into the conversation so it records what happened.
+private struct AssistRestoreNoteView: View {
+
+    // MARK: - Stored properties
+
+    let note: AssistSession.RestoreNote
+
+    // MARK: - Computed properties
+
+    var body: some View {
+        Label(note.text, systemImage: note.isProblem ? "exclamationmark.triangle" : "clock.arrow.circlepath")
+            .font(.callout)
+            .foregroundStyle(note.isProblem ? Color.orange : Color.secondary)
+            .textSelection(.enabled)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityIdentifier("assistRestoreNote")
     }
 }
 

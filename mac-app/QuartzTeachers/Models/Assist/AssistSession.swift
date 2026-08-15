@@ -20,6 +20,22 @@ final class AssistSession {
         case failed(reason: String)
     }
 
+    /// A restore, as the transcript records it.
+    ///
+    /// It is kept here rather than in `AssistAgent.entries` because a restore
+    /// is not something either side of the conversation SAID — the model is
+    /// never told about it, and should not be: it is the teacher stepping
+    /// outside the conversation to undo it. `saidSoFar` is what puts the note
+    /// back where it happened when the window lays the two together.
+    struct RestoreNote: Identifiable, Equatable {
+        let id: UUID = UUID()
+        let text: String
+        let isProblem: Bool
+
+        /// How many lines the conversation had run to when this happened.
+        let saidSoFar: Int
+    }
+
     // MARK: - Stored properties
 
     let courseCode: String
@@ -34,6 +50,14 @@ final class AssistSession {
 
     /// The conversation, once there is something to have it with.
     private(set) var agent: AssistAgent?
+
+    /// What the conversation can do, kept here as well as handed to the agent:
+    /// the copy it saves before its first change is what a Restore goes back
+    /// to, and the window has to be able to ask whether there is one.
+    private(set) var toolRunner: AssistToolRunner?
+
+    /// The restores done during this conversation, oldest first.
+    private(set) var restoreNotes: [RestoreNote] = []
 
     /// Where the window is up to.
     private(set) var readiness: Readiness = .checkingHardware
@@ -54,6 +78,23 @@ final class AssistSession {
             return false
         }
         return !agent.isBusy
+    }
+
+    /// Whether there is a way back to how this section was when the
+    /// conversation started.
+    ///
+    /// False for a conversation that has only READ, which has saved no copy —
+    /// and offering a Restore there would be offering to undo nothing.
+    var canRestoreSection: Bool {
+        guard let toolRunner else {
+            return false
+        }
+        return toolRunner.hasConversationBackup
+    }
+
+    /// Where this window's courses live.
+    var coursesDirectoryURL: URL {
+        return workingFolder.appendingPathComponent("courses")
     }
 
     // MARK: - Initializer
@@ -144,6 +185,7 @@ final class AssistSession {
             let workspace: WorkspaceModel = WorkspaceModel()
             workspace.adoptRestoredPath(workingFolder.path)
             let runner: AssistToolRunner = AssistToolRunner(workspace: workspace)
+            self.toolRunner = runner
             let agent: AssistAgent = AssistAgent(
                 courseCode: courseCode,
                 sectionNumber: sectionNumber,
@@ -187,6 +229,40 @@ final class AssistSession {
         _ = try? await client.respond(messages: priming, tools: definitions)
     }
 
+    /// Put this section back to how it was when the conversation started, and
+    /// record in the transcript that it happened.
+    ///
+    /// The teacher has already been asked — see
+    /// `AssistSectionRestore.confirmationMessage` — so this does not ask
+    /// again. What it does do is write down the outcome either way: a restore
+    /// that quietly failed would leave a teacher believing their section had
+    /// gone back when it had not.
+    func restoreSection() {
+        let saidSoFar: Int = agent?.entries.count ?? 0
+        do {
+            try AssistSectionRestore.restore(
+                backupURL: toolRunner?.conversationBackupURL,
+                courseCode: courseCode,
+                sectionNumber: sectionNumber,
+                coursesDirectoryURL: coursesDirectoryURL
+            )
+        } catch {
+            restoreNotes.append(RestoreNote(
+                text: "Nothing was put back: \(error.localizedDescription)",
+                isProblem: true,
+                saidSoFar: saidSoFar
+            ))
+            return
+        }
+        restoreNotes.append(RestoreNote(
+            text: AssistSectionRestore.doneMessage(
+                courseCode: courseCode, sectionNumber: sectionNumber
+            ),
+            isProblem: false,
+            saidSoFar: saidSoFar
+        ))
+    }
+
     /// The window is closing. Stop the server — a model holding several
     /// gigabytes of a teacher's RAM after they have finished with it is the
     /// sort of thing that gets an app uninstalled.
@@ -195,5 +271,6 @@ final class AssistSession {
         host?.stop()
         host = nil
         agent = nil
+        toolRunner = nil
     }
 }
