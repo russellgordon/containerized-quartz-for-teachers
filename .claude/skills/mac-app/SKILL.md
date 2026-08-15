@@ -181,6 +181,37 @@ Ordinary rebuilding does not clear these. Clear them yourself and say so.
 - Do not report a UI-test failure as real until it has been run alone on a
   quiet machine. That mistake has been made here before.
 
+## Every macOS improvement is written up for Windows, as you go
+
+**Standing rule, not a courtesy.** The Windows app is being built from what
+this side learns, by somebody who cannot see the macOS code or watch it being
+tested. A change that only exists in Swift is a change they will re-derive
+from scratch, usually badly, and usually after shipping the same bug once.
+
+So a macOS change is not finished until BOTH of these are true:
+
+1. **`GUI-IMPROVEMENTS.md` has an entry, and its "Notes for Windows port"
+   column actually says something.** That column is not optional. Every one
+   of the entries so far has one. Useful notes say what Windows must do
+   differently, what it can inherit unchanged, and — most valuable — the trap
+   that would look correct in review. "Shared Python, nothing to mirror" is a
+   fine note when true; an empty cell never is.
+2. **Anything architectural also gets a section in `WINDOWS-HANDOFF.md`.** A
+   log row records a decision; the handoff explains it well enough to
+   implement. Rule of thumb: if you needed more than a sentence of reasoning
+   to get it right, they will too.
+
+**Corrections count as improvements.** When a change makes existing Windows
+guidance WRONG, fixing that guidance is part of the change. This has already
+bitten twice in one night: the handoff still told Windows "the visible verb
+is Publish, never Deploy" long after rows 140 and 143 reversed it, and the
+per-conversation backup rule silently invalidated the pruning advice above
+it. Stale guidance is worse than none — they will follow it.
+
+**Say what you measured, not just what you decided.** Numbers travel; taste
+does not. "The 3B inverts polarity 9 times in 10" is something they can act
+on. "We chose the 4B" is not.
+
 ## The interface never names the machinery
 
 The oldest rule in this project, and the assistant broke it: no "toolchain",

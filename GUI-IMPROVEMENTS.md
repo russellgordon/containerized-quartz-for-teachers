@@ -9,6 +9,14 @@ this toolchain. Two purposes:
    the GUI — every entry here describes behaviour the Windows app must also
    have, unless marked macOS-only.
 
+**The Windows column is required.** An entry is not finished until "Notes
+for Windows port" says something a Windows implementer can use: what to do
+differently, what is inherited unchanged, or the trap that would pass review.
+"Shared Python, nothing to mirror" is a fine note when it is true; an empty
+cell never is. And when a change makes existing Windows guidance wrong,
+correcting it — here or in [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) — is
+part of the change, because stale guidance is followed.
+
 Baseline: both GUIs are thin wrappers. They collect input and present
 output; all real work happens in the command-line toolchain (scripts on
 macOS; the WSL2-backed equivalents on Windows). See

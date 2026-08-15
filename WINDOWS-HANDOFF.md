@@ -14,10 +14,18 @@ inside the container, and the PowerShell launchers (`setup.ps1`,
 job is the interface: the same behaviours as the macOS app, driving the
 `.ps1` launchers instead of the `.sh` ones.
 
-**The specification is [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md)** — 106
-numbered entries, each describing a behaviour the macOS app has and each
-carrying a Windows-porting note. Work through it top to bottom; it is the
-product of a great deal of live testing and every entry earned its place.
+**The specification is [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md)** — every
+numbered entry describes a behaviour the macOS app has, and every one carries
+a Windows-porting note. Work through it top to bottom; it is the product of a
+great deal of live testing and each entry earned its place.
+
+**This file is kept current as the macOS side changes**, rather than written
+once. The macOS working rule is that a change is not finished until its log
+entry has a usable Windows note, anything architectural has a section here,
+and any guidance the change made WRONG has been corrected. So if something
+here contradicts what you find in the repository, the repository is right and
+this file has a bug — say so, because that is a defect on the macOS side, not
+a judgement call on yours.
 
 ## The three load-bearing rules
 

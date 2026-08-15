@@ -312,10 +312,27 @@ before running UI tests — the test runner can't terminate it.
 
 - **The GUI never mentions the machinery.** No "toolchain", "script",
   "Docker", or "container" in user-facing text — plain words only
-  ("Building your website builder…", "Getting this Mac ready…").
-- **`GUI-IMPROVEMENTS.md` logs every GUI behaviour change** as a numbered
-  table row, each with a Windows-porting note. It is the spec for the future
-  Windows app — keep it current when changing app behaviour.
+  ("Building your website builder…", "Getting this Mac ready…"). That
+  includes the assistant's own plumbing: no model names, parameter counts,
+  tokens, context windows or GPU talk. It says "the small assistant" and
+  "the larger assistant", and a test enforces it.
+- **Every macOS improvement is written up for Windows, as you go.** The
+  Windows app is built from what this side learns, by somebody who cannot
+  read the Swift or watch it being tested, so a change that exists only in
+  Swift is one they will re-derive from scratch — usually after shipping the
+  same bug once. A change is not finished until:
+  - **`GUI-IMPROVEMENTS.md` has an entry whose "Notes for Windows port"
+    column says something usable** — what to do differently, what is
+    inherited unchanged, or the trap that would pass review. "Shared Python,
+    nothing to mirror" is fine when true; an empty cell never is.
+  - **anything architectural also has a section in
+    [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md)**. A log row records a
+    decision; the handoff explains it well enough to implement.
+  - **guidance the change made WRONG is corrected there too.** Stale advice
+    is worse than none, because it gets followed.
+
+  Say what you measured, not just what you decided — numbers travel, taste
+  does not.
 - **Launchers are snapshots.** Working folders copy the launchers at setup;
   the app refreshes any that differ from its bundled copies whenever it
   works in a folder. If you change a launcher, the fix reaches folders
