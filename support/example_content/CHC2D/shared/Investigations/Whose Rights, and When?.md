@@ -25,7 +25,7 @@ fight, which is not what the record shows.
 | The measure | The date that matters | Whom it reached |
 | --- | --- | --- |
 | Canadian Bill of Rights | Assented 10 August 1960, S.C. 1960, c. 44 | Federal law only; an ordinary statute, and still in force |
-| The federal franchise for status First Nations people | Early 1960s — the NCTR's timeline gives 1961 | Voting at last without surrendering Indian status |
+| The federal franchise for status First Nations people | 1960 — the Commons voted on 10 March to amend the *Canada Elections Act* | Voting at last without surrendering Indian status |
 | Royal Commission on the Status of Women | Reported at the end of the 1960s | Recommendations, not law; the follow-through is a separate question |
 | *Canadian Charter of Rights and Freedoms* | Proclaimed 17 April 1982 | Most of it — but not all |
 | Charter section 15, equality rights | In force 17 April 1985 | Deliberately delayed three years so governments could amend their laws |

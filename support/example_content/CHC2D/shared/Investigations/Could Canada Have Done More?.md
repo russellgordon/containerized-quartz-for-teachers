@@ -11,8 +11,10 @@ Jewish refugees. Cuba refused them. The United States refused them. A
 committee of Canadians petitioned the government to let the ship land here,
 and Canada refused them too. The *St. Louis* returned to Europe. Britain,
 France, Belgium and the Netherlands took the passengers in, and after the
-German invasions many of those who had landed on the continent were murdered
-in the Holocaust. Canada apologized in the House of Commons in 2018.
+German invasions 254 of the 620 who had landed on the continent were
+murdered in the Holocaust — the figure the United States Holocaust Memorial
+Museum's research established. Canada apologized in the House of Commons on
+7 November 2018.
 
 This inquiry asks whether the refusal was a mistake of the moment or the
 policy working exactly as designed.

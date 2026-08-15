@@ -48,6 +48,10 @@ and "units completed" are different numbers with different politics.
 **Non-market builders** — public, non-profit, co-operative and Indigenous
 housing providers — build for households the market will not serve at a
 price they can pay, and how much they build is a public spending decision.
+Where there is barely a private market to serve anyone, they are the whole
+answer: Nunavut's Igluliuqatigiingniq strategy, announced on 18 October
+2022 and usually called Nunavut 3000, commits the territory to 3,000 units
+across the housing continuum by 2030.
 
 **Existing residents** attend the public meeting. The people who would
 live in the new building do not, because they do not live there yet. That

@@ -16,9 +16,10 @@ attached to it included \$21,000 to each surviving individual, a
 \$12 million community fund, pardons for those wrongfully convicted, and
 acknowledgement of citizenship for those wrongfully deported. On
 11 June 2008, Prime Minister Stephen Harper apologised for the
-residential school system. Canada has also apologised for the Chinese
-head tax and for the purge of LGBTQ people from the public service, the
-military, and the RCMP.
+residential school system; he had already apologised in the House on
+22 June 2006 for the Chinese head tax. On 28 November 2017 Prime
+Minister Justin Trudeau apologised for the purge of LGBTQ people from
+the public service, the military, and the RCMP.
 
 ## Prepare
 

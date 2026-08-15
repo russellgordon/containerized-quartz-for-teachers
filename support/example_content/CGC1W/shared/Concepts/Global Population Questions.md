@@ -16,9 +16,13 @@ sometimes as a cause.
 
 The number of people forced from their homes by war and persecution worldwide
 has been above 100 million since 2022, a level the UN refugee agency had never
-recorded before. Most are not in wealthy countries: the large majority are
-hosted by states neighbouring the one they left, often for years, usually with
-fewer resources than Canada has.
+recorded before. UNHCR counted 117.8 million at the end of 2025 — 41.6 million
+refugees, 68.7 million displaced inside their own country, and 9 million
+asylum-seekers waiting on a decision. That was 5.4 million fewer than a year
+earlier, the first fall the agency had recorded in a decade — and it is still
+close to three times the population of Canada. Most are not in wealthy
+countries: the large majority are hosted by states neighbouring the one they
+left, often for years, usually with fewer resources than Canada has.
 
 Canada resettles a small fraction of that total. It is a meaningful fraction by
 the standards of resettlement programs and a tiny one by the standards of the

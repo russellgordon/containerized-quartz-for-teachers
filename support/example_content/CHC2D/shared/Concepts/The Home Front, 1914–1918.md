@@ -46,12 +46,14 @@ change. Prices rose faster than wages, and the resentment built through the
 war years fed directly into the labour unrest of 1919, in which returned
 veterans were prominent on both sides.
 
-The war reached home most literally when a collision in Halifax harbour in
-December 1917 detonated a ship loaded with munitions and flattened much of
+The war reached home most literally when a collision in Halifax harbour on
+6 December 1917 detonated a ship loaded with munitions and flattened much of
 the city's north end. It killed more people than any other single event on
-Canadian soil during the war. The exact toll has never been settled, because
-whole households died at once and the records of who lived there burned with
-the neighbourhood.
+Canadian soil during the war. The Canadian War Museum gives the official
+death toll as 1,963, with another 9,000 injured and 6,000 left homeless;
+Parks Canada says some 2,000 died. The exact toll has never been settled,
+because whole households died at once and the records of who lived there
+burned with the neighbourhood.
 
 Test the wartime laws against [[Continuity and Change]], and take an
 order-in-council apart in [[Reading a Primary Source]].

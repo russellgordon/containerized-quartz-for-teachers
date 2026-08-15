@@ -15,14 +15,20 @@ welfare state was built on that expectation.
 
 ## The programs, and what each one did
 
-| Program | Roughly when | What changed |
+| Program | When | What changed |
 | --- | --- | --- |
 | Unemployment insurance | 1940 | Required amending the Constitution first |
 | Family allowance | 1945 | A monthly payment per child, paid to mothers |
-| Old age security | Early 1950s | A pension by age, not by proving need |
-| Hospital insurance | Later 1950s | Cost-sharing made provincial plans work |
-| Medicare | 1960s | Saskatchewan first, over a doctors' strike |
-| Canada and Quebec plans | Mid-1960s | Contributory — and Quebec ran its own |
+| Old age security | 1951 | A pension by age, not by proving need |
+| Hospital insurance | 1957 | Cost-sharing made provincial plans work |
+| Medicare | 1966 | Saskatchewan first in 1962, over a doctors' strike |
+| Canada and Quebec plans | 1965 | Contributory — and Quebec ran its own |
+
+Those years are the years the federal statutes passed — the *Old Age
+Security Act* of 1951, the *Hospital Insurance and Diagnostic Services Act*
+of 1957, the *Canada Pension Plan* of 1965, the *Medical Care Act* of 1966.
+The money usually began flowing a year or two after the vote, which is worth
+remembering whenever a date is offered as the moment something changed.
 
 Notice the pattern. Almost every one began provincially or required a
 federal-provincial bargain, because health, welfare and education are

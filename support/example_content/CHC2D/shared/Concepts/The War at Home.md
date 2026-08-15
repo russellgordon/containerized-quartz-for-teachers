@@ -32,9 +32,10 @@ description of a politician trying to hold a country together.
 
 ## Japanese Canadians
 
-In 1942 the federal government used the *War Measures Act* to remove more
-than twenty thousand people of Japanese descent from the British Columbia
-coast. The majority were Canadian citizens, most born here. They were sent to
+In 1942 the federal government used the *War Measures Act* to remove people
+of Japanese descent from the British Columbia coast — Parks Canada puts the
+number at 22,000, the Canadian Museum for Human Rights at some 23,000.
+The majority were Canadian citizens, most born here. They were sent to
 camps in the interior, to road work, or to sugar beet farms on the Prairies.
 Their homes, businesses, farms and fishing boats were seized and sold, and
 the proceeds were used to pay the costs of their own detention. After the war

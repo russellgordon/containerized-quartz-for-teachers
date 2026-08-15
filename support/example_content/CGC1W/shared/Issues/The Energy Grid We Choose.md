@@ -15,13 +15,13 @@ add to it next.
 
 ## The situation
 
-In 2025 Ontario's supply was roughly 46 per cent nuclear and 23 per cent
-water power, with natural gas and other sources near 19 per cent and wind
-and solar making up most of the remainder. Those proportions move, and the
-Independent Electricity System Operator publishes current figures — look
-them up rather than quoting this paragraph, and put the year beside
-whatever you find. The mix matters because it decides what a new decision
-costs. Every source has a bill; they differ in who receives it and when.
+In 2025 Ontario's generation was 48 per cent nuclear and 23 per cent water
+power, with natural gas and oil near 19 per cent and wind making up most of
+the remainder. Those proportions move, and the Independent Electricity
+System Operator publishes current figures — look them up rather than
+quoting this paragraph, and put the year beside whatever you find. The mix
+matters because it decides what a new decision costs. Every source has a
+bill; they differ in who receives it and when.
 
 ## What each choice actually costs
 

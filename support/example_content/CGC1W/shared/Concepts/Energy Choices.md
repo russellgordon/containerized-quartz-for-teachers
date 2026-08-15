@@ -15,10 +15,10 @@ Edmonton.
 
 Electricity is provincial. Quebec, British Columbia, Manitoba, and Newfoundland
 and Labrador built on big rivers and run overwhelmingly on hydroelectricity.
-Ontario built nuclear: in 2025 its supply was about 46 per cent nuclear and 23
-per cent water power, with natural gas and other sources near 19 per cent and
-wind and solar most of the rest. Alberta and Saskatchewan built on the fossil
-fuels beneath them.
+Ontario built nuclear: the Independent Electricity System Operator puts its
+2025 generation at 48 per cent nuclear and 23 per cent water power, with
+natural gas and oil near 19 per cent and wind most of the rest. Alberta and
+Saskatchewan built on the fossil fuels beneath them.
 
 None of those were moral choices. They were geography and timing. Which means
 the transition ahead of each province is a different job, and comparing

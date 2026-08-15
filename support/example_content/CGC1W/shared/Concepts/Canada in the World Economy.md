@@ -10,6 +10,8 @@ Canada is a wealthy country with a small population and an enormous
 resource endowment. That combination produces an economy that is **open**
 — a large share of what we make is sold abroad — and **concentrated**,
 because for decades the great majority of it has gone to one customer.
+Statistics Canada put the United States' share of Canadian merchandise
+exports at 71.7 per cent in 2025, down from 75.9 per cent in 2024.
 
 We export what our geology and climate gave us and what our factories
 assemble: crude oil, natural gas, minerals and metals, potash, uranium,

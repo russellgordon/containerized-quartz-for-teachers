@@ -18,8 +18,10 @@ The war economy shut down, soldiers came home looking for work, and prices
 that had climbed through the war stayed high. Labour unrest peaked with the
 Winnipeg General Strike in 1919, when tens of thousands walked out, the
 federal government amended the Criminal Code to reach "unlawful
-associations," and strike leaders were arrested. Recovery did not arrive
-until the middle of the decade.
+associations," and strike leaders were arrested. On 21 June — Bloody
+Saturday — the Royal North-West Mounted Police charged the crowd and
+fired, killing two strikers and injuring many more. Recovery did not
+arrive until the middle of the decade.
 
 | Region or group | The 1920s |
 | --- | --- |

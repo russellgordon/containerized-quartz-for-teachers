@@ -48,6 +48,11 @@ heavy water, which is why it was adopted by countries without enrichment
 facilities. Small modular reactors — smaller units meant to be built in
 a factory and added one at a time — are being pursued partly because they
 could serve communities too small or too remote for a conventional plant.
+The first one in Canada is under construction now: the Canadian Nuclear
+Safety Commission licensed Ontario Power Generation in April 2025 to build a
+300-megawatt BWRX-300 at Darlington, cleared the reactor building foundation
+in March 2026, and has an application from OPG, filed the same month, for a
+licence to operate it.
 
 Judge each of these the same way: what does it change about the
 extraction, and what does it not change about the transport?

@@ -53,10 +53,11 @@ suspend when it is frightened.
 
 The Parti Québécois formed the government in 1976 and legislated the Charter
 of the French Language, making French the language of work, commerce and
-schooling. In 1980 it put sovereignty-association to a referendum. The
-proposal was defeated by roughly sixty per cent to forty — and the federalist
-campaign had promised constitutional renewal in exchange. What Quebec got two
-years later is the subject of the next unit. First Nations and Inuit in
+schooling. On 20 May 1980 it put sovereignty-association to a referendum.
+Élections Québec records the result as 59.56 per cent No to 40.44 per cent
+Yes, on a turnout of 85.61 per cent — and the federalist campaign had
+promised constitutional renewal in exchange. What Quebec got two years later
+is the subject of the next unit. First Nations and Inuit in
 Quebec were not neutral in any of this and did not line up behind either
 side: their own territorial and treaty claims cut across the argument
 entirely.

@@ -25,7 +25,12 @@ world and had supported communities for centuries. Improved technology
 allowed a catch far above the rate at which the fish replaced themselves.
 In 1992 Canada closed the fishery, and tens of thousands of people in
 Newfoundland and Labrador lost their work in a single announcement. The
-stock has not returned to anything like what it was.
+stock has not returned to anything like what it was. Fisheries and Oceans
+Canada ended the moratorium in June 2024 with a commercial catch limit of
+18,000 tonnes, raised it to 38,000 tonnes for 2025–26 and to 59,000 tonnes
+for 2026–27 — while its own assessment placed the stock in the cautious zone
+of its precautionary approach, not the healthy one. A fishery reopening and
+a stock recovering are not the same thing.
 
 Nothing about cod changed. What changed was the ratio between how fast we
 took it and how fast it came back. That ratio is the only thing the word

@@ -31,8 +31,8 @@ the same property qualifications men faced.
 
 The provinces moved on their own schedules, starting on the Prairies in 1916
 and ending, decades later, with Quebec in 1940. Holding office was a separate
-fight: the Judicial Committee of the Privy Council in London had to rule, in
-1929, that women were "persons" eligible for the Senate.
+fight: the Judicial Committee of the Privy Council in London had to rule, on
+18 October 1929, that women were "persons" eligible for the Senate.
 
 > [!success]- Who still could not vote federally after 1918 (click to expand)
 > Elections Canada's own history is blunt. Racial disqualifications stayed in
