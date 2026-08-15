@@ -52,6 +52,14 @@ Fetch it once before building; `xcodegen` copies it into the bundle:
 Without it the app still builds and runs; the assistant reports that its
 engine is missing rather than failing in some less obvious way.
 
+## Iterating on this app
+
+There is a skill for it: `.claude/skills/mac-app/SKILL.md`. It covers building
+so the app can be run on this Mac, when a clean build is actually required
+(folder-reference resources like `Vendor/llama` do not notice content
+changes), and — the part that saves the most time — when a change needs a NEW
+COURSE or a NEW WORKING FOLDER to be visible, rather than just a rebuild.
+
 ## Testing
 
 Three layers, matching how much environment each needs:
