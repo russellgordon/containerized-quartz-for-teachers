@@ -14,11 +14,18 @@ final class AssistToolRunnerTests: XCTestCase {
 
     // MARK: - The surface
 
-    /// The exact fifteen. Narrowed from the Windows server's full surface,
-    /// which is far larger: a small local model routes worse the more it is
-    /// shown, and the fifteen are the ones a teacher actually asks for.
+    /// The exact twenty. Narrowed from the Windows server's full surface, which
+    /// is far larger: a small local model routes worse the more it is shown,
+    /// and these are the ones a teacher actually asks for.
+    ///
+    /// **The count is a measurement, and it has moved.** Routing accuracy was
+    /// counted against FIFTEEN tools. Five have been added since — reading and
+    /// recording a section's timetable, and the page for the next class — and
+    /// each was a deliberate decision to spend some of that number. Anyone
+    /// changing this figure again should say so out loud, and the accuracy is
+    /// worth re-measuring rather than assumed to have survived.
     @MainActor
-    func testTheSurfaceIsExactlyTheFifteenNarrowedTools() {
+    func testTheSurfaceIsExactlyTheTwentyNarrowedTools() {
         let expected: Set<String> = [
             "list_pages", "read_page", "check_section",
             "plan_publish_class_on", "publish_class_on",
@@ -26,6 +33,8 @@ final class AssistToolRunnerTests: XCTestCase {
             "plan_unpublish_pages", "unpublish_pages",
             "rebuild_preview", "undo_last_change",
             "deploy_section", "plan_scheduled_deploy", "schedule_deploy", "cancel_scheduled_deploy",
+            "read_remembered_timetable", "plan_remember_timetable", "remember_timetable",
+            "plan_add_next_class", "add_next_class",
         ]
 
         var names: Set<String> = []
@@ -33,7 +42,7 @@ final class AssistToolRunnerTests: XCTestCase {
             names.insert(tool.name)
         }
         XCTAssertEqual(names, expected)
-        XCTAssertEqual(AssistToolRunner.tools.count, 15, "A tool is defined twice.")
+        XCTAssertEqual(AssistToolRunner.tools.count, 20, "A tool is defined twice.")
     }
 
     /// Every tool the model may name can be found again by name — the gate
@@ -280,6 +289,8 @@ final class AssistToolRunnerTests: XCTestCase {
             "undo_last_change": "TEACHERS SAY: \"undo that\"",
             "deploy_section": "TEACHERS SAY: \"deploy the site\"",
             "check_section": "TEACHERS SAY: \"what do students see right now?\"",
+            "add_next_class": "TEACHERS SAY: \"add an entry for the next class\"",
+            "read_remembered_timetable": "TEACHERS SAY: \"when does this class meet?\"",
         ]
         for (name, phrasing) in mustSay {
             let definition: AssistToolDefinition = try XCTUnwrap(tool(named: name))

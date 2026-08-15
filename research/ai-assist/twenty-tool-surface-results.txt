@@ -1,0 +1,527 @@
+# The 20-TOOL surface, measured. TEN trials, 2026-08-15.
+# Apple M4 Pro (48 GB), macOS 26.6, llama.cpp b10435, Metal, native.
+# llama-server --ctx-size 16384 --threads 6 --n-gpu-layers 999 --jinja
+#              --parallel 1 --reasoning off --reasoning-budget 0
+# Probes: the 29 probes of research/ai-assist/trimmed-surface-suite.py, verbatim,
+#         SHIPPED configuration (--date-appended --real-course), 29 x 10 = 290,
+#         plus 13 NEW-TOOL probes x 10 = 130 reported separately.
+# "Tomorrow" is 2026-08-16, as in macos-native-10-trial-comparison.txt.
+#
+# WHY THIS RUN EXISTS
+# -------------------
+# The shipped figures (macos-native-10-trial-comparison.txt) were measured on a
+# 15-tool surface. Five tools have since been added — read_remembered_timetable,
+# plan_remember_timetable, remember_timetable, plan_add_next_class,
+# add_next_class. More tools to choose between is the classic way a router
+# degrades, so it was re-measured rather than assumed.
+#
+# --reasoning-budget 0 IS NOT ENOUGH ON ITS OWN (b10435)
+# ------------------------------------------------------
+# Started with --reasoning-budget 0 alone, Qwen3-4B still thinks: 256/256
+# completion tokens of chain-of-thought in message.content, no tool call,
+# ~4.1 s a turn — the 39% failure mode. --reasoning off is the flag that
+# actually suppresses it; --reasoning-budget 0 is kept alongside it as a belt.
+# Every number below was measured with BOTH flags.
+#
+# ***  AND THE SHIPPING APP IS AFFECTED, RIGHT NOW  ***
+# AssistServerHost.swift:152 passes "--reasoning-budget", "0" and nothing else,
+# and AssistModelTierTests.swift:125 asserts that flag is the one that turns
+# thinking off ("starts without --reasoning-budget; thinking would be on").
+# The app's own llama-server was running during this session (pid 3765, port
+# 64620, build b10435-9e40df63b, qwen3-4b-q4_k_m.gguf). One probe sent to it:
+#
+#   "Publish Unit 2, Day 3, and everything it links to (Today is ...)"
+#   -> 13.0 s, completion_tokens 256, tool_calls [], content begins
+#      "Okay, the user wants to publish ... Let me check the available functions."
+#
+# That is chain-of-thought filling the whole budget and no tool call — the same
+# failure the 39% row in macos-native-10-trial-comparison.txt describes. The
+# 97%/100% figures in this file are NOT what the app currently gets. Adding
+# "--reasoning", "off" to that argument list (and to the test's assertion) is
+# the fix; it is a one-line change and it is worth more than everything else
+# measured here. NOT made here — mac-app/ was out of scope for this run.
+#
+# THREE SURFACES, NOT TWO — because the dumps differ by more than five tools
+# --------------------------------------------------------------------------
+# Diffing the two real dumps: 5 tools added AND 7 of the shared 15 changed
+# shape. `pages` went from an array of strings to one semicolon-separated
+# string on publish_pages / unpublish_pages / plan_*; the `preview` boolean was
+# dropped from publish_class_on / publish_pages / unpublish_pages;
+# includeLinked gained "Choose deliberately; there is no default."
+#
+# So "old dump vs new dump" cannot tell tool COUNT from schema CHANGE. A third
+# surface was built to separate them — the new dump with the five new tools
+# deleted and nothing else touched:
+#
+#   A  tools-local.json               15 tools, OLD schemas      ~3,419 tok
+#   B  tools-local-20-minus-new.json  15 tools, CURRENT schemas  ~3,387 tok
+#   C  tools-local-20.json            20 tools, CURRENT schemas  ~4,475 tok
+#
+#   growth cost = C - B.   total change since the shipped figures = C - A.
+# (Token counts are what llama-server reports for a real request, not an
+# estimate. The five new tools cost ~1,088 prompt tokens, +32%.)
+#
+# HEADLINE
+# --------
+#                                      all 290    Windows' 180   INVERSIONS  malformed  cold read        warm turn
+#   Qwen3-4B     A  old 15             280 (97%)   180 (100%)         0          0      5.84 s / 3419 tok  0.75 s
+#   Qwen3-4B     B  current 15         270 (93%)   160 ( 89%)         0          0      5.78 s / 3387 tok  0.76 s
+#   Qwen3-4B     C  SHIPPING 20        270 (93%)   160 ( 89%)         0          0      8.00 s / 4475 tok  0.77 s
+#   Qwen2.5-1.5B A  old 15             208 (72%)   147 ( 82%)         0          0      2.18 s / 3417 tok  0.32 s
+#   Qwen2.5-1.5B B  current 15         200 (69%)   120 ( 67%)         0          0      2.03 s / 3385 tok  0.36 s
+#   Qwen2.5-1.5B C  SHIPPING 20        189 (65%)   120 ( 67%)         0          0      2.79 s / 4473 tok  0.37 s
+#
+#   NEW-TOOL probes (surface C only, 13 probes x 10):
+#   Qwen3-4B     130/130 (100%)      Qwen2.5-1.5B  121/130 (93%)
+#
+#   INVERSIONS counts every polarity probe answered with a publish verb,
+#   including the plan_ ones and including the two probes the suite's own
+#   `probe.startswith("hide")` test misses. ZERO across all 1,420 responses
+#   measured here. The hard requirement is met on both tiers.
+#
+#   Surface A reproduces the shipped Qwen3-4B figure exactly (280/290,
+#   180/180, 5.84 s cold read), so the harness is faithful and the other
+#   numbers are comparable. The 1.5B reproduces to within run-to-run noise
+#   (208/290 here vs 203/290 recorded; temperature is 0.1, not 0).
+#
+# ANSWER: THE FIVE NEW TOOLS COST NOTHING MEASURABLE. THE SCHEMA CHANGE DID.
+# --------------------------------------------------------------------------
+#   Qwen3-4B  B -> C: 270/290 and 160/180 on BOTH. Identical, probe for probe.
+#             Twenty tools route exactly as well as fifteen of the same tools.
+#             A -> B is where the four points went: the array-to-string and
+#             preview-removal rewrite, with no new tool involved.
+#
+#   Qwen2.5-1.5B  B -> C: Windows-comparable is 120/180 on BOTH — again
+#             unchanged by the five tools. All-290 moves 200 -> 189, and that
+#             is churn on the promise-card probes in both directions, not a
+#             one-way slide: "card: deploy now" 10/10 -> 0/10 (declines), while
+#             "HIDE - the inversion case" goes 1/10 -> 10/10. This model is
+#             visibly unstable on this surface at either size.
+#
+#   So the growth did NOT cost routing accuracy. What it cost is prompt: +1,088
+#   tokens, and the cold read that follows from it — Qwen3-4B 5.84 s -> 8.00 s
+#   (+37%), Qwen2.5-1.5B 2.18 s -> 2.79 s (+28%). Warm turns are unchanged
+#   (0.75 -> 0.77 s and 0.32 -> 0.37 s), so this is a once-per-session cost.
+#
+# THE NEW TOOLS ROUTE, AND THE NAMING CONFUSION DID NOT APPEAR
+# ------------------------------------------------------------
+#   Qwen3-4B is 130/130 on the new probes — every add_next_class phrasing
+#   (including two written not to copy its TEACHERS SAY line, and one worded to
+#   bait the dated publish tool: "We meet again on Thursday - add that class"),
+#   every read_remembered_timetable phrasing, both remember_timetable ones, and
+#   the plan_-only probe. Qwen2.5-1.5B is 121/130.
+#
+#   The confusion to watch for — add_next_class mistaken for the
+#   publish-a-class-on-a-date tool — appeared ONCE in 260 new-probe responses
+#   (1.5B, one trial of "the class after this one" -> plan_publish_class_on).
+#   That is not a naming problem. The names and TEACHERS SAY lines are working.
+#
+#   The 1.5B's only real new-tool weakness is "Remind me which days I see this
+#   class" — declined 8/10 rather than reaching read_remembered_timetable. The
+#   other three timetable phrasings are 10/10, so this is a recall wobble in a
+#   small model, not a description gap.
+#
+# THE ONE THING WORTH FIXING — AND IT IS NOT A NEW TOOL
+# -----------------------------------------------------
+#   On BOTH current surfaces (B and C), Qwen3-4B answers
+#     "Publish tomorrow's class, and everything it links to."   (no course named)
+#   and its typo'd twin with:
+#     publish_pages {course, section:1, includeLinked:true, onOrAfter:"2026-08-16"}
+#   10/10 each — no `pages`, no `before`. That publishes EVERY class from
+#   tomorrow onward, not tomorrow's. On surface A the same sentence chose
+#   publish_class_on 10/10 with date=2026-08-16.
+#
+#   The cause is visible in the diff: publish_class_on lost nothing relevant,
+#   but it never had an includeLinked knob, and the rewrite made publish_pages
+#   the only tool that visibly offers "everything it links to". When the
+#   teacher says that phrase without naming a course, the model follows the
+#   knob. Note the longer probe that DOES name the course
+#   ("...and make sure every page it links to is published") still routes to
+#   publish_class_on 10/10, so this is narrow — but it is an over-publish, and
+#   over-publishing is the failure class this surface exists to prevent.
+#
+#   Suggested fix, in publish_class_on's description only: add the phrase to
+#   its TEACHERS SAY list — "publish tomorrow's class and everything it links
+#   to" — and state plainly that it already publishes linked pages so no
+#   includeLinked is needed. No new tool, no schema change.
+#
+#   Set against that, the rewrite BOUGHT something: "card: plan a publish"
+#   ("What would publishing Unit 3, Day 1 change?") went 0/10 -> 10/10 on the
+#   4B, taking the promise card to a clean 110/110. That probe was the 4B's
+#   only standing miss in the shipped figures.
+#
+# VERDICT
+# -------
+#   Qwen3-4B (>=16 GB tier)  — SAFE TO SHIP on 20 tools. Zero inversions, zero
+#   malformed calls, zero type coercions, zero fabricated dates, 100% on the
+#   new tools, a perfect promise card, and routing identical to the same 15
+#   tools. Pay the 8 s cold read once; fix the publish_pages over-publish in a
+#   description.
+#
+#   Qwen2.5-1.5B (<16 GB tier) — no worse on 20 tools than on 15 by the
+#   like-for-like measure (120/180 either way), and still zero inversions. But
+#   it is a weaker router than the recorded 79% suggests once the current
+#   schemas are in play (82% -> 67% from surface A to B), it declines "Deploy
+#   this section now" 10/10, and it answers "Push this section live" with
+#   publish_class_on 10/10. Shippable only because it never inverts polarity;
+#   worth revisiting whether the under-16 GB tier should be Qwen3-1.7B with
+#   reasoning off instead, which was not re-measured here.
+#
+# The suite, the three surfaces, and every raw response are in the session
+# scratchpad (routing20/*.jsonl). Nothing in mac-app/ was touched.
+
+== Qwen3-4B - surface A: the OLD 15 tools (tools-local.json, 3,419 tok) ==
+all probes:            280/290 (97%)
+Windows-comparable 18: 180/180 (100%)
+promise-card 11:       100/110 (91%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 0
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 20
+prompt tokens reported by server: [3407, 3409, 3411, 3414, 3415, 3416, 3417, 3418, 3419, 3420, 3424, 3425, 3426, 3427, 3428, 3430, 3431, 3435]
+cold prompt read: 5.84 s / 3419 tok (585 tok/s)
+warm turn median: 0.75 s   (mean 0.75 s, max 1.44 s)
+total probe responses parsed: 290
+
+probe                              score  tools chosen over trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name              10/10  10x publish_pages
+card: publish tomorrow             10/10  9x plan_publish_class_on, 1x publish_class_on
+card: unpublish by name            10/10  10x unpublish_pages
+card: unpublish, mistake           10/10  10x unpublish_pages
+card: plan a publish               0/10   10x plan_publish_class_on  [MISS]
+card: check the section            10/10  10x check_section
+card: rebuild preview              10/10  10x rebuild_preview
+card: undo                         10/10  10x undo_last_change
+card: deploy now                   10/10  10x deploy_section
+card: schedule a deploy            10/10  10x schedule_deploy
+card: cancel the deploy            10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links       10/10  10x publish_class_on
+publish by name, informal          10/10  10x publish_pages
+HIDE - the inversion case          10/10  10x unpublish_pages
+hide, informal (verbatim cue)      10/10  10x unpublish_pages
+hide, phrased as a mistake         10/10  10x unpublish_pages
+list pages                         10/10  10x list_pages
+read                               10/10  10x read_page
+check section                      10/10  10x check_section
+rebuild preview                    10/10  10x rebuild_preview
+undo                               10/10  10x undo_last_change
+schedule a deploy                  10/10  10x schedule_deploy
+deploy now                         10/10  10x deploy_section
+cancel scheduled deploy            10/10  10x cancel_scheduled_deploy
+no course named: publish           10/10  10x publish_class_on
+no course named: hide              10/10  10x unpublish_pages
+deletion - no such tool            10/10  10x (declined)
+out of scope                       10/10  10x (declined)
+typos                              10/10  10x publish_class_on
+
+== Qwen3-4B - surface B: the CURRENT 15 tools (5 new removed, 3,387 tok) ==
+all probes:            270/290 (93%)
+Windows-comparable 18: 160/180 (89%)
+promise-card 11:       110/110 (100%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 20
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 20
+prompt tokens reported by server: [3375, 3377, 3379, 3382, 3383, 3384, 3385, 3386, 3387, 3388, 3392, 3393, 3394, 3395, 3396, 3398, 3399, 3403]
+cold prompt read: 5.78 s / 3387 tok (586 tok/s)
+warm turn median: 0.76 s   (mean 0.67 s, max 1.03 s)
+total probe responses parsed: 290
+
+probe                              score  tools chosen over trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name              10/10  10x publish_pages
+card: publish tomorrow             10/10  10x publish_class_on
+card: unpublish by name            10/10  10x unpublish_pages
+card: unpublish, mistake           10/10  10x unpublish_pages
+card: plan a publish               10/10  10x plan_publish_pages
+card: check the section            10/10  10x check_section
+card: rebuild preview              10/10  10x rebuild_preview
+card: undo                         10/10  10x undo_last_change
+card: deploy now                   10/10  10x deploy_section
+card: schedule a deploy            10/10  10x schedule_deploy
+card: cancel the deploy            10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links       10/10  10x publish_class_on
+publish by name, informal          10/10  10x publish_pages
+HIDE - the inversion case          10/10  10x plan_unpublish_pages
+hide, informal (verbatim cue)      10/10  10x unpublish_pages
+hide, phrased as a mistake         10/10  10x unpublish_pages
+list pages                         10/10  10x list_pages
+read                               10/10  10x read_page
+check section                      10/10  10x check_section
+rebuild preview                    10/10  10x rebuild_preview
+undo                               10/10  10x undo_last_change
+schedule a deploy                  10/10  10x schedule_deploy
+deploy now                         10/10  10x deploy_section
+cancel scheduled deploy            10/10  10x cancel_scheduled_deploy
+no course named: publish           0/10   10x publish_pages  [MISS]
+no course named: hide              10/10  10x unpublish_pages
+deletion - no such tool            10/10  10x (declined)
+out of scope                       10/10  10x (declined)
+typos                              0/10   10x publish_pages  [MISS]
+
+== Qwen3-4B - surface C: the SHIPPING 20 tools (4,475 tok), like-for-like probes ==
+all probes:            270/290 (93%)
+Windows-comparable 18: 160/180 (89%)
+promise-card 11:       110/110 (100%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 20
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 20
+prompt tokens reported by server: [4463, 4465, 4467, 4470, 4471, 4472, 4473, 4474, 4475, 4476, 4480, 4481, 4482, 4483, 4484, 4486, 4487, 4491]
+cold prompt read: 8.00 s / 4475 tok (560 tok/s)
+warm turn median: 0.77 s   (mean 0.69 s, max 1.06 s)
+total probe responses parsed: 290
+
+probe                              score  tools chosen over trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name              10/10  10x publish_pages
+card: publish tomorrow             10/10  10x publish_class_on
+card: unpublish by name            10/10  10x unpublish_pages
+card: unpublish, mistake           10/10  10x unpublish_pages
+card: plan a publish               10/10  10x plan_publish_pages
+card: check the section            10/10  10x check_section
+card: rebuild preview              10/10  10x rebuild_preview
+card: undo                         10/10  10x undo_last_change
+card: deploy now                   10/10  10x deploy_section
+card: schedule a deploy            10/10  10x schedule_deploy
+card: cancel the deploy            10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links       10/10  10x publish_class_on
+publish by name, informal          10/10  10x publish_pages
+HIDE - the inversion case          10/10  10x unpublish_pages
+hide, informal (verbatim cue)      10/10  10x unpublish_pages
+hide, phrased as a mistake         10/10  10x unpublish_pages
+list pages                         10/10  10x list_pages
+read                               10/10  10x read_page
+check section                      10/10  10x check_section
+rebuild preview                    10/10  10x rebuild_preview
+undo                               10/10  10x undo_last_change
+schedule a deploy                  10/10  10x schedule_deploy
+deploy now                         10/10  10x deploy_section
+cancel scheduled deploy            10/10  10x cancel_scheduled_deploy
+no course named: publish           0/10   10x publish_pages  [MISS]
+no course named: hide              10/10  10x unpublish_pages
+deletion - no such tool            10/10  10x (declined)
+out of scope                       10/10  10x (declined)
+typos                              0/10   10x publish_pages  [MISS]
+
+== Qwen3-4B - NEW-TOOL probes, surface C only ==
+all probes:            130/130 (100%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 0
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 0
+prompt tokens reported by server: [4465, 4466, 4467, 4468, 4469, 4471, 4477, 4507, 4513]
+warm turn median: 0.56 s   (mean 0.68 s, max 1.57 s)
+total probe responses parsed: 130
+
+probe                              score  tools chosen over trials
+--------------------------------------------------------------------------------------------------------------
+new: add an entry (verbatim)       10/10  10x plan_add_next_class
+new: add tomorrow's page           10/10  10x add_next_class
+new: start the next class          10/10  10x add_next_class
+new: next lesson page (mine)       10/10  10x add_next_class
+new: class after this one (mine)   10/10  10x plan_add_next_class
+new: when does it meet (verbatim)  10/10  10x read_remembered_timetable
+new: what dates (verbatim)         10/10  10x read_remembered_timetable
+new: which days (mine)             10/10  10x read_remembered_timetable
+new: schedule on file (mine)       10/10  10x read_remembered_timetable
+new: remember dates (mine)         10/10  10x remember_timetable
+new: remember w/ source (mine)     10/10  10x remember_timetable
+new: add class, dated wording      10/10  10x add_next_class
+new: plan only                     10/10  10x plan_add_next_class
+
+== Qwen2.5-1.5B - surface A: the OLD 15 tools (3,417 tok) ==
+all probes:            208/290 (72%)
+Windows-comparable 18: 147/180 (82%)
+promise-card 11:       61/110 (55%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 39
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 1
+    typos -> date='2026-09-09'
+declined responses: 37
+prompt tokens reported by server: [3405, 3407, 3409, 3412, 3413, 3414, 3415, 3416, 3417, 3418, 3422, 3423, 3424, 3425, 3426, 3428, 3429, 3433]
+cold prompt read: 2.18 s / 3417 tok (1569 tok/s)
+warm turn median: 0.32 s   (mean 0.35 s, max 0.69 s)
+total probe responses parsed: 290
+
+probe                              score  tools chosen over trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name              1/10   9x publish_class_on, 1x plan_publish_pages  [MISS]
+card: publish tomorrow             10/10  7x publish_class_on, 3x plan_publish_class_on
+card: unpublish by name            10/10  10x unpublish_pages
+card: unpublish, mistake           10/10  10x unpublish_pages
+card: plan a publish               0/10   10x plan_publish_class_on  [MISS]
+card: check the section            10/10  10x check_section
+card: rebuild preview              10/10  10x rebuild_preview
+card: undo                         0/10   10x (declined)  [MISS]
+card: deploy now                   0/10   10x (declined)  [MISS]
+card: schedule a deploy            0/10   10x deploy_section  [MISS]
+card: cancel the deploy            10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links       10/10  10x publish_class_on
+publish by name, informal          0/10   10x publish_class_on  [MISS]
+HIDE - the inversion case          10/10  10x unpublish_pages
+hide, informal (verbatim cue)      10/10  10x unpublish_pages
+hide, phrased as a mistake         10/10  10x unpublish_pages
+list pages                         10/10  10x list_pages
+read                               0/10   6x plan_publish_pages, 4x check_section  [MISS]
+check section                      10/10  10x check_section
+rebuild preview                    10/10  10x rebuild_preview
+undo                               10/10  10x undo_last_change
+schedule a deploy                  0/10   10x deploy_section  [MISS]
+deploy now                         10/10  10x deploy_section
+cancel scheduled deploy            10/10  10x cancel_scheduled_deploy
+no course named: publish           10/10  10x publish_class_on
+no course named: hide              10/10  10x unpublish_pages
+deletion - no such tool            7/10   7x (declined), 3x plan_unpublish_pages  [MISS]
+out of scope                       10/10  10x (declined)
+typos                              10/10  10x publish_class_on
+
+== Qwen2.5-1.5B - surface B: the CURRENT 15 tools (3,385 tok) ==
+all probes:            200/290 (69%)
+Windows-comparable 18: 120/180 (67%)
+promise-card 11:       80/110 (73%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 51
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 29
+prompt tokens reported by server: [3373, 3375, 3377, 3380, 3381, 3382, 3383, 3384, 3385, 3386, 3390, 3391, 3392, 3393, 3394, 3396, 3397, 3401]
+cold prompt read: 2.03 s / 3385 tok (1667 tok/s)
+warm turn median: 0.36 s   (mean 0.39 s, max 1.93 s)
+total probe responses parsed: 290
+
+probe                              score  tools chosen over trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name              0/10   10x publish_class_on  [MISS]
+card: publish tomorrow             10/10  10x plan_publish_class_on
+card: unpublish by name            10/10  10x plan_unpublish_pages
+card: unpublish, mistake           10/10  10x unpublish_pages
+card: plan a publish               10/10  10x plan_publish_pages
+card: check the section            10/10  10x check_section
+card: rebuild preview              10/10  10x rebuild_preview
+card: undo                         0/10   10x (declined)  [MISS]
+card: deploy now                   10/10  10x deploy_section
+card: schedule a deploy            0/10   10x deploy_section  [MISS]
+card: cancel the deploy            10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links       10/10  10x publish_class_on
+publish by name, informal          0/10   10x publish_class_on  [MISS]
+HIDE - the inversion case          1/10   9x (declined), 1x plan_unpublish_pages  [MISS]
+hide, informal (verbatim cue)      10/10  10x plan_unpublish_pages
+hide, phrased as a mistake         9/10   9x unpublish_pages, 1x undo_last_change  [MISS]
+list pages                         10/10  10x list_pages
+read                               0/10   10x check_section  [MISS]
+check section                      10/10  10x check_section
+rebuild preview                    10/10  10x rebuild_preview
+undo                               10/10  10x undo_last_change
+schedule a deploy                  0/10   10x deploy_section  [MISS]
+deploy now                         0/10   10x publish_class_on  [MISS]
+cancel scheduled deploy            10/10  10x cancel_scheduled_deploy
+no course named: publish           10/10  10x publish_class_on
+no course named: hide              10/10  10x plan_unpublish_pages
+deletion - no such tool            0/10   10x plan_unpublish_pages  [MISS]
+out of scope                       10/10  10x (declined)
+typos                              10/10  10x publish_class_on
+
+== Qwen2.5-1.5B - surface C: the SHIPPING 20 tools (4,473 tok), like-for-like probes ==
+all probes:            189/290 (65%)
+Windows-comparable 18: 120/180 (67%)
+promise-card 11:       69/110 (63%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 60
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 30
+prompt tokens reported by server: [4461, 4463, 4465, 4468, 4469, 4470, 4471, 4472, 4473, 4474, 4478, 4479, 4480, 4481, 4482, 4484, 4485, 4489]
+cold prompt read: 2.79 s / 4473 tok (1605 tok/s)
+warm turn median: 0.37 s   (mean 0.35 s, max 0.62 s)
+total probe responses parsed: 290
+
+probe                              score  tools chosen over trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name              0/10   10x publish_class_on  [MISS]
+card: publish tomorrow             10/10  9x publish_class_on, 1x plan_publish_class_on
+card: unpublish by name            10/10  10x plan_unpublish_pages
+card: unpublish, mistake           10/10  10x unpublish_pages
+card: plan a publish               9/10   9x plan_publish_pages, 1x plan_publish_class_on  [MISS]
+card: check the section            10/10  10x check_section
+card: rebuild preview              10/10  10x rebuild_preview
+card: undo                         0/10   10x (declined)  [MISS]
+card: deploy now                   0/10   10x (declined)  [MISS]
+card: schedule a deploy            0/10   10x deploy_section  [MISS]
+card: cancel the deploy            10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links       10/10  10x publish_class_on
+publish by name, informal          0/10   10x publish_class_on  [MISS]
+HIDE - the inversion case          10/10  10x plan_unpublish_pages
+hide, informal (verbatim cue)      10/10  10x plan_unpublish_pages
+hide, phrased as a mistake         0/10   10x undo_last_change  [MISS]
+list pages                         10/10  10x list_pages
+read                               0/10   9x check_section, 1x plan_publish_pages  [MISS]
+check section                      10/10  10x check_section
+rebuild preview                    10/10  10x rebuild_preview
+undo                               10/10  10x undo_last_change
+schedule a deploy                  0/10   10x deploy_section  [MISS]
+deploy now                         0/10   10x publish_class_on  [MISS]
+cancel scheduled deploy            10/10  10x cancel_scheduled_deploy
+no course named: publish           10/10  10x publish_class_on
+no course named: hide              10/10  10x plan_unpublish_pages
+deletion - no such tool            0/10   10x plan_unpublish_pages  [MISS]
+out of scope                       10/10  10x (declined)
+typos                              10/10  10x publish_class_on
+
+== Qwen2.5-1.5B - NEW-TOOL probes, surface C only ==
+all probes:            121/130 (93%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 0
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 8
+prompt tokens reported by server: [4463, 4464, 4465, 4466, 4467, 4469, 4475, 4505, 4511]
+warm turn median: 0.30 s   (mean 0.36 s, max 0.74 s)
+total probe responses parsed: 130
+
+probe                              score  tools chosen over trials
+--------------------------------------------------------------------------------------------------------------
+new: add an entry (verbatim)       10/10  10x add_next_class
+new: add tomorrow's page           10/10  10x add_next_class
+new: start the next class          10/10  10x add_next_class
+new: next lesson page (mine)       10/10  10x add_next_class
+new: class after this one (mine)   9/10   6x plan_add_next_class, 3x add_next_class, 1x plan_publish_class_on  [MISS]
+new: when does it meet (verbatim)  10/10  10x read_remembered_timetable
+new: what dates (verbatim)         10/10  10x read_remembered_timetable
+new: which days (mine)             2/10   8x (declined), 2x read_remembered_timetable  [MISS]
+new: schedule on file (mine)       10/10  10x read_remembered_timetable
+new: remember dates (mine)         10/10  10x remember_timetable
+new: remember w/ source (mine)     10/10  10x plan_remember_timetable
+new: add class, dated wording      10/10  10x add_next_class
+new: plan only                     10/10  10x plan_add_next_class
+

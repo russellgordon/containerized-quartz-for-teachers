@@ -18,6 +18,22 @@ struct AssistPublishChange {
     let becauseLinked: Bool
 }
 
+/// One page an unpublish reached by following a link and deliberately left
+/// alone, and the reason it was left.
+///
+/// Said out loud in the plan, because "which pages did it NOT take down" is
+/// exactly what a teacher wants to know: a concept page another class still
+/// links to has to stay, or that other class is left pointing at nothing.
+struct AssistPublishKept {
+
+    // MARK: - Stored properties
+
+    let page: AssistSectionPage
+
+    /// The clause that finishes "“Ohm's Law” stays: …".
+    let reason: String
+}
+
 /// One page whose date would move onto the class's day.
 struct AssistPublishDateMove {
 
@@ -53,6 +69,11 @@ struct AssistPublishPlan {
 
     /// Pages already the way they were asked to be.
     let alreadyRight: [AssistSectionPage]
+
+    /// Pages an unpublish reached by following a link and left published, each
+    /// with the reason. Always empty when publishing: publishing a page
+    /// publishes everything it links to, with nothing held back.
+    let kept: [AssistPublishKept]
 
     let dateMoves: [AssistPublishDateMove]
 
@@ -96,6 +117,24 @@ struct AssistPublishPlan {
         if !alreadyRight.isEmpty {
             let word: String = alreadyRight.count == 1 ? "page is" : "pages are"
             lines.append("\(alreadyRight.count) \(word) already \(publishes ? "visible" : "hidden").")
+        }
+
+        // The pages that STAY. Every one of them is a page a student can still
+        // reach, and a teacher who is told only what came down has no way to
+        // tell whether the tool thought about the rest.
+        if !kept.isEmpty {
+            lines.append("")
+            let word: String = kept.count == 1 ? "page stays" : "pages stay"
+            lines.append("\(kept.count) linked \(word) published:")
+            var listed: Int = 0
+            for staying in kept {
+                if listed == mostListed {
+                    lines.append("  …and \(kept.count - listed) more.")
+                    break
+                }
+                lines.append("  \(staying.page.title)  —  \(staying.reason)")
+                listed += 1
+            }
         }
 
         if !dateMoves.isEmpty {
@@ -145,14 +184,27 @@ struct AssistPublishPlan {
 /// polarity inversion — asked to HIDE a page, the model called publish with
 /// "include everything it links to" set. A boolean is a coin flip under
 /// pressure; a verb is not.
+///
+/// **How far each verb reaches is settled HERE, not by whoever calls.** There
+/// used to be an `includeLinked` flag, and the model chose it — which is
+/// precisely the reasoning this design exists to keep out of a router. The two
+/// rules are not mirror images of each other, and each is written down once:
+///
+/// * **Publishing always takes the pages it links to.** Publishing a page whose
+///   links lead somewhere students cannot see is the one thing publishing must
+///   never do.
+/// * **Unpublishing takes a linked page only when nothing else needs it** — no
+///   other page links to it, and it is not one of the pages a section cannot do
+///   without. Hiding a concept page that Unit 3, Day 2 also links to would
+///   break that class to tidy this one.
 enum AssistPublishPlanner {
 
     // MARK: - Functions
 
-    /// What publishing these pages would do.
+    /// What publishing these pages would do — along with everything they link
+    /// to, always, so no published page points at a page students cannot see.
     static func planPublishing(
         titles: [String],
-        includeLinked: Bool,
         onOrAfter: CalendarDay?,
         before: CalendarDay?,
         graph: AssistSectionGraph,
@@ -161,16 +213,16 @@ enum AssistPublishPlanner {
         in course: Course
     ) -> AssistPublishPlan {
         return plan(
-            publishes: true, titles: titles, includeLinked: includeLinked,
+            publishes: true, titles: titles,
             onOrAfter: onOrAfter, before: before, graph: graph, classPages: classPages,
             dateMoves: [], forSection: sectionNumber, in: course
         )
     }
 
-    /// What unpublishing these pages would do.
+    /// What unpublishing these pages would do — along with the pages ONLY they
+    /// link to, and nothing else.
     static func planUnpublishing(
         titles: [String],
-        includeLinked: Bool,
         onOrAfter: CalendarDay?,
         before: CalendarDay?,
         graph: AssistSectionGraph,
@@ -179,7 +231,7 @@ enum AssistPublishPlanner {
         in course: Course
     ) -> AssistPublishPlan {
         return plan(
-            publishes: false, titles: titles, includeLinked: includeLinked,
+            publishes: false, titles: titles,
             onOrAfter: onOrAfter, before: before, graph: graph, classPages: classPages,
             dateMoves: [], forSection: sectionNumber, in: course
         )
@@ -216,7 +268,7 @@ enum AssistPublishPlanner {
             forClassesTitled: titles, on: day, graph: graph, classPages: classPages
         )
         return .success(plan(
-            publishes: true, titles: titles, includeLinked: true,
+            publishes: true, titles: titles,
             onOrAfter: nil, before: nil, graph: graph, classPages: classPages,
             dateMoves: moves, forSection: sectionNumber, in: course
         ))
@@ -228,7 +280,6 @@ enum AssistPublishPlanner {
     private static func plan(
         publishes: Bool,
         titles: [String],
-        includeLinked: Bool,
         onOrAfter: CalendarDay?,
         before: CalendarDay?,
         graph: AssistSectionGraph,
@@ -278,9 +329,17 @@ enum AssistPublishPlanner {
             }
         }
 
+        // How far the verb reaches, decided by the verb itself.
         var linked: [AssistSectionPage] = []
-        if includeLinked {
+        var kept: [AssistPublishKept] = []
+        if publishes {
             linked = graph.linkedPages(from: named)
+        } else {
+            let sweep: UnpublishSweep = pagesTakenDownAlongside(
+                named: named, graph: graph, in: course
+            )
+            linked = sweep.alsoUnpublished
+            kept = sweep.kept
         }
 
         var changes: [AssistPublishChange] = []
@@ -304,6 +363,7 @@ enum AssistPublishPlanner {
             unknownNames: unknownNames,
             changes: changes,
             alreadyRight: alreadyRight,
+            kept: kept,
             dateMoves: dateMoves
         )
     }

@@ -224,6 +224,34 @@ it. Stale guidance is worse than none — they will follow it.
 does not. "The 3B inverts polarity 9 times in 10" is something they can act
 on. "We chose the 4B" is not.
 
+**Write down the REASONING, not only the behaviour — and do it as you go.**
+This is the part that is always skipped and always the most expensive to
+lose. A behaviour can be read off the code; the reason it is that way cannot,
+and **a rule whose reason has been lost gets "simplified" back out by the
+next person who reads it.** Everything below was learned the hard way and
+would look like clutter to somebody who did not know why:
+
+- why the tools are coarse (the 8-of-8-wrong / 8-of-8-right result);
+- why publish and unpublish are separate verbs and the surface has no
+  booleans (a boolean inverted polarity on a real model);
+- why unpublish's linked-page rule is NOT the mirror of publish's;
+- why some phrasings are matched in code and never reach the model;
+- why the model's tool list is shorter than the server's;
+- why there is no delete tool at all.
+
+So: when a decision has a reason that is not obvious from reading the code,
+the reason goes in `WINDOWS-HANDOFF.md` in the same change that makes the
+decision. Not afterwards, not in a batch, and **not only when Russell asks —
+he has said plainly that he will forget to, and it is not his job to
+remember.** Record the roads NOT taken too, and why: an option rejected for
+a good reason will otherwise be proposed again, considered afresh, and cost
+the same afternoon twice.
+
+Design conversations count as work. If a decision was reached by talking it
+through rather than by writing code, it still gets written down before the
+conversation moves on — that reasoning exists only in the conversation, and
+conversations are the thing that gets summarised away.
+
 ## The interface never names the machinery
 
 The oldest rule in this project, and the assistant broke it: no "toolchain",

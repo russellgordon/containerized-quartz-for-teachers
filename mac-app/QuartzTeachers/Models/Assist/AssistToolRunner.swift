@@ -1,7 +1,7 @@
 import Foundation
 import Observation
 
-/// The fifteen tools the local model may call, and what running one does.
+/// The twenty tools the local model may call, and what running one does.
 ///
 /// Four rules shape this surface. They are inherited from the Windows work
 /// rather than rediscovered, and every one of them is measured:
@@ -87,14 +87,18 @@ final class AssistToolRunner {
         return conversationBackupURL != nil
     }
 
-    /// The tools, as the LOCAL model sees them. Fifteen, and staying fifteen:
-    /// routing accuracy was measured against exactly this surface.
+    /// The tools, as the LOCAL model sees them.
+    ///
+    /// Twenty. Routing accuracy was measured at fifteen, and the five since —
+    /// the section's timetable, and the page for the next class — were added
+    /// deliberately: a small local model routes worse the more it is shown, so
+    /// the accuracy figure is worth measuring again rather than inherited.
     var definitions: [AssistToolDefinition] {
         return AssistToolRunner.tools
     }
 
-    /// The tools the MCP client sees: the fifteen, plus the ones that ask for
-    /// judgement a small local model has no business making.
+    /// The tools the MCP client sees: the local surface, plus the ones that ask
+    /// for judgement a small local model has no business making.
     var mcpDefinitions: [AssistToolDefinition] {
         return AssistToolRunner.mcpTools
     }
@@ -192,6 +196,16 @@ final class AssistToolRunner {
             return scheduleDeploy(arguments)
         case "cancel_scheduled_deploy":
             return cancelScheduledDeploy(arguments)
+        case "read_remembered_timetable":
+            return readRememberedTimetable(arguments)
+        case "plan_remember_timetable":
+            return planRememberTimetable(arguments)
+        case "remember_timetable":
+            return rememberTimetable(arguments)
+        case "plan_add_next_class":
+            return planAddNextClass(arguments)
+        case "add_next_class":
+            return addNextClass(arguments)
         case "list_curriculum_expectations":
             return listCurriculumExpectations(arguments)
         case "plan_curriculum_mentions":
@@ -847,6 +861,264 @@ final class AssistToolRunner {
         return AssistToolOutcome.wrote(message, detail: message)
     }
 
+    // MARK: - When this class meets
+
+    /// What is remembered about when a section meets, read back with WHERE IT
+    /// CAME FROM — so a teacher can recognise a stale answer and say so.
+    private func readRememberedTimetable(_ arguments: [String: Any]) -> AssistToolOutcome {
+        let found: Result<Located, AssistToolRefusal> = locate(arguments)
+        guard case .success(let located) = found else {
+            return AssistToolOutcome.couldNotRead(refusal(from: found).message)
+        }
+        let where_: String = "\(located.course.code) Section \(located.sectionNumber)"
+
+        let remembered: SectionTimetable?
+        do {
+            remembered = try SectionTimetableStore.read(
+                forSection: located.sectionNumber, in: located.course
+            )
+        } catch {
+            // A file that IS there and cannot be read whole. Said out loud
+            // rather than reported as "no timetable": the two ask different
+            // things of the teacher.
+            return AssistToolOutcome.couldNotRead(error.localizedDescription)
+        }
+
+        guard let remembered else {
+            return AssistToolOutcome.read(
+                "No class dates are recorded for \(where_) yet.",
+                detail: "No class dates are recorded for \(where_) yet, so nothing knows when it meets — "
+                      + "and until they are, a new class page cannot be dated. Ask the teacher which days "
+                      + "this class meets, then record them with remember_timetable."
+            )
+        }
+
+        var lines: [String] = []
+        lines.append("\(where_) meets on \(remembered.dates.count) "
+                     + "\(remembered.dates.count == 1 ? "day" : "days"), from "
+                     + "\(remembered.firstDate.text) (\(remembered.firstDate.weekdayName)) to "
+                     + "\(remembered.lastDate.text) (\(remembered.lastDate.weekdayName)).")
+        lines.append("")
+        var origin: String = "Where they came from: \(remembered.source)."
+        if let when = remembered.recorded {
+            origin += " Recorded \(when.text)."
+        }
+        lines.append(origin)
+
+        // What the dates are actually FOR: the next class takes the next one
+        // along, counted by how many class pages the section already has.
+        let existing: [ClassPageSummary] = ClassPages.list(
+            forSection: located.sectionNumber, in: located.course
+        )
+        let spare: Int = remembered.spareDates(after: existing.count)
+        lines.append("")
+        lines.append("\(where_) has \(existing.count) class "
+                     + "\(existing.count == 1 ? "page" : "pages").")
+        if spare == 0 {
+            lines.append("Every recorded date is spoken for, so another class cannot be dated until more "
+                         + "dates are recorded.")
+        } else {
+            let next: CalendarDay = remembered.dates[existing.count]
+            lines.append("\(spare) recorded \(spare == 1 ? "date is" : "dates are") still spare; the next "
+                         + "class would fall on \(next.text) (\(next.weekdayName)).")
+        }
+
+        return AssistToolOutcome.read(
+            "\(where_) meets on \(remembered.dates.count) recorded "
+            + "\(remembered.dates.count == 1 ? "day" : "days"), from \(remembered.source).",
+            detail: lines.joined(separator: "\n")
+        )
+    }
+
+    private struct PlannedTimetable {
+        let located: Located
+        let plan: RememberTimetablePlan
+    }
+
+    /// The shared reading of the arguments for both halves of remembering a
+    /// timetable.
+    ///
+    /// The dates arrive ALREADY WORKED OUT, as `YYYY-MM-DD`. Nothing here reads
+    /// a spreadsheet, a `.csv`, an `.ics` or a teacher's pasted paragraph, and
+    /// the model is not asked to do it either — a date read loosely is a class
+    /// scheduled on the wrong day.
+    ///
+    /// - Note: turning a Google Sheet link, a `.csv`, an `.ics` or pasted text
+    ///   into `[CalendarDay]` belongs to `SectionScheduleSource`, and it plugs
+    ///   in one step upstream of here rather than inside this tool: whatever
+    ///   read the dates hands `SectionScheduleSource.Reading.datesText` on to
+    ///   `planRememberTimetable`, exactly as this does. Reading a source can
+    ///   need a question answered — "is 08/09/2026 the 8th of September or the
+    ///   9th of August?" — and that is a question for the teacher, not
+    ///   something to settle inside a tool call.
+    private func timetablePlan(_ arguments: [String: Any]) -> Result<PlannedTimetable, Error> {
+        let found: Result<Located, AssistToolRefusal> = locate(arguments)
+        guard case .success(let located) = found else {
+            return .failure(refusal(from: found))
+        }
+        do {
+            let plan: RememberTimetablePlan = try SectionTimetableStore.planRememberTimetable(
+                dates: days("dates", in: arguments),
+                source: text("source", in: arguments),
+                forSection: located.sectionNumber,
+                in: located.course,
+                today: today
+            )
+            return .success(PlannedTimetable(located: located, plan: plan))
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    private func planRememberTimetable(_ arguments: [String: Any]) -> AssistToolOutcome {
+        switch timetablePlan(arguments) {
+        case .failure(let problem):
+            return AssistToolOutcome.couldNotRead(problem.localizedDescription)
+        case .success(let asked):
+            return AssistToolOutcome.read(
+                asked.plan.changesNothing
+                    ? "Those dates are already remembered."
+                    : "Worked out what recording those class dates would do.",
+                detail: asked.plan.description + "\n\n" + AssistToolRunner.nothingChangedYet
+            )
+        }
+    }
+
+    private func rememberTimetable(_ arguments: [String: Any]) -> AssistToolOutcome {
+        switch timetablePlan(arguments) {
+        case .failure(let problem):
+            return AssistToolOutcome.refused(problem.localizedDescription)
+        case .success(let asked):
+            if asked.plan.changesNothing {
+                return AssistToolOutcome.wrote(
+                    "Those dates were already remembered.",
+                    detail: asked.plan.description
+                          + "\n\nNothing was changed, because nothing needed to be."
+                )
+            }
+
+            // Replacing a year's dates is worth having a way back from, and
+            // the copy is made once per conversation however many writes
+            // follow it.
+            let backedUp: Bool = backUpOnceForThisConversation(
+                asked.located.course, forSection: asked.located.sectionNumber
+            )
+            do {
+                try SectionTimetableStore.applyRememberTimetable(asked.plan)
+            } catch {
+                return AssistToolOutcome.refused(
+                    "Nothing was remembered: \(error.localizedDescription)"
+                )
+            }
+
+            let summary: String = "Remembered \(asked.plan.dates.count) class "
+                + "\(asked.plan.dates.count == 1 ? "date" : "dates") for "
+                + "\(asked.plan.courseCode) Section \(asked.plan.sectionNumber)."
+            var detail: String = asked.plan.description + "\n\nDone: \(summary)"
+            detail += "\n\nNo page was touched and no student saw anything. New class pages take their "
+                    + "dates from these, so this is worth reading back if a date ever looks wrong."
+            if backedUp {
+                detail += "\n\n" + AssistToolRunner.backedUpNote
+            }
+            return AssistToolOutcome.wrote(summary, detail: detail)
+        }
+    }
+
+    // MARK: - The page for the next class
+
+    private struct PlannedNextClass {
+        let located: Located
+        let plan: PlaceholderClassPlan
+    }
+
+    /// The shared reading of the arguments: which section, and what the next
+    /// class page in it would be.
+    ///
+    /// The failure is carried as the error itself rather than as an
+    /// `AssistToolRefusal`, because the two that matter here — no timetable at
+    /// all, and a timetable that has run out — belong to `NextClassPlanner`,
+    /// and each already says in its own words what to do about it.
+    private func nextClassPlan(_ arguments: [String: Any]) -> Result<PlannedNextClass, Error> {
+        let found: Result<Located, AssistToolRefusal> = locate(arguments)
+        guard case .success(let located) = found else {
+            return .failure(refusal(from: found))
+        }
+        do {
+            let plan: PlaceholderClassPlan = try NextClassPlanner.plan(
+                forSection: located.sectionNumber, in: located.course
+            )
+            return .success(PlannedNextClass(located: located, plan: plan))
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    private func planAddNextClass(_ arguments: [String: Any]) -> AssistToolOutcome {
+        switch nextClassPlan(arguments) {
+        case .failure(let problem):
+            return AssistToolOutcome.couldNotRead(problem.localizedDescription)
+        case .success(let asked):
+            return AssistToolOutcome.read(
+                asked.plan.changesNothing
+                    ? "The next class page already exists."
+                    : "Worked out what the next class page would be.",
+                detail: asked.plan.description + "\n\n" + AssistToolRunner.nothingChangedYet
+            )
+        }
+    }
+
+    private func addNextClass(_ arguments: [String: Any]) -> AssistToolOutcome {
+        switch nextClassPlan(arguments) {
+        case .failure(let problem):
+            return AssistToolOutcome.refused(problem.localizedDescription)
+        case .success(let asked):
+            if asked.plan.changesNothing {
+                return AssistToolOutcome.wrote(
+                    "Nothing needed adding — that page already exists.",
+                    detail: asked.plan.description
+                          + "\n\nNothing was created, because the page is already there. A page with that "
+                          + "name is never written over: it may be a lesson written months ago."
+                )
+            }
+
+            let backedUp: Bool = backUpOnceForThisConversation(
+                asked.located.course, forSection: asked.located.sectionNumber
+            )
+
+            let outcome: ClassChangeOutcome
+            do {
+                // Checked a second time inside `apply`, immediately before the
+                // file is written: Obsidian is open in the other window, and a
+                // page can appear while the teacher is deciding.
+                outcome = try PlaceholderClassPlanner.apply(asked.plan, in: asked.located.course)
+            } catch {
+                return AssistToolOutcome.refused(
+                    "Nothing was created: \(error.localizedDescription)"
+                )
+            }
+
+            var detail: String = asked.plan.description + "\n\nDone: \(outcome.message)"
+            // No preview rebuild: the page starts unpublished, so rebuilding
+            // would take minutes to show exactly what is on screen already.
+            detail += "\n\nThe preview was not rebuilt, because an unpublished page does not appear on the "
+                    + "site. Publishing it when it is written rebuilds by itself."
+            // Said plainly rather than left to be discovered: an undo puts
+            // files BACK as they were, and a page that did not exist has
+            // nothing to be put back to.
+            detail += "\n\n“Undo that” does not take away a page it created — delete it in Obsidian if it "
+                    + "isn't wanted."
+            if backedUp {
+                detail += "\n\n" + AssistToolRunner.backedUpNote
+            }
+
+            var summary: String = "Added the next class page."
+            if let created = asked.plan.classes.first {
+                summary = "Added \(created.title), dated \(created.date.text)."
+            }
+            return AssistToolOutcome.wrote(summary, detail: detail)
+        }
+    }
+
     // MARK: - Pointing a page at the curriculum
 
     /// Read out every expectation, wording and all, and decide nothing.
@@ -1146,6 +1418,46 @@ final class AssistToolRunner {
             }
         } else if let string = arguments[key] as? String {
             for piece in string.components(separatedBy: CharacterSet(charactersIn: ",;\n")) {
+                raw.append(piece)
+            }
+        }
+
+        var found: [String] = []
+        for entry in raw {
+            let tidied: String = entry.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !tidied.isEmpty {
+                found.append(tidied)
+            }
+        }
+        return found
+    }
+
+    /// A list of dates, however the model chose to separate them.
+    ///
+    /// Deliberately forgiving about the SEPARATOR and not at all forgiving
+    /// about the dates themselves. `2026-09-08` has no comma and no semicolon
+    /// in it, so either can be read as a separator without risking a date being
+    /// cut in half — and a whole year's timetable refused over a punctuation
+    /// mark would cost a teacher the five minutes this is meant to save. What
+    /// each piece MEANS is still read strictly, one form only, by
+    /// `SectionTimetableStore`, which refuses a partial list whole.
+    ///
+    /// A space is NOT a separator, though a list of dates could be split on one
+    /// safely enough. It is left out for the sake of the refusal: "next
+    /// Tuesday" quoted back whole is something a teacher can correct, where
+    /// "“next” and “Tuesday” aren't dates" reads like the tool misunderstanding
+    /// them twice.
+    private func days(_ key: String, in arguments: [String: Any]) -> [String] {
+        var raw: [String] = []
+        if let list = arguments[key] as? [Any] {
+            for entry in list {
+                if let string = entry as? String {
+                    raw.append(string)
+                }
+            }
+        } else if let string = arguments[key] as? String {
+            let separators: CharacterSet = CharacterSet(charactersIn: ",;\n\t")
+            for piece in string.components(separatedBy: separators) {
                 raw.append(piece)
             }
         }

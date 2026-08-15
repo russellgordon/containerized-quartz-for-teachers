@@ -184,7 +184,13 @@ enum PlaceholderClassPlanner {
         if written.isEmpty {
             message = "Nothing was created — every one of those pages already exists."
         } else {
-            message = "Created \(written.count) class page\(written.count == 1 ? "" : "s") in Unit \(plan.unit) of \(plan.courseCode) Section \(plan.sectionNumber), dated \(written[0].date.text) to \(written[written.count - 1].date.text). They are unpublished, so nothing changed on the site — write them, then publish when they are ready."
+            var dated: String = "dated \(written[0].date.text)"
+            if written.count > 1 {
+                dated += " to \(written[written.count - 1].date.text)"
+            }
+            let they: String = written.count == 1 ? "It is" : "They are"
+            let them: String = written.count == 1 ? "it" : "them"
+            message = "Created \(written.count) class page\(written.count == 1 ? "" : "s") in Unit \(plan.unit) of \(plan.courseCode) Section \(plan.sectionNumber), \(dated). \(they) unpublished, so nothing changed on the site — write \(them), then publish when \(written.count == 1 ? "it is" : "they are") ready."
         }
         if !appearedInBetween.isEmpty {
             message += " \(SectionTimetableStore.list(appearedInBetween)) appeared while you were deciding and \(appearedInBetween.count == 1 ? "was" : "were") left exactly as \(appearedInBetween.count == 1 ? "it is" : "they are")."
@@ -259,7 +265,7 @@ struct PlaceholderClassPlan {
             return lines.joined(separator: "\n")
         }
 
-        lines.append("Add \(classes.count) class page\(classes.count == 1 ? "" : "s") to Unit \(unit) of \(courseCode) Section \(sectionNumber), on the days this class actually meets:")
+        lines.append("Add \(classes.count) class page\(classes.count == 1 ? "" : "s") to Unit \(unit) of \(courseCode) Section \(sectionNumber), on the \(classes.count == 1 ? "day" : "days") this class actually meets:")
         lines.append("")
         for planned in classes {
             lines.append("  \(planned.title)  (\(planned.date.text) \(planned.date.weekdayName))")

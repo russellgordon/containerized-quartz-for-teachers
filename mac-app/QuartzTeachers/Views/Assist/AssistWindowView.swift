@@ -56,6 +56,14 @@ struct AssistWindowView: View {
         }
         .frame(minWidth: 460, minHeight: 420)
         .navigationTitle("Assistant — \(session.courseCode) section \(session.sectionNumber)")
+        // When something in here needs class dates for a section that has
+        // none recorded, it asks through SectionSchedulePrompt and the sheet
+        // opens on the window the teacher is already looking at.
+        .sectionSchedulePrompt(
+            courseCode: session.courseCode,
+            sectionNumber: session.sectionNumber,
+            workingFolder: session.workingFolder
+        )
         .task {
             await session.prepare()
         }

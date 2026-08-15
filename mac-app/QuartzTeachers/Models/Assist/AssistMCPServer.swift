@@ -10,8 +10,9 @@ import Foundation
 /// day they drift is the day one of them is missing a rule.
 ///
 /// This client is offered MORE of that one surface, not a different one. The
-/// local model sees fifteen tools because fifteen is what its routing accuracy
-/// was measured against; Claude Code is not that model, so it also gets the
+/// local model's list is kept as short as the job allows, because a small model
+/// routes worse the more it is shown; Claude Code is not that model, so it also
+/// gets the
 /// tools that ask for a judgement about meaning — reading a course's curriculum
 /// expectations and pointing a page at the ones that fit. Same definitions,
 /// same runner, same rules; `runner.mcpDefinitions` is simply the longer list.

@@ -5,9 +5,9 @@ import XCTest
 ///
 /// Two things are pinned here and they matter for different reasons. The first
 /// is the SHAPE OF THE SURFACE: these tools are served to the MCP client only,
-/// because the fifteen the local model sees are a measurement — routing
-/// accuracy was counted against exactly that surface — and a sixteenth tool
-/// spends a number somebody else already paid for.
+/// because the local model's list is a measurement — routing accuracy was
+/// counted against it — and every tool added to it spends some of a number
+/// somebody else already paid for.
 ///
 /// The second is WHERE THE TRANSCLUSIONS LAND. They go inside the
 /// `%%curriculum-start%%` markers, always. A course installed without
@@ -18,11 +18,16 @@ final class AssistCurriculumMentionsTests: XCTestCase {
 
     // MARK: - The two surfaces
 
-    /// The local model still sees exactly fifteen, and the MCP client sees
-    /// those fifteen plus the curriculum tools.
+    /// The local model sees the narrowed surface, and the MCP client sees that
+    /// surface plus the curriculum tools.
+    ///
+    /// The count moved from fifteen to twenty when the timetable and next-class
+    /// tools were added, each on purpose. The curriculum tools are still not
+    /// among them: which expectations fit a lesson is a judgement about
+    /// meaning, and it is not one to hand a small local model.
     @MainActor
-    func testTheLocalModelSurfaceIsStillFifteenAndTheMcpSurfaceIsLarger() {
-        XCTAssertEqual(AssistToolRunner.tools.count, 15)
+    func testTheLocalModelSurfaceIsNarrowAndTheMcpSurfaceIsLarger() {
+        XCTAssertEqual(AssistToolRunner.tools.count, 20)
 
         var localNames: Set<String> = []
         for tool in AssistToolRunner.tools {

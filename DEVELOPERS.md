@@ -332,7 +332,13 @@ before running UI tests — the test runner can't terminate it.
     is worse than none, because it gets followed.
 
   Say what you measured, not just what you decided — numbers travel, taste
-  does not.
+  does not. And write down the **reasoning**, not only the behaviour: a
+  behaviour can be read off the code, the reason for it cannot, and a rule
+  whose reason has been lost gets "simplified" back out by the next person
+  who reads it. Record the options REJECTED and why, too — otherwise they
+  get proposed again and cost the same afternoon twice. This applies to
+  decisions reached by discussion as much as by code, and it is not
+  contingent on being asked for it.
 - **Launchers are snapshots.** Working folders copy the launchers at setup;
   the app refreshes any that differ from its bundled copies whenever it
   works in a folder. If you change a launcher, the fix reaches folders

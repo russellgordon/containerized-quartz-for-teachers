@@ -1,6 +1,12 @@
 import Foundation
 
-/// The fifteen tools, exactly as the local model sees them.
+/// The twenty tools, exactly as the local model sees them.
+///
+/// It was fifteen when routing accuracy was measured, and the five that came
+/// after — reading and recording a section's timetable, and adding the next
+/// class page — were added on purpose, knowing the cost. A small local model
+/// routes worse the more it is shown, so the number is worth re-measuring
+/// rather than assuming the old figure still holds.
 ///
 /// The descriptions are the Windows server's own, put through the same
 /// shortening rule the narrowed surface uses there: keep the `TEACHERS SAY:`
@@ -43,24 +49,29 @@ extension AssistToolRunner {
         planScheduledDeployTool,
         scheduleDeployTool,
         cancelScheduledDeployTool,
+        readRememberedTimetableTool,
+        planRememberTimetableTool,
+        rememberTimetableTool,
+        planAddNextClassTool,
+        addNextClassTool,
     ]
 
-    /// The tools the MCP client is offered ON TOP of the fifteen.
+    /// The tools the MCP client is offered ON TOP of the local surface.
     ///
-    /// Kept apart because the fifteen are a MEASUREMENT: routing accuracy was
-    /// counted against exactly that surface, and a small local model routes
-    /// worse the more it is shown. Claude Code, on the other end of the MCP
-    /// server, is not that model — it can hold a larger surface and it can do
-    /// the one thing these tools need doing, which is deciding what a
-    /// curriculum expectation MEANS. So the fuller surface is served there and
-    /// nowhere else, and `AssistToolRunner.definitions` stays at fifteen.
+    /// Kept apart because the local surface is a MEASUREMENT: routing accuracy
+    /// was counted against exactly the tools a teacher asks for, and a small
+    /// local model routes worse the more it is shown. Claude Code, on the other
+    /// end of the MCP server, is not that model — it can hold a larger surface
+    /// and it can do the one thing these tools need doing, which is deciding
+    /// what a curriculum expectation MEANS. So the fuller surface is served
+    /// there and nowhere else.
     static let mcpOnlyTools: [AssistToolDefinition] = [
         listCurriculumExpectationsTool,
         planCurriculumMentionsTool,
         addCurriculumMentionsTool,
     ]
 
-    /// Everything the MCP client may call: the fifteen, plus the rest.
+    /// Everything the MCP client may call: the local surface, plus the rest.
     static let mcpTools: [AssistToolDefinition] = tools + mcpOnlyTools
 
     // MARK: - Shared argument wording
@@ -360,6 +371,114 @@ extension AssistToolRunner {
         ],
         required: ["course", "section"],
         readOnly: false,
+        needsApproval: false
+    )
+
+    // MARK: - When this class meets
+    //
+    // Asked once, kept, and read back with WHERE IT CAME FROM. A teacher
+    // answers "when does this class meet?" by finding a spreadsheet, working
+    // out which column is their block and reading it out; without somewhere to
+    // put that answer, every conversation asks again. Reading it back names the
+    // source so a stale answer can be recognised and replaced.
+
+    private static let readRememberedTimetableTool: AssistToolDefinition = AssistToolDefinition(
+        name: "read_remembered_timetable",
+        description: "TEACHERS SAY: \"when does this class meet?\", \"what dates do you have for us?\", "
+                   + "\"do you know our timetable?\", \"how many class days are left?\". Read back the class "
+                   + "dates recorded for a section, and where the teacher said they came from, changing "
+                   + "nothing.",
+        parameters: [
+            "course": courseHelp,
+            "section": sectionHelp,
+        ],
+        required: ["course", "section"],
+        readOnly: true,
+        needsApproval: false
+    )
+
+    /// Semicolons for the same reason the page lists use them, and because one
+    /// separator on this surface is easier to get right than two.
+    private static let datesHelp: AssistSchemaProperty = AssistSchemaProperty(
+        kind: .string,
+        description: "Every day this class meets, as YYYY-MM-DD, separated by semicolons — for example "
+                   + "\"2026-09-08; 2026-09-10; 2026-09-14\". Give the dates themselves; this tool does not "
+                   + "open timetable files or work dates out from a pattern."
+    )
+
+    private static let timetableSourceHelp: AssistSchemaProperty = AssistSchemaProperty(
+        kind: .string,
+        description: "Where the dates came from, in the teacher's own words — for example "
+                   + "\"timetable.xlsx, block H\" or \"typed in by hand\". Read back later, so a stale "
+                   + "answer can be recognised. Leave empty if they did not say."
+    )
+
+    private static let planRememberTimetableTool: AssistToolDefinition = AssistToolDefinition(
+        name: "plan_remember_timetable",
+        description: "Work out what recording these class dates would do, WITHOUT changing anything. Says "
+                   + "how many days it would remember, the first and the last, and what it would replace.",
+        parameters: [
+            "course": courseHelp,
+            "section": sectionHelp,
+            "dates": datesHelp,
+            "source": timetableSourceHelp,
+        ],
+        required: ["course", "section", "dates"],
+        readOnly: true,
+        needsApproval: false
+    )
+
+    private static let rememberTimetableTool: AssistToolDefinition = AssistToolDefinition(
+        name: "remember_timetable",
+        description: "TEACHERS SAY: \"here are the days we meet\", \"remember our timetable\", \"these are "
+                   + "our class dates\", \"save these dates\". Write down the days a section meets, so "
+                   + "nothing has to ask for them again. Changes no page.",
+        parameters: [
+            "course": courseHelp,
+            "section": sectionHelp,
+            "dates": datesHelp,
+            "source": timetableSourceHelp,
+        ],
+        required: ["course", "section", "dates"],
+        readOnly: false,
+        // Writes a note inside the course folder, nothing a student can see,
+        // and recording the right dates over the wrong ones is the whole cure.
+        needsApproval: false
+    )
+
+    // MARK: - The page for the next class
+
+    private static let planAddNextClassTool: AssistToolDefinition = AssistToolDefinition(
+        name: "plan_add_next_class",
+        description: "TEACHERS SAY: \"what would the next class page be?\", \"which day comes next?\", "
+                   + "\"show me before you add it\". Work out which page adding the next class would create "
+                   + "and which day it would fall on, WITHOUT changing anything.",
+        parameters: [
+            "course": courseHelp,
+            "section": sectionHelp,
+        ],
+        required: ["course", "section"],
+        readOnly: true,
+        needsApproval: false
+    )
+
+    private static let addNextClassTool: AssistToolDefinition = AssistToolDefinition(
+        name: "add_next_class",
+        description: "TEACHERS SAY: \"add an entry for the next class\", \"add tomorrow's class page\", "
+                   + "\"start the next class\", \"add the next class\", \"make a page for our next class\", "
+                   + "\"set up next day's lesson\". Create the next class page in a section: it continues "
+                   + "the unit the last class was in, and takes its date from the section's remembered "
+                   + "timetable. Work out no numbers and no dates yourself — this tool does both. It starts "
+                   + "unpublished, so students see nothing until the teacher publishes it.",
+        parameters: [
+            "course": courseHelp,
+            "section": sectionHelp,
+        ],
+        required: ["course", "section"],
+        readOnly: false,
+        // Creates one unpublished page and writes over nothing, so it happens
+        // when asked. Only deploying — the one act that reaches students and
+        // that Plantoir cannot undo for them — waits for a button.
         needsApproval: false
     )
 
