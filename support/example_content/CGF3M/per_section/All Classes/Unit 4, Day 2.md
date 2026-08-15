@@ -1,0 +1,19 @@
+---
+title: Unit 4, Day 2
+draft: false
+created: __CREATED_CLASS_68__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. The Boundary Waters Treaty of 1909 and the International Joint Commission it created
+2. The Montreal Protocol against the Paris Agreement: what each required, of whom, and who checked
+3. First Nations' rights and jurisdiction in a watershed, taken from the nations' own published statements
+
+## Things to do before our next class
+
+- [ ] Judge one of those agreements against those three questions, in writing.
