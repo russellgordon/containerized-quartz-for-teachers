@@ -429,3 +429,32 @@ every page it links to is published*" prefers `publish_pages` over
 `publish_class_on`, 3/3 — a write, but one the approval gate holds and the
 server validates, and the informal and typo'd versions of the same request
 route correctly.
+
+### 10.4 The promise card, measured — and turned into commands
+
+Later the same evening the suite ran the window's own example card, word
+for word, against the shipped configuration
+(`research/ai-assist/promise-card-results.txt`). The split was stark.
+**Arguments were perfect** — 87 trials, not one wrong course, wrong date,
+wrong type, or polarity inversion. **Routing of the card's fixed phrasings
+was not**: five of the eleven promises failed every trial. "Publish Unit 2,
+Day 3, and everything it links to" went to the publish-by-DATE tool 3/3;
+"What would publishing Unit 3, Day 1 change?" likewise; bare "Undo that"
+was declined 3/3; "Deploy this section now" never reached the deploy tool;
+"Deploy tomorrow's class at 6:30 AM" was answered with a publish plan. The
+deploy-gate rewrite of the system prompt also made `undo_last_change`
+over-salient ("I posted it by mistake, make it a draft again" → undo, 3/3)
+and cost the deletion probe its clean decline. Overall: 63/87.
+
+The response follows the architecture's own rule to its conclusion: a
+promise the router keeps three trials out of four is not a promise, so the
+card's fixed shapes stopped being routing questions. `AssistAgent` now
+matches them in code and synthesises the exact tool call — same deploy
+gate, same stop-edit-offer flow, instant — and the model keeps everything
+conversational: dated titles, freeform pages, sentences with a story in
+them. "Preview the site" had already made this journey (§10.3's cue fix
+was measured still losing 3/4 before it did); the rest of the card
+followed. Every command shape is pinned by the loop tests in
+`Plantoir.Tests/AssistAgentTests.cs`, which run the whole card in two
+seconds — the change-test-change cycle that found all of this no longer
+needs a teacher's afternoon.
