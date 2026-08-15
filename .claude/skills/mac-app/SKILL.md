@@ -274,6 +274,24 @@ Two exceptions, both non-teacher-facing: `GUI-IMPROVEMENTS.md` and the
 handoffs record what was measured and must name models precisely, and code
 comments should too. The rule is about what appears on screen.
 
+## Open investigations — read these before touching the area
+
+- **The preview showing stale content**:
+  [`research/preview-staleness/FINDINGS.md`](../../../research/preview-staleness/FINDINGS.md).
+  Several fixes have landed and the symptom was still reported afterwards. The
+  document separates what is verified (Quartz serves the OLD `public/` before
+  it rebuilds — its own `handlers.js`) from what is only suspected (Quartz's
+  live reload probably cannot work here, because the websocket port the page
+  is told is the CONTAINER's while the host publishes it on a different
+  number). If the suspicion holds, a good deal of timing machinery in
+  `waitForPreviewServer` should be DELETED rather than hardened.
+
+  Two traps recorded there that cost hours: a request's cache policy covers
+  only the main request, so a single-page app can still assemble a stale page
+  from cached parts; and the build happens inside the Linux VM, whose clock is
+  its own, so "is this file newer than now?" is not a question worth asking —
+  wait for the value to CHANGE instead.
+
 ## Things that are easy to get wrong
 
 - **`Vendor/llama` is not committed.** A fresh clone must run

@@ -68,7 +68,40 @@ enum AssistWindowPlacement {
         if frame.width < 200 || frame.height < 200 {
             return
         }
-        window.setFrame(frame, display: true)
+        put(window, at: frame, attemptsLeft: 3)
+    }
+
+    /// Move the window, and check that it stayed.
+    ///
+    /// The size came back on the first attempt and the POSITION did not, which
+    /// narrows it to the two things that move a window without resizing it.
+    /// AppKit cascades a newly shown window, and that happens after we place
+    /// it; and `setFrame` constrains the rectangle to the screen the window is
+    /// currently on, so a frame belonging to a second monitor gets pulled back
+    /// onto the first when it is applied to a window that has not moved there
+    /// yet.
+    ///
+    /// Both are answered the same way: put it where it belongs, look, and if
+    /// something has moved it, put it back. The check is what makes this
+    /// honest rather than superstitious — it stops as soon as the window is
+    /// actually where it should be, and gives up rather than fighting forever
+    /// with whatever moved it.
+    private static func put(_ window: NSWindow, at frame: NSRect, attemptsLeft: Int) {
+        window.setFrame(frame, display: false)
+        guard attemptsLeft > 0 else {
+            return
+        }
+        DispatchQueue.main.async {
+            // A point of slack: AppKit may legitimately nudge a window to keep
+            // its title bar reachable, and re-applying forever over one point
+            // would be a loop, not a fix.
+            let placed: NSRect = window.frame
+            let moved: Bool = abs(placed.origin.x - frame.origin.x) > 1
+                || abs(placed.origin.y - frame.origin.y) > 1
+            if moved {
+                put(window, at: frame, attemptsLeft: attemptsLeft - 1)
+            }
+        }
     }
 
     /// Write down where the window is, now.
