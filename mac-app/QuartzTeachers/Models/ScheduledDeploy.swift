@@ -274,29 +274,68 @@ enum ScheduledDeploy {
             deployLine += " \(shellQuoted(argument))"
         }
 
-        // BUILD FIRST, exactly as the Deploy button does.
+        // BUILD IF STALE, THEN DEPLOY — exactly what the Deploy button does.
         //
-        // `deploy.sh` never builds — it refuses outright when there is no
-        // built site — so an agent that ran it alone would either fail at
-        // half six or send whatever was last previewed. Neither is what a
-        // teacher means by "deploy tomorrow's class at 6:30".
+        // `deploy.sh` never builds; it refuses outright when there is no
+        // built site. So an agent that ran it alone would either fail at
+        // half six or send whatever was last previewed.
         //
-        // Unconditionally, not "only if stale": the whole point of setting
-        // an alarm the night before is that the work done AFTER setting it
-        // is what goes out. A freshness check made at scheduling time would
-        // answer the wrong question, and one made at 6:30 would only be a
-        // slower way of reaching the same answer.
+        // The staleness test is `BuildFreshness.needsRebuild` written out in
+        // shell, because the app is closed when this runs and cannot be
+        // asked. It has to stay in step with the Swift, so all three of its
+        // parts are here — and the second is the one that matters most.
         let previewPath: String = workspaceURL.appendingPathComponent("preview.sh").path
+        let builtIndexPath: String = workspaceURL
+            .appendingPathComponent("courses")
+            .appendingPathComponent(courseCode)
+            .appendingPathComponent(".merged_output")
+            .appendingPathComponent("section\(sectionNumber)")
+            .appendingPathComponent("public")
+            .appendingPathComponent("index.html")
+            .path
+        let courseDirectoryPath: String = workspaceURL
+            .appendingPathComponent("courses")
+            .appendingPathComponent(courseCode)
+            .path
+
         let buildLine: String = "/bin/bash \(shellQuoted(previewPath)) "
             + "\(shellQuoted(courseCode)) \(shellQuoted(String(sectionNumber))) --build-only"
 
         var lines: [String] = []
         lines.append("/bin/mkdir -p \(shellQuoted(logDirectory))")
         lines.append("/bin/rm -f \(shellQuoted(plistPath))")
-        // Deploy ONLY if the build succeeded — the button returns early on a
-        // failed build rather than deploying the previous one, and an
-        // unattended run must not be less careful than the teacher would be.
-        lines.append("if \(buildLine); then")
+
+        lines.append("NEEDS_BUILD=1")
+        lines.append("if [ -f \(shellQuoted(builtIndexPath)) ]; then")
+        // A PREVIEW's build is never deploy-fresh. Serve mode bakes a
+        // live-reload client pointed at ws://localhost into every page, and
+        // deploying that makes a visitor's browser knock on their own
+        // machine. Rebuilding is the only way to be rid of it, however
+        // recent the build looks.
+        lines.append("  if /usr/bin/grep -q 'ws://localhost:' \(shellQuoted(builtIndexPath)); then")
+        lines.append("    NEEDS_BUILD=1")
+        lines.append("  elif [ -z \"$(/usr/bin/find \(shellQuoted(courseDirectoryPath))"
+            + " -type f -newer \(shellQuoted(builtIndexPath)) -not -path '*/.*' -print -quit)\" ]; then")
+        // Nothing under the course is newer than the built page, so the site
+        // on disk already says what the teacher means. Rebuilding it at half
+        // six would cost a container start and a full Quartz run to produce
+        // the same bytes.
+        lines.append("    NEEDS_BUILD=0")
+        lines.append("  fi")
+        lines.append("fi")
+
+        // `-not -path '*/.*'` is the shell's version of skipsHiddenFiles,
+        // and it earns its place: without it, .merged_output is itself
+        // newer than the page it contains, so the site would look stale the
+        // instant it was built and rebuild every single time.
+        lines.append("READY=1")
+        lines.append("if [ \"$NEEDS_BUILD\" = \"1\" ]; then")
+        lines.append("  if ! \(buildLine); then READY=0; fi")
+        lines.append("fi")
+        // Deploy only if there is something good to deploy — the button
+        // returns early on a failed build rather than sending the previous
+        // one, and an unattended run must not be less careful.
+        lines.append("if [ \"$READY\" = \"1\" ]; then")
         lines.append("  \(deployLine)")
         lines.append("fi")
         // Cleanup runs either way: a failed build must still leave nothing
@@ -501,11 +540,12 @@ struct ScheduledDeployPlan {
         lines.append("")
         lines.append("Plantoir does not wake this Mac up. If it is asleep or switched off at that time, macOS runs the deploy at the next wake instead — which could be well after the class it was meant for.")
         lines.append("")
-        // The agent builds the section and then deploys it, which is what
-        // the Deploy button does. So a page written after the alarm was set
-        // IS in what goes out, and the teacher is told that plainly —
-        // otherwise they would keep previewing out of caution.
-        lines.append("The site is rebuilt at that time and then deployed, so anything you write between now and then goes out with it. If the build fails, nothing is deployed and the last live site stays as it is.")
+        // The agent rebuilds only when something has changed and then
+        // deploys, which is what the Deploy button does. So a page written
+        // after the alarm was set IS in what goes out, and the teacher is
+        // told that plainly — otherwise they would keep previewing out of
+        // caution the night before.
+        lines.append("Anything you write between now and then goes out with it: if the section has changed since it was last built, it is rebuilt first. If that build fails, nothing is deployed and the site students see stays exactly as it is.")
 
         if !unpublishedClasses.isEmpty {
             lines.append("")

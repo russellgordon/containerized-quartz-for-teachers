@@ -458,15 +458,15 @@ final class ScheduledDeployTests: XCTestCase {
         // launchd really does run a missed calendar job at the next wake,
         // so the plan says that rather than promising nothing happens.
         XCTAssertTrue(text.contains("at the next wake"))
-        // The agent BUILDS and then deploys, which is what the Deploy
-        // button does — so work done after the alarm is set does go out,
-        // and the teacher is told that rather than previewing out of
-        // caution every night.
-        XCTAssertTrue(text.contains("rebuilt at that time and then deployed"))
+        // The agent rebuilds when something changed and then deploys,
+        // which is what the Deploy button does — so work done after the
+        // alarm is set does go out, and the teacher is told that rather
+        // than previewing out of caution every night.
         XCTAssertTrue(text.contains("goes out with it"))
+        XCTAssertTrue(text.contains("it is rebuilt first"))
         // And the failure case, because an unattended deploy that half
         // worked is worse than one that did not run.
-        XCTAssertTrue(text.contains("If the build fails, nothing is deployed"))
+        XCTAssertTrue(text.contains("nothing is deployed"))
     }
 
     /// The agent builds the section before deploying it, exactly as the
@@ -491,20 +491,33 @@ final class ScheduledDeployTests: XCTestCase {
         XCTAssertTrue(buildAt.lowerBound < deployAt.lowerBound, "The build has to come first")
         XCTAssertTrue(command.contains("--build-only"), "The build must not also start a server")
 
-        // The deploy is INSIDE the if, so a failed build deploys nothing —
-        // the button returns early rather than sending the previous build,
-        // and an unattended run must not be less careful than the teacher.
-        XCTAssertTrue(command.contains("if /bin/bash"), "The build has to gate the deploy")
-        XCTAssertTrue(command.contains("fi"))
+        // Only when something changed. Rebuilding an unchanged section at
+        // half six costs a container start and a full Quartz run to produce
+        // the bytes already on disk.
+        XCTAssertTrue(command.contains("NEEDS_BUILD"), "The build has to be conditional")
+        XCTAssertTrue(command.contains("-newer"), "Staleness is content newer than the built page")
+        XCTAssertTrue(command.contains("-not -path '*/.*'"),
+                      "Hidden entries are skipped, or .merged_output makes the site look stale the instant it is built")
+        // A PREVIEW build is never deploy-fresh, however recent it looks:
+        // serve mode bakes a ws://localhost client into every page.
+        XCTAssertTrue(command.contains("ws://localhost:"),
+                      "A preview build must force a rebuild rather than being deployed")
+
+        // The deploy is gated, so a failed build deploys nothing — the
+        // button returns early rather than sending the previous build, and
+        // an unattended run must not be less careful than the teacher.
+        XCTAssertTrue(command.contains("READY=0"), "A failed build has to stop the deploy")
+        XCTAssertTrue(command.contains("if [ \"$READY\" = \"1\" ]; then"))
 
         // Cleanup sits outside the if: a failed build must still leave
         // nothing pending, or the agent fires again at the same time
         // tomorrow with nobody expecting it.
-        guard let closeAt = command.range(of: "\nfi"),
-              let bootoutAt = command.range(of: "bootout") else {
+        guard let bootoutAt = command.range(of: "bootout"),
+              let lastCloseAt = command.range(of: "fi", options: .backwards) else {
             return XCTFail("The agent must boot itself out when it is done")
         }
-        XCTAssertTrue(closeAt.lowerBound < bootoutAt.lowerBound, "Cleanup runs whether or not the build worked")
+        XCTAssertTrue(lastCloseAt.lowerBound < bootoutAt.lowerBound,
+                      "Cleanup runs whether or not the build worked")
 
         // A working folder with a space in its name is ordinary on a Mac —
         // "Class Websites" is what the documentation itself suggests.
