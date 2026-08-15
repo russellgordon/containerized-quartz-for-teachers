@@ -295,6 +295,97 @@ final class AssistToolRunnerTests: XCTestCase {
         XCTAssertTrue(text(ofCourseLevelPage: "Snippets", in: made.course).contains("publishForSection1: true"))
     }
 
+    /// Unpublishing the class the section's landing page points at must move
+    /// the pointer, or every student lands on a transclusion of a page that
+    /// is not there.
+    ///
+    /// Found in testing exactly that way: `section1/index.md` transcluded
+    /// Unit 4, Day 19, Day 19 was unpublished, and `check_section` reported
+    /// the broken link the unpublish had just created.
+    @MainActor
+    func testUnpublishingTheNewestClassRepointsTheSectionIndex() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08", body: "one", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "true", date: "2026-09-10", body: "two", in: made.course)
+        try writeSectionIndex(pointingAt: "Unit 1, Day 2", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 2"]
+        ))
+
+        let index: String = try sectionIndexText(in: made.course)
+        XCTAssertTrue(index.contains("![[Unit 1, Day 1]]"),
+                      "The landing page must follow the newest class students can still see")
+        XCTAssertFalse(index.contains("![[Unit 1, Day 2]]"),
+                       "…and must not still point at the one just hidden")
+        XCTAssertTrue(index.contains("created: 2026-09-08"),
+                      "Its date moves with it: a front page dated later than its newest lesson reads as stale")
+    }
+
+    /// The same invariant in the other direction. Stating it once means
+    /// publishing a newer class is covered without a second rule.
+    @MainActor
+    func testPublishingANewerClassMovesTheIndexForward() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08", body: "one", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "false", date: "2026-09-10", body: "two", in: made.course)
+        try writeSectionIndex(pointingAt: "Unit 1, Day 1", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "publish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 2"]
+        ))
+
+        let index: String = try sectionIndexText(in: made.course)
+        XCTAssertTrue(index.contains("![[Unit 1, Day 2]]"), index)
+        XCTAssertTrue(index.contains("created: 2026-09-10"), index)
+    }
+
+    /// The landing page transcludes other things too. Repointing Key Links at
+    /// a lesson would be a far worse bug than the one this fixes.
+    @MainActor
+    func testOnlyTheClassTransclusionIsRepointed() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08", body: "one", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "true", date: "2026-09-10", body: "two", in: made.course)
+        try writeSectionIndex(pointingAt: "Unit 1, Day 2", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 2"]
+        ))
+
+        let index: String = try sectionIndexText(in: made.course)
+        XCTAssertTrue(index.contains("![[Key Links]]"), "Left exactly as it was")
+        XCTAssertTrue(index.contains("![[Help Sessions]]"), "Left exactly as it was")
+    }
+
+    /// Undo has to take the landing page back with the lessons. Restoring the
+    /// classes and leaving the front page pointing at the wrong one would be a
+    /// worse state than either.
+    @MainActor
+    func testUndoTakesTheSectionIndexBackToo() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08", body: "one", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "true", date: "2026-09-10", body: "two", in: made.course)
+        try writeSectionIndex(pointingAt: "Unit 1, Day 2", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 2"]
+        ))
+        _ = await made.runner.run(call: call("undo_last_change", arguments: [:]))
+
+        let index: String = try sectionIndexText(in: made.course)
+        XCTAssertTrue(index.contains("![[Unit 1, Day 2]]"),
+                      "Undo put the lesson back, so it must put the pointer back")
+    }
+
     /// A class page is a ROOT, not an orphan.
     ///
     /// The rule the courses are built to is that every page must be reachable
@@ -1215,6 +1306,35 @@ final class AssistToolRunnerTests: XCTestCase {
         try text.write(
             to: ClassPages.folderURL(forSection: 1, in: course).appendingPathComponent(title + ".md"),
             atomically: true, encoding: .utf8
+        )
+    }
+
+    /// A section's landing page, shaped like the real ones: a class
+    /// transclusion under a heading, and two that are NOT classes.
+    @MainActor
+    private func writeSectionIndex(pointingAt classTitle: String, in course: Course) throws {
+        let text: String = """
+        ---
+        title: Section 1
+        created: 2026-08-01T09:00:00.000-0400
+        publish: true
+        ---
+        # Most Recent Class
+        ![[\(classTitle)]]
+
+        ![[Help Sessions]]
+        ![[Key Links]]
+        """
+        try text.write(
+            to: SectionIndexPointer.indexURL(forSection: 1, in: course),
+            atomically: true, encoding: .utf8
+        )
+    }
+
+    @MainActor
+    private func sectionIndexText(in course: Course) throws -> String {
+        return try String(
+            contentsOf: SectionIndexPointer.indexURL(forSection: 1, in: course), encoding: .utf8
         )
     }
 

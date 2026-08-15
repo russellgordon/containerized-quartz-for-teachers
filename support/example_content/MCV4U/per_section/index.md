@@ -8,8 +8,10 @@ publish: true
 # Most Recent Class
 ![[Unit 4, Day 25]]
 
-%% Teacher: after each class, point the transclusion above at the newest
-class page — students land here, so the latest agenda greets them first.
+%% Teacher: this is what students meet first, so it should show the newest
+class you have published. You do not have to keep it up to date by hand:
+ask the local AI assistant to publish or unpublish a class and it repoints
+this transclusion for you, and moves this page's date to match that class.
 It starts at Unit 4, Day 6 because that is the newest PUBLISHED page in
 the example semester (Unit 4, Day 7 is the held-back example). %%
 

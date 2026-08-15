@@ -10,8 +10,10 @@ excludeBacklinks: true
 ![[Unit 5, Day 15]]
 
 %%
-Change the transclusion above to the class you have just taught. That one
-line keeps this landing page current — everything else looks after itself.
+This is what students meet first, so it should show the newest class you
+have published. You do not have to keep it up to date by hand: ask the
+local AI assistant to publish or unpublish a class and it repoints this
+transclusion for you, and moves this page's date to match that class.
 It starts at Unit 5, Day 15 because that is the newest PUBLISHED page in
 the example semester; Unit 5, Day 16 is the held-back example.
 %%
