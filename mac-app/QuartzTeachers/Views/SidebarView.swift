@@ -723,7 +723,7 @@ struct SidebarView: View {
                 courseCode: course.code,
                 sectionNumber: sectionNumber
             )
-            Button("Revise with AI…", systemImage: "sparkles") {
+            Button("Revise with Local AI Assistant…", systemImage: "sparkles") {
                 openWindow(value: AssistWindowRequest(
                     courseCode: course.code,
                     sectionNumber: sectionNumber,

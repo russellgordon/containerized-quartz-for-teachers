@@ -232,7 +232,8 @@ where. Anything unmarked is still outstanding.
   the measurements. The headlines that will bite whoever ports it:
 
   **✅ DONE (macOS, 2026-08-15).** Built as `AssistWindowView` +
-  `AssistSession` + `AssistAgent`, reached from "Revise with AI…" on a
+  `AssistSession` + `AssistAgent`, reached from "Revise with Local AI
+  Assistant…" on a
   section's context menu, one window per section. The engine is native
   llama.cpp with Metal rather than a container — 175 s → 2.1 s on the same
   model and prompt. Model tier chosen from the Mac's memory.
