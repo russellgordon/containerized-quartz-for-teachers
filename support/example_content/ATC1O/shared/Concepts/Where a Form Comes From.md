@@ -22,14 +22,24 @@ Tap did not descend from one tradition. It came out of the contact between West
 African dance traditions carried to North America by enslaved people and their
 descendants, and the step and clog dancing of Irish and British immigrants —
 two traditions that both put the rhythm in the feet, meeting in port cities and
-tenements across the nineteenth century. By the 1920s and 1930s the form was on
-stages and in films, recognisably its own thing: percussive, improvisatory, and
-built for an audience to *hear*.
+tenements across the nineteenth century. One of those addresses is on the
+record: the Five Points district of lower Manhattan, where free Black residents
+and poor Irish immigrants lived along the same streets, and where William Henry
+Lane — born about 1825, and billed as Master Juba after he beat the Irish
+American minstrel John Diamond in a series of challenge dances in 1844 —
+grafted African rhythm and a loose carriage of the body onto the exacting
+technique of jig and clog. What came of that grafting is generally taken as the
+earliest form of American tap. By the 1920s and 1930s the form was on stages
+and in films, recognisably its own thing: percussive, improvisatory, and built
+for an audience to *hear*.
 
 That history is legible in the movement. The upright carriage and intricate
 footwork of the step traditions, the rhythmic complexity and grounded weight of
 the African traditions — both are still there. You can see the argument in the
-body.
+body, and hear it in the shoe, which is dated too: the metal plates we now call
+taps did not appear until the early decades of the twentieth century, on the
+Broadway musical stage. Before them the sound came off hard soles, clogs and
+hobnailed boots.
 
 ## What to ask about any form
 

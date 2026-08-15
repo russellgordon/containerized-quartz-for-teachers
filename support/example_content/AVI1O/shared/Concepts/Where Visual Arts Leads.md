@@ -23,13 +23,17 @@ be portable.
 | Straight to work | Freelance and commissions | Work you can show |
 
 Ontario's public colleges are applied to through one service,
-`ontariocolleges.ca`, which currently covers several program choices across
-more than one college. Universities have their own central application, run
-through your guidance department. Apprenticeship is certified provincially by
-Skilled Trades Ontario, which covers more than 140 trades. And some art and
-design programs ask to see a portfolio before admitting you — which ones, and
-what they want in it, is printed on each program's own admissions page, worth
-reading in Grade 10 rather than Grade 12.
+`ontariocolleges.ca`, which as of August 2026 lets one application carry up
+to five program choices, no more than three of them at any one college. The
+credentials it lists differ mostly in length: an Ontario college certificate
+is two semesters, a diploma four, an advanced diploma six, and a degree eight
+or more. Universities have their own central application, the Ontario
+Universities' Application Centre — `ouac.on.ca` — which your guidance
+department will take you through. Apprenticeship is certified provincially by
+Skilled Trades Ontario, which as of August 2026 lists 144 recognised trades.
+And some art and design programs ask to see a portfolio before admitting you
+— which ones, and what they want in it, is printed on each program's own
+admissions page, worth reading in Grade 10 rather than Grade 12.
 
 ## Where the skills go
 
