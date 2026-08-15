@@ -38,8 +38,26 @@ final class AssistModelTierTests: XCTestCase {
     /// reappears, this test should fail until somebody re-measures it.
     func testThereIsNoMiddleRung() {
         XCTAssertEqual(AssistModelTier.allCases.count, 2)
+        // Checked against the FILE name, not the display name: what a teacher
+        // is shown is deliberately plain language and says nothing about
+        // which model is running.
         for tier in AssistModelTier.allCases {
-            XCTAssertFalse(tier.displayName.contains("3B"), "The 3B inverts polarity — see AssistModelTier")
+            XCTAssertFalse(tier.fileName.contains("-3b-"), "A 3B inverts polarity — see AssistModelTier")
+            XCTAssertFalse(tier.fileName.contains("3b-instruct"), "A 3B inverts polarity — see AssistModelTier")
+        }
+    }
+
+    /// Nothing a teacher reads names the model. "Qwen3 4B" tells them nothing
+    /// they can act on, and it is the same rule that keeps "Docker" and
+    /// "container" out of the interface.
+    func testWhatTheTeacherIsShownNamesNoModel() {
+        let jargon: [String] = ["qwen", "llama", "gguf", "instruct", "1.5b", "4b", "7b", "3b"]
+        for tier in AssistModelTier.allCases {
+            let shown: String = tier.displayName.lowercased()
+            for word in jargon {
+                XCTAssertFalse(shown.contains(word), "\(tier.displayName) says '\(word)' to a teacher")
+            }
+            XCTAssertTrue(shown.contains("assistant"), "It should read as the assistant, in plain words")
         }
     }
 

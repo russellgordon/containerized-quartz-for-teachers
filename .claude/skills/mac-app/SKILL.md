@@ -181,6 +181,28 @@ Ordinary rebuilding does not clear these. Clear them yourself and say so.
 - Do not report a UI-test failure as real until it has been run alone on a
   quiet machine. That mistake has been made here before.
 
+## The interface never names the machinery
+
+The oldest rule in this project, and the assistant broke it: no "toolchain",
+"script", "Docker", "container", "WSL" — and **no model names**. A download
+sheet reading "Plantoir picked Qwen3 4B to suit this Mac's memory" tells a
+teacher nothing they can act on and quite a lot about plumbing they never
+asked about.
+
+Say **"the small assistant"** and **"the larger assistant"**. That is what
+`AssistModelTier.displayName` returns, and it is the only thing shown; the
+real model lives in `fileName` and `downloadURL`, which a teacher never sees.
+A test (`testWhatTheTeacherIsShownNamesNoModel`) fails if a model name, a
+parameter count or a file format reaches that string.
+
+The same goes for anything else the assistant surfaces: tokens, context
+windows, quantisation, Metal, GPU layers, inference. If a sentence would only
+make sense to somebody who has read the source, it is not ready to show.
+
+Two exceptions, both non-teacher-facing: `GUI-IMPROVEMENTS.md` and the
+handoffs record what was measured and must name models precisely, and code
+comments should too. The rule is about what appears on screen.
+
 ## Things that are easy to get wrong
 
 - **`Vendor/llama` is not committed.** A fresh clone must run

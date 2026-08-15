@@ -101,8 +101,8 @@ struct AssistDownloadView: View {
             // to discover it from a progress bar.
             Text("""
                  It runs entirely on this Mac — nothing you write is sent anywhere. \
-                 Plantoir picked \(tier.displayName) to suit this Mac's memory, \
-                 which is a \(tier.downloadDescription) download, kept for next time.
+                 Plantoir picked \(tier.displayName) to suit this Mac's memory: a \
+                 \(tier.downloadDescription) download, kept for next time.
                  """)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

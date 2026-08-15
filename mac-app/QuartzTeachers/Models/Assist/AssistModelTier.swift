@@ -44,11 +44,21 @@ nonisolated enum AssistModelTier: String, CaseIterable, Sendable {
 
     // MARK: - Computed properties
 
-    /// What the teacher is told is running, if they ask.
+    /// What the teacher is told is running.
+    ///
+    /// Deliberately NOT the model's name. "Qwen3 4B" tells a teacher nothing
+    /// they can act on and everything about machinery they did not ask about
+    /// — the same rule that keeps "Docker", "container" and "toolchain" out
+    /// of the interface. What matters to them is that this Mac gets the
+    /// better one, or that a smaller one is in use and is why the assistant
+    /// checks its work first.
+    ///
+    /// The actual model is identified by `fileName` and `downloadURL`, which
+    /// are never shown.
     var displayName: String {
         switch self {
-        case .small: return "Qwen2.5 1.5B"
-        case .large: return "Qwen3 4B"
+        case .small: return "the small assistant"
+        case .large: return "the larger assistant"
         }
     }
 
