@@ -49,4 +49,24 @@ enum AssistWindowPlacement {
         window.setFrameUsingName(NSWindow.FrameAutosaveName(name))
         window.setFrameAutosaveName(NSWindow.FrameAutosaveName(name))
     }
+
+    /// Write down where the window is, now.
+    ///
+    /// The autosave name means AppKit records the frame as the window is moved
+    /// and resized, which covers the ordinary case — but it writes when it
+    /// chooses to, and the two moments that matter most are the two least
+    /// likely to leave it time: the window being closed, and the app being
+    /// quit with the window still open. Both are exactly when a teacher has
+    /// finished arranging things, so both save explicitly.
+    ///
+    /// Harmless if the frame has not moved, and cheap: it is one defaults
+    /// write.
+    static func save(_ window: NSWindow?, courseCode: String, sectionNumber: Int) {
+        guard let window else {
+            return
+        }
+        window.saveFrame(usingName: NSWindow.FrameAutosaveName(
+            autosaveName(courseCode: courseCode, sectionNumber: sectionNumber)
+        ))
+    }
 }

@@ -591,6 +591,31 @@ Day 2 still links to it" — not only what it removed. A teacher needs to see
 the tool reasoned about it, or they will check by hand and the rule has
 bought nothing.
 
+#### Never ask the model for something the window already knows
+
+The tools take `course` and `section` as arguments, and for a long time the
+model filled them in. It should never have been asked: the assistant window is
+opened FOR one section and its title says so.
+
+The failure this produced is instructive because it is not a stupid one.
+**"Unpublish Unit 4, Day 12" was read as section 4**, and the teacher was told
+their course has no Section 4 — a perfectly reasonable misreading of a page
+name that begins with a number, and one that no amount of describing the
+argument would prevent on the next page name that does. It happened more than
+once before it was fixed.
+
+So the agent overwrites both arguments with the window's own before anything
+runs. It cannot cost routing accuracy, because it changes nothing the model
+reads — only what is done with what it said.
+
+**Do this in the agent, not in the tool.** The same tools answer Claude Code
+over MCP, where the course and section genuinely ARE the caller's to choose.
+It is the window that is about one section, so the window is what binds them.
+
+Worth a sweep of your own surface for the same shape: any argument the
+surrounding context already determines should be overwritten on the way in
+rather than described more carefully in a schema.
+
 #### A corollary, learned the expensive way: do not fix routing with words
 
 When a probe routes to the wrong tool, the tempting fix is a sentence in the

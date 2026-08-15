@@ -43,6 +43,16 @@ struct AssistToolOutcome: Sendable, Equatable {
     /// because a truncated list of what is broken cannot be acted on.
     let teacherDetail: String?
 
+    /// Whether this outcome really IS a plan — something that would happen if
+    /// the teacher agreed.
+    ///
+    /// A plan twin can come back with a refusal instead: the page was not
+    /// found, the section does not exist. Those used to be shown with "Shall I
+    /// go ahead?" and two buttons underneath, which asks a teacher to approve
+    /// an explanation of why nothing can be done — and in the transcript that
+    /// prompted this, four times in a row.
+    let isPlan: Bool
+
     /// What a Go/Cancel card shows the teacher.
     ///
     /// The same as `detail` for everything except a PLAN, where `detail` ends
@@ -63,12 +73,14 @@ struct AssistToolOutcome: Sendable, Equatable {
          detail: String,
          shouldContinue: Bool,
          forTheCard: String? = nil,
-         teacherDetail: String? = nil) {
+         teacherDetail: String? = nil,
+         isPlan: Bool = false) {
         self.summary = summary
         self.detail = detail
         self.shouldContinue = shouldContinue
         self.forTheCard = forTheCard ?? detail
         self.teacherDetail = teacherDetail
+        self.isPlan = isPlan
     }
 
     // MARK: - Functions
@@ -98,7 +110,8 @@ struct AssistToolOutcome: Sendable, Equatable {
             summary: summary,
             detail: plan + "\n\n" + AssistToolOutcome.askBeforeGoingAhead,
             shouldContinue: true,
-            forTheCard: plan
+            forTheCard: plan,
+            isPlan: true
         )
     }
 

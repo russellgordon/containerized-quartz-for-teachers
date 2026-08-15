@@ -214,7 +214,47 @@ final class AssistAgent {
     }
 
     /// Run a tool, stopping at the gate when it needs one.
-    private func run(call: AssistToolCall) async {
+    /// The same call, but about THIS window's course and section whatever the
+    /// model said.
+    ///
+    /// The window is opened for one section and its title says so, yet the
+    /// tools take `course` and `section` as arguments and the model fills them
+    /// in — which is a question it should never have been asked. Every wrong
+    /// answer is a lost turn, and one wrong answer in particular is common
+    /// enough to have been reported twice: **"Unpublish Unit 4, Day 12" gets
+    /// read as section 4**, and the teacher is told their course has no
+    /// Section 4. It is a perfectly reasonable misreading of a page name that
+    /// begins with a number, and no amount of describing the argument will
+    /// stop it happening on the next page name that does.
+    ///
+    /// So the argument is taken back. This is the same principle as the coarse
+    /// tools and the boolean-free surface: a fact the app already knows is not
+    /// a fact worth asking a model for. It cannot cost routing accuracy either,
+    /// since it changes nothing the model reads — only what is done with what
+    /// it said.
+    ///
+    /// Done HERE rather than in the runner, because the runner also answers
+    /// Claude Code over MCP, where the course and section are genuinely the
+    /// caller's to choose. It is this WINDOW that is about one section.
+    private func boundToThisSection(_ call: AssistToolCall) -> AssistToolCall {
+        var arguments: [String: Any] = call.argumentValues
+        if arguments["course"] != nil || arguments["section"] != nil {
+            arguments["course"] = courseCode
+            arguments["section"] = sectionNumber
+        }
+        guard let data = try? JSONSerialization.data(withJSONObject: arguments),
+              let rewritten = String(data: data, encoding: .utf8) else {
+            return call
+        }
+        return AssistToolCall(
+            id: call.id,
+            type: call.type,
+            function: AssistToolCall.Function(name: call.function.name, arguments: rewritten)
+        )
+    }
+
+    private func run(call rawCall: AssistToolCall) async {
+        let call: AssistToolCall = boundToThisSection(rawCall)
         guard let definition = tools.definition(named: call.function.name) else {
             messages.append(AssistMessage.toolResult(
                 callID: call.id, name: call.function.name,
@@ -289,6 +329,20 @@ final class AssistAgent {
         // `forTheCard`, not `detail`: the detail ends with a sentence written
         // for whatever reads a plan on a surface with no Go and Cancel of its
         // own, and this surface has them.
+        // A plan twin can come back with a REFUSAL — no such page, no such
+        // section — and a refusal is an answer, not a proposal. Asking "Shall
+        // I go ahead?" underneath one invites a teacher to approve an
+        // explanation of why nothing can be done, which the transcript that
+        // prompted this shows them declining four times in a row.
+        if !outcome.isPlan {
+            entries.append(Entry(speaker: .assistant, text: outcome.summary))
+            messages.append(AssistMessage.toolResult(
+                callID: call.id, name: call.function.name, text: outcome.detail
+            ))
+            activity = .idle
+            return
+        }
+
         entries.append(Entry(speaker: .assistant, text: outcome.forTheCard))
         // The question is a message too, so the card below can be nothing but
         // the two buttons. A card that carries its own heading is a second

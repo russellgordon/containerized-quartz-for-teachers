@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// The assistant, in a window of its own for one section.
@@ -39,6 +40,11 @@ struct AssistWindowView: View {
     /// The last line the arrow keys put in the box, so an edit can be told
     /// apart from the walk's own writing.
     @State private var lastRecalled: String?
+
+    /// The window this conversation lives in, so its place can be written
+    /// down at the two moments AppKit's own autosave is least likely to get
+    /// a turn: closing, and quitting with it open.
+    @State private var hostWindow: NSWindow?
 
     /// Whether the box has the keyboard. Tapping a suggestion puts text in it
     /// and gives it focus, so the teacher can edit straight away rather than
@@ -88,7 +94,19 @@ struct AssistWindowView: View {
             Divider()
             composer
         }
-        .frame(minWidth: 460, minHeight: 420)
+        // Fills whatever the window is, rather than asking for a size.
+        //
+        // With only a MINIMUM here, SwiftUI's idea of the ideal size came from
+        // the content — so when the window swapped "Getting the assistant
+        // ready…" for the conversation, the ideal changed and macOS resized
+        // the window under the remembered frame. What a teacher saw was the
+        // window appearing where they left it and then jumping once the model
+        // was ready. Filling the space makes the content's size a consequence
+        // of the window rather than a demand on it, so nothing moves.
+        .frame(
+            minWidth: 460, idealWidth: 620, maxWidth: .infinity,
+            minHeight: 420, idealHeight: 640, maxHeight: .infinity
+        )
         .navigationTitle("Assistant — \(session.courseCode) section \(session.sectionNumber)")
         // When something in here needs class dates for a section that has
         // none recorded, it asks through SectionSchedulePrompt and the sheet
@@ -105,17 +123,33 @@ struct AssistWindowView: View {
         // middle of the screen, on top of the section it is meant to sit
         // beside, gets dragged back every single time.
         .background(WindowAccessor { window in
+            hostWindow = window
             AssistWindowPlacement.remember(
                 window,
                 courseCode: session.courseCode,
                 sectionNumber: session.sectionNumber
             )
         })
+        // Quitting with the window open is the other moment a teacher has
+        // finished arranging it, and `onDisappear` is not guaranteed a turn
+        // during termination.
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.willTerminateNotification)) { _ in
+            AssistWindowPlacement.save(
+                hostWindow,
+                courseCode: session.courseCode,
+                sectionNumber: session.sectionNumber
+            )
+        }
         .task {
             history = AssistPromptHistory.read(fromStored: storedHistory)
             await session.prepare()
         }
         .onDisappear {
+            AssistWindowPlacement.save(
+                hostWindow,
+                courseCode: session.courseCode,
+                sectionNumber: session.sectionNumber
+            )
             session.finish()
         }
     }
