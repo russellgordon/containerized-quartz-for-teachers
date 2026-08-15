@@ -218,10 +218,27 @@ Every rung was chosen by measurement, and **two candidates were vetoed for a
 specific failure that no accuracy score would have caught**: asked to *hide* a
 page, Qwen2.5 3B called the publish tool in 9 trials out of 10, and
 Llama-3.2 3B in 10 out of 10 — on the same sentence, despite being unrelated
-model families. Publishing something a teacher asked to hide is the one
-mistake that cannot be taken back before students have seen it, so zero
-polarity inversions is treated as a veto rather than a tiebreaker. There is
-no 3B rung in the app as a result.
+model families. This is called a **polarity inversion**: not a failure to
+understand the request, but doing the exact opposite of it.
+
+It is worth being precise about why that is the veto, because the obvious
+reason is not the real one. Publishing a page does **not** put it in front of
+students — in Plantoir, *publishing* marks a page for inclusion, and
+*deploying* is the separate act that sends the built site to the web. An
+inversion is therefore recoverable: nothing is visible to anyone until a
+deploy, and `undo_last_change` takes it back.
+
+What makes it the veto is that it fails **silently and in the wrong
+direction**. Every other kind of routing mistake announces itself: the wrong
+tool runs and the teacher sees an answer that has nothing to do with what they
+asked. An inversion produces a confident report that the thing was done, while
+the section is left in the opposite state to the one the teacher asked for —
+and *that* state is what the next deploy faithfully carries out, days later,
+with no reason for anyone to look again. A model that can do the opposite of
+what it was told is not a model whose other 70% can be trusted, which is why
+this is treated as disqualifying rather than as points off a score.
+
+There is no 3B rung in the app as a result.
 
 *(In the interface none of this is ever named. A teacher is told "the small
 assistant" or "the larger assistant" and a download size; model names,

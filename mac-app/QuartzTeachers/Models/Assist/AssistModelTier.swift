@@ -169,8 +169,16 @@ nonisolated enum AssistModelTier: String, CaseIterable, Sendable {
     ///
     /// **Zero inversions is a veto, not a tiebreaker.** Both 3B-class models
     /// published a page when asked to HIDE it, and they failed on the SAME
-    /// sentence despite being unrelated families. That is the one mistake a
-    /// teacher cannot take back before students have seen it.
+    /// sentence despite being unrelated families.
+    ///
+    /// Not because the page becomes visible — it does not. Publishing marks a
+    /// page for inclusion; DEPLOYING is the separate act that reaches
+    /// students, and `undo_last_change` takes a publish back. The veto is
+    /// because an inversion is the one failure that does not announce itself:
+    /// every other misroute runs a tool the teacher can see was wrong, while
+    /// this one reports success and leaves the section in the OPPOSITE state
+    /// to the one asked for — which the next deploy then carries out
+    /// faithfully, days later, with no reason for anyone to look again.
     ///
     /// **8 GB Macs stay on the 1.5B for now, and that is a deliberate hold
     /// rather than a result.** Qwen3 4B at 8k context measured 3.87 GB

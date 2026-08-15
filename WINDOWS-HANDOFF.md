@@ -445,6 +445,18 @@ is the one genuinely dangerous failure — the reason publish and unpublish are
 separate verbs rather than one tool with a boolean — and the 3B also scored
 BELOW the 1.5B on the like-for-like probe set (70% against 81%).
 
+Be precise about WHY it is the dangerous one, because the obvious reason is
+wrong and stating it wrongly will lead somebody to weigh it against a score.
+A wrong publish does not put anything in front of students: **publishing marks
+a page for inclusion, deploying is the separate act that reaches them**, and
+undo takes a publish back. The veto is that an inversion is the only failure
+that does not announce itself. Every other misroute runs a visibly wrong tool;
+this one reports success while leaving the section in the OPPOSITE state to
+the one the teacher asked for — and the next deploy then carries that out
+faithfully, days later, with nothing to prompt a second look. A model that
+will do the opposite of what it was told is not one whose remaining 70% can
+be trusted.
+
 The macOS build has no 3B rung as a result; the case was deleted from the enum
 rather than marked risky, on the same reasoning as having no delete tool. If
 Windows ever offers a model choice, measure each candidate for inversions

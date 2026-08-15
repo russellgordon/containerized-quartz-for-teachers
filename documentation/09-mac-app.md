@@ -101,8 +101,12 @@ when the choice was made
 
 Both 3B-class models published a page when asked to HIDE it — and failed on
 the same sentence, despite being unrelated families. Zero inversions is a
-veto rather than a tiebreaker, because that is the one mistake a teacher
-cannot take back before students have seen it. Qwen3 4B then beat the 7B on
+veto rather than a tiebreaker, and not because the page becomes visible:
+publishing marks a page for inclusion, deploying is what reaches students,
+and undo takes it back. It is because an inversion is the one mistake that
+does not announce itself — the assistant reports success while the section
+sits in the opposite state to the one asked for, which the next deploy then
+carries out faithfully. Qwen3 4B then beat the 7B on
 accuracy, latency, download and memory alike, so the 7B is not shipped
 either.
 
