@@ -125,32 +125,17 @@ an item when it ships (finished behaviour is recorded in
   design pass rather than a stop-and-wait bolted onto `startDeploy`. Not
   urgent.
 
-- **AI Assist — the rest of it**, deferred 2026-08-13, all on the
-  `ai-assist` branch, none of it in 1.0. Step 1 (the MCP server) **is
-  built** — see [`AI-ASSIST.md`](AI-ASSIST.md) for the measurements and
-  [`windows-app/Plantoir.Mcp/README.md`](windows-app/Plantoir.Mcp/README.md)
-  for what shipped. What remains, in the order the evidence suggests:
+- **AI Assist — the rest of it**, updated 2026-08-14 after a full
+  live-tested day on the `ai-assist` branch (none of it in 1.0). The
+  Windows in-app assistant is now **working end to end**: approval gate
+  (deploys only), embedded model with a verified once-ever prompt cache,
+  the promise card handled as deterministic commands, page edits doing
+  stop-edit-offer around the app's own preview, and the whole loop moved
+  to `Plantoir.Core` with tests covering every promise —
+  [`AI-ASSIST-HANDOFF.md`](AI-ASSIST-HANDOFF.md) §10 is the record, and
+  `MAC-HANDOFF.md` carries the mac side's pickup entry. What remains:
 
-  **(a) A confirmation panel in the app.** The server already produces the
-  proposal — `plan_publish_class` returns a plain-words sentence naming
-  every file that would change. Nothing renders it yet. This is the piece
-  that makes the whole feature safe, because the one dangerous failure
-  measured was polarity inversion (a *hide* request answered with a
-  publish), and a teacher reading one sentence catches it where no test
-  can. Needed before any in-app assistant, not before the
-  bring-your-own-assistant path, which already confirms in the client.
-
-  **(b) The embedded model, opt-in.** Qwen2.5-1.5B-Instruct Q4_K_M on
-  llama.cpp with `--no-mmap` — 1.08 GB resident, 2–6 s a warm request,
-  100% routing across 27 trials. Roughly 1 GB downloaded on first use plus
-  a CPU-only llama.cpp build; nothing ships in the base image. The budget
-  is tight and fixed: macOS pins Colima at `--memory 4` regardless of host
-  RAM, so both platforms have about 4 GB, and AI Assist and a site build
-  must take turns. Offline-only is the recommendation, and not as a
-  compromise — course material can name students, which makes sending it
-  to a third-party API an MFIPPA question no feature is worth.
-
-  **(c) The CSV reschedule.** Deliberately last. The routing works; the
+  **(a) The CSV reschedule.** Deliberately last. The routing works; the
   tool does not exist. The hard part is parsing a teacher's real CSV and
   rewriting links without breaking the schedule invariant in
   `DEVELOPERS.md` (class pages' links *are* the schedule). Design it to
@@ -158,12 +143,20 @@ an item when it ships (finished behaviour is recorded in
   the CSV is messy enough that the model has to interpret it, that is
   planning, and the measurements say planning is where it fails.
 
-  **(d) The shared activity lease.** The server cannot see the GUI's
-  in-flight previews or publishes and vice versa; `CourseActivity` and
-  `PreviewLeases` are in-process on both platforms. Overnight this is moot,
-  daytime overlap could corrupt a build. A lease file under the working
-  folder that both apps and the server honour — a shared-design item, so
-  agree the file shape with the mac side first.
+  **(b) The shared activity lease, finished.** `WorkLease` files under the
+  working folder now let the GUI decline a preview while the assistant
+  builds, but the full both-directions story (server honouring the GUI's
+  claims across every operation, and the mac app reading the same files)
+  is still a shared-design item — agree the remaining shape with the mac
+  side first.
+
+  **(c) Re-measure the conversational residue.** The card's fixed shapes
+  no longer touch the model, but the conversational phrasings that still
+  do were last measured at 72% overall after the system-prompt rewrite
+  (`research/ai-assist/promise-card-results.txt`), with undo over-salient
+  and the deletion probe's decline lost. A prompt tweak plus a re-run of
+  `trimmed-surface-suite.py` is a contained afternoon; every change to
+  prompt or schemas retires the cache by design, so batch them.
 
 - **A "prepare for start of year" operation, and the audit behind it** —
   deferred 2026-08-13, from a real session on the `ai-assist` branch.

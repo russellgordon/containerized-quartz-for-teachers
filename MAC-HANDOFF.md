@@ -12,6 +12,55 @@ references are the durable pointers.)
 
 ## To implement
 
+- **The local assistant went from built to trustworthy in one live-tested
+  day — read `AI-ASSIST-HANDOFF.md` §10 before building the mac's**
+  (Windows + shared, 2026-08-14, the `ai-assist` branch from `7b18fe6` to
+  `1961d07`). The short of it: everything measured, five design decisions
+  worth inheriting rather than rediscovering, and the conversation loop is
+  now **shared C# in `Plantoir.Core`** — port the window, not the logic.
+
+  1. **The loop is `Plantoir.Core/Assist/AssistAgent.cs`**, behind
+     `IChatModel` (the llama.cpp client) and `IToolServer` (the MCP stdio
+     client). The mac app supplies those two and a window; every behaviour
+     below comes with the class, already pinned by
+     `Plantoir.Tests/AssistAgentTests.cs`, which runs the whole promise
+     card in two seconds.
+  2. **The promise card's eleven phrasings are COMMANDS, not routing
+     questions** (`CardCommand`). Measured word for word, the model
+     misrouted five of eleven — every trial — while filling arguments
+     perfectly (87 trials, zero wrong courses/dates/types). Fixed shapes
+     are matched in code; the model keeps whatever has a story in it.
+  3. **Only deploys wait for a button.** Everything else is backed up,
+     undoable, and invisible to students until a deploy; a scheduled
+     deploy collects its yes at scheduling time. The plan-first system
+     prompt is gone (it made undo over-salient — see §10.4's regressions
+     before re-wording anything).
+  4. **The assistant automates the app, it does not duplicate it.**
+     `rebuild_preview`/`deploy_section` never reach the server from the
+     window — they press the app's own Preview/Deploy. Page edits run
+     with `preview: false` and do what a person would: stop the showing
+     preview, edit, OFFER the restart. This matters because the served
+     preview is a merged COPY — an edit is invisible to it until rebuilt,
+     which on Windows read as "the assistant is stuck".
+  5. **The prompt cache is real and once-ever, if you name it honestly**:
+     save/restore verified (175 s cold → 30 ms restore → 11.7 s turn),
+     file named per course + section + SHA-fingerprint of system prompt
+     AND narrowed schemas, empty saves deleted, "Ready"/"picking up"
+     only said when true. Reference: `LocalModel.cs` (the WSL parts are
+     Windows-only; the colima analogue of "who holds the VM open" is
+     yours to check).
+
+  Smaller but shared: MCP progress only flows if the client sends
+  `_meta.progressToken` (see `McpClient.Call`) — without it every
+  milestone line is silently dropped; `AssistWorkspace.Apply` now narrates
+  page-by-page ("Editing “Unit 2, Day 3”…"), which the window grows into
+  one work-log bubble; the dateline rides appended on every user turn
+  (prepended cost 15 routing points; in the system prompt it would break
+  the cache nightly); `NarrowToLocal` rewrites the schemas' example
+  course to the window's own, because the model copies examples; and the
+  transcript speaks with ONE name, never shows content that rides with a
+  tool call, and never shows the dateline.
+
 - **⚠️ Add Section was creating pages in the OLD schema — check yours**
   (Windows, 2026-08-14, `7a66200`). The publish/draft entry below was landed
   and then found INCOMPLETE: `SectionAdder`'s fallback template — the path
