@@ -1,0 +1,177 @@
+THE SHIPPING 13-TOOL SURFACE, MEASURED
+======================================
+
+Date: 2026-08-15
+Engine: llama.cpp b10435, Metal, 48 GB M4 Pro
+Flags: --reasoning off --reasoning-budget 0 --ctx-size 16384 --threads 6
+       --n-gpu-layers 999 --jinja --parallel 1, temperature 0.1
+Surface: the 13 tools AssistToolRunner.localTools hands the model,
+         dumped from the app itself rather than transcribed.
+Suite: 42 probes x 10 trials = 420 responses per model.
+
+--- Qwen3-4B (the .large tier) ---
+== Qwen3-4B / 13 tools ==
+all probes:            380/420 (90%)
+Windows-comparable 18: 170/180 (94%)
+promise-card 11:       110/110 (100%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 10
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 20
+prompt tokens reported by server: [2643, 2645, 2646, 2647, 2648, 2649, 2650, 2651, 2652, 2653, 2654, 2655, 2656, 2657, 2660, 2661, 2662, 2663, 2664, 2666, 2667, 2671, 2687, 2693]
+warm turn median: 0.53 s   (mean 0.58 s, max 1.04 s)
+total probe responses parsed: 420
+
+probe                              score  tools chosen over trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name              10/10  10x publish_pages
+card: publish tomorrow             10/10  10x publish_class_on
+card: unpublish by name            10/10  10x unpublish_pages
+card: unpublish, mistake           10/10  10x unpublish_pages
+card: plan a publish               10/10  10x publish_pages
+card: check the section            10/10  10x check_section
+card: rebuild preview              10/10  10x rebuild_preview
+card: undo                         10/10  10x undo_last_change
+card: deploy now                   10/10  10x deploy_section
+card: schedule a deploy            10/10  10x schedule_deploy
+card: cancel the deploy            10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links       10/10  10x publish_class_on
+publish by name, informal          10/10  10x publish_pages
+HIDE - the inversion case          10/10  10x unpublish_pages
+hide, informal (verbatim cue)      10/10  10x unpublish_pages
+hide, phrased as a mistake         10/10  10x unpublish_pages
+list pages                         10/10  10x list_pages
+read                               10/10  10x read_page
+check section                      10/10  10x check_section
+rebuild preview                    10/10  10x rebuild_preview
+undo                               10/10  10x undo_last_change
+schedule a deploy                  10/10  10x schedule_deploy
+deploy now                         10/10  10x deploy_section
+cancel scheduled deploy            10/10  10x cancel_scheduled_deploy
+no course named: publish           10/10  10x publish_class_on
+no course named: hide              10/10  10x unpublish_pages
+deletion - no such tool            10/10  10x (declined)
+out of scope                       10/10  10x (declined)
+typos                              0/10   10x publish_pages  [MISS]
+new: add an entry (verbatim)       10/10  10x add_next_class
+new: add tomorrow's page           10/10  10x add_next_class
+new: start the next class          10/10  10x add_next_class
+new: next lesson page (mine)       10/10  10x add_next_class
+new: class after this one (mine)   10/10  10x add_next_class
+new: when does it meet (verbatim)  10/10  10x read_remembered_timetable
+new: what dates (verbatim)         10/10  10x read_remembered_timetable
+new: which days (mine)             10/10  10x read_remembered_timetable
+new: schedule on file (mine)       10/10  10x read_remembered_timetable
+new: remember dates (mine)         0/10   10x read_remembered_timetable  [MISS]
+new: remember w/ source (mine)     0/10   10x read_remembered_timetable  [MISS]
+new: add class, dated wording      10/10  10x add_next_class
+new: plan only                     0/10   10x read_remembered_timetable  [MISS]
+
+
+--- Qwen2.5-1.5B (the .small tier) ---
+== Qwen2.5-1.5B / 13 tools ==
+all probes:            298/420 (71%)
+Windows-comparable 18: 121/180 (67%)
+promise-card 11:       85/110 (77%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 49
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 1
+    typos -> date='2026-09-15'
+declined responses: 60
+prompt tokens reported by server: [2641, 2643, 2644, 2645, 2646, 2647, 2648, 2649, 2650, 2651, 2652, 2653, 2654, 2655, 2658, 2659, 2660, 2661, 2662, 2664, 2665, 2669, 2685, 2691]
+warm turn median: 0.29 s   (mean 0.37 s, max 1.95 s)
+total probe responses parsed: 420
+
+probe                              score  tools chosen over trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name              10/10  10x publish_pages
+card: publish tomorrow             10/10  10x publish_class_on
+card: unpublish by name            10/10  10x unpublish_pages
+card: unpublish, mistake           10/10  10x unpublish_pages
+card: plan a publish               9/10   9x publish_pages, 1x publish_class_on  [MISS]
+card: check the section            10/10  10x check_section
+card: rebuild preview              10/10  10x rebuild_preview
+card: undo                         6/10   6x undo_last_change, 4x (declined)  [MISS]
+card: deploy now                   0/10   10x (declined)  [MISS]
+card: schedule a deploy            0/10   9x deploy_section, 1x (declined)  [MISS]
+card: cancel the deploy            10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links       0/10   10x publish_pages  [MISS]
+publish by name, informal          10/10  10x publish_pages
+HIDE - the inversion case          0/10   10x (declined)  [MISS]
+hide, informal (verbatim cue)      10/10  10x unpublish_pages
+hide, phrased as a mistake         10/10  10x unpublish_pages
+list pages                         10/10  10x list_pages
+read                               9/10   9x read_page, 1x check_section  [MISS]
+check section                      10/10  10x check_section
+rebuild preview                    10/10  10x rebuild_preview
+undo                               10/10  10x undo_last_change
+schedule a deploy                  0/10   10x deploy_section  [MISS]
+deploy now                         0/10   9x publish_class_on, 1x publish_pages  [MISS]
+cancel scheduled deploy            10/10  10x cancel_scheduled_deploy
+no course named: publish           4/10   6x publish_pages, 4x publish_class_on  [MISS]
+no course named: hide              10/10  10x unpublish_pages
+deletion - no such tool            0/10   10x rebuild_preview  [MISS]
+out of scope                       10/10  10x (declined)
+typos                              8/10   8x publish_class_on, 2x publish_pages  [MISS]
+new: add an entry (verbatim)       10/10  10x add_next_class
+new: add tomorrow's page           10/10  10x add_next_class
+new: start the next class          10/10  10x add_next_class
+new: next lesson page (mine)       10/10  10x add_next_class
+new: class after this one (mine)   6/10   6x add_next_class, 4x (declined)  [MISS]
+new: when does it meet (verbatim)  10/10  10x read_remembered_timetable
+new: what dates (verbatim)         10/10  10x read_remembered_timetable
+new: which days (mine)             6/10   6x read_remembered_timetable, 4x (declined)  [MISS]
+new: schedule on file (mine)       10/10  10x read_remembered_timetable
+new: remember dates (mine)         0/10   10x (declined)  [MISS]
+new: remember w/ source (mine)     0/10   10x read_remembered_timetable  [MISS]
+new: add class, dated wording      10/10  10x add_next_class
+new: plan only                     0/10   7x (declined), 2x read_remembered_timetable, 1x add_next_class  [MISS]
+
+
+
+READING THE MISSES HONESTLY
+---------------------------
+
+Three of the 4B's four misses are probes for tools the local model can no
+longer see — `remember_timetable` and `plan_add_next_class` — and in all
+three it falls back to `read_remembered_timetable`, a READ that changes
+nothing. They are obsolete probes rather than regressions. Excluding them,
+the 4B is 380/390.
+
+The fourth is real: a typo'd "publsh tomorows class ... and the stuff it
+links to" chose `publish_pages` with no page named and an open-ended
+`onOrAfter`, which would have published the rest of the term. Fixing that in
+the tool DESCRIPTION was tried and measured worse (see
+description-steer-regression below), so it is refused in code instead.
+
+
+THE DESCRIPTION-STEER REGRESSION, RECORDED SO IT IS NOT RETRIED
+---------------------------------------------------------------
+
+Adding to publish_pages' description: "NOT for one day's class - for a single
+day, including tomorrow's class, use publish_class_on instead", and narrowing
+the `pages` argument help to require both dates when empty.
+
+  Measure                        before        after
+  ------------------------------------------------------
+  promise cards                  110/110       90/110
+  all probes                     380/420       360/420
+  Windows-comparable 18          170/180       170/180
+  "Publish Unit 2, Day 3"        10/10 right   10/10 WRONG (-> publish_class_on)
+  "What would publishing ... "   10/10 right   10/10 WRONG (-> publish_class_on)
+  "read"                         10/10 right   10/10 WRONG (-> check_section)
+  the typo probe                 10/10 wrong   fixed
+
+Fixed one, broke three. A small model reads a sentence naming another tool as
+a recommendation rather than a boundary, and does not reliably work out which
+half of the sentence applies to the request in front of it. Reverted to the
+byte; the rule went into Swift, where it costs no accuracy because it changes
+nothing the model reads.
