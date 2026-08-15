@@ -616,21 +616,21 @@ struct SectionDetailView: View {
                     if httpResponse.statusCode == 200 {
                         isWaitingForServer = false
                         previewURL = serverURL
-                        // And one reload, once, a moment after the page
-                        // appears.
+                        // A reload ONLY when we never saw the build finish.
                         //
-                        // Belt and braces on purpose. Phase 2 should mean the
-                        // build is already finished by now, but this failure
-                        // is INVISIBLE when it happens — the teacher is shown
-                        // a page that looks fine and is simply out of date,
-                        // with nothing to suggest it — and pressing Reload by
-                        // hand was proved to fix it. A reload the teacher did
-                        // not ask for costs a flicker on a page they just
-                        // asked to appear; being quietly shown last week's
-                        // site costs them a lesson.
-                        Task { @MainActor in
-                            try? await Task.sleep(for: .milliseconds(900))
-                            previewController.reload()
+                        // While Phase 2 waits for Quartz's emit line, the page
+                        // is loaded once, at the right moment, and looks it.
+                        // An unconditional reload was tried and was worse than
+                        // the problem: every preview in the app flickered, for
+                        // a case that by then could not happen. The signal
+                        // tells us which situation we are in, so it decides —
+                        // no signal, no certainty, so reload; signal, so leave
+                        // the teacher's page alone.
+                        if !buildFinished {
+                            Task { @MainActor in
+                                try? await Task.sleep(for: .milliseconds(900))
+                                previewController.reload()
+                            }
                         }
                         return
                     }

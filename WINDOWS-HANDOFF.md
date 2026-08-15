@@ -816,15 +816,16 @@ Two rules follow:
    `Emitted N files to \`public\` in …` when the output has actually been
    written; that is the honest signal. "Started a Quartz server" is printed
    one line before the build begins and means almost nothing.
-2. **Reload once anyway, shortly after the page appears.** Belt and braces,
-   because this failure is silent: a teacher is shown a page that looks fine
-   and is merely out of date. A reload nobody asked for costs a flicker on a
-   page they just asked to appear; being quietly shown last week's site costs
-   them a lesson.
+2. **Reload only when you never saw that line.** We first reloaded
+   unconditionally, as cheap insurance, and it was worse than the problem it
+   insured against: every preview in the app flickered, for a case that by
+   then could not happen. The signal tells you which situation you are in, so
+   let it decide — no line, no certainty, so reload; line, so leave the
+   teacher's page alone.
 
 Bound the wait (we allow 120 seconds) so a Quartz that never prints the line
-cannot leave a teacher watching a spinner — show it anyway and let the reload
-do its work.
+cannot leave a teacher watching a spinner: show the preview anyway, and that
+is exactly the case the conditional reload covers.
 
 ## What the conversation looks like, and why
 
