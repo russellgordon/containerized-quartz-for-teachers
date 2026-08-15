@@ -552,8 +552,8 @@ private struct AssistEntryView: View {
                     .textSelection(.enabled)
                     .padding(.leading, 11)
                     .padding(.trailing, 11)
-                    .padding(.top, 5)
-                .padding(.bottom, 5 + AssistChatBubbleShape.drop)
+                    .padding(.top, 7)
+                .padding(.bottom, 7 + AssistChatBubbleShape.drop)
                     .background(
                         AssistChatBubbleShape(side: .teacher, hasTail: hasTail)
                             .fill(AssistBubbleColour.teacher)
@@ -572,8 +572,8 @@ private struct AssistEntryView: View {
                     // the same distance from the bubble's edge on both sides.
                     .padding(.leading, 11)
                     .padding(.trailing, 11)
-                    .padding(.top, 5)
-                .padding(.bottom, 5 + AssistChatBubbleShape.drop)
+                    .padding(.top, 7)
+                .padding(.bottom, 7 + AssistChatBubbleShape.drop)
                     .background(
                         AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
                             .fill(AssistBubbleColour.assistant)
@@ -611,8 +611,8 @@ private struct AssistEntryView: View {
                 }
                 .padding(.leading, 11)
                 .padding(.trailing, 11)
-                .padding(.top, 5)
-                .padding(.bottom, 5 + AssistChatBubbleShape.drop)
+                .padding(.top, 7)
+                .padding(.bottom, 7 + AssistChatBubbleShape.drop)
                 .background(
                     AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
                         .fill(AssistBubbleColour.assistant)
@@ -628,8 +628,8 @@ private struct AssistEntryView: View {
                     .textSelection(.enabled)
                     .padding(.leading, 11)
                     .padding(.trailing, 11)
-                    .padding(.top, 5)
-                .padding(.bottom, 5 + AssistChatBubbleShape.drop)
+                    .padding(.top, 7)
+                .padding(.bottom, 7 + AssistChatBubbleShape.drop)
                     .background(
                         AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
                             .fill(AssistBubbleColour.assistant)
