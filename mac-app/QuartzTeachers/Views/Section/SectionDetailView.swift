@@ -168,7 +168,7 @@ struct SectionDetailView: View {
                 controller: SectionPreviewControllers.Controller(
                     isRunning: { previewRunner.isRunning },
                     start: { startPreview() },
-                    stop: { stopPreview() }
+                    stop: { await stopPreviewAndWait() }
                 )
             )
         }
@@ -332,6 +332,27 @@ struct SectionDetailView: View {
         )
         Task {
             await waitForPreviewServer(port: lease.port)
+        }
+    }
+
+    /// Stop, and do not come back until the container-side processes have
+    /// actually gone.
+    ///
+    /// The button does not need this — the teacher has finished with the
+    /// preview and nothing is racing it. The ASSISTANT does: it stops, writes
+    /// the pages, and starts again, and if the stop is still running when the
+    /// start begins it kills the new build. What a teacher then sees is not an
+    /// error but something worse: no preview, and a site on disk still showing
+    /// the last build that was allowed to finish.
+    func stopPreviewAndWait() async {
+        let courseCode: String = course.code
+        let section: Int = sectionNumber
+        let folder: URL? = workspace.workspaceURL
+        stopPreview()
+        if let folder {
+            await PreviewStopper.stopSectionProcessesAndWait(
+                courseCode: courseCode, sectionNumber: section, workspaceURL: folder
+            )
         }
     }
 

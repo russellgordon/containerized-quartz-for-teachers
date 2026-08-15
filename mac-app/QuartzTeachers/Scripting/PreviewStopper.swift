@@ -52,4 +52,47 @@ enum PreviewStopper {
             // Could not start: nothing held, nothing to clean up.
         }
     }
+
+    /// Stop the section's container-side processes and WAIT for that to
+    /// finish.
+    ///
+    /// Fire-and-forget is right behind a button — the teacher has already
+    /// moved on — and wrong in front of a rebuild. The stop runs
+    /// `preview.sh --stop`, which reaches into the container and kills the
+    /// processes belonging to that section; start a new preview while it is
+    /// still going and it kills that one too. The symptom is nasty precisely
+    /// because it is not an error: the preview simply never appears, and the
+    /// site on disk stays at the last build that was allowed to FINISH, so a
+    /// teacher who restarts it by hand is shown yesterday's pages and has no
+    /// reason to suspect the assistant.
+    ///
+    /// Bounded, because a stop that hangs must not take the rebuild with it:
+    /// after the deadline the caller carries on, which is no worse than the
+    /// old fire-and-forget behaviour.
+    static func stopSectionProcessesAndWait(
+        courseCode: String,
+        sectionNumber: Int,
+        workspaceURL: URL,
+        secondsToWait: Double = 20
+    ) async {
+        stopSectionProcesses(
+            courseCode: courseCode, sectionNumber: sectionNumber, workspaceURL: workspaceURL
+        )
+        await waitForStopsToFinish(secondsToWait: secondsToWait)
+    }
+
+    /// Waits until no stop is still running, or the deadline passes.
+    static func waitForStopsToFinish(secondsToWait: Double = 20) async {
+        let deadline: Date = Date().addingTimeInterval(secondsToWait)
+        while Date() < deadline {
+            var stillGoing: Bool = false
+            for process in running where process.isRunning {
+                stillGoing = true
+            }
+            if !stillGoing {
+                return
+            }
+            try? await Task.sleep(for: .milliseconds(120))
+        }
+    }
 }

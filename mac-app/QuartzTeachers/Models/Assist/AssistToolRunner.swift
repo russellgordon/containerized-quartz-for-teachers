@@ -391,8 +391,8 @@ final class AssistToolRunner {
             let word: String = dangling.count == 1 ? "link goes" : "links go"
             lines.append("\(dangling.count) \(word) to a page students cannot see:")
             for link in dangling {
-                lines.append("   • \(link.fromRelativePath)")
-                lines.append("      → \(link.toTitle), which is not published")
+                lines.append("• \(link.fromRelativePath)")
+                lines.append("   → \(link.toTitle), which is not published")
             }
             lines.append("")
             lines.append("Either publish the page each one points at, or take the link off the "
@@ -407,7 +407,7 @@ final class AssistToolRunner {
             let word: String = orphans.count == 1 ? "page is" : "pages are"
             lines.append("\(orphans.count) visible \(word) not linked from anywhere:")
             for page in orphans {
-                lines.append("   • \(page.relativePath)")
+                lines.append("• \(page.relativePath)")
             }
             lines.append("")
             lines.append("Class pages are not counted here — they are what a section is navigated "
@@ -708,7 +708,7 @@ final class AssistToolRunner {
         // start for a reason. A preview left serving while the pages beneath
         // it are rewritten serves a half-changed site, and the teacher's next
         // refresh is a race they cannot see they are in.
-        _ = stopThePreviewBeforeWriting(for: course, sectionNumber: sectionNumber)
+        _ = await stopThePreviewBeforeWriting(for: course, sectionNumber: sectionNumber)
 
         let change: AssistChange
         do {
@@ -768,14 +768,17 @@ final class AssistToolRunner {
     /// refresh is a race they cannot see they are in.
     private func stopThePreviewBeforeWriting(
         for course: Course, sectionNumber: Int
-    ) -> Bool {
+    ) async -> Bool {
         guard let controller = previewController(for: course, sectionNumber: sectionNumber) else {
             return false
         }
         if !controller.isRunning() {
             return false
         }
-        controller.stop()
+        // Awaited. A stop that is still finishing when the rebuild starts
+        // kills the rebuild, and the teacher is left with no preview and a
+        // site on disk from before their change.
+        await controller.stop()
         return true
     }
 

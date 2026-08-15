@@ -42,9 +42,18 @@ final class FakePreview {
                     self?.events.append("start")
                 },
                 stop: { [weak self] in
+                    // Records the stop as two events with a real suspension
+                    // between them, so the test can tell "called the stop"
+                    // apart from "waited for the stop to finish". The real
+                    // one reaches into the container and takes time; a caller
+                    // that does not await it starts a rebuild the stop then
+                    // kills.
                     self?.noteWriteIfItHappened()
+                    self?.events.append("stop-begins")
+                    try? await Task.sleep(for: .milliseconds(60))
                     self?.running = false
-                    self?.events.append("stop")
+                    self?.noteWriteIfItHappened()
+                    self?.events.append("stop-ends")
                 }
             )
         )

@@ -244,10 +244,7 @@ struct AssistWindowView: View {
                     }
                     if let approval = session.agent?.pendingApproval,
                        let agent = session.agent {
-                        AssistApprovalView(
-                            explanation: approval.explanation,
-                            isDeploy: agent.pendingIsDeploy
-                        ) {
+                        AssistApprovalView(isDeploy: agent.pendingIsDeploy) {
                             Task { await agent.approvePending() }
                         } decline: {
                             agent.declinePending()
@@ -467,31 +464,37 @@ private struct AssistEntryView: View {
                 Text(entry.text)
                     .foregroundStyle(.white)
                     .textSelection(.enabled)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 9)
+                    .padding(.leading, 14)
+                    .padding(.trailing, 14 + AssistChatBubbleShape.reach)
+                    .padding(.top, 9)
+                    .padding(.bottom, 9 + (hasTail ? AssistChatBubbleShape.drop : 0))
                     .background(
                         AssistChatBubbleShape(side: .teacher, hasTail: hasTail)
                             .fill(Color.accentColor)
                     )
             }
-            .padding(.bottom, hasTail ? 6 : 0)
+            .padding(.bottom, hasTail ? 4 : 0)
 
         // Grey, on the left. Softer than the teacher's bubble on purpose:
         // the assistant talks more than the teacher does, and a column of
         // strong fills down one side is exhausting to read.
         case .assistant:
             HStack {
-                Text(entry.text)
+                Text(AssistSaid.styled(entry.text))
                     .textSelection(.enabled)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 9)
+                    // The tail's side gets the extra room, so the words sit
+                    // the same distance from the bubble's edge on both sides.
+                    .padding(.leading, 14 + AssistChatBubbleShape.reach)
+                    .padding(.trailing, 14)
+                    .padding(.top, 9)
+                    .padding(.bottom, 9 + (hasTail ? AssistChatBubbleShape.drop : 0))
                     .background(
                         AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
                             .fill(Color.secondary.opacity(0.16))
                     )
                 Spacer(minLength: 48)
             }
-            .padding(.bottom, hasTail ? 6 : 0)
+            .padding(.bottom, hasTail ? 4 : 0)
 
         case .toolResult:
             // What ran is said in the teacher's terms, not the tool's name —
@@ -538,50 +541,45 @@ private struct AssistEntryView: View {
 /// front of students immediately and cannot be taken back by us. Everything
 /// else asks only while plan mode is on, and what it shows is the `plan_`
 /// twin's own words rather than a tool name a teacher would have to decode.
+/// The two buttons, and nothing else.
+///
+/// It used to carry a heading and a copy of the plan. Both have moved into the
+/// conversation, where they belong: the plan is something the assistant SAID,
+/// the question is another thing it said, and what the teacher chose is their
+/// own reply. What is left here is the only part that is not a message — the
+/// choice itself.
 private struct AssistApprovalView: View {
 
     // MARK: - Stored properties
 
-    let explanation: String
     let isDeploy: Bool
     let approve: () -> Void
     let decline: () -> Void
 
     // MARK: - Computed properties
 
-    private var title: String {
-        return isDeploy ? "This one needs your say-so" : "Here is what I would do"
-    }
-
     private var goTitle: String {
         return isDeploy ? "Deploy" : "Go"
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Label(title, systemImage: isDeploy ? "hand.raised" : "text.magnifyingglass")
-                .font(.headline)
-            // The plan itself is NOT repeated here. It is said in the
-            // conversation above, as a message that stays there after this
-            // card has gone — which is the whole point of moving it. Printing
-            // it twice would give a teacher two copies to compare and a
-            // reason to wonder whether they differ.
-            HStack {
-                Button(goTitle, action: approve)
-                    .keyboardShortcut(.defaultAction)
-                    .accessibilityIdentifier("assistApproveButton")
-                Button("Cancel", action: decline)
-                    .accessibilityIdentifier("assistDeclineButton")
-            }
+        HStack(spacing: 8) {
+            Spacer(minLength: 0)
+            Button("Cancel", action: decline)
+                .accessibilityIdentifier("assistDeclineButton")
+            Button(goTitle, action: approve)
+                .keyboardShortcut(.defaultAction)
+                // A deploy is the one act that cannot be taken back, so its
+                // button says so in the way macOS says it.
+                .buttonStyle(.borderedProminent)
+                .tint(isDeploy ? .orange : .accentColor)
+                .accessibilityIdentifier("assistApproveButton")
         }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            (isDeploy ? Color.orange : Color.accentColor).opacity(0.10),
-            in: RoundedRectangle(cornerRadius: 10)
-        )
+        .padding(.top, 2)
+        .frame(maxWidth: .infinity, alignment: .trailing)
     }
 }
+
 
 /// The one-time offer to stop showing plans.
 ///

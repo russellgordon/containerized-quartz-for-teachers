@@ -392,8 +392,14 @@ final class AssistToolRunnerTests: XCTestCase {
     /// A preview left serving while the pages beneath it are rewritten is
     /// serving a half-changed site. The first attempt at this posted a request
     /// for a view to notice, which meant the stop landed whenever SwiftUI next
-    /// evaluated a body — sometimes after the writes, and silently, which is
-    /// why the order is pinned here rather than trusted.
+    /// evaluated a body — sometimes after the writes, and silently.
+    ///
+    /// The second attempt called the stop in the right place but did not WAIT
+    /// for it. Stopping reaches into the container and kills the section's
+    /// processes, so a stop still finishing when the rebuild began killed the
+    /// rebuild — leaving no preview and a site on disk from the last build
+    /// that was allowed to complete. That is why the fake's stop takes time
+    /// and reports beginning and ending separately.
     @MainActor
     func testAWriteStopsThePreviewThenWritesThenStartsIt() async throws {
         let made = try makeRunner(registeringPreview: true)
@@ -409,8 +415,9 @@ final class AssistToolRunnerTests: XCTestCase {
             "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
         ))
 
-        XCTAssertEqual(FakePreview.shared.events, ["stop", "write", "start"],
-                       "Stop must come before the writes, and start after them")
+        XCTAssertEqual(FakePreview.shared.events,
+                       ["stop-begins", "stop-ends", "write", "start"],
+                       "The stop must FINISH before the writes, and the start come after them")
     }
 
     /// With no section window open there is nothing to drive, and the answer

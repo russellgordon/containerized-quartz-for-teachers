@@ -90,6 +90,14 @@ struct AssistPublishPlan {
     // MARK: - Functions
 
     /// The plan in words, meant to be read aloud to a teacher.
+    ///
+    /// Two things about the shape of it, both learned from looking at one on
+    /// screen. The headings are **bold** so the counts stand out from the list
+    /// underneath — a plan is scanned for "how much is about to change" before
+    /// it is read. And the list items are NOT indented: a chat bubble is
+    /// narrow, every line of any length wraps, and the wrapped half returns to
+    /// the left margin — so the indent marks only the first line of each item
+    /// and makes the rest harder to follow rather than easier.
     func describe(mostListed: Int = 15) -> String {
         var lines: [String] = []
         lines.append("\(courseCode) Section \(sectionNumber): \(verb)ing.")
@@ -99,15 +107,15 @@ struct AssistPublishPlan {
             lines.append("No page's visibility would change.")
         } else {
             let word: String = changes.count == 1 ? "page" : "pages"
-            lines.append("\(changes.count) \(word) would change:")
+            lines.append("**\(changes.count) \(word) would change:**")
             var listed: Int = 0
             for change in changes {
                 if listed == mostListed {
-                    lines.append("  …and \(changes.count - listed) more.")
+                    lines.append("…and \(changes.count - listed) more.")
                     break
                 }
                 let reason: String = change.becauseLinked ? "  (linked from a page you named)" : ""
-                lines.append("  \(change.page.title)  —  \(change.key): "
+                lines.append("\(change.page.title)  —  \(change.key): "
                              + "\(change.wasVisible ? "visible" : "hidden") → "
                              + "\(change.willBeVisible ? "visible" : "hidden")\(reason)")
                 listed += 1
@@ -125,14 +133,14 @@ struct AssistPublishPlan {
         if !kept.isEmpty {
             lines.append("")
             let word: String = kept.count == 1 ? "page stays" : "pages stay"
-            lines.append("\(kept.count) linked \(word) published:")
+            lines.append("**\(kept.count) linked \(word) published:**")
             var listed: Int = 0
             for staying in kept {
                 if listed == mostListed {
-                    lines.append("  …and \(kept.count - listed) more.")
+                    lines.append("…and \(kept.count - listed) more.")
                     break
                 }
-                lines.append("  \(staying.page.title)  —  \(staying.reason)")
+                lines.append("\(staying.page.title)  —  \(staying.reason)")
                 listed += 1
             }
         }
@@ -140,15 +148,15 @@ struct AssistPublishPlan {
         if !dateMoves.isEmpty {
             lines.append("")
             let word: String = dateMoves.count == 1 ? "page" : "pages"
-            lines.append("\(dateMoves.count) \(word) no other class uses would take this class's date:")
+            lines.append("**\(dateMoves.count) \(word) no other class uses would take this class's date:**")
             var listed: Int = 0
             for move in dateMoves {
                 if listed == mostListed {
-                    lines.append("  …and \(dateMoves.count - listed) more.")
+                    lines.append("…and \(dateMoves.count - listed) more.")
                     break
                 }
                 let from: String = move.from?.text ?? "no date"
-                lines.append("  \(move.page.title)  —  \(from) → \(move.to.text)")
+                lines.append("\(move.page.title)  —  \(from) → \(move.to.text)")
                 listed += 1
             }
         }

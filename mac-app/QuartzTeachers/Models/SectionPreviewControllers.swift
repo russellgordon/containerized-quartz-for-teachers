@@ -59,7 +59,16 @@ final class SectionPreviewControllers {
 
         let isRunning: () -> Bool
         let start: () -> Void
-        let stop: () -> Void
+
+        /// Asynchronous, and that is the whole point of it.
+        ///
+        /// Stopping a preview reaches into the container and kills the
+        /// processes belonging to that section. Started as fire-and-forget —
+        /// which is right behind a button, where the teacher has already moved
+        /// on — it is still running when the next preview begins, and kills
+        /// that one too. Awaiting it is what makes "stop, write, start" mean
+        /// what it says.
+        let stop: () async -> Void
     }
 
     // MARK: - Stored properties

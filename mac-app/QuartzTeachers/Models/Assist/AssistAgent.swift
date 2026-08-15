@@ -157,6 +157,11 @@ final class AssistAgent {
         guard let pending = pendingApproval else {
             return
         }
+        // What the teacher chose is part of the history, in their own bubble.
+        // Reading back a conversation where the assistant asked and nothing
+        // answered — but something plainly happened — is worse than not being
+        // able to read it back at all.
+        entries.append(Entry(speaker: .teacher, text: pendingIsDeploy ? "Deploy" : "Go"))
         pendingApproval = nil
         planMode.recordAccepted()
         await execute(call: pending.call)
@@ -167,6 +172,7 @@ final class AssistAgent {
         guard let pending = pendingApproval else {
             return
         }
+        entries.append(Entry(speaker: .teacher, text: "Cancel"))
         pendingApproval = nil
         activity = .idle
         // A Cancel resets the run of accepted plans. Somebody who has just
@@ -223,6 +229,7 @@ final class AssistAgent {
         if definition.needsApproval {
             let explanation: String = tools.explain(call: call)
             entries.append(Entry(speaker: .assistant, text: explanation))
+            entries.append(Entry(speaker: .assistant, text: "Shall I deploy?"))
             pendingApproval = PendingApproval(call: call, explanation: explanation)
             activity = .waitingForApproval
             return
@@ -283,6 +290,10 @@ final class AssistAgent {
         // for whatever reads a plan on a surface with no Go and Cancel of its
         // own, and this surface has them.
         entries.append(Entry(speaker: .assistant, text: outcome.forTheCard))
+        // The question is a message too, so the card below can be nothing but
+        // the two buttons. A card that carries its own heading is a second
+        // voice in a conversation that already has two.
+        entries.append(Entry(speaker: .assistant, text: "Shall I go ahead?"))
         pendingApproval = PendingApproval(call: call, explanation: outcome.forTheCard)
         activity = .waitingForApproval
     }

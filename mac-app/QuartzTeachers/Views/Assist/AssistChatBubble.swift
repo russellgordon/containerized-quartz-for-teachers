@@ -63,11 +63,24 @@ enum AssistChatLayout {
     }
 }
 
-/// A chat bubble: a rounded rectangle, with a tail when it ends a turn.
+/// A chat bubble, with a curved tail when it ends a turn.
 ///
-/// Drawn rather than assembled from a rectangle and a triangle, so the tail
-/// joins the body as one filled outline. Two shapes overlapping look right
-/// until the bubble is translucent or has a border, and then the seam shows.
+/// **One continuous outline, not a rectangle with a triangle stuck on it.**
+/// The first version added the tail as a second subpath hanging off the
+/// corner, and it showed: a hard spike with a visible notch where the two
+/// shapes met. Overlapping subpaths only merge cleanly under a non-zero fill
+/// AND matching winding directions, which is a lot to hold true by accident —
+/// so the outline is walked once, and the tail is simply part of the walk.
+///
+/// **The tail is drawn INSIDE the rect.** The first version drew below
+/// `rect.maxY`, outside the bounds the background was given, so the tip was
+/// clipped — which is most of why it looked severe. The body is now inset by
+/// the tail's drop and the tail lives in the strip beneath it, so nothing is
+/// ever cut off.
+///
+/// The curve itself is two arcs rather than two straight lines: it leaves the
+/// bubble tangentially, swells outward, and hooks back in — the way a
+/// speech tail does. A triangle points; a tail flows out of what said it.
 struct AssistChatBubbleShape: Shape {
 
     // MARK: - Stored properties
@@ -75,34 +88,78 @@ struct AssistChatBubbleShape: Shape {
     let side: AssistChatSide
     let hasTail: Bool
 
-    /// Kept modest on purpose: a large tail on a short message ("Undo that")
-    /// takes up more of the bubble than the words do.
-    private let tailWidth: CGFloat = 9
-    private let tailHeight: CGFloat = 9
-    private let corner: CGFloat = 14
+    /// How far the tail hangs below the bubble body, and how far it reaches
+    /// sideways. Modest on purpose: a big tail on "Undo that" is more tail
+    /// than message.
+    static let drop: CGFloat = 7
+    static let reach: CGFloat = 7
+    private let corner: CGFloat = 15
 
     // MARK: - Functions
 
     func path(in rect: CGRect) -> Path {
-        var path: Path = Path(roundedRect: rect, cornerRadius: corner)
         guard hasTail, side != .neither else {
-            return path
+            return Path(roundedRect: rect, cornerRadius: corner)
         }
 
-        // Sits just above the bottom corner and sweeps down and outward, the
-        // way a spoken tail points back at whoever said it.
-        var tail: Path = Path()
+        // The bubble body gives up the strip the tail needs — below it, and
+        // to its own side — so the whole outline stays inside the rect the
+        // background was handed. Anything drawn outside that rect is clipped,
+        // and a clipped tail is exactly what made the first attempt look like
+        // a severed spike.
+        var body: CGRect = rect
+        body.size.height -= AssistChatBubbleShape.drop
+        body.size.width -= AssistChatBubbleShape.reach
         if side == .assistant {
-            tail.move(to: CGPoint(x: rect.minX + corner, y: rect.maxY))
-            tail.addLine(to: CGPoint(x: rect.minX - tailWidth, y: rect.maxY + tailHeight))
-            tail.addLine(to: CGPoint(x: rect.minX + corner, y: rect.maxY - corner))
-        } else {
-            tail.move(to: CGPoint(x: rect.maxX - corner, y: rect.maxY))
-            tail.addLine(to: CGPoint(x: rect.maxX + tailWidth, y: rect.maxY + tailHeight))
-            tail.addLine(to: CGPoint(x: rect.maxX - corner, y: rect.maxY - corner))
+            body.origin.x += AssistChatBubbleShape.reach
         }
-        tail.closeSubpath()
-        path.addPath(tail)
+
+        var path: Path = Path()
+        let radius: CGFloat = min(corner, body.height / 2)
+        let tipY: CGFloat = body.maxY + AssistChatBubbleShape.drop
+
+        if side == .teacher {
+            // Clockwise from the top-left, with the tail replacing the
+            // bottom-RIGHT corner.
+            path.move(to: CGPoint(x: body.minX + radius, y: body.minY))
+            path.addLine(to: CGPoint(x: body.maxX - radius, y: body.minY))
+            path.addQuadCurve(to: CGPoint(x: body.maxX, y: body.minY + radius),
+                              control: CGPoint(x: body.maxX, y: body.minY))
+            // Down the right edge, then out into the tail: a shallow swell
+            // outward…
+            path.addLine(to: CGPoint(x: body.maxX, y: body.maxY - radius))
+            path.addQuadCurve(to: CGPoint(x: body.maxX + AssistChatBubbleShape.reach, y: tipY),
+                              control: CGPoint(x: body.maxX + AssistChatBubbleShape.reach * 0.5, y: body.maxY))
+            // …then the hook back in, which is what stops it reading as a
+            // spike. The control point sits INSIDE the bubble's edge, so the
+            // return curve is concave.
+            path.addQuadCurve(to: CGPoint(x: body.maxX - radius * 1.2, y: body.maxY),
+                              control: CGPoint(x: body.maxX - radius * 0.35, y: body.maxY))
+            path.addLine(to: CGPoint(x: body.minX + radius, y: body.maxY))
+            path.addQuadCurve(to: CGPoint(x: body.minX, y: body.maxY - radius),
+                              control: CGPoint(x: body.minX, y: body.maxY))
+            path.addLine(to: CGPoint(x: body.minX, y: body.minY + radius))
+            path.addQuadCurve(to: CGPoint(x: body.minX + radius, y: body.minY),
+                              control: CGPoint(x: body.minX, y: body.minY))
+        } else {
+            // The mirror image, tail at the bottom-LEFT.
+            path.move(to: CGPoint(x: body.maxX - radius, y: body.minY))
+            path.addLine(to: CGPoint(x: body.minX + radius, y: body.minY))
+            path.addQuadCurve(to: CGPoint(x: body.minX, y: body.minY + radius),
+                              control: CGPoint(x: body.minX, y: body.minY))
+            path.addLine(to: CGPoint(x: body.minX, y: body.maxY - radius))
+            path.addQuadCurve(to: CGPoint(x: body.minX - AssistChatBubbleShape.reach, y: tipY),
+                              control: CGPoint(x: body.minX - AssistChatBubbleShape.reach * 0.5, y: body.maxY))
+            path.addQuadCurve(to: CGPoint(x: body.minX + radius * 1.2, y: body.maxY),
+                              control: CGPoint(x: body.minX + radius * 0.35, y: body.maxY))
+            path.addLine(to: CGPoint(x: body.maxX - radius, y: body.maxY))
+            path.addQuadCurve(to: CGPoint(x: body.maxX, y: body.maxY - radius),
+                              control: CGPoint(x: body.maxX, y: body.maxY))
+            path.addLine(to: CGPoint(x: body.maxX, y: body.minY + radius))
+            path.addQuadCurve(to: CGPoint(x: body.maxX - radius, y: body.minY),
+                              control: CGPoint(x: body.maxX, y: body.minY))
+        }
+        path.closeSubpath()
         return path
     }
 }
@@ -153,5 +210,36 @@ struct AssistTypingIndicator: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("The assistant is working")
         .accessibilityIdentifier("assistTypingIndicator")
+    }
+}
+
+/// Text the assistant said, with its **bold** rendered.
+///
+/// `Text(someString)` does NOT parse markdown — only a string LITERAL is
+/// treated as a localised key and styled. The plans are built at runtime, so
+/// their emphasis would otherwise reach the teacher as literal asterisks.
+///
+/// `.inlineOnlyPreservingWhitespace` is the interpretation that matters:
+/// the default one treats the text as a markdown DOCUMENT and throws the line
+/// breaks away, which would run a plan's headings and its list into one
+/// paragraph. This keeps the layout and styles only what is inline.
+///
+/// Anything that fails to parse is shown exactly as it arrived. A stray
+/// asterisk in a page title should look odd, never swallow the message.
+@MainActor
+enum AssistSaid {
+
+    // MARK: - Functions
+
+    static func styled(_ text: String) -> AttributedString {
+        if let parsed = try? AttributedString(
+            markdown: text,
+            options: AttributedString.MarkdownParsingOptions(
+                interpretedSyntax: .inlineOnlyPreservingWhitespace
+            )
+        ) {
+            return parsed
+        }
+        return AttributedString(text)
     }
 }
