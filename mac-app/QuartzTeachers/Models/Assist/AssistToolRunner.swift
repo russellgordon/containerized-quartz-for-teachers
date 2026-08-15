@@ -915,11 +915,23 @@ final class AssistToolRunner {
         }
 
         guard let remembered else {
+            // Asks, rather than telling the model to record them. The tool
+            // that writes a timetable is off the local surface, so naming it
+            // here would send the model somewhere it cannot go — and the one
+            // thing worse than a refusal is a refusal whose remedy does not
+            // exist, because the next move is to invent the dates.
+            SectionSchedulePrompt.shared.ask(
+                courseCode: located.course.code,
+                sectionNumber: located.sectionNumber,
+                workingFolder: workspace.workspaceURL ?? located.course.directoryURL,
+                because: "Nothing on file says when \(where_) meets."
+            )
             return AssistToolOutcome.read(
                 "No class dates are recorded for \(where_) yet.",
                 detail: "No class dates are recorded for \(where_) yet, so nothing knows when it meets — "
-                      + "and until they are, a new class page cannot be dated. Ask the teacher which days "
-                      + "this class meets, then record them with remember_timetable."
+                      + "and until they are, a new class page cannot be dated. Plantoir is asking the "
+                      + "teacher for this section's class dates now; say so, and that they can be typed "
+                      + "in, chosen from a file, or read from a shared sheet."
             )
         }
 
@@ -1083,9 +1095,40 @@ final class AssistToolRunner {
         }
     }
 
+    /// When the only thing missing is the section's class dates, ASK for them.
+    ///
+    /// `remember_timetable` is no longer on the local surface — dates the
+    /// model supplies are dates it may have invented, and a wrong one silently
+    /// puts a class on the wrong day — so a refusal that says "record them
+    /// first" is a dead end for the local model: it cannot see the tool it is
+    /// being sent to. The sheet is the way a teacher gives dates, and this is
+    /// the call that opens it. `SectionSchedulePrompt` exists precisely for
+    /// this: the runner knows nothing about windows, so it leaves a request
+    /// and whichever assistant window is showing that section presents it.
+    ///
+    /// Fire and forget on purpose. The tool still refuses THIS turn — the
+    /// dates are not there yet — and the teacher answers the sheet and asks
+    /// again. Waiting inside the tool would hold the conversation open across
+    /// a file picker and a Google Sheets fetch.
+    private func askForTheTimetableIfThatIsWhatIsMissing(_ problem: Error) {
+        guard case NextClassPlanner.Problem.noTimetable(let code, let number) = problem else {
+            return
+        }
+        guard let folder = workspace.workspaceURL else {
+            return
+        }
+        SectionSchedulePrompt.shared.ask(
+            courseCode: code,
+            sectionNumber: number,
+            workingFolder: folder,
+            because: "Adding the next class page needs to know which days this section meets."
+        )
+    }
+
     private func planAddNextClass(_ arguments: [String: Any]) -> AssistToolOutcome {
         switch nextClassPlan(arguments) {
         case .failure(let problem):
+            askForTheTimetableIfThatIsWhatIsMissing(problem)
             return AssistToolOutcome.couldNotRead(problem.localizedDescription)
         case .success(let asked):
             return AssistToolOutcome.read(
@@ -1100,6 +1143,7 @@ final class AssistToolRunner {
     private func addNextClass(_ arguments: [String: Any]) -> AssistToolOutcome {
         switch nextClassPlan(arguments) {
         case .failure(let problem):
+            askForTheTimetableIfThatIsWhatIsMissing(problem)
             return AssistToolOutcome.refused(problem.localizedDescription)
         case .success(let asked):
             if asked.plan.changesNothing {

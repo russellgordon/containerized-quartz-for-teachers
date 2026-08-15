@@ -629,6 +629,33 @@ the whole suite; a conditional is not.** If you change any description, re-run
 every probe, not the one you were fixing — that is the only reason we caught
 this instead of shipping a regression that looked like a fix.
 
+#### And when you REMOVE a tool, audit the refusals that pointed at it
+
+Cutting `remember_timetable` from the local list was right — dates the model
+supplies are dates it may have invented — but it left three refusals saying
+"record them with `remember_timetable` first". The model can no longer see
+that tool. **A remedy naming something unreachable is worse than no remedy**,
+because the next move available to a model that cannot follow the instruction
+is to improvise the dates, which is the exact failure the removal was meant to
+prevent.
+
+Two things had to follow the cut, and only one of them was obvious:
+
+1. The messages now name no tool. They say what is missing and that the app is
+   asking the teacher — which also stays true over MCP, where the client's
+   tool list is different again.
+2. **Something else has to actually ask.** On macOS a schedule sheet collects
+   dates (typed, from a file, or from a shared sheet link); the tool leaves a
+   request and whichever assistant window is showing that section presents it.
+   That sheet existed and was already attached to the window — the call that
+   sets the request was simply never written, so nothing ever opened it. It
+   looked finished from every angle except running it.
+
+So: **if Windows has no equivalent way to ask, `remember_timetable` must stay
+on its local list.** The cut is only safe because something else asks. And the
+audit worth running after any removal is not "does the surface still route"
+but "can every refusal still be acted on by the surface that receives it".
+
 ### The model's list is SHORTER than the server's
 
 Two lists, deliberately. `definitions` is what the local model sees;

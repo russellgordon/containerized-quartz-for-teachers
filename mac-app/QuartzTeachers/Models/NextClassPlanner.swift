@@ -34,6 +34,16 @@ enum NextClassPlanner {
     // MARK: - Types
 
     /// Why a next class could not be planned, in words a teacher can act on.
+    ///
+    /// **Neither message names a tool.** They used to say "record them with
+    /// `remember_timetable` first", which was a dead end the day that tool
+    /// came off the local surface: the model was being sent to something it
+    /// could no longer see, and would either give up or invent dates of its
+    /// own. Asking for the dates is the APP's job now — `AssistToolRunner`
+    /// opens the schedule sheet when it sees `noTimetable` — so these say what
+    /// is missing and who is being asked, and leave the how alone. That also
+    /// keeps them true on the MCP surface, where the client's tool list is
+    /// different again.
     enum Problem: LocalizedError {
         case noTimetable(String, Int)
         case timetableRanOut(String, Int, Int, Int)
@@ -41,9 +51,9 @@ enum NextClassPlanner {
         var errorDescription: String? {
             switch self {
             case .noTimetable(let code, let number):
-                return "I don’t know when \(code) Section \(number) meets, so I can’t date a new class. Ask the teacher which days this class meets — their timetable, or the dates typed out — and record them with remember_timetable first."
+                return "I don’t know when \(code) Section \(number) meets, so I can’t date a new class. Plantoir is asking the teacher for this section’s class dates now — once they have given them, ask again."
             case .timetableRanOut(let code, let number, let classes, let dates):
-                return "\(code) Section \(number) has \(classes) class page\(classes == 1 ? "" : "s") and the remembered timetable has \(dates) date\(dates == 1 ? "" : "s"), so there is no date left for another class. Add more class dates — record the timetable again with the rest of them in it — and ask again."
+                return "\(code) Section \(number) has \(classes) class page\(classes == 1 ? "" : "s") and only \(dates) class date\(dates == 1 ? "" : "s") on file, so there is no date left for another class. The teacher needs to give the rest of the section’s dates before another class can be added."
             }
         }
     }

@@ -244,9 +244,20 @@ final class NextClassTests: XCTestCase {
         ))
         XCTAssertFalse(outcome.shouldContinue, "A refused write is still the end of the turn.")
         XCTAssertTrue(outcome.summary.contains("don’t know when ICS3U Section 1 meets"), outcome.summary)
-        XCTAssertTrue(outcome.summary.contains("remember_timetable"),
-                      "The refusal names the way out of it")
+        XCTAssertFalse(outcome.summary.contains("remember_timetable"),
+                       "The local model cannot see that tool, so being sent to it is a dead end")
+        XCTAssertTrue(outcome.summary.contains("asking the teacher"),
+                      "The refusal says who is being asked, so the model knows to wait rather than guess")
         XCTAssertEqual(pageCount(in: made.course), 0, "And nothing was written")
+
+        // The way out is the SHEET, and this is the call that opens it. Left
+        // unwired, the assistant would refuse for ever: the tool that records
+        // dates is off the local surface, so nothing else can ask.
+        let asked = try XCTUnwrap(SectionSchedulePrompt.shared.request,
+                                  "Nothing asked the teacher for the dates")
+        XCTAssertEqual(asked.courseCode, "ICS3U")
+        XCTAssertEqual(asked.sectionNumber, 1)
+        SectionSchedulePrompt.shared.stopAsking()
 
         // The plan twin says the same thing rather than crashing on the way to
         // showing a plan that cannot exist.
@@ -270,8 +281,11 @@ final class NextClassTests: XCTestCase {
             "add_next_class", arguments: ["course": "ICS3U", "section": 1]
         ))
         XCTAssertTrue(outcome.summary.contains("2 class pages"), outcome.summary)
-        XCTAssertTrue(outcome.summary.contains("2 dates"), outcome.summary)
-        XCTAssertTrue(outcome.summary.contains("Add more class dates"), outcome.summary)
+        XCTAssertTrue(outcome.summary.contains("2 class dates"), outcome.summary)
+        // Says what has to happen, without naming a tool the local model
+        // cannot see — the teacher supplies dates, not the model.
+        XCTAssertTrue(outcome.summary.contains("teacher needs to give the rest"), outcome.summary)
+        XCTAssertFalse(outcome.summary.contains("remember_timetable"), outcome.summary)
         XCTAssertEqual(pageCount(in: made.course), 2, "Nothing was written")
         XCTAssertTrue(text(ofClass: "Unit 1, Day 2", in: made.course).contains("two"))
     }
@@ -351,7 +365,11 @@ final class NextClassTests: XCTestCase {
         ))
         XCTAssertTrue(outcome.shouldContinue, "A read hands back so the model can answer.")
         XCTAssertTrue(outcome.summary.contains("No class dates are recorded"), outcome.summary)
-        XCTAssertTrue(outcome.detail.contains("remember_timetable"))
+        XCTAssertFalse(outcome.detail.contains("remember_timetable"),
+                       "That tool is off the local surface; naming it is a remedy the model cannot reach")
+        XCTAssertTrue(outcome.detail.contains("asking the teacher"), outcome.detail)
+        XCTAssertNotNil(SectionSchedulePrompt.shared.request, "Reading an empty timetable asks for one")
+        SectionSchedulePrompt.shared.stopAsking()
     }
 
     /// Recorded, then read back with WHERE THEY CAME FROM — which is how a
