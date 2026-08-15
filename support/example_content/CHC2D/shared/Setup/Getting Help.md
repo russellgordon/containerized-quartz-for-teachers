@@ -55,3 +55,12 @@ trust, and without having to explain why.
 > available at any hour to anyone affected by residential schools. The
 > guidance office can connect you to counselling and to community
 > supports, including ones with nothing to do with this school.
+
+> [!important] Three lines that work anywhere in Canada
+> National, free, and open at any hour:
+>
+> - **9-8-8 — Suicide Crisis Helpline**: call or text 988. You can ask
+>   for services meant for young people, and for Indigenous responders.
+> - **Kids Help Phone**: 1-800-668-6868, or text CONNECT to 686868.
+> - **Hope for Wellness Helpline**, for First Nations, Inuit, and Métis
+>   callers, with responders trained in cultural humility: 1-855-242-3310.

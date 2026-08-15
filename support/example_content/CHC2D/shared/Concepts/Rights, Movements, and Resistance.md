@@ -28,9 +28,13 @@ the record of that work is specific.
 - **Hugh Burnett** and the National Unity Association of Chatham, Dresden and
   North Buxton campaigned through the late 1940s and 1950s against businesses
   that refused Black customers, documenting refusals until Ontario
-  legislated. The province's fair employment and fair accommodation statutes
-  came out of that pressure and became its Human Rights Code in 1962, the
-  first in Canada.
+  legislated. That pressure produced the *Fair Employment Practices Act*
+  in 1951 and the *Fair Accommodation Practices Act* in 1954, following the
+  *Racial Discrimination Act* of 1944, and the three were brought together
+  as Ontario's Human Rights Code in 1962 — the first in Canada. Historians
+  note the fair-practices acts were weakly enforced, which is worth asking
+  about on its own: a right you cannot practically enforce is a different
+  thing from a right.
 - **Sleeping car porters**, long confined to the only railway job open to
   Black men, organized. Stanley Grizzle and the Brotherhood of Sleeping Car
   Porters won contract protections, then pushed against the immigration and
