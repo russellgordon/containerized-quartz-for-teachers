@@ -704,6 +704,12 @@ final class AssistToolRunner {
         // outlives the conversation.
         let backedUp: Bool = backUpOnceForThisConversation(course, forSection: sectionNumber)
 
+        // Stop → write → start, and the stop is HERE rather than beside the
+        // start for a reason. A preview left serving while the pages beneath
+        // it are rewritten serves a half-changed site, and the teacher's next
+        // refresh is a race they cannot see they are in.
+        _ = stopThePreviewBeforeWriting(for: course, sectionNumber: sectionNumber)
+
         let change: AssistChange
         do {
             change = try AssistPublishPlanner.apply(plan, forSection: sectionNumber, in: course)
@@ -719,19 +725,10 @@ final class AssistToolRunner {
             detail += "\n\n" + AssistToolRunner.backedUpNote
         }
 
-        let rebuild: AssistSiteWorkResult = await siteWork.rebuildPreview(
-            course: course, sectionNumber: sectionNumber
+        let previewNote: String = await bringThePreviewUpToDate(
+            for: course, sectionNumber: sectionNumber
         )
-        detail += "\n\n" + rebuild.message
-        // On screen, not merely built. A teacher who has just been told their
-        // change is in the preview should be looking at it.
-        if rebuild.succeeded {
-            SectionPreviewRequests.shared.ask(
-                folderPath: workspace.workspaceURL?.path ?? "",
-                courseCode: course.code,
-                sectionNumber: sectionNumber
-            )
-        }
+        detail += "\n\n" + previewNote
         detail += "\n\nThis changed the teacher's files and their PREVIEW. It did not put anything in front "
                 + "of students — deploying does that, and only when they ask."
 
@@ -745,39 +742,74 @@ final class AssistToolRunner {
         guard case .success(let located) = found else {
             return AssistToolOutcome.refused(refusal(from: found).message)
         }
-        let result: AssistSiteWorkResult = await siteWork.rebuildPreview(
-            course: located.course, sectionNumber: located.sectionNumber
+        let message: String = await bringThePreviewUpToDate(
+            for: located.course, sectionNumber: located.sectionNumber
         )
-        if !result.succeeded {
-            return AssistToolOutcome.refused(result.message)
-        }
-        showThePreview(for: located)
-        let message: String = "Rebuilt the preview for \(located.course.code) Section "
-                            + "\(located.sectionNumber) and put it on screen in that section's window."
         return AssistToolOutcome.wrote(message, detail: message)
     }
 
-    /// Ask the section's own window to show its preview.
-    ///
-    /// Building is only half of a preview — the other half is a server on a
-    /// leased port and a web view, both of which belong to the section window.
-    /// Doing the buildable half and telling the teacher to go and look left
-    /// the assistant reporting success beside a window reading "No Preview
-    /// Running", which is the worst thing it can say.
-    ///
-    /// The window answers by pressing its own Preview, so this and the button
-    /// are the same code rather than two versions of it. A preview already
-    /// running is left alone: the button is a toggle, and stopping a teacher's
-    /// preview because they asked to see it would be absurd.
-    private func showThePreview(for located: Located) {
+    /// The section window driving this section's preview, if one is open.
+    private func previewController(
+        for course: Course, sectionNumber: Int
+    ) -> SectionPreviewControllers.Controller? {
         guard let folder = workspace.workspaceURL else {
-            return
+            return nil
         }
-        SectionPreviewRequests.shared.ask(
-            folderPath: folder.path,
-            courseCode: located.course.code,
-            sectionNumber: located.sectionNumber
+        return SectionPreviewControllers.shared.controller(
+            folderPath: folder.path, courseCode: course.code, sectionNumber: sectionNumber
         )
+    }
+
+    /// Stop the preview before changing files. Returns whether one was up.
+    ///
+    /// Called BEFORE the writes, which is the whole point of it being a
+    /// separate step. A preview left serving while the pages underneath it are
+    /// rewritten is serving a half-changed site, and the teacher's next
+    /// refresh is a race they cannot see they are in.
+    private func stopThePreviewBeforeWriting(
+        for course: Course, sectionNumber: Int
+    ) -> Bool {
+        guard let controller = previewController(for: course, sectionNumber: sectionNumber) else {
+            return false
+        }
+        if !controller.isRunning() {
+            return false
+        }
+        controller.stop()
+        return true
+    }
+
+    /// Put the section's preview back up, built from what is now on disk.
+    ///
+    /// Two paths, and which one runs depends on whether a section window is
+    /// open — not on a flag anyone passes:
+    ///
+    /// * **A window is open.** Its own Preview is started, which builds AND
+    ///   serves. Nothing else builds, because starting it builds: doing a
+    ///   `--build-only` pass first would build the same site twice and make a
+    ///   teacher wait through both.
+    /// * **No window is open.** Nobody can be shown anything, so the site is
+    ///   brought up to date on disk and the answer says so plainly rather than
+    ///   claiming a preview that does not exist.
+    private func bringThePreviewUpToDate(
+        for course: Course, sectionNumber: Int
+    ) async -> String {
+        let where_: String = "\(course.code) Section \(sectionNumber)"
+
+        if let controller = previewController(for: course, sectionNumber: sectionNumber) {
+            controller.start()
+            return "The preview for \(where_) is rebuilding now, and will appear in that "
+                 + "section's window when it is ready."
+        }
+
+        let rebuild: AssistSiteWorkResult = await siteWork.rebuildPreview(
+            course: course, sectionNumber: sectionNumber
+        )
+        if !rebuild.succeeded {
+            return rebuild.message
+        }
+        return "Rebuilt the site for \(where_). Open that section in Plantoir and press Preview "
+             + "to look it over — no window is showing it at the moment."
     }
 
     private func undoLastChange() -> AssistToolOutcome {

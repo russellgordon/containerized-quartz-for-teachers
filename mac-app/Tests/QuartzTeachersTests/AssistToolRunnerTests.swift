@@ -386,6 +386,50 @@ final class AssistToolRunnerTests: XCTestCase {
                       "Undo put the lesson back, so it must put the pointer back")
     }
 
+    /// The ORDER is the requirement: the preview stops, the files change, the
+    /// preview starts again. Not "all three happen".
+    ///
+    /// A preview left serving while the pages beneath it are rewritten is
+    /// serving a half-changed site. The first attempt at this posted a request
+    /// for a view to notice, which meant the stop landed whenever SwiftUI next
+    /// evaluated a body — sometimes after the writes, and silently, which is
+    /// why the order is pinned here rather than trusted.
+    @MainActor
+    func testAWriteStopsThePreviewThenWritesThenStartsIt() async throws {
+        let made = try makeRunner(registeringPreview: true)
+        defer {
+            FakePreview.shared.forget()
+            try? FileManager.default.removeItem(at: made.root)
+        }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08", body: "one", in: made.course)
+        FakePreview.shared.watch(pageAt: pageURL(of: "Unit 1, Day 1", in: made.course))
+
+        _ = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+
+        XCTAssertEqual(FakePreview.shared.events, ["stop", "write", "start"],
+                       "Stop must come before the writes, and start after them")
+    }
+
+    /// With no section window open there is nothing to drive, and the answer
+    /// must say so rather than claim a preview nobody can see.
+    @MainActor
+    func testWithNoSectionWindowOpenTheAnswerSaysTheSiteWasBuilt() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+        SectionPreviewControllers.shared.forgetAll()
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08", body: "one", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+
+        XCTAssertTrue(outcome.detail.contains("no window is showing it"), outcome.detail)
+    }
+
     /// A class page is a ROOT, not an orphan.
     ///
     /// The rule the courses are built to is that every page must be reachable
@@ -1219,7 +1263,8 @@ final class AssistToolRunnerTests: XCTestCase {
     }
 
     @MainActor
-    private func makeRunner(hasDeployedBefore: Bool = false) throws
+    private func makeRunner(hasDeployedBefore: Bool = false,
+                            registeringPreview: Bool = false) throws
         -> (root: URL, course: Course, runner: AssistToolRunner, siteWork: StubSiteWork) {
         let fileManager: FileManager = FileManager.default
         let root: URL = fileManager.temporaryDirectory
@@ -1274,6 +1319,11 @@ final class AssistToolRunnerTests: XCTestCase {
             today: CalendarDay(year: 2026, month: 9, day: 8)!,
             launchControl: SilentLaunchControl()
         )
+
+        SectionPreviewControllers.shared.forgetAll()
+        if registeringPreview {
+            FakePreview.shared.register(folderPath: root.path, courseCode: "ICS3U", sectionNumber: 1)
+        }
         return (root, course, runner, siteWork)
     }
 
@@ -1307,6 +1357,11 @@ final class AssistToolRunnerTests: XCTestCase {
             to: ClassPages.folderURL(forSection: 1, in: course).appendingPathComponent(title + ".md"),
             atomically: true, encoding: .utf8
         )
+    }
+
+    @MainActor
+    private func pageURL(of title: String, in course: Course) -> URL {
+        return ClassPages.folderURL(forSection: 1, in: course).appendingPathComponent(title + ".md")
     }
 
     /// A section's landing page, shaped like the real ones: a class
