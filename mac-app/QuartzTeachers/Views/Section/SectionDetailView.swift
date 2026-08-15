@@ -369,6 +369,11 @@ struct SectionDetailView: View {
         previewRunner.stopByUser()
         previewURL = nil
         isWaitingForServer = false
+        // The next preview reuses this section's port, so its address will be
+        // identical to the one already loaded. Without this the web view sees
+        // a URL it has seen before and shows the pages it already had —
+        // which is how a rebuilt site kept appearing unchanged.
+        previewController.forgetLoadedPage()
         releasePreviewLease()
     }
 

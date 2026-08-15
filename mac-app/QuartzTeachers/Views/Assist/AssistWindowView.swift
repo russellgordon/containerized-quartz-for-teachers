@@ -227,7 +227,7 @@ struct AssistWindowView: View {
                             AssistEntryView(
                                 entry: entry,
                                 hasTail: AssistChatLayout.showsTail(
-                                    at: position, in: transcriptSpeakers
+                                    at: position, in: transcriptSides
                                 )
                             )
                         case .restored(let note):
@@ -335,21 +335,21 @@ struct AssistWindowView: View {
         .background(.bar)
     }
 
-    /// Who said each line, in order, with a placeholder for the lines nobody
-    /// said. The tail rule reads this rather than the views.
-    private var transcriptSpeakers: [AssistAgent.Entry.Speaker] {
-        var speakers: [AssistAgent.Entry.Speaker] = []
+    /// Which side each line of the transcript belongs to, in order. The tail
+    /// rule reads this rather than the views.
+    private var transcriptSides: [AssistChatSide] {
+        var sides: [AssistChatSide] = []
         for line in transcriptLines {
             switch line {
             case .said(let entry):
-                speakers.append(entry.speaker)
+                sides.append(AssistChatLayout.side(of: entry.speaker))
             case .restored:
                 // A restore is something that HAPPENED, not something said,
                 // so it neither wears a tail nor ends anybody's turn.
-                speakers.append(.problem)
+                sides.append(.neither)
             }
         }
-        return speakers
+        return sides
     }
 
     /// The conversation and the restores, laid together in the order they
@@ -464,10 +464,9 @@ private struct AssistEntryView: View {
                 Text(entry.text)
                     .foregroundStyle(.white)
                     .textSelection(.enabled)
-                    .padding(.leading, 14)
-                    .padding(.trailing, 14 + AssistChatBubbleShape.reach)
-                    .padding(.top, 9)
-                    .padding(.bottom, 9 + (hasTail ? AssistChatBubbleShape.drop : 0))
+                    .padding(.leading, 12)
+                    .padding(.trailing, 12 + AssistChatBubbleShape.reach)
+                    .padding(.vertical, 8)
                     .background(
                         AssistChatBubbleShape(side: .teacher, hasTail: hasTail)
                             .fill(Color.accentColor)
@@ -484,10 +483,9 @@ private struct AssistEntryView: View {
                     .textSelection(.enabled)
                     // The tail's side gets the extra room, so the words sit
                     // the same distance from the bubble's edge on both sides.
-                    .padding(.leading, 14 + AssistChatBubbleShape.reach)
-                    .padding(.trailing, 14)
-                    .padding(.top, 9)
-                    .padding(.bottom, 9 + (hasTail ? AssistChatBubbleShape.drop : 0))
+                    .padding(.leading, 12 + AssistChatBubbleShape.reach)
+                    .padding(.trailing, 12)
+                    .padding(.vertical, 8)
                     .background(
                         AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
                             .fill(Color.secondary.opacity(0.16))
@@ -496,41 +494,59 @@ private struct AssistEntryView: View {
             }
             .padding(.bottom, hasTail ? 4 : 0)
 
+        // A result is the assistant ANSWERING, so it wears the same grey
+        // bubble as anything else it says. As plain lines with an icon these
+        // read as a log spliced through a conversation — and that the answer
+        // came from a tool is machinery, which the teacher is not the
+        // audience for.
         case .toolResult:
-            // What ran is said in the teacher's terms, not the tool's name —
-            // "Published Unit 2, Day 3", never "publish_pages returned ok".
-            //
-            // When the result has a list behind it, the line unfolds. A count
-            // on its own is not actionable — "1 broken link" says something is
-            // wrong and nothing about where — but the list is long enough to
-            // bury the conversation if it were always open, so it folds.
-            if let detail = entry.detail {
-                DisclosureGroup {
-                    Text(detail)
-                        .font(.callout)
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(AssistSaid.styled(entry.text))
                         .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 4)
-                        .padding(.leading, 4)
-                } label: {
-                    Label(entry.text, systemImage: "checkmark.circle")
+                    // When there is a list behind the answer, it unfolds
+                    // inside the bubble. A count on its own is not something
+                    // a teacher can act on — "1 broken link" says something
+                    // is wrong and nothing about where — but the list would
+                    // bury the conversation if it were always open.
+                    if let detail = entry.detail {
+                        DisclosureGroup("Show me") {
+                            Text(detail)
+                                .font(.callout)
+                                .textSelection(.enabled)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 4)
+                        }
                         .font(.callout)
-                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("assistResultDetail")
+                    }
                 }
-                .accessibilityIdentifier("assistResultDetail")
-                .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                Label(entry.text, systemImage: "checkmark.circle")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 12 + AssistChatBubbleShape.reach)
+                .padding(.trailing, 12)
+                .padding(.vertical, 8)
+                .background(
+                    AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
+                        .fill(Color.secondary.opacity(0.16))
+                )
+                Spacer(minLength: 48)
             }
+            .padding(.bottom, hasTail ? 4 : 0)
 
         case .problem:
-            Label(entry.text, systemImage: "exclamationmark.triangle")
-                .font(.callout)
-                .foregroundStyle(.orange)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                Label(entry.text, systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(.orange)
+                    .textSelection(.enabled)
+                    .padding(.leading, 12 + AssistChatBubbleShape.reach)
+                    .padding(.trailing, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
+                            .fill(Color.secondary.opacity(0.16))
+                    )
+                Spacer(minLength: 48)
+            }
+            .padding(.bottom, hasTail ? 4 : 0)
         }
     }
 }
