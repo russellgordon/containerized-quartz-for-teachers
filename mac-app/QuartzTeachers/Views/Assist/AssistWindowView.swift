@@ -151,7 +151,8 @@ struct AssistWindowView: View {
             .accessibilityIdentifier("assistRestoreSectionButton")
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.top, 8)
+                    .padding(.bottom, 8 + AssistChatBubbleShape.drop)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.bar)
         .alert(
@@ -466,7 +467,8 @@ private struct AssistEntryView: View {
                     .textSelection(.enabled)
                     .padding(.leading, 12)
                     .padding(.trailing, 12 + AssistChatBubbleShape.reach)
-                    .padding(.vertical, 8)
+                    .padding(.top, 8)
+                    .padding(.bottom, 8 + AssistChatBubbleShape.drop)
                     .background(
                         AssistChatBubbleShape(side: .teacher, hasTail: hasTail)
                             .fill(Color.accentColor)
@@ -485,7 +487,8 @@ private struct AssistEntryView: View {
                     // the same distance from the bubble's edge on both sides.
                     .padding(.leading, 12 + AssistChatBubbleShape.reach)
                     .padding(.trailing, 12)
-                    .padding(.vertical, 8)
+                    .padding(.top, 8)
+                    .padding(.bottom, 8 + AssistChatBubbleShape.drop)
                     .background(
                         AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
                             .fill(Color.secondary.opacity(0.16))
@@ -523,7 +526,8 @@ private struct AssistEntryView: View {
                 }
                 .padding(.leading, 12 + AssistChatBubbleShape.reach)
                 .padding(.trailing, 12)
-                .padding(.vertical, 8)
+                .padding(.top, 8)
+                    .padding(.bottom, 8 + AssistChatBubbleShape.drop)
                 .background(
                     AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
                         .fill(Color.secondary.opacity(0.16))
@@ -539,7 +543,8 @@ private struct AssistEntryView: View {
                     .textSelection(.enabled)
                     .padding(.leading, 12 + AssistChatBubbleShape.reach)
                     .padding(.trailing, 12)
-                    .padding(.vertical, 8)
+                    .padding(.top, 8)
+                    .padding(.bottom, 8 + AssistChatBubbleShape.drop)
                     .background(
                         AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
                             .fill(Color.secondary.opacity(0.16))

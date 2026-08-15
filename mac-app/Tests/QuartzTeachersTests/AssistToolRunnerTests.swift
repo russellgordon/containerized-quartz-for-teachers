@@ -420,6 +420,25 @@ final class AssistToolRunnerTests: XCTestCase {
                        "The stop must FINISH before the writes, and the start come after them")
     }
 
+    /// "Preview" on its own stops a running preview and starts it again,
+    /// rather than leaving it up. The running preview IS the stale thing the
+    /// teacher is asking to have refreshed.
+    @MainActor
+    func testPreviewStopsAndRestartsARunningPreview() async throws {
+        let made = try makeRunner(registeringPreview: true)
+        defer {
+            FakePreview.shared.forget()
+            try? FileManager.default.removeItem(at: made.root)
+        }
+
+        _ = await made.runner.run(call: call(
+            "rebuild_preview", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertEqual(FakePreview.shared.events, ["stop-begins", "stop-ends", "start"],
+                       "A running preview must be stopped, waited for, and started again")
+    }
+
     /// With no section window open there is nothing to drive, and the answer
     /// must say so rather than claim a preview nobody can see.
     @MainActor

@@ -67,22 +67,25 @@ enum AssistChatLayout {
     }
 }
 
-/// A chat bubble shaped like the one macOS Messages draws.
+/// A chat bubble shaped like the one Messages draws.
 ///
-/// **The tail does not hang below the bubble.** That was the structural
-/// mistake in the first two attempts: a tail drawn beneath the body reads as a
-/// spike hanging off a box, whichever way it is curved. In Messages the tail's
-/// lowest point is LEVEL with the bubble's bottom edge — it bulges sideways
-/// out of the bottom corner and curls back underneath itself, so the bubble
-/// keeps one flat baseline and the tail looks like part of the same blob.
+/// **The tail hangs BELOW the bubble.** This was got wrong twice in opposite
+/// directions, so it is worth stating plainly: the tip sits below the bubble's
+/// bottom edge and outside its side, and the underside of the tail curves back
+/// up INTO the bubble's bottom edge. A tail that only bulges sideways looks
+/// like a wedge stuck on the corner; a tail made of straight lines looks like
+/// a spike. It is the concave underside — the hook — that makes it read as a
+/// tail rather than as a shape that happens to be pointy.
 ///
-/// The curve below is the well-known reconstruction of Apple's own path, and
-/// the odd-looking constants (17, 4, 11.04, 7.61…) are kept as they are rather
-/// than rounded off, because they are what makes it read as the real thing
-/// rather than as an imitation. The body's edge on the tail side sits four
-/// points inside the rect, and the tail fills that strip — which is also why
-/// bubbles with and without tails line up down the column: every bubble gives
-/// up the same four points, and only the tailed one uses them.
+/// Everything is drawn INSIDE the rect the background is given: the body gives
+/// up a strip below and to its own side, and the tail lives in that strip.
+/// Anything drawn outside is clipped, and a clipped tail is severed rather than
+/// pointed.
+///
+/// Proportions scale with the corner radius rather than being fixed, so a
+/// short bubble and a tall one look like the same design. Both sides give up
+/// the same strip whether or not they have a tail, so a run of bubbles keeps
+/// one straight edge down the column.
 struct AssistChatBubbleShape: Shape {
 
     // MARK: - Stored properties
@@ -90,88 +93,77 @@ struct AssistChatBubbleShape: Shape {
     let side: AssistChatSide
     let hasTail: Bool
 
-    /// The strip on the tail's side that the body gives up, so the tail has
-    /// somewhere to go without being clipped or knocking bubbles out of line.
-    static let reach: CGFloat = 4
+    /// The strip the tail needs: below the bubble, and beyond its side.
+    static let drop: CGFloat = 6
+    static let reach: CGFloat = 7
 
-    /// Messages' own corner radius. Bubbles here are at least 34 points tall
-    /// (nine points of padding above and below a line of text), so it never
-    /// has to be clamped in practice — but it is, for the day something short
-    /// is put in one.
+    /// Messages' corner radius, clamped for bubbles too short to take it.
     private let corner: CGFloat = 17
 
     // MARK: - Functions
 
     func path(in rect: CGRect) -> Path {
-        // Both sides give up the same strip, tail or no tail, so a run of
-        // bubbles has one straight edge down the column.
+        // Every bubble gives up the same strip, tail or no tail, so a run of
+        // them lines up down the column.
         var body: CGRect = rect
         body.size.width -= AssistChatBubbleShape.reach
+        body.size.height -= AssistChatBubbleShape.drop
         if side == .assistant {
             body.origin.x += AssistChatBubbleShape.reach
         }
 
-        // Messages' geometry is written for a bubble at least twice its
-        // corner radius tall. Below that the top and bottom curves would
-        // overlap and the tail would take a third of the bubble's height —
-        // which is exactly what a too-short bubble looked like. So the whole
-        // figure is SCALED rather than clipped, and stays in proportion at
-        // any size.
-        let radius: CGFloat = min(corner, rect.height / 2)
-        let unit: CGFloat = radius / corner
+        let radius: CGFloat = min(corner, body.height / 2)
 
         guard hasTail, side != .neither else {
             return Path(roundedRect: body, cornerRadius: radius)
         }
 
-        // Worked out left-to-right for the teacher's side, then mirrored.
-        // `at` flips the x of every point when the tail belongs on the left,
-        // so there is one path to read and one to get right.
+        // Written for a tail on the right, then mirrored. `at` flips x when
+        // the tail belongs on the left, so there is one path to read and one
+        // to get right.
         let flip: Bool = (side == .assistant)
         func at(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
-            let across: CGFloat = flip ? (rect.maxX - x) : (rect.minX + x)
-            return CGPoint(x: across, y: rect.minY + y)
+            return CGPoint(x: flip ? (rect.maxX - (x - rect.minX)) : x, y: y)
         }
 
-        let width: CGFloat = rect.width
-        let height: CGFloat = rect.height
-
-        // Apple's own numbers, in seventeenths of the corner radius. They are
-        // kept as measured rather than rounded off: the proportions are what
-        // make it read as the real thing rather than as an impression of it.
-        let cornerPull: CGFloat = 7.61 * unit     // how far a corner's curve reaches
-        let tailStart: CGFloat = 22 * unit        // where the bottom edge gives way to the tail
-        let topRight: CGFloat = 21 * unit
-        let edge: CGFloat = AssistChatBubbleShape.reach * unit   // body edge inside the rect
-        let tailRise: CGFloat = 11 * unit         // how far up the edge the tail begins
-        let hookIn: CGFloat = 11.04 * unit        // where the hook returns into the bubble
-        let hookUp: CGFloat = 4.04 * unit
+        let drop: CGFloat = AssistChatBubbleShape.drop
+        let reach: CGFloat = AssistChatBubbleShape.reach
 
         var path: Path = Path()
-        path.move(to: at(width - tailStart, height))
-        path.addLine(to: at(radius, height))
-        path.addCurve(to: at(0, height - radius),
-                      control1: at(cornerPull, height), control2: at(0, height - cornerPull))
-        path.addLine(to: at(0, radius))
-        path.addCurve(to: at(radius, 0), control1: at(0, cornerPull), control2: at(cornerPull, 0))
-        path.addLine(to: at(width - topRight, 0))
-        path.addCurve(to: at(width - edge, radius),
-                      control1: at(width - topRight + cornerPull * 1.3, 0),
-                      control2: at(width - edge, cornerPull))
 
-        // Down the body's edge, then the tail: out past the edge, round the
-        // tip, and back underneath into the bubble's own bottom — which is
-        // why the bubble keeps ONE flat baseline and the tail reads as part
-        // of the same blob rather than a spike hung off it.
-        path.addLine(to: at(width - edge, height - tailRise))
-        path.addCurve(to: at(width, height),
-                      control1: at(width - edge, height - 1 * unit), control2: at(width, height))
-        path.addLine(to: at(width + 0.05, height - 0.01))
-        path.addCurve(to: at(width - hookIn, height - hookUp),
-                      control1: at(width - 4.07 * unit, height + 0.43 * unit),
-                      control2: at(width - 8.16 * unit, height - 1.06 * unit))
-        path.addCurve(to: at(width - tailStart, height),
-                      control1: at(width - 16 * unit, height), control2: at(width - 19 * unit, height))
+        // Top edge, left to right.
+        path.move(to: at(body.minX + radius, body.minY))
+        path.addLine(to: at(body.maxX - radius, body.minY))
+        path.addQuadCurve(to: at(body.maxX, body.minY + radius),
+                          control: at(body.maxX, body.minY))
+
+        // Down the right edge, stopping where the tail begins.
+        path.addLine(to: at(body.maxX, body.maxY - radius * 0.55))
+
+        // Out and DOWN to the tip, below the bubble's bottom and beyond its
+        // side. The first control keeps it flush with the edge as it leaves,
+        // so the tail grows out of the bubble instead of being attached to it.
+        path.addCurve(
+            to: at(body.maxX + reach, body.maxY + drop),
+            control1: at(body.maxX, body.maxY - radius * 0.1),
+            control2: at(body.maxX + reach * 0.45, body.maxY + drop * 0.45)
+        )
+
+        // The hook: back up and in, concave, rejoining the bottom edge. This
+        // curve is the whole difference between a tail and a spike.
+        path.addCurve(
+            to: at(body.maxX - radius * 0.6, body.maxY),
+            control1: at(body.maxX + reach * 0.1, body.maxY + drop * 0.1),
+            control2: at(body.maxX - radius * 0.1, body.maxY)
+        )
+
+        // Bottom edge back to the left, and up the far side.
+        path.addLine(to: at(body.minX + radius, body.maxY))
+        path.addQuadCurve(to: at(body.minX, body.maxY - radius),
+                          control: at(body.minX, body.maxY))
+        path.addLine(to: at(body.minX, body.minY + radius))
+        path.addQuadCurve(to: at(body.minX + radius, body.minY),
+                          control: at(body.minX, body.minY))
         path.closeSubpath()
         return path
     }

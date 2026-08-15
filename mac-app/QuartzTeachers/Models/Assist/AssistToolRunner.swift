@@ -784,6 +784,11 @@ final class AssistToolRunner {
 
     /// Put the section's preview back up, built from what is now on disk.
     ///
+    /// Always a full stop and restart when one is running, never a quiet
+    /// rebuild underneath it: "Preview" asks to be shown the section as it is
+    /// NOW, and the running preview is precisely the stale thing being
+    /// complained about.
+    ///
     /// Two paths, and which one runs depends on whether a section window is
     /// open — not on a flag anyone passes:
     ///
@@ -800,6 +805,19 @@ final class AssistToolRunner {
         let where_: String = "\(course.code) Section \(sectionNumber)"
 
         if let controller = previewController(for: course, sectionNumber: sectionNumber) {
+            // Stop whatever is running first, and WAIT for it. "Preview" means
+            // show me this section as it is now, so a preview already up is
+            // the thing most in need of replacing — leaving it alone would
+            // answer the request with the very page it was asked to refresh.
+            //
+            // The wait is not politeness. Stopping reaches into the container
+            // and kills that section's processes, so a stop still finishing
+            // when the rebuild starts kills the rebuild, and what gets served
+            // is the last build allowed to complete — the site as it was
+            // before.
+            if controller.isRunning() {
+                await controller.stop()
+            }
             controller.start()
             return "The preview for \(where_) is rebuilding now, and will appear in that "
                  + "section's window when it is ready."
