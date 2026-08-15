@@ -10,6 +10,69 @@ public class CourseConfigurationTests
     private static CourseConfiguration FromJson(string json) =>
         CourseConfiguration.FromBytes(Encoding.UTF8.GetBytes(json));
 
+    [Fact]
+    public void PublishingAccessorsDefaultToNetlifyAndRoundTrip()
+    {
+        var config = FromJson("""{"course_code":"ICS3U"}""");
+        Assert.Equal("netlify", config.DeployTarget);
+        Assert.False(config.DeploysToLocalFolder);
+
+        config.DeployTarget = "local_folder";
+        Assert.False(config.DeploysToLocalFolder);   // no folder chosen yet
+        config.DeployFolderPath = @"C:\somewhere";
+        Assert.True(config.DeploysToLocalFolder);
+    }
+
+    [Fact]
+    public void CloudflareIsAThirdDestinationAndRoundTrips()
+    {
+        var config = FromJson("""{"course_code":"ICS3U"}""");
+        Assert.False(config.DeploysToCloudflare);
+
+        config.DeployTarget = "cloudflare_pages";
+        Assert.True(config.DeploysToCloudflare);
+        // The three destinations stay strangers — picking one never reads as
+        // another.
+        Assert.False(config.DeploysToLocalFolder);
+    }
+
+    [Fact]
+    public void CloudflareAccountProblemsAreNamedInPlainWords()
+    {
+        Assert.Equal("Paste your Cloudflare Account ID.",
+            CourseConfiguration.CloudflareAccountProblem("   "));
+
+        // 32 hex characters is the shape Cloudflare uses; anything else is
+        // caught here rather than by a failed publish.
+        string valid = new string('a', 24) + "0123456f";
+        Assert.Null(CourseConfiguration.CloudflareAccountProblem(valid));
+        Assert.Null(CourseConfiguration.CloudflareAccountProblem("  " + valid.ToUpperInvariant() + "  "));
+
+        Assert.NotNull(CourseConfiguration.CloudflareAccountProblem(valid[..31]));       // too short
+        Assert.NotNull(CourseConfiguration.CloudflareAccountProblem(valid + "a"));       // too long
+        Assert.NotNull(CourseConfiguration.CloudflareAccountProblem(valid[..31] + "z")); // not hex
+    }
+
+    [Fact]
+    public void DeployFolderProblemsAreNamedInPlainWords()
+    {
+        Assert.Equal("Choose the folder this course deploys into.",
+            CourseConfiguration.DeployFolderProblem("   "));
+
+        string missing = Path.Combine(Path.GetTempPath(), "no-such-" + Guid.NewGuid().ToString("N"));
+        Assert.Contains("doesn’t exist", CourseConfiguration.DeployFolderProblem(missing));
+
+        string file = Path.Combine(Path.GetTempPath(), "file-" + Guid.NewGuid().ToString("N") + ".txt");
+        File.WriteAllText(file, "x");
+        try { Assert.Contains("That’s a file", CourseConfiguration.DeployFolderProblem(file)); }
+        finally { File.Delete(file); }
+
+        string good = Path.Combine(Path.GetTempPath(), "ok-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(good);
+        try { Assert.Null(CourseConfiguration.DeployFolderProblem(good)); }
+        finally { try { Directory.Delete(good); } catch { } }
+    }
+
     /// <summary>
     /// Mirrors build_site.py's computed_landing_title: [Grade X ]Name[, Section N],
     /// each switch literal, empty name falling back to the code.

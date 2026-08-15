@@ -4,6 +4,20 @@ using Xunit;
 
 namespace Plantoir.Tests;
 
+/// <summary>
+/// Preview leases and the publish registry are process-wide statics, so the
+/// classes that touch them must not run at the same time. xUnit runs test
+/// CLASSES in parallel by default, and PreviewLeaseTests resets the lease
+/// list around every one of its methods — which would yank the lease
+/// CourseActivityTests is in the middle of asserting on, roughly one run in
+/// three. Sharing a collection serializes them.
+/// </summary>
+[CollectionDefinition(SharedActivityState.Name, DisableParallelization = true)]
+public class SharedActivityStateCollection { }
+
+public static class SharedActivityState { public const string Name = "Process-wide preview and publish state"; }
+
+[Collection(SharedActivityState.Name)]
 public class PreviewLeaseTests : IDisposable
 {
     public PreviewLeaseTests() => PreviewLeases.Reset();
@@ -151,7 +165,7 @@ public class SectionAdderTests
 
             Assert.Equal(new[] { 1, 2 }, CourseConfiguration.Load(course.ConfigFilePath).SectionNumbers);
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -165,12 +179,13 @@ public class SectionAdderTests
                  "per_section_files":["Private Notes.md","Key Links.md"]}
                 """);
             SectionAdder.AddSection(1, course);
-            Assert.Contains("draft: true", File.ReadAllText(Path.Combine(course.DirectoryPath, "section1", "Private Notes.md")));
-            Assert.Contains("draft: false", File.ReadAllText(Path.Combine(course.DirectoryPath, "section1", "Key Links.md")));
+            // publish:, and inverted — a teacher-eyes-only page is publish: false.
+            Assert.Contains("publish: false", File.ReadAllText(Path.Combine(course.DirectoryPath, "section1", "Private Notes.md")));
+            Assert.Contains("publish: true", File.ReadAllText(Path.Combine(course.DirectoryPath, "section1", "Key Links.md")));
             Assert.Contains("title: Grade 9 Science, Section 1",
                 File.ReadAllText(Path.Combine(course.DirectoryPath, "section1", "index.md")));
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -187,7 +202,7 @@ public class SectionAdderTests
             var inTheWay = Assert.Throws<SectionAdder.SectionAddException>(() => SectionAdder.AddSection(3, course));
             Assert.Contains("Move it aside first — it may hold work you want to keep.", inTheWay.Message);
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     internal static Course MakeCourse(string root, string code, string configJson)
@@ -202,6 +217,43 @@ public class SectionAdderTests
 
 public class ArchiveRoundTripTests
 {
+    [Fact]
+    public void RemovingACourseSurvivesAGitRepoInTheBuildOutput()
+    {
+        // The Quartz project copied into .merged_output carries a .git whose
+        // pack files are READONLY — git marks them so — and removing a course
+        // died on the first one ("Access to the path 'pack-….idx' is
+        // denied"), half-deleted, behind an archive that had already
+        // succeeded. The delete must strip attributes as it goes.
+        string root = Path.Combine(Path.GetTempPath(), "arch-" + Guid.NewGuid());
+        string pack = "";
+        try
+        {
+            string coursesDir = Path.Combine(root, "courses");
+            var course = SectionAdderTests.MakeCourse(root, "ADA1O",
+                """{"course_code":"ADA1O","course_name":"Drama","section_numbers":[1]}""");
+            string packDir = Path.Combine(course.DirectoryPath,
+                ".merged_output", "section1", ".git", "objects", "pack");
+            Directory.CreateDirectory(packDir);
+            pack = Path.Combine(packDir, "pack-ace7b.idx");
+            File.WriteAllText(pack, "git made me");
+            File.SetAttributes(pack, FileAttributes.ReadOnly);
+            File.WriteAllText(Path.Combine(course.DirectoryPath, "index.md"), "---\ntitle: T\n---");
+
+            string archivePath = CourseArchiver.ArchiveAndRemoveCourse(course, coursesDir);
+
+            Assert.False(Directory.Exists(course.DirectoryPath));
+            Assert.True(File.Exists(archivePath));
+        }
+        finally
+        {
+            // If the delete under test failed, the readonly pack would trip
+            // this cleanup too — clear it so the temp folder never leaks.
+            try { if (File.Exists(pack)) File.SetAttributes(pack, FileAttributes.Normal); } catch { }
+            try { Directory.Delete(root, recursive: true); } catch { }
+        }
+    }
+
     [Fact]
     public void SectionArchiveRoundTripsAndKeepsBookkeeping()
     {
@@ -234,7 +286,7 @@ public class ArchiveRoundTripTests
             Assert.Equal(new[] { 1, 2 }, CourseConfiguration.Load(course.ConfigFilePath).SectionNumbers);
             Assert.False(File.Exists(archivePath));   // restored = no longer archived
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -261,7 +313,280 @@ public class ArchiveRoundTripTests
             Assert.Equal("Section 1 of ICS3U already exists. Remove it first if you want the archived copy back.", refusal.Message);
             Assert.True(File.Exists(zipPath));   // refusal leaves the archive alone
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
+    }
+}
+
+/// <summary>
+/// Whole-course backups (row 106): the three zip name forms stay strangers,
+/// backing up touches nothing, and a restore replaces the course folder's
+/// CONTENTS — never the folder itself, which is Obsidian's vault anchor.
+/// </summary>
+public class CourseBackupTests
+{
+    private static string Temp()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "backup-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        return root;
+    }
+
+    private static Course MakeCourse(string coursesDir, string code)
+    {
+        string dir = Path.Combine(coursesDir, code);
+        Directory.CreateDirectory(dir);
+        File.WriteAllText(Path.Combine(dir, "course_config.json"),
+            $$"""{"course_code":"{{code}}","section_numbers":[1]}""");
+        File.WriteAllText(Path.Combine(dir, "Learning Goals.md"), "original goals");
+        Directory.CreateDirectory(Path.Combine(dir, ".merged_output"));
+        File.WriteAllText(Path.Combine(dir, ".merged_output", "huge.txt"), "rebuildable");
+        return Workspace.DiscoverCourses(Path.GetDirectoryName(coursesDir)!).First(c => c.Code == code);
+    }
+
+    [Fact]
+    public void TheThreeZipNameFormsNeverCrossMatch()
+    {
+        const string backup = @"C:\x\ICS3U_backup_2026-08-12_101500.zip";
+        const string archive = @"C:\x\ICS3U_2026-08-12_101500.zip";
+        const string wizard = @"C:\x\2026-08-12_101500.zip";
+
+        Assert.NotNull(BackupItem.From(backup, "ICS3U"));
+        Assert.Null(ArchivedItem.From(backup, "ICS3U"));
+
+        Assert.NotNull(ArchivedItem.From(archive, "ICS3U"));
+        Assert.Null(BackupItem.From(archive, "ICS3U"));
+
+        Assert.Null(BackupItem.From(wizard, "ICS3U"));
+        Assert.Null(ArchivedItem.From(wizard, "ICS3U"));
+    }
+
+    [Fact]
+    public void BackingUpTouchesNothingAndSkipsTheRebuildableBulk()
+    {
+        string root = Temp();
+        try
+        {
+            string coursesDir = Path.Combine(root, "courses");
+            var course = MakeCourse(coursesDir, "ICS3U");
+
+            string zipPath = CourseArchiver.BackUpCourse(course, coursesDir);
+
+            Assert.True(File.Exists(Path.Combine(course.DirectoryPath, "Learning Goals.md")));
+            Assert.NotNull(BackupItem.From(zipPath, "ICS3U"));
+            using var zip = System.IO.Compression.ZipFile.OpenRead(zipPath);
+            Assert.Contains(zip.Entries, e => e.FullName.EndsWith("Learning Goals.md"));
+            Assert.DoesNotContain(zip.Entries, e => e.FullName.Contains(".merged_output"));
+        }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
+    }
+
+    [Fact]
+    public void RestoreReplacesContentsInPlaceKeepsTheFolderAndTheZip()
+    {
+        string root = Temp();
+        try
+        {
+            string coursesDir = Path.Combine(root, "courses");
+            var course = MakeCourse(coursesDir, "ICS3U");
+            string zipPath = CourseArchiver.BackUpCourse(course, coursesDir);
+            var backup = BackupItem.From(zipPath, "ICS3U")!;
+
+            // The mess an LLM might make: a page rewritten, a stray added.
+            File.WriteAllText(Path.Combine(course.DirectoryPath, "Learning Goals.md"), "MANGLED");
+            File.WriteAllText(Path.Combine(course.DirectoryPath, "Rogue.md"), "should vanish");
+            DateTime folderCreated = Directory.GetCreationTimeUtc(course.DirectoryPath);
+
+            CourseRestorer.RestoreBackup(backup, coursesDir);
+
+            Assert.Equal("original goals", File.ReadAllText(Path.Combine(course.DirectoryPath, "Learning Goals.md")));
+            Assert.False(File.Exists(Path.Combine(course.DirectoryPath, "Rogue.md")));
+            // The folder itself never left: same file-system identity for
+            // Obsidian's watcher (a recreated folder gets a new creation time).
+            Assert.Equal(folderCreated, Directory.GetCreationTimeUtc(course.DirectoryPath));
+            Assert.True(File.Exists(zipPath));   // the backup STAYS after restoring
+        }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
+    }
+
+    [Fact]
+    public void RestoreSurvivesReadonlyFilesAndUntraversableLinks()
+    {
+        // What a course folder REALLY holds after container builds: readonly
+        // droppings and links Directory.Delete(recursive) cannot traverse —
+        // the failure seen live before the delete learned to cope.
+        string root = Temp();
+        try
+        {
+            string coursesDir = Path.Combine(root, "courses");
+            var course = MakeCourse(coursesDir, "ICS3U");
+            string zipPath = CourseArchiver.BackUpCourse(course, coursesDir);
+            var backup = BackupItem.From(zipPath, "ICS3U")!;
+
+            File.WriteAllText(Path.Combine(course.DirectoryPath, "Learning Goals.md"), "MANGLED");
+            string stubborn = Path.Combine(course.DirectoryPath, ".merged_output", "locked.txt");
+            File.WriteAllText(stubborn, "readonly dropping");
+            File.SetAttributes(stubborn, FileAttributes.ReadOnly);
+            try
+            {
+                // A link like the container's content\Media, when this
+                // machine permits creating one (Developer Mode / admin).
+                Directory.CreateSymbolicLink(
+                    Path.Combine(course.DirectoryPath, ".merged_output", "Media"),
+                    Path.Combine(root, "no-such-target"));
+            }
+            catch { /* the readonly file still exercises the robust delete */ }
+
+            CourseRestorer.RestoreBackup(backup, coursesDir);
+
+            Assert.Equal("original goals", File.ReadAllText(Path.Combine(course.DirectoryPath, "Learning Goals.md")));
+            Assert.False(Directory.Exists(Path.Combine(course.DirectoryPath, ".merged_output")));
+        }
+        finally
+        {
+            // The readonly dropping would also stop the cleanup.
+            foreach (string file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories))
+                try { File.SetAttributes(file, FileAttributes.Normal); } catch { }
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void DeletingRemovesOnlyTheZip()
+    {
+        string root = Temp();
+        try
+        {
+            string coursesDir = Path.Combine(root, "courses");
+            var course = MakeCourse(coursesDir, "ICS3U");
+            string zipPath = CourseArchiver.BackUpCourse(course, coursesDir);
+            var backup = BackupItem.From(zipPath, "ICS3U")!;
+
+            CourseRestorer.DeleteBackup(backup);
+            Assert.False(File.Exists(zipPath));
+            Assert.True(Directory.Exists(course.DirectoryPath));
+            Assert.Empty(Workspace.FindBackups(root));
+        }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
+    }
+}
+
+/// <summary>
+/// The per-window sidebar memory's string forms (row 99): selection and
+/// expansion round-trips, unrecognized forms restoring nothing, and the
+/// deliberate Windows divergence — no stored state means all-open.
+/// </summary>
+public class WindowMemoryCodecTests
+{
+    [Theory]
+    [InlineData("course|ICS3U", "course", "ICS3U", 0, "")]
+    [InlineData("section|MCV4U|3", "section", "MCV4U", 3, "")]
+    [InlineData("archived|abc-123", "archived", "", 0, "abc-123")]
+    public void SelectionsRoundTrip(string stored, string kind, string code, int section, string id)
+    {
+        var decoded = WindowMemoryCodec.ParseSelection(stored)!;
+        Assert.Equal(kind, decoded.Kind);
+        Assert.Equal(code, decoded.Code);
+        Assert.Equal(section, decoded.Section);
+        Assert.Equal(id, decoded.Id);
+    }
+
+    [Fact]
+    public void EncodersProduceWhatTheParserReads()
+    {
+        Assert.Equal("course|ICS3U", WindowMemoryCodec.EncodeCourse("ICS3U"));
+        Assert.Equal("section|MCV4U|3", WindowMemoryCodec.EncodeSection("MCV4U", 3));
+        Assert.Equal("archived|x", WindowMemoryCodec.EncodeArchived("x"));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("course|")]
+    [InlineData("section|ICS3U|zero")]
+    [InlineData("section|ICS3U|0")]
+    [InlineData("bookmark|whatever")]
+    public void UnrecognizedSelectionsRestoreNothing(string? stored) =>
+        Assert.Null(WindowMemoryCodec.ParseSelection(stored));
+
+    [Fact]
+    public void ExpansionRoundTripsAndNullMeansEverythingOpen()
+    {
+        Assert.Null(WindowMemoryCodec.EncodeExpandedCourses(null));
+        Assert.Null(WindowMemoryCodec.ParseExpandedCourses(null));   // legacy entry: all open
+
+        Assert.Equal("ICS3U,MCV4U", WindowMemoryCodec.EncodeExpandedCourses(new[] { "MCV4U", "ICS3U" }));
+        Assert.Equal(new[] { "ICS3U", "MCV4U" },
+            WindowMemoryCodec.ParseExpandedCourses("ICS3U,MCV4U")!.OrderBy(c => c));
+
+        // An explicit empty string is "the teacher collapsed everything".
+        Assert.Equal("", WindowMemoryCodec.EncodeExpandedCourses(Array.Empty<string>()));
+        Assert.Empty(WindowMemoryCodec.ParseExpandedCourses("")!);
+    }
+}
+
+/// <summary>
+/// The cross-window busy registry gating Add Section (row 104). Folder paths
+/// are unique per test so the static registry never crosses wires with the
+/// lease tests.
+/// </summary>
+[Collection(SharedActivityState.Name)]
+public class CourseActivityTests
+{
+    private static string Folder() => @"C:\activity-" + Guid.NewGuid().ToString("N");
+
+    [Fact]
+    public void PublishesAreScopedToTheirCourseAndFolder()
+    {
+        string folder = Folder(), other = Folder();
+        using var publish = CourseActivity.BeginPublish(folder, "ICS3U", 1);
+        Assert.True(CourseActivity.IsPublishing(folder, "ICS3U"));
+        Assert.False(CourseActivity.IsPublishing(folder, "ICS4U"));
+        Assert.False(CourseActivity.IsPublishing(other, "ICS3U"));   // same code, other folder = other course
+    }
+
+    [Fact]
+    public void TwoPublishesOfOneCourseEndIndependently()
+    {
+        string folder = Folder();
+        var first = CourseActivity.BeginPublish(folder, "ICS3U", 1);
+        var second = CourseActivity.BeginPublish(folder, "ICS3U", 3);
+        first.Dispose();
+        Assert.True(CourseActivity.IsPublishing(folder, "ICS3U"));   // section 3 still going
+        second.Dispose();
+        Assert.False(CourseActivity.IsPublishing(folder, "ICS3U"));
+        second.Dispose();   // double-dispose is harmless
+        Assert.False(CourseActivity.IsPublishing(folder, "ICS3U"));
+    }
+
+    [Fact]
+    public void BusyReasonNamesWhatStandsInTheWay()
+    {
+        string folder = Folder();
+        Assert.Null(CourseActivity.BusyReason(folder, "ICS3U"));
+
+        var publish = CourseActivity.BeginPublish(folder, "ICS3U", 1);
+        Assert.Equal("Available once deploy completed", CourseActivity.BusyReason(folder, "ICS3U"));
+
+        var lease = PreviewLeases.Take(folder, "ICS3U", 2);
+        Assert.Equal("Available once preview and deploy complete", CourseActivity.BusyReason(folder, "ICS3U"));
+
+        publish.Dispose();
+        Assert.Equal("Available once preview completed", CourseActivity.BusyReason(folder, "ICS3U"));
+
+        PreviewLeases.Release(lease);
+        Assert.Null(CourseActivity.BusyReason(folder, "ICS3U"));
+    }
+
+    [Fact]
+    public void PreviewsCountThroughTheirLeases()
+    {
+        string folder = Folder();
+        var lease = PreviewLeases.Take(folder, "MCV4U", 1);
+        Assert.True(CourseActivity.IsPreviewing(folder, "MCV4U"));
+        Assert.False(CourseActivity.IsPreviewing(folder, "ICS3U"));
+        PreviewLeases.Release(lease);
+        Assert.False(CourseActivity.IsPreviewing(folder, "MCV4U"));
     }
 }
 
@@ -276,7 +601,7 @@ public class BuildFreshnessTests
             var course = SectionAdderTests.MakeCourse(root, "ICS3U", """{"course_code":"ICS3U"}""");
             Assert.True(BuildFreshness.NeedsRebuild(course, 1));
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -298,7 +623,7 @@ public class BuildFreshnessTests
             File.SetLastWriteTimeUtc(Path.Combine(content, "index.md"), DateTime.UtcNow.AddMinutes(10));
             Assert.True(BuildFreshness.NeedsRebuild(course, 1));
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -320,7 +645,7 @@ public class BuildFreshnessTests
 
             Assert.False(BuildFreshness.NeedsRebuild(course, 1));
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 
     [Fact]
@@ -347,7 +672,7 @@ public class BuildFreshnessTests
             Assert.False(BuildFreshness.BuiltForPreview(index));
             Assert.False(BuildFreshness.NeedsRebuild(course, 1));
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { try { Directory.Delete(root, recursive: true); } catch { } }
     }
 }
 
@@ -372,7 +697,7 @@ public class FolderContainerTests
             Assert.StartsWith("teaching-quartz-", expected);
             Assert.Equal("teaching-quartz-".Length + 8, expected.Length);
         }
-        finally { Directory.Delete(dir); }
+        finally { try { Directory.Delete(dir); } catch { } }
     }
 
     [Fact]

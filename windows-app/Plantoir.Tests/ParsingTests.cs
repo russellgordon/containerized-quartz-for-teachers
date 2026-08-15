@@ -27,6 +27,18 @@ public class OutputParserTests
     }
 
     [Fact]
+    public void PublishedFolderComesFromItsMarkerLastWins()
+    {
+        string text = "Published.\n Folder: C:\\old\\section1\nPUBLISHED_FOLDER=C:\\old\\section1\n" +
+                      "noise\nPUBLISHED_FOLDER=C:\\Users\\pat\\site\\section1\n";
+        Assert.Equal(@"C:\Users\pat\site\section1", OutputParsers.PublishedFolder(text));
+    }
+
+    [Fact]
+    public void ANetlifyPublishHasNoFolderMarker() =>
+        Assert.Null(OutputParsers.PublishedFolder(" Live URL: https://x.netlify.app\n✅ Deploy complete.\n"));
+
+    [Fact]
     public void RepeatPublishPlainHttpIsPromoted()
     {
         string text = " Using existing Netlify site for this section.\n Site: http://ics3u-s1.netlify.app\n";
@@ -280,6 +292,44 @@ public class TaskMilestoneTests
                 Assert.DoesNotContain("WSL", milestone.Label);
                 Assert.DoesNotContain("script", milestone.Label, StringComparison.OrdinalIgnoreCase);
             }
+    }
+
+    [Fact]
+    public void FolderPublishingNeverMentionsNetlify()
+    {
+        // Row 102d: a folder publish saying "Connecting to Netlify…" was
+        // wrong twice over. The folder lists must never say the word.
+        foreach (var list in new[] { TaskMilestones.DeployToFolder, TaskMilestones.BuildAndDeployToFolder })
+            foreach (var milestone in list)
+                Assert.DoesNotContain("Netlify", milestone.Label, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void CloudflarePublishingNeverMentionsNetlify()
+    {
+        // Same rule as folder publishing: a Cloudflare publish that said
+        // "Connecting to Netlify…" would be naming the wrong company.
+        foreach (var list in new[] { TaskMilestones.DeployToCloudflare, TaskMilestones.BuildAndDeployToCloudflare })
+            foreach (var milestone in list)
+                Assert.DoesNotContain("Netlify", milestone.Label, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void ACloudflareLiveUrlIsFoundByItsLabel()
+    {
+        // deploy.py prints "Live URL: https://<project>.pages.dev" — the same
+        // label the Netlify path uses, which is why no parser change was
+        // needed. wrangler's own chatter must not win over it.
+        const string transcript = """
+             Uploading the built site to Cloudflare…
+            Deploying to https://abc123.mcv4u-s1-2026-gordon.pages.dev
+             Live URL: https://mcv4u-s1-2026-gordon.pages.dev
+
+            ✅ Deploy complete.
+            """;
+        Uri? found = OutputParsers.PublishedSiteUrl(transcript);
+        Assert.NotNull(found);
+        Assert.Equal("https://mcv4u-s1-2026-gordon.pages.dev", found!.ToString().TrimEnd('/'));
     }
 
     [Fact]

@@ -118,6 +118,75 @@ public sealed class CourseConfiguration
         set => _values["custom_short_name"] = value;
     }
 
+    /// <summary>
+    /// Where publishes go: "netlify" (the default) or "local_folder" — a
+    /// folder on this computer, for teachers who upload to their own web
+    /// host themselves (e.g. over SFTP). Course-level: every section of the
+    /// course publishes the same way.
+    /// </summary>
+    public string DeployTarget
+    {
+        get { var raw = StringValue("deploy_target"); return raw.Length == 0 ? "netlify" : raw; }
+        set => _values["deploy_target"] = value;
+    }
+
+    /// <summary>
+    /// The folder local-folder publishes land in; each section gets its own
+    /// sectionN subfolder inside it.
+    /// </summary>
+    public string DeployFolderPath
+    {
+        get => StringValue("deploy_folder_path");
+        set => _values["deploy_folder_path"] = value;
+    }
+
+    /// <summary>True when this course publishes to a folder rather than Netlify.</summary>
+    public bool DeploysToLocalFolder =>
+        DeployTarget == "local_folder" && DeployFolderPath.Trim().Length > 0;
+
+    /// <summary>True when this course publishes to Cloudflare Pages.</summary>
+    public bool DeploysToCloudflare => DeployTarget == "cloudflare_pages";
+
+    /// <summary>
+    /// What is wrong with a Cloudflare account ID, or null when it looks
+    /// usable. A token scoped to Pages cannot list its own account — verified
+    /// against a real token — so the teacher supplies it once here, and the
+    /// app checks the shape before a publish can fail on it.
+    /// </summary>
+    public static string? CloudflareAccountProblem(string rawId)
+    {
+        string id = rawId.Trim();
+        if (id.Length == 0) return "Paste your Cloudflare Account ID.";
+        if (id.Length != 32 || !id.All(Uri.IsHexDigit))
+            return "That doesn’t look like an Account ID — it’s 32 letters and digits.";
+        return null;
+    }
+
+    /// <summary>
+    /// What is wrong with a folder chosen for local-folder publishing, or
+    /// null when the folder is usable. Both the settings form and the wizard
+    /// check this live — and block saving — so a publish never discovers the
+    /// problem after the fact.
+    /// </summary>
+    public static string? DeployFolderProblem(string rawPath)
+    {
+        string path = rawPath.Trim();
+        if (path.Length == 0) return "Choose the folder this course deploys into.";
+        if (File.Exists(path)) return "That’s a file — publishing needs a folder.";
+        if (!Directory.Exists(path)) return "That folder doesn’t exist — use Choose… to pick or create one.";
+        try
+        {
+            string probe = Path.Combine(path, ".plantoir-write-probe-" + Guid.NewGuid().ToString("N"));
+            File.WriteAllText(probe, "");
+            File.Delete(probe);
+        }
+        catch
+        {
+            return "That folder can’t be written to — choose a different one.";
+        }
+        return null;
+    }
+
     public string Locale
     {
         get { var raw = StringValue("locale"); return raw.Length == 0 ? "en-US" : raw; }

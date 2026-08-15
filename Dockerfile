@@ -12,6 +12,16 @@ RUN apt-get update && apt-get install -y curl git lsof dos2unix fonts-noto-color
     && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Cloudflare's own deploy CLI, used by deploy.py for the Pages publishing
+# target. It is pinned, and deliberately pinned BELOW 4.100: from 4.100 on,
+# wrangler requires Node 22, while this image ships Node 20 because that is
+# what Quartz v4.5.0 is known-good against. Raising Node to satisfy a newer
+# CLI would mean revalidating every teacher's site build, which is a far
+# larger risk than staying on the newest Node-20 wrangler. The exact pin also
+# keeps the image reproducible and stops an upstream CLI change from breaking
+# publishing for a teacher mid-semester.
+RUN npm install -g wrangler@4.80.0 && npm cache clean --force
+
 # Clone Quartz v4.5.0 into /opt/quartz
 WORKDIR /opt
 RUN git clone --branch v4.5.0 https://github.com/jackyzha0/quartz.git quartz
@@ -20,6 +30,10 @@ RUN git clone --branch v4.5.0 https://github.com/jackyzha0/quartz.git quartz
 COPY patches/Explorer.tsx /opt/quartz/quartz/components/Explorer.tsx
 COPY patches/FolderContent.tsx /opt/quartz/quartz/components/pages/FolderContent.tsx
 COPY patches/explorer.inline.ts /opt/quartz/quartz/components/scripts/explorer.inline.ts
+# Whether a page reaches the built site is decided by `publish:`, not `draft:`
+# — the teacher's word, and the polarity they actually use.
+COPY patches/publish.ts /opt/quartz/quartz/plugins/filters/publish.ts
+COPY patches/filters-index.ts /opt/quartz/quartz/plugins/filters/index.ts
 
 # Copy Quartz scaffold to /opt/quartz-site
 RUN cp -r /opt/quartz /opt/quartz-site

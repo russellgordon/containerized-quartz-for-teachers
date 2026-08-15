@@ -1,6 +1,6 @@
 ---
 title: Debugging Step by Step
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

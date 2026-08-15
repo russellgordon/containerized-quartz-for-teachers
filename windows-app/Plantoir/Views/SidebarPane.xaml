@@ -22,6 +22,12 @@
                             <StackPanel Orientation="Horizontal" Spacing="8" ToolTipService.ToolTip="{x:Bind Tooltip}">
                                 <FontIcon Glyph="{x:Bind Glyph}" FontSize="14" />
                                 <TextBlock Text="{x:Bind Title}" />
+                                <!-- A clock, only on a section with a deploy waiting to fire.
+                                     Its own tooltip says when: the row's tooltip is about the
+                                     section, and "at 6:30 tomorrow" belongs to the clock. -->
+                                <FontIcon Glyph="{x:Bind BadgeGlyph}" FontSize="12" Opacity="0.75"
+                                          Visibility="{x:Bind BadgeVisibility}"
+                                          ToolTipService.ToolTip="{x:Bind BadgeTooltip}" />
                             </StackPanel>
                         </TreeViewItem>
                     </DataTemplate>

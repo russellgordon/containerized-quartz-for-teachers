@@ -53,7 +53,7 @@ public sealed class AboutDialog : ContentDialog
         });
         panel.Children.Add(new TextBlock
         {
-            Text = "A plantoir is a dibber — the simple hand tool that opens a hole at the right depth so a seedling can be set in and take root. This app does the same for teaching materials. Write in Obsidian, preview locally, publish when you're ready.",
+            Text = "A plantoir is a dibber — the simple hand tool that opens a hole at the right depth so a seedling can be set in and take root. This app does the same for teaching materials. Write in Obsidian, preview locally, deploy when you're ready.",
             TextWrapping = TextWrapping.Wrap,
             FontSize = 12,
             Opacity = 0.7,

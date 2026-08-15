@@ -1,6 +1,6 @@
 ---
 title: Cable Habits
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

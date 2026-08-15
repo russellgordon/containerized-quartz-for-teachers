@@ -1,4 +1,18 @@
-# 7. Deployment to Netlify (`deploy.py`)
+# 7. Publishing a built section (`deploy.py`)
+
+> A course chooses **where** it publishes with the `deploy_target` key
+> (see [the config reference](08-course-config-reference.md)). There are
+> three destinations, and most of this page describes the first:
+>
+> | `deploy_target` | Where it goes | Who does the work |
+> |---|---|---|
+> | `netlify` (default) | A Netlify site per section | `deploy.py`, Netlify REST API |
+> | `cloudflare_pages` | A Cloudflare Pages project per section, at `<project>.pages.dev` | `deploy.py`, via wrangler in the image |
+> | `local_folder` | A folder on the teacher's own machine, one `sectionN` subfolder per section | the **launcher**, host-side — the container is never involved |
+>
+> Whichever is chosen, the thing published is the same built
+> `public/` folder; only the transport differs. The two newer
+> destinations are described at the end of this page.
 
 [◀ Previous: Quartz Customizations](06-quartz-customizations.md) · [Back to index](README.md) · [Next: course_config.json Reference ▶](08-course-config-reference.md)
 
@@ -101,6 +115,71 @@ friendly explanation derived from the `X-RateLimit-Reset` header: the current
 local time and when the window resets (converted to the teacher's timezone
 via `HOST_TZ_OFFSET`). Vendor-specific values like `Retry-After` counts are
 deliberately omitted to avoid confusion.
+
+## Cloudflare Pages (`--target cloudflare`)
+
+Chosen with `deploy_target: "cloudflare_pages"`. Each section becomes its
+own Pages **project**, served at `<project>.pages.dev` — a root address per
+section, the same shape as a Netlify site, so nothing in the build has to
+carry a URL sub-path.
+
+Unlike the Netlify path, this one does **not** speak the vendor's REST API
+for the upload. Cloudflare's direct-upload protocol is multi-stage and
+undocumented — BLAKE3 hashes computed over base64-of-contents plus the file
+extension, a short-lived upload JWT that can expire mid-upload on a large
+site, batched asset uploads — so publishing hands the built folder to
+**wrangler**, Cloudflare's own CLI, which lives in the image (see
+[the image](02-docker-image.md)) and is pinned. Reimplementing that protocol
+from community write-ups would break teachers' publishing silently whenever
+Cloudflare changed it.
+
+Two things are needed, and only one comes from the teacher directly:
+
+- **An API token** with the single permission *Account → Cloudflare Pages →
+  Edit*. The launcher owns it exactly as it owns the Netlify token (Keychain
+  / Credential Manager), under its own entry so a teacher publishing some
+  courses to each keeps both.
+- **An account ID.** A token scoped to Pages **cannot list its own account**
+  — verified against a real token, where `/user/tokens/verify` reports
+  `active` while `/accounts` returns success with an empty list. So token
+  validity and account discovery are separate questions: validity is checked
+  against `/user/tokens/verify`, and the account is resolved by trying
+  discovery, then a remembered value, then asking once. The GUI collects it
+  up front, because an app publishing in the background has nothing attached
+  that could answer a console prompt.
+
+Per-section state lives in `courses/<CODE>/.cloudflare_sites/section<N>.json`,
+mirroring the Netlify marker, so re-publishing reuses the same project rather
+than creating a second one.
+
+**The one real limit: 25 MB per file.** Cloudflare refuses anything larger,
+and the failure otherwise surfaces from deep inside the upload as an
+unhelpful error — so `deploy.py` checks sizes *before* uploading anything and
+names the offending files, suggesting a shorter or compressed video, or
+Netlify for that section. Ordinary course material is nowhere near it;
+long-form video is, which is why most teachers embed from YouTube or Vimeo.
+
+Cloudflare's free plan limits builds to 500 a month, but that does not apply
+here: a Direct Upload deployment records `deployment_trigger.type: ad_hoc`
+with stages `clone_repo=idle, build=idle, deploy=success` — no Cloudflare
+build runs, because nothing is pushed to a git repository. Static requests
+and bandwidth are unmetered on the free plan.
+
+## A folder on this PC (`--to-folder`)
+
+Chosen with `deploy_target: "local_folder"` plus `deploy_folder_path`. This
+one never reaches the container: the launcher mirrors the already-built
+`public/` folder into `<chosen folder>/section<N>` on the host, copying only
+what changed and propagating deletions. It exists for teachers whose board or
+university already gives them web space — they upload the folder however they
+normally do (SFTP, a network share, a sync client), and no third-party
+account is involved at all.
+
+Because the copy is host-side, this path prints `PUBLISHED_FOLDER=<path>`
+rather than a live URL, and the apps show a "copied to its publishing folder"
+panel with a reveal-in-file-manager button instead of a link — plus a note
+that pages opened straight from disk won't look right, since the site expects
+to be served over HTTP.
 
 ---
 

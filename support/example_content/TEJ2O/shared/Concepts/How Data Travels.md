@@ -1,6 +1,6 @@
 ---
 title: How Data Travels
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

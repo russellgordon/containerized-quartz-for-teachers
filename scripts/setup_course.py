@@ -2221,7 +2221,7 @@ def setup_course(no_backup: bool = False):
         except Exception as e:
             print(f"⚠️ Could not add the starting pages: {e}")
 
-    # ---------- Create shared structure (with createdSectionN + draftSectionN) ----------
+    # ---------- Create shared structure (with createdSectionN + publishForSectionN) ----------
     for folder in shared_folders:
         folder_path = Path("/teaching/courses") / course_code / folder
         folder_path.mkdir(parents=True, exist_ok=True)
@@ -2232,7 +2232,7 @@ def setup_course(no_backup: bool = False):
                 f.write(f"title: {folder}\n")
                 for sec in section_numbers:
                     f.write(f"createdSection{sec}: {now_str}\n")
-                    f.write(f"draftSection{sec}: false\n")
+                    f.write(f"publishForSection{sec}: true\n")
                 f.write("---\n")
                 f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site. Optionally, you can remove this `index.md` file and Quartz will then show only a listing of files that exist in this folder instead.\n")
     
@@ -2244,11 +2244,11 @@ def setup_course(no_backup: bool = False):
                 f.write(f"title: {file.replace('.md', '')}\n")
                 for sec in section_numbers:
                     f.write(f"createdSection{sec}: {now_str}\n")
-                    f.write(f"draftSection{sec}: false\n")
+                    f.write(f"publishForSection{sec}: true\n")
                 f.write("---\n")
                 f.write(f"This is the shared file **{file}**.\n")
     
-    # ---------- Create per-section structure (with created + draft) ----------
+    # ---------- Create per-section structure (with created + publish) ----------
     # Determine grade level from 4th character of course code
     grade_map = {
         "1": "Grade 9",
@@ -2285,7 +2285,7 @@ def setup_course(no_backup: bool = False):
                 title_prefix = f"{grade_label} " if (grade_label and show_grade) else ""
                 f.write(f"title: {title_prefix}{course_name}, Section {sec}\n")
                 f.write(f"created: {now_str}\n")
-                f.write("draft: false\n")
+                f.write("publish: true\n")
                 f.write("---\n")
     
         for folder in DEFAULT_PER_SECTION_FOLDERS if not DEFAULT_PER_SECTION_FOLDERS else []:
@@ -2301,7 +2301,7 @@ def setup_course(no_backup: bool = False):
                     f.write("---\n")
                     f.write(f"title: {folder}\n")
                     f.write(f"created: {now_str}\n")
-                    f.write("draft: false\n")
+                    f.write("publish: true\n")
                     f.write("---\n")
                     f.write(f"This is the **{folder}** folder. Add Markdown files to this folder to build out your site.\n")
     
@@ -2313,10 +2313,10 @@ def setup_course(no_backup: bool = False):
                     f.write("---\n")
                     f.write(f"title: {file.replace('.md', '')}\n")
                     f.write(f"created: {now_str}\n")
-                    f.write(f"draft: {'true' if is_unpublished else 'false'}\n")
+                    f.write(f"publish: {'false' if is_unpublished else 'true'}\n")
                     f.write("---\n")
                     if is_unpublished:
-                        f.write(f"This is the per-section file **{file}**. It is marked `draft: true`, so it is never published — a private place for your own notes.\n")
+                        f.write(f"This is the per-section file **{file}**. It is marked `publish: false`, so it stays out of the built site — a private place for your own notes.\n")
                     else:
                         f.write(f"This is the per-section file **{file}**.\n")
 

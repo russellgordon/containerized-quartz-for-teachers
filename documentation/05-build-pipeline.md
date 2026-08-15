@@ -92,15 +92,25 @@ During copying, every Markdown file passes through two transformations:
 For the section being built (say section 3), each file's frontmatter is
 rewritten:
 
-- `draftSection3` → `draft` (and `createdSection3` → `created`)
-- *All* `draftSectionN`/`createdSectionN` keys are then deleted.
+- `publishForSection3` → `publish` (and `createdSection3` → `created`)
+- Failing that, the legacy `draftSection3` (or a plain `draft`) is read and
+  **inverted** into `publish`, so a course written before the change builds
+  exactly as it always did.
+- *All* per-section keys — both spellings — are then deleted.
 
-So a shared file marked `draftSection1: false, draftSection3: true` is
-published on Section 1's site but excluded (Quartz omits `draft: true` pages
-entirely) from Section 3's — one file, independent publication state per
-section. This mechanism is why the workshop "quest" about a missing
-*Thread 2, Day 11* page has the answer it does: the page was still marked
-draft for that section.
+So a shared file marked `publishForSection1: true, publishForSection3: false`
+is published on Section 1's site but excluded from Section 3's — one file,
+independent publication state per section. This mechanism is why the workshop
+"quest" about a missing *Thread 2, Day 11* page has the answer it does: the
+page was not published for that section.
+
+Quartz decides visibility with `PublishFlag` (`patches/publish.ts`), which
+drops a page only when it says `publish: false`. That matters more than the
+renaming: Quartz's stock `ExplicitPublish` filter would have required
+`publish: true` on every page and silently removed every page that forgot it —
+including all of the curriculum pages. A missing flag should never make work
+vanish, so the patched filter keeps the forgiving default and only the word
+changes.
 
 ### Wikilink rewriting
 

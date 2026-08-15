@@ -1,6 +1,6 @@
 ---
 title: What a Strong Entry Looks Like
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolio

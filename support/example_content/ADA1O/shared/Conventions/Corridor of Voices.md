@@ -1,6 +1,6 @@
 ---
 title: Corridor of Voices
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - conventions

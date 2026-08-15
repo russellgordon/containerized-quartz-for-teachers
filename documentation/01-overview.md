@@ -16,7 +16,7 @@ This toolchain lets a teacher:
    searchable, portable, version-controllable.
 2. **Share most content across sections** while keeping per-section lesson
    sequences (`section1/`, `section2/`, …) and per-section publication state
-   (a page can be published to Section 1 but still be a draft for Section 2).
+   (a page can be published to Section 1 and still hidden for Section 2).
 3. **Publish a polished website per section** with one command, with search,
    code highlighting, LaTeX math, callouts, backlinks, and light/dark mode —
    all provided by Quartz.
@@ -66,7 +66,7 @@ This toolchain lets a teacher:
 |---|---|---|
 | `./setup.sh` / `.\setup.bat` | [`setup_course.py`](04-course-setup.md) | Ensures the container is running with the right folder mounted, then runs an interactive wizard that scaffolds `courses/<CODE>/` and writes `course_config.json` |
 | `./preview.sh ICS3U 1` / `.\preview.bat ICS3U 1` | [`build_site.py`](05-build-pipeline.md) | Merges shared + section-1 content into `.merged_output/section1/`, patches the Quartz scaffold, draws the section's social sharing card, and serves the site — the launcher prints the address (each working folder has its own probed host port block) |
-| `./deploy.sh ICS3U 1` / `.\deploy.bat ICS3U 1` | [`deploy.py`](07-deployment.md) | Runs a static build (`--build-only`), then delta-uploads `public/` to a Netlify site tied to that section |
+| `./deploy.sh ICS3U 1` / `.\deploy.bat ICS3U 1` | [`deploy.py`](07-deployment.md) | Runs a static build (`--build-only`), then publishes `public/` to the course's chosen destination: delta-upload to a Netlify site (the default), `--target cloudflare` for a Cloudflare Pages project, or `--to-folder` to copy it into a folder on the teacher's own machine |
 
 ## Key design decisions worth understanding
 

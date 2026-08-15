@@ -1,6 +1,6 @@
 ---
 title: How Big Is a Million
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

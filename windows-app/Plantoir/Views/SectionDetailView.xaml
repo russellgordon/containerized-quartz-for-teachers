@@ -69,9 +69,17 @@
                     <TextBlock x:Name="PreviewLabel" Text="Preview" />
                 </StackPanel>
             </Button>
+            <!-- "Deploy", NOT "Publish" — reversing row 103, which dropped
+                 the word as jargon. It has to come back, because "publish"
+                 now names something else entirely: a page carries
+                 `publish: true` when students can see it in the built site.
+                 One word cannot mean both "this page is visible" and "send
+                 the whole site to the web" without the assistant and the
+                 teacher talking past each other. Deploy is the rarer word,
+                 so it takes the rarer act. -->
             <Button x:Name="DeployButton" Grid.Column="7" Click="Deploy_Click"
                     MinWidth="34" MinHeight="30"
-                    ToolTipService.ToolTip="Publish this section's website"
+                    ToolTipService.ToolTip="Deploy this section's website"
                     AutomationProperties.AutomationId="deployButton">
                 <StackPanel Orientation="Horizontal" Spacing="6">
                     <FontIcon Glyph="&#xE724;" FontSize="14" />
@@ -95,8 +103,9 @@
                     <FontIcon Glyph="&#xE774;" FontSize="40" Opacity="0.5" HorizontalAlignment="Center" />
                     <TextBlock Text="No Preview Running" FontSize="20" FontWeight="SemiBold"
                                HorizontalAlignment="Center" />
-                    <TextBlock Opacity="0.7" TextWrapping="Wrap" TextAlignment="Center"
-                               Text="Click Preview to build this section's website and see it here, or Deploy to publish it to Netlify." />
+                    <!-- Text set in code: it follows the course's publishing
+                         choice (Netlify or a folder), per row 103. -->
+                    <TextBlock x:Name="NoPreviewDetail" Opacity="0.7" TextWrapping="Wrap" TextAlignment="Center" />
                 </StackPanel>
                 <!-- The progress view fills the whole detail area so its console
                      grows to fill and its input row pins to the bottom, level

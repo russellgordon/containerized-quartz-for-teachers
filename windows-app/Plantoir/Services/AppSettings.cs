@@ -5,8 +5,15 @@ using Newtonsoft.Json;
 
 namespace Plantoir.Services;
 
-/// <summary>One remembered window: its folder and frame.</summary>
-public sealed record RememberedWindow(string Path, double X, double Y, double Width, double Height);
+/// <summary>
+/// One remembered window: its folder, frame, and sidebar state (row 99).
+/// The three sidebar fields are optional so entries written before they
+/// existed still load: a null ExpandedCourses restores all-expanded (the
+/// Windows fallback), null Selection restores none.
+/// </summary>
+public sealed record RememberedWindow(string Path, double X, double Y, double Width, double Height,
+                                      string? ExpandedCourses = null, bool ShowsArchived = false,
+                                      string? Selection = null, bool ShowsBackups = false);
 
 /// <summary>
 /// The app's own settings store (%LOCALAPPDATA%\Plantoir\settings.json).
@@ -17,6 +24,15 @@ public sealed record RememberedWindow(string Path, double X, double Y, double Wi
 public sealed class AppSettings
 {
     public string? WorkspacePath { get; set; }
+
+    /// <summary>
+    /// The teacher's Cloudflare account, asked for once and remembered for
+    /// every course. It belongs here rather than in a course's settings for
+    /// the same reason the token lives in Credential Manager: it identifies
+    /// the teacher, not the course. It is an identifier, not a secret.
+    /// </summary>
+    public string CloudflareAccountId { get; set; } = "";
+
     public List<RememberedWindow> RememberedWindows { get; set; } = new();
     /// <summary>No OS-level setting exists here, so it is an app preference — default restore.</summary>
     public bool RestoreWindowsOnLaunch { get; set; } = true;

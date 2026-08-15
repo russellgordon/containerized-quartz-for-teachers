@@ -12,13 +12,573 @@ references are the durable pointers.)
 
 ## To implement
 
-- (Nothing at the moment — all entries picked up on 2026-08-12:
-  About credits + Support-row removal, the preview-build deploy-freshness
-  check, the computed-title font samples — already on macOS as spec
-  entry 100 — and the live code-field explanation. Spec entries 107–109
-  record the mirrors.)
+- **The local assistant went from built to trustworthy in one live-tested
+  day — read `AI-ASSIST-HANDOFF.md` §10 before building the mac's**
+  (Windows + shared, 2026-08-14, the `ai-assist` branch from `7b18fe6` to
+  `1961d07`). The short of it: everything measured, five design decisions
+  worth inheriting rather than rediscovering, and the conversation loop is
+  now **shared C# in `Plantoir.Core`** — port the window, not the logic.
+
+  1. **The loop is `Plantoir.Core/Assist/AssistAgent.cs`**, behind
+     `IChatModel` (the llama.cpp client) and `IToolServer` (the MCP stdio
+     client). The mac app supplies those two and a window; every behaviour
+     below comes with the class, already pinned by
+     `Plantoir.Tests/AssistAgentTests.cs`, which runs the whole promise
+     card in two seconds.
+  2. **The promise card's eleven phrasings are COMMANDS, not routing
+     questions** (`CardCommand`). Measured word for word, the model
+     misrouted five of eleven — every trial — while filling arguments
+     perfectly (87 trials, zero wrong courses/dates/types). Fixed shapes
+     are matched in code; the model keeps whatever has a story in it.
+  3. **Only deploys wait for a button.** Everything else is backed up,
+     undoable, and invisible to students until a deploy; a scheduled
+     deploy collects its yes at scheduling time. The plan-first system
+     prompt is gone (it made undo over-salient — see §10.4's regressions
+     before re-wording anything).
+  4. **The assistant automates the app, it does not duplicate it.**
+     `rebuild_preview`/`deploy_section` never reach the server from the
+     window — they press the app's own Preview/Deploy. Page edits run
+     with `preview: false` and do what a person would: stop the showing
+     preview, edit, OFFER the restart. This matters because the served
+     preview is a merged COPY — an edit is invisible to it until rebuilt,
+     which on Windows read as "the assistant is stuck".
+  5. **The prompt cache is real and once-ever, if you name it honestly**:
+     save/restore verified (175 s cold → 30 ms restore → 11.7 s turn),
+     file named per course + section + SHA-fingerprint of system prompt
+     AND narrowed schemas, empty saves deleted, "Ready"/"picking up"
+     only said when true. Reference: `LocalModel.cs` (the WSL parts are
+     Windows-only; the colima analogue of "who holds the VM open" is
+     yours to check).
+
+  Smaller but shared: MCP progress only flows if the client sends
+  `_meta.progressToken` (see `McpClient.Call`) — without it every
+  milestone line is silently dropped; `AssistWorkspace.Apply` now narrates
+  page-by-page ("Editing “Unit 2, Day 3”…"), which the window grows into
+  one work-log bubble; the dateline rides appended on every user turn
+  (prepended cost 15 routing points; in the system prompt it would break
+  the cache nightly); `NarrowToLocal` rewrites the schemas' example
+  course to the window's own, because the model copies examples; and the
+  transcript speaks with ONE name, never shows content that rides with a
+  tool call, and never shows the dateline.
+
+- **⚠️ Add Section was creating pages in the OLD schema — check yours**
+  (Windows, 2026-08-14, `7a66200`). The publish/draft entry below was landed
+  and then found INCOMPLETE: `SectionAdder`'s fallback template — the path
+  taken when there is no sibling section to copy — was still writing
+  `draft: true`. A section added through the app was therefore born in the
+  schema everything else had moved off.
+
+  It was missed because the TEST agreed with the code: it asserted
+  `draft: true` and passed. Worth ten minutes on the mac's own section
+  scaffolding for exactly that reason. Two rules: write `publish:` inverted
+  (a teacher-eyes-only page is `publish: false`), and only in the FALLBACK —
+  when a sibling section exists its frontmatter is copied verbatim, which is
+  right, because a course still using `draft:` should get a new section that
+  matches its siblings rather than one page speaking a different language.
+
+- **A section remembers when its classes meet** (shared, 2026-08-14,
+  `9fa510c`). `courses/<CODE>/.internal/timetable/section<N>.json` holds the
+  dates, where they came from in the teacher's words, and when recorded.
+  Written when a re-date is applied, and by a new `remember_timetable` tool.
+
+  **Format first, as with `WorkLease`** — the mac should read and write the
+  same file rather than the same code:
+
+  ```json
+  { "section": 1,
+    "dates": ["2026-09-08", "2026-09-10"],
+    "source": "timetable.xlsx, block H",
+    "recorded": "2026-08-14" }
+  ```
+
+  Inside the course, under `.internal/`, so it travels through backup,
+  archive and restore — all of which are already careful about that folder. A
+  file kept beside the app would come adrift the first time a teacher moved
+  their work and be silently WRONG rather than missing. A partial list is
+  refused rather than half-stored: a half-remembered timetable gets trusted
+  and then dates the wrong classes.
+
+- **Four new operations, all shared C# in `Plantoir.Core`** (Windows +
+  shared, 2026-08-14). Nothing mac-specific except the UI that reaches them;
+  the mac inherits the logic if it ports `AssistWorkspace`.
+
+  - **Placeholder class pages** (`638d5d7`) — "add seven days to the next
+    unit". Lands on the section's own meeting dates, skipping days an
+    existing class already sits on, so a reshuffled course still gets the
+    right answer. Pages start `publish: false`. Never overwrites, checked
+    twice: at plan time and again at write time, because Obsidian is open in
+    the other window.
+  - **Insert a class and push the rest back** (`b913f85`) — the one a teacher
+    called "a huge hassle". Later days of the SAME unit are renamed; every
+    class after the insertion point, later units included, moves to a later
+    meeting day and keeps its name. Renames run **highest day first** or they
+    overwrite a real lesson. Titles inside the files follow the file names.
+    **Links are rewritten by us, not by Obsidian** — Obsidian only does that
+    when Obsidian performs the rename; a rename on disk from another process
+    reads to it as a delete plus a create. All wikilink forms are handled
+    (`[[P]]`, `[[P|alias]]`, `![[P]]`, `[[P#Heading]]`, `[[P#^block]]`);
+    Markdown-style links are NOT, and that is written down rather than
+    discovered.
+  - **Curriculum expectations for a page** (`e5a01ed`) — the tools find the
+    expectations and read out their full wording; the MODEL decides which fit,
+    because that is a judgement about meaning. Transclusions go inside the
+    `%%curriculum-start%%` markers, or a course installed without curriculum
+    would keep a dangling reference on a live site.
+  - **Scheduled deploys** (`935ad9f`, `ad020d3`, `4400f80`) — see the next
+    entry; the Windows half is `schtasks`.
+
+- **Scheduled deploys — the mac needs launchd** (Windows, 2026-08-14). "Deploy
+  tomorrow's class at 6:30 AM." Windows uses `schtasks` to run
+  `deploy.ps1 <CODE> <N>` at a set time; the mac equivalent is a launchd
+  agent running `deploy.sh`. The decision of *whether* to schedule, and every
+  word the teacher reads, is already in `Plantoir.Core`
+  (`ScheduledDeploy.Problem`) — only the last step is platform-specific.
+
+  Points that cost something to learn:
+
+  - **It must fire with nothing of ours running.** Verified: a task fired
+    unattended, started WSL from cold, reached Docker, with Plantoir closed.
+    The teacher's *Go ahead* consents to setting the alarm, not to the deploy.
+  - **No wake timer, deliberately.** Waking depends on hardware and power
+    settings and fails SILENTLY; the plan states the conditions instead (on,
+    awake, plugged in, lid open). A warning a teacher can act on beats a
+    promise that might not be kept.
+  - **Refuse what would ASK a question.** A Cloudflare course (needs the
+    account ID only the app has) and a section never deployed (`deploy.py`
+    asks what to name the site) are both declined AT SCHEDULING TIME.
+    Attended, those fail in front of the teacher; scheduled, they wait on a
+    prompt at half six with nobody there.
+  - **One per section, by construction** — the task name is fixed per section,
+    so scheduling replaces. Verified: scheduled twice, still one task.
+  - **Visible, or it may as well not exist.** A clock sits beside the section
+    in the sidebar with the time in its tooltip, and the context menu offers
+    "Schedule Deploy…" or "Cancel Deploy at 6:30 AM…" — one or the other,
+    never a greyed-out line teaching teachers to stop reading the menu.
+    **Ask the OS, do not keep a note**: the teacher can delete the task
+    themselves, and a badge promising a deploy that will never happen is worse
+    than no badge.
+
+- **The built-in assistant, and what it cost** (Windows, 2026-08-14). A local
+  model in a window of its own, reached from "Revise with AI…" on both the
+  course and every section menu. **Read
+  [`AI-ASSIST-HANDOFF.md`](AI-ASSIST-HANDOFF.md) before building the mac
+  equivalent** — it is the full account of what worked and what did not, with
+  the measurements. The headlines that will bite whoever ports it:
+
+  - **Fewer tools is better routing AND a shorter prompt.** 34 tools is 9,032
+    tokens; at ~21 tokens/second on two cores that is 430 seconds of reading
+    before a first answer. The local model sees 15.
+  - **A warm-up must prime the SAME prefix a real turn uses**, system message
+    included, or it caches something no conversation asks for. Measured: 1.8s
+    versus 29.6s for the identical turn.
+  - **Colima may or may not idle out the way WSL2 does.** On Windows a
+    detached container dies ~25 seconds after nothing holds the distro open,
+    and the app now holds a session open for the conversation's life. Whether
+    Colima behaves the same is **unknown and worth checking early** — the
+    symptom is an HTTP error that looks like a network fault and is not.
+  - **Withholding a tool is not a safety mechanism.** Deploy was trimmed out
+    for speed and silently removed a capability the teacher had asked for by
+    name. The approval gate — every non-read-only tool waits for a button,
+    decided from the server's own `readOnlyHint` — is the safety mechanism.
+
+- **The MCP server must SHIP with the app** (Windows, 2026-08-14, `b211b13`).
+  `publish.ps1` never built `Plantoir.Mcp`, so the bundle contained no
+  `plantoir-mcp.exe` and the whole feature would have shipped dead — on a
+  teacher's machine only. It is now built, copied beside the app and signed
+  with it. Keep them separate binaries: Claude Code launches the server
+  itself as a stdio subprocess, so it has to stay a plain console app.
+
+- **The publication flag is `publish:`, not `draft:`** (Windows +
+  shared, 2026-08-13, `ai-assist` branch). Commits `2d6c59a` (the
+  toolchain and the app) and `7347d2b` (the example content and the
+  course-creation wizard). Same caveat as the AI Assist entry below:
+  **this lives on `ai-assist`, not `main`, and is not in 1.0.**
+
+  A page inside `section<N>/` now carries `publish:`; a course-level page
+  carries `publishForSection<N>:`. Both are the OPPOSITE polarity from
+  the keys they replace — `draft: true` becomes `publish: false`.
+
+  **The shared half is done and the mac inherits it**, so read this
+  before assuming the mac has to do anything drastic:
+
+  - `build_site.py` maps `publishForSection<N>` → `publish` for the
+    section being built, falls back to the legacy `draftSection<N>` /
+    `draft` **inverted**, and strips all four key families from the
+    built copy. A course nobody has touched builds exactly as it did.
+  - `patches/publish.ts` gives Quartz a `PublishFlag` filter, and
+    `build_site.py` rewrites `Plugin.RemoveDrafts()` to `Plugin.PublishFlag()`
+    in `quartz.config.ts`. **Do not reach for Quartz's own
+    `ExplicitPublish` instead** — it looks like exactly what we want and
+    it is a trap. It reads `publish === true`, which flips the DEFAULT,
+    and 60 of the sample course's 225 pages carry no flag at all,
+    every curriculum page among them. All of them would have vanished
+    silently. `PublishFlag` is eight lines that keep the forgiving
+    default and change only the word.
+  - `setup_course.py` creates new courses in the new schema.
+
+  **What the mac app owes**: the same reading and writing of the new
+  keys, in whatever its counterpart to `PageFrontmatter` is. Three rules
+  matter, and each one is there because breaking it caused a real bug:
+
+  1. **Read new-then-legacy, and invert the legacy value.** Per-section
+     key first, plain key second, then `draftSection<N>`, then `draft`.
+     No key at all means PUBLISHED.
+  2. **Never write a legacy key.** Writing the new key is the migration,
+     and it happens one page at a time as things are edited. There is no
+     sweep and no flag day.
+  3. **Write the new key in the OLD key's position**, so a migrated page
+     shows a one-line diff instead of reordered frontmatter in a file
+     Obsidian may have open.
+
+  Watch for the inversion bug, because it is subtle and it bit three
+  times here: any variable meaning "is this page hidden" must not be
+  fed the raw `publish` value. All three instances were caught by tests
+  that already existed — a plan that thought published pages still
+  needed publishing, a dangling-link check that found nothing in either
+  direction, and a transition line that told the teacher the exact
+  reverse of the truth. Reference: `PageFrontmatter.IsDraft` /
+  `StoredDraft` / `SetDraft` in
+  `windows-app/Plantoir.Core/Models/PageFrontmatter.cs`.
+
+  The example content in `support/` was inverted wholesale (1145 keys
+  across 957 files), including the prose that teaches the flag, so the
+  mac gets that for free. Verified against a real container build: a
+  course with a page for every branch — `publish` true/false/absent/
+  quoted-false, legacy `draft` both ways, and per-section keys set
+  OPPOSITE for two sections — built correctly in all fourteen cases,
+  with section 2's site the exact mirror of section 1's.
+
+- **"Deploy" comes back to the GUI — this REVERSES row 103** (Windows,
+  2026-08-13, `ai-assist` branch, commit `ba4889c`). Row 103 had the mac
+  drop "Deploy" as jargon and call the button "Publish". That has to be
+  undone, and not because row 103 was wrong: it was right when there was
+  only one act to name. There are two now. A page is **published** when
+  students can see it in the built site (the `publish:` flag above, which
+  the assistant changes); the whole site is **deployed** to Netlify,
+  Cloudflare, or a folder (the teacher's own act, which the assistant
+  never takes). One word for both makes "I published tomorrow's class"
+  mean a flag to one party and a live site to the other.
+
+  On Windows the sweep covered: the toolbar button and its tooltip, the
+  No Preview Running invitation, the progress title, the Publishing
+  settings group (now "Deploying") and its "Deploy to" picker, the
+  Cloudflare and folder problem dialogs, the busy lines in
+  `CourseActivity.BusyReason`, and the folder-copy completion note.
+  **Internal names deliberately keep their spelling** — `deploy.ps1` /
+  `deploy.sh`, `deploy_target`, `deploy_folder_path`, the `deployButton`
+  automation id — so nothing in the launchers or the config format
+  moves. Also worth copying: the assistant's plan says "Unpublish", not
+  "Hide", since hide/unhide is not a teacher's word.
+
+- **AI Assist — an MCP server, on the `ai-assist` branch** (Windows +
+  shared, 2026-08-13). Commits `c6b1381` (the feasibility investigation
+  and its evidence) and `b3b7fc0` (the server). **Nothing here is on
+  `main`, and none of it is in 1.0** — the branch exists so this can be
+  folded into a later release or dropped without touching the impending
+  release. Read [`AI-ASSIST.md`](AI-ASSIST.md) first for the measurements,
+  then [`windows-app/Plantoir.Mcp/README.md`](windows-app/Plantoir.Mcp/README.md)
+  for the tool surface and the reasoning behind its shape.
+
+  **What exists.** `plantoir-mcp`, a stdio MCP server over one working
+  folder, built on the official `ModelContextProtocol` 2.2.0 C# SDK. Eight
+  tools: four read-only, two planning tools that change nothing, and two
+  writes that back up first. Verified end to end over real JSON-RPC against
+  the sample course — including a publish that flipped one section's
+  per-section key while leaving the other section's untouched, with the
+  backup written first. (Those keys were `draftSection<N>` at the time;
+  they are `publishForSection<N>` now — see the publication-flag entry
+  at the top of this file.)
+  Plan logic is unit-tested against a fake launcher; the suite is at 200.
+
+  **The mac side inherits most of it.** The platform-neutral logic lives in
+  `Plantoir.Core` (`Assist/AssistWorkspace.cs`, `Assist/PublishPlan.cs`,
+  `Models/PageFrontmatter.cs`, `Models/PagePaths.cs`, `Models/WikiLinks.cs`)
+  and the launcher call is abstracted behind `ILauncherRunner`, which picks
+  `deploy.ps1` or `deploy.sh` by platform. The csproj already lists
+  `osx-arm64` and `osx-x64`. **In principle `dotnet publish -r osx-arm64`
+  is the entire mac port.**
+
+  **The Phase 0 question is still open, and it is yours.** Is the mac side
+  willing to ship a .NET-published binary beside (or inside) the app? If
+  yes, one implementation serves both platforms and every behaviour is
+  written and tested once. If no, `Plantoir.Mcp/README.md` is the spec a
+  Swift implementation should follow — but please keep the four safety
+  rules exactly, because each one is a measured failure and not a
+  preference:
+
+  1. *No destructive tool exists.* The model declined "delete the Unit 1
+     folder" because it had **no tool for it**, not from judgement.
+  2. *Publish and hide are separate tools, never one tool with a boolean.*
+     Asked to hide a page, the model called publish with "include linked"
+     set — on some runs and not others.
+  3. *Every named entity is validated against disk*, and a miss is a
+     refusal naming what does exist. Asked to "clean up my course", naming
+     no course, it invented `MCV4U`.
+  4. *Every write backs the course up first and has a `plan_` twin that
+     changes nothing.* Row 106 closing its own loop.
+
+  **Two things the mac side should sanity-check**, because they were
+  reasoned from shared code rather than tested on macOS: that
+  `Path.GetRelativePath`-based containment behaves as expected on a
+  case-insensitive-but-case-preserving APFS volume, and that the launcher
+  runner's `/bin/sh` invocation of `deploy.sh` inherits the environment
+  Colima needs.
+
+  **A shared-launcher change rode along with this, and it is worth taking
+  even if the mac passes on everything else.** `preview.sh` and `deploy.sh`
+  used `docker exec -it` unconditionally. `-t` **refuses to start** when
+  stdin is not a terminal, so any non-interactive run — a script, CI, an
+  MCP server — died at that line, *after* several minutes of Docker build,
+  saying only "the input device is not a TTY". (`verify.sh:69-75` has
+  refused up front for this reason for ages; that guard is now
+  unnecessary.) Both scripts now ask for a terminal only when there is one
+  and run Python unbuffered when there is not, so progress still arrives
+  line by line instead of in one lump. **The interactive path is
+  byte-identical in behaviour**, so the mac GUI — which supplies a terminal
+  through `PseudoTerminal.swift` — is unaffected. Verified on Windows end
+  to end; the shell edit is the same two-line shape and wants a quick
+  confirmation on macOS.
+
+  **Known gap, shared design needed.** The server cannot see the GUI's
+  in-flight previews or publishes and vice versa — `CourseActivity` and
+  `PreviewLeases` are in-process on both platforms. Overnight this is moot;
+  daytime overlap could corrupt a build. The v2 answer is a lease file
+  under the working folder that both apps and the server honour, which
+  **both sides would have to adopt**. Worth agreeing on the file shape
+  before either side writes it.
+
+- **Cloudflare Pages as a third publishing destination** (Windows +
+  shared, 2026-08-12). Commits `0306c98` (container side), `4575647`
+  (account fallback), `e6611cc` (Windows UI). **The shared half is
+  already done and the mac inherits it** — `scripts/deploy.py` and the
+  `Dockerfile` are common to both apps. The mac side needs two things:
+  `deploy.sh`, and the GUI.
+
+  **What already works, in shared code.** `deploy.py --target cloudflare`
+  discovers the account, creates or reuses this section's Pages project,
+  hands the built folder to wrangler, and prints `Live URL: https://…` —
+  the label both apps' parsers already read, so no parser change was
+  needed on either side. Per-section state lives in
+  `courses/<CODE>/.cloudflare_sites/section<N>.json`, deliberately
+  mirroring the existing `.netlify_sites/` marker.
+
+  **Design decisions, and why — please keep these rather than re-deciding:**
+
+  1. *Publishing rides on wrangler, not a reimplementation.* Cloudflare's
+     direct-upload protocol is multi-stage and undocumented: BLAKE3 hashes
+     computed over base64-of-contents plus the file extension, a
+     short-lived upload JWT that can expire mid-upload on a large site,
+     and batched asset uploads. Community write-ups exist, but a
+     reimplementation would break teachers' publishing silently whenever
+     Cloudflare changed it. wrangler is Cloudflare's own supported
+     implementation and already handles those edges.
+  2. *wrangler is pinned at 4.80.0 — and pinned BELOW 4.100 on purpose.*
+     From 4.100 wrangler requires Node 22; the image ships Node 20 because
+     that is what Quartz v4.5.0 is known-good against. Raising Node to
+     chase a newer CLI would mean revalidating every teacher's site build.
+     Install and `--version` were verified on `node:20-slim` before
+     committing. **If you bump Node, revisit this pin — and revalidate
+     Quartz first.**
+  3. *A token scoped to Pages CANNOT list its own account.* This was
+     found by testing a real token: `/user/tokens/verify` reports
+     `active`, while `/accounts` returns success with an EMPTY list and
+     `/memberships` returns 403. The first cut treated "no accounts" as
+     "bad token" and would have sent teachers off to re-mint a perfectly
+     good one. **Validity and account lookup are now separate questions**
+     — validity against `/user/tokens/verify`, the account by discovery →
+     remembered value → asking. Please do not collapse them again.
+  4. *Because of (3), the account ID must be collected in the GUI.* The
+     app publishes with nothing attached that can answer a console
+     prompt, so the launcher's prompt is unreachable from the GUI. On
+     Windows it is a field in the Publishing section, validated live (32
+     hex characters) with Save/Create gated on it, and passed to the
+     launcher as `--account`. It is stored in **app settings, not course
+     settings**, because it identifies the teacher rather than the course
+     — the same reasoning that puts the token in the OS keychain — so it
+     is entered once and used by every course.
+  5. *The 25 MB per-file cap is checked before anything uploads.*
+     Cloudflare refuses larger files, and the failure otherwise surfaces
+     from deep inside the upload as an unhelpful error. `deploy.py` lists
+     the offending files by name and suggests compressing the video or
+     publishing that section to Netlify, which allows larger files. This
+     is the one real functional difference between the destinations and
+     is worth saying plainly in the mac UI too.
+  6. *Tokens are stored under separate keychain entries.* A teacher
+     publishing some courses to Netlify and others to Cloudflare keeps
+     both, and `--reset-token --target cloudflare` clears only the
+     Cloudflare one (plus its remembered account).
+
+  **What the mac side must write.** `deploy.sh` needs the `--target`
+  and `--account` flags, its own keychain entry for the Cloudflare token
+  (plus one for the remembered account ID), token validation against
+  `/user/tokens/verify`, and the same env hand-off into the container:
+  `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, with
+  `--target cloudflare` passed to `deploy.py`. **`deploy.sh` was left
+  deliberately untouched on the Windows side** — shipping an edit to a
+  launcher that could not be tested here would be worse than shipping
+  none. GUI-wise: the third picker option, the account field with live
+  validation, the milestone list (never saying "Netlify" — pinned by a
+  test on Windows), and a decline path if the account is missing.
+  Reference: `windows-app/Plantoir/Views/PublishingChoiceView.cs`,
+  `SectionDetailView.xaml.cs` (`Deploy_Click`),
+  `Plantoir.Core/Scripting/TaskMilestones.cs`,
+  `CourseConfiguration.CloudflareAccountProblem`.
+
+  **Status: PUBLISHED END TO END and working** (Windows, 2026-08-12).
+  MCV4U Section 1 from a real workspace went live at
+  `mcv4u-s1-2026-gordon.pages.dev` (HTTP 200, correct Quartz title),
+  driven from the app's Publish button, not a script. Observed:
+
+  - First publish ~140 s including the one-off toolchain image rebuild;
+    a second publish ~23 s, reusing the project rather than creating a
+    second one (exactly one project in the account afterwards).
+  - The progress bar tracked "Step 8 of 8" through the
+    `BuildAndDeployToCloudflare` list, and the completion panel showed
+    "Your website is live" with the clickable pages.dev link — the
+    Netlify live-link panel works unchanged, because `deploy.py` prints
+    the `Live URL:` label the parser already reads.
+  - The marker file came out as intended:
+    `{name, id, subdomain, account_id}`.
+
+  **The build-counter question is settled, empirically.** The deployment
+  record for a Direct Upload reports `deployment_trigger.type: ad_hoc`
+  and its stages come back `clone_repo=idle, build=idle, deploy=success`
+  — **no Cloudflare build runs**, so the free plan's 500-builds-per-month
+  limit does not apply to how Plantoir publishes. A teacher republishing
+  many times a day across several classes is in no danger of it. (The
+  limit is documented as applying to builds triggered by a git push,
+  which this path never does.) Worth not re-investigating on the mac.
+
+  Remaining unknown: behaviour at the 25 MB per-file cap has still only
+  been checked by the pre-flight guard in `deploy.py`, not by actually
+  pushing an oversized file.
+
+  **Mirror the standing size note too** (`8883ad9`). Whenever Cloudflare
+  is the chosen destination, the Publishing section shows a permanent
+  orange line — not the validation warning, which comes and goes, but a
+  fact about the destination that never hides:
+
+  > One thing to know: Cloudflare won't accept any single file larger
+  > than 25 MB. Documents, images, and slide decks are almost always
+  > comfortably under that — a long video usually isn't. Most teachers
+  > embed video from YouTube or Vimeo rather than uploading it, which
+  > avoids the limit entirely.
+
+  This is the one real functional difference between the destinations, so
+  a teacher should meet it while choosing rather than when a publish
+  fails. The grey caption deliberately no longer repeats it.
+
+- **`sanitize_last_name` folds accents instead of dropping them**
+  (shared, 2026-08-12, commit `0306c98`). Pre-existing bug in
+  `scripts/deploy.py`, found while testing Cloudflare project naming: the
+  function kept only `a-z`, so a teacher named **Côté** got `ct` in her
+  site name and Müller got `mller`. In an Ontario staff list that is not
+  an edge case. It now normalises (NFKD) and strips combining marks
+  first, so Côté → `cote`. **This affected Netlify site names too**, and
+  the mac inherits the fix automatically since `deploy.py` is shared —
+  no mac code needed, but worth knowing the suggested names changed.
+  Existing sites are pinned by their marker files and are unaffected.
+
+- **About box credits match plantoir.app's footer** (Windows, 2026-08-11).
+  The credits section is now: a rounded-rect callout carrying the full
+  sponsor message ("Plantoir is a friendly wrapper around [Quartz], which
+  Jacky Zhao builds and gives away for free. If you end up using Plantoir
+  regularly, please consider [sponsoring him on GitHub] — it is his work
+  that makes all of this possible."), then three plain acknowledgement
+  lines: "Icon from [Phosphor Icons] (MIT)." / "Designed by
+  [Russell Gordon]." / "Made with Claude." — links to quartz.jzhao.xyz
+  and github.com/sponsors/jackyzha0 (in the callout), phosphoricons.com,
+  russellgordon.ca. No "Built on Quartz" line: the callout already says
+  whose work this stands on. (Replaces the old one-line "Please sponsor
+  Jacky" credit; plantoir.app's footer matches.) Also: the
+  plantoir.app/support row is REMOVED from the Windows About — help is
+  coming into the app itself — leaving Email as the only contact row;
+  drop the mac About's Support row to match. Mirror in the mac About
+  window. Reference: `windows-app/Plantoir/Views/AboutDialog.cs`.
+
+- **Preview builds are never deploy-fresh** (from `94e25f8`, 2026-08-11).
+  Deploying right after previewing published the preview's build, whose
+  pages carry Quartz's live-reload client (`new WebSocket('ws://localhost:…')`)
+  — so the PUBLISHED site knocked on every visitor's localhost and
+  Chromium-family browsers prompted "wants to access other apps and
+  services on this device" on first load. The shared `scripts/deploy.py`
+  now detects the client and re-emits a production build before
+  uploading, which already protects the mac app functionally — but the
+  mac app's own deploy-freshness check shares the Windows one's blind
+  spot (it compares only content dates). Mirror the Windows fix so the
+  app's ordinary, visible build-first step runs instead of the silent
+  in-deploy rebuild: a built `public/index.html` containing
+  `ws://localhost:` is never fresh. Reference:
+  `windows-app/Plantoir.Core/Models/BuildFreshness.cs`
+  (`BuiltForPreview`) and the `APreviewBuildIsNeverDeployFresh` test in
+  `windows-app/Plantoir.Tests/ModelTests.cs`.
+
+- **Font samples show the course's own computed site title** (Windows,
+  2026-08-11). The header font sample renders the title the build will
+  actually produce — `[Grade X ]Name[, Section N]`, i.e. the course name
+  with the grade and section-marker switches applied — in the candidate
+  typeface, updating live as the name, code, section numbers, or either
+  toggle changes. The "Grade 11 Computer Science" stand-in remains only
+  while the form is blank; the body-sentence sample is unchanged. In
+  Course Settings each section's sample uses that section's own toggles.
+  The compute is `CourseConfiguration.ComputedSiteTitle` (Core),
+  mirroring `computed_landing_title` in `scripts/build_site.py` and
+  pinned by a six-case theory test. Mirror in the mac wizard's
+  FontChoiceEditorView and Course Settings. References:
+  `SampleHeaderText()` in `windows-app/Plantoir/Views/NewCourseDialog.cs`
+  and `windows-app/Plantoir/Views/CourseSettingsView.xaml.cs`;
+  `ComputedSiteTitleMatchesTheBuild` in
+  `windows-app/Plantoir.Tests/CourseConfigurationTests.cs`.
+
+- **Explain a disabled Create button in the wizard** (from `2d10e4c`,
+  2026-08-11). On Windows, a filled-in New Course form with a DUPLICATE
+  course code left Create greyed with no explanation — the sections
+  field explained its problems inline while the code field stayed
+  silent. Windows now shows the reason under the code field ("A course
+  named ICS4U already exists — choose a different code."), single-sourced
+  with the check that gates the button. Worth checking whether the mac
+  wizard has the same silent-disable and wants the same inline
+  explanation. Reference: `CourseCodeProblem()` / `RefreshCodeValidation()`
+  in `windows-app/Plantoir/Views/NewCourseDialog.cs`.
+
+- (Earlier Windows work — About credits + Support-row removal, the
+  preview-build deploy-freshness check, the computed-title font samples,
+  and the live code-field explanation — was picked up on 2026-08-12;
+  spec entries 107–109 record those mirrors.)
 
 ## Already shared — no mac code needed, just awareness
+
+- **Cleanup that fails must not fail a test that passed** (Windows,
+  2026-08-14, `0479d44`). An intermittent failure that never reproduced turned
+  out to be 23 tests ending with a bare
+  `finally { Directory.Delete(root, recursive: true); }`. On Windows that
+  throws whenever anything still holds a handle in the folder — Defender
+  scanning the files the test just wrote, or the Search Indexer. Every
+  assertion had passed; the test failed on housekeeping. If the mac's tests
+  do the same on a machine with Spotlight indexing, the same shape is
+  available. Deleting a temp folder is housekeeping: when it does not work,
+  the OS will get to it.
+
+- **Worth checking: the same test race may exist on the mac**
+  (`3bbb1a7`, 2026-08-13). A Windows test failed about one run in three
+  with a baffling null. The cause was not the production code: preview
+  leases and the publish registry are **process-wide statics**, the test
+  runner runs test classes in parallel, and the lease-tests class reset
+  that shared state around every one of its methods — wiping the lease
+  another class was mid-assertion on. Fixed by putting both classes in a
+  serialized collection. If the mac's tests around `CourseActivity` /
+  preview leases share process-wide state and run in parallel, the same
+  intermittent failure is possible there; it is the kind that gets
+  written off as "flaky CI" for months. Worth ten minutes to check.
+
+- **`MCP-PROPOSAL.md` is waiting on a mac-side opinion** (2026-08-12).
+  A design (nothing built) for letting AI assistants drive Plantoir over
+  MCP — "publish the Science courses overnight and un-draft tomorrow's
+  class plus everything it links to". The proposal's central question is
+  for the mac side: whether to ship **one** self-contained .NET binary
+  serving both platforms, or reimplement the tool contract in Swift. It
+  ends with four explicit questions. Nothing blocks on it, but it should
+  not get lost between syncs.
 
 - **The Windows icon derives from `mac-app/Plantoir.icon`** (2026-08-11).
   `windows-app/Plantoir/Assets/make-icon.ps1` turns a full-bleed 1024px

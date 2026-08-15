@@ -1,6 +1,6 @@
 ---
 title: Crimp and Test a Cable
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

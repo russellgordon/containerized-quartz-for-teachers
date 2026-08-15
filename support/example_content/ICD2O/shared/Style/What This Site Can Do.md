@@ -1,6 +1,6 @@
 ---
 title: What This Site Can Do
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:
@@ -296,15 +296,16 @@ Two things on this page are invisible in the browser:
 1. **Comments.** Text wrapped in `%%` double percent marks `%%` never
    reaches the site. Useful for notes to yourself in a page you are
    still writing — tomorrow's hint, next year's fix.
-2. **Drafts.** A page with `draft: true` in its frontmatter is skipped
-   entirely when the site is built. Write next week's lesson today and
-   publish it when you are ready.
+2. **Holding a page back.** A page with `publish: false` in its frontmatter
+   is left out when the site is built. Write next week's lesson today and
+   publish it when you are ready. A page with no `publish` line is published,
+   so forgetting it can never make your work vanish.
 
 %% This sentence is a comment. If you can read it on the website, something is broken. %%
 
 > [!tip] For teachers reading this
-> With more than one section, per-section keys like `draftSection1` and
-> `draftSection2` let one shared page be published to one class and held
+> With more than one section, per-section keys like `publishForSection1` and
+> `publishForSection2` let one shared page be published to one class and held
 > back from another — useful when your two sections sit a few days apart.
 
 ---
@@ -320,6 +321,6 @@ out of date:
 | Transclusion | The same text copied into six places, five stale |
 | Backlinks | "Where did we use this again?" |
 | Folded answers | Solutions that spoil the attempt |
-| Drafts | Next week's lesson in a separate file somewhere |
+| Holding a page back | Next week's lesson in a separate file somewhere |
 
 Write it once, link to it everywhere.

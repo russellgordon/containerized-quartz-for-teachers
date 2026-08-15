@@ -1,6 +1,6 @@
 ---
 title: How the Lab Runs
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - setup

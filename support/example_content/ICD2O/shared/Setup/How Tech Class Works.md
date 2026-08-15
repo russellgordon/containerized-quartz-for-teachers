@@ -1,6 +1,6 @@
 ---
 title: How Tech Class Works
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - setup

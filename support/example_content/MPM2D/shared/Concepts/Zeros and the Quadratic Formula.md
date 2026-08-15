@@ -1,6 +1,6 @@
 ---
 title: Zeros and the Quadratic Formula
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

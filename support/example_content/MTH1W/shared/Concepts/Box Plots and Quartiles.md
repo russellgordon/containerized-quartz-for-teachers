@@ -1,6 +1,6 @@
 ---
 title: Box Plots and Quartiles
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: Coding
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - coding

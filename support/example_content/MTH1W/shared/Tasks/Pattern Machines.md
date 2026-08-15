@@ -1,6 +1,6 @@
 ---
 title: Pattern Machines
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

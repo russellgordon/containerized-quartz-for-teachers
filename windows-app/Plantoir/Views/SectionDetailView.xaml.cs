@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Plantoir.Core.Assist;
 using Plantoir.Core.Models;
 using Plantoir.Core.Scripting;
 using Plantoir.Services;
@@ -24,6 +25,20 @@ public sealed partial class SectionDetailView : UserControl
     private readonly ScriptRunner _previewRunner = new(SynchronizationContext.Current);
     private readonly ScriptRunner _deployRunner = new(SynchronizationContext.Current);
     private PreviewLeases.Lease? _lease;
+
+    // The on-disk half of the same claims. In-memory leases are invisible to
+    // the MCP server, which is a different process entirely.
+    private IDisposable? _previewWork;
+    private IDisposable? _publishWork;
+    private IDisposable? _publishActivity;
+
+    /// <summary>
+    /// Held only while a build is actually running, and dropped the moment the
+    /// preview server answers. The preview lease beside it lasts as long as the
+    /// SERVER does, which is a different question: serving is not a conflict,
+    /// building is.
+    /// </summary>
+    private IDisposable? _buildWork;
     private Uri? _previewUrl;
     private Uri? _lastLoadedUrl;
     private bool _isWaitingForServer;
@@ -40,6 +55,12 @@ public sealed partial class SectionDetailView : UserControl
         _sectionNumber = sectionNumber;
         SectionTitle.Text = TitleText;
         ObsidianButton.IsEnabled = FolderActions.ObsidianIsInstalled;
+
+        // The empty-state invitation follows the course's destination —
+        // "to Netlify" would be wrong twice over for a folder-publishing course.
+        NoPreviewDetail.Text = course.Configuration.DeploysToLocalFolder
+            ? "Click Preview to build this section's website and see it here, or Deploy to copy it to your publishing folder."
+            : "Click Preview to build this section's website and see it here, or Deploy to put it online.";
 
         // Each runner is bound to the progress view exactly once — its
         // question dialog and outcome states follow whichever runner the
@@ -62,14 +83,27 @@ public sealed partial class SectionDetailView : UserControl
         ForwardButton.IsEnabled = previewShown && Preview.CanGoForward;
         ReloadButton.IsEnabled = previewShown;
         BrowserButton.IsEnabled = previewShown;
-        DeployButton.IsEnabled = !IsBusy;
+
+        // Previewing DURING a conversation is the point of the assistant, not
+        // a conflict with it: the teacher reads the preview to judge the change
+        // they just asked for. So a session being open changes nothing here.
+        // Only a build actually in flight stands in the way, and only for the
+        // seconds it runs, because two builds clear the same output folder.
+        bool building = _window.Workspace.WorkspacePath is { } folder &&
+                        CourseActivity.IsBuildingElsewhere(folder, _course.Code);
+        DeployButton.IsEnabled = !IsBusy && !building;
+        if (building)
+            ToolTipService.SetToolTip(DeployButton, $"Available in a moment — {_course.Code} is being built");
 
         bool running = _previewRunner.IsRunning;
         PreviewLabel.Text = running ? "Stop Preview" : "Preview";
         PreviewIcon.Glyph = running ? Glyphs.Stop : Glyphs.Play;
         ToolTipService.SetToolTip(PreviewButton,
-            running ? "Stop previewing this section" : "Preview this section's website");
-        PreviewButton.IsEnabled = running || !IsBusy;
+            running ? "Stop previewing this section"
+            : building ? $"Available in a moment — {_course.Code} is being built"
+            : "Preview this section's website");
+        // Stopping a preview already under way is always allowed.
+        PreviewButton.IsEnabled = running || (!IsBusy && !building);
 
         // Which task owns the console: the running one, else the most recent.
         // Bind ONCE per runner (in the constructor) and only swap which is
@@ -79,7 +113,7 @@ public sealed partial class SectionDetailView : UserControl
             (_deployRunner.IsRunning ||
              (_deployRunner.StartedAt ?? DateTime.MinValue) > (_previewRunner.StartedAt ?? DateTime.MinValue));
         if (showDeploy)
-            Progress.Show(_deployRunner, $"Publishing {TitleText}");
+            Progress.Show(_deployRunner, $"Deploying {TitleText}");
         else
             Progress.Show(_previewRunner,
                 _previewRunner.IsRunning || _isWaitingForServer
@@ -99,20 +133,80 @@ public sealed partial class SectionDetailView : UserControl
     /// <summary>Smoke-test entry: the same path the Preview button takes.</summary>
     public void StartPreviewForAutomation() => PreviewOrStop_Click(this, new RoutedEventArgs());
 
+    /// <summary>
+    /// Start this section's preview unless one is already serving — the
+    /// assistant's "come and look" path. Guarded, because the click handler
+    /// is a toggle: calling it blind against a running preview would STOP the
+    /// very thing the teacher was being shown.
+    /// </summary>
+    public void StartPreviewIfIdle()
+    {
+        if (_previewRunner.IsRunning) return;
+        PreviewOrStop_Click(this, new RoutedEventArgs());
+    }
+
+    /// <summary>Stop the preview if one is up — the assistant's half of stop, edit, start again.</summary>
+    public void StopPreviewIfRunning()
+    {
+        if (_previewRunner.IsRunning) StopPreview();
+    }
+
     /// <summary>Smoke-test entry: open the console details pane.</summary>
     public void ShowDetailsForAutomation() => Progress.ExpandDetailsForAutomation();
 
     /// <summary>Smoke-test entry: the same path the Deploy button takes.</summary>
     public void StartDeployForAutomation() => Deploy_Click(this, new RoutedEventArgs());
 
+    /// <summary>
+    /// Refuse to start a build while the assistant is running one.
+    ///
+    /// Checked at the CLICK, not just when the buttons were last drawn: a
+    /// build can start at any moment in the other process, and the chrome only
+    /// redraws when a runner or the browser says something. The disabled
+    /// button is the courtesy; this is the guarantee.
+    ///
+    /// Both would otherwise build into
+    /// <c>.merged_output/section&lt;N&gt;/</c>, which the build clears before
+    /// writing — so the loser serves a half-written site, or deploys files
+    /// the other just deleted.
+    ///
+    /// It waits on a BUILD, never on the conversation. Waiting on the whole
+    /// session made a teacher choose between watching their preview and
+    /// talking about it, and those two things belong together.
+    /// </summary>
+    private async Task<bool> TheAssistantIsBuilding()
+    {
+        if (_window.Workspace.WorkspacePath is not { } folder) return false;
+        if (!CourseActivity.IsBuildingElsewhere(folder, _course.Code)) return false;
+
+        var dialog = new ContentDialog
+        {
+            Title = $"{_course.Code} is being built",
+            Content = "The assistant is rebuilding this course right now, and building it here at the " +
+                      "same time would clash — both write to the same place. This usually takes a few " +
+                      "seconds; try again when it finishes.",
+            CloseButtonText = "OK",
+            XamlRoot = XamlRoot,
+        };
+        await dialog.ShowAsync();
+        RefreshChrome();
+        return true;
+    }
+
     private async void PreviewOrStop_Click(object sender, RoutedEventArgs e)
     {
         if (_previewRunner.IsRunning) { StopPreview(); return; }
+        if (await TheAssistantIsBuilding()) return;
         if (_window.Workspace.WorkspacePath is not { } workspacePath) return;
 
         try
         {
             _lease = PreviewLeases.Take(workspacePath, _course.Code, _sectionNumber);
+            // Say so on disk as well as in memory: an assistant is a separate
+            // process and cannot see the in-memory lease.
+            _previewWork = WorkLease.Take(workspacePath, _course.Code, WorkLease.Previewing);
+            // Dropped as soon as the server answers — see ReleaseBuildClaim.
+            _buildWork = WorkLease.Take(workspacePath, _course.Code, WorkLease.Building);
         }
         catch (PreviewLeases.LeaseRefusedException refusal)
         {
@@ -183,7 +277,11 @@ public sealed partial class SectionDetailView : UserControl
                     var response = await client.GetAsync(serverUrl);
                     if (response.IsSuccessStatusCode)
                     {
+                        // The site is up, so the build is over: the assistant
+                        // may build again from here on, while this preview
+                        // stays on screen for the teacher to read.
                         _isWaitingForServer = false;
+                        ReleaseBuildClaim();
                         _previewUrl = serverUrl;
                         LoadIfNeeded(serverUrl);
                         RefreshChrome();
@@ -194,7 +292,10 @@ public sealed partial class SectionDetailView : UserControl
                 await Task.Delay(1000);
                 elapsed++;
             }
+            // The server never answered. The build is over either way, so the
+            // claim must not outlive it.
             _isWaitingForServer = false;
+            ReleaseBuildClaim();
             RefreshChrome();
         }
         finally
@@ -220,8 +321,14 @@ public sealed partial class SectionDetailView : UserControl
 
     private void StopPreview()
     {
+        // Whenever a preview was actually running (or still building),
+        // reclaim its container-side processes too — ending the host
+        // launcher alone leaves the serve chain alive inside the container.
+        bool hadPreview = _previewRunner.IsRunning || _isWaitingForServer || _previewUrl is not null;
         _serverWait?.Cancel();
         if (_previewRunner.IsRunning) _previewRunner.StopByUser();
+        if (hadPreview && _window.Workspace.WorkspacePath is { } workspacePath)
+            PreviewStopper.StopSectionProcesses(workspacePath, _course.Code, _sectionNumber);
         _previewUrl = null;
         _lastLoadedUrl = null;
         _isWaitingForServer = false;
@@ -229,8 +336,22 @@ public sealed partial class SectionDetailView : UserControl
         RefreshChrome();
     }
 
+    /// <summary>
+    /// Give up the build claim. Safe to call twice, and called on every path
+    /// that stops waiting — a claim left behind would lock the assistant out
+    /// of building for as long as Plantoir stayed open.
+    /// </summary>
+    private void ReleaseBuildClaim()
+    {
+        _buildWork?.Dispose();
+        _buildWork = null;
+    }
+
     private void ReleaseLease()
     {
+        ReleaseBuildClaim();
+        _previewWork?.Dispose();
+        _previewWork = null;
         if (_lease is { } lease) PreviewLeases.Release(lease);
         _lease = null;
     }
@@ -239,13 +360,65 @@ public sealed partial class SectionDetailView : UserControl
 
     private async void Deploy_Click(object sender, RoutedEventArgs e)
     {
-        if (IsBusy || _window.Workspace.WorkspacePath is not { } workspacePath) return;
+        if (IsBusy) return;
+        if (await TheAssistantIsBuilding()) return;
+        if (_window.Workspace.WorkspacePath is not { } workspacePath) return;
+
+        // Folder publishing (rows 101–102): the save gate keeps the folder
+        // valid, but a hand-edited config could still slip a bad one in —
+        // decline plainly rather than let the launcher discover it.
+        bool toFolder = _course.Configuration.DeploysToLocalFolder;
+        string deployFolder = _course.Configuration.DeployFolderPath.Trim();
+        if (toFolder && CourseConfiguration.DeployFolderProblem(deployFolder) is { } folderProblem)
+        {
+            var problemDialog = new ContentDialog
+            {
+                Title = "The deploy folder needs attention",
+                Content = folderProblem + " Fix it in this course's settings, then deploy again.",
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot,
+            };
+            await problemDialog.ShowAsync();
+            return;
+        }
+
+        // Cloudflare needs the teacher's account, and the launcher's console
+        // prompt for it can never be answered from here — so decline plainly
+        // and point at the setting that fixes it.
+        bool toCloudflare = _course.Configuration.DeploysToCloudflare;
+        string cloudflareAccount = _window.Workspace.Settings.CloudflareAccountId.Trim();
+        if (toCloudflare && CourseConfiguration.CloudflareAccountProblem(cloudflareAccount) is { } accountProblem)
+        {
+            var accountDialog = new ContentDialog
+            {
+                Title = "Cloudflare needs your Account ID",
+                Content = accountProblem + " Add it in this course's settings, under Deploying, then deploy again.",
+                CloseButtonText = "OK",
+                XamlRoot = XamlRoot,
+            };
+            await accountDialog.ShowAsync();
+            return;
+        }
 
         bool needsBuild = BuildFreshness.NeedsRebuild(_course, _sectionNumber);
-        _deployRunner.Milestones = needsBuild ? TaskMilestones.BuildAndDeploy : TaskMilestones.Deploy;
+        _deployRunner.Milestones = toFolder
+            ? (needsBuild ? TaskMilestones.BuildAndDeployToFolder : TaskMilestones.DeployToFolder)
+            : toCloudflare
+                ? (needsBuild ? TaskMilestones.BuildAndDeployToCloudflare : TaskMilestones.DeployToCloudflare)
+                : (needsBuild ? TaskMilestones.BuildAndDeploy : TaskMilestones.Deploy);
         string customDomain = CourseConfiguration.NormalizedCustomDomain(
             _course.Configuration.CustomDomain(_sectionNumber));
         _deployRunner.CustomDomainForLinks = customDomain.Length == 0 ? null : customDomain;
+
+        // The publish is on the books for its WHOLE life — the quiet build
+        // included — and comes off them on every exit path (EndPublish runs
+        // from the runner-stopped transition in RefreshChrome).
+        _publishActivity?.Dispose();
+        _publishActivity = CourseActivity.BeginPublish(workspacePath, _course.Code, _sectionNumber);
+        _publishWork = WorkLease.Take(workspacePath, _course.Code, WorkLease.Publishing);
+        // A deploy builds and then uploads, and both end together, so the
+        // build claim can simply run its whole length.
+        _buildWork = WorkLease.Take(workspacePath, _course.Code, WorkLease.Building);
 
         if (needsBuild)
         {
@@ -254,12 +427,27 @@ public sealed partial class SectionDetailView : UserControl
             _deployRunner.Run("preview.ps1",
                 new[] { _course.Code, _sectionNumber.ToString(), "--build-only" }, workspacePath);
             RefreshChrome();
-            if (!await _deployRunner.WaitUntilFinished()) return;
+            if (!await _deployRunner.WaitUntilFinished()) { EndPublishActivity(); return; }
         }
-        _deployRunner.Run("deploy.ps1",
-            new[] { _course.Code, _sectionNumber.ToString() }, workspacePath,
+        var deployArguments = toFolder
+            ? new[] { _course.Code, _sectionNumber.ToString(), "--to-folder", deployFolder }
+            : toCloudflare
+                ? new[] { _course.Code, _sectionNumber.ToString(), "--target", "cloudflare", "--account", cloudflareAccount }
+                : new[] { _course.Code, _sectionNumber.ToString() };
+        _deployRunner.Run("deploy.ps1", deployArguments, workspacePath,
             keepTranscript: needsBuild);
         RefreshChrome();
+        await _deployRunner.WaitUntilFinished();   // outcome already on screen
+        EndPublishActivity();
+    }
+
+    private void EndPublishActivity()
+    {
+        _publishActivity?.Dispose();
+        _publishActivity = null;
+        _publishWork?.Dispose();
+        _publishWork = null;
+        ReleaseBuildClaim();
     }
 
     // ---- Browser chrome --------------------------------------------------

@@ -1,6 +1,6 @@
 ---
 title: When Will I Use This
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

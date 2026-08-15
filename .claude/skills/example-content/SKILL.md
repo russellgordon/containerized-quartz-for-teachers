@@ -187,7 +187,7 @@ from Phase 5 apply here too.
 
 **The style contract** (gold standard: `ADA1O/shared/Conventions/Tableau.md`):
 
-- Frontmatter: `title:` matching filename, `draft: false`,
+- Frontmatter: `title:` matching filename, `publish: true`,
   `created: __CREATED__` (literal), `tags:`, `enableToc: true` only with
   4+ H2s. No H1 in the body. Canadian spelling. Spaced em dashes — like
   this. ~80-column wrap. Direct, warm, concrete, second person to
@@ -355,7 +355,7 @@ inside a curriculum block, with plain-words fallback text outside it), a
 Tutorials `Using This Site.md`, and per-section: `index.md` (the landing
 page — `title: Section __SECTION_NUMBER__`, "# Most Recent Class"
 transcluding the NEWEST PUBLISHED class page of the payload's semester
-(not Day 1, and not the draft finale) + a `%%` teacher comment about
+(not Day 1, and not the unpublished finale) + a `%%` teacher comment about
 advancing it + `![[Help Sessions]]` + `![[Key Links]]`) and a populated
 `Key Links.md`. Every folder's `index.md` MUST have
 `title: <Folder Name>` — a literal `title: index` shows "index" as the
@@ -431,8 +431,8 @@ verbatim wording and stay.
 numbered Agenda of links + a "Things to do before our next class" checkbox
 list (journal prompts often); **NEVER a curriculum connection block** (see
 below); exactly ONE page in the whole payload is
-`draft: true` — the final class page, carrying a `%%` comment explaining
-drafts. No absolute dates anywhere in prose.
+`publish: false` — the final class page, carrying a `%%` comment explaining
+how a page is held back. No absolute dates anywhere in prose.
 
 **Fan-out**: hand-write the gold-standard exemplar and the landing/setup
 pages yourself; batch the rest to 2–3 parallel agents, each prompt carrying
@@ -491,8 +491,8 @@ the linter.
    `script -q /dev/null docker exec -it <container> python3
    /opt/scripts/setup_course.py --host-os mac`), then
    `./preview.sh <CODE> 1 --build-only --image quartz-teacher:dev-test`,
-   then inspect the built HTML: landing transclusions render, the draft
-   finale is NOT published, `%%` comments invisible, All Classes and one
+   then inspect the built HTML: landing transclusions render, the
+   unpublished finale is absent, `%%` comments invisible, All Classes and one
    category listing sort correctly (check the `page-listing` region of the
    HTML, not the whole page — index prose also mentions page names), and
    `grep -rl katex-error <public dir>` finds NOTHING — a katex-error span
@@ -594,7 +594,7 @@ is the contract; what EXC2O needed:
   `[[Curriculum/index|Curriculum Expectations]]`; standalone prose
   pointers at the curriculum wrapped too, so a curriculum-free install
   leaves no dangling sentence.
-- The finale class becomes the `draft: true` example (with the standard
+- The finale class becomes the `publish: false` example (with the standard
   `%%` comment), and the landing transclusion steps back to the newest
   PUBLISHED class.
 - Section landing title becomes `title: Section __SECTION_NUMBER__`.

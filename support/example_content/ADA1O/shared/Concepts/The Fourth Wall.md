@@ -1,6 +1,6 @@
 ---
 title: The Fourth Wall
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

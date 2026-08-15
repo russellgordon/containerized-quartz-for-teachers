@@ -1,6 +1,6 @@
 ---
 title: Misinformation and Verification
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

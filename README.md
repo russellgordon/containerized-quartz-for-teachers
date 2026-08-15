@@ -174,6 +174,14 @@ This will:
 - Package the built site for the chosen section
 - Allow you to deploy the site to **Netlify**, which will host your site publicly
 
+> ℹ️ Netlify is the default, but not the only choice. Add
+> `--target cloudflare` to publish to **Cloudflare Pages** instead (free,
+> with unmetered bandwidth; it asks once for an API token and your account
+> ID, and refuses individual files over 25 MB). Add
+> `--to-folder <path>` to copy the finished site into a folder on your own
+> machine instead — useful if your school or university already gives you
+> web space. The apps offer the same three choices as a menu, per course.
+
 
 ---
 

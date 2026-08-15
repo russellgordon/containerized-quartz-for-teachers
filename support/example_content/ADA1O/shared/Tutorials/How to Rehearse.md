@@ -1,6 +1,6 @@
 ---
 title: How to Rehearse
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

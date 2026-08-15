@@ -1,6 +1,6 @@
 ---
 title: Who Owns Your Data
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

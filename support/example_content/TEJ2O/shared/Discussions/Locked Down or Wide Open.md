@@ -1,6 +1,6 @@
 ---
 title: Locked Down or Wide Open
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

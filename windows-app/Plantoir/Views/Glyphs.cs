@@ -1,4 +1,4 @@
-namespace Plantoir.Views;
+﻿namespace Plantoir.Views;
 
 /// <summary>
 /// Segoe Fluent Icons code points as C# unicode escapes, so a literal glyph
@@ -30,4 +30,19 @@ public static class Glyphs
     public const string Cancel = "\uE711";   // cancelled / failed
     public const string Search = "\uE721";
     public const string QuestionBubble = "\uE897";   // awaiting your answer
+
+    /// <summary>
+    /// An outline star (FavoriteStar), for the two "revise with\u2026" items.
+    /// Checked present in the installed SegoeIcons.ttf and segmdl2.ttf, so it
+    /// draws in the ordinary icon font like everything else here. It replaced
+    /// a sparkle EMOJI, which needed its own font and its own colour \u2014 the
+    /// only coloured icon in the menu, and it read as noise. (The documented
+    /// Fluent "Sparkle" at U+E45E is simply not in the font on Windows 11 (the
+    /// whole U+E45A to E460 neighbourhood is absent), which is how the emoji
+    /// got in.)
+    /// </summary>
+    public const string Star = "\uE734";
+
+    /// <summary>A clock — a section with a deploy waiting to fire. Checked present in SegoeIcons.ttf.</summary>
+    public const string Clock = "";
 }

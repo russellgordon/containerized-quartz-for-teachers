@@ -1,6 +1,6 @@
 ---
 title: Status Walks
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - warm-ups

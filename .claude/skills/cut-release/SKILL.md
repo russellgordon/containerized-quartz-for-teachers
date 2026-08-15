@@ -78,3 +78,29 @@ and the evergreen download links now serve the new assets — nothing
 manual remains for the site. Remind the user only of: the mac asset (if
 it attaches separately, named exactly `Plantoir-macOS.zip`), and — once
 WinSparkle lands — the appcast entry.
+
+**Redraw the brand images in the same commit as the version line.** After
+editing `site/index.html` and before tagging, run:
+
+```
+python scripts/brand_images.py --install-card
+```
+
+This draws the og:image, the profile photos and the Bluesky banner from
+`mac-app/Plantoir.icon`, and installs the card to `site/social-card.png`
+so Netlify deploys it with the rest of the push.
+
+The output is deterministic, so **the normal outcome is no diff at all** —
+`git status` stays quiet and you commit only the version line. Do not
+report that as a failure or re-run it. Files change only when the icon,
+the palette or the tagline moved since the last release.
+
+If it does produce a diff, stop and show the user the changed images
+before committing: `site/social-card.png` is a public, widely-cached
+og:image, and a release push deploys it. Say plainly which files changed
+and why you think they did. Commit them alongside the version line so the
+card and the release ship together.
+
+Stage by path — never `git add -A`. Other work may be in the tree.
+
+See "Brand images" in `windows-app/RELEASING.md`.

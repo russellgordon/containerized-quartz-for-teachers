@@ -79,6 +79,26 @@ public static class OutputParsers
         return token;
     }
 
+    /// <summary>
+    /// The folder a folder-mode publish landed in — deploy.ps1 prints
+    /// "PUBLISHED_FOLDER=&lt;path&gt;" so the app can offer it in Explorer.
+    /// The LAST marker wins; null when none appears (a Netlify publish).
+    /// </summary>
+    public static string? PublishedFolder(string text)
+    {
+        const string marker = "PUBLISHED_FOLDER=";
+        string? found = null;
+        foreach (string rawLine in text.Split('\n'))
+        {
+            string line = rawLine.Trim();
+            int index = line.IndexOf(marker, StringComparison.Ordinal);
+            if (index < 0) continue;
+            string path = line[(index + marker.Length)..].Trim();
+            if (path.Length > 0) found = path;
+        }
+        return found;
+    }
+
     /// <summary>Custom-domain swap: host replaced, https forced, path kept.</summary>
     public static Uri ApplyingCustomDomain(string? domain, Uri url)
     {

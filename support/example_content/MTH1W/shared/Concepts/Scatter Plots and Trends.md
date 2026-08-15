@@ -1,6 +1,6 @@
 ---
 title: Scatter Plots and Trends
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

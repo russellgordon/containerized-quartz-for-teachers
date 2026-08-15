@@ -54,10 +54,14 @@ public sealed partial class CourseSettingsView : UserControl
         CourseConfiguration.ComputedSiteTitle(Config.CourseName, _course.Code, section,
             Config.ShowsGradeInTitle(section), Config.ShowsSectionMarker(section));
 
+    private PublishingChoiceView? _publishingChoice;
+
     private void RefreshDirtyState()
     {
         bool dirty = Config.HasUnsavedChanges;
-        SaveButton.IsEnabled = dirty;
+        // A folder-publishing course with a bad folder cannot be saved — a
+        // publish must never discover the problem after the fact (row 102).
+        SaveButton.IsEnabled = dirty && _publishingChoice?.Problem is null;
         RevertButton.IsEnabled = dirty;
     }
 
@@ -102,6 +106,19 @@ public sealed partial class CourseSettingsView : UserControl
         expandBox.SelectedIndex = Config.ExpandOnFolderClick ? 0 : 1;
         expandBox.SelectionChanged += (_, _) => { Config.ExpandOnFolderClick = expandBox.SelectedIndex == 0; MarkChanged(); };
         Form.Children.Add(FormBuilders.LabeledRow("Sidebar folders expand when clicking", expandBox));
+
+        // -------- Publishing (course-level: every section goes the same way) --------
+        Form.Children.Add(FormBuilders.SectionHeaderWithCaption("Deploying", null));
+        _publishingChoice = new PublishingChoiceView(_window,
+            () => Config.DeployTarget, v => Config.DeployTarget = v,
+            () => Config.DeployFolderPath, v => Config.DeployFolderPath = v,
+            // The account identifies the teacher, not the course, so it is
+            // kept in app settings and saved as it is typed — a teacher
+            // should never enter it twice.
+            () => _window.Workspace.Settings.CloudflareAccountId,
+            v => { _window.Workspace.Settings.CloudflareAccountId = v; _window.Workspace.Settings.Save(); });
+        _publishingChoice.Changed += MarkChanged;
+        Form.Children.Add(_publishingChoice.Root);
 
         // -------- Footer --------
         Form.Children.Add(FormBuilders.SectionHeaderWithCaption("Footer", null));
@@ -228,7 +245,7 @@ public sealed partial class CourseSettingsView : UserControl
         };
         var domainPanel = FormBuilders.LabeledRow("Custom domain", domainBox);
         var domainCaption = FormBuilders.ExampleCaption(
-            "e.g. ics3u.yourschool.ca — links to your published site will use this domain instead of the Netlify address. Your site must already answer there (set the domain up in Netlify first). Leave empty to use the Netlify address.");
+            "e.g. ics3u.yourschool.ca — links to your live site will use this domain instead of the Netlify address. Your site must already answer there (set the domain up in Netlify first). Leave empty to use the Netlify address.");
         var domainWarning = FormBuilders.WarningCaption("That doesn't look like a domain — e.g. ics3u.yourschool.ca");
         domainWarning.Visibility = Visibility.Collapsed;
         domainPanel.Children.Add(domainWarning);

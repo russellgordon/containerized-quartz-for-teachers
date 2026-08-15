@@ -1,6 +1,6 @@
 ---
 title: Slope and Rate of Change
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

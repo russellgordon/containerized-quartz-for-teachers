@@ -655,7 +655,20 @@ if [[ -z "$BUILD_ONLY" ]]; then
   echo "🌐 Preview will be available at: http://localhost:${HOST_PREVIEW_PORT}/"
 fi
 
-docker exec -it "$CONTAINER_NAME" python3 /opt/scripts/build_site.py \
+# A terminal is what makes the container's prompts and live progress work, so
+# ask for one when there IS one. But `docker exec -t` refuses to start at all
+# when stdin is not a terminal — from a script, from CI, or from Plantoir's
+# MCP server — and it fails here, minutes into the build, saying only "the
+# input device is not a TTY". Without a terminal, run python unbuffered so
+# progress still arrives line by line. (verify.sh refuses up front for the
+# same reason; this makes refusing unnecessary.)
+if [[ -t 0 ]]; then
+  _EXEC_TTY="-it"; _PY_UNBUFFERED=""
+else
+  _EXEC_TTY="-i";  _PY_UNBUFFERED="-u"
+fi
+
+docker exec $_EXEC_TTY "$CONTAINER_NAME" python3 $_PY_UNBUFFERED /opt/scripts/build_site.py \
   --host-os "$_PREVIEW_HOST_OS" \
   --course="$COURSE" \
   --section="$SECTION" \

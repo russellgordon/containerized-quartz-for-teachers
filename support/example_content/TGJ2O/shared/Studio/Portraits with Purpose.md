@@ -1,6 +1,6 @@
 ---
 title: Portraits with Purpose
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - studio

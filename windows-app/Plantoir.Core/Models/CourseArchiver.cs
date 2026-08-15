@@ -23,11 +23,33 @@ public static class CourseArchiver
     public static string BackupsDirectory(string coursesDirectory, string courseCode) =>
         Path.Combine(coursesDirectory, "_backups", courseCode);
 
-    /// <summary>Archive a whole course, then remove its folder.</summary>
+    /// <summary>
+    /// Saves a copy of an entire course — and touches nothing: the course
+    /// stays exactly where it is. Made on purpose before risky editing so
+    /// there is always a way back (row 106). The name
+    /// (&lt;CODE&gt;_backup_&lt;timestamp&gt;.zip) is what separates a backup from an
+    /// archive in the shared _backups folder.
+    /// </summary>
+    public static string BackUpCourse(Course course, string coursesDirectory) =>
+        Archive(course.DirectoryPath, course.Code + "_backup", coursesDirectory, course.Code);
+
+    /// <summary>
+    /// Writes an archive of an entire course folder WITHOUT removing it —
+    /// for restores, which replace the course's contents in place so
+    /// Obsidian's file watcher (anchored to the folder) keeps up.
+    /// </summary>
+    public static string ArchiveCourseWithoutRemoving(Course course, string coursesDirectory) =>
+        Archive(course.DirectoryPath, course.Code, coursesDirectory, course.Code);
+
+    /// <summary>
+    /// Archive a whole course, then remove its folder — with the delete that
+    /// survives readonly files and links (<see cref="CourseRestorer.DeleteTree"/>),
+    /// because a build leaves both inside .merged_output.
+    /// </summary>
     public static string ArchiveAndRemoveCourse(Course course, string coursesDirectory)
     {
-        string archivePath = Archive(course.DirectoryPath, course.Code, coursesDirectory, course.Code);
-        Directory.Delete(course.DirectoryPath, recursive: true);
+        string archivePath = ArchiveCourseWithoutRemoving(course, coursesDirectory);
+        CourseRestorer.DeleteTree(course.DirectoryPath);
         return archivePath;
     }
 
@@ -40,7 +62,7 @@ public static class CourseArchiver
         string sectionDir = course.SectionDirectory(sectionNumber);
         string archivePath = Archive(sectionDir, $"{course.Code}-section{sectionNumber}",
                                      coursesDirectory, course.Code);
-        if (Directory.Exists(sectionDir)) Directory.Delete(sectionDir, recursive: true);
+        if (Directory.Exists(sectionDir)) CourseRestorer.DeleteTree(sectionDir);
         var remaining = course.Configuration.SectionNumbers.Where(n => n != sectionNumber).ToList();
         course.Configuration.SetSectionNumbers(remaining);
         course.Configuration.Write(course.ConfigFilePath);
@@ -51,27 +73,57 @@ public static class CourseArchiver
     {
         string backupsDir = BackupsDirectory(coursesDirectory, courseCode);
         Directory.CreateDirectory(backupsDir);
+
+        // Names are stamped to the second, and two operations can easily land
+        // in the same one — an assistant publishing two classes in a row does
+        // it every time. Without this the second backup throws, which (because
+        // no backup means no edits) turns a routine sequence into a refusal.
         string archivePath = Path.Combine(backupsDir, TimestampedName(prefix, DateTime.Now));
+        for (int attempt = 2; File.Exists(archivePath) && attempt < 100; attempt++)
+            archivePath = Path.Combine(backupsDir,
+                TimestampedName(prefix, DateTime.Now).Replace(".zip", $"-{attempt}.zip"));
+
         ZipFolder(folderPath, archivePath);
         return archivePath;
     }
 
     /// <summary>
-    /// Zips a folder with the folder itself as the archive's root entry,
-    /// skipping any path that contains an excluded component.
+    /// Zips a folder with the folder itself as the archive's root entry.
+    /// The walk NEVER DESCENDS into an excluded folder — filtering paths
+    /// after a full enumeration walked straight into .merged_output, where
+    /// container-made links (content\Media) cannot be traversed by Windows
+    /// and sank the whole backup. Reparse points are skipped for the same
+    /// reason. A failure never leaves a partial zip behind.
     /// </summary>
     public static void ZipFolder(string folderPath, string archivePath)
     {
         string rootName = Path.GetFileName(folderPath.TrimEnd(Path.DirectorySeparatorChar));
-        using var archive = ZipFile.Open(archivePath, ZipArchiveMode.Create);
-        foreach (string file in Directory.EnumerateFiles(folderPath, "*", SearchOption.AllDirectories))
+        try
         {
-            string relative = Path.GetRelativePath(folderPath, file);
-            if (relative.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                        .Any(part => ExcludedFromArchives.Contains(part)))
-                continue;
-            string entryName = rootName + "/" + relative.Replace('\\', '/');
-            archive.CreateEntryFromFile(file, entryName, CompressionLevel.Optimal);
+            using var archive = ZipFile.Open(archivePath, ZipArchiveMode.Create);
+            AddFolder(archive, folderPath, rootName);
+        }
+        catch
+        {
+            try { File.Delete(archivePath); } catch { }
+            throw;
+        }
+    }
+
+    private static void AddFolder(ZipArchive archive, string folderPath, string entryPrefix)
+    {
+        foreach (string file in Directory.EnumerateFiles(folderPath))
+        {
+            if (ExcludedFromArchives.Contains(Path.GetFileName(file))) continue;   // .DS_Store
+            archive.CreateEntryFromFile(file, entryPrefix + "/" + Path.GetFileName(file),
+                                        CompressionLevel.Optimal);
+        }
+        foreach (string sub in Directory.EnumerateDirectories(folderPath))
+        {
+            string name = Path.GetFileName(sub);
+            if (ExcludedFromArchives.Contains(name)) continue;
+            if ((new DirectoryInfo(sub).Attributes & FileAttributes.ReparsePoint) != 0) continue;
+            AddFolder(archive, sub, entryPrefix + "/" + name);
         }
     }
 }

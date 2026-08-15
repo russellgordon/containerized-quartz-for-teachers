@@ -1,6 +1,6 @@
 ---
 title: A Data Story
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

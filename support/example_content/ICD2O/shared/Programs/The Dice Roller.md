@@ -1,6 +1,6 @@
 ---
 title: The Dice Roller
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - programs

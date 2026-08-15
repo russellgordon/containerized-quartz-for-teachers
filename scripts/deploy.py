@@ -143,8 +143,17 @@ def _ensure_global_secrets_dir():
         pass
 
 def sanitize_last_name(name: str) -> str:
-    """Lowercase and keep letters only; e.g., 'Mc-Donald ' -> 'mcdonald'."""
-    return re.sub(r"[^a-z]", "", name.strip().lower())
+    """
+    Lowercase and keep letters only; e.g., 'Mc-Donald ' -> 'mcdonald'.
+
+    Accented letters are folded to their plain form rather than dropped, so
+    'Côté' becomes 'cote' instead of 'ct'. Ontario staff lists are full of
+    names that the dropping version turned into two or three letters, which
+    a teacher would not recognise as their own site.
+    """
+    folded = unicodedata.normalize("NFKD", name.strip().lower())
+    folded = "".join(ch for ch in folded if not unicodedata.combining(ch))
+    return re.sub(r"[^a-z]", "", folded)
 
 def load_teacher_last_name() -> str | None:
     path = _profile_path()
@@ -358,6 +367,225 @@ def save_netlify_marker(course_dir: Path, section: str | int, site: dict):
     except Exception:
         pass
 
+# ---------- Cloudflare Pages ----------
+# Cloudflare refuses any single file larger than this, and the failure comes
+# back from deep inside the upload as an unhelpful error — so the size is
+# checked here, before anything is sent, and reported by filename.
+CF_MAX_FILE_BYTES = 25 * 1024 * 1024
+CF_API = "https://api.cloudflare.com/client/v4"
+
+def cloudflare_api(method: str, path: str, token: str, payload: dict | None = None):
+    """
+    Cloudflare wraps every response in {success, errors, result} and can
+    report failure inside a 200, so both the HTTP status and that envelope
+    are checked. Returns the unwrapped `result` (a dict or a list).
+    """
+    req = urllib.request.Request(f"{CF_API}{path}", method=method)
+    req.add_header("Accept", "application/json")
+    req.add_header("Authorization", f"Bearer {token}")
+    body = None
+    if payload is not None:
+        body = json.dumps(payload).encode("utf-8")
+        req.add_header("Content-Type", "application/json")
+    try:
+        with urllib.request.urlopen(req, data=body) as resp:
+            raw = resp.read()
+    except urllib.error.HTTPError as e:
+        raw = e.read()
+        raise RuntimeError(f"Cloudflare API error {e.code}: {_cf_errors(raw)}") from e
+    if not raw:
+        return {}
+    data = json.loads(raw.decode("utf-8"))
+    if not data.get("success", True):
+        raise RuntimeError(f"Cloudflare API error: {_cf_errors(raw)}")
+    result = data.get("result")
+    return {} if result is None else result
+
+def _cf_errors(raw: bytes) -> str:
+    try:
+        data = json.loads(raw.decode("utf-8", errors="ignore"))
+        messages = [str(x.get("message", "")).strip() for x in (data.get("errors") or [])]
+        joined = "; ".join(m for m in messages if m)
+        if joined:
+            return joined
+    except Exception:
+        pass
+    return raw.decode("utf-8", errors="ignore").strip() or "no details given"
+
+def discover_cloudflare_account(token: str) -> str:
+    """
+    Cloudflare needs an account ID as well as a token, but asking a teacher to
+    find a 32-character hex string in a dashboard is exactly the kind of step
+    that loses people. The token already knows which account it can reach, so
+    look it up instead of asking.
+    """
+    accounts = cloudflare_api("GET", "/accounts", token)
+    if not isinstance(accounts, list) or not accounts:
+        raise RuntimeError("This token cannot reach any Cloudflare account.")
+    if len(accounts) > 1:
+        names = ", ".join(str(a.get("name", "?")) for a in accounts)
+        print(f" This token can reach several Cloudflare accounts: {names}")
+        print(f" Using the first one ({accounts[0].get('name')}).")
+    return accounts[0]["id"]
+
+def sanitize_pages_name(name: str) -> str:
+    """
+    Cloudflare Pages project names allow lowercase letters, digits and
+    hyphens, must begin and end alphanumeric, and stop at 58 characters.
+    """
+    name = name.lower().replace(" ", "-").replace("_", "-")
+    name = re.sub(r"[^a-z0-9-]", "-", name)
+    name = re.sub(r"-{2,}", "-", name).strip("-")
+    return name[:58].strip("-") or "class-site"
+
+def suggest_pages_name(course_code: str, section: str, teacher_last_name: str | None) -> str:
+    base = f"{course_code or 'course'}-s{section or '1'}-{NOW.year}"
+    if teacher_last_name:
+        base = f"{base}-{teacher_last_name}"
+    return sanitize_pages_name(base)
+
+def _cf_marker_dir(course_dir: Path) -> Path:
+    return course_dir / ".cloudflare_sites"
+
+def _cf_marker_path(course_dir: Path, section: str | int) -> Path:
+    return _cf_marker_dir(course_dir) / f"section{section}.json"
+
+def load_cloudflare_marker(course_dir: Path, section: str | int) -> dict | None:
+    p = _cf_marker_path(course_dir, section)
+    if p.exists():
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return None
+
+def save_cloudflare_marker(course_dir: Path, section: str | int, project: dict):
+    _cf_marker_dir(course_dir).mkdir(parents=True, exist_ok=True)
+    p = _cf_marker_path(course_dir, section)
+    p.write_text(json.dumps(project, indent=2), encoding="utf-8")
+    try:
+        os.chmod(p, 0o600)
+    except Exception:
+        pass
+
+def ensure_pages_project(token: str, account_id: str, name: str) -> dict:
+    """
+    Find this section's project or create it. A Pages project name only has to
+    be unique inside the teacher's own account — unlike a Netlify site name,
+    which is global — so a name that already exists almost always means "this
+    section published before" and is reused rather than renamed around.
+    """
+    try:
+        existing = cloudflare_api("GET", f"/accounts/{account_id}/pages/projects/{name}", token)
+        if existing:
+            return existing
+    except RuntimeError:
+        pass  # Most often "not found"; a real problem resurfaces on create.
+    return cloudflare_api(
+        "POST", f"/accounts/{account_id}/pages/projects", token,
+        {"name": name, "production_branch": "main"},
+    )
+
+def oversized_for_cloudflare(public_dir: Path) -> list[tuple[str, int]]:
+    """Files Cloudflare Pages will refuse, newest complaint first."""
+    too_big = []
+    for f in _iter_public_files(public_dir):
+        try:
+            size = f.stat().st_size
+        except OSError:
+            continue
+        if size > CF_MAX_FILE_BYTES:
+            too_big.append((_remote_path_for(public_dir, f), size))
+    too_big.sort(key=lambda pair: pair[1], reverse=True)
+    return too_big
+
+def deploy_to_cloudflare(public_dir: Path, project_name: str, token: str, account_id: str):
+    """
+    Hand the built folder to Cloudflare's own CLI. The upload protocol is a
+    multi-stage, undocumented one (BLAKE3 asset hashing, a short-lived upload
+    JWT that can expire mid-upload on a large site, batching); wrangler is
+    Cloudflare's supported implementation of it and already handles those
+    edges, so publishing rides on it rather than on a reimplementation.
+    """
+    env = os.environ.copy()
+    env["CLOUDFLARE_API_TOKEN"] = token
+    env["CLOUDFLARE_ACCOUNT_ID"] = account_id
+    # The app runs this with no console to answer prompts on.
+    env["CI"] = "1"
+    env.setdefault("WRANGLER_SEND_METRICS", "false")
+    cmd = [
+        "wrangler", "pages", "deploy", str(public_dir),
+        f"--project-name={project_name}",
+        # The production branch is what gives the stable <project>.pages.dev
+        # address; a different branch would publish to a preview URL instead.
+        "--branch=main",
+        # There is no git repository here, and without this wrangler stops to
+        # ask about the "dirty" working directory.
+        "--commit-dirty=true",
+    ]
+    try:
+        completed = subprocess.run(cmd, env=env)
+    except OSError as e:
+        raise RuntimeError(f"Could not run Cloudflare's deploy tool: {e}") from e
+    if completed.returncode != 0:
+        raise RuntimeError(f"Cloudflare's deploy tool exited with code {completed.returncode}")
+
+def publish_to_cloudflare(public_dir: Path, course_dir: Path, course_code: str,
+                          section: str, teacher_last_name: str | None):
+    token = os.getenv("CLOUDFLARE_API_TOKEN")
+    if not token:
+        print("❌ Cloudflare token missing.")
+        print(" This script expects the token to be passed in by the launcher.")
+        print(" If you ran this directly, create an API token with the")
+        print(" 'Cloudflare Pages: Edit' permission here:")
+        print("   https://dash.cloudflare.com/profile/api-tokens")
+        print(" Then set it as CLOUDFLARE_API_TOKEN and re-run via your launcher:")
+        print(f"   {_cmd_example('deploy', course_code, section, _HOST_OS)}")
+        sys.exit(1)
+
+    oversized = oversized_for_cloudflare(public_dir)
+    if oversized:
+        print("❌ Some files are too large for Cloudflare Pages.")
+        print(" Cloudflare refuses any single file bigger than 25 MB:")
+        for rel, size in oversized[:10]:
+            print(f"   {rel} — {size / (1024 * 1024):.1f} MB")
+        if len(oversized) > 10:
+            print(f"   …and {len(oversized) - 10} more.")
+        print(" Shorten or compress the file — a shorter or lower-resolution")
+        print(" video is usually enough — or publish this section to Netlify,")
+        print(" which allows larger files.")
+        sys.exit(1)
+
+    account_id = os.getenv("CLOUDFLARE_ACCOUNT_ID")
+    if not account_id:
+        account_id = discover_cloudflare_account(token)
+
+    marker = load_cloudflare_marker(course_dir, section)
+    if marker and marker.get("name"):
+        project_name = marker["name"]
+        print(f" Using this section's existing Cloudflare project: {project_name}")
+    else:
+        project_name = suggest_pages_name(course_code, section, teacher_last_name)
+        project = ensure_pages_project(token, account_id, project_name)
+        project_name = project.get("name") or project_name
+        save_cloudflare_marker(course_dir, section, {
+            "name": project_name,
+            "id": project.get("id"),
+            "subdomain": project.get("subdomain"),
+            "account_id": account_id,
+        })
+        print(f" Cloudflare project ready: {project_name}")
+
+    print(" Uploading the built site to Cloudflare…")
+    deploy_to_cloudflare(public_dir, project_name, token, account_id)
+
+    # The marker's subdomain is authoritative when Cloudflare has given one;
+    # otherwise the production address is <project>.pages.dev by construction.
+    marker = load_cloudflare_marker(course_dir, section) or {}
+    host = marker.get("subdomain") or f"{project_name}.pages.dev"
+    print(f" Live URL: https://{host}")
+    print("\n✅ Deploy complete.")
+
 # ---------- Delta deploy helpers ----------
 def _sha1_bytes(data: bytes) -> str:
     h = hashlib.sha1()
@@ -515,10 +743,12 @@ def print_required_diagnostics(required_shas: list[str], sha_to_pairs: dict[str,
 # ---------- Main ----------
 def main():
     p = argparse.ArgumentParser(
-        description="Deploy a built section site directly to Netlify using delta (file-digest) uploads only."
+        description="Publish a built section site — to Netlify by delta (file-digest) upload, or to Cloudflare Pages."
     )
     p.add_argument("--host-os", choices=["windows","mac","linux","unknown"], default="unknown",
                    help="Host OS passed by deploy launchers")
+    p.add_argument("--target", choices=["netlify", "cloudflare"], default="netlify",
+                   help="Where to publish. Defaults to netlify.")
     p.add_argument("--course", required=True, help="Course code, e.g., ICS3U")
     p.add_argument("--section", required=True, help="Section number, e.g., 1")
     p.add_argument("--diagnose", action="store_true",
@@ -588,6 +818,18 @@ def main():
 
     print(f" Deploying from local build: {public_dir}")
     print(f" Timestamp TZ offset: {NOW.strftime('%z')}")
+
+    # Everything above is target-independent: the same built folder is what
+    # gets published wherever it goes.
+    if args.target == "cloudflare":
+        publish_to_cloudflare(
+            public_dir=public_dir,
+            course_dir=course_dir,
+            course_code=args.course,
+            section=str(args.section),
+            teacher_last_name=teacher_last_name,
+        )
+        return
 
     # --- Token handling (new, simplified) ---
     # Only read from environment; host launcher (deploy.sh/.ps1) must inject it.

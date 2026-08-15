@@ -69,12 +69,20 @@ public sealed partial class MainWindow : Window
                 or nameof(WorkspaceViewModel.WorkspaceProblem)) ApplyState();
             if (args.PropertyName is nameof(WorkspaceViewModel.Selection)
                 or nameof(WorkspaceViewModel.Courses)) ShowDetailForSelection();
+            // The selection is part of the window's memory (row 99).
+            if (args.PropertyName is nameof(WorkspaceViewModel.Selection)) App.RememberOpenWindows();
         };
 
         // Decide the folder BEFORE first paint so the picker never flashes.
+        // The sidebar memory seeds first, so the very first Refresh builds
+        // the tree the way this window left it (row 99).
+        Workspace.ExpandedCourseCodes = WindowMemoryCodec.ParseExpandedCourses(frame?.ExpandedCourses);
+        Workspace.IsShowingArchived = frame?.ShowsArchived ?? false;
+        Workspace.IsShowingBackups = frame?.ShowsBackups ?? false;
         if (folderPath is not null && Directory.Exists(folderPath))
             Workspace.AdoptRestoredPath(folderPath);
         ApplyState();
+        RestoreRememberedSelection(frame?.Selection);
         RunAutomationHooks();
     }
 
@@ -158,12 +166,95 @@ public sealed partial class MainWindow : Window
         });
     }
 
+    /// <summary>
+    /// Bring a section's preview onto the screen, for the assistant.
+    ///
+    /// The assistant's tools build the section's site, and a build nobody can
+    /// see might as well not have happened — a teacher approved a rebuild,
+    /// watched it finish, and had nothing to look at. So after a tool that
+    /// leaves a fresh build behind, the assistant's window asks this one to
+    /// select the section and start its preview. If a preview is already
+    /// serving, starting is skipped — live reload is showing the change — but
+    /// the window still comes forward so the teacher actually sees it.
+    /// May be called from any thread.
+    /// </summary>
+    public void ShowPreviewFor(string courseCode, int section)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            Workspace.Selection = new SidebarSelection.SectionItem(courseCode, section);
+            if (DetailHost.Content is SectionDetailView detail) detail.StartPreviewIfIdle();
+            Activate();
+        });
+    }
+
+    /// <summary>
+    /// Deploy a section through this window's own flow — console, milestones,
+    /// needs-rebuild decision and all — for the assistant. The assistant
+    /// automates Plantoir; it does not deploy behind its back.
+    /// </summary>
+    public void DeployFor(string courseCode, int section)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            Workspace.Selection = new SidebarSelection.SectionItem(courseCode, section);
+            if (DetailHost.Content is SectionDetailView detail) detail.StartDeployForAutomation();
+            Activate();
+        });
+    }
+
+    /// <summary>
+    /// Stop a section's preview, for the assistant — the first half of
+    /// stop, edit, start again. No Activate: a stop is not the moment to
+    /// pull the teacher away from the conversation.
+    /// </summary>
+    public void StopPreviewFor(string courseCode, int section)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            Workspace.Selection = new SidebarSelection.SectionItem(courseCode, section);
+            if (DetailHost.Content is SectionDetailView detail) detail.StopPreviewIfRunning();
+        });
+    }
+
+    /// <summary>
+    /// Restore the remembered selection — but only when its target still
+    /// exists, so a course removed between sessions never greets the teacher
+    /// with "Course Not Found". Unrecognized stored forms restore none.
+    /// </summary>
+    private void RestoreRememberedSelection(string? stored)
+    {
+        switch (SidebarSelection.Parse(stored))
+        {
+            case SidebarSelection.CourseItem(var code)
+                when Workspace.Courses.Any(c => c.Code == code):
+                Workspace.Selection = new SidebarSelection.CourseItem(code);
+                break;
+            case SidebarSelection.SectionItem(var code, var number)
+                when Workspace.Courses.FirstOrDefault(c => c.Code == code)?.SectionNumbers.Contains(number) == true:
+                Workspace.Selection = new SidebarSelection.SectionItem(code, number);
+                break;
+            case SidebarSelection.ArchivedEntry(var id)
+                when Workspace.ArchivedItems.Any(a => a.Id == id):
+                Workspace.Selection = new SidebarSelection.ArchivedEntry(id);
+                break;
+            case SidebarSelection.BackupEntry(var id)
+                when Workspace.BackupItems.Any(b => b.Id == id):
+                Workspace.Selection = new SidebarSelection.BackupEntry(id);
+                break;
+        }
+    }
+
     public RememberedWindow? RememberedEntry()
     {
         if (Workspace.WorkspacePath is null) return null;
         var position = AppWindow.Position;
         var size = AppWindow.Size;
-        return new RememberedWindow(Workspace.WorkspacePath, position.X, position.Y, size.Width, size.Height);
+        return new RememberedWindow(Workspace.WorkspacePath, position.X, position.Y, size.Width, size.Height,
+            WindowMemoryCodec.EncodeExpandedCourses(Workspace.ExpandedCourseCodes),
+            Workspace.IsShowingArchived,
+            Workspace.Selection?.Serialized,
+            Workspace.IsShowingBackups);
     }
 
     // ---- State switching -------------------------------------------------
@@ -229,6 +320,13 @@ public sealed partial class MainWindow : Window
                     $"{item.Subtitle}. It is not part of your courses until you restore it.",
                     "Restore…", () => Sidebar.ConfirmRestore(item));
                 break;
+            case SidebarSelection.BackupEntry(var backupId)
+                when Workspace.BackupItems.FirstOrDefault(b => b.Id == backupId) is { } backup:
+                DetailHost.Content = EmptyState(backup.Title,
+                    $"{backup.Subtitle}. Restoring puts {backup.CourseCode} back to exactly this " +
+                    "moment — the current version is archived first, and the backup is kept.",
+                    "Restore…", () => Sidebar.ConfirmRestoreBackup(backup));
+                break;
             case null when Workspace.Courses.Count == 0:
                 DetailHost.Content = EmptyState("No Courses Yet",
                     "Add your first course, or start from the example course to see how everything fits together.",
@@ -236,7 +334,7 @@ public sealed partial class MainWindow : Window
                 break;
             case null:
                 DetailHost.Content = EmptyState("Select a Course or Section",
-                    "Choose a course to edit its settings, or a section to preview and publish its website.",
+                    "Choose a course to edit its settings, or a section to preview and deploy its website.",
                     null, null);
                 break;
             default:

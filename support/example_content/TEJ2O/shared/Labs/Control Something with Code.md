@@ -1,6 +1,6 @@
 ---
 title: Control Something with Code
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

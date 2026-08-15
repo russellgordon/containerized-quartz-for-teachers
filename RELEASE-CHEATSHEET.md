@@ -4,7 +4,11 @@ For future-you, mid-school-year, who remembers nothing. Full story with
 all the whys: [`windows-app/RELEASING.md`](windows-app/RELEASING.md).
 
 1. **Everything merged and green?** Mac and Windows work both on `main`;
-   `dotnet test` passes in `windows-app/`.
+   `dotnet test` passes in `windows-app/`. Then **actually publish a
+   section from the app** — the tests never touch Docker, and the bundle
+   carries the toolchain, so this is the only check that covers what
+   teachers run. If the toolchain changed, smoke whichever destination(s)
+   it affects (Netlify, Cloudflare Pages, a folder).
 
 2. **Bump the version**: `<Version>` in
    `windows-app/Plantoir/Plantoir.csproj` (say `1.0.1`). Commit. The mac

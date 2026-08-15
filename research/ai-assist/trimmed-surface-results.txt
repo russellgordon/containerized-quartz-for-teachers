@@ -1,0 +1,211 @@
+# Trimmed-surface routing measurements, 2026-08-14
+# Qwen2.5-1.5B-Instruct Q4_K_M, llama.cpp, 4 GB / 2 CPUs / --no-mmap / -c 16384 / --parallel 1
+# 15-tool surface from AssistAgent.NarrowToLocal, 3,411 prompt tokens. 18 probes x 3 trials.
+# Summary: bare 49/54 (91%) | date PREPENDED 41/54 (76%) | date APPENDED + real-course examples 51/54 (94%)
+# Zero polarity inversions, zero malformed calls, zero type coercions in all three runs.
+
+
+### bare, as the app ships (no date given to the model)
+probe                          chose                    ok    ms     arguments
+----------------------------------------------------------------------------------------------------------------------
+publish tomorrow, with links   publish_class_on         OK    19489  {"course": "EXC2O", "section": 1, "date": "2023-09
+publish tomorrow, with links   publish_pages            MISS  15083  {"course": "EXC2O", "section": 1, "includeLinked":
+publish tomorrow, with links   publish_pages            MISS  16586  {"course": "EXC2O", "section": 1, "includeLinked":
+publish by name, informal      publish_pages            OK    15565  {"course": "EXC2O", "section": 1, "includeLinked":
+publish by name, informal      publish_pages            OK    12855  {"course": "EXC2O", "section": 1, "includeLinked":
+publish by name, informal      publish_pages            OK    12743  {"course": "EXC2O", "section": 1, "includeLinked":
+HIDE - the inversion case      unpublish_pages          OK    15444  {"course": "ICS2O", "section": 1, "includeLinked":
+HIDE - the inversion case      unpublish_pages          OK    12025  {"course": "EXC2O", "section": 1, "includeLinked":
+HIDE - the inversion case      unpublish_pages          OK    13037  {"course": "ICS2O", "section": 1, "includeLinked":
+hide, informal (verbatim cue)  unpublish_pages          OK    17207  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, informal (verbatim cue)  unpublish_pages          OK    14186  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, informal (verbatim cue)  unpublish_pages          OK    14727  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, phrased as a mistake     unpublish_pages          OK    18467  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, phrased as a mistake     unpublish_pages          OK    12285  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, phrased as a mistake     unpublish_pages          OK    10401  {"course": "EXC2O", "section": 1, "includeLinked":
+list pages                     list_pages               OK    7100   {"course": "EXC2O", "section": 1}
+list pages                     list_pages               OK    5621   {"course": "EXC2O", "section": 1}
+list pages                     list_pages               OK    6519   {"course": "EXC2O", "section": 1}
+read                           list_pages               OK    14826  {"course": "ICS3U", "section": 1, "matching": "Uni
+read                           list_pages               OK    11838  {"course": "ICS3U", "section": 1, "matching": "Uni
+read                           list_pages               OK    11820  {"course": "EXC2O", "section": 1, "matching": "Uni
+check section                  check_section            OK    11777  {"course": "EXC2O", "section": 1}
+check section                  check_section            OK    7746   {"course": "EXC2O", "section": 1}
+check section                  check_section            OK    8895   {"course": "EXC2O", "section": 1}
+rebuild preview                rebuild_preview          OK    10922  {"course": "EXC2O", "section": 1}
+rebuild preview                rebuild_preview          OK    10096  {"course": "EXC2O", "section": 1}
+rebuild preview                rebuild_preview          OK    8506   {"course": "EXC2O", "section": 1}
+undo                           (declined)               MISS  4398   {}
+undo                           (declined)               MISS  2036   {}
+undo                           (declined)               MISS  1649   {}
+schedule a deploy              schedule_deploy          OK    17243  {"course": "ICS3U", "section": 1, "when": "2026-09
+schedule a deploy              schedule_deploy          OK    14829  {"course": "EXC2O", "section": 1, "when": "2026-09
+schedule a deploy              schedule_deploy          OK    14201  {"course": "ICS3U", "section": 1, "when": "2026-09
+deploy now                     deploy_section           OK    11943  {"course": "EXC2O", "section": 1}
+deploy now                     deploy_section           OK    7782   {"course": "EXC2O", "section": 1}
+deploy now                     deploy_section           OK    8063   {"course": "EXC2O", "section": 1}
+cancel scheduled deploy        cancel_scheduled_deploy  OK    11622  {"course": "EXC2O", "section": 1}
+cancel scheduled deploy        cancel_scheduled_deploy  OK    9645   {"course": "EXC2O", "section": 1}
+cancel scheduled deploy        cancel_scheduled_deploy  OK    7872   {"course": "EXC2O", "section": 1}
+no course named: publish       publish_class_on         OK    16207  {"course": "ICS3U", "section": 1, "date": "2023-09
+no course named: publish       publish_class_on         OK    15427  {"course": "ICS3U", "section": 1, "date": "2023-09
+no course named: publish       publish_class_on         OK    13503  {"course": "ICS3U", "section": 1, "date": "2023-09
+no course named: hide          unpublish_pages          OK    16578  {"course": "ICS3U", "section": 1, "includeLinked":
+no course named: hide          unpublish_pages          OK    13398  {"course": "ICS3U", "section": 1, "includeLinked":
+no course named: hide          unpublish_pages          OK    14492  {"course": "ICS3U", "section": 1, "includeLinked":
+deletion - no such tool        (declined)               OK    5809   {}
+deletion - no such tool        (declined)               OK    3601   {}
+deletion - no such tool        (declined)               OK    3903   {}
+out of scope                   (declined)               OK    5308   {}
+out of scope                   (declined)               OK    3780   {}
+out of scope                   (declined)               OK    3539   {}
+typos                          publish_class_on         OK    17407  {"course": "EXC2O", "section": 1, "date": "2023-10
+typos                          publish_class_on         OK    15715  {"course": "EXC2O", "section": 1, "date": "2023-10
+typos                          publish_class_on         OK    14547  {"course": "EXC2O", "section": 1, "date": "2023-10
+----------------------------------------------------------------------------------------------------------------------
+routing accuracy: 49/54 (91%)
+misses that were a WRITE (the dangerous kind): 2
+polarity inversions: 0
+responses needing type coercion: 0
+malformed tool calls: 0
+'tomorrow' dates not equal to 2026-08-15: 7
+   publish tomorrow, with links -> date='2023-09-15'
+   no course named: publish -> date='2023-09-15'
+   no course named: publish -> date='2023-09-15'
+   no course named: publish -> date='2023-09-15'
+   typos -> date='2023-10-15'
+   typos -> date='2023-10-01'
+   typos -> date='2023-10-15'
+
+### with '(Today is ...)' prepended to the user message
+probe                          chose                    ok    ms     arguments
+----------------------------------------------------------------------------------------------------------------------
+publish tomorrow, with links   publish_pages            MISS  27360  {"course": "EXC2O", "section": 1, "includeLinked":
+publish tomorrow, with links   publish_pages            MISS  24563  {"course": "EXC2O", "section": 1, "includeLinked":
+publish tomorrow, with links   publish_pages            MISS  22718  {"course": "EXC2O", "section": 1, "includeLinked":
+publish by name, informal      publish_pages            OK    16051  {"course": "EXC2O", "section": 1, "includeLinked":
+publish by name, informal      publish_pages            OK    14317  {"course": "EXC2O", "section": 1, "includeLinked":
+publish by name, informal      publish_pages            OK    13805  {"course": "EXC2O", "section": 1, "includeLinked":
+HIDE - the inversion case      unpublish_pages          OK    25503  {"course": "ICS2O", "section": 1, "includeLinked":
+HIDE - the inversion case      unpublish_pages          OK    25857  {"course": "EXC2O", "section": 1, "includeLinked":
+HIDE - the inversion case      unpublish_pages          OK    24071  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, informal (verbatim cue)  unpublish_pages          OK    29375  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, informal (verbatim cue)  unpublish_pages          OK    15695  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, informal (verbatim cue)  unpublish_pages          OK    24753  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, phrased as a mistake     unpublish_pages          OK    23943  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, phrased as a mistake     undo_last_change         MISS  4925   {}
+hide, phrased as a mistake     unpublish_pages          OK    17731  {"course": "EXC2O", "section": 1, "includeLinked":
+list pages                     list_pages               OK    10620  {"course": "EXC2O", "section": 1}
+list pages                     list_pages               OK    9965   {"course": "EXC2O", "section": 1}
+list pages                     list_pages               OK    10212  {"course": "EXC2O", "section": 1}
+read                           list_pages               OK    15467  {"course": "EXC2O", "section": 1, "matching": "Uni
+read                           list_pages               OK    13106  {"course": "EXC2O", "section": 1, "matching": "Uni
+read                           list_pages               OK    11544  {"course": "EXC2O", "section": 1, "matching": "Uni
+check section                  check_section            OK    12626  {"course": "EXC2O", "section": 1}
+check section                  check_section            OK    9628   {"course": "EXC2O", "section": 1}
+check section                  check_section            OK    8501   {"course": "EXC2O", "section": 1}
+rebuild preview                rebuild_preview          OK    12593  {"course": "EXC2O", "section": 1}
+rebuild preview                rebuild_preview          OK    9380   {"course": "EXC2O", "section": 1}
+rebuild preview                rebuild_preview          OK    8803   {"course": "EXC2O", "section": 1}
+undo                           (declined)               MISS  14802  {}
+undo                           (declined)               MISS  1589   {}
+undo                           (declined)               MISS  11348  {}
+schedule a deploy              plan_publish_class_on    MISS  17146  {"course": "EXC2O", "section": 1, "date": "2026-08
+schedule a deploy              plan_publish_class_on    MISS  13734  {"course": "EXC2O", "section": 1, "date": "2026-08
+schedule a deploy              plan_publish_class_on    MISS  13358  {"course": "EXC2O", "section": 1, "date": "2026-08
+deploy now                     deploy_section           OK    11507  {"course": "EXC2O", "section": 1}
+deploy now                     deploy_section           OK    6628   {"course": "EXC2O", "section": 1}
+deploy now                     deploy_section           OK    5291   {"course": "EXC2O", "section": 1}
+cancel scheduled deploy        cancel_scheduled_deploy  OK    7317   {"course": "EXC2O", "section": 1}
+cancel scheduled deploy        cancel_scheduled_deploy  OK    5639   {"course": "EXC2O", "section": 1}
+cancel scheduled deploy        cancel_scheduled_deploy  OK    5918   {"course": "EXC2O", "section": 1}
+no course named: publish       publish_class_on         OK    10424  {"course": "ICS3U", "section": 1, "date": "2026-08
+no course named: publish       publish_class_on         OK    8960   {"course": "ICS3U", "section": 1, "date": "2026-08
+no course named: publish       publish_class_on         OK    9029   {"course": "ICS3U", "section": 1, "date": "2026-08
+no course named: hide          unpublish_pages          OK    11453  {"course": "ICS3U", "section": 1, "includeLinked":
+no course named: hide          unpublish_pages          OK    9224   {"course": "ICS3U", "section": 1, "includeLinked":
+no course named: hide          unpublish_pages          OK    14561  {"course": "ICS3U", "section": 1, "includeLinked":
+deletion - no such tool        cancel_scheduled_deploy  MISS  12535  {"course": "EXC2O", "section": 1}
+deletion - no such tool        cancel_scheduled_deploy  MISS  8963   {"course": "EXC2O", "section": 1}
+deletion - no such tool        cancel_scheduled_deploy  MISS  10678  {"course": "EXC2O", "section": 1}
+out of scope                   (declined)               OK    18135  {}
+out of scope                   (declined)               OK    16734  {}
+out of scope                   (declined)               OK    16838  {}
+typos                          publish_class_on         OK    19211  {"course": "EXC2O", "section": 1, "date": "2026-08
+typos                          publish_class_on         OK    13935  {"course": "EXC2O", "section": 1, "date": "2026-08
+typos                          publish_class_on         OK    16252  {"course": "EXC2O", "section": 1, "date": "2026-08
+----------------------------------------------------------------------------------------------------------------------
+routing accuracy: 41/54 (76%)
+misses that were a WRITE (the dangerous kind): 7
+polarity inversions: 0
+responses needing type coercion: 0
+malformed tool calls: 0
+'tomorrow' dates not equal to 2026-08-15: 0
+
+
+### dateline APPENDED + schema examples say EXC2O
+probe                          chose                    ok    ms     arguments
+----------------------------------------------------------------------------------------------------------------------
+publish tomorrow, with links   publish_pages            MISS  176646 {"course": "EXC2O", "section": 1, "includeLinked":
+publish tomorrow, with links   publish_pages            MISS  16493  {"course": "EXC2O", "section": 1, "includeLinked":
+publish tomorrow, with links   publish_pages            MISS  21539  {"course": "EXC2O", "section": 1, "includeLinked":
+publish by name, informal      publish_pages            OK    25974  {"course": "EXC2O", "section": 1, "includeLinked":
+publish by name, informal      publish_pages            OK    22807  {"course": "EXC2O", "section": 1, "includeLinked":
+publish by name, informal      publish_pages            OK    14164  {"course": "EXC2O", "section": 1, "includeLinked":
+HIDE - the inversion case      unpublish_pages          OK    28706  {"course": "EXC2O", "section": 1, "includeLinked":
+HIDE - the inversion case      unpublish_pages          OK    21014  {"course": "EXC2O", "section": 1, "includeLinked":
+HIDE - the inversion case      unpublish_pages          OK    22960  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, informal (verbatim cue)  unpublish_pages          OK    27475  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, informal (verbatim cue)  unpublish_pages          OK    23251  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, informal (verbatim cue)  unpublish_pages          OK    23240  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, phrased as a mistake     unpublish_pages          OK    18872  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, phrased as a mistake     unpublish_pages          OK    13916  {"course": "EXC2O", "section": 1, "includeLinked":
+hide, phrased as a mistake     unpublish_pages          OK    16665  {"course": "EXC2O", "section": 1, "includeLinked":
+list pages                     list_pages               OK    15431  {"course": "EXC2O", "section": 1, "matching": ""}
+list pages                     list_pages               OK    8150   {"course": "EXC2O", "section": 1, "matching": ""}
+list pages                     list_pages               OK    9168   {"course": "EXC2O", "section": 1, "matching": ""}
+read                           list_pages               OK    17582  {"course": "EXC2O", "section": 1, "matching": "Uni
+read                           list_pages               OK    13906  {"course": "EXC2O", "section": 1, "matching": "Uni
+read                           list_pages               OK    13027  {"course": "EXC2O", "section": 1, "matching": "Uni
+check section                  check_section            OK    11866  {"course": "EXC2O", "section": 1}
+check section                  check_section            OK    7123   {"course": "EXC2O", "section": 1}
+check section                  check_section            OK    8218   {"course": "EXC2O", "section": 1}
+rebuild preview                rebuild_preview          OK    12905  {"course": "EXC2O", "section": 1}
+rebuild preview                rebuild_preview          OK    7144   {"course": "EXC2O", "section": 1}
+rebuild preview                rebuild_preview          OK    9906   {"course": "EXC2O", "section": 1}
+undo                           undo_last_change         OK    7146   {}
+undo                           undo_last_change         OK    5040   {}
+undo                           undo_last_change         OK    4650   {}
+schedule a deploy              schedule_deploy          OK    19497  {"course": "EXC2O", "section": 1, "when": "2026-08
+schedule a deploy              schedule_deploy          OK    14252  {"course": "EXC2O", "section": 1, "when": "2026-08
+schedule a deploy              schedule_deploy          OK    14368  {"course": "EXC2O", "section": 1, "when": "2026-08
+deploy now                     deploy_section           OK    11217  {"course": "EXC2O", "section": 1}
+deploy now                     deploy_section           OK    9063   {"course": "EXC2O", "section": 1}
+deploy now                     deploy_section           OK    7887   {"course": "EXC2O", "section": 1}
+cancel scheduled deploy        cancel_scheduled_deploy  OK    12616  {"course": "EXC2O", "section": 1}
+cancel scheduled deploy        cancel_scheduled_deploy  OK    8524   {"course": "EXC2O", "section": 1}
+cancel scheduled deploy        cancel_scheduled_deploy  OK    9030   {"course": "EXC2O", "section": 1}
+no course named: publish       publish_class_on         OK    18241  {"course": "EXC2O", "section": 1, "date": "2026-08
+no course named: publish       publish_class_on         OK    14469  {"course": "EXC2O", "section": 1, "date": "2026-08
+no course named: publish       publish_class_on         OK    14463  {"course": "EXC2O", "section": 1, "date": "2026-08
+no course named: hide          unpublish_pages          OK    17595  {"course": "EXC2O", "section": 1, "includeLinked":
+no course named: hide          unpublish_pages          OK    13458  {"course": "EXC2O", "section": 1, "includeLinked":
+no course named: hide          unpublish_pages          OK    14251  {"course": "EXC2O", "section": 1, "includeLinked":
+deletion - no such tool        (declined)               OK    7326   {}
+deletion - no such tool        (declined)               OK    3220   {}
+deletion - no such tool        (declined)               OK    3366   {}
+out of scope                   (declined)               OK    8053   {}
+out of scope                   (declined)               OK    3960   {}
+out of scope                   (declined)               OK    3753   {}
+typos                          publish_class_on         OK    20954  {"course": "EXC2O", "section": 1, "date": "2026-08
+typos                          publish_class_on         OK    15297  {"course": "EXC2O", "section": 1, "date": "2026-08
+typos                          publish_class_on         OK    15607  {"course": "EXC2O", "section": 1, "date": "2026-08
+----------------------------------------------------------------------------------------------------------------------
+routing accuracy: 51/54 (94%)
+misses that were a WRITE (the dangerous kind): 3
+polarity inversions: 0
+responses needing type coercion: 0
+malformed tool calls: 0
+'tomorrow' dates not equal to 2026-08-15: 0
+course arguments not equal to EXC2O: 0
+

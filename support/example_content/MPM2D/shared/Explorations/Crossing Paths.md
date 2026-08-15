@@ -1,6 +1,6 @@
 ---
 title: Crossing Paths
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

@@ -1,6 +1,6 @@
 ---
 title: Files and the Cloud
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

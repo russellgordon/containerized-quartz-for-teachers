@@ -1,6 +1,6 @@
 ---
 title: All Classes
-draft: false
+publish: true
 created: __CREATED__
 ---
 Every class we have had, most recent at the top of the section page.

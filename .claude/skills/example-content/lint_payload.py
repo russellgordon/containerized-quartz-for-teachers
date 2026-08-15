@@ -292,7 +292,12 @@ def lint(course_code: str) -> int:
         for page in (root / "per_section").rglob("*.md"):
             text = page.read_text(encoding="utf-8")
             match = class_sentinel.search(text)
-            if match and "draft: true" not in text:
+            # Visibility is `publish:`, but payloads written before that
+            # rename still say `draft: true`. build_site.py reads both (it
+            # falls back to the inverted draft flag), so the linter has to
+            # agree with the builder or it calls a held-back page published.
+            held_back = "publish: false" in text or "draft: true" in text
+            if match and not held_back:
                 ordinal = int(match.group(1))
                 if newest_published is None or ordinal > newest_published[0]:
                     newest_published = (ordinal, page.stem)

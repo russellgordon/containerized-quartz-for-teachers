@@ -1,6 +1,6 @@
 ---
 title: Variables and Formulas in Code
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - coding

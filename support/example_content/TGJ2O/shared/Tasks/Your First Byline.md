@@ -1,6 +1,6 @@
 ---
 title: Your First Byline
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks
