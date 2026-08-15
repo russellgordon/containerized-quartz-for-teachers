@@ -41,11 +41,15 @@ public static class CourseArchiver
     public static string ArchiveCourseWithoutRemoving(Course course, string coursesDirectory) =>
         Archive(course.DirectoryPath, course.Code, coursesDirectory, course.Code);
 
-    /// <summary>Archive a whole course, then remove its folder.</summary>
+    /// <summary>
+    /// Archive a whole course, then remove its folder — with the delete that
+    /// survives readonly files and links (<see cref="CourseRestorer.DeleteTree"/>),
+    /// because a build leaves both inside .merged_output.
+    /// </summary>
     public static string ArchiveAndRemoveCourse(Course course, string coursesDirectory)
     {
         string archivePath = ArchiveCourseWithoutRemoving(course, coursesDirectory);
-        Directory.Delete(course.DirectoryPath, recursive: true);
+        CourseRestorer.DeleteTree(course.DirectoryPath);
         return archivePath;
     }
 
@@ -58,7 +62,7 @@ public static class CourseArchiver
         string sectionDir = course.SectionDirectory(sectionNumber);
         string archivePath = Archive(sectionDir, $"{course.Code}-section{sectionNumber}",
                                      coursesDirectory, course.Code);
-        if (Directory.Exists(sectionDir)) Directory.Delete(sectionDir, recursive: true);
+        if (Directory.Exists(sectionDir)) CourseRestorer.DeleteTree(sectionDir);
         var remaining = course.Configuration.SectionNumbers.Where(n => n != sectionNumber).ToList();
         course.Configuration.SetSectionNumbers(remaining);
         course.Configuration.Write(course.ConfigFilePath);

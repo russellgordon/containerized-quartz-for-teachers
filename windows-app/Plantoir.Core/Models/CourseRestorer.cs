@@ -87,8 +87,15 @@ public static class CourseRestorer
     /// Directory.Delete(recursive) cannot traverse (the restore died on
     /// content\Media before touching anything else), and readonly files stop
     /// it too. Reparse points are deleted AS LINKS, never followed.
+    ///
+    /// Shared with <see cref="CourseArchiver"/>, which learned the same
+    /// lesson separately: the Quartz project copied into .merged_output can
+    /// carry a .git whose pack files are readonly, and removing a course
+    /// died on the first one — "Access to the path 'pack-….idx' is denied"
+    /// — leaving the folder half-deleted behind an archive that had already
+    /// succeeded.
     /// </summary>
-    private static void DeleteTree(string path)
+    internal static void DeleteTree(string path)
     {
         FileAttributes attributes;
         try { attributes = File.GetAttributes(path); }

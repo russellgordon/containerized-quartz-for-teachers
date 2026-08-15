@@ -218,6 +218,43 @@ public class SectionAdderTests
 public class ArchiveRoundTripTests
 {
     [Fact]
+    public void RemovingACourseSurvivesAGitRepoInTheBuildOutput()
+    {
+        // The Quartz project copied into .merged_output carries a .git whose
+        // pack files are READONLY — git marks them so — and removing a course
+        // died on the first one ("Access to the path 'pack-….idx' is
+        // denied"), half-deleted, behind an archive that had already
+        // succeeded. The delete must strip attributes as it goes.
+        string root = Path.Combine(Path.GetTempPath(), "arch-" + Guid.NewGuid());
+        string pack = "";
+        try
+        {
+            string coursesDir = Path.Combine(root, "courses");
+            var course = SectionAdderTests.MakeCourse(root, "ADA1O",
+                """{"course_code":"ADA1O","course_name":"Drama","section_numbers":[1]}""");
+            string packDir = Path.Combine(course.DirectoryPath,
+                ".merged_output", "section1", ".git", "objects", "pack");
+            Directory.CreateDirectory(packDir);
+            pack = Path.Combine(packDir, "pack-ace7b.idx");
+            File.WriteAllText(pack, "git made me");
+            File.SetAttributes(pack, FileAttributes.ReadOnly);
+            File.WriteAllText(Path.Combine(course.DirectoryPath, "index.md"), "---\ntitle: T\n---");
+
+            string archivePath = CourseArchiver.ArchiveAndRemoveCourse(course, coursesDir);
+
+            Assert.False(Directory.Exists(course.DirectoryPath));
+            Assert.True(File.Exists(archivePath));
+        }
+        finally
+        {
+            // If the delete under test failed, the readonly pack would trip
+            // this cleanup too — clear it so the temp folder never leaks.
+            try { if (File.Exists(pack)) File.SetAttributes(pack, FileAttributes.Normal); } catch { }
+            try { Directory.Delete(root, recursive: true); } catch { }
+        }
+    }
+
+    [Fact]
     public void SectionArchiveRoundTripsAndKeepsBookkeeping()
     {
         string root = Path.Combine(Path.GetTempPath(), "arch-" + Guid.NewGuid());
