@@ -1664,7 +1664,8 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
                                             reference=reference,
                                             course_code=course_code,
                                             course_name=course_name,
-                                            weekday_step=weekday_step):
+                                            weekday_step=weekday_step,
+                                            start_school_day=start_school_day):
                         written += 1
 
     return written
