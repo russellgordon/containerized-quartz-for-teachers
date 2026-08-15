@@ -26,12 +26,27 @@ struct AssistToolOutcome: Sendable, Equatable {
     /// Whether the model gets another turn after this.
     let shouldContinue: Bool
 
+    /// What a Go/Cancel card shows the teacher.
+    ///
+    /// The same as `detail` for everything except a PLAN, where `detail` ends
+    /// with a sentence addressed to the model — "Nothing has been changed.
+    /// Show this to the teacher and ask before going ahead." That sentence is
+    /// right where it goes: over MCP, Claude Code has no plan mode and has to
+    /// be told to ask. It was WRONG on the card, where it appeared directly
+    /// above the Go and Cancel buttons that are the asking, addressed a
+    /// teacher as though they were the model, and described machinery.
+    ///
+    /// The two audiences were always meant to be apart; the card simply reused
+    /// the wrong one of them.
+    let forTheCard: String
+
     // MARK: - Initializer
 
-    init(summary: String, detail: String, shouldContinue: Bool) {
+    init(summary: String, detail: String, shouldContinue: Bool, forTheCard: String? = nil) {
         self.summary = summary
         self.detail = detail
         self.shouldContinue = shouldContinue
+        self.forTheCard = forTheCard ?? detail
     }
 
     // MARK: - Functions
@@ -40,6 +55,26 @@ struct AssistToolOutcome: Sendable, Equatable {
     static func read(_ summary: String, detail: String) -> AssistToolOutcome {
         return AssistToolOutcome(summary: summary, detail: detail, shouldContinue: true)
     }
+
+    /// A PLAN: what would happen if this went ahead, and nothing done yet.
+    ///
+    /// The plan itself is written for the teacher, because the teacher is who
+    /// decides. Only the instruction to ask is added for the model, and only
+    /// on its way out — see `forTheCard`.
+    static func planned(_ summary: String, plan: String) -> AssistToolOutcome {
+        return AssistToolOutcome(
+            summary: summary,
+            detail: plan + "\n\n" + AssistToolOutcome.askBeforeGoingAhead,
+            shouldContinue: true,
+            forTheCard: plan
+        )
+    }
+
+    /// Addressed to whatever is reading a plan on a surface with no Go and
+    /// Cancel of its own — which means Claude Code over MCP, and never the
+    /// teacher.
+    static let askBeforeGoingAhead: String =
+        "Nothing has been changed. Show this to the teacher and ask before going ahead."
 
     /// A write: it happened, and the turn is over.
     static func wrote(_ summary: String, detail: String) -> AssistToolOutcome {

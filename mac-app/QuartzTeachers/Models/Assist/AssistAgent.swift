@@ -262,7 +262,10 @@ final class AssistAgent {
         )
         let outcome: AssistToolOutcome = await tools.run(call: planCall)
 
-        pendingApproval = PendingApproval(call: call, explanation: outcome.detail)
+        // `forTheCard`, not `detail`. The detail ends with a sentence written
+        // for whatever is reading a plan on a surface that has no Go and
+        // Cancel of its own — and this surface has them, directly underneath.
+        pendingApproval = PendingApproval(call: call, explanation: outcome.forTheCard)
         activity = .waitingForApproval
     }
 

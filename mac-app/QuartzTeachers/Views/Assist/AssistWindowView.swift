@@ -23,6 +23,23 @@ struct AssistWindowView: View {
     /// Whether the Restore question is on screen.
     @State private var isConfirmingRestore: Bool = false
 
+    /// What has been asked for before, walked with the arrow keys.
+    ///
+    /// Per section, and kept across launches, because that is what makes it
+    /// worth having: a teacher who works on one section over several days
+    /// asks for the same handful of things in the same handful of words, and
+    /// a history that emptied every time the window closed would only ever
+    /// hold what they had just finished typing anyway.
+    @State private var history: AssistPromptHistory = AssistPromptHistory()
+
+    /// Where that history lives between launches. Keyed by section, so one
+    /// course's phrasings never surface while working on another.
+    @AppStorage private var storedHistory: String
+
+    /// The last line the arrow keys put in the box, so an edit can be told
+    /// apart from the walk's own writing.
+    @State private var lastRecalled: String?
+
     // MARK: - Initializer
 
     init(courseCode: String, sectionNumber: Int, workingFolder: URL) {
@@ -31,6 +48,10 @@ struct AssistWindowView: View {
             sectionNumber: sectionNumber,
             workingFolder: workingFolder
         ))
+        _storedHistory = AppStorage(
+            wrappedValue: "",
+            "AssistPromptHistory-\(courseCode)-\(sectionNumber)"
+        )
     }
 
     // MARK: - Computed properties
@@ -65,6 +86,7 @@ struct AssistWindowView: View {
             workingFolder: session.workingFolder
         )
         .task {
+            history = AssistPromptHistory.read(fromStored: storedHistory)
             await session.prepare()
         }
         .onDisappear {
@@ -219,6 +241,46 @@ struct AssistWindowView: View {
                 .onSubmit {
                     Task { await send(typing) }
                 }
+                // Up and Down walk what has been asked before, the way a
+                // Terminal does.
+                //
+                // Handed back as `.ignored` in two cases, so the keys keep
+                // doing their ordinary job when history is not what is
+                // wanted: when the box holds more than one line, where the
+                // arrows have to move the caret between those lines, and
+                // when there is nowhere further to walk — a key that silently
+                // does nothing reads as a dropped keystroke, while one that
+                // is passed on lets the field answer it.
+                .onKeyPress(.upArrow) {
+                    if typing.contains("\n") {
+                        return .ignored
+                    }
+                    guard let recalled = history.earlier(startingFrom: typing) else {
+                        return .ignored
+                    }
+                    show(recalled)
+                    return .handled
+                }
+                .onKeyPress(.downArrow) {
+                    if typing.contains("\n") {
+                        return .ignored
+                    }
+                    guard let recalled = history.later() else {
+                        return .ignored
+                    }
+                    show(recalled)
+                    return .handled
+                }
+                // Editing a recalled line makes it a new line, so Down must
+                // not come along afterwards and replace what was typed. The
+                // walk writes through `show(_:)`, which records what it put
+                // there — so anything ELSE that changes the box came from the
+                // keyboard, and ends the walk.
+                .onChange(of: typing) { _, current in
+                    if history.isBrowsing && current != lastRecalled {
+                        history.stopBrowsing()
+                    }
+                }
                 .disabled(!session.canAcceptTyping)
                 .accessibilityIdentifier("assistInputField")
 
@@ -265,11 +327,21 @@ struct AssistWindowView: View {
 
     // MARK: - Functions
 
+    /// Put a recalled line in the box, remembering that the walk is what put
+    /// it there rather than the teacher.
+    private func show(_ recalled: String) {
+        lastRecalled = recalled
+        typing = recalled
+    }
+
     private func send(_ text: String) async {
         let message: String = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if message.isEmpty {
             return
         }
+        history.remember(message)
+        storedHistory = history.stored
+        lastRecalled = nil
         typing = ""
         await session.agent?.say(message)
     }

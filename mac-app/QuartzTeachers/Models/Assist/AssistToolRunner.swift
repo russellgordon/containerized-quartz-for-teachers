@@ -371,9 +371,9 @@ final class AssistToolRunner {
         case .failure(let refusal):
             return AssistToolOutcome.couldNotRead(refusal.message)
         case .success(let planned):
-            return AssistToolOutcome.read(
+            return AssistToolOutcome.planned(
                 "Worked out what publishing the class on \(planned.day.text) would do.",
-                detail: planned.plan.describe() + "\n\n" + AssistToolRunner.nothingChangedYet
+                plan: planned.plan.describe()
             )
         }
     }
@@ -444,9 +444,9 @@ final class AssistToolRunner {
         case .failure(let refusal):
             return AssistToolOutcome.couldNotRead(refusal.message)
         case .success(let planned):
-            return AssistToolOutcome.read(
+            return AssistToolOutcome.planned(
                 "Worked out what publishing those pages would do.",
-                detail: planned.plan.describe() + "\n\n" + AssistToolRunner.nothingChangedYet
+                plan: planned.plan.describe()
             )
         }
     }
@@ -471,9 +471,9 @@ final class AssistToolRunner {
         case .failure(let refusal):
             return AssistToolOutcome.couldNotRead(refusal.message)
         case .success(let planned):
-            return AssistToolOutcome.read(
+            return AssistToolOutcome.planned(
                 "Worked out what unpublishing those pages would do.",
-                detail: planned.plan.describe() + "\n\n" + AssistToolRunner.nothingChangedYet
+                plan: planned.plan.describe()
             )
         }
     }
@@ -803,14 +803,11 @@ final class AssistToolRunner {
                                 : "NOT published, so the deploy would ship without it."))
             }
         }
-        lines.append("")
-        lines.append(AssistToolRunner.nothingChangedYet)
-
-        return AssistToolOutcome.read(
+        return AssistToolOutcome.planned(
             asked.plan.isSchedulable
                 ? "Worked out what scheduling that deploy would mean."
                 : "That deploy cannot be scheduled.",
-            detail: lines.joined(separator: "\n")
+            plan: lines.joined(separator: "\n")
         )
     }
 
@@ -1017,11 +1014,11 @@ final class AssistToolRunner {
         case .failure(let problem):
             return AssistToolOutcome.couldNotRead(problem.localizedDescription)
         case .success(let asked):
-            return AssistToolOutcome.read(
+            return AssistToolOutcome.planned(
                 asked.plan.changesNothing
                     ? "Those dates are already remembered."
                     : "Worked out what recording those class dates would do.",
-                detail: asked.plan.description + "\n\n" + AssistToolRunner.nothingChangedYet
+                plan: asked.plan.description
             )
         }
     }
@@ -1131,11 +1128,11 @@ final class AssistToolRunner {
             askForTheTimetableIfThatIsWhatIsMissing(problem)
             return AssistToolOutcome.couldNotRead(problem.localizedDescription)
         case .success(let asked):
-            return AssistToolOutcome.read(
+            return AssistToolOutcome.planned(
                 asked.plan.changesNothing
                     ? "The next class page already exists."
                     : "Worked out what the next class page would be.",
-                detail: asked.plan.description + "\n\n" + AssistToolRunner.nothingChangedYet
+                plan: asked.plan.description
             )
         }
     }
@@ -1287,11 +1284,11 @@ final class AssistToolRunner {
         case .failure(let refusal):
             return AssistToolOutcome.couldNotRead(refusal.message)
         case .success(let asked):
-            return AssistToolOutcome.read(
+            return AssistToolOutcome.planned(
                 asked.plan.changesNothing
                     ? "Nothing needs adding to “\(asked.plan.pageTitle)”."
                     : "Worked out what pointing “\(asked.plan.pageTitle)” at those expectations would do.",
-                detail: asked.plan.describe() + "\n\n" + AssistToolRunner.nothingChangedYet
+                plan: asked.plan.describe()
             )
         }
     }
@@ -1610,7 +1607,4 @@ final class AssistToolRunner {
 
     /// How much of one page to hand back.
     static let mostCharactersRead: Int = 8000
-
-    private static let nothingChangedYet: String =
-        "Nothing has been changed. Show this to the teacher and ask before going ahead."
 }

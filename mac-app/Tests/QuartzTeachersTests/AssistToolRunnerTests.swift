@@ -295,6 +295,34 @@ final class AssistToolRunnerTests: XCTestCase {
         XCTAssertTrue(text(ofCourseLevelPage: "Snippets", in: made.course).contains("publishForSection1: true"))
     }
 
+    /// The plan card shows the teacher `forTheCard`, not `detail`.
+    ///
+    /// `detail` ends with a sentence addressed to whatever is reading a plan
+    /// on a surface with no Go and Cancel of its own — Claude Code over MCP.
+    /// It appeared on the card for a while, directly above the very buttons
+    /// it was describing, telling a teacher to "show this to the teacher".
+    @MainActor
+    func testAPlanCardDoesNotShowTheSentenceWrittenForTheModel() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", body: "A lesson.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "plan_unpublish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+
+        XCTAssertTrue(outcome.detail.contains("ask before going ahead"),
+                      "Claude Code has no plan mode, so it still has to be told to ask")
+        XCTAssertFalse(outcome.forTheCard.contains("ask before going ahead"),
+                       "The card has Go and Cancel underneath it; saying it as well is noise")
+        XCTAssertFalse(outcome.forTheCard.contains("Show this to the teacher"),
+                       "…and it addresses the teacher as though they were the model")
+        XCTAssertTrue(outcome.forTheCard.contains("Unit 1, Day 1"),
+                      "The plan itself is still all there")
+    }
+
     /// A start date with no end date and no pages named means "everything
     /// from here to the end of the course", which is what a mistyped request
     /// for ONE lesson turns into — measured at 10 trials out of 10 on
