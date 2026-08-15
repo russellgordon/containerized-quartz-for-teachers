@@ -458,11 +458,58 @@ final class ScheduledDeployTests: XCTestCase {
         // launchd really does run a missed calendar job at the next wake,
         // so the plan says that rather than promising nothing happens.
         XCTAssertTrue(text.contains("at the next wake"))
-        // The agent runs the deploy launcher only, so a page written after
-        // the last preview would not be in what goes out. Said plainly
-        // rather than left to be discovered by a student.
-        XCTAssertTrue(text.contains("the site as it was last built"))
-        XCTAssertTrue(text.contains("preview this section again"))
+        // The agent BUILDS and then deploys, which is what the Deploy
+        // button does — so work done after the alarm is set does go out,
+        // and the teacher is told that rather than previewing out of
+        // caution every night.
+        XCTAssertTrue(text.contains("rebuilt at that time and then deployed"))
+        XCTAssertTrue(text.contains("goes out with it"))
+        // And the failure case, because an unattended deploy that half
+        // worked is worse than one that did not run.
+        XCTAssertTrue(text.contains("If the build fails, nothing is deployed"))
+    }
+
+    /// The agent builds the section before deploying it, exactly as the
+    /// Deploy button does.
+    ///
+    /// `deploy.sh` never builds — it refuses outright when there is no built
+    /// site — so an agent that ran it alone would either fail at half six or
+    /// send whatever was last previewed. Neither is what a teacher means by
+    /// "deploy tomorrow's class at 6:30".
+    func testTheAgentBuildsBeforeItDeploys() throws {
+        let command: String = ScheduledDeploy.oneShotCommand(
+            courseCode: "ICS3U",
+            sectionNumber: 1,
+            workspaceURL: URL(fileURLWithPath: "/Users/someone/Class Websites"),
+            deployArguments: ["ICS3U", "1"]
+        )
+
+        guard let buildAt = command.range(of: "preview.sh"),
+              let deployAt = command.range(of: "deploy.sh") else {
+            return XCTFail("The agent must run both preview.sh and deploy.sh")
+        }
+        XCTAssertTrue(buildAt.lowerBound < deployAt.lowerBound, "The build has to come first")
+        XCTAssertTrue(command.contains("--build-only"), "The build must not also start a server")
+
+        // The deploy is INSIDE the if, so a failed build deploys nothing —
+        // the button returns early rather than sending the previous build,
+        // and an unattended run must not be less careful than the teacher.
+        XCTAssertTrue(command.contains("if /bin/bash"), "The build has to gate the deploy")
+        XCTAssertTrue(command.contains("fi"))
+
+        // Cleanup sits outside the if: a failed build must still leave
+        // nothing pending, or the agent fires again at the same time
+        // tomorrow with nobody expecting it.
+        guard let closeAt = command.range(of: "\nfi"),
+              let bootoutAt = command.range(of: "bootout") else {
+            return XCTFail("The agent must boot itself out when it is done")
+        }
+        XCTAssertTrue(closeAt.lowerBound < bootoutAt.lowerBound, "Cleanup runs whether or not the build worked")
+
+        // A working folder with a space in its name is ordinary on a Mac —
+        // "Class Websites" is what the documentation itself suggests.
+        XCTAssertTrue(command.contains("'/Users/someone/Class Websites/preview.sh'"),
+                      "Paths must survive a space in the folder name")
     }
 
     func testTheDestinationIsNamedInThePlan() throws {

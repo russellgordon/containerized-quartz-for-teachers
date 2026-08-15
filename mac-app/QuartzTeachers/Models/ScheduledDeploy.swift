@@ -274,10 +274,33 @@ enum ScheduledDeploy {
             deployLine += " \(shellQuoted(argument))"
         }
 
+        // BUILD FIRST, exactly as the Deploy button does.
+        //
+        // `deploy.sh` never builds — it refuses outright when there is no
+        // built site — so an agent that ran it alone would either fail at
+        // half six or send whatever was last previewed. Neither is what a
+        // teacher means by "deploy tomorrow's class at 6:30".
+        //
+        // Unconditionally, not "only if stale": the whole point of setting
+        // an alarm the night before is that the work done AFTER setting it
+        // is what goes out. A freshness check made at scheduling time would
+        // answer the wrong question, and one made at 6:30 would only be a
+        // slower way of reaching the same answer.
+        let previewPath: String = workspaceURL.appendingPathComponent("preview.sh").path
+        let buildLine: String = "/bin/bash \(shellQuoted(previewPath)) "
+            + "\(shellQuoted(courseCode)) \(shellQuoted(String(sectionNumber))) --build-only"
+
         var lines: [String] = []
         lines.append("/bin/mkdir -p \(shellQuoted(logDirectory))")
         lines.append("/bin/rm -f \(shellQuoted(plistPath))")
-        lines.append(deployLine)
+        // Deploy ONLY if the build succeeded — the button returns early on a
+        // failed build rather than deploying the previous one, and an
+        // unattended run must not be less careful than the teacher would be.
+        lines.append("if \(buildLine); then")
+        lines.append("  \(deployLine)")
+        lines.append("fi")
+        // Cleanup runs either way: a failed build must still leave nothing
+        // pending, or the agent fires again at the same time tomorrow.
         lines.append("/bin/launchctl bootout gui/$(/usr/bin/id -u)/\(shellQuoted(label))")
         return lines.joined(separator: "\n")
     }
@@ -478,12 +501,11 @@ struct ScheduledDeployPlan {
         lines.append("")
         lines.append("Plantoir does not wake this Mac up. If it is asleep or switched off at that time, macOS runs the deploy at the next wake instead — which could be well after the class it was meant for.")
         lines.append("")
-        // The agent runs the deploy launcher and nothing else, exactly as
-        // the Deploy button does when the built site is already current.
-        // A page written after the last preview is therefore not in what
-        // goes out — so the teacher is told, rather than finding out from
-        // a student.
-        lines.append("What goes out is the site as it was last built. If you change any pages between now and then, preview this section again afterwards so the change is in what gets deployed.")
+        // The agent builds the section and then deploys it, which is what
+        // the Deploy button does. So a page written after the alarm was set
+        // IS in what goes out, and the teacher is told that plainly —
+        // otherwise they would keep previewing out of caution.
+        lines.append("The site is rebuilt at that time and then deployed, so anything you write between now and then goes out with it. If the build fails, nothing is deployed and the last live site stays as it is.")
 
         if !unpublishedClasses.isEmpty {
             lines.append("")
