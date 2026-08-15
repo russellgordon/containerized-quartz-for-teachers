@@ -712,12 +712,31 @@ struct SidebarView: View {
     @ViewBuilder
     func reviseWithAIItem(course: Course, sectionNumber: Int) -> some View {
         if AssistHardwareBudget.current().canRunAssistant, let folder = workspace.workspaceURL {
+            // Read HERE, during the row's render, not inside the button's
+            // closure — the registry is observable, so the row redraws and
+            // the menu is right the moment an assistant opens or closes.
+            // Reading it in the closure would show the answer from whenever
+            // the row last drew, which is the staleness bug the course
+            // activity registry already taught us.
+            let blocked: String? = AssistActivity.reasonItIsUnavailable(
+                folderPath: folder.path,
+                courseCode: course.code,
+                sectionNumber: sectionNumber
+            )
             Button("Revise with AI…", systemImage: "sparkles") {
                 openWindow(value: AssistWindowRequest(
                     courseCode: course.code,
                     sectionNumber: sectionNumber,
                     workingFolder: folder
                 ))
+            }
+            .disabled(blocked != nil)
+            .accessibilityIdentifier("reviseWithAI-\(course.code)-section\(sectionNumber)")
+            // Dimmed alone says "no"; the line under it says what to do
+            // about it — the same shape "Add Section…" uses when a course is
+            // busy.
+            if let blocked {
+                Text(blocked)
             }
         }
     }

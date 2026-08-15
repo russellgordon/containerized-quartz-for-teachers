@@ -383,6 +383,43 @@ back to CPU and lands somewhere between the two columns, and that is worth
 knowing rather than assuming. But the container is not buying anything here
 that a host process does not, and it is costing three minutes.
 
+### One assistant at a time, machine-wide
+
+The downloaded model is shared — **one file per machine**, in Application
+Support, whatever course or section is being worked on, and it survives app
+updates. What is NOT shared is the RUNNING copy: each assistant window starts
+its own engine and loads the weights again. Two windows is twice the resident
+memory, which on a 16 GB machine is most of it and undoes the point of sizing
+the model to the hardware.
+
+So the macOS build allows exactly one assistant window at a time, across the
+whole app. The menu item for every other section is **dimmed, with a line
+saying which section to close** — "Close the assistant for ICS3U Section 1
+first". Dimmed alone tells somebody they cannot do the thing; naming the
+holder tells them what to do about it.
+
+Three details worth copying rather than re-deriving:
+
+- **Claim when the WINDOW opens, not when the engine is ready.** A teacher
+  three minutes into a 2.5 GB download has the assistant open as far as they
+  are concerned, and a second window started meanwhile is exactly what this
+  prevents.
+- **Release unconditionally on close.** A claim that leaks locks the feature
+  out until the app restarts, which is a far worse failure than briefly
+  allowing a second window. For the same reason a NEWER claim replaces a
+  stale one rather than being refused.
+- **The section that already holds it stays enabled**, because choosing it
+  brings the existing window forward — which is what a teacher expects from
+  a menu item naming a window they can see.
+
+Read the registry during the row's RENDER, not inside the button's closure,
+or the menu shows the answer from whenever the row last drew. That is the
+same staleness trap `CourseActivity` documents for "Add Section…".
+
+**This governs the built-in assistant only.** Claude Code driving the same
+tools over MCP has no engine of its own, so nothing about it multiplies
+memory and nothing about it should be blocked.
+
 ### Your two findings, re-measured natively — one held, one did not
 
 Both were re-run on macOS against the same suite (3B, 3 trials, results in

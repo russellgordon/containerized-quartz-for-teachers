@@ -113,6 +113,16 @@ final class AssistSession {
     /// Work out what this window can offer, and get as far towards a
     /// conversation as it can without asking the teacher anything.
     func prepare() async {
+        // Claimed as the window opens, not when the engine is ready. A
+        // teacher three minutes into a download has the assistant open as
+        // far as they are concerned, and a second window started meanwhile
+        // is exactly what this prevents.
+        AssistActivity.begin(
+            folderPath: workingFolder.path,
+            courseCode: courseCode,
+            sectionNumber: sectionNumber
+        )
+
         guard budget.canRunAssistant else {
             readiness = .unsupported(reason:
                 "The assistant needs an Apple silicon Mac. Everything else in Plantoir works as usual."
@@ -272,5 +282,13 @@ final class AssistSession {
         host = nil
         agent = nil
         toolRunner = nil
+        // Released unconditionally: if this does not run, the feature stays
+        // locked out until the app restarts — a far worse failure than
+        // briefly allowing a second window.
+        AssistActivity.end(
+            folderPath: workingFolder.path,
+            courseCode: courseCode,
+            sectionNumber: sectionNumber
+        )
     }
 }
