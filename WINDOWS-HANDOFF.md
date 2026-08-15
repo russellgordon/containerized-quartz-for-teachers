@@ -456,6 +456,123 @@ specifically, and treat that as a veto rather than a score.
 | 3B | 70% | **2 of 3 trials** |
 | 7B | 94% | none |
 
+## The assistant's division of labour — the rule everything else follows
+
+**The model picks which Swift function to run, and fills in its arguments.
+Nothing else.** Every rule about what an action MEANS lives in code. If you
+take one thing from this file, take this: it is what makes a small local
+model viable, and every problem worth having came from violating it.
+
+The split is measured, not aesthetic. Across the same runs the model:
+
+- **misrouted five of the eleven suggested phrasings in EVERY trial** — it is
+  bad at choosing;
+- produced **zero wrong courses, zero wrong dates, zero type errors, zero
+  invented dates** — it is good at filling in.
+
+So take the choosing away wherever it can be taken, keep the filling in.
+
+Three consequences that follow, each of which cost something to learn:
+
+1. **Tools are coarse.** Given `resolve_links`, `set_publish` and
+   `publish_section` separately, and asked to publish tomorrow's class *and
+   everything it links to*, the model chose `publish_section` 8 times out of
+   8 — skipping the link resolution. Perfectly consistent, and wrong. One
+   `publish_class_on` that resolves links itself: right 8 of 8.
+2. **Fixed phrasings never reach the model.** The card's unambiguous shapes
+   are matched in code. If you reword one, update the matcher too, or the
+   shortcut silently stops firing and the phrasing quietly starts being
+   routed instead — it will look correct and behave worse.
+3. **Absence is the guardrail.** There is no delete tool, so "delete the
+   Unit 1 folder" cannot be honoured however confidently it is asked. Not
+   judgement — no route.
+
+### Rules belong in the tool, never in an argument
+
+`publish_pages` and `unpublish_pages` used to take an `includeLinked`
+boolean with no default, so the MODEL decided. That is the same reasoning
+this design exists to keep out of the model, and a boolean is the thing that
+inverted polarity on the 3B. It is gone, and the rules are now code:
+
+**Publishing always publishes the pages it links to.** Never publish a page
+whose links lead somewhere students cannot see — that is the whole point.
+
+**Unpublishing is NOT the mirror**, and this asymmetry is deliberate:
+
+- unpublish the named page(s);
+- also unpublish a linked page **only if that page is linked to ONLY by the
+  page(s) being unpublished**. If anything else still links to it, it stays —
+  otherwise you create the dead links the publish rule exists to prevent;
+- **never** unpublish, whatever the link count: a folder's landing page
+  (`index.md` — Concepts, Investigations…), any page in that section's **Key
+  Links**, or any **Curriculum** page (detect with `build_site.py`'s own
+  rule: any folder segment containing "curriculum").
+
+The plan should say what it **kept** and why — "Ohm's Law stays: Unit 3,
+Day 2 still links to it" — not only what it removed. A teacher needs to see
+the tool reasoned about it, or they will check by hand and the rule has
+bought nothing.
+
+### The model's list is SHORTER than the server's
+
+Two lists, deliberately. `definitions` is what the local model sees;
+`mcpDefinitions` is what Claude Code sees over MCP. Same tools, same runner,
+same rules — the model is simply shown fewer.
+
+- **The `plan_` twins are hidden from the model.** Plan mode calls them from
+  CODE when the model picks a write, so the model never needs to name one.
+  They were about 30% of the prompt buying nothing. Claude Code KEEPS them:
+  it has no plan mode and genuinely needs to ask "what would that do?".
+- **`remember_timetable` is hidden from the model.** It takes dates as
+  strings, so dates the model supplies are dates it may have invented — and
+  a wrong one schedules a class on the wrong day silently. The schedule UI
+  owns that path. `read_remembered_timetable` stays, because reading is safe.
+
+Result: 20 tools down to 12 for the model. Worth doing on Windows too — the
+routing figures were measured at 15, so a surface that grows past that is
+spending accuracy, and one that shrinks below it should be spending less.
+
+### The class timetable, and the chore it removes
+
+Stored once per section in `courses/<CODE>/.internal/timetable/section<N>.json`
+— dates, where they came from in the teacher's words, when recorded. Under
+`.internal/` so it travels through backup, archive and restore. A partial
+list is refused whole rather than half-stored: a half-remembered timetable
+gets trusted and then dates the wrong classes.
+
+**Parsing lives in Swift, never in the model.** This dissolves the question
+of whether a bigger model could accept looser input: the model never sees a
+date it did not read from the teacher's own file, so the small local model is
+exactly as capable here as any cloud one, and it cannot hallucinate a date.
+Sources: a shared Google Sheet link (fetched as CSV), a `.csv`/`.ics` file,
+or pasted text.
+
+**Ambiguous day/month ordering is ASKED, not guessed.** Any value with a
+number past 12 settles the whole column silently, so most teachers never see
+the question. When nothing settles it, quote the teacher's OWN date back —
+"Is 08/09/2026 the 8th of September, or the 9th of August?" — apply the
+answer to every row, and record the choice in the stored source string. Never
+per-row, and a column written both ways round is a corrupt file, not an
+ambiguity. Guessing here dates a term months out and nobody notices until a
+class page appears on the wrong day.
+
+**`add_next_class` — the chore this is all for.** A teacher finishing a
+lesson wants tomorrow's page to exist, numbered and dated, without opening
+frontmatter. The rule, and the second half is the part to get right:
+
+- the NAME continues the highest unit, then the highest day inside it:
+  Unit 3, Day 2 → Unit 3, Day 3;
+- the DATE comes from **position in the timetable, not from the numbering**.
+  Count the section's class pages, add one, take that date. Fifteen pages →
+  the sixteenth date. A page called "Field Trip" consumes a date without
+  moving the numbering, which falls out of counting pages rather than parsing
+  names.
+
+Refuse usefully at both edges: no timetable stored ("I don't know when ICS3U
+Section 1 meets…"), and a timetable that has run out ("…has 40 class pages
+and 40 dates, so there is no date left. Add more class dates."). "Index out
+of range" helps nobody.
+
 ## Plan mode, undo, and how often to back up
 
 Three decisions taken on the macOS side on 2026-08-15 that Windows should
