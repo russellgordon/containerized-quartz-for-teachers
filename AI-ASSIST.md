@@ -11,9 +11,9 @@ account, no API key, and no internet requirement?*
 > (`Plantoir/Services/LocalModel.cs`), the conversation loop
 > (`Services/AssistAgent.cs`), and a window to hold it
 > (`Views/AssistWindow.xaml`), reached from **Revise with AI…** on a
-> section's context menu. None of this is on `main` or in the 1.0 release;
-> the branch exists so it can be folded into a later release, or dropped,
-> without disturbing that.
+> section's context menu. Folded into `main` on 2026-08-14, after the
+> live-testing day recorded in `AI-ASSIST-HANDOFF.md` §10; not yet in any
+> tagged release.
 >
 > **Not yet exercised end to end:** the model download is ~1.1 GB and happens
 > only on a teacher's explicit yes, so the install-and-first-answer path has

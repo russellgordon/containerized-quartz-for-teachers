@@ -126,7 +126,8 @@ an item when it ships (finished behaviour is recorded in
   urgent.
 
 - **AI Assist — the rest of it**, updated 2026-08-14 after a full
-  live-tested day on the `ai-assist` branch (none of it in 1.0). The
+  live-tested day on the `ai-assist` branch, since folded into `main`
+  (not yet in any tagged release). The
   Windows in-app assistant is now **working end to end**: approval gate
   (deploys only), embedded model with a verified once-ever prompt cache,
   the promise card handled as deterministic commands, page edits doing

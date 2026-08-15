@@ -8,7 +8,7 @@ more — the things that went wrong and why.*
 > preceded this. It has the model comparison and the numbers that decided the
 > architecture. This document is what happened when it was built.
 >
-> Nothing here is on `main` or in 1.0.
+> Folded into `main` on 2026-08-14; not yet in any tagged release.
 
 ---
 
