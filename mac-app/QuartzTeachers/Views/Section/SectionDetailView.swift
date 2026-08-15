@@ -645,16 +645,28 @@ struct SectionDetailView: View {
                     if httpResponse.statusCode == 200 {
                         isWaitingForServer = false
                         previewURL = serverURL
-                        // A reload ONLY when we never saw the build finish.
+                        // Load the fresh site EXPLICITLY, rather than trusting
+                        // the mounting web view's `loadIfNeeded` to do it.
                         //
-                        // While Phase 2 waits for Quartz's emit line, the page
-                        // is loaded once, at the right moment, and looks it.
-                        // An unconditional reload was tried and was worse than
-                        // the problem: every preview in the app flickered, for
-                        // a case that by then could not happen. The signal
-                        // tells us which situation we are in, so it decides —
-                        // no signal, no certainty, so reload; signal, so leave
-                        // the teacher's page alone.
+                        // That trust was watched being betrayed: a stray
+                        // SwiftUI update between the stop and this moment
+                        // loaded the OLD server's site and re-armed the
+                        // controller's last-requested URL — so when the view
+                        // mounted here, at the same address (a section keeps
+                        // its port), `loadIfNeeded` skipped and the teacher
+                        // kept the page from before their change.
+                        //
+                        // This is still a single load per rebuild — the call
+                        // marks the URL as requested, so the mounting view's
+                        // own `loadIfNeeded` becomes the no-op instead — which
+                        // is why it does not reintroduce the flicker that made
+                        // an unconditional reload-after-load worse than the
+                        // problem it addressed.
+                        previewController.showFreshBuild(serverURL)
+                        // And a second, later reload ONLY when we never saw
+                        // the build finish: the bounded Phase 2 wait ran out,
+                        // so what was just loaded may itself predate the
+                        // build that is still landing.
                         if !buildFinished {
                             Task { @MainActor in
                                 try? await Task.sleep(for: .milliseconds(900))

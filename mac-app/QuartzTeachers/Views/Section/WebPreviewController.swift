@@ -124,6 +124,28 @@ class WebPreviewController {
         lastRequestedURL = nil
     }
 
+    /// A build has just finished, so whatever the web view is showing —
+    /// whatever it is — predates that build. Always loads.
+    ///
+    /// This exists because `forgetLoadedPage()` alone was not enough, and the
+    /// gap was watched happening: between a stop forgetting the page and the
+    /// restarted preview coming up, SwiftUI ran one more update on the
+    /// outgoing web view, which re-loaded the OLD server's site and quietly
+    /// re-armed `lastRequestedURL`. When the fresh build was ready — at the
+    /// same address, because a section keeps its port — `loadIfNeeded`
+    /// compared the URLs, found them equal, and skipped. The teacher was left
+    /// looking at the page from before their change, with no reload coming.
+    ///
+    /// Encoding "must reload" as cleared state can be undone by any stray
+    /// load in that window. Saying it as a call cannot. Setting
+    /// `lastRequestedURL` here also makes the view's own `loadIfNeeded` a
+    /// no-op when it mounts a moment later, so this stays a single load —
+    /// the unconditional-reload flicker is not reintroduced.
+    func showFreshBuild(_ url: URL) {
+        lastRequestedURL = url
+        loadIgnoringEverythingCached(url)
+    }
+
     func goBack() {
         webView.goBack()
     }

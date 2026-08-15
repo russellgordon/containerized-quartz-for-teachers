@@ -278,13 +278,16 @@ comments should too. The rule is about what appears on screen.
 
 - **The preview showing stale content**:
   [`research/preview-staleness/FINDINGS.md`](../../../research/preview-staleness/FINDINGS.md).
-  Several fixes have landed and the symptom was still reported afterwards. The
-  document separates what is verified (Quartz serves the OLD `public/` before
-  it rebuilds — its own `handlers.js`) from what is only suspected (Quartz's
-  live reload probably cannot work here, because the websocket port the page
-  is told is the CONTAINER's while the host publishes it on a different
-  number). If the suspicion holds, a good deal of timing machinery in
-  `waitForPreviewServer` should be DELETED rather than hardened.
+  Several fixes have landed and the symptom was still reported afterwards.
+  The live-reload suspicion recorded there was TESTED on 2026-08-15 and the
+  hoped-for simplification is off the table: the websocket port mismatch is
+  real, but live reload is dead anyway because file events from Mac-side
+  writes never cross the Colima bind mount — the watcher inside the
+  container sees nothing when Obsidian or the assistant writes a file. The
+  timing machinery in `waitForPreviewServer` is therefore LOAD-BEARING; do
+  not delete it in favour of live reload. The document's closing section
+  lists the four changes that would all be needed before live reload could
+  take over.
 
   Two traps recorded there that cost hours: a request's cache policy covers
   only the main request, so a single-page app can still assemble a stale page
