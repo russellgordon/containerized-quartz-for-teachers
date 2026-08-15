@@ -1287,13 +1287,21 @@ def is_school_day(date) -> bool:
 
 
 def semester_class_timestamp(class_ordinal: int, reference,
-                             weekday_step: int = DEFAULT_CLASS_WEEKDAY_STEP) -> str:
+                             weekday_step: int = DEFAULT_CLASS_WEEKDAY_STEP,
+                             start_school_day: int = 1) -> str:
     """
     The `created:` timestamp for the K-th class of the semester: at 07:00,
     `weekday_step` school days apart, anchored at September 8 of the current
     school year (the year whose September has most recently begun, or is
     about to). Matches the semestered September-to-January shape of the
     example content, and the 07:00 convention real courses here use.
+
+    `start_school_day` moves the anchor later, counted in school days. It
+    exists for HALF CREDITS, which are commonly timetabled back to back:
+    Career Studies runs from September and Civics picks up the same period
+    when it ends. The second course declares where it starts rather than
+    both courses claiming September, which would date two different
+    courses onto the same mornings.
 
     The walk is done on a NAIVE date, and the offset attached only at the
     end. A semester crosses the change off daylight time in November, so
@@ -1304,7 +1312,8 @@ def semester_class_timestamp(class_ordinal: int, reference,
     date = datetime(year, 9, 8, 7, 0, 0)
     while not is_school_day(date):
         date += timedelta(days=1)
-    remaining_steps = (class_ordinal - 1) * max(1, weekday_step)
+    remaining_steps = ((class_ordinal - 1) * max(1, weekday_step)
+                       + max(0, start_school_day - 1))
     while remaining_steps > 0:
         date += timedelta(days=1)
         if is_school_day(date):
@@ -1313,14 +1322,17 @@ def semester_class_timestamp(class_ordinal: int, reference,
 
 
 def replacing_class_sentinels(text: str, reference,
-                              weekday_step: int = DEFAULT_CLASS_WEEKDAY_STEP) -> str:
+                              weekday_step: int = DEFAULT_CLASS_WEEKDAY_STEP,
+                              start_school_day: int = 1) -> str:
     def replace(match):
-        return semester_class_timestamp(int(match.group(1)), reference, weekday_step)
+        return semester_class_timestamp(int(match.group(1)), reference,
+                                        weekday_step, start_school_day)
     return EXAMPLE_CONTENT_CLASS_SENTINEL.sub(replace, text)
 
 
 def first_use_dates(payload_dir: Path, reference,
-                    weekday_step: int = DEFAULT_CLASS_WEEKDAY_STEP) -> dict:
+                    weekday_step: int = DEFAULT_CLASS_WEEKDAY_STEP,
+                    start_school_day: int = 1) -> dict:
     """
     Page name -> the date of the FIRST class that links to it. A concept
     taught on Unit 3, Day 5 should carry Unit 3, Day 5's date — that is
@@ -1344,7 +1356,8 @@ def first_use_dates(payload_dir: Path, reference,
     link_target_pattern = re.compile(r"!?\[\[([^\]#|]+)")
     dates = {}
     for ordinal, text in class_pages:
-        class_date = semester_class_timestamp(ordinal, reference, weekday_step)
+        class_date = semester_class_timestamp(ordinal, reference, weekday_step,
+                                              start_school_day)
         for match in link_target_pattern.finditer(text):
             target = match.group(1).strip().split("/")[-1]
             if target and target != "index" and target not in dates:
@@ -1539,7 +1552,8 @@ def install_payload_file(source: Path, destination: Path, now_str: str,
                          shared_sections: list | None = None,
                          course_code: str | None = None,
                          course_name: str | None = None,
-                         weekday_step: int = DEFAULT_CLASS_WEEKDAY_STEP) -> bool:
+                         weekday_step: int = DEFAULT_CLASS_WEEKDAY_STEP,
+                         start_school_day: int = 1) -> bool:
     """
     One file from payload to course. Markdown is adjusted on the way
     through; everything else is copied as-is. Existing files are never
@@ -1554,7 +1568,8 @@ def install_payload_file(source: Path, destination: Path, now_str: str,
     with open(source, "r", encoding="utf-8") as handle:
         text = handle.read()
     if reference is not None:
-        text = replacing_class_sentinels(text, reference, weekday_step)
+        text = replacing_class_sentinels(text, reference, weekday_step,
+                                         start_school_day)
     if first_use_date is not None:
         text = text.replace(
             f"created: {EXAMPLE_CONTENT_CREATED_SENTINEL}",
@@ -1593,7 +1608,12 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
     page_names = curriculum_page_names(payload_dir, manifest)
     curriculum_folder = manifest.get("curriculum_folder")
     weekday_step = int(manifest.get("class_weekday_step", DEFAULT_CLASS_WEEKDAY_STEP))
-    class_use_dates = (first_use_dates(payload_dir, reference, weekday_step)
+    # Which school day the course's first class lands on. 1 for anything
+    # starting in September; a later number for the second half credit in
+    # a pair, which begins when the first one finishes.
+    start_school_day = int(manifest.get("class_start_school_day", 1))
+    class_use_dates = (first_use_dates(payload_dir, reference, weekday_step,
+                                       start_school_day)
                        if reference is not None else {})
     written = 0
 

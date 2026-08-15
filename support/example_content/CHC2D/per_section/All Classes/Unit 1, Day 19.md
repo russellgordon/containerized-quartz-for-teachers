@@ -1,0 +1,19 @@
+---
+title: Unit 1, Day 19
+draft: false
+created: __CREATED_CLASS_19__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. [[Winning the Vote]] — and who was still excluded after 1918
+2. Persons Case, and the limits of it
+3. Notebook
+
+## Things to do before our next class
+
+- [ ] Read [[Winning the Vote]] to the end.

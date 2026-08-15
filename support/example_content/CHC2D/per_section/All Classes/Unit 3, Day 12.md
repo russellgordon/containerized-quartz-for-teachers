@@ -1,0 +1,19 @@
+---
+title: Unit 3, Day 12
+draft: false
+created: __CREATED_CLASS_54__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-3
+---
+## Agenda
+
+1. Seminar: [[Who Gets to Tell the Story?]]
+2. Whose accounts became the record
+3. Work period
+
+## Things to do before our next class
+
+- [ ] Draft the report's causation section.

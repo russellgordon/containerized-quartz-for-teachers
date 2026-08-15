@@ -14,14 +14,20 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 # An Ontario credit is 110 hours of scheduled time. A semestered day school
-# runs 75-minute periods, so the arc is about 86 periods plus a three-hour
-# final evaluation — the tolerance either side is one week of classes,
-# because timetables really do differ.
-CREDIT_HOURS = 110
+# runs 75-minute periods, so a full credit is about 86 periods plus a
+# three-hour final evaluation — the tolerance either side is one week of
+# classes, because timetables really do differ.
+#
+# HALF CREDITS are real courses, not exceptions: Career Studies and Civics
+# are 55 hours each and are commonly timetabled back to back in one
+# semester. A payload declares what it is in its manifest rather than
+# having the linter guess from the page count, so the arithmetic below
+# scales instead of special-casing.
+FULL_CREDIT_HOURS = 110
 PERIOD_MINUTES = 75
-EXAM_HOURS = 3
-MINIMUM_HOURS = 104
-MAXIMUM_HOURS = 116
+DEFAULT_FINAL_EVALUATION_HOURS = 3
+# One week of classes either side of the target, scaled to the credit.
+HOURS_TOLERANCE = 6
 MINIMUM_REVIEW_CLASSES = 3
 
 
@@ -383,25 +389,37 @@ def lint(course_code: str) -> int:
                     f"a page in Tasks must transclude one of its specific expectations"
                 )
 
-    # ---- Hours: an Ontario credit is 110 hours of scheduled time.
+    # ---- Hours: an Ontario credit is 110 hours of scheduled time, and a
+    # half credit is 55.
     #
-    # One class page is one period. The exam is not a class page, so its
-    # hours are added separately; several review periods belong inside the
-    # arc, before it.
+    # One class page is one period. The final evaluation is not a class
+    # page, so its hours are added separately; several review periods
+    # belong inside the arc, before it. Both the credit value and the
+    # length of the final evaluation are declared in the manifest, so a
+    # half credit is a stated property of the payload rather than a
+    # tolerance stretched until it fits.
+    credit_value = float(manifest.get("credit_value", 1.0))
+    final_hours = float(manifest.get("final_evaluation_hours",
+                                     DEFAULT_FINAL_EVALUATION_HOURS))
+    credit_hours = FULL_CREDIT_HOURS * credit_value
+    tolerance = HOURS_TOLERANCE * credit_value
+    review_needed = max(2, round(MINIMUM_REVIEW_CLASSES * credit_value))
     if class_ordinals:
-        hours = len(class_ordinals) * PERIOD_MINUTES / 60 + EXAM_HOURS
-        if not MINIMUM_HOURS <= hours <= MAXIMUM_HOURS:
+        hours = len(class_ordinals) * PERIOD_MINUTES / 60 + final_hours
+        if not credit_hours - tolerance <= hours <= credit_hours + tolerance:
             problems.append(
                 f"the arc accounts for {hours:.1f} hours "
-                f"({len(class_ordinals)} periods x {PERIOD_MINUTES} min + {EXAM_HOURS} h exam) — "
-                f"an Ontario credit is {CREDIT_HOURS} hours, so this arc needs about "
-                f"{round((CREDIT_HOURS - EXAM_HOURS) * 60 / PERIOD_MINUTES)} class pages"
+                f"({len(class_ordinals)} periods x {PERIOD_MINUTES} min + "
+                f"{final_hours:g} h final evaluation) — this payload declares "
+                f"{credit_value:g} credit, which is {credit_hours:g} hours, so the arc "
+                f"needs about "
+                f"{round((credit_hours - final_hours) * 60 / PERIOD_MINUTES)} class pages"
             )
         review = [page for page in pages if "\n  - review\n" in page.read_text(encoding="utf-8")]
-        if len(review) < MINIMUM_REVIEW_CLASSES:
+        if len(review) < review_needed:
             problems.append(
                 f"{len(review)} review class(es) — a course ends with at least "
-                f"{MINIMUM_REVIEW_CLASSES}, tagged `review`, before the final evaluation"
+                f"{review_needed}, tagged `review`, before the final evaluation"
             )
         final = [page for page in pages
                  if "\n  - final-evaluation\n" in page.read_text(encoding="utf-8")]
