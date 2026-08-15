@@ -1,23 +1,62 @@
 import SwiftUI
 
-/// What the assistant tells a teacher it is good at.
+/// What the assistant tells a teacher it is good at — kept on screen for
+/// the whole conversation, not just at the start.
 ///
 /// These eleven are not decoration. They are measured — the routing suite
-/// probes them word for word — and several of them are matched in code rather
-/// than routed, precisely so that what the window promises is what the window
+/// probes them word for word — and several are matched in code rather than
+/// routed, precisely so that what the window promises is what the window
 /// delivers. A card offering something the assistant is unreliable at is
 /// worse than a card with nothing on it.
-struct AssistPromiseCardView: View {
+///
+/// **Why it stays, and why it folds.** It used to appear only while the
+/// conversation was empty, which meant the teacher saw the list once, at the
+/// moment they knew least about what to do with it, and never again. But a
+/// list this long sitting open would push the conversation off the screen it
+/// belongs on. So each kind of request is a disclosure group, shut by
+/// default: four short lines a teacher can scan, and open when they want
+/// reminding.
+struct AssistPromptShelfView: View {
 
     // MARK: - Stored properties
 
-    /// Called with the phrasing the teacher chose, verbatim.
+    /// Called with the phrasing the teacher chose, verbatim — the wording
+    /// matters, so nothing paraphrases it on the way through.
     let choose: (String) -> Void
+
+    /// Which groups are open, remembered across windows and launches.
+    ///
+    /// `@AppStorage` rather than `@SceneStorage` on purpose. Scene storage is
+    /// per-window: it would restore this window's shape when THIS window came
+    /// back, but opening the assistant on a different section is a different
+    /// scene, so a teacher who had opened "Taking it back" would find it shut
+    /// again. This is a preference about how they like the shelf, not a fact
+    /// about one window — and the app already has a note about scene storage
+    /// sharing one value across a window group and losing to the last writer.
+    ///
+    /// Stored as one string because `@AppStorage` holds no sets. Group titles
+    /// contain no `|`, so it is a safe separator; a title that ever does will
+    /// simply be forgotten rather than corrupting the rest.
+    @AppStorage("AssistPromptShelfOpenGroups") private var openGroupsRaw: String = ""
 
     // MARK: - Computed properties
 
-    /// Grouped the way a teacher thinks about them, not the way the tools are
-    /// organised.
+    /// The open groups, read back from the stored string.
+    private var expanded: Set<String> {
+        var titles: Set<String> = []
+        for piece in openGroupsRaw.split(separator: "|") {
+            let title: String = String(piece)
+            if !title.isEmpty {
+                titles.insert(title)
+            }
+        }
+        return titles
+    }
+
+    // MARK: - Computed properties
+
+    /// Grouped the way a teacher thinks about them, not the way the tools
+    /// are organised.
     private var groups: [(String, [String])] {
         return [
             ("Showing work to students", [
@@ -43,36 +82,81 @@ struct AssistPromiseCardView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 2) {
             Text("Things you can ask for")
-                .font(.headline)
-            Text("Type your own words if you prefer — these are just the ones it is surest about.")
-                .font(.callout)
+                .font(.caption)
                 .foregroundStyle(.secondary)
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
 
-            ForEach(groups, id: \.0) { group in
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(group.0)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .textCase(.uppercase)
-                    ForEach(group.1, id: \.self) { phrasing in
-                        Button {
-                            choose(phrasing)
+            // Capped and scrollable: with every group open this is taller
+            // than the conversation deserves to give up, and a teacher who
+            // opens all four should lose their own scroll position rather
+            // than the transcript.
+            ScrollView {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(groups, id: \.0) { group in
+                        DisclosureGroup(isExpanded: binding(for: group.0)) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                ForEach(group.1, id: \.self) { phrasing in
+                                    Button {
+                                        choose(phrasing)
+                                    } label: {
+                                        Text(phrasing)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 5)
+                                            .background(Color.secondary.opacity(0.10),
+                                                        in: RoundedRectangle(cornerRadius: 6))
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityIdentifier("assistSuggestion-\(phrasing)")
+                                }
+                            }
+                            .padding(.top, 4)
+                            .padding(.leading, 2)
                         } label: {
-                            Text(phrasing)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
-                                .background(Color.secondary.opacity(0.10),
-                                            in: RoundedRectangle(cornerRadius: 8))
+                            Text(group.0)
+                                .font(.callout)
                         }
-                        .buttonStyle(.plain)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 2)
                     }
                 }
+                .padding(.bottom, 8)
             }
+            .frame(maxHeight: 220)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.bar)
+    }
+
+    // MARK: - Functions
+
+    /// One group's open/shut state, as a binding a `DisclosureGroup` can
+    /// drive, written straight back to the stored preference.
+    private func binding(for title: String) -> Binding<Bool> {
+        return Binding(
+            get: {
+                return expanded.contains(title)
+            },
+            set: { isOpen in
+                var titles: Set<String> = expanded
+                if isOpen {
+                    titles.insert(title)
+                } else {
+                    titles.remove(title)
+                }
+                // Sorted so the stored value does not churn between launches
+                // just because a Set enumerated differently.
+                var ordered: [String] = []
+                for stored in titles {
+                    ordered.append(stored)
+                }
+                ordered.sort()
+                openGroupsRaw = ordered.joined(separator: "|")
+            }
+        )
     }
 }
 

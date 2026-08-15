@@ -43,6 +43,16 @@ struct AssistWindowView: View {
             }
             transcript
             Divider()
+            // Permanent, between the conversation and the box the teacher
+            // types in — the moment they are wondering what to say is the
+            // moment it should be in reach. Shut by default so it costs four
+            // lines rather than the screen.
+            if session.readiness == .ready {
+                AssistPromptShelfView { phrasing in
+                    Task { await send(phrasing) }
+                }
+                Divider()
+            }
             composer
         }
         .frame(minWidth: 460, minHeight: 420)
@@ -156,11 +166,6 @@ struct AssistWindowView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 12) {
-                    if session.agent?.entries.isEmpty ?? true {
-                        AssistPromiseCardView { phrasing in
-                            Task { await send(phrasing) }
-                        }
-                    }
                     ForEach(transcriptLines) { line in
                         switch line {
                         case .said(let entry):
