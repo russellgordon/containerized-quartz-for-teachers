@@ -117,6 +117,20 @@ struct BackupItem: Identifiable, Hashable {
 
     /// A different mark for the assistant's own, so the two kinds can be
     /// told apart down a list without reading a word.
+    /// What happens to this copy over time, which differs by who made it.
+    ///
+    /// Said per item rather than once for the list, because the two answers
+    /// are genuinely different and a teacher deciding whether to keep their
+    /// own copy needs THEIR answer, not the assistant's.
+    var keptDescription: String {
+        switch maker {
+        case .teacher:
+            return "You made this one, so it is kept until you delete it."
+        case .assistant:
+            return "The assistant made this one; its five most recent are kept."
+        }
+    }
+
     var symbolName: String {
         switch maker {
         case .teacher:

@@ -8,10 +8,15 @@ enum CourseArchiver {
 
     // MARK: - Functions
 
-    /// How many backups of one course are kept. A course full of images
-    /// makes a large zip, and a teacher who never deletes one would fill a
-    /// disk with copies of copies; five is enough to get back to last week
-    /// without turning the working folder into an archive of itself.
+    /// How many of the ASSISTANT's backups of one course are kept.
+    ///
+    /// A course full of images makes a large zip, and the assistant saves one
+    /// per conversation whether or not anybody asked for it, so without a
+    /// limit a term of chats fills a disk with copies of copies.
+    ///
+    /// A teacher's OWN backups are never counted here and never pruned. They
+    /// made those on purpose; deciding on their behalf that a backup from
+    /// last month has expired is not the app's call to make.
     static let mostBackupsKept: Int = 5
 
     /// Saves a copy of an entire course — and touches nothing: the course
@@ -60,11 +65,28 @@ enum CourseArchiver {
             return
         }
 
+        // ONLY the assistant's own backups are pruned.
+        //
+        // A teacher's backup is a decision — they pressed Back Up because they
+        // were about to do something they were unsure of, or the app saved one
+        // on their behalf before adding a section. Deleting that on a schedule
+        // they never agreed to is the app overruling them about their own
+        // work. The assistant's are different in kind: it makes one per
+        // conversation whether or not anybody asked, so it is the assistant's
+        // job to clear up after itself.
+        //
+        // A consequence worth knowing: the five kept are five ASSISTANT
+        // backups. A teacher with twenty of their own keeps all twenty, and
+        // they do not crowd out the assistant's five.
         var backups: [BackupItem] = []
         for fileURL in contents {
-            if let backup = BackupItem.from(fileURL: fileURL, courseCode: courseCode) {
-                backups.append(backup)
+            guard let backup = BackupItem.from(fileURL: fileURL, courseCode: courseCode) else {
+                continue
             }
+            guard case .assistant = backup.maker else {
+                continue
+            }
+            backups.append(backup)
         }
         if backups.count <= mostBackupsKept {
             return

@@ -472,9 +472,16 @@ Two details that make the backups usable rather than merely present:
   can tell what made each one and why — Plantoir before an assistant chat
   about a particular section, or themselves on purpose. A list of five
   identical-looking timestamps is not a choice anybody can make.
-- **Keep the five most recent per course**, pruned oldest-first, and prune
-  ONLY the backups: archives and the wizard's own zips live in the same area
-  and their parsers deliberately reject each other's forms.
+- **Prune only the ASSISTANT's own backups**, keeping its five most recent
+  per course. A teacher's backup is a decision — they pressed Back Up because
+  they were about to do something they were unsure of — and deleting it on a
+  schedule they never agreed to is the app overruling them about their own
+  work. The assistant's are different in kind: it saves one per conversation
+  whether or not anybody asked, so clearing up after itself is its job. A
+  teacher with twenty of their own keeps all twenty, and they never crowd out
+  the assistant's five, because the two are counted separately.
+- And prune ONLY backups at that: archives and the wizard's own zips live in
+  the same folder and their parsers deliberately reject each other's forms.
 
 ### Restore is section-scoped, though the zip holds the course
 
