@@ -19,12 +19,15 @@ Ontario, 2009. Reproduced for educational use.
 > faithfully.
 
 > [!info] The official sources
-> [Communications Technology (TGJ2O) — Ontario Curriculum and Resources](https://www.dcp.edu.gov.on.ca/en/curriculum/technological-education/courses/tgj2o)
+> The verbatim text is from *The Ontario Curriculum, Grades 9 and 10:
+> Technological Education*, revised 2009, where TGJ2O appears on
+> pages 51–56.
 >
-> The verbatim text is from the Ministry's 2009 document (TGJ2O appears
-> on pages 51–56); the original PDF is no longer hosted at its
-> historical URL but remains available through library and archive
-> copies.
+> There is no link to give you. The Ministry's curriculum site covers
+> the current curriculum only and holds no page for this course, and
+> the original PDF is no longer hosted at its historical URL. The
+> document remains available through library and archive copies, and
+> the wording below was taken from it rather than from a summary.
 
 Each page keeps the expectation's official **code** — `A1.3`, `B2.4`,
 and so on, exactly as the 2009 document prints them — and every story,

@@ -24,9 +24,9 @@ Put plainly, week to week that means:
 
 - **Think on your feet** — work problems you have not been shown how to
   do, at the whiteboards, in [[Our Classroom Norms|a room built for it]].
-- **Conjecture the rules** — the [[Derivative Rules|derivative's
-  toolbox]] is discovered here, pattern first, proof after, never
-  handed down.
+- **Conjecture the rules** — the
+  [[Derivative Rules|derivative's toolbox]] is discovered here, pattern
+  first, proof after, never handed down.
 - **Optimize honestly** — the best box, the cheapest route, the
   smoothest landing: [[Optimization|calculus answers "what is best"]]
   only after you say what "best" means.

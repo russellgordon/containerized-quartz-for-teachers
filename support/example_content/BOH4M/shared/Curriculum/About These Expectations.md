@@ -9,7 +9,7 @@ Grade 12 University/College course **BOH4M**, published by the Ontario
 Ministry of Education.
 
 > [!info] The official source
-> [Business Leadership: Management Fundamentals (BOH4M) — Ontario Curriculum and Resources](https://www.dcp.edu.gov.on.ca/en/curriculum/secondary-business/courses/boh4m)
+> [Business Leadership: Management Fundamentals (BOH4M) — Ontario Curriculum and Resources](https://www.dcp.edu.gov.on.ca/en/curriculum/secondary-business/courses/boh4m-pdf)
 >
 > The verbatim text is from [the Ministry's published document](https://www.edu.gov.on.ca/eng/curriculum/secondary/business1112currb.pdf)
 > (BOH4M appears on printed pages 122–128). © Queen's Printer for

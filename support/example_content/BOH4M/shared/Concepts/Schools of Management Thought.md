@@ -40,9 +40,9 @@ which is exactly what the behavioural school was reacting against. When
 you evaluate a theory in this course, evaluate it the way its critics
 did: what does it get right, what does it cost, and who pays that cost?
 
-That question comes back in Unit 3, when [[Analysing a Strategy|strategy
-tools]] turn out to have the same property — powerful, and blind in
-particular directions.
+That question comes back in Unit 3, when
+[[Analysing a Strategy|strategy tools]] turn out to have the same
+property — powerful, and blind in particular directions.
 
 %%curriculum-start%%
 ## Curriculum connection

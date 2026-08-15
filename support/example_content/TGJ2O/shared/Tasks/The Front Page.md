@@ -20,8 +20,8 @@ different containers, and every choice is an argument about what
 matters most.
 
 Hierarchy is the heart of it. Something leads and something follows,
-and you must be able to say why — that is [[News Values|news
-judgement]] made visible in ink and pixels.
+and you must be able to say why — that is
+[[News Values|news judgement]] made visible in ink and pixels.
 
 ## How to work
 

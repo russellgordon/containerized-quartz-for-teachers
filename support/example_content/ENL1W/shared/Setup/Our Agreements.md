@@ -29,8 +29,9 @@ somewhere tender. These are the agreements that make that survivable.
 
 Several texts this year deal with residential schools, racism, and loss.
 They are here because they are true, because they are well written, and
-because [[A3.3|the course asks us to learn from First Nations, Métis, and
-Inuit voices]] rather than about them at a distance.
+because
+[[A3.3|the course asks us to learn from First Nations, Métis, and Inuit voices]]
+rather than about them at a distance.
 
 You will always know before we start what a text deals with. If you need
 to step out of a class, step out; you do not need to explain, and it will

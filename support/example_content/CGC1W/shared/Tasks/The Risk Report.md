@@ -46,8 +46,8 @@ lives there.
 > arrives with solutions and no idea what has been tried is the kind
 > nobody acts on.
 
-[[Hazard, Exposure, Risk]] gives you the vocabulary; [[A Changing
-Climate]] is where the fourth section comes from.
+[[Hazard, Exposure, Risk]] gives you the vocabulary;
+[[A Changing Climate]] is where the fourth section comes from.
 
 %%curriculum-start%%
 ## Curriculum connection

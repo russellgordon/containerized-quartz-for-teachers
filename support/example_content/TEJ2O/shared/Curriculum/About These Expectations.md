@@ -18,12 +18,15 @@ Reproduced for educational use.
 > document's, reproduced faithfully.
 
 > [!info] The official sources
-> [Computer Technology (TEJ2O) — Ontario Curriculum and Resources](https://www.dcp.edu.gov.on.ca/en/curriculum/technological-education/courses/tej2o)
+> The verbatim text is from *The Ontario Curriculum, Grades 9 and 10:
+> Technological Education*, revised 2009, where TEJ2O appears on
+> pages 57–62.
 >
-> The verbatim text is from the Ministry's 2009 document (TEJ2O appears
-> on pages 57–62); the original PDF is no longer hosted at its
-> historical URL but remains available through library and archive
-> copies.
+> There is no link to give you. The Ministry's curriculum site covers
+> the current curriculum only and holds no page for this course, and
+> the original PDF is no longer hosted at its historical URL. The
+> document remains available through library and archive copies, and
+> the wording below was taken from it rather than from a summary.
 
 Each page keeps the expectation's official **code** — `A3.1`, `B2.4`,
 and so on, exactly as the 2009 document prints them — and every lesson,

@@ -12,7 +12,7 @@ added three expectations — B1.3, B1.4, and B1.5 — to bridge from the
 de-streamed Grade 9 course.
 
 > [!info] The official sources
-> [Principles of Mathematics, Grade 10, Academic (MPM2D) — Ontario Curriculum and Resources](https://www.dcp.edu.gov.on.ca/en/curriculum/secondary-mathematics/courses/mpm2d)
+> [Principles of Mathematics, Grade 10, Academic (MPM2D) — Ontario Curriculum and Resources](https://www.dcp.edu.gov.on.ca/en/curriculum/secondary-mathematics/courses/mpm2d-pdf)
 >
 > The verbatim text is from [the Ministry's published document](https://www.edu.gov.on.ca/eng/curriculum/secondary/math910curr.pdf)
 > (MPM2D appears on pages 46–52) and [the 2022 addendum](https://www.dcp.edu.gov.on.ca/en/addenda-g10-math).

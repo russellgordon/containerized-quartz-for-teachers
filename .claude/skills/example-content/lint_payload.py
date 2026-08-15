@@ -40,6 +40,15 @@ def lint(course_code: str) -> int:
     manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
     pages = sorted(root.rglob("*.md"))
     page_names = {page.stem for page in pages} | {"index"}
+
+    # Folder-qualified targets such as [[Curriculum/index]]. These need the
+    # whole path checked: matching only the last segment lets a link to a
+    # missing Curriculum/index pass because some other folder has an index.
+    qualified_names = set()
+    for page in pages:
+        parts = page.relative_to(root).parts
+        for depth in range(1, len(parts)):
+            qualified_names.add("/".join(parts[depth - 1:])[:-len(".md")])
     curriculum_folder = manifest.get("curriculum_folder")
 
     problems = []
@@ -112,6 +121,14 @@ def lint(course_code: str) -> int:
             for link in link_pattern.finditer(outside_fences)
         }
 
+        # A wikilink split by the 80-column wrap still parses, but the
+        # target it builds contains a newline and so matches no page. The
+        # prose reads correctly, which is exactly why this survives review;
+        # the per-line scan below cannot see it at all.
+        for match in re.finditer(r"!?\[\[[^\[\]]*\n[^\[\]]*\]\]", outside_fences):
+            wrapped = " ".join(match.group(0).split())
+            problems.append(f"{rel}: wikilink split across lines: {wrapped}")
+
         class_match = class_sentinel.search(text)
         if class_match:
             class_ordinals.append(int(class_match.group(1)))
@@ -141,7 +158,11 @@ def lint(course_code: str) -> int:
                 continue
             for match in link_pattern.finditer(line):
                 target = match.group(1).strip().rstrip("\\")
-                if target.split("/")[-1] not in page_names:
+                if "/" in target:
+                    known = target in qualified_names
+                else:
+                    known = target in page_names
+                if not known:
                     problems.append(f"{rel}: unknown link [[{target}]]")
             if stripped.startswith("|") and re.search(r"\[\[[^\]]*[^\\]\|[^\]]*\]\]", line):
                 problems.append(f"{rel}: unescaped pipe in table: {stripped[:60]}")

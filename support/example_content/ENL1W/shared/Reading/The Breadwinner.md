@@ -6,8 +6,8 @@ enableToc: true
 ---
 > [!abstract] At a glance
 > **Deborah Ellis**, Canadian writer · *The Breadwinner* (Groundwood
-> Books, 2000) · novel · one of the four [[The Book Club|literature
-> circle]] choices
+> Books, 2000) · novel · one of the four
+> [[The Book Club|literature circle]] choices
 
 > [!warning] What this text deals with
 > Life under the Taliban in Kabul: a father arrested, a family without

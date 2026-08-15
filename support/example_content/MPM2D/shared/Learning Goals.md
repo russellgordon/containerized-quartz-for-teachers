@@ -23,8 +23,9 @@ Put plainly, week to week that means:
 - **Connect representations** — a relation is a table, a graph, an
   equation, and a story at once; moving between them is the course's
   quiet superpower.
-- **Verify, don't trust** — from [[Checking Your Own Work|checking a
-  solution]] to [[What Makes a Proof Convincing|proving a quadrilateral's
-  identity]] on the coordinate grid.
+- **Verify, don't trust** — from
+  [[Checking Your Own Work|checking a solution]] to
+  [[What Makes a Proof Convincing|proving a quadrilateral's identity]] on
+  the coordinate grid.
 - **Grow visibly** — your [[Math Journal]] is where struggle turns into
   evidence; see [[How Marks Work]].

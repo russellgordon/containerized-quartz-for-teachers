@@ -27,8 +27,8 @@ Put plainly, week to week that means:
 - **Connect** — between representations (tables, graphs, equations,
   [[Coding/index|code]]), between strands, and between mathematics and
   the [[When Will I Use This|life outside it]].
-- **Model** — take a messy real question, [[A Data Story|gather what you
-  need]], build the mathematics that answers it, and say honestly what
-  your model can and cannot tell you.
+- **Model** — take a messy real question,
+  [[A Data Story|gather what you need]], build the mathematics that
+  answers it, and say honestly what your model can and cannot tell you.
 - **Grow visibly** — your [[Math Journal]] is where struggle turns into
   evidence; see [[How Marks Work]].

@@ -268,9 +268,10 @@ matters more here than it sounds.
 - [ ] Somebody else could build this from your documentation
 
 On the site they are read-only — the boxes show what the page says, and
-clicking one does nothing. Copied into your own notes, they are how [[Bench
-Power Supply Habits]] and [[Writing Documentation Somebody Can Build From]]
-turn from advice into habit.
+clicking one does nothing. Copied into your own notes, they are how
+[[Bench Power Supply Habits]] and
+[[Writing Documentation Somebody Can Build From]] turn from advice into
+habit.
 
 ---
 
