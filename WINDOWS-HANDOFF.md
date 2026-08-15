@@ -777,6 +777,55 @@ promise is that the vault is the truth. **This is a live constraint, not a
 historical note** — the same argument applies to any future "the builder could
 just fix it up" idea, and there will be more of them.
 
+## Quartz serves the OLD site before it builds the new one
+
+This one is inside Quartz, so it is yours as much as ours, and it is invisible
+until somebody edits a page and looks.
+
+`quartz build --serve` does this, in this order (its own `cli/handlers.js`):
+
+```
+server.listen(argv.port)
+console.log("Started a Quartz server listening at http://localhost:PORT")
+await build(clientRefresh)
+```
+
+**It starts serving the existing `public/` before it rebuilds it.** So the
+moment a preview launches, the server answers `200` — with the PREVIOUS build.
+The fresh one lands seconds later.
+
+Anything that decides "the preview is ready" from the server responding will
+therefore show the site as it was BEFORE the teacher's change, with nothing on
+screen to suggest it. Ours did, and the symptoms were maddening in a specific
+way worth recognising:
+
+- editing a page, previewing, and seeing the old page;
+- stopping and starting the preview, and still seeing the old page;
+- **doing the same thing slowly and having it work**, because the build had
+  quietly finished in the meantime;
+- pressing Reload by hand and having it come right.
+
+We suspected three innocent components before finding this — the merge, the
+build, and our own web view — and every one of them was provably correct: the
+merged content, the built `public/`, and the file timestamps all showed a
+current site while the screen showed an old one.
+
+Two rules follow:
+
+1. **Wait for the BUILD, not for the server.** Quartz prints
+   `Emitted N files to \`public\` in …` when the output has actually been
+   written; that is the honest signal. "Started a Quartz server" is printed
+   one line before the build begins and means almost nothing.
+2. **Reload once anyway, shortly after the page appears.** Belt and braces,
+   because this failure is silent: a teacher is shown a page that looks fine
+   and is merely out of date. A reload nobody asked for costs a flicker on a
+   page they just asked to appear; being quietly shown last week's site costs
+   them a lesson.
+
+Bound the wait (we allow 120 seconds) so a Quartz that never prints the line
+cannot leave a teacher watching a spinner — show it anyway and let the reload
+do its work.
+
 ## What the conversation looks like, and why
 
 The assistant window is a CHAT, not a form with a log under it. That was a

@@ -554,7 +554,54 @@ struct SectionDetailView: View {
             waitedSeconds += 1
         }
 
-        // Phase 2: poll until the newly launched server responds.
+        // Phase 2: wait for the BUILD to finish, which is not the same moment
+        // as the server coming up — and that difference is the whole bug.
+        //
+        // Quartz's own handlers.js, in this order:
+        //
+        //     server.listen(argv.port)
+        //     "Started a Quartz server listening at ..."
+        //     await build(clientRefresh)
+        //
+        // It SERVES THE EXISTING public/ BEFORE IT REBUILDS IT. So the server
+        // answers 200 straight away with the previous build, and the fresh one
+        // lands seconds later. Waiting for an HTTP 200 — or for the "Started a
+        // Quartz server" line, which prints just as early — means showing the
+        // site as it was before the teacher's change, with nothing on screen
+        // to say so. Pressing Reload a moment later fixed it, which is exactly
+        // the shape of a race against the build.
+        //
+        // The honest signal is Quartz's emit line, printed once the output has
+        // actually been written: "Emitted N files to `public` in ...".
+        //
+        // Bounded, so a Quartz that never prints it cannot leave a teacher
+        // watching a spinner: after 120 seconds we show it anyway, and the
+        // reload below covers that case.
+        var buildFinished: Bool = false
+        var waitedForBuild: Int = 0
+        while waitedSeconds < 600 && waitedForBuild < 120 {
+            if !previewRunner.isRunning && previewRunner.lastExitCode != nil {
+                isWaitingForServer = false
+                releasePreviewLease()
+                return
+            }
+            if let announced = previewRunner.previewAddress {
+                serverURL = announced
+            }
+            if previewRunner.transcript.displayText.contains("Emitted ") {
+                buildFinished = true
+                break
+            }
+            try? await Task.sleep(for: .seconds(1))
+            waitedSeconds += 1
+            waitedForBuild += 1
+        }
+        if !buildFinished {
+            AppLog.interface.info("preview never reported a finished build; showing it anyway")
+        }
+
+        // Phase 3: poll until it actually answers, so the web view is never
+        // pointed at an address that is not ready.
         while waitedSeconds < 600 {
             if !previewRunner.isRunning && previewRunner.lastExitCode != nil {
                 isWaitingForServer = false
@@ -569,6 +616,22 @@ struct SectionDetailView: View {
                     if httpResponse.statusCode == 200 {
                         isWaitingForServer = false
                         previewURL = serverURL
+                        // And one reload, once, a moment after the page
+                        // appears.
+                        //
+                        // Belt and braces on purpose. Phase 2 should mean the
+                        // build is already finished by now, but this failure
+                        // is INVISIBLE when it happens — the teacher is shown
+                        // a page that looks fine and is simply out of date,
+                        // with nothing to suggest it — and pressing Reload by
+                        // hand was proved to fix it. A reload the teacher did
+                        // not ask for costs a flicker on a page they just
+                        // asked to appear; being quietly shown last week's
+                        // site costs them a lesson.
+                        Task { @MainActor in
+                            try? await Task.sleep(for: .milliseconds(900))
+                            previewController.reload()
+                        }
                         return
                     }
                 }
