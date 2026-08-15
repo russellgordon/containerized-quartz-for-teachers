@@ -69,23 +69,34 @@ enum AssistChatLayout {
 
 /// A chat bubble shaped like the one Messages draws.
 ///
-/// **The tail hangs BELOW the bubble.** This was got wrong twice in opposite
-/// directions, so it is worth stating plainly: the tip sits below the bubble's
-/// bottom edge and outside its side, and the underside of the tail curves back
-/// up INTO the bubble's bottom edge. A tail that only bulges sideways looks
-/// like a wedge stuck on the corner; a tail made of straight lines looks like
-/// a spike. It is the concave underside — the hook — that makes it read as a
-/// tail rather than as a shape that happens to be pointy.
+/// **Measured, not eyeballed.** Every number here was read off a screenshot of
+/// a real Messages conversation, pixel by pixel, after three attempts at
+/// guessing produced three different wrong shapes. On a single-line bubble at
+/// 2x, in points:
 ///
-/// Everything is drawn INSIDE the rect the background is given: the body gives
-/// up a strip below and to its own side, and the tail lives in that strip.
-/// Anything drawn outside is clipped, and a clipped tail is severed rather than
-/// pointed.
+/// | | |
+/// |---|---|
+/// | body height | 25.5 |
+/// | corner radius | 12 |
+/// | text inset, sides | 11 |
+/// | tail drop below the body | 4.5 |
+/// | tail tip, INSIDE the body's edge | 5.5 |
 ///
-/// Proportions scale with the corner radius rather than being fixed, so a
-/// short bubble and a tall one look like the same design. Both sides give up
-/// the same strip whether or not they have a tail, so a run of bubbles keeps
-/// one straight edge down the column.
+/// Two of those corrected assumptions worth stating, because both look right
+/// until measured. The tail **hangs below** the bubble — it is not level with
+/// the bottom edge. And it stays **within the bubble's width**: its tip is
+/// five and a half points INSIDE the right edge, not outside it. A tail drawn
+/// past the side reads as a wedge stuck onto the corner, which is what the
+/// last version was.
+///
+/// So the bubble is a rounded rectangle whose bottom corner, on the speaker's
+/// side, dips into a small hook. The hook's underside is concave, curving back
+/// up into the bottom edge — that curve, rather than the tip, is what makes
+/// the shape read as a tail.
+///
+/// Proportions are held relative to the corner radius so a short bubble and a
+/// tall one are the same design, and everything is drawn inside the rect the
+/// background is given, since anything outside it is clipped.
 struct AssistChatBubbleShape: Shape {
 
     // MARK: - Stored properties
@@ -93,26 +104,23 @@ struct AssistChatBubbleShape: Shape {
     let side: AssistChatSide
     let hasTail: Bool
 
-    /// The strip the tail needs: below the bubble, and beyond its side.
-    static let drop: CGFloat = 6
-    static let reach: CGFloat = 7
+    /// The strip below the bubble that the tail hangs into. Nothing is needed
+    /// at the sides: the tail never reaches past the bubble's own edge.
+    static let drop: CGFloat = 4.5
 
     /// Messages' corner radius, clamped for bubbles too short to take it.
-    private let corner: CGFloat = 17
+    private let corner: CGFloat = 12
 
     // MARK: - Functions
 
     func path(in rect: CGRect) -> Path {
-        // Every bubble gives up the same strip, tail or no tail, so a run of
-        // them lines up down the column.
+        // Every bubble gives up the same strip beneath it, tail or no tail, so
+        // a run of them sits on one rhythm rather than jumping by four points
+        // wherever a turn ends.
         var body: CGRect = rect
-        body.size.width -= AssistChatBubbleShape.reach
         body.size.height -= AssistChatBubbleShape.drop
-        if side == .assistant {
-            body.origin.x += AssistChatBubbleShape.reach
-        }
 
-        let radius: CGFloat = min(corner, body.height / 2)
+        let radius: CGFloat = min(corner, min(body.height, body.width) / 2)
 
         guard hasTail, side != .neither else {
             return Path(roundedRect: body, cornerRadius: radius)
@@ -126,38 +134,37 @@ struct AssistChatBubbleShape: Shape {
             return CGPoint(x: flip ? (rect.maxX - (x - rect.minX)) : x, y: y)
         }
 
-        let drop: CGFloat = AssistChatBubbleShape.drop
-        let reach: CGFloat = AssistChatBubbleShape.reach
+        // Measured, expressed against the radius so it all scales together.
+        let dropBelow: CGFloat = radius * 0.375     // 4.5 at r = 12
+        let tipInset: CGFloat = radius * 0.458      // 5.5 at r = 12
+        let hookBase: CGFloat = radius * 1.25       // where the underside rejoins
+
+        let tip: CGPoint = at(body.maxX - tipInset, body.maxY + dropBelow)
 
         var path: Path = Path()
-
-        // Top edge, left to right.
         path.move(to: at(body.minX + radius, body.minY))
         path.addLine(to: at(body.maxX - radius, body.minY))
         path.addQuadCurve(to: at(body.maxX, body.minY + radius),
                           control: at(body.maxX, body.minY))
 
-        // Down the right edge, stopping where the tail begins.
-        path.addLine(to: at(body.maxX, body.maxY - radius * 0.55))
-
-        // Out and DOWN to the tip, below the bubble's bottom and beyond its
-        // side. The first control keeps it flush with the edge as it leaves,
-        // so the tail grows out of the bubble instead of being attached to it.
+        // Down the right edge, then the corner dips into the tail instead of
+        // turning. Keeping the first control ON the edge is what makes the
+        // tail grow out of the bubble rather than sit against it.
+        path.addLine(to: at(body.maxX, body.maxY - radius))
         path.addCurve(
-            to: at(body.maxX + reach, body.maxY + drop),
-            control1: at(body.maxX, body.maxY - radius * 0.1),
-            control2: at(body.maxX + reach * 0.45, body.maxY + drop * 0.45)
+            to: tip,
+            control1: at(body.maxX, body.maxY - radius * 0.15),
+            control2: at(body.maxX - radius * 0.1, body.maxY + dropBelow * 0.75)
         )
 
-        // The hook: back up and in, concave, rejoining the bottom edge. This
-        // curve is the whole difference between a tail and a spike.
+        // The hook: back up and in, concave, rejoining the bottom edge.
         path.addCurve(
-            to: at(body.maxX - radius * 0.6, body.maxY),
-            control1: at(body.maxX + reach * 0.1, body.maxY + drop * 0.1),
-            control2: at(body.maxX - radius * 0.1, body.maxY)
+            to: at(body.maxX - hookBase, body.maxY),
+            control1: at(body.maxX - tipInset - radius * 0.15, body.maxY + dropBelow * 0.55),
+            control2: at(body.maxX - hookBase * 0.55, body.maxY)
         )
 
-        // Bottom edge back to the left, and up the far side.
+        // Bottom edge back to the far side, and up.
         path.addLine(to: at(body.minX + radius, body.maxY))
         path.addQuadCurve(to: at(body.minX, body.maxY - radius),
                           control: at(body.minX, body.maxY))
@@ -173,45 +180,63 @@ struct AssistChatBubbleShape: Shape {
 ///
 /// The conversation used to go silent between the teacher pressing return and
 /// the answer arriving — several seconds in which the only honest reading was
-/// that nothing had happened. Everyone who has used a messaging app knows
-/// what three pulsing dots mean, so nothing has to be explained.
+/// that nothing had happened. Everyone who has used a messaging app knows what
+/// three pulsing dots mean, so nothing has to be explained.
+///
+/// **It is a message, so it is a bubble** — grey, on the assistant's side, and
+/// wearing the tail, because it is always the newest thing in the
+/// conversation. Without the tail it read as a widget parked at the bottom
+/// rather than as the assistant about to speak.
+///
+/// The proportions matter more than the absolute size: the dots are large
+/// against a small bubble, not small against a wide one. A wide flat pill with
+/// three specks in it is the shape of a progress indicator, and this is meant
+/// to be the shape of somebody typing.
 struct AssistTypingIndicator: View {
 
     // MARK: - Stored properties
 
     /// Drives the animation. Toggled once when the view appears; the phase
-    /// difference between the dots comes from each dot's delay, not from
-    /// three separate pieces of state.
+    /// difference between the dots comes from each dot's delay, not from three
+    /// separate pieces of state.
     @State private var isBreathing: Bool = false
+
+    /// Large against the bubble, the way Messages draws them.
+    private let dot: CGFloat = 9
 
     // MARK: - Computed properties
 
     var body: some View {
-        HStack(spacing: 4) {
-            ForEach(0..<3, id: \.self) { index in
-                Circle()
-                    .fill(Color.secondary)
-                    .frame(width: 7, height: 7)
-                    .opacity(isBreathing ? 0.9 : 0.3)
-                    .animation(
-                        .easeInOut(duration: 0.6)
-                            .repeatForever(autoreverses: true)
-                            .delay(Double(index) * 0.18),
-                        value: isBreathing
-                    )
+        HStack {
+            HStack(spacing: 5) {
+                ForEach(0..<3, id: \.self) { index in
+                    Circle()
+                        .fill(Color.secondary)
+                        .frame(width: dot, height: dot)
+                        .opacity(isBreathing ? 0.95 : 0.35)
+                        // Each dot lags the one before it, so the three read
+                        // as a wave rather than as a single blink.
+                        .animation(
+                            .easeInOut(duration: 0.6)
+                                .repeatForever(autoreverses: true)
+                                .delay(Double(index) * 0.18),
+                            value: isBreathing
+                        )
+                }
             }
+            .padding(.horizontal, 12)
+            .padding(.top, 10)
+            .padding(.bottom, 10 + AssistChatBubbleShape.drop)
+            .background(
+                AssistChatBubbleShape(side: .assistant, hasTail: true)
+                    .fill(AssistBubbleColour.assistant)
+            )
+            Spacer(minLength: 48)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 11)
-        .background(
-            AssistChatBubbleShape(side: .assistant, hasTail: false)
-                .fill(Color.secondary.opacity(0.16))
-        )
-        .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear {
             isBreathing = true
         }
-        // Read out as one thing rather than three dots.
+        // Read out as one thing rather than as three dots.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("The assistant is working")
         .accessibilityIdentifier("assistTypingIndicator")
@@ -247,4 +272,33 @@ enum AssistSaid {
         }
         return AttributedString(text)
     }
+}
+
+/// The two bubble colours.
+///
+/// **Not `Color.accentColor`.** That is whatever accent the teacher has chosen
+/// in System Settings, and it is not always blue: set to graphite it would
+/// make the teacher's bubbles grey — the same grey as the assistant's — and
+/// the whole left/right, blue/grey distinction the window relies on would
+/// quietly disappear. Messages does not follow the accent either; its blue is
+/// its own.
+///
+/// The blue is SAMPLED from a Messages bubble rather than guessed: 20, 147,
+/// 255. The obvious candidates are all near it and none is it — the system
+/// blue is (0, 122, 255) and its dark variant (10, 132, 255) — and being a
+/// few points out is exactly the sort of thing that reads as "nearly right",
+/// which is worse than clearly different.
+///
+/// Taken from a dark-appearance screenshot. Messages appears to use the same
+/// blue in both appearances, and this is used in both; if it turns out to
+/// differ in light mode, this is the one place to say so.
+enum AssistBubbleColour {
+
+    // MARK: - Stored properties
+
+    static let teacher: Color = Color(red: 20 / 255, green: 147 / 255, blue: 255 / 255)
+
+    /// The assistant's side stays a system grey, so it follows the
+    /// appearance the way the surrounding window does.
+    static let assistant: Color = Color.secondary.opacity(0.16)
 }

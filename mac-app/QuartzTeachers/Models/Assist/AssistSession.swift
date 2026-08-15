@@ -73,7 +73,26 @@ final class AssistSession {
     }
 
     /// Whether the teacher can type.
+    ///
+    /// True while the assistant is working, deliberately. Disabling the box
+    /// mid-conversation does two unhelpful things: it takes the keyboard away
+    /// — macOS moves focus to the next thing it can find, which was the first
+    /// disclosure group in the shelf — and it stops a teacher writing their
+    /// next message while they wait, which every messaging app they have ever
+    /// used allows.
+    ///
+    /// What must not happen while it is busy is SENDING, and that is guarded
+    /// separately by `canSend`.
     var canAcceptTyping: Bool {
+        return readiness == .ready
+    }
+
+    /// Whether what is typed can be sent right now.
+    ///
+    /// The assistant runs one thing at a time — a second request arriving
+    /// mid-run would interleave with the tool calls of the first — so the
+    /// send waits even though the typing does not.
+    var canSend: Bool {
         guard readiness == .ready, let agent else {
             return false
         }

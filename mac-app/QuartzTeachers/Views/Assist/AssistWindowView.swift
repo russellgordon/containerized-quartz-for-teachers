@@ -151,8 +151,7 @@ struct AssistWindowView: View {
             .accessibilityIdentifier("assistRestoreSectionButton")
         }
         .padding(.horizontal, 12)
-        .padding(.top, 8)
-                    .padding(.bottom, 8 + AssistChatBubbleShape.drop)
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.bar)
         .alert(
@@ -270,13 +269,21 @@ struct AssistWindowView: View {
         }
     }
 
+    /// The box, shaped the way Messages shapes it: one rounded field with the
+    /// send button living inside its right end, rather than a plain rule of a
+    /// text field with a button parked beside it.
     private var composer: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             TextField("Ask about this section…", text: $typing, axis: .vertical)
                 .textFieldStyle(.plain)
                 .lineLimit(1...4)
                 .onSubmit {
-                    Task { await send(typing) }
+                    // Ignored while the assistant is mid-run: it does one
+                    // thing at a time, and a second request would interleave
+                    // with the first one's tool calls.
+                    if session.canSend {
+                        Task { await send(typing) }
+                    }
                 }
                 // Up and Down walk what has been asked before, the way a
                 // Terminal does.
@@ -329,10 +336,25 @@ struct AssistWindowView: View {
                     .font(.title2)
             }
             .buttonStyle(.plain)
-            .disabled(!session.canAcceptTyping || typing.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            .disabled(!session.canSend || typing.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             .accessibilityIdentifier("assistSendButton")
         }
-        .padding(10)
+        // A continuous rounded rectangle rather than a Capsule: at one line
+        // the two are indistinguishable, and when the box grows to four lines
+        // a capsule's ends bow outwards while this keeps its shape.
+        .padding(.leading, 12)
+        .padding(.trailing, 6)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 17, style: .continuous)
+                .fill(Color.secondary.opacity(0.10))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 17, style: .continuous)
+                .strokeBorder(Color.secondary.opacity(0.35), lineWidth: 1)
+        )
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
         .background(.bar)
     }
 
@@ -400,8 +422,14 @@ struct AssistWindowView: View {
         typing = ""
         // The cursor stays put. A teacher sending two things in a row should
         // not have to click back into the box between them, and losing focus
-        // after every send also loses the arrow-key history that depends on
+        // after every send also loses the arrow-key history, which depends on
         // the field having it.
+        //
+        // This only works because the box is no longer DISABLED while the
+        // assistant runs: a disabled field cannot hold focus, so macOS moved
+        // the keyboard to the next thing it could find — the first disclosure
+        // group in the shelf — and setting focus beforehand could not survive
+        // that.
         isComposerFocused = true
         await session.agent?.say(message)
     }
@@ -465,13 +493,13 @@ private struct AssistEntryView: View {
                 Text(entry.text)
                     .foregroundStyle(.white)
                     .textSelection(.enabled)
-                    .padding(.leading, 12)
-                    .padding(.trailing, 12 + AssistChatBubbleShape.reach)
-                    .padding(.top, 8)
-                    .padding(.bottom, 8 + AssistChatBubbleShape.drop)
+                    .padding(.leading, 11)
+                    .padding(.trailing, 11)
+                    .padding(.top, 5)
+                .padding(.bottom, 5 + AssistChatBubbleShape.drop)
                     .background(
                         AssistChatBubbleShape(side: .teacher, hasTail: hasTail)
-                            .fill(Color.accentColor)
+                            .fill(AssistBubbleColour.teacher)
                     )
             }
             .padding(.bottom, hasTail ? 4 : 0)
@@ -485,13 +513,13 @@ private struct AssistEntryView: View {
                     .textSelection(.enabled)
                     // The tail's side gets the extra room, so the words sit
                     // the same distance from the bubble's edge on both sides.
-                    .padding(.leading, 12 + AssistChatBubbleShape.reach)
-                    .padding(.trailing, 12)
-                    .padding(.top, 8)
-                    .padding(.bottom, 8 + AssistChatBubbleShape.drop)
+                    .padding(.leading, 11)
+                    .padding(.trailing, 11)
+                    .padding(.top, 5)
+                .padding(.bottom, 5 + AssistChatBubbleShape.drop)
                     .background(
                         AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
-                            .fill(Color.secondary.opacity(0.16))
+                            .fill(AssistBubbleColour.assistant)
                     )
                 Spacer(minLength: 48)
             }
@@ -524,13 +552,13 @@ private struct AssistEntryView: View {
                         .accessibilityIdentifier("assistResultDetail")
                     }
                 }
-                .padding(.leading, 12 + AssistChatBubbleShape.reach)
-                .padding(.trailing, 12)
-                .padding(.top, 8)
-                    .padding(.bottom, 8 + AssistChatBubbleShape.drop)
+                .padding(.leading, 11)
+                .padding(.trailing, 11)
+                .padding(.top, 5)
+                .padding(.bottom, 5 + AssistChatBubbleShape.drop)
                 .background(
                     AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
-                        .fill(Color.secondary.opacity(0.16))
+                        .fill(AssistBubbleColour.assistant)
                 )
                 Spacer(minLength: 48)
             }
@@ -541,13 +569,13 @@ private struct AssistEntryView: View {
                 Label(entry.text, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.orange)
                     .textSelection(.enabled)
-                    .padding(.leading, 12 + AssistChatBubbleShape.reach)
-                    .padding(.trailing, 12)
-                    .padding(.top, 8)
-                    .padding(.bottom, 8 + AssistChatBubbleShape.drop)
+                    .padding(.leading, 11)
+                    .padding(.trailing, 11)
+                    .padding(.top, 5)
+                .padding(.bottom, 5 + AssistChatBubbleShape.drop)
                     .background(
                         AssistChatBubbleShape(side: .assistant, hasTail: hasTail)
-                            .fill(Color.secondary.opacity(0.16))
+                            .fill(AssistBubbleColour.assistant)
                     )
                 Spacer(minLength: 48)
             }
