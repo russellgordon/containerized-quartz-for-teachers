@@ -223,11 +223,16 @@ public sealed class AssistAgent
     /// </summary>
     private const int MostStepsPerTurn = 6;
 
+    private readonly string _courseCode;
+    private readonly int _section;
+
     public AssistAgent(IChatModel model, IToolServer tools, JsonArray schemas, string courseCode, int section)
     {
         _model = model;
         _tools = tools;
         _schemas = schemas;
+        _courseCode = courseCode;
+        _section = section;
         _messages.Add(new JsonObject
         {
             ["role"] = "system",
@@ -416,6 +421,7 @@ public sealed class AssistAgent
     public async Task<List<Line>> Say(string text, CancellationToken cancellation)
     {
         if (PreviewAskedForPlainly(text) is { } handled) return handled;
+        if (await CardCommand(text, cancellation) is { } commanded) return commanded;
 
         var today = DateTime.Now;
         _dateline = $" (Today is {today:yyyy-MM-dd}, a {today.DayOfWeek}.)";
@@ -425,6 +431,160 @@ public sealed class AssistAgent
             ["content"] = text + _dateline,
         });
         return await Run(cancellation);
+    }
+
+    /// <summary>
+    /// The promise card's shapes, answered as COMMANDS rather than routing
+    /// questions.
+    ///
+    /// Measured against the card, word for word, the model failed five of
+    /// its eleven promises outright — "Publish Unit 2, Day 3, and everything
+    /// it links to" went to the publish-by-date tool three trials out of
+    /// three, "Deploy this section now" never once reached the deploy tool,
+    /// and bare "Undo that" was declined every time. These phrasings are the
+    /// ones the window itself tells teachers to use; a promise the router
+    /// keeps three times out of four is not a promise. Each fixed shape is
+    /// matched here and the tool call synthesised exactly — same gates, same
+    /// stop-edit-offer flow, and instant, because no model is consulted.
+    /// The model keeps everything these patterns do not match, which is
+    /// everything genuinely conversational.
+    /// </summary>
+    private async Task<List<Line>?> CardCommand(string text, CancellationToken cancellation)
+    {
+        string request = text.Trim().TrimEnd('.', '!');
+
+        // Publish/unpublish a NAMED page. Anything dated — "tomorrow's
+        // class" — falls through to the model, which handles dates well now
+        // that it is told the date.
+        var withLinks = System.Text.RegularExpressions.Regex.Match(request,
+            @"^(?<verb>publish|unpublish)\s+(?<title>.+?),?\s+and everything it links to$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var named = System.Text.RegularExpressions.Regex.Match(request,
+            @"^(?<verb>publish|unpublish)\s+(?<title>unit\s+\d+,\s*day\s+\d+)$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var planned = System.Text.RegularExpressions.Regex.Match(request,
+            @"^what would publishing\s+(?<title>.+?)\s+change\??$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var undo = System.Text.RegularExpressions.Regex.Match(request,
+            @"^(please\s+)?undo(\s+(that|it|the last change))?$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var deployNow = System.Text.RegularExpressions.Regex.Match(request,
+            @"^(please\s+)?deploy(\s+(this|the))?\s+(section|site)(\s+now)?$|^deploy now$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var scheduled = System.Text.RegularExpressions.Regex.Match(request,
+            @"^deploy tomorrow'?s class at\s+(?<hour>\d{1,2})(:(?<minute>\d{2}))?\s*(?<half>am|pm)$",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+        static bool Dated(string title) =>
+            title.Contains("tomorrow", StringComparison.OrdinalIgnoreCase) ||
+            title.Contains("today", StringComparison.OrdinalIgnoreCase);
+
+        if (withLinks.Success && !Dated(withLinks.Groups["title"].Value))
+        {
+            string tool = withLinks.Groups["verb"].Value.StartsWith("un", StringComparison.OrdinalIgnoreCase)
+                ? "unpublish_pages" : "publish_pages";
+            return await RunCommand(text, tool, PageArguments(withLinks.Groups["title"].Value, includeLinked: true),
+                                    cancellation);
+        }
+        if (named.Success)
+        {
+            string tool = named.Groups["verb"].Value.StartsWith("un", StringComparison.OrdinalIgnoreCase)
+                ? "unpublish_pages" : "publish_pages";
+            return await RunCommand(text, tool, PageArguments(named.Groups["title"].Value, includeLinked: false),
+                                    cancellation);
+        }
+        if (planned.Success && !Dated(planned.Groups["title"].Value))
+            return await RunCommand(text, "plan_publish_pages",
+                                    PageArguments(planned.Groups["title"].Value, includeLinked: true),
+                                    cancellation);
+        if (undo.Success)
+            return await RunCommand(text, "undo_last_change", new JsonObject(), cancellation);
+        if (deployNow.Success)
+            return AskFirst(text, "deploy_section", new JsonObject
+            {
+                ["course"] = _courseCode,
+                ["section"] = _section,
+            });
+        if (scheduled.Success)
+        {
+            int hour = int.Parse(scheduled.Groups["hour"].Value);
+            int minute = scheduled.Groups["minute"].Success ? int.Parse(scheduled.Groups["minute"].Value) : 0;
+            if (scheduled.Groups["half"].Value.Equals("pm", StringComparison.OrdinalIgnoreCase) && hour < 12) hour += 12;
+            if (scheduled.Groups["half"].Value.Equals("am", StringComparison.OrdinalIgnoreCase) && hour == 12) hour = 0;
+            string when = $"{DateTime.Now.AddDays(1):yyyy-MM-dd} {hour:00}:{minute:00}";
+            return AskFirst(text, "schedule_deploy", new JsonObject
+            {
+                ["course"] = _courseCode,
+                ["section"] = _section,
+                ["when"] = when,
+            });
+        }
+        return null;
+    }
+
+    private JsonObject PageArguments(string title, bool includeLinked) => new()
+    {
+        ["course"] = _courseCode,
+        ["section"] = _section,
+        ["includeLinked"] = includeLinked,
+        ["pages"] = new JsonArray(JsonValue.Create(TidyTitle(title))),
+    };
+
+    /// <summary>Quotes off, "Unit 2, Day 3" capitalised the way pages are titled.</summary>
+    private static string TidyTitle(string title)
+    {
+        title = title.Trim().Trim('"', '“', '”', '\'');
+        return System.Text.RegularExpressions.Regex.Replace(title, @"^unit\s+(\d+),\s*day\s+(\d+)$",
+            m => $"Unit {m.Groups[1].Value}, Day {m.Groups[2].Value}",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    }
+
+    /// <summary>
+    /// A synthesised tool call, recorded in the transcript exactly as if the
+    /// model had made it — the assistant message carries the call, the tool
+    /// message carries the result — so a later, genuinely conversational
+    /// turn reads a history that makes sense.
+    /// </summary>
+    private JsonObject Synthesise(string userText, string tool, JsonObject arguments)
+    {
+        var call = new JsonObject
+        {
+            ["id"] = $"command-{_messages.Count}",
+            ["type"] = "function",
+            ["function"] = new JsonObject
+            {
+                ["name"] = tool,
+                ["arguments"] = arguments.ToJsonString(),
+            },
+        };
+        _messages.Add(new JsonObject { ["role"] = "user", ["content"] = userText });
+        _messages.Add(new JsonObject
+        {
+            ["role"] = "assistant",
+            ["tool_calls"] = new JsonArray(call.DeepClone()),
+        });
+        return call;
+    }
+
+    private async Task<List<Line>> RunCommand(string userText, string tool, JsonObject arguments,
+                                              CancellationToken cancellation)
+    {
+        var call = Synthesise(userText, tool, arguments);
+        var lines = new List<Line>();
+        string result = await RunTool(call, lines, cancellation);
+        lines.Add(new Line("tools", result));
+        TurnEnded(lines);   // the offer, when the command edited pages
+        return lines;
+    }
+
+    private List<Line> AskFirst(string userText, string tool, JsonObject arguments)
+    {
+        _awaiting = Synthesise(userText, tool, arguments);
+        return new List<Line>
+        {
+            new("assistant", $"I’d like to run **{tool.Replace('_', ' ')}**. Shall I go ahead?",
+                NeedsApproval: true, Pending: tool),
+        };
     }
 
     /// <summary>This turn's date note, remembered so a parroting reply can have it stripped.</summary>

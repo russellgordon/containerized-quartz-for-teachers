@@ -107,26 +107,27 @@ public class AssistAgentTests
     // ---- Publishing a class ---------------------------------------------
 
     [Fact]
-    public void PublishingAClassRunsWithoutAskingAndOffersThePreview()
+    public void PublishingAClassIsACommandNotARoutingQuestion()
     {
-        // "Publish Unit 2, Day 3, and everything it links to" — the model
-        // routes it; the loop must run it freely (no approval), decline the
-        // server's own build, and end the turn with the restart question.
+        // "Publish Unit 2, Day 3, and everything it links to" — the card's
+        // own wording. Measured, the model sent it to the publish-by-DATE
+        // tool three trials out of three, so the shape is matched in code:
+        // exact tool, exact arguments, server's build declined, restart
+        // offered, and the model never consulted.
         var rig = new Rig();
-        rig.Model.ThenCalls("publish_pages",
-            """{"course": "VVH2O", "section": 1, "pages": ["Unit 2, Day 3"], "includeLinked": true}""");
         rig.Tools.Result = "Published “Unit 2, Day 3” and the 3 pages it links to.";
 
         var lines = rig.Say("Publish Unit 2, Day 3, and everything it links to");
 
+        Assert.Empty(rig.Model.Asked);
         var call = Assert.Single(rig.Tools.Calls);
         Assert.Equal("publish_pages", call.Name);
+        Assert.True(call.Arguments["includeLinked"]!.GetValue<bool>());
+        Assert.Equal("Unit 2, Day 3", call.Arguments["pages"]![0]!.GetValue<string>());
         Assert.False(call.Arguments["preview"]!.GetValue<bool>());
         Assert.Contains(lines, l => l.Text.Contains("Published “Unit 2, Day 3”"));
         Assert.True(lines[^1].NeedsApproval);
         Assert.Contains("preview", lines[^1].Text, StringComparison.OrdinalIgnoreCase);
-        // The model was consulted exactly once: no what-next echo round.
-        Assert.Single(rig.Model.Asked);
     }
 
     [Fact]
@@ -155,12 +156,11 @@ public class AssistAgentTests
         // first live run skipped all three: the preview kept serving the old
         // build and the teacher concluded the assistant was stuck.
         var rig = new Rig { PreviewShowing = true };
-        rig.Model.ThenCalls("unpublish_pages",
-            """{"course": "VVH2O", "section": 1, "pages": ["Unit 2, Day 3"], "includeLinked": false}""");
         rig.Tools.Result = "Unpublished “Unit 2, Day 3”.";
 
         var lines = rig.Say("Unpublish Unit 2, Day 3");
 
+        Assert.Empty(rig.Model.Asked);                        // the card's shape is a command
         Assert.Equal("stop preview", rig.AppActions[0]);      // before the edit
         Assert.False(Assert.Single(rig.Tools.Calls).Arguments["preview"]!.GetValue<bool>());
         Assert.True(rig.Agent.IsAwaitingApproval);
@@ -190,7 +190,6 @@ public class AssistAgentTests
     public void AnEditWithNoPreviewShowingStopsNothingButStillOffers()
     {
         var rig = new Rig { PreviewShowing = false };
-        rig.Model.ThenCalls("unpublish_pages", """{"course": "VVH2O", "section": 1}""");
 
         var lines = rig.Say("Unpublish Unit 2, Day 3");
 
@@ -201,22 +200,23 @@ public class AssistAgentTests
     // ---- Looking before you leap ----------------------------------------
 
     [Fact]
-    public void PlanQuestionsRunFreelyAndTheModelSummarises()
+    public void PlanQuestionsAnswerWithThePlansOwnSentence()
     {
-        // "What would publishing Unit 3, Day 1 change?" — a plan tool reads,
-        // the loop lets the model turn the answer into a sentence, and
-        // nothing needs a button.
+        // "What would publishing Unit 3, Day 1 change?" — the plan tool's
+        // result is written to be read aloud, so it IS the answer: no model
+        // round to summarise it (measured, the model routed this to the
+        // wrong plan tool three trials out of three), and no button.
         var rig = new Rig();
-        rig.Model.ThenCalls("plan_publish_pages",
-            """{"course": "VVH2O", "section": 1, "pages": ["Unit 3, Day 1"], "includeLinked": true}""");
-        rig.Model.ThenSays("Publishing “Unit 3, Day 1” would change 4 pages.");
-        rig.Tools.Result = "Would publish “Unit 3, Day 1” and 3 linked pages.";
+        rig.Tools.Result = "Would publish “Unit 3, Day 1” and the 3 pages it links to.";
 
         var lines = rig.Say("What would publishing Unit 3, Day 1 change?");
 
-        Assert.Equal("plan_publish_pages", Assert.Single(rig.Tools.Calls).Name);
+        Assert.Empty(rig.Model.Asked);
+        var call = Assert.Single(rig.Tools.Calls);
+        Assert.Equal("plan_publish_pages", call.Name);
+        Assert.Equal("Unit 3, Day 1", call.Arguments["pages"]![0]!.GetValue<string>());
         Assert.False(rig.Agent.IsAwaitingApproval);
-        Assert.Contains(lines, l => l.Text.Contains("would change 4 pages"));
+        Assert.Contains(lines, l => l.Text.Contains("Would publish “Unit 3, Day 1”"));
     }
 
     [Fact]
@@ -282,14 +282,17 @@ public class AssistAgentTests
     }
 
     [Fact]
-    public void UndoRunsFreelyAndOffersThePreview()
+    public void UndoIsACommandAndOffersThePreview()
     {
+        // Bare "Undo that" was DECLINED by the model three trials out of
+        // three — without conversation context it saw nothing to undo. It
+        // means exactly one thing, so it is matched in code.
         var rig = new Rig();
-        rig.Model.ThenCalls("undo_last_change");
         rig.Tools.Result = "Took back the last change.";
 
         var lines = rig.Say("Undo that");
 
+        Assert.Empty(rig.Model.Asked);
         Assert.Equal("undo_last_change", Assert.Single(rig.Tools.Calls).Name);
         Assert.Contains(lines, l => l.Text.Contains("Took back the last change."));
         Assert.True(lines[^1].NeedsApproval);   // the restart offer
@@ -300,14 +303,15 @@ public class AssistAgentTests
     [Fact]
     public void DeployingWaitsForTheButtonAndThenDrivesTheMainWindow()
     {
-        // The one gate left. Nothing must happen — no app action, no server
-        // call — until the teacher presses the button; then the deploy runs
+        // The one gate left, reached as a command — measured, "Deploy this
+        // section now" never once routed to the deploy tool. Nothing must
+        // happen until the teacher presses the button; then the deploy runs
         // through the main window's own flow, never the server's.
         var rig = new Rig();
-        rig.Model.ThenCalls("deploy_section", """{"course": "VVH2O", "section": 1}""");
 
         var lines = rig.Say("Deploy this section now");
 
+        Assert.Empty(rig.Model.Asked);
         Assert.True(rig.Agent.IsAwaitingApproval);
         Assert.Empty(rig.AppActions);
         Assert.Empty(rig.Tools.Calls);
@@ -323,8 +327,7 @@ public class AssistAgentTests
     public void DecliningADeployRunsNothing()
     {
         var rig = new Rig();
-        rig.Model.ThenCalls("deploy_section", """{"course": "VVH2O", "section": 1}""");
-        rig.Model.ThenSays("All right — nothing deployed.");
+        rig.Model.ThenSays("All right — nothing deployed.");   // the model carries on after the no
 
         rig.Say("Deploy this section now");
         rig.Decline();
@@ -336,21 +339,23 @@ public class AssistAgentTests
     [Fact]
     public void SchedulingADeployIsApprovedAtSchedulingTime()
     {
-        // "Deploy tomorrow's class at 6:30 AM" — the yes is collected NOW,
-        // because the firing at 6:30 asks nobody. The tool itself runs on
-        // the server; scheduling is not a deploy.
+        // "Deploy tomorrow's class at 6:30 AM" — matched in code (measured,
+        // the model answered it with a publish tool three trials out of
+        // three), the time parsed, and the yes collected NOW, because the
+        // firing at 6:30 asks nobody. The tool itself runs on the server:
+        // scheduling has to outlive the window.
         var rig = new Rig();
-        rig.Model.ThenCalls("schedule_deploy",
-            """{"course": "VVH2O", "section": 1, "when": "2026-08-15 06:30"}""");
-        rig.Model.ThenSays("Scheduled for 6:30 tomorrow morning.");
         rig.Tools.Result = "This computer will deploy VVH2O section 1 at 06:30.";
 
         var asked = rig.Say("Deploy tomorrow's class at 6:30 AM");
+        Assert.Empty(rig.Model.Asked);
         Assert.True(asked[^1].NeedsApproval);
         Assert.Empty(rig.Tools.Calls);
 
         var answer = rig.Approve();
-        Assert.Equal("schedule_deploy", Assert.Single(rig.Tools.Calls).Name);
+        var call = Assert.Single(rig.Tools.Calls);
+        Assert.Equal("schedule_deploy", call.Name);
+        Assert.Equal($"{DateTime.Now.AddDays(1):yyyy-MM-dd} 06:30", call.Arguments["when"]!.GetValue<string>());
         Assert.Contains(answer, l => l.Text.Contains("06:30"));
     }
 
@@ -371,6 +376,25 @@ public class AssistAgentTests
         Assert.Contains(lines, l => l.Text.Contains("cancelled", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Theory]
+    [InlineData("Publish tomorrow's class")]
+    [InlineData("Publish the Safety Contract page")]
+    [InlineData("I published Unit 4, Day 1 by mistake — unpublish it")]
+    [InlineData("What would publishing tomorrow's class change?")]
+    [InlineData("Deploy tomorrow's class when the bell goes")]
+    public void AnythingConversationalStillGoesToTheModel(string phrasing)
+    {
+        // The command layer handles the card's fixed shapes and nothing
+        // more. Dated titles, freeform titles, sentences with a story in
+        // them — those are what the model is for.
+        var rig = new Rig();
+        rig.Model.ThenSays("Let me look into that.");
+
+        rig.Say(phrasing);
+
+        Assert.NotEmpty(rig.Model.Asked);
+    }
+
     // ---- The transcript never shows the machinery ------------------------
 
     [Fact]
@@ -379,12 +403,14 @@ public class AssistAgentTests
         // The model parrots the request back beside its tool call —
         // "Unpublishing Unit 4, Day 5 (Today is 2026-08-14, a Friday.)",
         // dateline and all, shown to the teacher who had just typed it.
+        // A conversational phrasing, because the card's own shape is a
+        // command that never reaches the model.
         var rig = new Rig();
         rig.Model.ThenCalls("unpublish_pages", """{"course": "VVH2O", "section": 1}""",
             alsoSays: "Unpublishing Unit 4, Day 5 (Today is 2026-08-14, a Friday.)");
         rig.Tools.Result = "Unpublished “Unit 4, Day 5”.";
 
-        var lines = rig.Say("Unpublish Unit 4, Day 5");
+        var lines = rig.Say("Take Unit 4, Day 5 down for me, would you?");
 
         Assert.DoesNotContain(lines, l => l.Text.Contains("Unpublishing Unit 4, Day 5"));
         Assert.Contains(lines, l => l.Text.Contains("Unpublished “Unit 4, Day 5”."));
