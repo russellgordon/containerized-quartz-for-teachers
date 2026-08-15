@@ -1,6 +1,6 @@
 ---
 title: Correlation and Causation
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

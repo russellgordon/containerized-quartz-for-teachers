@@ -1,6 +1,6 @@
 ---
 title: Fieldwork
-draft: false
+publish: true
 created: __CREATED__
 ---
 Three sites within reach of the school, each carrying evidence you cannot

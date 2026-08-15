@@ -1,6 +1,6 @@
 ---
 title: The Evidence File
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

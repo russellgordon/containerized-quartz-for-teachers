@@ -1,6 +1,6 @@
 ---
 title: What Can This Planet Support?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

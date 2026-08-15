@@ -1,6 +1,6 @@
 ---
 title: Setup
-draft: false
+publish: true
 created: __CREATED__
 ---
 How this room runs, what to bring to it, and how the marking works. Read

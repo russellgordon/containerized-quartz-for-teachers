@@ -1,6 +1,6 @@
 ---
 title: Portfolios
-draft: false
+publish: true
 created: __CREATED__
 ---
 Work you keep rather than hand in once. The notebook runs all year; the

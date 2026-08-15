@@ -1,6 +1,6 @@
 ---
 title: Showing and Feedback
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - choreography

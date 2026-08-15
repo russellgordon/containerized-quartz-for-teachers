@@ -1,6 +1,6 @@
 ---
 title: The Story Behind the Story
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

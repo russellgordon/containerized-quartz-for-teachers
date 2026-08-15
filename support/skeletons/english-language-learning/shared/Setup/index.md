@@ -1,6 +1,6 @@
 ---
 title: Setup
-draft: false
+publish: true
 created: __CREATED__
 ---
 How the course runs — the pages a student reads once in September and comes

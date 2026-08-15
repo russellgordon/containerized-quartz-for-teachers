@@ -1,6 +1,6 @@
 ---
 title: The Human-Resource Process
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

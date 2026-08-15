@@ -1,6 +1,6 @@
 ---
 title: Discussions
-draft: false
+publish: true
 created: __CREATED__
 ---
 Seminar questions where the evidence genuinely divides. Each page says

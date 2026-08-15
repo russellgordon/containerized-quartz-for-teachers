@@ -1,6 +1,6 @@
 ---
 title: What Art Is For
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

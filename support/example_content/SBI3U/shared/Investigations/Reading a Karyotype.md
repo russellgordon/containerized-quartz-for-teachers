@@ -1,6 +1,6 @@
 ---
 title: Reading a Karyotype
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

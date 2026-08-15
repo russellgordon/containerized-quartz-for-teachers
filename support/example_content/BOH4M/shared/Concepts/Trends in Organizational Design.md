@@ -1,6 +1,6 @@
 ---
 title: Trends in Organizational Design
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

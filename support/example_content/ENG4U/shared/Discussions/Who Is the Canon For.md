@@ -1,6 +1,6 @@
 ---
 title: Who Is the Canon For
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

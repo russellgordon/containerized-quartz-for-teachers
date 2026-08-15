@@ -1,6 +1,6 @@
 ---
 title: What Population Change Does
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

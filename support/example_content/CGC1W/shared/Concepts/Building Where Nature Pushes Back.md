@@ -1,6 +1,6 @@
 ---
 title: Building Where Nature Pushes Back
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

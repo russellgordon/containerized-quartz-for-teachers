@@ -1,6 +1,6 @@
 ---
 title: Where the Records Live
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - sources

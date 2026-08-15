@@ -1,6 +1,6 @@
 ---
 title: Indigenous Policy and Indigenous Response
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

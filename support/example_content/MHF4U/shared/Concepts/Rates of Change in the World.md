@@ -1,6 +1,6 @@
 ---
 title: Rates of Change in the World
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

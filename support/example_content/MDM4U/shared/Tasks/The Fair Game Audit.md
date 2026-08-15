@@ -1,6 +1,6 @@
 ---
 title: The Fair Game Audit
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

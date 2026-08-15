@@ -1,6 +1,6 @@
 ---
 title: Lenses Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - optics

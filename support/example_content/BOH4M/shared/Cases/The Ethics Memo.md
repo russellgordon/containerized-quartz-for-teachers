@@ -1,6 +1,6 @@
 ---
 title: The Ethics Memo
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - cases

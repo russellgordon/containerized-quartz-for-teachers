@@ -1,6 +1,6 @@
 ---
 title: Composition From a Stimulus
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

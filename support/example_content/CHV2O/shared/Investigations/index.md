@@ -1,6 +1,6 @@
 ---
 title: Investigations
-draft: false
+publish: true
 created: __CREATED__
 ---
 A real question about a real decision, worked until you can name who

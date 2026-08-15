@@ -1,6 +1,6 @@
 ---
 title: Using a Dichotomous Key
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

@@ -1,6 +1,6 @@
 ---
 title: Writing About Yourself Without Cringing
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

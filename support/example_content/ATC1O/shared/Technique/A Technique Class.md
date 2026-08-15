@@ -1,6 +1,6 @@
 ---
 title: A Technique Class
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - technique

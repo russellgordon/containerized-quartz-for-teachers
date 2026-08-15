@@ -1,6 +1,6 @@
 ---
 title: Statistics and the Census
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - sources

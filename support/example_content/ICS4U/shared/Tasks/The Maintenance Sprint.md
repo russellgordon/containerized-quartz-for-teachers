@@ -1,6 +1,6 @@
 ---
 title: The Maintenance Sprint
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

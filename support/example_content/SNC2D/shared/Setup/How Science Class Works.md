@@ -1,6 +1,6 @@
 ---
 title: How Science Class Works
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

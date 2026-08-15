@@ -1,6 +1,6 @@
 ---
 title: What You Take With You
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

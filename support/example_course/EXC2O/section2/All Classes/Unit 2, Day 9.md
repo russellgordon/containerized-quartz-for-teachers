@@ -1,6 +1,6 @@
 ---
 title: Unit 2, Day 9
-draft: false
+publish: true
 created: 2026-10-09T07:00:00.000-0400
 transcludeTitleSize: h2
 enableToc: false

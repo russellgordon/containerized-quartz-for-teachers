@@ -1,6 +1,6 @@
 ---
 title: What Happens When You Leave
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

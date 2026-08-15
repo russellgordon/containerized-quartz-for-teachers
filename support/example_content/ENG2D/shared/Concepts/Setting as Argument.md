@@ -1,6 +1,6 @@
 ---
 title: Setting as Argument
-draft: false
+publish: true
 created: __CREATED__
 ---
 Setting is not background. In a good text the where and when are doing

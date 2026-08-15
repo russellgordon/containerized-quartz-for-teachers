@@ -1,6 +1,6 @@
 ---
 title: Health and Safety in the Shop
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

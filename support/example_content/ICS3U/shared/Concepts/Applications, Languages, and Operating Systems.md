@@ -1,6 +1,6 @@
 ---
 title: Applications, Languages, and Operating Systems
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

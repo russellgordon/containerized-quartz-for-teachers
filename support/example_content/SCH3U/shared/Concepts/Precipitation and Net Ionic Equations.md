@@ -1,6 +1,6 @@
 ---
 title: Precipitation and Net Ionic Equations
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

@@ -1,6 +1,6 @@
 ---
 title: Getting Help
-draft: false
+publish: true
 created: __CREATED__
 ---
 1. **Ask the person beside you.** Half of English is talking about a text

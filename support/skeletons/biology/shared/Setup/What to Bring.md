@@ -1,6 +1,6 @@
 ---
 title: What to Bring
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - setup

@@ -1,6 +1,6 @@
 ---
 title: Forces That Shape a Community
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

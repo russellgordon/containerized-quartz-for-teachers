@@ -1,6 +1,6 @@
 ---
 title: Thesis Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 Turn each observation into a claim with a mechanism, per

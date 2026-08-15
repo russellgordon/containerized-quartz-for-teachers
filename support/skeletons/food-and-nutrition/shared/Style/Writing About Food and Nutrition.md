@@ -1,6 +1,6 @@
 ---
 title: Writing About Food and Nutrition
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

@@ -1,6 +1,6 @@
 ---
 title: Corrosion and Electrolysis
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

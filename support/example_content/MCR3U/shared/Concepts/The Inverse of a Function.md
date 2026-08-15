@@ -1,6 +1,6 @@
 ---
 title: The Inverse of a Function
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

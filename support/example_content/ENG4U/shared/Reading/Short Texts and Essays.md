@@ -1,6 +1,6 @@
 ---
 title: Short Texts and Essays
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

@@ -1,7 +1,7 @@
 ---
 title: Bohr-Rutherford Diagrams
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - chemistry

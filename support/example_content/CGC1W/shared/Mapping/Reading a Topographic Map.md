@@ -1,6 +1,6 @@
 ---
 title: Reading a Topographic Map
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - mapping

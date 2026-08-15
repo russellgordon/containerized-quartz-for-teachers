@@ -1,6 +1,6 @@
 ---
 title: Writing About Management
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - style

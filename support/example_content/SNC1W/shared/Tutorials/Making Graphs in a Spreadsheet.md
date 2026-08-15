@@ -1,7 +1,7 @@
 ---
 title: Making Graphs in a Spreadsheet
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - skills

@@ -1,6 +1,6 @@
 ---
 title: Clients
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - clients

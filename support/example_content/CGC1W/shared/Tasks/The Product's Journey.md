@@ -1,6 +1,6 @@
 ---
 title: The Product's Journey
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

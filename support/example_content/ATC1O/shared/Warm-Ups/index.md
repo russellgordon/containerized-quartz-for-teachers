@@ -1,6 +1,6 @@
 ---
 title: Warm-Ups
-draft: false
+publish: true
 created: __CREATED__
 ---
 How a studio period starts, and why. The class page names which warm-up

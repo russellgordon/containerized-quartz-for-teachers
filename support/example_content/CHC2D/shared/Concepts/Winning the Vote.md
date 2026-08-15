@@ -1,6 +1,6 @@
 ---
 title: Winning the Vote
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

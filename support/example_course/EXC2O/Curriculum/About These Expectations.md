@@ -1,9 +1,9 @@
 ---
 title: About These Expectations
 createdSection1: 2026-08-14T12:24:26.000-0400
-draftSection1: false
+publishForSection1: true
 createdSection2: 2026-08-14T12:24:26.000-0400
-draftSection2: false
+publishForSection2: true
 ---
 The expectations in this folder are reproduced from **The Ontario Curriculum,
 Grade 9: Science (2022)**, the de-streamed course **SNC1W**, published by the

@@ -1,6 +1,6 @@
 ---
 title: Unit 5, Day 5
-draft: false
+publish: true
 created: 2026-12-21T07:00:00.000-0500
 transcludeTitleSize: h2
 enableToc: false

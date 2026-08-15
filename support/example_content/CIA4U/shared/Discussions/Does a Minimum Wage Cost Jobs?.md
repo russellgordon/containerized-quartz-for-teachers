@@ -1,6 +1,6 @@
 ---
 title: Does a Minimum Wage Cost Jobs?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

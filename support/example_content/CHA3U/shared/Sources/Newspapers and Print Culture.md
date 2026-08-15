@@ -1,6 +1,6 @@
 ---
 title: Newspapers and Print Culture
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - sources

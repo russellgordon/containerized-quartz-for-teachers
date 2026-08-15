@@ -1,6 +1,6 @@
 ---
 title: Style
-draft: false
+publish: true
 created: __CREATED__
 ---
 Three pages about the site itself and about the conventions this course

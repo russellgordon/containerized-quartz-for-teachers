@@ -1,6 +1,6 @@
 ---
 title: The 2021 Prairie Drought
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - case-studies

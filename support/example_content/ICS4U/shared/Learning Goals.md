@@ -1,6 +1,6 @@
 ---
 title: Learning Goals
-draft: false
+publish: true
 created: __CREATED__
 ---
 Last year you learned to build a program for somebody. This year you

@@ -1,6 +1,6 @@
 ---
 title: Devising in a Group
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - choreography

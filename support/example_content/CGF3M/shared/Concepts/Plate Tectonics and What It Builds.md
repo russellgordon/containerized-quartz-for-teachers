@@ -1,6 +1,6 @@
 ---
 title: Plate Tectonics and What It Builds
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

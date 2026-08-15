@@ -1,6 +1,6 @@
 ---
 title: Your Leadership Statement
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

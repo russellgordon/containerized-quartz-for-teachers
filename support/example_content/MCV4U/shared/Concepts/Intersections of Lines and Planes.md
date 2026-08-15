@@ -1,6 +1,6 @@
 ---
 title: Intersections of Lines and Planes
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

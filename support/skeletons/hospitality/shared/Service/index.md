@@ -1,6 +1,6 @@
 ---
 title: Service
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - service

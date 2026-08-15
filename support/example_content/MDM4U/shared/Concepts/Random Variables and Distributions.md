@@ -1,6 +1,6 @@
 ---
 title: Random Variables and Distributions
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

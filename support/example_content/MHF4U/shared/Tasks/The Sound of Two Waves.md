@@ -1,6 +1,6 @@
 ---
 title: The Sound of Two Waves
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

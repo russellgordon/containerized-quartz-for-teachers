@@ -1,6 +1,6 @@
 ---
 title: Portfolios
-draft: false
+publish: true
 created: __CREATED__
 ---
 Four entries, spread across the term, about you rather than about a

@@ -1,6 +1,6 @@
 ---
 title: Word Parts Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 The reference is [[Where Words Come From]]. Work them out before you

@@ -1,6 +1,6 @@
 ---
 title: Reading an Error Message
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

@@ -1,6 +1,6 @@
 ---
 title: The 2023 Canadian Wildfire Season
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - case-studies

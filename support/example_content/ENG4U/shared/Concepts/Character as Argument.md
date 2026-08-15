@@ -1,6 +1,6 @@
 ---
 title: Character as Argument
-draft: false
+publish: true
 created: __CREATED__
 ---
 Characters are not people, and treating them as people is the fastest way

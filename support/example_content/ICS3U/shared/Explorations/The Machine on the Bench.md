@@ -1,6 +1,6 @@
 ---
 title: The Machine on the Bench
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

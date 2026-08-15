@@ -1,6 +1,6 @@
 ---
 title: Factors and Intercepts
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

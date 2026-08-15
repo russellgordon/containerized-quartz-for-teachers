@@ -1,6 +1,6 @@
 ---
 title: Portfolios
-draft: false
+publish: true
 created: __CREATED__
 ---
 Your own record across the term — what you thought in November, and what

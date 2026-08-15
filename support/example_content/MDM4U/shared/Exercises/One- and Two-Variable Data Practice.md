@@ -1,6 +1,6 @@
 ---
 title: One- and Two-Variable Data Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - exercises

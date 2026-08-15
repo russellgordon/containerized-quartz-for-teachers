@@ -1,6 +1,6 @@
 ---
 title: The Concepts of Geographic Thinking
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: The Appraisal Meeting
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - cases

@@ -1,6 +1,6 @@
 ---
 title: The Team That Stopped Talking
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - cases

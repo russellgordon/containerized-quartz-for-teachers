@@ -1,6 +1,6 @@
 ---
 title: A Week of Your Time
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

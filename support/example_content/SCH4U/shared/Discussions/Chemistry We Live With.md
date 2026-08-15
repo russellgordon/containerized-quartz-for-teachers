@@ -1,6 +1,6 @@
 ---
 title: Chemistry We Live With
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

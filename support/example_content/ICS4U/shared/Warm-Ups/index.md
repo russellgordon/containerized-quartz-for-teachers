@@ -1,6 +1,6 @@
 ---
 title: Warm-Ups
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - warm-ups

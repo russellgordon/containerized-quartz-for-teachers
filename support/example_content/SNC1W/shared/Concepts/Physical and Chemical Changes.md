@@ -1,7 +1,7 @@
 ---
 title: Physical and Chemical Changes
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - chemistry

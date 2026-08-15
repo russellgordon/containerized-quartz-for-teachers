@@ -1,6 +1,6 @@
 ---
 title: Drama in the World
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

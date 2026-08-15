@@ -1,6 +1,6 @@
 ---
 title: Portfolios
-draft: false
+publish: true
 created: __CREATED__
 ---
 The record you build across the nine weeks, and the only part of this

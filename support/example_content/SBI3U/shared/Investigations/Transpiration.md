@@ -1,6 +1,6 @@
 ---
 title: Transpiration
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

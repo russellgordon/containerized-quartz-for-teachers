@@ -1,6 +1,6 @@
 ---
 title: Warm-Up as Choreography
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - warm-ups

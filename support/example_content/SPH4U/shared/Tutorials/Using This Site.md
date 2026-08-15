@@ -1,6 +1,6 @@
 ---
 title: Using This Site
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:
@@ -28,8 +28,8 @@ used. The checklist at the bottom is what to do before next class.
 Everything works on a phone. Tables scroll sideways rather than squashing,
 and equations stay readable — but graphs are worth a bigger screen.
 
-Everything this site can do — callouts, equations, diagrams, drafts — is
-demonstrated with its source on [[What This Site Can Do]].
+Everything this site can do — callouts, equations, diagrams, held-back
+pages — is demonstrated with its source on [[What This Site Can Do]].
 
 > [!tip] Hover before you click
 > On a computer, resting the pointer on a link shows the page in a small

@@ -1,6 +1,6 @@
 ---
 title: Heating and Cooling Curves
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

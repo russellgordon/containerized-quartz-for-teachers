@@ -1,6 +1,6 @@
 ---
 title: The Colonies Compared
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

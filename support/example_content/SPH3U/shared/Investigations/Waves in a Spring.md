@@ -1,6 +1,6 @@
 ---
 title: Waves in a Spring
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

@@ -1,6 +1,6 @@
 ---
 title: Amplify a Sensor
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

@@ -1,6 +1,6 @@
 ---
 title: Assessing Your Own Work
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - critiques

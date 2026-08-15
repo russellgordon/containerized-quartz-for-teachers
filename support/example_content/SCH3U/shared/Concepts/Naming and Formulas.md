@@ -1,6 +1,6 @@
 ---
 title: Naming and Formulas
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

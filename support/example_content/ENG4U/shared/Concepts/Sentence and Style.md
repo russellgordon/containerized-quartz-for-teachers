@@ -1,6 +1,6 @@
 ---
 title: Sentence and Style
-draft: false
+publish: true
 created: __CREATED__
 ---
 Style is not ornament. At this level it is the difference between an

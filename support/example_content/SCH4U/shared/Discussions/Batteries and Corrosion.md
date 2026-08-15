@@ -1,6 +1,6 @@
 ---
 title: Batteries and Corrosion
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

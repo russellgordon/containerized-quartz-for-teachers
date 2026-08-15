@@ -1,6 +1,6 @@
 ---
 title: What Was the Revolution For?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

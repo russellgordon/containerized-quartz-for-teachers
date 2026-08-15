@@ -258,10 +258,10 @@ from Phase 5 apply here too.
   the payload's own transclusions and reports the same numbers the built
   map will show. Treat "addressed exactly once" as thin rather than done —
   the linter lists those too, and a course of 86 periods has room to meet
-  most expectations two or three times. **Only PUBLISHED pages count**: a page still marked
-  `draft: true` is not on the site, so it cannot have addressed anything,
+  most expectations two or three times. **Only PUBLISHED pages count**: a page marked
+  `publish: false` is not on the site, so it cannot have addressed anything,
   and the map ignores it until the day it is published. The payload's one
-  draft page — the final class — therefore contributes nothing, which is
+  held-back page — the final class — therefore contributes nothing, which is
   another reason curriculum blocks belong on destination pages rather than
   class pages.
 - **Checklists on the site are READ-ONLY.** `- [ ]` renders a box that
@@ -458,11 +458,11 @@ the linter.
   A course-level page (anything under `shared/`) is shared by sections
   that are not in step: one class may reach a topic a day later, or not
   yet at all. So `install_payload_file` splits a shared page's
-  `created:`/`draft:` into `createdSectionN:`/`draftSectionN:` — one pair
+  `created:`/`publish:` into `createdSectionN:`/`publishForSectionN:` — one pair
   per section, written together in section order — and `build_site.py`'s
   `process_frontmatter` resolves them back to plain keys for whichever
   section is being built. Write the payload with the ordinary single
-  `created: __CREATED__` / `draft: false`: the payload cannot know how
+  `created: __CREATED__` / `publish: true`: the payload cannot know how
   many sections the teacher will choose, and hand-writing per-section
   keys would freeze the course at one section. The linter rejects them.
   Pages under `per_section/` already belong to one section and keep the

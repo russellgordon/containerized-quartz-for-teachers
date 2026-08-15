@@ -1,6 +1,6 @@
 ---
 title: Why Did Movements Succeed When They Did?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

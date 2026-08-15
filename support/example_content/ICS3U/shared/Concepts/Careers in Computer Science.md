@@ -1,6 +1,6 @@
 ---
 title: Careers in Computer Science
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

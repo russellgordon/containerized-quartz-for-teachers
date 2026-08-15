@@ -1,6 +1,6 @@
 ---
 title: Learning Goals
-draft: false
+publish: true
 created: __CREATED__
 ---
 What you should be able to do by mid-January, in plain words first and in

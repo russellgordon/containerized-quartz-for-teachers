@@ -1,6 +1,6 @@
 ---
 title: Le Châtelier's Principle
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

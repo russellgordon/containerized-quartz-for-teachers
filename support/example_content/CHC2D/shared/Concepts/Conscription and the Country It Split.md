@@ -1,6 +1,6 @@
 ---
 title: Conscription and the Country It Split
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

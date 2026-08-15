@@ -1,6 +1,6 @@
 ---
 title: All Classes
-draft: false
+publish: true
 created: __CREATED__
 ---
 Every class in this section, newest first. The list builds itself from the

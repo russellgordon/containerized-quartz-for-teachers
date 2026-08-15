@@ -1,6 +1,6 @@
 ---
 title: The In-Basket
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - simulations

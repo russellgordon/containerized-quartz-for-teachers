@@ -1,6 +1,6 @@
 ---
 title: The Transformation Gallery
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

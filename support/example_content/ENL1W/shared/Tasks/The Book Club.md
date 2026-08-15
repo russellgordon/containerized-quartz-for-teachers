@@ -1,6 +1,6 @@
 ---
 title: The Book Club
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

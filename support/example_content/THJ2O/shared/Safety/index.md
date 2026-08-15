@@ -1,6 +1,6 @@
 ---
 title: Safety
-draft: false
+publish: true
 created: __CREATED__
 ---
 Read these before the practical day they belong to, not on the way

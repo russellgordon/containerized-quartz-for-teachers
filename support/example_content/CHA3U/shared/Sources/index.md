@@ -1,6 +1,6 @@
 ---
 title: Sources
-draft: false
+publish: true
 created: __CREATED__
 ---
 What American history is made of, sorted by kind. Each page says what

@@ -1,6 +1,6 @@
 ---
 title: Safe Shop and Site Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - safety

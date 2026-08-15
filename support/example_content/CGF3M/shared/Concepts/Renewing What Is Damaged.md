@@ -1,6 +1,6 @@
 ---
 title: Renewing What Is Damaged
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

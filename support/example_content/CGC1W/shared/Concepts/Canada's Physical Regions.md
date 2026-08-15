@@ -1,6 +1,6 @@
 ---
 title: Canada's Physical Regions
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: Close Reading Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 Short passages, read hard. The method is on [[Reading Like a Writer]].

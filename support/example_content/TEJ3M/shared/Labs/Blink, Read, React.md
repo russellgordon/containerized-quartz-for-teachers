@@ -1,6 +1,6 @@
 ---
 title: Blink, Read, React
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

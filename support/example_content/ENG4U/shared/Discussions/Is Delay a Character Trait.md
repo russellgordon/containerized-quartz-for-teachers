@@ -1,6 +1,6 @@
 ---
 title: Is Delay a Character Trait
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

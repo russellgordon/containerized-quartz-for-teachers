@@ -1,6 +1,6 @@
 ---
 title: Who Should Pay for the Damage?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

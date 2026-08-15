@@ -1,6 +1,6 @@
 ---
 title: Where You Stand
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

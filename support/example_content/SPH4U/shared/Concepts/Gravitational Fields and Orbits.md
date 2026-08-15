@@ -1,6 +1,6 @@
 ---
 title: Gravitational Fields and Orbits
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

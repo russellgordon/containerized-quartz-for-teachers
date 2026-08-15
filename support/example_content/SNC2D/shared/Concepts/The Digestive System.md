@@ -1,6 +1,6 @@
 ---
 title: The Digestive System
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

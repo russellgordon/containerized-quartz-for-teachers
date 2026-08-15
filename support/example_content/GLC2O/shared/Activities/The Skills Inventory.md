@@ -1,6 +1,6 @@
 ---
 title: The Skills Inventory
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - activities

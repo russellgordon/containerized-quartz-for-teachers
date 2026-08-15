@@ -1,6 +1,6 @@
 ---
 title: Evidence for Evolution
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

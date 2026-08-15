@@ -1,6 +1,6 @@
 ---
 title: Sample a Signal
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

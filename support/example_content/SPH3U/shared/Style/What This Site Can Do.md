@@ -1,6 +1,6 @@
 ---
 title: What This Site Can Do
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:
@@ -217,8 +217,9 @@ you find every Unit 3 page at once.
 
 1. **Comments.** Text wrapped in `%%` double percent marks `%%` never
    reaches the site.
-2. **Drafts.** A page with `draft: true` is skipped entirely when the site
-   is built — next week's lesson can sit here finished and invisible.
+2. **Holding a page back.** A page with `publish: false` is skipped
+   entirely when the site is built — next week's lesson can sit here
+   finished and invisible.
 
 %% This sentence is a comment. If you can read it on the website,
 something is broken. %%
@@ -226,8 +227,9 @@ something is broken. %%
 > [!tip] For teachers reading this
 > A shared page can be published to one section and held back from
 > another: at the top of this page's source there is a
-> `createdSection1` / `draftSection1` pair for each of your sections. Set
-> one section's `draft` to `true` and the page waits for that class.
+> `createdSection1` / `publishForSection1` pair for each of your
+> sections. Set one section's key to `false` and the page waits for that
+> class.
 
 ---
 
@@ -247,7 +249,7 @@ padding.
 | Transclusion | The same text copied into six places, five of them stale |
 | Backlinks | "Where did we use this again?" |
 | Diagrams as text | Rebuilding a whole diagram to change one arrow |
-| Drafts | Keeping unpublished work in some other file somewhere |
+| Holding a page back | Keeping unpublished work in some other file somewhere |
 | Typeset equations | Screenshotting maths out of a document |
 
 Write it once, link to it everywhere.

@@ -72,7 +72,7 @@ Both are poured in by the same `install_example_content()`, which replaces
 the payload's sentinels: `__CREATED__`, `__CREATED_CLASS_K__` (spread
 across the semester), `__SECTION_NUMBER__`, and — for skeletons —
 `__COURSE_CODE__` and `__COURSE_NAME__`. Course-level pages have their
-`created`/`draft` split into `createdSectionN`/`draftSectionN`, one pair per
+`created`/`publish` split into `createdSectionN`/`publishForSectionN`, one pair per
 section, so two sections can publish the same page on different days
 ([mechanism](05-build-pipeline.md#frontmatter-processing)).
 

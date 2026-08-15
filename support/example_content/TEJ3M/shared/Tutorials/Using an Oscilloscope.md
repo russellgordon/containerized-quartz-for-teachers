@@ -1,6 +1,6 @@
 ---
 title: Using an Oscilloscope
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

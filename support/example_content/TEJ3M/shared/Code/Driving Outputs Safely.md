@@ -1,6 +1,6 @@
 ---
 title: Driving Outputs Safely
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - code

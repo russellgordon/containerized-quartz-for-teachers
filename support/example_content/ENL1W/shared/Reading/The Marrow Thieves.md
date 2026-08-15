@@ -1,6 +1,6 @@
 ---
 title: The Marrow Thieves
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

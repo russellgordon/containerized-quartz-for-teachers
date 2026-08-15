@@ -1,9 +1,9 @@
 ---
 title: Efficiency of a Light Bulb
 createdSection1: 2026-12-02T07:00:00.000-0500
-draftSection1: false
+publishForSection1: true
 createdSection2: 2026-12-03T07:00:00.000-0500
-draftSection2: false
+publishForSection2: true
 enableToc: true
 tags:
   - physics

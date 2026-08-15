@@ -1,11 +1,11 @@
 ---
 title: Scratch Page
-draft: true
+publish: false
 created: __CREATED__
 enableToc: false
 excludeBacklinks: true
 ---
-%% A draft page, so it never appears on the site. %%
+%% Held back, so it never appears on the site. %%
 
 ## Ideas for next time
 

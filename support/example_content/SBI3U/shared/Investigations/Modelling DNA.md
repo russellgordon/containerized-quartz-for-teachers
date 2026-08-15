@@ -1,6 +1,6 @@
 ---
 title: Modelling DNA
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

@@ -1,6 +1,6 @@
 ---
 title: The Ground Rules of Change
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

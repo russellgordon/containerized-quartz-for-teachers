@@ -1,6 +1,6 @@
 ---
 title: The Activity Series
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

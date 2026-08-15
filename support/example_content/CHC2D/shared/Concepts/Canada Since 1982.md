@@ -1,6 +1,6 @@
 ---
 title: Canada Since 1982
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

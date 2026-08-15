@@ -1,7 +1,7 @@
 ---
 title: The Carbon Cycle
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - biology

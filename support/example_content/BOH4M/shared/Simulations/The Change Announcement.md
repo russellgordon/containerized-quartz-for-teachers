@@ -1,6 +1,6 @@
 ---
 title: The Change Announcement
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - simulations

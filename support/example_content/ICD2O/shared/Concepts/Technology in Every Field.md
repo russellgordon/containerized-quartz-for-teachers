@@ -1,6 +1,6 @@
 ---
 title: Technology in Every Field
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

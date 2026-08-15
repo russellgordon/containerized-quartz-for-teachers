@@ -1,6 +1,6 @@
 ---
 title: Models
-draft: false
+publish: true
 created: __CREATED__
 ---
 A model is a way of reasoning, not a fact about the world. Each of these

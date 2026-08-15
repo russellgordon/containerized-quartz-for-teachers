@@ -1,6 +1,6 @@
 ---
 title: Where Planes Meet
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

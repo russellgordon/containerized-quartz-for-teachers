@@ -1,6 +1,6 @@
 ---
 title: Technique
-draft: false
+publish: true
 created: __CREATED__
 ---
 Trained movement: how a technique class is built, what alignment

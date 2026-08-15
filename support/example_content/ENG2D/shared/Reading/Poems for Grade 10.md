@@ -1,6 +1,6 @@
 ---
 title: Poems for Grade 10
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

@@ -1,6 +1,6 @@
 ---
 title: Citing Historical Sources
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - writing

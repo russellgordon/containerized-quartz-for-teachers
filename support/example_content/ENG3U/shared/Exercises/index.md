@@ -1,6 +1,6 @@
 ---
 title: Exercises
-draft: false
+publish: true
 created: __CREATED__
 ---
 > [!tip] How to use these pages

@@ -1,6 +1,6 @@
 ---
 title: Researching a Pathway
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - activities

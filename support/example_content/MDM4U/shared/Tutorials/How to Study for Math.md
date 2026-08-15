@@ -1,6 +1,6 @@
 ---
 title: How to Study for Math
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

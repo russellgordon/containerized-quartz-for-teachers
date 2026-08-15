@@ -1,6 +1,6 @@
 ---
 title: Identifying an Unknown Organic Compound
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

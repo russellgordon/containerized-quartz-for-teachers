@@ -1,6 +1,6 @@
 ---
 title: Input and Output
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

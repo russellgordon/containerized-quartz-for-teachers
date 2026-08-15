@@ -1,7 +1,7 @@
 ---
 title: Atomic Models Through Time
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - chemistry

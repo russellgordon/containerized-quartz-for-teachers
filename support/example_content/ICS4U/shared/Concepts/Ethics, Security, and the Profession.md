@@ -1,6 +1,6 @@
 ---
 title: Ethics, Security, and the Profession
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: Your Inquiry Notebook
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

@@ -1,6 +1,6 @@
 ---
 title: Reaction Time and the Nervous System
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

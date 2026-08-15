@@ -1,6 +1,6 @@
 ---
 title: Read the Diff
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - warm-ups

@@ -1,6 +1,6 @@
 ---
 title: Your Skills Record
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

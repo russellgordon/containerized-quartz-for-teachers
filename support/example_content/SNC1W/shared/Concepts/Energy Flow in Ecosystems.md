@@ -1,7 +1,7 @@
 ---
 title: Energy Flow in Ecosystems
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - biology

@@ -1,6 +1,6 @@
 ---
 title: Careers in Geography
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

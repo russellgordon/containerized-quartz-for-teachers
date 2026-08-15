@@ -1,6 +1,6 @@
 ---
 title: How Numbers Actually Fit
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

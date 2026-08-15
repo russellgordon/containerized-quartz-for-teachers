@@ -1,6 +1,6 @@
 ---
 title: Finding the Focal Length
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

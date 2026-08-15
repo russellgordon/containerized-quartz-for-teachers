@@ -1,6 +1,6 @@
 ---
 title: Unit 2, Day 12
-draft: false
+publish: true
 created: __CREATED_CLASS_31__
 transcludeTitleSize: h2
 enableToc: false

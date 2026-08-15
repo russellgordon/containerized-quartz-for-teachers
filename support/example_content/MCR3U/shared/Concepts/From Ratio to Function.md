@@ -1,6 +1,6 @@
 ---
 title: From Ratio to Function
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

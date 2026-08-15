@@ -53,7 +53,7 @@ being a metaphor; every session before this one was for today.
 ## What can go wrong
 
 - **The preview looked perfect; the live page does not.** An image
-  too large, a draft flag left on — publishing ends at verification.
+  too large, a page still held back — publishing ends at verification.
 - **A working headline shipped.** "Sports story v2 FINAL" is live
   with your name near it — slow down at step one.
 - **The credit conversation happens after publication.** Someone sees

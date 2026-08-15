@@ -1,6 +1,6 @@
 ---
 title: Our Studio Agreement
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

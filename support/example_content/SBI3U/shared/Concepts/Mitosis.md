@@ -1,6 +1,6 @@
 ---
 title: Mitosis
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

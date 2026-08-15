@@ -1,6 +1,6 @@
 ---
 title: Variables and Data Types
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

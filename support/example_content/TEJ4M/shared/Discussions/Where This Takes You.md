@@ -1,6 +1,6 @@
 ---
 title: Where This Takes You
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

@@ -1,6 +1,6 @@
 ---
 title: Testing for Bond Type
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

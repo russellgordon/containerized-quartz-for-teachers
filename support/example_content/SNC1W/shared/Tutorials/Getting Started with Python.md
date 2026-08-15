@@ -1,7 +1,7 @@
 ---
 title: Getting Started with Python
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - skills

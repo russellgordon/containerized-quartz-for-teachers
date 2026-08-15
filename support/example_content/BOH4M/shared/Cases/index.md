@@ -1,6 +1,6 @@
 ---
 title: Cases
-draft: false
+publish: true
 created: __CREATED__
 ---
 A case is an organization with a problem, described in enough detail to

@@ -1,6 +1,6 @@
 ---
 title: Careers and the Environment
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: Setup
-draft: false
+publish: true
 created: __CREATED__
 ---
 How this course runs. Read these in the first week, and note the boots

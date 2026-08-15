@@ -1,6 +1,6 @@
 ---
 title: Mass–Energy Equivalence
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

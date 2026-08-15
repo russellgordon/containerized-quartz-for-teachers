@@ -1,6 +1,6 @@
 ---
 title: Simulations
-draft: false
+publish: true
 created: __CREATED__
 ---
 Management is a practice, and some of it can only be learned by doing it

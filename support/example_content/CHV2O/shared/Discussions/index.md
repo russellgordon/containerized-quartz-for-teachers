@@ -1,6 +1,6 @@
 ---
 title: Discussions
-draft: false
+publish: true
 created: __CREATED__
 ---
 Seminars on questions where citizens genuinely disagree. You are marked

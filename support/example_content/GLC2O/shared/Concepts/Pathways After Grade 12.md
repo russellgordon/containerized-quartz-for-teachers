@@ -1,6 +1,6 @@
 ---
 title: Pathways After Grade 12
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

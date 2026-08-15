@@ -1,6 +1,6 @@
 ---
 title: The Four-Day Week
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

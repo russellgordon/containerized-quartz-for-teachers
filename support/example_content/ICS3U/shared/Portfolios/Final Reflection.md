@@ -1,6 +1,6 @@
 ---
 title: Final Reflection
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolio

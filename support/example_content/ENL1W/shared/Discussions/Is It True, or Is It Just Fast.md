@@ -1,6 +1,6 @@
 ---
 title: Is It True, or Is It Just Fast
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

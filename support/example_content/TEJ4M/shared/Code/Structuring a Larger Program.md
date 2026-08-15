@@ -1,6 +1,6 @@
 ---
 title: Structuring a Larger Program
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - code

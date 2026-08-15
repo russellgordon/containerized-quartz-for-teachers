@@ -1,6 +1,6 @@
 ---
 title: Bosses We Have Known
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

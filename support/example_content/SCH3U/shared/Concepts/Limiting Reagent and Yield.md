@@ -1,6 +1,6 @@
 ---
 title: Limiting Reagent and Yield
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

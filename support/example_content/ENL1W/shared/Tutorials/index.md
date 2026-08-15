@@ -1,6 +1,6 @@
 ---
 title: Tutorials
-draft: false
+publish: true
 created: __CREATED__
 ---
 How to do a specific thing. Each one teaches a skill once so that every

@@ -1,6 +1,6 @@
 ---
 title: The Unit Circle
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

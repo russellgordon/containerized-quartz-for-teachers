@@ -1,6 +1,6 @@
 ---
 title: Reading a Time Series
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - data

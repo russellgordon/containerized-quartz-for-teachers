@@ -1,6 +1,6 @@
 ---
 title: Finding an Empirical Formula
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

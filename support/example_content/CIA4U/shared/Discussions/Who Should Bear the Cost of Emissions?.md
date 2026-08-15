@@ -1,6 +1,6 @@
 ---
 title: Who Should Bear the Cost of Emissions?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

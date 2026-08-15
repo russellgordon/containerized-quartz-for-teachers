@@ -1,7 +1,7 @@
 ---
 title: Reflecting on an Investigation
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - portfolio

@@ -1,6 +1,6 @@
 ---
 title: Counting Without Counting
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

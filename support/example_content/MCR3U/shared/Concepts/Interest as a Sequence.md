@@ -1,6 +1,6 @@
 ---
 title: Interest as a Sequence
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

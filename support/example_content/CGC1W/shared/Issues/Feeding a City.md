@@ -1,6 +1,6 @@
 ---
 title: Feeding a City
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - issues

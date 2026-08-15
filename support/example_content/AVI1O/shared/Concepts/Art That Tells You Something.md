@@ -1,6 +1,6 @@
 ---
 title: Art That Tells You Something
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

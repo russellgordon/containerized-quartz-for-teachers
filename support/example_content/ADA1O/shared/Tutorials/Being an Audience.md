@@ -1,6 +1,6 @@
 ---
 title: Being an Audience
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

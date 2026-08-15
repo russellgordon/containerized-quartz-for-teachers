@@ -1,6 +1,6 @@
 ---
 title: Looking After Yourself While You Work
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

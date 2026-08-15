@@ -1,6 +1,6 @@
 ---
 title: Discussions
-draft: false
+publish: true
 created: __CREATED__
 ---
 - [[Does the Lens Make the Reading]] — where interpretation ends and

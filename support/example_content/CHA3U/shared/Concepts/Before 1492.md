@@ -1,6 +1,6 @@
 ---
 title: Before 1492
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

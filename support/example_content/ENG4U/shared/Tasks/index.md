@@ -1,6 +1,6 @@
 ---
 title: Tasks
-draft: false
+publish: true
 created: __CREATED__
 ---
 - [[The Lens Essay]] — Unit 1. One short text, two critical approaches,

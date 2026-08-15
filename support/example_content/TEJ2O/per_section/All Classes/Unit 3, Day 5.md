@@ -1,6 +1,6 @@
 ---
 title: Unit 3, Day 5
-draft: false
+publish: true
 created: __CREATED_CLASS_44__
 transcludeTitleSize: h2
 enableToc: false

@@ -1,6 +1,6 @@
 ---
 title: Where People Settled, and Why
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

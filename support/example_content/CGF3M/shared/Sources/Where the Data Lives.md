@@ -1,6 +1,6 @@
 ---
 title: Where the Data Lives
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - sources

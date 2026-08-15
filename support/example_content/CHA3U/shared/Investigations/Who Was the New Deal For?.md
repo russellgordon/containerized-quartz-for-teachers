@@ -1,6 +1,6 @@
 ---
 title: Who Was the New Deal For?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

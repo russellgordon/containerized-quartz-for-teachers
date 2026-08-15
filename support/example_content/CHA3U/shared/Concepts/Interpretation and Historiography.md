@@ -1,6 +1,6 @@
 ---
 title: Interpretation and Historiography
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

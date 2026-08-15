@@ -1,6 +1,6 @@
 ---
 title: Input, Output, and Timing
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - code

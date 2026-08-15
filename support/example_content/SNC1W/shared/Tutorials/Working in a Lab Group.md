@@ -1,7 +1,7 @@
 ---
 title: Working in a Lab Group
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - skills

@@ -1,6 +1,6 @@
 ---
 title: Moon of the Crusted Snow
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

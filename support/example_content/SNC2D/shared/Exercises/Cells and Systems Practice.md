@@ -1,6 +1,6 @@
 ---
 title: Cells and Systems Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - biology

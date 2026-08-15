@@ -1,6 +1,6 @@
 ---
 title: The Spurious Correlation Hunt
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

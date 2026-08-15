@@ -1,6 +1,6 @@
 ---
 title: A Mountain Legend
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

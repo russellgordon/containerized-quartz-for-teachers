@@ -1,6 +1,6 @@
 ---
 title: Building an Argument
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - writing

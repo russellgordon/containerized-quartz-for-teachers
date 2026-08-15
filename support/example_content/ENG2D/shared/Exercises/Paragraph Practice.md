@@ -1,6 +1,6 @@
 ---
 title: Paragraph Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 The shape is on [[The Paragraph]].

@@ -1,6 +1,6 @@
 ---
 title: Structure and Time
-draft: false
+publish: true
 created: __CREATED__
 ---
 Structure is the order a writer chose. Time is the raw material they

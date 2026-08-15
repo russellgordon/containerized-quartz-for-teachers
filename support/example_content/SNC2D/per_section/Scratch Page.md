@@ -1,6 +1,6 @@
 ---
 title: Scratch Page
-draft: true
+publish: false
 created: __CREATED__
 ---
 Somewhere to draft the next class before it is ready. Also unpublished.

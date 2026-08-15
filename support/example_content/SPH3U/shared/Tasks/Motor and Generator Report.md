@@ -1,6 +1,6 @@
 ---
 title: Motor and Generator Report
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

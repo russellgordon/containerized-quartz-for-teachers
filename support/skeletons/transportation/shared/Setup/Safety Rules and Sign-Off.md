@@ -1,6 +1,6 @@
 ---
 title: Safety Rules and Sign-Off
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

@@ -1,6 +1,6 @@
 ---
 title: The Control Process
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

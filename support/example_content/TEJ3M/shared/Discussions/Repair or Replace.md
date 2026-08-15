@@ -1,6 +1,6 @@
 ---
 title: Repair or Replace
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

@@ -1,6 +1,6 @@
 ---
 title: Testing Without a Debugger
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - code

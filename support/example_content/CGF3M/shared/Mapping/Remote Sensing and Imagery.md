@@ -1,6 +1,6 @@
 ---
 title: Remote Sensing and Imagery
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - mapping

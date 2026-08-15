@@ -1,6 +1,6 @@
 ---
 title: Who Decides What, and Where
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

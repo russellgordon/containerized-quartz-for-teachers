@@ -1,6 +1,6 @@
 ---
 title: Genre and Expectation
-draft: false
+publish: true
 created: __CREATED__
 ---
 Genre is a contract with a reader: certain things are promised, and the

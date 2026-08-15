@@ -1,6 +1,6 @@
 ---
 title: The Cost of a Place to Live
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - cases

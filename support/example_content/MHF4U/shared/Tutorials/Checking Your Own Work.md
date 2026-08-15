@@ -1,6 +1,6 @@
 ---
 title: Checking Your Own Work
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

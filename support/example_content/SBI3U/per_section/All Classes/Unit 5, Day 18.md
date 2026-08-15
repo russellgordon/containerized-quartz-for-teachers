@@ -1,6 +1,6 @@
 ---
 title: Unit 5, Day 18
-draft: false
+publish: true
 created: __CREATED_CLASS_85__
 transcludeTitleSize: h2
 enableToc: false

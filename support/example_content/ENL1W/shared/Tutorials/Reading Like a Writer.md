@@ -1,6 +1,6 @@
 ---
 title: Reading Like a Writer
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

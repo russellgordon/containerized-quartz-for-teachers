@@ -1,6 +1,6 @@
 ---
 title: Significant Figures in Practice
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

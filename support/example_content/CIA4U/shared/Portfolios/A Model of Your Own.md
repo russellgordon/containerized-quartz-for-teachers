@@ -1,6 +1,6 @@
 ---
 title: A Model of Your Own
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

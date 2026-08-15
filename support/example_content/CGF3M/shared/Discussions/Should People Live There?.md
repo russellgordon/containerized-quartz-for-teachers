@@ -1,6 +1,6 @@
 ---
 title: Should People Live There?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

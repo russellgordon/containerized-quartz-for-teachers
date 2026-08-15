@@ -1,12 +1,12 @@
 ---
 title: Private Notes
-draft: true
+publish: false
 created: __CREATED__
 excludeBacklinks: true
 ---
 %%
-For your own eyes. This page ships as a draft, so it is never published —
-leave `draft: true` alone unless you mean it.
+For your own eyes. This page ships held back, so it is never published —
+leave `publish: false` alone unless you mean it.
 %%
 
 Notes about this section: who needs what, which groups work, what to

@@ -1,6 +1,6 @@
 ---
 title: Science, Technology, and Everyday Life
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

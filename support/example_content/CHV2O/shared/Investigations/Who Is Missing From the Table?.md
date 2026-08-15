@@ -1,6 +1,6 @@
 ---
 title: Who Is Missing From the Table?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

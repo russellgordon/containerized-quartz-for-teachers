@@ -1,6 +1,6 @@
 ---
 title: Units and Significant Figures
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

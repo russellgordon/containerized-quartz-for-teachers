@@ -1,6 +1,6 @@
 ---
 title: Symbol and Motif
-draft: false
+publish: true
 created: __CREATED__
 ---
 A **symbol** is an object or image that carries meaning beyond itself. A

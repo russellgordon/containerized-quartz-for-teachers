@@ -1,6 +1,6 @@
 ---
 title: Three Forms We Practise
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - technique

@@ -1,6 +1,6 @@
 ---
 title: Diffraction Gratings and Thin Films
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

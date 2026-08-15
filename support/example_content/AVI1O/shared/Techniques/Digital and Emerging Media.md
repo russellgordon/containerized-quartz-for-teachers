@@ -1,6 +1,6 @@
 ---
 title: Digital and Emerging Media
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - techniques

@@ -1,6 +1,6 @@
 ---
 title: Working From Reference
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - studio-time

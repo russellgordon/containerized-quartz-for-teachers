@@ -1,6 +1,6 @@
 ---
 title: The Flat Structure
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - cases

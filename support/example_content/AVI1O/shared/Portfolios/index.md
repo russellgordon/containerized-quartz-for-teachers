@@ -1,6 +1,6 @@
 ---
 title: Portfolios
-draft: false
+publish: true
 created: __CREATED__
 ---
 Your sketchbook, your portfolio, and the record of a year. This is the

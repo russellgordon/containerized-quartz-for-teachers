@@ -1,6 +1,6 @@
 ---
 title: Revolution and the Republic It Made
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

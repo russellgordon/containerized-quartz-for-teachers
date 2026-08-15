@@ -1,6 +1,6 @@
 ---
 title: The Negotiation
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - simulations

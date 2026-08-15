@@ -1,6 +1,6 @@
 ---
 title: Index Numbers and Real Versus Nominal
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - data

@@ -1,6 +1,6 @@
 ---
 title: Tissues, Organs, and Systems
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

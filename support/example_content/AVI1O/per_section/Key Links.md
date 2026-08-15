@@ -1,6 +1,6 @@
 ---
 title: Key Links
-draft: false
+publish: true
 created: __CREATED__
 transcludeTitleSize: h2
 excludeBacklinks: true

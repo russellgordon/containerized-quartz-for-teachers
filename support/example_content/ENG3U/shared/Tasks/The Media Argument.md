@@ -1,6 +1,6 @@
 ---
 title: The Media Argument
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

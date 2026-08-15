@@ -1,6 +1,6 @@
 ---
 title: Patterns and Trends in a Restless Country
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

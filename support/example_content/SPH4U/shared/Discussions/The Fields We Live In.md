@@ -1,6 +1,6 @@
 ---
 title: The Fields We Live In
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

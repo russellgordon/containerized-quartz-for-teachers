@@ -1,6 +1,6 @@
 ---
 title: Close Reading
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

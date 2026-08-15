@@ -1,6 +1,6 @@
 ---
 title: Bills and What Happens to Them
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - sources

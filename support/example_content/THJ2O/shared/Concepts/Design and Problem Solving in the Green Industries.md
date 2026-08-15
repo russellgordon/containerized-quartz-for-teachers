@@ -1,6 +1,6 @@
 ---
 title: Design and Problem Solving in the Green Industries
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: What a Community Owes Itself
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

@@ -1,6 +1,6 @@
 ---
 title: Writing a Management Memo
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

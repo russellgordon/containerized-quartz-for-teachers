@@ -1,6 +1,6 @@
 ---
 title: The Hundred-Line Problem
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

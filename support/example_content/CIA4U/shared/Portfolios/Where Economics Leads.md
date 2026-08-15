@@ -1,6 +1,6 @@
 ---
 title: Where Economics Leads
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

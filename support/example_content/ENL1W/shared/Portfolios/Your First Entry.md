@@ -1,6 +1,6 @@
 ---
 title: Your First Entry
-draft: false
+publish: true
 created: __CREATED__
 ---
 Written in the first week, kept until January, and read again in the last

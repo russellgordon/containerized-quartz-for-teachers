@@ -1,6 +1,6 @@
 ---
 title: Licensing, Policy, and Privacy
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

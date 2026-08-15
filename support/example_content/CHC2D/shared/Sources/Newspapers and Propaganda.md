@@ -1,6 +1,6 @@
 ---
 title: Newspapers and Propaganda
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - sources

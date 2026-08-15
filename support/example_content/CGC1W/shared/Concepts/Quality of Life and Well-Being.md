@@ -1,6 +1,6 @@
 ---
 title: Quality of Life and Well-Being
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

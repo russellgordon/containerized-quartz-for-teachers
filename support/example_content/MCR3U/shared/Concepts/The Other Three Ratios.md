@@ -1,6 +1,6 @@
 ---
 title: The Other Three Ratios
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

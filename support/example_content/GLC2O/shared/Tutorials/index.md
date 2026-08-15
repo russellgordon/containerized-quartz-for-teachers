@@ -1,6 +1,6 @@
 ---
 title: Tutorials
-draft: false
+publish: true
 created: __CREATED__
 ---
 How to use this site, and how to write about yourself without either

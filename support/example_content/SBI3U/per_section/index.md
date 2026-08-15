@@ -1,6 +1,6 @@
 ---
 title: Section __SECTION_NUMBER__
-draft: false
+publish: true
 created: __CREATED__
 enableToc: false
 excludeBacklinks: true

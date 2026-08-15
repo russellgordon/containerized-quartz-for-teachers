@@ -1,6 +1,6 @@
 ---
 title: The Code Review
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

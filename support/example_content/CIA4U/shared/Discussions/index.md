@@ -1,6 +1,6 @@
 ---
 title: Discussions
-draft: false
+publish: true
 created: __CREATED__
 ---
 Four questions with genuine disagreement behind them. Come with a

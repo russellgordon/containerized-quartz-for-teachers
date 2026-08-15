@@ -1,6 +1,6 @@
 ---
 title: Timing, Interrupts, and Real Time
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - code

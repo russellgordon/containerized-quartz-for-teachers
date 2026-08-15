@@ -1,6 +1,6 @@
 ---
 title: The Land Use Proposal
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

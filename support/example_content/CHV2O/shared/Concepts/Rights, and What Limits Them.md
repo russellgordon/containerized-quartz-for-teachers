@@ -1,6 +1,6 @@
 ---
 title: Rights, and What Limits Them
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

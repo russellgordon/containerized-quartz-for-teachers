@@ -1,7 +1,7 @@
 ---
 title: Ions and Ionic Compounds
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - chemistry

@@ -1,6 +1,6 @@
 ---
 title: Sequential Logic and Memory
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

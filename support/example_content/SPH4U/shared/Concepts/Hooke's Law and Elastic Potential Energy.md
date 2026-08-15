@@ -1,6 +1,6 @@
 ---
 title: Hooke's Law and Elastic Potential Energy
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

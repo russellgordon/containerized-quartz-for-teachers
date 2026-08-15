@@ -1,6 +1,6 @@
 ---
 title: Domain and Range Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - exercises

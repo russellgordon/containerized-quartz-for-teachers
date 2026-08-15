@@ -1,6 +1,6 @@
 ---
 title: Safety in the Kitchen
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

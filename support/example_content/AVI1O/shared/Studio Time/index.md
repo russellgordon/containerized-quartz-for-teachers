@@ -1,6 +1,6 @@
 ---
 title: Studio Time
-draft: false
+publish: true
 created: __CREATED__
 ---
 The working periods: how to use them, how to work from reference

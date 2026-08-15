@@ -1,6 +1,6 @@
 ---
 title: Human Impact on Physical Systems
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

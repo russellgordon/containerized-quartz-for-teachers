@@ -1,6 +1,6 @@
 ---
 title: Recipes
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - recipes

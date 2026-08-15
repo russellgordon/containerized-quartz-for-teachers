@@ -1,6 +1,6 @@
 ---
 title: Ambiguity and Indeterminacy
-draft: false
+publish: true
 created: __CREATED__
 ---
 An ambiguous text supports more than one reading. An indeterminate one

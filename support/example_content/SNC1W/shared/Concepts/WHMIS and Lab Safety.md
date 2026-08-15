@@ -1,7 +1,7 @@
 ---
 title: WHMIS and Lab Safety
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - chemistry

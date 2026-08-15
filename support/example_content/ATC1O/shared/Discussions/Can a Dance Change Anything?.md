@@ -1,6 +1,6 @@
 ---
 title: Can a Dance Change Anything?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

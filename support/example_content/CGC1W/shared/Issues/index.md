@@ -1,6 +1,6 @@
 ---
 title: Issues
-draft: false
+publish: true
 created: __CREATED__
 ---
 Real Canadian issues, worked as cases. Each has a situation, the

@@ -1,6 +1,6 @@
 ---
 title: What Did the Frontier Mean?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

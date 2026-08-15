@@ -1,6 +1,6 @@
 ---
 title: What Dance Does in a Society
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

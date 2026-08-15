@@ -1,6 +1,6 @@
 ---
 title: Feedback and Control Systems
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

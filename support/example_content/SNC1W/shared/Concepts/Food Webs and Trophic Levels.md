@@ -1,7 +1,7 @@
 ---
 title: Food Webs and Trophic Levels
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - biology

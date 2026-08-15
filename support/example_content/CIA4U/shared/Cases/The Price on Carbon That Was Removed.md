@@ -1,6 +1,6 @@
 ---
 title: The Price on Carbon That Was Removed
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - cases

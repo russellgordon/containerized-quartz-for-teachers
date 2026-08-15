@@ -1,6 +1,6 @@
 ---
 title: Writing About First Nations, Métis, and Inuit Studies
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

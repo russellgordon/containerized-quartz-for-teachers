@@ -1,6 +1,6 @@
 ---
 title: Your First Embedded Program
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - code

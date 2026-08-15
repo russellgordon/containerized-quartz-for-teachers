@@ -1,6 +1,6 @@
 ---
 title: Critiques
-draft: false
+publish: true
 created: __CREATED__
 ---
 Looking at work — other people's and your own. Critique is a skill, and

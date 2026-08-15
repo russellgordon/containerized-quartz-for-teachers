@@ -1,6 +1,6 @@
 ---
 title: Working in a Series
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - studio-time

@@ -1,6 +1,6 @@
 ---
 title: The Greenhouse Effect
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

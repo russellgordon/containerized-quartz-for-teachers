@@ -1,9 +1,9 @@
 ---
 title: Static Electricity Stations
 createdSection1: 2026-11-19T07:00:00.000-0500
-draftSection1: false
+publishForSection1: true
 createdSection2: 2026-11-20T07:00:00.000-0500
-draftSection2: false
+publishForSection2: true
 enableToc: true
 tags:
   - physics

@@ -1,6 +1,6 @@
 ---
 title: Reading an Equilibrium Table
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

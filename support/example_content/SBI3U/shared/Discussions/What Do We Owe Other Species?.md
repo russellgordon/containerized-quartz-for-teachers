@@ -1,6 +1,6 @@
 ---
 title: What Do We Owe Other Species?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

@@ -1,6 +1,6 @@
 ---
 title: Industries Built on People
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

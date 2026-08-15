@@ -1,6 +1,6 @@
 ---
 title: How Canada Is Governed
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

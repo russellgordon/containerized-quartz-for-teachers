@@ -1,6 +1,6 @@
 ---
 title: Specific Heat of a Metal
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

@@ -1,6 +1,6 @@
 ---
 title: Your Plan So Far
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

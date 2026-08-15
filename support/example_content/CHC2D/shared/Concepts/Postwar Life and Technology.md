@@ -1,6 +1,6 @@
 ---
 title: Postwar Life and Technology
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

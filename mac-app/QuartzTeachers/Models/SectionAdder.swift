@@ -45,7 +45,7 @@ enum SectionAdder {
         try fileManager.createDirectory(at: sectionURL, withIntermediateDirectories: true)
 
         // A new section should behave like the sections beside it — the same
-        // pages published, the same pages held back as drafts, the same
+        // pages published, the same pages held back, the same
         // display flags. So each scaffolded file copies its frontmatter from
         // the matching file in an existing section when there is one, and
         // only falls back to the wizard's plain template when there is not.
@@ -98,7 +98,7 @@ enum SectionAdder {
 
         // Course-level pages are shared by every section, but each section
         // decides for itself when a page appeared and whether it is
-        // published — that is what `createdSectionN` / `draftSectionN` are
+        // published — that is what `createdSectionN` / `publishForSectionN` are
         // for. A page that has those keys for the existing sections needs a
         // pair for this one too, or the new section builds it with no date
         // and no publishing state at all.
@@ -116,7 +116,7 @@ enum SectionAdder {
 
     /// Every markdown page at the course level — the shared folders and
     /// files, everything outside the `sectionN` folders — gains a
-    /// `createdSectionN` / `draftSectionN` pair for the section being added.
+    /// `createdSectionN` / `publishForSectionN` pair for the section being added.
     ///
     /// The new section takes the LOWEST existing section's publishing state,
     /// for the same reason the scaffolded files copy a sibling's: a section
@@ -145,14 +145,14 @@ enum SectionAdder {
     }
 
     /// One page's frontmatter, given a pair for the new section. Only the
-    /// frontmatter block is read: a `draft: true` shown inside a fenced code
+    /// frontmatter block is read: a `publish: false` shown inside a fenced code
     /// block further down the page is documentation, not metadata.
     static func extendFrontmatter(ofPageAt url: URL, toInclude sectionNumber: Int, created: String) {
         guard let text = try? String(contentsOf: url, encoding: .utf8),
               let lines = frontmatterLines(ofFileAt: url) else {
             return
         }
-        if lines.contains(where: { $0.hasPrefix("createdSection\(sectionNumber):") || $0.hasPrefix("draftSection\(sectionNumber):") }) {
+        if alreadyHasKeys(for: sectionNumber, in: lines) {
             return
         }
 
@@ -170,9 +170,8 @@ enum SectionAdder {
         }
 
         var addition: [String] = ["createdSection\(sectionNumber): \(created)"]
-        for line in lines where line.hasPrefix("draftSection\(source):") {
-            let value: String = String(line.dropFirst("draftSection\(source):".count)).trimmingCharacters(in: .whitespaces)
-            addition.append("draftSection\(sectionNumber): \(value)")
+        if let publish = publishValue(forSection: source, in: lines) {
+            addition.append("publishForSection\(sectionNumber): \(publish)")
         }
 
         // The pair goes after the last per-section key, so each section's
@@ -194,9 +193,46 @@ enum SectionAdder {
         try? rewritten.write(to: url, atomically: true, encoding: .utf8)
     }
 
-    /// The section number in a `createdSectionN:` or `draftSectionN:` key.
+    /// Does this page already carry the new section's keys?
+    static func alreadyHasKeys(for sectionNumber: Int, in lines: [String]) -> Bool {
+        let prefixes: [String] = [
+            "createdSection\(sectionNumber):",
+            "publishForSection\(sectionNumber):",
+            "draftSection\(sectionNumber):",
+        ]
+        for line in lines {
+            for prefix in prefixes {
+                if line.hasPrefix(prefix) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    /// Whether a section publishes this page, as the string to write back.
+    ///
+    /// Visibility is `publishForSectionN`. `draftSectionN` is the older
+    /// spelling with the OPPOSITE polarity, so a course written before the
+    /// rename is read and inverted — carrying it across unchanged would
+    /// publish a page the teacher had held back.
+    static func publishValue(forSection sectionNumber: Int, in lines: [String]) -> String? {
+        let publishPrefix: String = "publishForSection\(sectionNumber):"
+        for line in lines where line.hasPrefix(publishPrefix) {
+            return String(line.dropFirst(publishPrefix.count)).trimmingCharacters(in: .whitespaces)
+        }
+
+        let draftPrefix: String = "draftSection\(sectionNumber):"
+        for line in lines where line.hasPrefix(draftPrefix) {
+            let value: String = String(line.dropFirst(draftPrefix.count)).trimmingCharacters(in: .whitespaces)
+            return value.lowercased() == "true" ? "false" : "true"
+        }
+        return nil
+    }
+
+    /// The section number in a per-section key.
     static func perSectionKeyNumber(in line: String) -> Int? {
-        for prefix in ["createdSection", "draftSection"] {
+        for prefix in ["createdSection", "publishForSection", "draftSection"] {
             guard line.hasPrefix(prefix) else {
                 continue
             }
@@ -224,12 +260,12 @@ enum SectionAdder {
     }
 
     /// Pages that exist for the teacher's own eyes — the wizard creates
-    /// them as drafts so they are never published, and a section added
+    /// them held back so they are never published, and a section added
     /// with no sibling to imitate must do the same.
     static let unpublishedFileNames: Set<String> = ["Private Notes.md", "Scratch Page.md"]
 
     /// The frontmatter for one scaffolded file. A sibling's frontmatter is
-    /// carried over whole — draft status, table-of-contents and backlink
+    /// carried over whole — publish status, table-of-contents and backlink
     /// flags, anything else the teacher set — with only `created:` freshened
     /// and, when a new title is given, the title swapped. Without a sibling,
     /// the wizard's plain template stands in.
@@ -254,7 +290,8 @@ enum SectionAdder {
             return result.joined(separator: "\n")
         }
         let title: String = newTitle ?? fallbackTitle ?? ""
-        return "title: \(title)\ncreated: \(created)\ndraft: \(fallbackIsDraft ? "true" : "false")"
+        let publish: String = fallbackIsDraft ? "false" : "true"
+        return "title: \(title)\ncreated: \(created)\npublish: \(publish)"
     }
 
     /// The lines between a file's opening and closing `---` markers, or nil

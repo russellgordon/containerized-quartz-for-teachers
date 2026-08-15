@@ -1,6 +1,6 @@
 ---
 title: What Should a Country Remember?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

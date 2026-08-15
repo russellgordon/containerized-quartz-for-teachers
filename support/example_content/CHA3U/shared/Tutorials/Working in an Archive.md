@@ -1,6 +1,6 @@
 ---
 title: Working in an Archive
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

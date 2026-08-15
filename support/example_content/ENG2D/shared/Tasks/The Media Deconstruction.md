@@ -1,6 +1,6 @@
 ---
 title: The Media Deconstruction
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

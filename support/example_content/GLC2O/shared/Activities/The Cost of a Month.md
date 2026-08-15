@@ -1,6 +1,6 @@
 ---
 title: The Cost of a Month
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - activities

@@ -1,6 +1,6 @@
 ---
 title: Who You Are, in Three Hundred Words
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

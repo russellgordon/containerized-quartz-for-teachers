@@ -1,6 +1,6 @@
 ---
 title: Setup
-draft: false
+publish: true
 created: __CREATED__
 ---
 How this class runs. Read all five in the first week, and come back to

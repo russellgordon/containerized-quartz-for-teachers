@@ -1,6 +1,6 @@
 ---
 title: Measuring and Marking
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - techniques

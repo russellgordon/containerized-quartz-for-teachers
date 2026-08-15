@@ -1,6 +1,6 @@
 ---
 title: Concepts
-draft: false
+publish: true
 created: __CREATED__
 ---
 The ideas this course runs on — how you work, how you decide, how work

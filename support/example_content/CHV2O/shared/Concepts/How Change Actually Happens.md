@@ -1,6 +1,6 @@
 ---
 title: How Change Actually Happens
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: Personal Protective Equipment
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - safety

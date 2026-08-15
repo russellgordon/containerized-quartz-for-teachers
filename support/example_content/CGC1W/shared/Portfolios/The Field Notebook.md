@@ -1,6 +1,6 @@
 ---
 title: The Field Notebook
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

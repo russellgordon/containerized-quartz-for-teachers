@@ -1,6 +1,6 @@
 ---
 title: Interactions Between Species
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

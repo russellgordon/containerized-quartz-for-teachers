@@ -1,6 +1,6 @@
 ---
 title: Design and Build a Logic Block
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

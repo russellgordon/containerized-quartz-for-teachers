@@ -2960,7 +2960,7 @@ directly, or from a page a class page links to. A page written in August
 and never put into a class has addressed nothing yet, and a page reached
 only from Key Links is a reference, not a lesson.
 
-**Only published pages count.** A page still marked `draft: true` is not on
+**Only published pages count.** A page marked `publish: false` is not on
 the site yet, so it cannot have addressed anything — next week's lesson,
 written early, leaves the map exactly where it was until the day it is
 published.
@@ -3027,21 +3027,26 @@ def _is_draft(text: str) -> bool:
     """
     Is this page held back from the built site?
 
-    The same test Quartz's own RemoveDrafts filter applies: `draft: true`,
-    or the string "true". Anything else — false, absent, a comment — is
-    published.
+    Visibility is `publish: false`. `draft: true` is the older spelling
+    with the opposite polarity and is still read, because a teacher's
+    existing course may carry it — but an explicit `publish` always wins.
     """
     if not text.startswith("---\n"):
         return False
     end = text.find("\n---", 4)
     if end < 0:
         return False
+    legacy = None
     for line in text[4:end].split("\n"):
-        match = re.match(r"^draft:\s*(.+?)\s*$", line)
+        match = re.match(r"^(publish|draft):\s*(.+?)\s*$", line)
         if match:
-            value = match.group(1).strip().strip('"').strip("'").lower()
-            return value == "true"
-    return False
+            key = match.group(1)
+            value = match.group(2).strip().strip('"').strip("'").lower()
+            if key == "publish":
+                return value == "false"
+            if legacy is None:
+                legacy = value == "true"
+    return bool(legacy)
 
 
 def _pages_the_course_teaches(content_root: Path) -> set | None:
@@ -3102,7 +3107,7 @@ def _coverage_counts(content_root: Path, curriculum_dir: Path, specific: dict):
     what the map keys on — but where a teacher's own vault still has them,
     links inside them count too.
 
-    Only PUBLISHED pages count. A page still marked `draft: true` is not on
+    Only PUBLISHED pages count. A page marked `publish: false` is not on
     the site a student can read, so it cannot have addressed anything yet —
     and a teacher who writes next week's lesson early should not see the map
     turn green before the class has happened. By the time this runs, the
@@ -3254,7 +3259,7 @@ def build_curriculum_coverage(content_root: Path, course_code: str,
 
     body = f"""---
 title: Curriculum Coverage
-draft: false
+publish: true
 enableToc: true
 ---
 Every expectation in {course_code}, coloured by how many pages address it.

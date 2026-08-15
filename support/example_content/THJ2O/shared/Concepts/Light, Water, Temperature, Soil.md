@@ -1,6 +1,6 @@
 ---
 title: Light, Water, Temperature, Soil
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

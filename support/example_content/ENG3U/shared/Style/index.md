@@ -1,6 +1,6 @@
 ---
 title: Style
-draft: false
+publish: true
 created: __CREATED__
 ---
 - [[How This Site Is Organised]]

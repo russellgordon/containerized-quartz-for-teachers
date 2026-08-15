@@ -1,9 +1,9 @@
 ---
 title: Private Notes
-draft: true
+publish: false
 created: __CREATED__
 ---
-%% This page is for you, not for students: `draft: true` in the
+%% This page is for you, not for students: `publish: false` in the
 frontmatter means it is never published to the site. Seating, phone
 calls home, who to check on, which group needs splitting up — none of it
 leaves this file. %%

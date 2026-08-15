@@ -1,6 +1,6 @@
 ---
 title: Sentence Craft Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 The reference is [[The Sentence]]. Write your answers before unfolding.

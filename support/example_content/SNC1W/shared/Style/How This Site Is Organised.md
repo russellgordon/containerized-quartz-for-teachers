@@ -1,7 +1,7 @@
 ---
 title: How This Site Is Organised
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - reference

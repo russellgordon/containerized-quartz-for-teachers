@@ -1,6 +1,6 @@
 ---
 title: Ways to Find a Bug
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

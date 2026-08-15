@@ -1,6 +1,6 @@
 ---
 title: Analysing Video of Motion
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

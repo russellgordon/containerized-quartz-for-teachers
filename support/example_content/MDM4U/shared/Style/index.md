@@ -1,6 +1,6 @@
 ---
 title: Style
-draft: false
+publish: true
 created: __CREATED__
 ---
 Pages about the site itself — how it is arranged, what it can do, and

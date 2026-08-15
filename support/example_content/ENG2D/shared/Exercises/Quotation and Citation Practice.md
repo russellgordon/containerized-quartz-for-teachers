@@ -1,6 +1,6 @@
 ---
 title: Quotation and Citation Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 Conventions on [[Writing About Literature]] and [[Citing Sources]].

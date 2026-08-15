@@ -1,6 +1,6 @@
 ---
 title: Using a Dictionary
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - programs

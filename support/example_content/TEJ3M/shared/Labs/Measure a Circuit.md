@@ -1,6 +1,6 @@
 ---
 title: Measure a Circuit
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

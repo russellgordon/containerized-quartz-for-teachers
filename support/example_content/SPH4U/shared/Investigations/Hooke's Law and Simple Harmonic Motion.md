@@ -1,6 +1,6 @@
 ---
 title: Hooke's Law and Simple Harmonic Motion
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

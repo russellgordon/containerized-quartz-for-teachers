@@ -1,6 +1,6 @@
 ---
 title: Shakespeare's Language
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

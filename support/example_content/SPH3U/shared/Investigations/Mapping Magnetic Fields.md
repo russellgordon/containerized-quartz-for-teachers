@@ -1,6 +1,6 @@
 ---
 title: Mapping Magnetic Fields
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

@@ -1,6 +1,6 @@
 ---
 title: Figurative Language
-draft: false
+publish: true
 created: __CREATED__
 ---
 Figurative language says one thing in terms of another. Naming a device

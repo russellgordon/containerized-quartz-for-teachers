@@ -1,6 +1,6 @@
 ---
 title: Who Decided This?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

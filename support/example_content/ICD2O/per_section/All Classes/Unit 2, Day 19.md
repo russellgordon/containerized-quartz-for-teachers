@@ -1,6 +1,6 @@
 ---
 title: Unit 2, Day 19
-draft: false
+publish: true
 created: __CREATED_CLASS_38__
 transcludeTitleSize: h2
 enableToc: false

@@ -1,6 +1,6 @@
 ---
 title: Folding Paper to the Moon
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

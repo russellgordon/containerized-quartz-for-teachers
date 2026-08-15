@@ -1,6 +1,6 @@
 ---
 title: Style
-draft: false
+publish: true
 created: __CREATED__
 ---
 How this site works, and how writing works in family studies.

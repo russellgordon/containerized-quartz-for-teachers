@@ -1,6 +1,6 @@
 ---
 title: Tasks
-draft: false
+publish: true
 created: __CREATED__
 ---
 - [[The Close Reading Essay]] — Unit 1. One argument about one story, in

@@ -1,6 +1,6 @@
 ---
 title: The Economic Inquiry Process
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

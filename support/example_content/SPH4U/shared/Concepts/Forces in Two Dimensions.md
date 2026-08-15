@@ -1,6 +1,6 @@
 ---
 title: Forces in Two Dimensions
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

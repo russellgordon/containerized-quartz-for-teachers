@@ -1,6 +1,6 @@
 ---
 title: Learning Goals
-draft: false
+publish: true
 created: __CREATED__
 ---
 By the end of this course, you will hold the whole family album of

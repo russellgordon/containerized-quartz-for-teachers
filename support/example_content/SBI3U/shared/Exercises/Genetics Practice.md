@@ -1,6 +1,6 @@
 ---
 title: Genetics Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - exercises

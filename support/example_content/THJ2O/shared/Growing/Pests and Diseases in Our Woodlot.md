@@ -1,6 +1,6 @@
 ---
 title: Pests and Diseases in Our Woodlot
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - growing

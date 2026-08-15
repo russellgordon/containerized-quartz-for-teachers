@@ -1,6 +1,6 @@
 ---
 title: Quotation Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 The conventions are on [[Writing About Texts]]. Every answer here is one

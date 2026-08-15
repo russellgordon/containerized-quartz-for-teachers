@@ -1,6 +1,6 @@
 ---
 title: The Team Build
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - simulations

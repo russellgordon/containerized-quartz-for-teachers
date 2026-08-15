@@ -1,6 +1,6 @@
 ---
 title: Lens Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 One passage, several approaches. Method on [[Using a Critical Lens]].

@@ -1,6 +1,6 @@
 ---
 title: A Map of Your Own
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

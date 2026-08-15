@@ -1,6 +1,6 @@
 ---
 title: Oral History and Testimony
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - sources

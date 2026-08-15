@@ -1,6 +1,6 @@
 ---
 title: Where and How We Work
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

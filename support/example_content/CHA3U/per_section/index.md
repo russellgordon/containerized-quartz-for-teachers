@@ -3,14 +3,14 @@ title: Section __SECTION_NUMBER__
 created: __CREATED__
 enableToc: false
 excludeBacklinks: true
-draft: false
+publish: true
 ---
 # Most Recent Class
 ![[Unit 4, Day 21]]
 
 %% Teacher: after each class, point the transclusion above at the newest
 class page — students land here, so the latest agenda greets them first.
-It stops at Unit 4, Day 21 because Day 22 is the draft example and is not
+It stops at Unit 4, Day 21 because Day 22 is the held-back example and is not
 on the built site yet. %%
 
 ![[Help Sessions]]

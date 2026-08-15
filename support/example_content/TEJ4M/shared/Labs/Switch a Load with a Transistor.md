@@ -1,6 +1,6 @@
 ---
 title: Switch a Load with a Transistor
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

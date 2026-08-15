@@ -1,6 +1,6 @@
 ---
 title: The Sampling Frame
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

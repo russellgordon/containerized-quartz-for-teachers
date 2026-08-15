@@ -1,6 +1,6 @@
 ---
 title: Romeo and Juliet
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

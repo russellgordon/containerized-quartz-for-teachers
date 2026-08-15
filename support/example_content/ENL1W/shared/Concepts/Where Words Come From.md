@@ -1,6 +1,6 @@
 ---
 title: Where Words Come From
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

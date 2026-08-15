@@ -1,6 +1,6 @@
 ---
 title: Writing About Art
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - style

@@ -1,6 +1,6 @@
 ---
 title: Concepts
-draft: false
+publish: true
 created: __CREATED__
 ---
 One page per idea, written once and linked from every class that uses it.

@@ -1,6 +1,6 @@
 ---
 title: What This Site Can Do
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - style

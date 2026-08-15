@@ -1,6 +1,6 @@
 ---
 title: Symbol, Motif, and Pattern
-draft: false
+publish: true
 created: __CREATED__
 ---
 A **symbol** carries meaning beyond itself. A **motif** recurs and

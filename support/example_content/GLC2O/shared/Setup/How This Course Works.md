@@ -1,6 +1,6 @@
 ---
 title: How This Course Works
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - setup

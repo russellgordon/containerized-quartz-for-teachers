@@ -1,6 +1,6 @@
 ---
 title: Equations of Lines
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

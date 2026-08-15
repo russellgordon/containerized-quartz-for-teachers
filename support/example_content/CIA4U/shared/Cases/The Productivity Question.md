@@ -1,6 +1,6 @@
 ---
 title: The Productivity Question
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - cases

@@ -1,6 +1,6 @@
 ---
 title: The Sketchbook Habit
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

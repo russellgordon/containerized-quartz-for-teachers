@@ -1,6 +1,6 @@
 ---
 title: Science, Technology, and American Life
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

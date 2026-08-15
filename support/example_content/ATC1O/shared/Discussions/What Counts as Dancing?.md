@@ -1,6 +1,6 @@
 ---
 title: What Counts as Dancing?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

@@ -1,6 +1,6 @@
 ---
 title: The Community App
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

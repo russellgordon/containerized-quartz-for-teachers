@@ -1,6 +1,6 @@
 ---
 title: Writing
-draft: false
+publish: true
 created: __CREATED__
 ---
 How history is written: a claim someone could disagree with, evidence

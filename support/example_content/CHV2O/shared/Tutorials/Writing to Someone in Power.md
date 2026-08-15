@@ -1,6 +1,6 @@
 ---
 title: Writing to Someone in Power
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

@@ -1,6 +1,6 @@
 ---
 title: Fieldwork Safety
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - fieldwork

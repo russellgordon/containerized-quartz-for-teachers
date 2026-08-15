@@ -1,6 +1,6 @@
 ---
 title: Help Sessions
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - setup

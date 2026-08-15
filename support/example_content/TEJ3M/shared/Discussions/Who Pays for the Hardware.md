@@ -1,6 +1,6 @@
 ---
 title: Who Pays for the Hardware
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

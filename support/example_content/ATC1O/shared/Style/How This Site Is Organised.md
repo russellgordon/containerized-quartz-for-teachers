@@ -1,6 +1,6 @@
 ---
 title: How This Site Is Organised
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - style

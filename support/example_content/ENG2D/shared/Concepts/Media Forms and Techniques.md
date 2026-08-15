@@ -1,6 +1,6 @@
 ---
 title: Media Forms and Techniques
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

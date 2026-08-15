@@ -1,6 +1,6 @@
 ---
 title: Indigenous Peoples and the Second World War
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

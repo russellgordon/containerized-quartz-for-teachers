@@ -1,6 +1,6 @@
 ---
 title: Clearing Up
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - studio-time

@@ -1,6 +1,6 @@
 ---
 title: Conservation of Energy
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

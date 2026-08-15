@@ -1,6 +1,6 @@
 ---
 title: The Optics Design
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

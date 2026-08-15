@@ -1,6 +1,6 @@
 ---
 title: Presenting to a Room
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

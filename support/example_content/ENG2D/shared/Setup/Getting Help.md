@@ -1,6 +1,6 @@
 ---
 title: Getting Help
-draft: false
+publish: true
 created: __CREATED__
 ---
 In order of speed.

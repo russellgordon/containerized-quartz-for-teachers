@@ -1,6 +1,6 @@
 ---
 title: Curriculum
-draft: false
+publish: true
 enableToc: true
 ---
 This folder is where the Ministry's expectations for __COURSE_CODE__ live —

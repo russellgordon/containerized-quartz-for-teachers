@@ -1,6 +1,6 @@
 ---
 title: The Energy Audit of a Bouncing Ball
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

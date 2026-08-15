@@ -1,6 +1,6 @@
 ---
 title: A Program with Two Classes
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - programs

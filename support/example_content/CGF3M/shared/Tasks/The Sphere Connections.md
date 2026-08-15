@@ -1,6 +1,6 @@
 ---
 title: The Sphere Connections
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

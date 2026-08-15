@@ -1,6 +1,6 @@
 ---
 title: Setting and Mood
-draft: false
+publish: true
 created: __CREATED__
 ---
 Setting is where and when. Mood is how it feels to be there. The first is

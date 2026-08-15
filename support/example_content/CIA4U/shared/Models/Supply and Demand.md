@@ -1,6 +1,6 @@
 ---
 title: Supply and Demand
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - models

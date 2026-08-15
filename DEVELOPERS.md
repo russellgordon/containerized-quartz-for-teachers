@@ -215,7 +215,7 @@ relies on:
 
 Two more conventions, added since:
 
-- course-level pages arrive with `createdSectionN`/`draftSectionN` — one
+- course-level pages arrive with `createdSectionN`/`publishForSectionN` — one
   pair per section — because two sections are never quite in step. The
   payload keeps the plain sentinel; `install_payload_file` does the split,
   since a payload cannot know how many sections the teacher will choose,

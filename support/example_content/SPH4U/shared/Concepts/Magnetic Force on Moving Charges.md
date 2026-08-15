@@ -1,6 +1,6 @@
 ---
 title: Magnetic Force on Moving Charges
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

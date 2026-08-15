@@ -1,6 +1,6 @@
 ---
 title: The Failure Autopsy
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

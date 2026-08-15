@@ -1,6 +1,6 @@
 ---
 title: Writing Documentation Somebody Can Build From
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

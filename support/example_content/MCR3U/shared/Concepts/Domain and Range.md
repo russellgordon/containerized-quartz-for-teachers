@@ -1,6 +1,6 @@
 ---
 title: Domain and Range
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: Tutorials
-draft: false
+publish: true
 created: __CREATED__
 ---
 How to use the site, and the method the whole course runs on.

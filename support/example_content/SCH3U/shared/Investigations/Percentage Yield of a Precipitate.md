@@ -1,6 +1,6 @@
 ---
 title: Percentage Yield of a Precipitate
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

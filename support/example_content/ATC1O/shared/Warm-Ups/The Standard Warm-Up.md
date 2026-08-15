@@ -1,6 +1,6 @@
 ---
 title: The Standard Warm-Up
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - warm-ups

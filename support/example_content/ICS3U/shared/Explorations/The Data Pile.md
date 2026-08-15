@@ -1,6 +1,6 @@
 ---
 title: The Data Pile
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

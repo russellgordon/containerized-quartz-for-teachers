@@ -1,6 +1,6 @@
 ---
 title: Tutorials
-draft: false
+publish: true
 created: __CREATED__
 ---
 | Tutorial | The skill |

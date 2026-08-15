@@ -1,6 +1,6 @@
 ---
 title: Harvest and What Happens Next
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - growing

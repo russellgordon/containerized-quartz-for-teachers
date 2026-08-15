@@ -1,6 +1,6 @@
 ---
 title: Setup
-draft: false
+publish: true
 created: __CREATED__
 ---
 Everything you need to know before the work starts — read these in

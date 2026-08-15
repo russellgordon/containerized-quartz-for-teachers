@@ -1,6 +1,6 @@
 ---
 title: Case Studies
-draft: false
+publish: true
 created: __CREATED__
 ---
 Six real events, each worked through with figures attributed to the body

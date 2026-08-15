@@ -1,6 +1,6 @@
 ---
 title: Narrative Perspective
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

@@ -1,6 +1,6 @@
 ---
 title: Where History Leads
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

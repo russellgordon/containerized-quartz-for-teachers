@@ -1,6 +1,6 @@
 ---
 title: Evidence of a Chemical Change
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

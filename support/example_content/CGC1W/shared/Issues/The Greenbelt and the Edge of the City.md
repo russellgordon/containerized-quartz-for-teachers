@@ -1,6 +1,6 @@
 ---
 title: The Greenbelt and the Edge of the City
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - issues

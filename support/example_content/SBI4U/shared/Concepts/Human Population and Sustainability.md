@@ -1,6 +1,6 @@
 ---
 title: Human Population and Sustainability
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: The Law on the Job
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - safety

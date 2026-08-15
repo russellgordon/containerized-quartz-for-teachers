@@ -1,6 +1,6 @@
 ---
 title: Voice
-draft: false
+publish: true
 created: __CREATED__
 ---
 Voice is the thing that makes two people describing the same afternoon

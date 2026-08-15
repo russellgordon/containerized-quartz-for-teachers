@@ -1,6 +1,6 @@
 ---
 title: Writing About Literature
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

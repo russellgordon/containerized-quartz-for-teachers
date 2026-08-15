@@ -1,6 +1,6 @@
 ---
 title: Getting It Out, Getting It There
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: Reading a Media Text
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

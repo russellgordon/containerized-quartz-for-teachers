@@ -1,6 +1,6 @@
 ---
 title: Land Use in a Community
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

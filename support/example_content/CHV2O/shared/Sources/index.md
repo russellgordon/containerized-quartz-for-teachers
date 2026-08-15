@@ -1,6 +1,6 @@
 ---
 title: Sources
-draft: false
+publish: true
 created: __CREATED__
 ---
 Civics has documents. A bill, a budget, a court decision, and a news

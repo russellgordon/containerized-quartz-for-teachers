@@ -1,6 +1,6 @@
 ---
 title: What Democracy Asks of You
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

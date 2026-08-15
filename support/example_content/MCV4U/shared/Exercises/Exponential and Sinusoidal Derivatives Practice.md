@@ -1,6 +1,6 @@
 ---
 title: Exponential and Sinusoidal Derivatives Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - exercises

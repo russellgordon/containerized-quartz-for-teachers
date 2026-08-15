@@ -1,6 +1,6 @@
 ---
 title: The Doppler Effect
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: The Paragraph
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

@@ -1,6 +1,6 @@
 ---
 title: Comparing the Three Fields
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

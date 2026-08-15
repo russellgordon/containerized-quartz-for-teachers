@@ -1,6 +1,6 @@
 ---
 title: Writing a Work Record
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

@@ -1,6 +1,6 @@
 ---
 title: Looping Programs
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - programs

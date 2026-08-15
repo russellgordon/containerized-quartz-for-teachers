@@ -1495,15 +1495,21 @@ def unlink_curriculum_references(text: str, page_names: set) -> str:
 
 def per_section_frontmatter(text: str, section_numbers: list) -> str:
     """
-    Give a course-level page one `created`/`draft` pair PER SECTION.
+    Give a course-level page one `created`/`publish` pair PER SECTION.
 
     A page at the course root is shared by every section, but the sections
     are not in step: one class may have covered the material a day later,
-    or not yet at all. Quartz reads `createdSectionN` / `draftSectionN` at
-    build time (see `process_frontmatter` in build_site.py) and resolves
+    or not yet at all. Quartz reads `createdSectionN` / `publishForSectionN`
+    at build time (see `process_frontmatter` in build_site.py) and resolves
     them to the plain keys for the section being built, so splitting them
     here is what lets a teacher publish a page to one section and hold it
     back from another.
+
+    Visibility is read from either key and always written as
+    `publishForSectionN`. `draft:` is the older spelling with the opposite
+    polarity, so it is inverted on the way through; a page carrying only
+    `draft:` that came out unsplit would silently share one publish state
+    across every section, which is the bug this function exists to prevent.
 
     Only the frontmatter block is touched — a `draft: true` shown inside a
     fenced code block on a tutorial page is documentation, not metadata.
@@ -1518,11 +1524,18 @@ def per_section_frontmatter(text: str, section_numbers: list) -> str:
 
     values = {}
     for line in head.split("\n"):
-        match = re.match(r"^(created|draft):[ \t]*(.*)$", line)
+        match = re.match(r"^(created|draft|publish):[ \t]*(.*)$", line)
         if match:
             values.setdefault(match.group(1), match.group(2))
     if not values:
         return text
+
+    if "publish" in values:
+        publish = values["publish"]
+    elif "draft" in values:
+        publish = "false" if values["draft"].strip().lower() == "true" else "true"
+    else:
+        publish = None
 
     # Written section by section, so a teacher scanning the top of a page
     # reads each section's pair together.
@@ -1530,12 +1543,12 @@ def per_section_frontmatter(text: str, section_numbers: list) -> str:
     for number in section_numbers:
         if "created" in values:
             block.append(f"createdSection{number}: {values['created']}")
-        if "draft" in values:
-            block.append(f"draftSection{number}: {values['draft']}")
+        if publish is not None:
+            block.append(f"publishForSection{number}: {publish}")
 
     out = []
     for line in head.split("\n"):
-        if re.match(r"^(created|draft):", line):
+        if re.match(r"^(created|draft|publish):", line):
             if block:
                 out.extend(block)
                 block = []

@@ -1,6 +1,6 @@
 ---
 title: Your Movement Journal
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

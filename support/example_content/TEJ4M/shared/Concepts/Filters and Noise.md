@@ -1,6 +1,6 @@
 ---
 title: Filters and Noise
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

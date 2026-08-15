@@ -1,6 +1,6 @@
 ---
 title: The Home Front, 1914–1918
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

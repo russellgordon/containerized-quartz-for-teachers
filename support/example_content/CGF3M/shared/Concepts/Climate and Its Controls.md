@@ -1,6 +1,6 @@
 ---
 title: Climate and Its Controls
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

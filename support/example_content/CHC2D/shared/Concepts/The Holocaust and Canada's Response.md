@@ -1,6 +1,6 @@
 ---
 title: The Holocaust and Canada's Response
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

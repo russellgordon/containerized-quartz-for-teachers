@@ -1,6 +1,6 @@
 ---
 title: Paragraphs That Hold Together
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

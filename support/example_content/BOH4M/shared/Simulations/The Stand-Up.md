@@ -1,6 +1,6 @@
 ---
 title: The Stand-Up
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - simulations

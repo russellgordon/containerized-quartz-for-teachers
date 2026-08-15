@@ -1,6 +1,6 @@
 ---
 title: The Birthday Problem
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

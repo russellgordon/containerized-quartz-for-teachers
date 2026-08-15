@@ -1,6 +1,6 @@
 ---
 title: Feedback Loops in Climate
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

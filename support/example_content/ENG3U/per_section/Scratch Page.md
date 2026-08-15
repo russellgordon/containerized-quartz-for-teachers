@@ -1,9 +1,9 @@
 ---
 title: Scratch Page
-draft: true
+publish: false
 created: __CREATED__
 ---
-%% A draft page to think on. Never published; delete or reuse freely. %%
+%% A held-back page to think on. Never published; delete or reuse freely. %%
 
 Ideas for next year:
 

@@ -1,6 +1,6 @@
 ---
 title: The Macbeth Seminar
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

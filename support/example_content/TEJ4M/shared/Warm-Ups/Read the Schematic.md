@@ -1,6 +1,6 @@
 ---
 title: Read the Schematic
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - warm-ups

@@ -1,6 +1,6 @@
 ---
 title: Sources
-draft: false
+publish: true
 created: __CREATED__
 ---
 Almost every number this course needs is published free by the agency

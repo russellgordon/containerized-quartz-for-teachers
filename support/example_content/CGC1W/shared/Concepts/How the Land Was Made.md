@@ -1,6 +1,6 @@
 ---
 title: How the Land Was Made
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

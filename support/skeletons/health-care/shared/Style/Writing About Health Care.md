@@ -1,6 +1,6 @@
 ---
 title: Writing About Health Care
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

@@ -1,6 +1,6 @@
 ---
 title: Concepts
-draft: false
+publish: true
 created: __CREATED__
 ---
 The ideas behind the work, one to a page. Each is written to be read

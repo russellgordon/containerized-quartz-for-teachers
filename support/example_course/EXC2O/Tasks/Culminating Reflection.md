@@ -1,9 +1,9 @@
 ---
 title: Culminating Reflection
 createdSection1: 2027-01-12T07:00:00.000-0500
-draftSection1: false
+publishForSection1: true
 createdSection2: 2027-01-13T07:00:00.000-0500
-draftSection2: false
+publishForSection2: true
 enableToc: true
 tags:
   - assessment

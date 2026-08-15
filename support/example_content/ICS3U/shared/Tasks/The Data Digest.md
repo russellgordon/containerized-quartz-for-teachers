@@ -1,6 +1,6 @@
 ---
 title: The Data Digest
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

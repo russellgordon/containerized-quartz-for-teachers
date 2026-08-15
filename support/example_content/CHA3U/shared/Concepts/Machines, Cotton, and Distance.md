@@ -1,6 +1,6 @@
 ---
 title: Machines, Cotton, and Distance
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: Style
-draft: false
+publish: true
 created: __CREATED__
 ---
 Two pages about the site itself rather than about geography. Worth ten

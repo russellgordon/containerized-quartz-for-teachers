@@ -1,6 +1,6 @@
 ---
 title: The Lens Essay
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

@@ -1,6 +1,6 @@
 ---
 title: With Music and Without
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - choreography

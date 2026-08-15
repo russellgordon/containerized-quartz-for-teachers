@@ -1,6 +1,6 @@
 ---
 title: Component Selection and Tolerances
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

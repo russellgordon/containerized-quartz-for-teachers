@@ -1,6 +1,6 @@
 ---
 title: Adaptations and Media Texts
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

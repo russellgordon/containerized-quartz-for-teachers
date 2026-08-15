@@ -1,6 +1,6 @@
 ---
 title: Data
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - data

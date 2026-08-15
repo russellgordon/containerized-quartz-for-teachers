@@ -1,6 +1,6 @@
 ---
 title: Portfolio Checklist
-draft: false
+publish: true
 created: __CREATED__
 ---
 What has to be in your journal and folder before

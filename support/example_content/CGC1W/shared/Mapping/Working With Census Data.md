@@ -1,6 +1,6 @@
 ---
 title: Working With Census Data
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - mapping

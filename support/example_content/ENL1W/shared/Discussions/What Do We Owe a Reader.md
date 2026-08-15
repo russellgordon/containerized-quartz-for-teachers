@@ -1,6 +1,6 @@
 ---
 title: What Do We Owe a Reader
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

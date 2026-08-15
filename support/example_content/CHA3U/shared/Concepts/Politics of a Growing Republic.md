@@ -1,6 +1,6 @@
 ---
 title: Politics of a Growing Republic
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

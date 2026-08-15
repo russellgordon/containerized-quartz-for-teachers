@@ -1,6 +1,6 @@
 ---
 title: Who Gets to Tell the Story?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

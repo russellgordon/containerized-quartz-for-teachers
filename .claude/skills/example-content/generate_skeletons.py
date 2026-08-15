@@ -566,7 +566,7 @@ def fill(text: str, fam: dict) -> str:
 
 def page(title: str, body: str, *, tags=None, toc=False, extra_frontmatter=None,
          created="__CREATED__") -> str:
-    lines = ["---", f"title: {title}", "draft: false", f"created: {created}"]
+    lines = ["---", f"title: {title}", "publish: true", f"created: {created}"]
     if toc:
         lines.append("enableToc: true")
     for line in (extra_frontmatter or []):
@@ -1000,16 +1000,16 @@ Two things on this page are invisible in the browser:
 1. **Comments.** Text wrapped in `%%` double percent marks `%%` never
    reaches the site. Useful for notes to yourself in a page you are still
    writing.
-2. **Drafts.** A page with `draft: true` in its frontmatter is skipped
-   entirely when the site is built. Write next week's lesson today and
-   publish it when you are ready.
+2. **Holding a page back.** A page with `publish: false` in its
+   frontmatter is skipped entirely when the site is built. Write next
+   week's lesson today and publish it when you are ready.
 
 %% This sentence is a comment. If you can read it on the website,
 something is broken. %%
 
 > [!tip] For teachers reading this
 > A shared page can be published to one section and held back from another
-> using per-section `draftSection1` / `draftSection2` keys in the
+> using per-section `publishForSection1` / `publishForSection2` keys in the
 > frontmatter — useful when two classes have drifted a few days apart.
 
 ---
@@ -1364,20 +1364,20 @@ after itself.
                                                     "excludeBacklinks: true"])
 
     pages["Private Notes.md"] = page("Private Notes", """%%
-A page for your own eyes. It ships as a draft, so it is never published —
-leave `draft: true` alone unless you mean it.
+A page for your own eyes. It ships held back, so it is never published —
+leave `publish: false` alone unless you mean it.
 %%
 
 Notes to yourself about this section: who needs what, what to try next time,
 what did not work.
-""", extra_frontmatter=["excludeBacklinks: true"]).replace("draft: false", "draft: true")
+""", extra_frontmatter=["excludeBacklinks: true"]).replace("publish: true", "publish: false")
 
     pages["Scratch Page.md"] = page("Scratch Page", """%%
-Somewhere to draft. Also a draft page, so nothing here is published.
+Somewhere to draft. Also held back, so nothing here is published.
 %%
 
 Paste things here while you work out where they belong.
-""", extra_frontmatter=["excludeBacklinks: true"]).replace("draft: false", "draft: true")
+""", extra_frontmatter=["excludeBacklinks: true"]).replace("publish: true", "publish: false")
 
     pages["All Classes/index.md"] = page("All Classes", """Every class in this section, newest first. The list builds itself from the
 pages in this folder — you never maintain it.

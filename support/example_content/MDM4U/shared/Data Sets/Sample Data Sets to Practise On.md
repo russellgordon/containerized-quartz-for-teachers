@@ -1,6 +1,6 @@
 ---
 title: Sample Data Sets to Practise On
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - data-sets

@@ -1,6 +1,6 @@
 ---
 title: Forms From Around the World
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - technique

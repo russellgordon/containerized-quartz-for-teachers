@@ -1,6 +1,6 @@
 ---
 title: Sugar Falls
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

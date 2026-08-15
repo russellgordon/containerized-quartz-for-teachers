@@ -1,6 +1,6 @@
 ---
 title: Mapping
-draft: false
+publish: true
 created: __CREATED__
 ---
 Maps are geography's own instrument. These pages are how to read one,

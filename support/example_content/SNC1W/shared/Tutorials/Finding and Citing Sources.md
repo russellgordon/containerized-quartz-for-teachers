@@ -1,7 +1,7 @@
 ---
 title: Finding and Citing Sources
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - skills

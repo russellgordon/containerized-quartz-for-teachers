@@ -1,6 +1,6 @@
 ---
 title: Style and Diction
-draft: false
+publish: true
 created: __CREATED__
 ---
 **Diction** is word choice. **Syntax** is sentence construction.

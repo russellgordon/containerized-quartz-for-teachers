@@ -1,6 +1,6 @@
 ---
 title: Discussions
-draft: false
+publish: true
 created: __CREATED__
 ---
 Three seminars, spread across the course, on questions that physical

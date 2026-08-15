@@ -1,6 +1,6 @@
 ---
 title: Is a Company Responsible?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

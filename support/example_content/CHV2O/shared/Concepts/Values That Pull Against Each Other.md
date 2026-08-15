@@ -1,6 +1,6 @@
 ---
 title: Values That Pull Against Each Other
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

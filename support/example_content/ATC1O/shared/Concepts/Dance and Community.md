@@ -1,6 +1,6 @@
 ---
 title: Dance and Community
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

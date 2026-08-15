@@ -1,6 +1,6 @@
 ---
 title: A Stack and a Queue
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - programs

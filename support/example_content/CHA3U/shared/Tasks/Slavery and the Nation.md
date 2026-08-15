@@ -1,6 +1,6 @@
 ---
 title: Slavery and the Nation
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

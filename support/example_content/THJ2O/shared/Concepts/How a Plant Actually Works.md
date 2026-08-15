@@ -1,6 +1,6 @@
 ---
 title: How a Plant Actually Works
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

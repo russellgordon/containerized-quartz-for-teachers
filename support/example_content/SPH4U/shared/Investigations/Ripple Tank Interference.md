@@ -1,6 +1,6 @@
 ---
 title: Ripple Tank Interference
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

@@ -1,6 +1,6 @@
 ---
 title: Was the Revolution Inevitable?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

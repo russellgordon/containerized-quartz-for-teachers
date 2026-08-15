@@ -1,6 +1,6 @@
 ---
 title: What This Site Can Do
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:
@@ -415,9 +415,9 @@ Two things on this page are invisible in the browser:
 1. **Comments.** Text wrapped in `%%` double percent marks `%%` never
    reaches the site. Useful for notes to yourself in a page you are
    still writing.
-2. **Drafts.** A page with `draft: true` in its frontmatter is skipped
-   entirely when the site is built. Write next week's lesson today and
-   publish it when you are ready.
+2. **Holding a page back.** A page with `publish: false` in its
+   frontmatter is skipped entirely when the site is built. Write next
+   week's lesson today and publish it when you are ready.
 
 %% This sentence is a comment. If you can read it on the
 website, something is broken. %%
@@ -425,10 +425,10 @@ website, something is broken. %%
 > [!tip] For teachers reading this
 > A shared page can also be published to one section and held back from
 > another: look at the top of this page's source and you will find a
-> `createdSection1` / `draftSection1` pair for each of your sections.
-> Set one section's `draft` to `true` and the page waits for that class —
-> useful when your two classes have drifted a few days apart and one of
-> them has not done the lab yet.
+> `createdSection1` / `publishForSection1` pair for each of your
+> sections. Set one section's key to `false` and the page waits for
+> that class — useful when your two classes have drifted a few days
+> apart and one of them has not done the lab yet.
 
 ---
 
@@ -442,7 +442,7 @@ out of date:
 | Transclusion | The same text copied into six places, five of them stale |
 | Backlinks | "Where did we use this again?" |
 | Diagrams as text | Rebuilding a whole diagram to change one arrow |
-| Drafts | Keeping unpublished work in some other file somewhere |
+| Holding a page back | Keeping unpublished work in some other file somewhere |
 | Typeset chemistry | Screenshotting equations out of a document |
 
 Write it once, link to it everywhere.

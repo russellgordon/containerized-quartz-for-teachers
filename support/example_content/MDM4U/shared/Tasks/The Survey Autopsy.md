@@ -1,6 +1,6 @@
 ---
 title: The Survey Autopsy
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

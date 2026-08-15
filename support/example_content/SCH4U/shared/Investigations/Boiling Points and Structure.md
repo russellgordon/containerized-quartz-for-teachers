@@ -1,6 +1,6 @@
 ---
 title: Boiling Points and Structure
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

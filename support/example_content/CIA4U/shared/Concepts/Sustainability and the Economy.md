@@ -1,6 +1,6 @@
 ---
 title: Sustainability and the Economy
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

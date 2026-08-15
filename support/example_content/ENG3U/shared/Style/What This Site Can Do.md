@@ -1,6 +1,6 @@
 ---
 title: What This Site Can Do
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---
@@ -223,15 +223,15 @@ question "can it do…?" deserves an answer you can see.
 
 ---
 
-## Drafts
+## Holding a page back
 
-A page with `draft: true` in its frontmatter is skipped entirely when the
-site is built. That is how tomorrow's class page can be written today and
-published when the class actually happens.
+A page with `publish: false` in its frontmatter is skipped entirely when
+the site is built. That is how tomorrow's class page can be written today
+and published when the class actually happens.
 
 ```yaml
 ---
-draft: true
+publish: false
 ---
 ```
 
@@ -245,6 +245,6 @@ draft: true
 | Backlinks | "Where did we do this again?" |
 | Callouts | Important things lost in a wall of paragraphs |
 | Diagrams as text | Rebuilding a whole diagram to change one arrow |
-| Drafts | Keeping unpublished plans in some other file somewhere |
+| Holding a page back | Keeping unpublished plans in some other file somewhere |
 
 Write it once, link to it everywhere.

@@ -1,6 +1,6 @@
 ---
 title: Is Voting Enough?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

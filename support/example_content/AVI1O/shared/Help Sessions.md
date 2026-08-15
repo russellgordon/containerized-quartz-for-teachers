@@ -1,6 +1,6 @@
 ---
 title: Help Sessions
-draft: false
+publish: true
 created: __CREATED__
 ---
 Times the studio is open and I am in it. No appointment needed — bring

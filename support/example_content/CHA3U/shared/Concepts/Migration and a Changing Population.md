@@ -1,6 +1,6 @@
 ---
 title: Migration and a Changing Population
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

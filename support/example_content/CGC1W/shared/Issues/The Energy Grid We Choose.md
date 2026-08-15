@@ -1,6 +1,6 @@
 ---
 title: The Energy Grid We Choose
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - issues

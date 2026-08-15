@@ -1,6 +1,6 @@
 ---
 title: Help Sessions
-draft: false
+publish: true
 created: __CREATED__
 ---
 Times I am in the room and free to work with you.

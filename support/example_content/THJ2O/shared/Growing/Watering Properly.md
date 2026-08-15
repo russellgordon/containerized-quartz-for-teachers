@@ -1,6 +1,6 @@
 ---
 title: Watering Properly
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - growing

@@ -1,6 +1,6 @@
 ---
 title: Kidneys and Water Balance
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

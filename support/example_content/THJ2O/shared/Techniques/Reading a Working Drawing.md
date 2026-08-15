@@ -1,6 +1,6 @@
 ---
 title: Reading a Working Drawing
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - techniques

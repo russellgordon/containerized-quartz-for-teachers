@@ -1,6 +1,6 @@
 ---
 title: Stand Up a Service
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

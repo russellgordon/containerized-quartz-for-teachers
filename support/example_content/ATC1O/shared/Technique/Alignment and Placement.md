@@ -1,6 +1,6 @@
 ---
 title: Alignment and Placement
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - technique

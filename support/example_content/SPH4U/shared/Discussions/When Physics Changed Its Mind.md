@@ -1,6 +1,6 @@
 ---
 title: When Physics Changed Its Mind
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

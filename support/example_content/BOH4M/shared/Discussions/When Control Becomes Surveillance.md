@@ -1,6 +1,6 @@
 ---
 title: When Control Becomes Surveillance
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

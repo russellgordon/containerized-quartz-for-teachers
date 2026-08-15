@@ -1,6 +1,6 @@
 ---
 title: How This Studio Works
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - setup

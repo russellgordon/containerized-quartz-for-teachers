@@ -1,6 +1,6 @@
 ---
 title: Strategies and Whether They Work
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

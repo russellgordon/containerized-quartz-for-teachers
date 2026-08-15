@@ -1,6 +1,6 @@
 ---
 title: Setting a Goal You Will Keep
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

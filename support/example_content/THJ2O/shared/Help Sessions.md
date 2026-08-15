@@ -1,6 +1,6 @@
 ---
 title: Help Sessions
-draft: false
+publish: true
 created: __CREATED__
 ---
 Times the shop and greenhouse are open and I am in them. No appointment

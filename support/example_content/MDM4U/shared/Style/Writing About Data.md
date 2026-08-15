@@ -1,6 +1,6 @@
 ---
 title: Writing About Data
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - reference

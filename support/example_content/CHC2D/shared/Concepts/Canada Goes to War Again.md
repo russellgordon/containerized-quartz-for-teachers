@@ -1,6 +1,6 @@
 ---
 title: Canada Goes to War Again
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

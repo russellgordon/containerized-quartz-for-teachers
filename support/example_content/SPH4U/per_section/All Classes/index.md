@@ -1,6 +1,6 @@
 ---
 title: All Classes
-draft: false
+publish: true
 created: __CREATED__
 ---
 Every class this section has had, newest first. The list builds itself
@@ -12,5 +12,5 @@ rather than asking what you missed.
 
 %%
 The order comes from each page's `created:` date, not its name. The last
-class page ships as a draft — see the comment in it.
+class page is held back — see the comment in it.
 %%

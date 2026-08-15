@@ -1,6 +1,6 @@
 ---
 title: Searching and Timing It
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - programs

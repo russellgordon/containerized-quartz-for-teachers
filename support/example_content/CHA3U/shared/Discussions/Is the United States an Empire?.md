@@ -1,6 +1,6 @@
 ---
 title: Is the United States an Empire?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

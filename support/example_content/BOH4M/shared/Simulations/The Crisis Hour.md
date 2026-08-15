@@ -1,6 +1,6 @@
 ---
 title: The Crisis Hour
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - simulations

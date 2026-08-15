@@ -1,7 +1,7 @@
 ---
 title: The Particle Theory of Matter
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - chemistry

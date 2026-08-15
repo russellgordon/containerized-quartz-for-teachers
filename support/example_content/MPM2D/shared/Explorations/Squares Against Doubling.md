@@ -1,6 +1,6 @@
 ---
 title: Squares Against Doubling
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

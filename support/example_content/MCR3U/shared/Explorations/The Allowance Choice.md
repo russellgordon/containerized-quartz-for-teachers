@@ -1,6 +1,6 @@
 ---
 title: The Allowance Choice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

@@ -1,6 +1,6 @@
 ---
 title: Sources
-draft: false
+publish: true
 created: __CREATED__
 ---
 Where the evidence comes from, and how to tell whether it is any good.

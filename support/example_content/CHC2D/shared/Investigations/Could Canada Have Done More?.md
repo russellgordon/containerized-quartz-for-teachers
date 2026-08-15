@@ -1,6 +1,6 @@
 ---
 title: Could Canada Have Done More?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

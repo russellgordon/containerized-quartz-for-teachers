@@ -1,6 +1,6 @@
 ---
 title: Deflecting a Charged Particle
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

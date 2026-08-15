@@ -1,6 +1,6 @@
 ---
 title: Bench Power Supply Habits
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

@@ -1,6 +1,6 @@
 ---
 title: Working with Logarithms in Chemistry
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

@@ -1,6 +1,6 @@
 ---
 title: Where This Physics Leads
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

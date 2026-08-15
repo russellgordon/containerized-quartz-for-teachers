@@ -1,6 +1,6 @@
 ---
 title: The Land Use Question
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

@@ -1,6 +1,6 @@
 ---
 title: The Client Build
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

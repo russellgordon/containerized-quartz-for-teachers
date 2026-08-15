@@ -1,6 +1,6 @@
 ---
 title: What Did the War Change at Home?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

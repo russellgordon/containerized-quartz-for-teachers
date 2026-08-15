@@ -1,6 +1,6 @@
 ---
 title: Sustainable Communities
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

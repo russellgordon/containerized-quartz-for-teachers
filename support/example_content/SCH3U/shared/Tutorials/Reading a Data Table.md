@@ -1,6 +1,6 @@
 ---
 title: Reading a Data Table
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

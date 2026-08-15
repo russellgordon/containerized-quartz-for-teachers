@@ -1,6 +1,6 @@
 ---
 title: The Portfolio
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

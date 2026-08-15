@@ -1,6 +1,6 @@
 ---
 title: How Physics Class Works
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

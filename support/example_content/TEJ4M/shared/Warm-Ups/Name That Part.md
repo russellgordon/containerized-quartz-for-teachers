@@ -1,6 +1,6 @@
 ---
 title: Name That Part
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - warm-ups

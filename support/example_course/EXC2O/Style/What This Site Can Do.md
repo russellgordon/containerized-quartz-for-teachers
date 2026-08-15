@@ -1,9 +1,9 @@
 ---
 title: What This Site Can Do
 createdSection1: 2026-08-14T12:24:26.000-0400
-draftSection1: false
+publishForSection1: true
 createdSection2: 2026-08-14T12:24:26.000-0400
-draftSection2: false
+publishForSection2: true
 enableToc: true
 tags:
   - reference
@@ -414,16 +414,17 @@ Two things on this page are invisible in the browser:
 
 1. **Comments.** Text wrapped in `%%` double percent marks `%%` never reaches
    the site. Useful for notes to yourself in a page you are still writing.
-2. **Drafts.** A page with `draft: true` in its frontmatter is skipped entirely
-   when the site is built. Write next week's lesson today and publish it when
-   you are ready.
+2. **Holding a page back.** A page with `publish: false` in its frontmatter
+   is skipped entirely when the site is built. Write next week's lesson today
+   and publish it when you are ready.
 
 %% This sentence is a comment. If you can read it on the website, something is broken. %%
 
 > [!tip] For teachers reading this
-> The per-section keys `draftSection1` and `draftSection2` let one shared page
-> be published to one class and held back from another — useful when your two
-> sections are a few days apart. Every Concepts page in this course uses them.
+> The per-section keys `publishForSection1` and `publishForSection2` let one
+> shared page be published to one class and held back from another — useful
+> when your two sections are a few days apart. Every Concepts page in this
+> course uses them.
 
 ---
 
@@ -437,7 +438,7 @@ date:
 | Transclusion | The same text copied into six places, five of them stale |
 | Backlinks | "Where did we use this again?" |
 | Diagrams as text | Rebuilding a diagram from scratch to change one arrow |
-| Drafts | Keeping unpublished work in a separate file somewhere |
+| Holding a page back | Keeping unpublished work in a separate file somewhere |
 | Maths | Screenshotting equations from a document |
 
 Write it once, link to it everywhere.

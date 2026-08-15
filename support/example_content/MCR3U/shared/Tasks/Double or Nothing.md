@@ -1,6 +1,6 @@
 ---
 title: Double or Nothing
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

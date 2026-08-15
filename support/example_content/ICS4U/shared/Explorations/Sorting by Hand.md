@@ -1,6 +1,6 @@
 ---
 title: Sorting by Hand
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

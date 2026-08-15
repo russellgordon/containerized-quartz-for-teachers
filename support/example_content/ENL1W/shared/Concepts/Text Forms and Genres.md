@@ -1,6 +1,6 @@
 ---
 title: Text Forms and Genres
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

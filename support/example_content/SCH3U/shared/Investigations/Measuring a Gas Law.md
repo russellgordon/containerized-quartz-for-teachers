@@ -1,6 +1,6 @@
 ---
 title: Measuring a Gas Law
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

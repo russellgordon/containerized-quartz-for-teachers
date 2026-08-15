@@ -1,6 +1,6 @@
 ---
 title: The Crash and the Thirties
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

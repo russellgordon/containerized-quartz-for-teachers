@@ -1,6 +1,6 @@
 ---
 title: What Do We Owe the Next Community?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

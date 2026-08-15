@@ -1,6 +1,6 @@
 ---
 title: Could the Civil War Have Been Avoided?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

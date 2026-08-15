@@ -1,6 +1,6 @@
 ---
 title: Fasteners and Construction
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - techniques

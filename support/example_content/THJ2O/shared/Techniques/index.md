@@ -1,6 +1,6 @@
 ---
 title: Techniques
-draft: false
+publish: true
 created: __CREATED__
 ---
 Tools, measurement, drawings, and construction. Read the page before you

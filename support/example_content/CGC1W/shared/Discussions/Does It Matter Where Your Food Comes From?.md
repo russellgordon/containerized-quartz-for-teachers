@@ -1,6 +1,6 @@
 ---
 title: Does It Matter Where Your Food Comes From?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

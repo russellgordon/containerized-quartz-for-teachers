@@ -1,6 +1,6 @@
 ---
 title: Mapping a Hazard
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - mapping

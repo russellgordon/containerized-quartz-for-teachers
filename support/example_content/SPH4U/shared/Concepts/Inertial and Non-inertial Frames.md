@@ -1,6 +1,6 @@
 ---
 title: Inertial and Non-inertial Frames
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

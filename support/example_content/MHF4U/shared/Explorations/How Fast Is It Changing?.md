@@ -1,6 +1,6 @@
 ---
 title: How Fast Is It Changing?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

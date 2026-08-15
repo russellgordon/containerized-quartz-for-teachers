@@ -1,6 +1,6 @@
 ---
 title: Structure and Delay
-draft: false
+publish: true
 created: __CREATED__
 ---
 Structure is the order a writer chose. In *Hamlet* the structure is

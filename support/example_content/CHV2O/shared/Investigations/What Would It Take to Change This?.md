@@ -1,6 +1,6 @@
 ---
 title: What Would It Take to Change This?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

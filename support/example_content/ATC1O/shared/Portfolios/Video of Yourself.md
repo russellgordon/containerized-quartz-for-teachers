@@ -1,6 +1,6 @@
 ---
 title: Video of Yourself
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

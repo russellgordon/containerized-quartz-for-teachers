@@ -1,6 +1,6 @@
 ---
 title: The Body of Work
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

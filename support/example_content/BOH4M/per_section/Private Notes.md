@@ -1,13 +1,13 @@
 ---
 title: Private Notes
-draft: true
+publish: false
 created: __CREATED__
 enableToc: false
 excludeBacklinks: true
 ---
-%% This page is a draft, so it is never published — it is here for you,
-not for students. Drafts are how you keep working notes inside the same
-vault as the course. %%
+%% This page is held back, so it is never published — it is here for
+you, not for students. Holding pages back is how you keep working notes
+inside the same vault as the course. %%
 
 ## Section __SECTION_NUMBER__ — notes to myself
 

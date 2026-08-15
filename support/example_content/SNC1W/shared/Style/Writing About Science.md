@@ -1,7 +1,7 @@
 ---
 title: Writing About Science
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - skills

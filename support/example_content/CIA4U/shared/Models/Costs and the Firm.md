@@ -1,6 +1,6 @@
 ---
 title: Costs and the Firm
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - models

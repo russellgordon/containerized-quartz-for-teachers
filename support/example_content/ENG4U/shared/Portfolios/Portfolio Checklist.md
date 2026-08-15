@@ -1,6 +1,6 @@
 ---
 title: Portfolio Checklist
-draft: false
+publish: true
 created: __CREATED__
 ---
 Copy this into your notebook — the boxes here are printed, not clickable.

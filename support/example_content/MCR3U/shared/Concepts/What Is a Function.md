@@ -1,6 +1,6 @@
 ---
 title: What Is a Function
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

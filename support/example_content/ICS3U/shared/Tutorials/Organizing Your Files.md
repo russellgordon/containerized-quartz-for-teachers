@@ -1,6 +1,6 @@
 ---
 title: Organizing Your Files
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

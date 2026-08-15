@@ -1,6 +1,6 @@
 ---
 title: Kinds of Control System
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

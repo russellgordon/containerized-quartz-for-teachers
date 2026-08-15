@@ -1,7 +1,7 @@
 ---
 title: Your Lab Notebook
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - setup

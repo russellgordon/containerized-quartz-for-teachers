@@ -1,6 +1,6 @@
 ---
 title: The Civic Action Project
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

@@ -1,6 +1,6 @@
 ---
 title: Media Analysis Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 Method on [[Media Texts and Their Arguments]].

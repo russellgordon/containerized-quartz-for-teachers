@@ -1,6 +1,6 @@
 ---
 title: Gates on the Bench
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

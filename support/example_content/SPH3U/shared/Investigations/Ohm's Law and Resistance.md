@@ -1,6 +1,6 @@
 ---
 title: Ohm's Law and Resistance
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

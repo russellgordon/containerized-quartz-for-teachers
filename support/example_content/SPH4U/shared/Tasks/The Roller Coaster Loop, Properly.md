@@ -1,6 +1,6 @@
 ---
 title: The Roller Coaster Loop, Properly
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

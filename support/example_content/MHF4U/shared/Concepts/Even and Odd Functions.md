@@ -1,6 +1,6 @@
 ---
 title: Even and Odd Functions
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

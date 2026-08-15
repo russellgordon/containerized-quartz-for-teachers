@@ -1,6 +1,6 @@
 ---
 title: Science in the News
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

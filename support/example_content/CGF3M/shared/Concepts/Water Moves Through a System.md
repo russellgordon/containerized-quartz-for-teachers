@@ -1,6 +1,6 @@
 ---
 title: Water Moves Through a System
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

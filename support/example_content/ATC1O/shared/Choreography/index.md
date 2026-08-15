@@ -1,6 +1,6 @@
 ---
 title: Choreography
-draft: false
+publish: true
 created: __CREATED__
 ---
 Making dances — the structures, the experiments, and how a group gets

@@ -1,6 +1,6 @@
 ---
 title: The Tohoku Earthquake and Tsunami, 2011
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - case-studies

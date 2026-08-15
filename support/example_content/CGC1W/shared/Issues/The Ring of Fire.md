@@ -1,6 +1,6 @@
 ---
 title: The Ring of Fire
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - issues

@@ -1,6 +1,6 @@
 ---
 title: Version Control for Firmware
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

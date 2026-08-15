@@ -1,6 +1,6 @@
 ---
 title: Growing
-draft: false
+publish: true
 created: __CREATED__
 ---
 How things are actually grown: propagation, media, water, planting, and

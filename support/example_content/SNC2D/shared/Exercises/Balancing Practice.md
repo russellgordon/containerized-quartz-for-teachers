@@ -1,6 +1,6 @@
 ---
 title: Balancing Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - chemistry

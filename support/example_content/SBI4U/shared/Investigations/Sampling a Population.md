@@ -1,6 +1,6 @@
 ---
 title: Sampling a Population
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

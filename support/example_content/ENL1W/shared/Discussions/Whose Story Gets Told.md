@@ -1,6 +1,6 @@
 ---
 title: Whose Story Gets Told
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

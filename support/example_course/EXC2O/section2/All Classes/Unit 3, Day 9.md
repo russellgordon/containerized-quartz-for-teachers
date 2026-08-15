@@ -1,6 +1,6 @@
 ---
 title: Unit 3, Day 9
-draft: false
+publish: true
 created: 2026-11-06T07:00:00.000-0500
 transcludeTitleSize: h2
 enableToc: false

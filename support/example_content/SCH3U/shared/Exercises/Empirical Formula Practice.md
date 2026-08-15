@@ -1,6 +1,6 @@
 ---
 title: Empirical Formula Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - chemistry

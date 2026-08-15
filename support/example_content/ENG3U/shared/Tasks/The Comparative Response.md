@@ -1,6 +1,6 @@
 ---
 title: The Comparative Response
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

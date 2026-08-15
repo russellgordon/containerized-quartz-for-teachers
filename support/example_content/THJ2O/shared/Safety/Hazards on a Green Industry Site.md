@@ -1,6 +1,6 @@
 ---
 title: Hazards on a Green Industry Site
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - safety

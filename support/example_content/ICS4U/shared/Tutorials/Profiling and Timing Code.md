@@ -1,6 +1,6 @@
 ---
 title: Profiling and Timing Code
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

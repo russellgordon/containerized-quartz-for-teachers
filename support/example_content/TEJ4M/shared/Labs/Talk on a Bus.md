@@ -1,6 +1,6 @@
 ---
 title: Talk on a Bus
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

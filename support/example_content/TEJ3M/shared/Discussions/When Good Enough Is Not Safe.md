@@ -1,6 +1,6 @@
 ---
 title: When Good Enough Is Not Safe
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

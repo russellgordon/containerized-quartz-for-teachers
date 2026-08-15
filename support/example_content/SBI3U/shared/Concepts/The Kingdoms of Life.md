@@ -1,6 +1,6 @@
 ---
 title: The Kingdoms of Life
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

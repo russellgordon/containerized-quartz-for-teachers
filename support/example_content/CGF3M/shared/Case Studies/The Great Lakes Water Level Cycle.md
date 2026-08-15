@@ -1,6 +1,6 @@
 ---
 title: The Great Lakes Water Level Cycle
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - case-studies

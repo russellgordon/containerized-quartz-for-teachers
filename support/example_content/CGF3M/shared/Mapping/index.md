@@ -1,6 +1,6 @@
 ---
 title: Mapping
-draft: false
+publish: true
 created: __CREATED__
 ---
 Maps in this course are instruments, not illustrations. Each page here is

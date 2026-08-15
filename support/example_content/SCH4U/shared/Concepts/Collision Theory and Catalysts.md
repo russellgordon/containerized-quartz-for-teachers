@@ -1,6 +1,6 @@
 ---
 title: Collision Theory and Catalysts
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

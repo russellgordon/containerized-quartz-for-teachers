@@ -11,7 +11,7 @@ publish: true
 %% Teacher: after each class, point the transclusion above at the newest
 class page — students land here, so the latest agenda greets them first.
 It starts at Unit 5, Day 17 because that is the newest PUBLISHED page in
-the example semester (Unit 5, Day 18 is the draft example). %%
+the example semester (Unit 5, Day 18 is the held-back example). %%
 
 ![[Help Sessions]]
 ![[Key Links]]

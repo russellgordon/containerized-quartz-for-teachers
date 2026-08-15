@@ -1,7 +1,7 @@
 ---
 title: Efficiency Calculations
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - physics

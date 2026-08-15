@@ -1,6 +1,6 @@
 ---
 title: Setup
-draft: false
+publish: true
 created: __CREATED__
 ---
 - [[How This Class Works]] — the shape of a period, and what is assumed.

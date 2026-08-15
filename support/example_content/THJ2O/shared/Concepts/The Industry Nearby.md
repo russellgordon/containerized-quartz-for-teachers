@@ -1,6 +1,6 @@
 ---
 title: The Industry Nearby
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

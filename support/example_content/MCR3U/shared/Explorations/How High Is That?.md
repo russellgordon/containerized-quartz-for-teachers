@@ -1,6 +1,6 @@
 ---
 title: How High Is That?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - explorations

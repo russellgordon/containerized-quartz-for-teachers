@@ -1,6 +1,6 @@
 ---
 title: Formulas and Names Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - chemistry

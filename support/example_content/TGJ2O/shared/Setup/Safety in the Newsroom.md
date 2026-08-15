@@ -1,6 +1,6 @@
 ---
 title: Safety in the Newsroom
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - setup

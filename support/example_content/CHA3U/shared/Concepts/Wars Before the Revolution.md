@@ -1,6 +1,6 @@
 ---
 title: Wars Before the Revolution
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

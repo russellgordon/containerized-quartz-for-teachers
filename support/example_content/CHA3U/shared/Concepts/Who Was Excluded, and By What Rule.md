@@ -1,6 +1,6 @@
 ---
 title: Who Was Excluded, and By What Rule
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

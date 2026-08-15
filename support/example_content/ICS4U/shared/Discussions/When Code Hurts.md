@@ -1,6 +1,6 @@
 ---
 title: When Code Hurts
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

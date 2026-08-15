@@ -1,6 +1,6 @@
 ---
 title: Paraphrase Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 The method is on [[Reading Shakespeare]]: unscramble the syntax, check

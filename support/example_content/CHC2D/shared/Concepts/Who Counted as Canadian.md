@@ -1,6 +1,6 @@
 ---
 title: Who Counted as Canadian
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

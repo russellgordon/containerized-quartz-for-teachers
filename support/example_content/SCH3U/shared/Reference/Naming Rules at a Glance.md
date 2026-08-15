@@ -1,6 +1,6 @@
 ---
 title: Naming Rules at a Glance
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

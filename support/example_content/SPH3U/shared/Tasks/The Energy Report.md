@@ -1,6 +1,6 @@
 ---
 title: The Energy Report
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

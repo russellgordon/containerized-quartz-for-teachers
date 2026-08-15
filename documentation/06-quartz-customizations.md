@@ -218,7 +218,7 @@ adapt *Obsidian conventions* to *Quartz expectations* and are detailed in
   it never appears in the sidebar: it is a teacher's instrument, reached
   from Key Links, and it sits at the content root where it would otherwise
   be listed above every folder. **Only published pages count** — a page held back with
-  `draft: true` is not on the site, so it leaves the map exactly where it
+  `publish: false` is not on the site, so it leaves the map exactly where it
   was until the day it is published. **And only pages the course teaches
   count**: the page carrying the connection must be linked from a class
   page, or from a page a class page links to. A page written over the

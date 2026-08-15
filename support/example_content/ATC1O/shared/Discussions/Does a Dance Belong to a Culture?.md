@@ -1,6 +1,6 @@
 ---
 title: Does a Dance Belong to a Culture?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

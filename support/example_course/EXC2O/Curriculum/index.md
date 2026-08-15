@@ -1,9 +1,9 @@
 ---
 title: Curriculum
 createdSection1: 2026-08-14T12:24:26.000-0400
-draftSection1: false
+publishForSection1: true
 createdSection2: 2026-08-14T12:24:26.000-0400
-draftSection2: false
+publishForSection2: true
 enableToc: true
 ---
 Everything we do in this course points at one or more of these expectations,

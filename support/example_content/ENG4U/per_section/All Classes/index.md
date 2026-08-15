@@ -1,6 +1,6 @@
 ---
 title: All Classes
-draft: false
+publish: true
 created: __CREATED__
 ---
 Every class, newest first. Each page is the plan for that period: what we

@@ -1,6 +1,6 @@
 ---
 title: Debugging Hardware and Software Together
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - code

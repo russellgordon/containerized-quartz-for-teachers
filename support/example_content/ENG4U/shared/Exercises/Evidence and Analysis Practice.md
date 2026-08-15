@@ -1,6 +1,6 @@
 ---
 title: Evidence and Analysis Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 Conventions on [[Writing About Literature]].

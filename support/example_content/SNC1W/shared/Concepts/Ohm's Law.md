@@ -1,7 +1,7 @@
 ---
 title: Ohm's Law
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - physics

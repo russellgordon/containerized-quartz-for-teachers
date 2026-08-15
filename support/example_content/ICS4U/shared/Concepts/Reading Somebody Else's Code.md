@@ -1,6 +1,6 @@
 ---
 title: Reading Somebody Else's Code
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

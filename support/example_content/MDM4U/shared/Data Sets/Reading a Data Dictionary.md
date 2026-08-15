@@ -1,6 +1,6 @@
 ---
 title: Reading a Data Dictionary
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - data-sets

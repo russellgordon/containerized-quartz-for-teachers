@@ -72,11 +72,21 @@ def lint(course_code: str) -> int:
 
         # A payload cannot know how many sections the teacher will choose,
         # so per-section keys are the INSTALLER's job — it splits a shared
-        # page's created/draft into createdSectionN/draftSectionN for each
+        # page's created/publish into createdSectionN/publishForSectionN for each
         # section. Writing them here would fix the course at one section.
         head = text.split("\n---", 1)[0] if text.startswith("---\n") else ""
-        if re.search(r"^(created|draft)Section\d+:", head, re.M):
+        if re.search(r"^(created|draft)Section\d+:|^publishForSection\d+:", head, re.M):
             problems.append(f"{rel}: per-section keys are written by the installer, not the payload")
+
+        # Visibility is `publish:` — a teacher says a page is published or it
+        # is not. `draft:` is the older spelling with the OPPOSITE polarity,
+        # so a page that keeps it does not merely look inconsistent: anyone
+        # copying that page as a model inverts the flag by accident.
+        if re.search(r"^draft:", head, re.M):
+            problems.append(
+                f"{rel}: uses draft: — visibility is publish:, and the "
+                f"polarity is inverted (draft: true is publish: false)"
+            )
 
         # A checklist on the site cannot be ticked — nothing is saved and
         # clicking does nothing. A page that says otherwise lies about the
@@ -292,12 +302,7 @@ def lint(course_code: str) -> int:
         for page in (root / "per_section").rglob("*.md"):
             text = page.read_text(encoding="utf-8")
             match = class_sentinel.search(text)
-            # Visibility is `publish:`, but payloads written before that
-            # rename still say `draft: true`. build_site.py reads both (it
-            # falls back to the inverted draft flag), so the linter has to
-            # agree with the builder or it calls a held-back page published.
-            held_back = "publish: false" in text or "draft: true" in text
-            if match and not held_back:
+            if match and "publish: false" not in text:
                 ordinal = int(match.group(1))
                 if newest_published is None or ordinal > newest_published[0]:
                     newest_published = (ordinal, page.stem)
@@ -386,7 +391,7 @@ def lint(course_code: str) -> int:
             if curriculum_folder and rel.startswith(f"shared/{curriculum_folder}/"):
                 continue
             text = page.read_text(encoding="utf-8")
-            if "draft: true" in text:
+            if "publish: false" in text:
                 continue          # not on the site, so it addresses nothing
             is_assessed = "/Tasks/" in rel.replace("\\", "/")
             # The same pattern build_site.py counts with, block anchor and

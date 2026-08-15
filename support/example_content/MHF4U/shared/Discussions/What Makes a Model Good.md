@@ -1,6 +1,6 @@
 ---
 title: What Makes a Model Good
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

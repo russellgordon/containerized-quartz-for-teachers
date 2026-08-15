@@ -1,6 +1,6 @@
 ---
 title: Source Use Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 The four moves are on [[Research Writing]]: support, extend, complicate,

@@ -1,6 +1,6 @@
 ---
 title: Propagation From Seed
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - growing

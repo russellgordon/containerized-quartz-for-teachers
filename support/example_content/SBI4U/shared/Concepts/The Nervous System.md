@@ -1,6 +1,6 @@
 ---
 title: The Nervous System
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

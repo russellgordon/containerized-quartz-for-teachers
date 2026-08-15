@@ -1,7 +1,7 @@
 ---
 title: Science in the News
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - skills

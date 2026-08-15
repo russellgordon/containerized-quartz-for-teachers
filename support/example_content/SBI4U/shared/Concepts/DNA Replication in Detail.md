@@ -1,6 +1,6 @@
 ---
 title: DNA Replication in Detail
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

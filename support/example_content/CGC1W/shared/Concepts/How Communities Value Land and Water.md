@@ -1,6 +1,6 @@
 ---
 title: How Communities Value Land and Water
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

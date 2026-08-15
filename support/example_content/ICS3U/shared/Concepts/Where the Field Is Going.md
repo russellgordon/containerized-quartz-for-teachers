@@ -1,6 +1,6 @@
 ---
 title: Where the Field Is Going
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

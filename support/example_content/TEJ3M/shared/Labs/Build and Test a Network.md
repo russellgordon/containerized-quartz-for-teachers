@@ -1,6 +1,6 @@
 ---
 title: Build and Test a Network
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - labs

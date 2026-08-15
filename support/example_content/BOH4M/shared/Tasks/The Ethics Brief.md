@@ -1,6 +1,6 @@
 ---
 title: The Ethics Brief
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

@@ -1,6 +1,6 @@
 ---
 title: Parameters, Returns, and Scope
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

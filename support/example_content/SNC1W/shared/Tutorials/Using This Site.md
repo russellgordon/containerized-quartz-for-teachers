@@ -1,7 +1,7 @@
 ---
 title: Using This Site
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - skills

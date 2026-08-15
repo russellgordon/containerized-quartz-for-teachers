@@ -1,6 +1,6 @@
 ---
 title: The Periodic Table as an Argument
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

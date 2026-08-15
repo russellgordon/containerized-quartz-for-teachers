@@ -1,6 +1,6 @@
 ---
 title: Judging an Economic Claim
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - data

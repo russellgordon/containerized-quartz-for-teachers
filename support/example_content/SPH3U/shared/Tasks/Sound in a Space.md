@@ -1,6 +1,6 @@
 ---
 title: Sound in a Space
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

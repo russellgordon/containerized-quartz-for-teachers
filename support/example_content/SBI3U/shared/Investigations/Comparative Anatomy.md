@@ -1,6 +1,6 @@
 ---
 title: Comparative Anatomy
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

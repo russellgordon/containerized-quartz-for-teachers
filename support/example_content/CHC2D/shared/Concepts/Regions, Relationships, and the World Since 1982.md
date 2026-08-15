@@ -1,6 +1,6 @@
 ---
 title: Regions, Relationships, and the World Since 1982
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: Storage Systems and Arrays
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

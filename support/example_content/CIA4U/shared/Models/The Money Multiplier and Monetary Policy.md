@@ -1,6 +1,6 @@
 ---
 title: The Money Multiplier and Monetary Policy
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - models

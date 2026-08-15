@@ -1,6 +1,6 @@
 ---
 title: Activities
-draft: false
+publish: true
 created: __CREATED__
 ---
 The things we do in class. Nothing here is marked on its own; every one

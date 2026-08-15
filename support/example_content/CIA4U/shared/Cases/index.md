@@ -1,6 +1,6 @@
 ---
 title: Cases
-draft: false
+publish: true
 created: __CREATED__
 ---
 Real Canadian economic issues, each one worked with the models and the

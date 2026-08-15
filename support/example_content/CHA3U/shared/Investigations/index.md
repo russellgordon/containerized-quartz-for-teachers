@@ -1,6 +1,6 @@
 ---
 title: Investigations
-draft: false
+publish: true
 created: __CREATED__
 ---
 A question, an evidence set, and a judgement to reach.

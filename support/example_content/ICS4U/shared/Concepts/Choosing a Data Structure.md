@@ -1,6 +1,6 @@
 ---
 title: Choosing a Data Structure
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

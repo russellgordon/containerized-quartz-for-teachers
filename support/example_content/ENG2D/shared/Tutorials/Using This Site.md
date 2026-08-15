@@ -1,6 +1,6 @@
 ---
 title: Using This Site
-draft: false
+publish: true
 created: __CREATED__
 ---
 Four things to know, and then you are fluent.

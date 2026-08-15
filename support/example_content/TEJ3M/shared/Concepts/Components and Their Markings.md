@@ -1,6 +1,6 @@
 ---
 title: Components and Their Markings
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

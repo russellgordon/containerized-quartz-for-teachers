@@ -1,6 +1,6 @@
 ---
 title: All Classes
-draft: false
+publish: true
 created: __CREATED__
 ---
 Every class this semester, most recent at the top. Each page carries the

@@ -1,6 +1,6 @@
 ---
 title: The Literacy Test
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

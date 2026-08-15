@@ -1,6 +1,6 @@
 ---
 title: Whose Rights, and When?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

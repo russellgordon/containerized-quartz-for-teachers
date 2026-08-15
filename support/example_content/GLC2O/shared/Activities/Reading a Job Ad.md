@@ -1,6 +1,6 @@
 ---
 title: Reading a Job Ad
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - activities

@@ -1,7 +1,7 @@
 ---
 title: Building Series and Parallel Circuits
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - physics

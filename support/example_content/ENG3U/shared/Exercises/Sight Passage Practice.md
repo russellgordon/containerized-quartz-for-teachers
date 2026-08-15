@@ -1,6 +1,6 @@
 ---
 title: Sight Passage Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 Unseen passages, answered under time. This is the examination's largest

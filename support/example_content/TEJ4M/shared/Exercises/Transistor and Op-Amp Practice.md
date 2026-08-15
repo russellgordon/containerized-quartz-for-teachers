@@ -1,6 +1,6 @@
 ---
 title: Transistor and Op-Amp Practice
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - exercises

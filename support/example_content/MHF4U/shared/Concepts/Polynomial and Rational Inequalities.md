@@ -1,6 +1,6 @@
 ---
 title: Polynomial and Rational Inequalities
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

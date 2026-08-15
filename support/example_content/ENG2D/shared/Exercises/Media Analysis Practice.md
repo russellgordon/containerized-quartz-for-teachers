@@ -1,6 +1,6 @@
 ---
 title: Media Analysis Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 The method is on [[Media Forms and Techniques]].

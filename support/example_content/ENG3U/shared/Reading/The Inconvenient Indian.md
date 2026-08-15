@@ -1,6 +1,6 @@
 ---
 title: The Inconvenient Indian
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

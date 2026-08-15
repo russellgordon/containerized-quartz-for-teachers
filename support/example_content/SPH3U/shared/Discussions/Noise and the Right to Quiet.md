@@ -1,6 +1,6 @@
 ---
 title: Noise and the Right to Quiet
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

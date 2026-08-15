@@ -1,6 +1,6 @@
 ---
 title: Tasks
-draft: false
+publish: true
 created: __CREATED__
 ---
 Everything you are marked on, with the criteria written on each page.

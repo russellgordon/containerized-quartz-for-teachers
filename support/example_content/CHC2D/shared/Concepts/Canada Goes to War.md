@@ -1,6 +1,6 @@
 ---
 title: Canada Goes to War
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

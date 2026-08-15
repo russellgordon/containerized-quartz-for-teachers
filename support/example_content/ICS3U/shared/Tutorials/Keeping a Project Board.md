@@ -1,6 +1,6 @@
 ---
 title: Keeping a Project Board
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

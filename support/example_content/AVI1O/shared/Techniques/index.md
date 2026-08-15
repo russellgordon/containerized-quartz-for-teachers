@@ -1,6 +1,6 @@
 ---
 title: Techniques
-draft: false
+publish: true
 created: __CREATED__
 ---
 How each medium actually behaves in your hands, and what it will and

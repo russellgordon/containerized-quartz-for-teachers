@@ -1,6 +1,6 @@
 ---
 title: North and South
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

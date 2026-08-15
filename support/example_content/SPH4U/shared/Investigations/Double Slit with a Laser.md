@@ -1,6 +1,6 @@
 ---
 title: Double Slit with a Laser
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

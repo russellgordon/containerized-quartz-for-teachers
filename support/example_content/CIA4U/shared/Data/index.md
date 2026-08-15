@@ -1,6 +1,6 @@
 ---
 title: Data
-draft: false
+publish: true
 created: __CREATED__
 ---
 Where the evidence comes from, and how to read it without being fooled by

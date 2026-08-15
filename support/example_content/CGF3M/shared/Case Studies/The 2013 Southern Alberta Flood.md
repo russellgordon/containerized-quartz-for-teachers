@@ -1,6 +1,6 @@
 ---
 title: The 2013 Southern Alberta Flood
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - case-studies

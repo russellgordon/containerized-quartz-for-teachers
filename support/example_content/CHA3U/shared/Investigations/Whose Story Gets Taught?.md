@@ -1,6 +1,6 @@
 ---
 title: Whose Story Gets Taught?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

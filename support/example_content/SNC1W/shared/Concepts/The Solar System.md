@@ -1,7 +1,7 @@
 ---
 title: The Solar System
 created: __CREATED__
-draft: false
+publish: true
 enableToc: true
 tags:
   - space

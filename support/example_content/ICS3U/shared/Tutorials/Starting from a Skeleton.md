@@ -1,6 +1,6 @@
 ---
 title: Starting from a Skeleton
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

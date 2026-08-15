@@ -1,6 +1,6 @@
 ---
 title: Punctuation That Changes Meaning
-draft: false
+publish: true
 created: __CREATED__
 ---
 Punctuation is not decoration and it is not a guess about where you would

@@ -1,6 +1,6 @@
 ---
 title: Lewis Structures and Models
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

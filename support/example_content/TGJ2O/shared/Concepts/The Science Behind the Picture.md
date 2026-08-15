@@ -1,6 +1,6 @@
 ---
 title: The Science Behind the Picture
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

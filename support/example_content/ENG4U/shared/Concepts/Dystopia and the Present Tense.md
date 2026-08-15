@@ -1,6 +1,6 @@
 ---
 title: Dystopia and the Present Tense
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

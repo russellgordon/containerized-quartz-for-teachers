@@ -1,6 +1,6 @@
 ---
 title: Should It Exist
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

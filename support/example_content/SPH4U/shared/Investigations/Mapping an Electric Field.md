@@ -1,6 +1,6 @@
 ---
 title: Mapping an Electric Field
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

@@ -1,6 +1,6 @@
 ---
 title: Drama and the World Right Now
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - discussions

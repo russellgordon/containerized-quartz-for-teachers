@@ -1,6 +1,6 @@
 ---
 title: Gases and the Atmosphere
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

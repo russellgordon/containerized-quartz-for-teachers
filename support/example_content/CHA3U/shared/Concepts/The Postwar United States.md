@@ -1,6 +1,6 @@
 ---
 title: The Postwar United States
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

@@ -1,6 +1,6 @@
 ---
 title: Was Conscription Necessary?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

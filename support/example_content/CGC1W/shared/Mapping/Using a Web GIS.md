@@ -1,6 +1,6 @@
 ---
 title: Using a Web GIS
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - mapping

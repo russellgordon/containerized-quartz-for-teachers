@@ -1,6 +1,6 @@
 ---
 title: The Law at Work
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

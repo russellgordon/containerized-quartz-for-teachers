@@ -1,6 +1,6 @@
 ---
 title: Transplanting and Establishment
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - growing

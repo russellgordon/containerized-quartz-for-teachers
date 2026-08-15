@@ -1,6 +1,6 @@
 ---
 title: Why Industries Locate Where They Do
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

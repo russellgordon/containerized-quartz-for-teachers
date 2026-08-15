@@ -1,6 +1,6 @@
 ---
 title: Whose Voice Is Missing
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

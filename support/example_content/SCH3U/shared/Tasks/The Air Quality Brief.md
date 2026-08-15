@@ -1,6 +1,6 @@
 ---
 title: The Air Quality Brief
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

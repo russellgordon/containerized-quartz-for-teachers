@@ -1,6 +1,6 @@
 ---
 title: Discussions
-draft: false
+publish: true
 created: __CREATED__
 ---
 - [[Whose Reading Counts]] — can an interpretation be wrong?

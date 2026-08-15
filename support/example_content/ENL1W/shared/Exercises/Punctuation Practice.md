@@ -1,6 +1,6 @@
 ---
 title: Punctuation Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 The reference is [[Punctuation That Changes Meaning]].

@@ -1,6 +1,6 @@
 ---
 title: About These Expectations
-draft: false
+publish: true
 created: __CREATED__
 ---
 The expectations in this folder are reproduced from **The Ontario Curriculum, Grades 11 and 12: English (revised 2007)**,

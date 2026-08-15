@@ -1,6 +1,6 @@
 ---
 title: Writing About French
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

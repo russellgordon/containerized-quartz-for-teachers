@@ -1,6 +1,6 @@
 ---
 title: Thinking Tasks
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - thinking-tasks

@@ -1,6 +1,6 @@
 ---
 title: Evidence of What You Can Do
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - portfolios

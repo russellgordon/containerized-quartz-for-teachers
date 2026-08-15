@@ -1,6 +1,6 @@
 ---
 title: Predicting the Neutrino
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

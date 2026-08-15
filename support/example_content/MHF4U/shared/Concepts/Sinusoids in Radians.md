@@ -1,6 +1,6 @@
 ---
 title: Sinusoids in Radians
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

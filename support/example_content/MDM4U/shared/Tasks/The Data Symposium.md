@@ -1,6 +1,6 @@
 ---
 title: The Data Symposium
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tasks

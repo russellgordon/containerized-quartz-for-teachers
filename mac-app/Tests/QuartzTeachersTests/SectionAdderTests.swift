@@ -43,7 +43,7 @@ final class SectionAdderTests: XCTestCase {
         let indexText: String = try String(contentsOf: sectionURL.appendingPathComponent("index.md"), encoding: .utf8)
         XCTAssertTrue(indexText.contains("title: Grade 11 Introduction to Computer Science, Section 2"),
                       "The landing page is titled the way the wizard titles one")
-        XCTAssertTrue(indexText.contains("draft: false"))
+        XCTAssertTrue(indexText.contains("publish: true"))
 
         for folderName in ["All Classes", "Notes"] {
             let folderIndex: URL = sectionURL.appendingPathComponent(folderName).appendingPathComponent("index.md")
@@ -54,13 +54,13 @@ final class SectionAdderTests: XCTestCase {
                       "Per-section files should be scaffolded too")
 
         // Even with no sibling to imitate (the fixture's sections are bare
-        // folders), the teacher's private pages start as drafts — that is
+        // folders), the teacher's private pages start held back — that is
         // what keeps them from being published.
         let privateNotes: String = try String(contentsOf: sectionURL.appendingPathComponent("Private Notes.md"), encoding: .utf8)
-        XCTAssertTrue(privateNotes.contains("draft: true"),
+        XCTAssertTrue(privateNotes.contains("publish: false"),
                       "Private Notes.md must start unpublished")
         let snippets: String = try String(contentsOf: sectionURL.appendingPathComponent("Snippets.md"), encoding: .utf8)
-        XCTAssertTrue(snippets.contains("draft: false"),
+        XCTAssertTrue(snippets.contains("publish: true"),
                       "An ordinary per-section file still starts published")
 
         let reloaded: CourseConfiguration = try CourseConfiguration(contentsOf: course.configFileURL)
@@ -171,9 +171,9 @@ final class SectionAdderTests: XCTestCase {
         ---
         title: Learning Goals
         createdSection1: 2026-09-08T07:00:00.000
-        draftSection1: false
+        publishForSection1: true
         createdSection3: 2026-09-08T07:00:00.000
-        draftSection3: true
+        publishForSection3: false
         enableToc: false
         ---
         A page with `draft: true` in its frontmatter is skipped.
@@ -186,16 +186,47 @@ final class SectionAdderTests: XCTestCase {
         let updated: String = try String(contentsOf: sharedURL, encoding: .utf8)
         XCTAssertTrue(updated.contains("createdSection2:"),
                       "The new section needs its own created date")
-        XCTAssertTrue(updated.contains("draftSection2: false"),
+        XCTAssertTrue(updated.contains("publishForSection2: true"),
                       "It takes the LOWEST existing section's publishing state")
         XCTAssertTrue(updated.contains("createdSection1: 2026-09-08T07:00:00.000"),
                       "The sections already there are untouched")
-        XCTAssertTrue(updated.contains("draftSection3: true"),
+        XCTAssertTrue(updated.contains("publishForSection3: false"),
                       "Including one deliberately held back")
         XCTAssertTrue(updated.contains("enableToc: false"),
                       "Everything else in the frontmatter survives")
         XCTAssertEqual(updated.components(separatedBy: "draft: true").count - 1, 1,
                        "Prose that mentions draft: true is not metadata and is left alone")
+    }
+
+    /// A course made before the `draft:` → `publish:` rename still carries
+    /// `draftSectionN`, whose polarity is the OPPOSITE. Carrying that value
+    /// across unchanged would publish a page the teacher had held back, so
+    /// the old key is read and inverted.
+    @MainActor
+    func testALegacyDraftSectionKeyIsReadAndInverted() throws {
+        let (root, course) = try makeWorkspace()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let shared: String = """
+        ---
+        title: Held Back Everywhere
+        createdSection1: 2026-09-08T07:00:00.000
+        draftSection1: true
+        ---
+        Not ready for students yet.
+        """
+        let sharedURL: URL = course.directoryURL.appendingPathComponent("Held Back Everywhere.md")
+        try shared.write(to: sharedURL, atomically: true, encoding: .utf8)
+
+        try SectionAdder.addSection(2, to: course)
+
+        let updated: String = try String(contentsOf: sharedURL, encoding: .utf8)
+        XCTAssertTrue(updated.contains("publishForSection2: false"),
+                      "draftSection1: true means held back, so the new section is publish false")
+        XCTAssertFalse(updated.contains("publishForSection2: true"),
+                       "Inverting the polarity is the whole point — this would publish it")
+        XCTAssertTrue(updated.contains("draftSection1: true"),
+                      "The existing section's own key is left exactly as it was")
     }
 
     /// A page written with plain `created:` applies to every section

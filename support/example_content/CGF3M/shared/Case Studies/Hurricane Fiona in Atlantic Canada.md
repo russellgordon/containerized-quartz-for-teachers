@@ -1,6 +1,6 @@
 ---
 title: Hurricane Fiona in Atlantic Canada
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - case-studies

@@ -1,6 +1,6 @@
 ---
 title: Fieldwork
-draft: false
+publish: true
 created: __CREATED__
 ---
 This course goes outside. The shoreline and the woodlot are a walk away

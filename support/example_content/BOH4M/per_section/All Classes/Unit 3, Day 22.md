@@ -1,6 +1,6 @@
 ---
 title: Unit 3, Day 22
-draft: false
+publish: true
 created: __CREATED_CLASS_62__
 transcludeTitleSize: h2
 enableToc: false

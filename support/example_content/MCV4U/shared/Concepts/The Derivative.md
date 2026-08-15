@@ -1,6 +1,6 @@
 ---
 title: The Derivative
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

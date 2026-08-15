@@ -1,6 +1,6 @@
 ---
 title: Unit 1, Day 21
-draft: false
+publish: true
 created: __CREATED_CLASS_21__
 transcludeTitleSize: h2
 enableToc: false

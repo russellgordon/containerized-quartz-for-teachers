@@ -1,6 +1,6 @@
 ---
 title: The Hamlet Seminar
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

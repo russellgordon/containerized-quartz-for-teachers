@@ -1,6 +1,6 @@
 ---
 title: Naming Organic Compounds
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 tags:

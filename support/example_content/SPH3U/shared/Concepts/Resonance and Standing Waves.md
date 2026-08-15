@@ -1,6 +1,6 @@
 ---
 title: Resonance and Standing Waves
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

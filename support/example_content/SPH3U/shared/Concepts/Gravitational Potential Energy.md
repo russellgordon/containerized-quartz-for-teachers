@@ -1,6 +1,6 @@
 ---
 title: Gravitational Potential Energy
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

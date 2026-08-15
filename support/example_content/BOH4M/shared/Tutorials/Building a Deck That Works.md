@@ -1,6 +1,6 @@
 ---
 title: Building a Deck That Works
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - tutorials

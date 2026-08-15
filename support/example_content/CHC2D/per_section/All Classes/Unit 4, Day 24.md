@@ -1,6 +1,6 @@
 ---
 title: Unit 4, Day 24
-draft: true
+publish: false
 created: __CREATED_CLASS_86__
 transcludeTitleSize: h2
 enableToc: false
@@ -19,4 +19,7 @@ tags:
 
 - [ ] Rest. Bring your notebook to the examination.
 
-%% This page is a draft, so it is not on the built site yet — students cannot see it. That is how you write next week's classes ahead of time: leave `draft: true` until the morning of the class, then set it to `false` and rebuild. %%
+%% This page is held back, so it is not on the built site yet — students
+cannot see it. That is how you write next week's classes ahead of time:
+leave `publish: false` until the morning of the class, then set it to
+`true` and rebuild. %%

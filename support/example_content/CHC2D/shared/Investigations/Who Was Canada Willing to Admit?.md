@@ -1,6 +1,6 @@
 ---
 title: Who Was Canada Willing to Admit?
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - investigations

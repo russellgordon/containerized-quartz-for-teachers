@@ -1,6 +1,6 @@
 ---
 title: What Makes a Story
-draft: false
+publish: true
 created: __CREATED__
 enableToc: true
 ---

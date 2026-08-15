@@ -1,6 +1,6 @@
 ---
 title: The Informational Interview
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - activities

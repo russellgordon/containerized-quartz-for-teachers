@@ -1,6 +1,6 @@
 ---
 title: Where to Find Out
-draft: false
+publish: true
 created: __CREATED__
 tags:
   - concepts

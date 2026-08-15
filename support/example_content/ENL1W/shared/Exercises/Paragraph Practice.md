@@ -1,6 +1,6 @@
 ---
 title: Paragraph Practice
-draft: false
+publish: true
 created: __CREATED__
 ---
 The reference is [[Paragraphs That Hold Together]] and the conventions
