@@ -82,13 +82,13 @@ enum AssistChatLayout {
 /// | corner radius, multi-line | 12 |
 /// | corner radius, single line | half the body height |
 /// | text inset, sides | 11 |
-/// | tail drop below the body | 4.8, one size for every bubble |
-/// | tail tip, INSIDE the body's edge | 6 |
+/// | tail drop below the body | 5.7, one size for every bubble |
+/// | tail tip, INSIDE the body's edge | 7 |
 ///
 /// Two of those corrected assumptions worth stating, because both look right
 /// until measured. The tail **hangs below** the bubble — it is not level with
 /// the bottom edge. And it stays **within the bubble's width**: its tip is
-/// five and a half points INSIDE the right edge, not outside it. A tail drawn
+/// seven points INSIDE the right edge, not outside it. A tail drawn
 /// past the side reads as a wedge stuck onto the corner, which is what the
 /// last version was.
 ///
@@ -109,19 +109,26 @@ struct AssistChatBubbleShape: Shape {
 
     /// The strip below the bubble that the tail hangs into. Nothing is needed
     /// at the sides: the tail never reaches past the bubble's own edge.
-    static let drop: CGFloat = 5
+    static let drop: CGFloat = 6
 
     /// Messages' corner radius for bubbles of more than one line.
     private let corner: CGFloat = 12
 
-    /// What the tail's measurements scale from — and it is NOT the bubble's
-    /// corner radius. Measured 2026-08-15 on a three-line bubble and a
-    /// single-line one side by side: Messages draws the SAME tail on both
-    /// (drop, tip and hook all within a pixel), while the corner radius
-    /// differs. Scaling the tail with the corner — what this shape did —
-    /// shrank every multi-line bubble's tail to a nub. The value is the
-    /// single-line capsule's radius, where the two scales coincide.
-    private let tailScale: CGFloat = 14.5
+    /// What the tail's measurements scale from — and it is neither the
+    /// bubble's corner radius nor anything to do with the text size. A
+    /// three-line and a one-line bubble carry the SAME tail while their
+    /// corner radii differ, so the tail is a constant of the design, like a
+    /// pen width; scaling it with the corner, as this shape originally did,
+    /// shrank every multi-line bubble's tail to a nub.
+    ///
+    /// THIS number must come from a screenshot with both apps in it. It was
+    /// first derived by comparing two separate captures, which requires
+    /// knowing each one's pixels-per-point — both were guessed, one wrongly,
+    /// and the tail shipped a fifth too large. The final value comes from
+    /// one screenshot of Messages and this app side by side on the same
+    /// screen, where the scale cancels out: 17, giving a 5.7 drop, a 9.2
+    /// corner landing, a 7.1 tip inset and a 16.3 hook.
+    private let tailScale: CGFloat = 17
 
     /// Below this half-height, a bubble is a CAPSULE — its corners are half
     /// its height. Re-measured 2026-08-15 from a side-by-side screenshot at
@@ -212,8 +219,15 @@ struct AssistChatBubbleShape: Shape {
         path.addLine(to: at(body.maxX, body.maxY - radius))
         path.addCurve(
             to: at(body.maxX - cornerEnd, body.maxY),
-            control1: at(body.maxX, body.maxY - radius * 0.45),
-            control2: at(body.maxX - cornerEnd, body.maxY - tailScale * 0.35)
+            // Weighted so the edge HUGS the side and completes the jog late:
+            // profiled against the top corner (2026-08-15), Messages' bottom
+            // corner matches its top corner almost row for row until the
+            // tail takes over — the same distance in at the same distance
+            // from the end. An earlier weighting carried the inset too
+            // early, and the bubble read as bulging on the tail side rather
+            // than vertically symmetric.
+            control1: at(body.maxX, body.maxY - radius * 0.37),
+            control2: at(body.maxX - cornerEnd, body.maxY - radius * 0.10)
         )
 
         // Still heading down at the bottom line; eases outward to the tip.
@@ -419,7 +433,18 @@ enum AssistBubbleColour {
 
     static let teacher: Color = Color(red: 20 / 255, green: 147 / 255, blue: 255 / 255)
 
-    /// The assistant's side stays a system grey, so it follows the
-    /// appearance the way the surrounding window does.
-    static let assistant: Color = Color.secondary.opacity(0.16)
+    /// Messages' grey, not a system token. The token this used to be —
+    /// `secondary` at 0.16 — lands on (50, 50, 50) over a dark window while
+    /// Messages draws (59, 59, 61), measured from the two apps side by side
+    /// on the same backdrop; a translucent fill can only ever be as light as
+    /// what sits behind it allows. The dark value is the measured one; the
+    /// light value is Messages' long-standing light-mode bubble grey, which
+    /// there was no light-mode capture to confirm against — if the light
+    /// preview ever looks off, measure before touching either number.
+    static let assistant: Color = Color(nsColor: NSColor(name: nil) { appearance in
+        if appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
+            return NSColor(srgbRed: 59 / 255, green: 59 / 255, blue: 61 / 255, alpha: 1)
+        }
+        return NSColor(srgbRed: 233 / 255, green: 233 / 255, blue: 235 / 255, alpha: 1)
+    })
 }
