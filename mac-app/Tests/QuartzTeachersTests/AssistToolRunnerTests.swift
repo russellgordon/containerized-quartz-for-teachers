@@ -541,6 +541,87 @@ final class AssistToolRunnerTests: XCTestCase {
         XCTAssertTrue(partly.detail.contains("left alone"))
     }
 
+    // MARK: - Backing up, once per conversation
+
+    /// One conversation, one backup — however many commands it runs.
+    ///
+    /// A vault full of images makes a slow, fat zip, and a chat with six
+    /// commands in it used to make six near-identical ones. The first write
+    /// saves the copy; the undo history covers everything after it.
+    @MainActor
+    func testAConversationWithThreeWritesBacksUpExactlyOnce() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+        let coursesDirectoryURL: URL = made.root.appendingPathComponent("courses")
+
+        try write(page: "Unit 1, Day 1", publish: "false", body: "One.", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "false", body: "Two.", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "publish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1", "includeLinked": false]
+        ))
+        _ = await made.runner.run(call: call(
+            "publish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 2", "includeLinked": false]
+        ))
+        let third: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1", "includeLinked": false]
+        ))
+
+        // All three really wrote.
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: false"))
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 2", in: made.course).contains("publish: true"))
+        XCTAssertTrue(third.detail.contains("backed up"),
+                      "Every write still tells the teacher there is a way back")
+
+        let backups: [BackupItem] = WorkspaceModel.findBackupItems(in: coursesDirectoryURL)
+        XCTAssertEqual(backups.count, 1, "Three writes in one chat make ONE backup")
+        XCTAssertEqual(backups[0].maker, .assistant(sectionNumber: 1),
+                       "And it says who made it, and what it was for")
+
+        // What the assistant's window reads to offer a way back to where the
+        // conversation started.
+        XCTAssertTrue(made.runner.hasConversationBackup)
+        // Compared by name: the temporary folder is reached through a symlink,
+        // so the two URLs spell the same file differently.
+        XCTAssertEqual(made.runner.conversationBackupURL?.lastPathComponent,
+                       backups[0].fileURL.lastPathComponent)
+    }
+
+    /// A conversation that only reads makes no backup at all — there is
+    /// nothing to go back from.
+    @MainActor
+    func testAReadOnlyConversationMakesNoBackup() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+        let coursesDirectoryURL: URL = made.root.appendingPathComponent("courses")
+
+        try write(page: "Unit 1, Day 1", publish: "false", body: "One.", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "list_pages", arguments: ["course": "ICS3U", "section": 1]
+        ))
+        _ = await made.runner.run(call: call(
+            "read_page", arguments: ["course": "ICS3U", "section": 1, "page": "Unit 1, Day 1"]
+        ))
+        _ = await made.runner.run(call: call(
+            "check_section", arguments: ["course": "ICS3U", "section": 1]
+        ))
+        _ = await made.runner.run(call: call(
+            "plan_publish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1", "includeLinked": false]
+        ))
+
+        XCTAssertEqual(
+            WorkspaceModel.findBackupItems(in: coursesDirectoryURL).count, 0,
+            "Reading — and planning, which changes nothing — copies nothing"
+        )
+        XCTAssertFalse(made.runner.hasConversationBackup)
+        XCTAssertNil(made.runner.conversationBackupURL)
+    }
+
     /// The gate is the tool's own answer, not a list kept beside it, and the
     /// explanation is the sentence the teacher reads before pressing anything.
     @MainActor

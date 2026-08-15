@@ -56,7 +56,29 @@ final class AssistToolRunner {
     /// an agent would leave one on the machine running the suite.
     private let launchControl: LaunchControlRunning
 
+    /// The backup this conversation has already made of each course it has
+    /// changed, by course code.
+    ///
+    /// One runner is built per assistant window, so this is per-conversation
+    /// state — and that is the whole point: a course full of images makes a
+    /// slow, fat zip, and a chat with six commands in it used to make six
+    /// near-identical ones. The first write of a conversation saves a copy;
+    /// every later write in the same conversation is covered by that copy and
+    /// the undo history, so it makes none. A conversation that only reads
+    /// makes none at all.
+    private var conversationBackups: [String: URL] = [:]
+
+    /// The most recent backup this conversation made, for a window that wants
+    /// to offer the teacher a way back to where the chat started. Nil until
+    /// the conversation changes something.
+    private(set) var conversationBackupURL: URL?
+
     // MARK: - Computed properties
+
+    /// Whether this conversation has saved a copy to go back to yet.
+    var hasConversationBackup: Bool {
+        return conversationBackupURL != nil
+    }
 
     /// The tools, as the LOCAL model sees them. Fifteen, and staying fifteen:
     /// routing accuracy was measured against exactly this surface.
@@ -517,6 +539,46 @@ final class AssistToolRunner {
         return .success(PlannedPages(located: located, plan: plan))
     }
 
+    // MARK: - Backing up, once per conversation
+
+    /// Makes sure a copy of the course exists from before this conversation
+    /// touched it, and says whether one does.
+    ///
+    /// Lazy and once: the first write saves the copy, and every later write in
+    /// the same conversation reuses it rather than saving a near-identical one.
+    /// The copy is named for the assistant and the section it was made for, so
+    /// a teacher reading the Backups list knows what it was for.
+    private func backUpOnceForThisConversation(
+        _ course: Course,
+        forSection sectionNumber: Int
+    ) -> Bool {
+        if conversationBackups[course.code] != nil {
+            return true
+        }
+        guard let coursesDirectoryURL = workspace.coursesDirectoryURL else {
+            return false
+        }
+        guard let backupURL = try? CourseArchiver.backUpCourse(
+            course,
+            coursesDirectoryURL: coursesDirectoryURL,
+            madeBy: .assistant(sectionNumber: sectionNumber)
+        ) else {
+            return false
+        }
+        conversationBackups[course.code] = backupURL
+        conversationBackupURL = backupURL
+        return true
+    }
+
+    /// What the teacher is told about that copy. The same sentence whether the
+    /// backup was made by this command or by an earlier one in the same chat,
+    /// because what matters to them is only that there is a way back.
+    private static let backedUpNote: String =
+        "The course was backed up before this conversation changed anything, so this can also be "
+      + "undone from Plantoir's Backups list."
+
+    // MARK: - Writing pages
+
     /// Back the course up, write the change, remember it, rebuild the preview.
     private func carryOut(
         _ plan: AssistPublishPlan,
@@ -531,12 +593,10 @@ final class AssistToolRunner {
             )
         }
 
-        var backedUp: Bool = false
-        if let coursesDirectoryURL = workspace.coursesDirectoryURL {
-            // Before anything is touched, every time. The undo history covers
-            // this conversation; the backup outlives it.
-            backedUp = (try? CourseArchiver.backUpCourse(course, coursesDirectoryURL: coursesDirectoryURL)) != nil
-        }
+        // Before anything is touched — but only the first time in a
+        // conversation. The undo history covers the rest of it; the backup
+        // outlives the conversation.
+        let backedUp: Bool = backUpOnceForThisConversation(course, forSection: sectionNumber)
 
         let change: AssistChange
         do {
@@ -550,8 +610,7 @@ final class AssistToolRunner {
 
         var detail: String = plan.describe() + "\n\nDone: \(change.description)."
         if backedUp {
-            detail += "\n\nThe course was backed up first, so this can also be undone from Plantoir's "
-                    + "Backups list."
+            detail += "\n\n" + AssistToolRunner.backedUpNote
         }
 
         let rebuild: AssistSiteWorkResult = await siteWork.rebuildPreview(
@@ -897,14 +956,12 @@ final class AssistToolRunner {
                 )
             }
 
-            var backedUp: Bool = false
-            if let coursesDirectoryURL = workspace.coursesDirectoryURL {
-                // Before anything is touched, every time. The undo history
-                // covers this conversation; the backup outlives it.
-                backedUp = (try? CourseArchiver.backUpCourse(
-                    asked.located.course, coursesDirectoryURL: coursesDirectoryURL
-                )) != nil
-            }
+            // Before anything is touched — but only the first time in a
+            // conversation. The undo history covers the rest of it; the
+            // backup outlives the conversation.
+            let backedUp: Bool = backUpOnceForThisConversation(
+                asked.located.course, forSection: asked.located.sectionNumber
+            )
 
             let change: AssistChange
             do {
@@ -924,8 +981,7 @@ final class AssistToolRunner {
             detail += "\n\nThey are wrapped in the curriculum markers, so a course installed without "
                     + "curriculum still builds. Look the page over in Plantoir."
             if backedUp {
-                detail += "\n\nThe course was backed up first, so this can also be undone from Plantoir's "
-                        + "Backups list."
+                detail += "\n\n" + AssistToolRunner.backedUpNote
             }
             detail += "\n\nThis changed the teacher's files. It did not put anything in front of students — "
                     + "deploying does that, and only when they ask."

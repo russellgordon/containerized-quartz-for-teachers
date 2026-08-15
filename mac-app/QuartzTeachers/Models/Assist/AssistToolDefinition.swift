@@ -46,6 +46,33 @@ nonisolated struct AssistToolDefinition: Sendable, Equatable {
 
     // MARK: - Computed properties
 
+    /// What this tool's `plan_` twin WOULD be called.
+    ///
+    /// The name only — whether such a tool exists is the surface's business,
+    /// and the caller must check. Not every write has a twin: four of them
+    /// are their own reversal and there is nothing to plan.
+    ///
+    /// - `rebuild_preview` changes no page at all.
+    /// - `undo_last_change` IS the undo; asking a teacher to approve a plan
+    ///   to undo something is a joke at their expense.
+    /// - `deploy_section` waits on its own button already, always.
+    /// - `cancel_scheduled_deploy` calls off an alarm, and re-setting it is
+    ///   the whole remedy.
+    ///
+    /// One irregular pair: `schedule_deploy`'s twin reads
+    /// `plan_scheduled_deploy` rather than `plan_schedule_deploy`, because
+    /// the plan describes a scheduled deploy rather than the act of
+    /// scheduling. The exception lives here so callers never encode it.
+    var planTwinName: String? {
+        if readOnly {
+            return nil
+        }
+        if name == "schedule_deploy" {
+            return "plan_scheduled_deploy"
+        }
+        return "plan_" + name
+    }
+
     /// The parameters as a JSON Schema object.
     var parametersJSON: [String: Any] {
         var properties: [String: Any] = [:]

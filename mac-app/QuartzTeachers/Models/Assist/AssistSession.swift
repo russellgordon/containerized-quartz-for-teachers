@@ -148,7 +148,8 @@ final class AssistSession {
                 courseCode: courseCode,
                 sectionNumber: sectionNumber,
                 client: AssistModelClient(baseURL: baseURL),
-                tools: runner
+                tools: runner,
+                planMode: AssistPlanMode(tier: tier)
             )
             self.agent = agent
             readiness = .ready

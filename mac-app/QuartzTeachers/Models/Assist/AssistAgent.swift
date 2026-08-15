@@ -63,6 +63,9 @@ final class AssistAgent {
     /// What can be run.
     private let tools: AssistToolRunner
 
+    /// Whether writes are shown before they happen.
+    let planMode: AssistPlanMode
+
     /// The messages actually sent, including tool results.
     private var messages: [AssistMessage] = []
 
@@ -83,16 +86,30 @@ final class AssistAgent {
         return activity != .idle
     }
 
+    /// Whether what is waiting is a DEPLOY rather than an ordinary plan.
+    ///
+    /// The two read differently to a teacher and should look different: a
+    /// deploy puts work in front of students and cannot be taken back by us,
+    /// while a plan is the assistant checking it understood.
+    var pendingIsDeploy: Bool {
+        guard let pending = pendingApproval else {
+            return false
+        }
+        return tools.definition(named: pending.call.function.name)?.needsApproval ?? false
+    }
+
     // MARK: - Initializer
 
     init(courseCode: String,
          sectionNumber: Int,
          client: AssistModelClient,
-         tools: AssistToolRunner) {
+         tools: AssistToolRunner,
+         planMode: AssistPlanMode) {
         self.courseCode = courseCode
         self.sectionNumber = sectionNumber
         self.client = client
         self.tools = tools
+        self.planMode = planMode
         messages = [AssistMessage.system(AssistAgent.systemPrompt(course: courseCode, section: sectionNumber))]
     }
 
@@ -133,6 +150,7 @@ final class AssistAgent {
             return
         }
         pendingApproval = nil
+        planMode.recordAccepted()
         await execute(call: pending.call)
     }
 
@@ -143,6 +161,10 @@ final class AssistAgent {
         }
         pendingApproval = nil
         activity = .idle
+        // A Cancel resets the run of accepted plans. Somebody who has just
+        // stopped the assistant doing the wrong thing should not then be
+        // asked whether they would like it to stop asking.
+        planMode.recordCancelled()
         messages.append(AssistMessage.toolResult(
             callID: pending.call.id,
             name: pending.call.function.name,
@@ -188,11 +210,8 @@ final class AssistAgent {
             return
         }
 
-        // ONLY DEPLOYS WAIT FOR A BUTTON. Publishing and unpublishing are
-        // backed up and undoable, and a gate in front of every write trains a
-        // teacher to click through gates. Deploying is the one act that puts
-        // something in front of students immediately and cannot be taken back
-        // by us — so that is the one that asks.
+        // Deploying ALWAYS waits for a button: it puts something in front of
+        // students immediately and Plantoir cannot take it back for them.
         if definition.needsApproval {
             pendingApproval = PendingApproval(
                 call: call,
@@ -202,7 +221,49 @@ final class AssistAgent {
             return
         }
 
+        // In plan mode, so does anything else that changes a page — but the
+        // teacher is shown the PLAN rather than the tool's name. Every write
+        // has a `plan_` twin that works the change out and changes nothing,
+        // so this is the assistant answering "what would that do?" in words
+        // before it does it.
+        // The twin has to actually exist. Four writes are their own reversal
+        // and have none — rebuild_preview changes no page, undo_last_change
+        // IS the undo, deploy_section already waits on its own button, and
+        // cancelling a scheduled deploy is remedied by scheduling it again.
+        // Asking the surface rather than assuming keeps that list in ONE
+        // place: without this check, plan mode would ask for a tool that is
+        // not there and show the teacher an error where their plan should be.
+        if planMode.isOn,
+           let twinName = definition.planTwinName,
+           tools.definition(named: twinName) != nil {
+            await showPlan(twinName: twinName, before: call)
+            return
+        }
+
         await execute(call: call)
+    }
+
+    /// Run the `plan_` twin and hold the real call behind it.
+    ///
+    /// The plan is written to be read aloud, so what a teacher sees is
+    /// "publishing Unit 2, Day 3 would also publish the four pages it links
+    /// to" rather than a tool name and a JSON blob. The model is not asked
+    /// again: the same arguments it chose are carried through to the real
+    /// call, so what runs on Go is exactly what was described.
+    private func showPlan(twinName: String, before call: AssistToolCall) async {
+        activity = .running(toolName: twinName)
+        let planCall: AssistToolCall = AssistToolCall(
+            id: UUID().uuidString,
+            type: "function",
+            function: AssistToolCall.Function(
+                name: twinName,
+                arguments: call.function.arguments
+            )
+        )
+        let outcome: AssistToolOutcome = await tools.run(call: planCall)
+
+        pendingApproval = PendingApproval(call: call, explanation: outcome.detail)
+        activity = .waitingForApproval
     }
 
     /// Actually run it, and hand the result back to the model.

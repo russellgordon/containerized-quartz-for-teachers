@@ -24,9 +24,13 @@ product of a great deal of live testing and every entry earned its place.
 1. **The GUI never mentions the machinery.** No "toolchain", "script",
    "Docker", "container", or "WSL" in user-facing text. Plain words:
    "Building your website builder…", "Getting this Mac ready…" (yours will
-   say "this PC"). Same rule for developer jargon: the visible verb is
-   **Publish**, never "Deploy" (entry 103) — internal names, script file
-   names, and config keys keep "deploy".
+   say "this PC"). **The visible verbs are now BOTH, and they mean different
+   things** (entries 140 and 143, reversing entry 103): a PAGE is
+   *published* — the `publish:` frontmatter flag deciding whether students
+   see it — and the SITE is *deployed* to Netlify, Cloudflare or a folder.
+   One word for both makes "I published tomorrow's class" mean a flag to one
+   person and a live site to another. Internal names, script file names and
+   config keys keep "deploy" throughout.
 2. **Use the script logic itself as much as possible.** The app runs the
    real launchers and answers their real prompts; it does not reimplement
    them. Progress comes from parsing their output (milestone markers,
@@ -406,6 +410,79 @@ specifically, and treat that as a veto rather than a score.
 | 1.5B | 81% | none |
 | 3B | 70% | **2 of 3 trials** |
 | 7B | 94% | none |
+
+## Plan mode, undo, and how often to back up
+
+Three decisions taken on the macOS side on 2026-08-15 that Windows should
+match, because they are about how much to trust a local router rather than
+about either platform.
+
+### Plan mode: the model says what it heard before it acts
+
+A local router is wrong sometimes. Measured over 290 trials, the small model
+puts about **one request in five** on the wrong tool. Plan mode turns that
+from something that happens into something a teacher declines: a write runs
+its `plan_` twin first, the plan is shown in the twin's own words, and
+nothing happens until they press Go.
+
+- **Writes only.** Reads answer immediately. Gating "what do students see
+  right now?" makes every question two clicks and teaches people to press Go
+  without reading — which costs the gate its whole value.
+- **Always on for the small model.** On the 1.5B it cannot be turned off at
+  all; 79% is not a rate at which anyone should be handed a "stop asking"
+  button. The macOS build ignores a remembered "off" answer when it finds
+  itself on that tier, so a teacher who turned it off on a capable machine
+  does not inherit that on an 8 GB one.
+- **Offered off after five in a row, once, on the capable model only.** Trust
+  is earned rather than assumed, and the offer arrives while five correct
+  plans are still fresh rather than months later in a settings pane. A Cancel
+  RESETS the run: somebody who has just stopped the assistant doing the wrong
+  thing must not then be asked whether they would like it to stop asking.
+- **Deploys always ask, plan mode or not.** A deploy puts work in front of
+  students immediately and cannot be taken back by us.
+
+### Undo is not version control, and it should not pretend to be
+
+Worth stating because it is easy to assume otherwise: **courses are not git
+repositories.** Nothing in the toolchain runs `git init`. The undo history is
+in-memory before/after snapshots of the files each tool touched, held as a
+stack for the life of the conversation, and it is gone when the window
+closes.
+
+It has one property worth copying exactly: before restoring a file it
+compares what is on disk to what it wrote, and **skips anything the teacher
+has edited since**. Publishing a class, then spending ten minutes writing it
+in Obsidian, then saying "undo that" must not cost those ten minutes.
+
+### Back up once per conversation, not once per command
+
+The macOS build originally zipped the whole course before EVERY write. On an
+Obsidian vault full of images that is slow and large, and a chat with six
+commands made six near-identical copies.
+
+It now backs up **lazily, once per conversation**: the first write makes the
+zip, later writes reuse it, and a conversation that only reads makes none.
+That single zip is also what the assistant's **Restore** offers — putting the
+section back to how it was when the chat started, which is the safety net
+that makes "just do it" mode reasonable to offer at all.
+
+Two details that make the backups usable rather than merely present:
+
+- **Provenance rides in the file name**, so a teacher choosing among several
+  can tell what made each one and why — Plantoir before an assistant chat
+  about a particular section, or themselves on purpose. A list of five
+  identical-looking timestamps is not a choice anybody can make.
+- **Keep the five most recent per course**, pruned oldest-first, and prune
+  ONLY the backups: archives and the wizard's own zips live in the same area
+  and their parsers deliberately reject each other's forms.
+
+### Restore is section-scoped, though the zip holds the course
+
+The backup contains the whole course; a conversation is about one section. A
+whole-course restore would silently revert work done in a sibling section
+while the chat was open — a teacher may well have been editing Section 2 in
+Obsidian while talking about Section 1. So Restore puts back only the
+section the conversation was about, and says so on the button.
 
 ## Testing
 

@@ -8,20 +8,84 @@ enum CourseArchiver {
 
     // MARK: - Functions
 
+    /// How many backups of one course are kept. A course full of images
+    /// makes a large zip, and a teacher who never deletes one would fill a
+    /// disk with copies of copies; five is enough to get back to last week
+    /// without turning the working folder into an archive of itself.
+    static let mostBackupsKept: Int = 5
+
     /// Saves a copy of an entire course — and touches nothing: the course
     /// stays exactly where it is. Made on purpose before risky editing so
     /// there is always a way back. Returns the backup that was written.
     ///
     /// The name (`<CODE>_backup_<timestamp>.zip`) is what separates a
-    /// backup from an archive in the shared `_backups` folder.
+    /// backup from an archive in the shared `_backups` folder, and who made
+    /// it rides in the same name — see `BackupMaker`.
+    ///
+    /// The oldest backups of this course are pruned afterwards, so the
+    /// folder settles at `mostBackupsKept` instead of growing forever.
     @discardableResult
-    static func backUpCourse(_ course: Course, coursesDirectoryURL: URL) throws -> URL {
-        return try archive(
+    static func backUpCourse(
+        _ course: Course,
+        coursesDirectoryURL: URL,
+        madeBy maker: BackupMaker = .teacher
+    ) throws -> URL {
+        let backupURL: URL = try archive(
             folderURL: course.directoryURL,
-            named: timestampedName(prefix: "\(course.code)_backup"),
+            named: timestampedName(prefix: "\(course.code)_backup", suffix: maker.nameSuffix),
             forCourseCode: course.code,
             coursesDirectoryURL: coursesDirectoryURL
         )
+        pruneBackups(forCourseCode: course.code, coursesDirectoryURL: coursesDirectoryURL)
+        return backupURL
+    }
+
+    /// Deletes the oldest backups of one course until only
+    /// `mostBackupsKept` are left.
+    ///
+    /// Only backups: archives (`<CODE>_<timestamp>.zip`) and the setup
+    /// wizard's automatic zips (`<timestamp>.zip`) share this folder, and
+    /// deleting one of those would throw away the only copy of something a
+    /// teacher deliberately put away. `BackupItem.from` accepts nothing but
+    /// this convention's own names, so asking it is the whole safeguard.
+    static func pruneBackups(forCourseCode courseCode: String, coursesDirectoryURL: URL) {
+        let backupsURL: URL = coursesDirectoryURL
+            .appendingPathComponent("_backups")
+            .appendingPathComponent(courseCode)
+        guard let contents = try? FileManager.default.contentsOfDirectory(
+            at: backupsURL,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) else {
+            return
+        }
+
+        var backups: [BackupItem] = []
+        for fileURL in contents {
+            if let backup = BackupItem.from(fileURL: fileURL, courseCode: courseCode) {
+                backups.append(backup)
+            }
+        }
+        if backups.count <= mostBackupsKept {
+            return
+        }
+
+        // Newest first. Two backups made in the same second are ordered by
+        // name, so the answer is the same every time it is asked.
+        backups.sort { first, second in
+            if first.backedUpAt == second.backedUpAt {
+                return first.fileURL.lastPathComponent > second.fileURL.lastPathComponent
+            }
+            return first.backedUpAt > second.backedUpAt
+        }
+
+        var keptSoFar: Int = 0
+        for backup in backups {
+            keptSoFar += 1
+            if keptSoFar > mostBackupsKept {
+                try? FileManager.default.removeItem(at: backup.fileURL)
+            }
+        }
     }
 
     /// Writes an archive of an entire course folder without removing it —
@@ -140,10 +204,11 @@ enum CourseArchiver {
         return archiveURL
     }
 
-    /// "ICS3U_2026-08-09_141530.zip"
-    private static func timestampedName(prefix: String) -> String {
+    /// "ICS3U_2026-08-09_141530.zip", or with a suffix,
+    /// "ICS3U_backup_2026-08-09_141530_assistant-section1.zip".
+    private static func timestampedName(prefix: String, suffix: String = "") -> String {
         let formatter: DateFormatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd_HHmmss"
-        return "\(prefix)_\(formatter.string(from: Date())).zip"
+        return "\(prefix)_\(formatter.string(from: Date()))\(suffix).zip"
     }
 }

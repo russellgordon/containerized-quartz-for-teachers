@@ -97,11 +97,22 @@ struct AssistWindowView: View {
                     ForEach(session.agent?.entries ?? []) { entry in
                         AssistEntryView(entry: entry)
                     }
-                    if let approval = session.agent?.pendingApproval {
-                        AssistApprovalView(explanation: approval.explanation) {
-                            Task { await session.agent?.approvePending() }
+                    if let approval = session.agent?.pendingApproval,
+                       let agent = session.agent {
+                        AssistApprovalView(
+                            explanation: approval.explanation,
+                            isDeploy: agent.pendingIsDeploy
+                        ) {
+                            Task { await agent.approvePending() }
                         } decline: {
-                            session.agent?.declinePending()
+                            agent.declinePending()
+                        }
+                    }
+                    if let agent = session.agent, agent.planMode.shouldOfferToStop {
+                        AssistStopAskingOfferView {
+                            agent.planMode.stopAsking()
+                        } keepAsking: {
+                            agent.planMode.keepAsking()
                         }
                     }
                     Color.clear.frame(height: 1).id(bottom)
@@ -195,34 +206,93 @@ private struct AssistEntryView: View {
     }
 }
 
-/// The one act that waits for a button.
+/// What the assistant is about to do, waiting on a button.
+///
+/// Two shapes, one box. A DEPLOY always asks, because it puts something in
+/// front of students immediately and cannot be taken back by us. Everything
+/// else asks only while plan mode is on, and what it shows is the `plan_`
+/// twin's own words rather than a tool name a teacher would have to decode.
 private struct AssistApprovalView: View {
 
     // MARK: - Stored properties
 
     let explanation: String
+    let isDeploy: Bool
     let approve: () -> Void
     let decline: () -> Void
 
     // MARK: - Computed properties
 
+    private var title: String {
+        return isDeploy ? "This one needs your say-so" : "Here is what I would do"
+    }
+
+    private var goTitle: String {
+        return isDeploy ? "Deploy" : "Go"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("This one needs your say-so", systemImage: "hand.raised")
+            Label(title, systemImage: isDeploy ? "hand.raised" : "text.magnifyingglass")
                 .font(.headline)
             Text(explanation)
+                .textSelection(.enabled)
                 .fixedSize(horizontal: false, vertical: true)
             HStack {
-                Button("Deploy", action: approve)
+                Button(goTitle, action: approve)
                     .keyboardShortcut(.defaultAction)
                     .accessibilityIdentifier("assistApproveButton")
-                Button("Not now", action: decline)
+                Button("Cancel", action: decline)
                     .accessibilityIdentifier("assistDeclineButton")
             }
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: 10))
+        .background(
+            (isDeploy ? Color.orange : Color.accentColor).opacity(0.10),
+            in: RoundedRectangle(cornerRadius: 10)
+        )
+    }
+}
+
+/// The one-time offer to stop showing plans.
+///
+/// Offered after five plans accepted without a Cancel, while getting it
+/// right five times running is still fresh — rather than months later in a
+/// settings pane nobody opens. "Keep checking" is the default button: the
+/// teacher who pressed Return without reading keeps the safer arrangement.
+private struct AssistStopAskingOfferView: View {
+
+    // MARK: - Stored properties
+
+    let stopAsking: () -> Void
+    let keepAsking: () -> Void
+
+    // MARK: - Computed properties
+
+    private var message: String {
+        return "That is five in a row you have said yes to. I can just do what you "
+             + "ask from now on — you can still undo anything, and Restore puts the "
+             + "whole section back to how it was when we started."
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Shall I stop checking first?", systemImage: "checkmark.seal")
+                .font(.headline)
+            Text(message)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack {
+                Button("Just do it", action: stopAsking)
+                    .accessibilityIdentifier("assistStopAskingButton")
+                Button("Keep checking", action: keepAsking)
+                    .keyboardShortcut(.defaultAction)
+                    .accessibilityIdentifier("assistKeepAskingButton")
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 10))
     }
 }
 

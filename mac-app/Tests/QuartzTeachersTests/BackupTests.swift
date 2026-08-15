@@ -1,4 +1,5 @@
 import XCTest
+import AppKit
 @testable import QuartzTeachers
 
 /// Backups: saved copies of whole courses, made on purpose before risky
@@ -35,6 +36,145 @@ final class BackupTests: XCTestCase {
             fileURL: folder.appendingPathComponent("ICS3U_backup_notadate.zip"),
             courseCode: "ICS3U"
         ))
+    }
+
+    /// Every backup made before provenance existed is one the teacher made
+    /// themselves — so an old name must still parse, and must read that way.
+    /// If it did not, a teacher's own backups would vanish from the list.
+    @MainActor
+    func testAnOldNameStillParsesAndReadsAsTheTeachersOwn() throws {
+        let fileURL: URL = URL(fileURLWithPath:
+            "/folder/_backups/ICS3U/ICS3U_backup_2026-08-11_221530.zip")
+        let backup: BackupItem = try XCTUnwrap(
+            BackupItem.from(fileURL: fileURL, courseCode: "ICS3U")
+        )
+        XCTAssertEqual(backup.maker, .teacher)
+        XCTAssertTrue(backup.subtitle.hasPrefix("Backed up "))
+        XCTAssertTrue(backup.subtitle.hasSuffix("made by you"), backup.subtitle)
+    }
+
+    /// The assistant's own say so in the name, and the list says what the
+    /// backup was FOR — which is the question a teacher choosing between five
+    /// copies of one course is actually asking.
+    @MainActor
+    func testAnAssistantsBackupSaysWhichSectionItWasFor() throws {
+        let fileURL: URL = URL(fileURLWithPath:
+            "/folder/_backups/ICS3U/ICS3U_backup_2026-08-11_221530_assistant-section3.zip")
+        let backup: BackupItem = try XCTUnwrap(
+            BackupItem.from(fileURL: fileURL, courseCode: "ICS3U")
+        )
+        XCTAssertEqual(backup.maker, .assistant(sectionNumber: 3))
+        XCTAssertTrue(backup.subtitle.contains("before an assistant chat about Section 3"),
+                      backup.subtitle)
+        let teachersOwn: BackupItem = BackupItem(
+            courseCode: "ICS3U", backedUpAt: backup.backedUpAt, fileURL: fileURL, maker: .teacher
+        )
+        XCTAssertNotEqual(backup.symbolName, teachersOwn.symbolName,
+                          "The two kinds are told apart down a list without reading a word")
+        for name in [backup.symbolName, teachersOwn.symbolName] {
+            XCTAssertNotNil(NSImage(systemSymbolName: name, accessibilityDescription: nil),
+                            "\(name) is not a symbol this system knows — the row would show no icon")
+        }
+
+        // A maker nobody recognises makes the whole name unrecognised, rather
+        // than quietly reading as one of the teacher's own.
+        XCTAssertNil(BackupItem.from(
+            fileURL: URL(fileURLWithPath:
+                "/folder/_backups/ICS3U/ICS3U_backup_2026-08-11_221530_somethingelse.zip"),
+            courseCode: "ICS3U"
+        ))
+    }
+
+    /// An assistant's backup is still a backup, and still invisible to the
+    /// archived list it shares a folder with.
+    @MainActor
+    func testAnAssistantsBackupIsInvisibleToTheArchivedList() {
+        let fileURL: URL = URL(fileURLWithPath:
+            "/folder/_backups/ICS3U/ICS3U_backup_2026-08-11_221530_assistant-section1.zip")
+        XCTAssertNil(ArchivedItem.from(fileURL: fileURL, courseCode: "ICS3U"))
+    }
+
+    /// Five is what a course keeps. The pruning owns only this convention's
+    /// own names: an archive and the setup wizard's automatic zip live in the
+    /// very same folder, and either one may be the last copy of something.
+    @MainActor
+    func testOnlyTheFiveNewestBackupsSurviveAndNothingElseIsTouched() throws {
+        let fixture: BackupFixture = try BackupFixture()
+        defer { fixture.tearDown() }
+        let fileManager: FileManager = FileManager.default
+
+        let folderURL: URL = fixture.coursesDirectoryURL
+            .appendingPathComponent("_backups")
+            .appendingPathComponent("ICS3U")
+        try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true)
+
+        // Six older backups, oldest last — one of them the assistant's, which
+        // is pruned by the same rule as the teacher's.
+        var plantedNames: [String] = []
+        for daysAgo in 1...6 {
+            let stamp: String = BackupTests.stamp(daysAgo: daysAgo)
+            if daysAgo == 2 {
+                plantedNames.append("ICS3U_backup_\(stamp)_assistant-section1.zip")
+            } else {
+                plantedNames.append("ICS3U_backup_\(stamp).zip")
+            }
+        }
+        // Neither of these is a backup, and neither is ours to delete.
+        let archiveName: String = "ICS3U_\(BackupTests.stamp(daysAgo: 7)).zip"
+        let wizardName: String = "\(BackupTests.stamp(daysAgo: 8)).zip"
+
+        var namesToPlant: [String] = plantedNames
+        namesToPlant.append(archiveName)
+        namesToPlant.append(wizardName)
+        for name in namesToPlant {
+            try Data("planted".utf8).write(to: folderURL.appendingPathComponent(name))
+        }
+
+        // The seventh backup — made now, so the newest of them all.
+        let newestURL: URL = try CourseArchiver.backUpCourse(
+            fixture.course, coursesDirectoryURL: fixture.coursesDirectoryURL
+        )
+
+        let kept: [BackupItem] = WorkspaceModel.findBackupItems(in: fixture.coursesDirectoryURL)
+        XCTAssertEqual(kept.count, 5, "A course keeps five backups")
+        // Compared by name: the temporary folder is reached through a symlink,
+        // so the two URLs spell the same file differently.
+        XCTAssertEqual(kept[0].fileURL.lastPathComponent, newestURL.lastPathComponent,
+                       "Newest first")
+
+        // The four newest of the planted ones are still here…
+        for index in 0...3 {
+            XCTAssertTrue(
+                fileManager.fileExists(atPath: folderURL.appendingPathComponent(plantedNames[index]).path),
+                "\(plantedNames[index]) is among the five newest and must survive"
+            )
+        }
+        // …and the two oldest are gone.
+        for index in 4...5 {
+            XCTAssertFalse(
+                fileManager.fileExists(atPath: folderURL.appendingPathComponent(plantedNames[index]).path),
+                "\(plantedNames[index]) is the oldest and should have been pruned"
+            )
+        }
+
+        XCTAssertTrue(
+            fileManager.fileExists(atPath: folderURL.appendingPathComponent(archiveName).path),
+            "An archive is not a backup and must never be pruned"
+        )
+        XCTAssertTrue(
+            fileManager.fileExists(atPath: folderURL.appendingPathComponent(wizardName).path),
+            "The setup wizard's own zip must never be pruned"
+        )
+    }
+
+    /// "2026-08-09_141530", that many days back from now — so the test means
+    /// the same thing whenever it is run.
+    private static func stamp(daysAgo: Int) -> String {
+        let formatter: DateFormatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd_HHmmss"
+        let secondsPerDay: TimeInterval = 24 * 60 * 60
+        let moment: Date = Date().addingTimeInterval(-secondsPerDay * TimeInterval(daysAgo))
+        return formatter.string(from: moment)
     }
 
     @MainActor

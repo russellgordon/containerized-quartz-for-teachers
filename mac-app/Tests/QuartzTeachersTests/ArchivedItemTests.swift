@@ -119,7 +119,8 @@ final class ArchivedItemTests: XCTestCase {
         // …unless a backup of the course still exists.
         let backup: BackupItem = BackupItem(
             courseCode: "ICD2O", backedUpAt: stamp,
-            fileURL: URL(fileURLWithPath: "/w/courses/_backups/ICD2O/ICD2O_backup_x.zip")
+            fileURL: URL(fileURLWithPath: "/w/courses/_backups/ICD2O/ICD2O_backup_x.zip"),
+            maker: .teacher
         )
         XCTAssertEqual(
             WorkspaceModel.archiveStanding(first, among: liveCourses, archives: [first], backups: [backup]),
