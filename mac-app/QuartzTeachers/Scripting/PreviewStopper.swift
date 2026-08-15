@@ -12,8 +12,19 @@ enum PreviewStopper {
 
     // MARK: - Stored properties
 
+    /// One stop in flight, and which section it belongs to.
+    ///
+    /// The section is kept because waiting matters: a preview must not begin
+    /// while ITS section's stop is still running, and equally must not be
+    /// held up by a stop belonging to a different section in another window.
+    struct Stopping {
+        let courseCode: String
+        let sectionNumber: Int
+        let process: Process
+    }
+
     /// Keeps each stop process alive until it finishes.
-    private(set) static var running: [Process] = []
+    private(set) static var running: [Stopping] = []
 
     // MARK: - Functions
 
@@ -35,9 +46,9 @@ enum PreviewStopper {
         process.standardError = FileHandle.nullDevice
         process.terminationHandler = { finished in
             Task { @MainActor in
-                var remaining: [Process] = []
+                var remaining: [Stopping] = []
                 for candidate in running {
-                    if candidate !== finished {
+                    if candidate.process !== finished {
                         remaining.append(candidate)
                     }
                 }
@@ -47,7 +58,9 @@ enum PreviewStopper {
 
         do {
             try process.run()
-            running.append(process)
+            running.append(Stopping(
+                courseCode: courseCode, sectionNumber: sectionNumber, process: process
+            ))
         } catch {
             // Could not start: nothing held, nothing to clean up.
         }
@@ -78,16 +91,32 @@ enum PreviewStopper {
         stopSectionProcesses(
             courseCode: courseCode, sectionNumber: sectionNumber, workspaceURL: workspaceURL
         )
-        await waitForStopsToFinish(secondsToWait: secondsToWait)
+        await waitForStopsToFinish(
+            courseCode: courseCode, sectionNumber: sectionNumber, secondsToWait: secondsToWait
+        )
     }
 
-    /// Waits until no stop is still running, or the deadline passes.
-    static func waitForStopsToFinish(secondsToWait: Double = 20) async {
+    /// Waits until this section has no stop still running, or the deadline
+    /// passes.
+    ///
+    /// Scoped to the section on purpose. Waiting for every stop everywhere
+    /// would be safe but would let one window's Stop delay another window's
+    /// Preview for no reason — and a preview that takes a few unexplained
+    /// seconds is how this whole class of problem gets excused rather than
+    /// found.
+    static func waitForStopsToFinish(
+        courseCode: String,
+        sectionNumber: Int,
+        secondsToWait: Double = 20
+    ) async {
         let deadline: Date = Date().addingTimeInterval(secondsToWait)
         while Date() < deadline {
             var stillGoing: Bool = false
-            for process in running where process.isRunning {
-                stillGoing = true
+            for stopping in running where stopping.process.isRunning {
+                if stopping.courseCode.lowercased() == courseCode.lowercased()
+                    && stopping.sectionNumber == sectionNumber {
+                    stillGoing = true
+                }
             }
             if !stillGoing {
                 return

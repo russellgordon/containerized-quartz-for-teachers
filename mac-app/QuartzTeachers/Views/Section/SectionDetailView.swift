@@ -325,12 +325,33 @@ struct SectionDetailView: View {
         previewURL = nil
         isWaitingForServer = true
         previewRunner.milestones = TaskMilestones.preview
-        previewRunner.run(
-            scriptNamed: "preview.sh",
-            arguments: [course.code, String(sectionNumber), "--port", String(lease.port)],
-            workingDirectory: workspaceURL
-        )
-        Task {
+
+        Task { @MainActor in
+            // Wait for any stop that is still finishing before building.
+            //
+            // Stop mode finds a section's processes BY WORKING DIRECTORY, so
+            // it "catches builds as well as servers" — `preview.sh` says so
+            // itself. A stop still running when this build starts kills the
+            // build, and what gets served is the last `public/` that was
+            // allowed to finish: the site as it was BEFORE the edit.
+            //
+            // That is why stopping and starting quickly showed stale content
+            // while doing the same slowly worked. Nothing failed, nothing was
+            // logged; the only symptom was a preview that looked like the
+            // edit had not happened.
+            //
+            // The guard lives HERE, at the one place a preview begins, rather
+            // than beside each caller — the button, the assistant, a window
+            // being reopened. Somewhere there will always be a caller nobody
+            // remembered.
+            await PreviewStopper.waitForStopsToFinish(
+                courseCode: course.code, sectionNumber: sectionNumber
+            )
+            previewRunner.run(
+                scriptNamed: "preview.sh",
+                arguments: [course.code, String(sectionNumber), "--port", String(lease.port)],
+                workingDirectory: workspaceURL
+            )
             await waitForPreviewServer(port: lease.port)
         }
     }
