@@ -1,0 +1,19 @@
+---
+title: Unit 1, Day 17
+draft: false
+created: __CREATED_CLASS_17__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Writing clinic: [[Using Evidence]] — quoting, paraphrasing, and weighing a source inside a paragraph
+2. Work period
+3. Conferences on claims that are not yet arguable
+
+## Things to do before our next class
+
+- [ ] Draft two body paragraphs.

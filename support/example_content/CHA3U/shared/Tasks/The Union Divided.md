@@ -1,0 +1,78 @@
+---
+title: The Union Divided
+draft: false
+created: __CREATED__
+tags:
+  - tasks
+  - unit-2
+---
+**Due: the end of Unit 2.** Individual. An argument of about 1,000
+words.
+
+The years between the founding and 1877 are usually taught as a
+countdown. Compromise, crisis, compromise, crisis, war. That is a
+sequence, and a sequence is not an explanation. This task asks for an
+argument.
+
+## The questions on offer
+
+- Rank the developments that made war likely, and defend the criteria
+  you ranked them by. The criteria are the argument.
+- Removal of Native American nations and the sectional quarrel are
+  usually taught in separate chapters. Argue whether they were one
+  conflict or two, given that both were fought over the same land.
+- Take one compromise — over a territory, a state's admission, or the
+  return of fugitives — and argue what it actually settled, and for how
+  long, and for whom.
+- Reconstruction ended. Argue what ended it, and whether the settlement
+  of 1877 is better described as a compromise or as a defeat.
+- Argue what the war was about, using what people said at the time
+  rather than what was said about it afterwards.
+
+You may propose your own, agreed with me first.
+
+## What the argument must do
+
+1. **Name the criteria** you are judging by, before you use them.
+2. **Use at least five sources**, at least two primary, and at least one
+   from a Native American nation or an African American writer of the
+   period.
+3. **Establish contingency.** Show one point at which it could have gone
+   otherwise, and what would have had to be different.
+4. **Answer the strongest objection.**
+5. **Say what your argument does not explain.**
+
+## How it is marked
+
+| Criterion | What earns the marks |
+| --- | --- |
+| Argument | A claim with criteria attached, not a chronology with a verdict on the end |
+| Causation | Causes ranked and weighed, and the ranking defended |
+| Scope | Removal, sectional conflict, and federal politics held in one frame |
+| Evidence | Contemporary, weighed, and cited |
+| Honesty | The limits of your explanation stated by you, not left for me |
+
+> [!caution] "And then" is the tell
+> If your paragraphs could be reordered only by changing the dates, you
+> have written a narrative and marked it as an essay. An argument's
+> paragraphs cannot be reordered, because each one earns the next. When
+> you revise, try moving a paragraph. If nothing breaks, that paragraph
+> was not arguing. See [[Building an Argument]].
+
+[[North and South]], [[Removal and Resistance]], and
+[[Politics of a Growing Republic]] are the ground.
+[[Cause and Consequence]] is the concept you are actually being marked
+on, and the investigation [[What Held the Union Together?]] plus the
+seminar [[Could the Civil War Have Been Avoided?]] are where these
+questions were first opened up. For what the newspapers of the period
+will and will not tell you, see [[Newspapers and Print Culture]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[C1.5]]
+
+![[C2.1]]
+
+![[C2.3]]
+%%curriculum-end%%

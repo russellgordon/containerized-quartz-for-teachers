@@ -1,0 +1,19 @@
+---
+title: Unit 4, Day 8
+draft: false
+created: __CREATED_CLASS_72__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. Seminar: [[Who Counts as American?]]
+2. Citizenship in law, and citizenship in practice
+3. Work period
+
+## Things to do before our next class
+
+- [ ] Finish [[Rights and Movements]] for next class.
