@@ -9,9 +9,26 @@ Russell tests by **running the app on this Mac**, not by reading a diff and
 not inside Xcode's test runner. So a change is not delivered until the app is
 built and he has been told, in one line, what he has to do to see it.
 
-Two things are always his to do and never yours: **launching the app** and
-**deciding when to quit a copy he has open**. Everything else — building,
-cleaning, clearing stale state — do it and say you did.
+**Quit and relaunch it for him, every time, without asking.** He decided
+this on 2026-08-15 and it is standing authorisation — do not re-ask. Quit
+gracefully so the app can stop its containers on the way out:
+
+```bash
+osascript -e 'quit app "Plantoir"' 2>/dev/null
+sleep 1
+open "$APP"
+```
+
+Two conditions on that:
+
+- **Only after a build that SUCCEEDED.** Quitting his working copy to
+  replace it with nothing is the one way this rule can hurt him.
+- **Say what quitting discarded, if it plausibly did.** A conversation's
+  undo history dies with its window, an unsaved settings form is lost, and a
+  running preview stops. He accepted that trade for a faster loop; he did
+  not accept being surprised by it. If he had an assistant window open, a
+  single line — "the open conversation's undo history went with it" — is
+  the whole of what is owed.
 
 ## Every iteration ends the same way
 
@@ -30,34 +47,29 @@ cleaning, clearing stale state — do it and say you did.
      -destination 'platform=macOS' -only-testing:QuartzTeachersTests test
    ```
 
-3. **Confirm the app is actually there, then tell him.** He launches from the
-   **Dock**, not from Terminal. His Dock entry points straight at the build
-   path (`~/Library/Developer/Xcode/DerivedData/Plantoir-*/Build/Products/Debug/Plantoir.app`),
-   so an ordinary build updates what that icon opens — nothing to copy or
-   re-point.
+3. **Check the bundle exists, then restart it in front of him.**
 
    ```bash
    APP=$(ls -d ~/Library/Developer/Xcode/DerivedData/Plantoir-*/Build/Products/Debug/Plantoir.app | head -1)
-   [ -d "$APP" ] && echo "ready" || echo "NOT BUILT — do not tell him it is ready"
-   pgrep -x Plantoir >/dev/null && echo "a copy is running (it is the OLD build)"
+   [ -d "$APP" ] || { echo "NOT BUILT — stop; do not quit his running copy"; exit 1; }
+   osascript -e 'quit app "Plantoir"' 2>/dev/null
+   sleep 1
+   open "$APP"
    ```
 
-   **Never say "ready" without checking the bundle exists.** See the clean
-   section: a clean DELETES it, and telling him to click an icon that points
-   at nothing is how the Dock entry gets lost.
+   **Never restart without checking the bundle exists.** A clean DELETES it
+   (see below), and quitting his working copy to replace it with nothing is
+   the one genuinely damaging move available here.
 
-   **Say whether a copy is running.** Clicking the Dock icon then just brings
-   the old build forward instead of launching the new one, which looks exactly
-   like your change not working. Quitting is his to do. Comparing the running
-   process's start time with the binary's modification time answers it
-   truthfully rather than by guesswork.
+   His Dock entry points straight at that build path, so nothing needs
+   copying or re-pointing; the icon opens whatever was last built.
 
 The one-line summary is the part that saves him time. It is one of:
 
-> Ready to run — just open it, no other setup.
-> Ready — but quit the running copy first, then open it.
-> Ready — you will need a NEW COURSE (code XYZ) to see this.
-> Ready — you will need a NEW WORKING FOLDER to see this.
+> Relaunched — nothing else needed.
+> Relaunched — you will need a NEW COURSE (code XYZ) to see this.
+> Relaunched — you will need a NEW WORKING FOLDER to see this.
+> Relaunched — note the open conversation's undo history went with it.
 
 ## When a clean build is required
 
