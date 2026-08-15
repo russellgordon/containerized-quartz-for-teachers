@@ -95,24 +95,12 @@ final class AssistServerHost {
 
         let process: Process = Process()
         process.executableURL = executable
-        process.arguments = [
-            "--model", modelURL.path,
-            "--port", String(chosenPort),
-            "--host", "127.0.0.1",
-            // The tool definitions alone are ~3,400 tokens; 8,192 proved too
-            // small on the Windows side once a conversation had a few tool
-            // results in it.
-            "--ctx-size", "16384",
-            "--threads", String(budget.threadCount),
-            // Every layer on the GPU. This is the whole point of running
-            // natively; a partial offload would leave the slow path in play.
-            "--n-gpu-layers", "999",
-            // Chat templates and tool calls come from the model's own Jinja
-            // template rather than a guess at its format.
-            "--jinja",
-            // One conversation per window, and each window has its own server.
-            "--parallel", "1",
-        ]
+        process.arguments = AssistServerHost.serverArguments(
+            modelPath: modelURL.path,
+            port: chosenPort,
+            tier: budget.tier,
+            threadCount: budget.threadCount
+        )
 
         // The server is chatty on stderr and none of it is for the teacher.
         process.standardOutput = FileHandle.nullDevice
@@ -133,6 +121,45 @@ final class AssistServerHost {
             stop()
             state = .failed(reason: "The assistant's engine did not become ready.")
         }
+    }
+
+    /// Everything `llama-server` is asked to do, in one testable place.
+    ///
+    /// Separated from `start()` on purpose: one of these flags is the
+    /// difference between a 97% router and a 39% one, and a flag that only
+    /// exists inside a function that spawns a process cannot be checked
+    /// without spawning one.
+    nonisolated static func serverArguments(
+        modelPath: String,
+        port: Int,
+        tier: AssistModelTier,
+        threadCount: Int
+    ) -> [String] {
+        return [
+            "--model", modelPath,
+            "--port", String(port),
+            "--host", "127.0.0.1",
+            // Sized by tier: the context is most of what the model holds in
+            // memory, so an 8 GB Mac and a 32 GB one should not be given the
+            // same figure.
+            "--ctx-size", String(tier.contextTokens),
+            // THINKING OFF, and this single flag is worth more than any other
+            // on the line. Qwen3 with thinking enabled spends its token budget
+            // inside <think> and never reaches the tool call: the SAME weights
+            // scored 39% with it on and 97% with it off. Dropping this does
+            // not break loudly — it quietly makes the assistant a worse
+            // router, which is why a test asserts it is here.
+            "--reasoning-budget", "0",
+            "--threads", String(threadCount),
+            // Every layer on the GPU. This is the whole point of running
+            // natively; a partial offload would leave the slow path in play.
+            "--n-gpu-layers", "999",
+            // Chat templates and tool calls come from the model's own Jinja
+            // template rather than a guess at its format.
+            "--jinja",
+            // One conversation per window, and each window has its own server.
+            "--parallel", "1",
+        ]
     }
 
     /// Stop the server. Called when the window closes — a model holding

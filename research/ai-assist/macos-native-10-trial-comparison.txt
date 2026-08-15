@@ -1,0 +1,852 @@
+# macOS native routing measurements, TEN trials, 2026-08-15
+# Apple M4 Pro (48 GB), macOS 26.6, llama.cpp b10435, Metal, native.
+# llama-server --ctx-size 16384 --threads 6 --n-gpu-layers 999 --jinja --parallel 1
+# Suite: research/ai-assist/trimmed-surface-suite.py, SHIPPED configuration
+#        (--date-appended --real-course), 29 probes x 10 trials = 290 responses.
+# Tool surface: the SAME tools-local.json the 3-trial run used (15 tools,
+#        13,858 bytes, 3,417 prompt tokens as Qwen2.5 tokenises it). Byte-for-
+#        byte identical across every model below, so the comparison is fair.
+# "Tomorrow" is 2026-08-16 in every run, exactly as in the 3-trial file.
+#
+# WHY THIS RUN EXISTS
+# -------------------
+# macos-native-results.txt vetoed Qwen2.5-3B on 2 polarity inversions out of 3
+# trials, and no other family had been tried in the 2-4B band. Two questions:
+#   (1) does the 3B veto survive 10 trials, or was 2/3 noise?
+#   (2) is the failure Qwen2.5-3B-specific, or a property of that size?
+# Both are now answered, and the answer to (2) changes the ladder.
+#
+# A NOTE ON WHAT 10 TRIALS BUYS
+# -----------------------------
+# The suite runs at temperature 0.1, so repeated trials of one probe are very
+# nearly deterministic — most probes below are 10x the same tool. Ten trials
+# therefore does NOT give a precise failure RATE; what it gives is the
+# distinction between "this model systematically does the wrong thing on this
+# phrasing" and "it wobbled once". That is exactly the distinction the veto
+# needed, and the 3B's 2-of-3 turns out to be the systematic kind.
+#
+# HEADLINE
+# --------
+#                              all 290      Windows' 180   INVERSIONS  malformed  resident  warm turn  download
+#   Qwen2.5-1.5B  (shipped <16GB)  203 (70%)   143 (79%)         0          0      1.75 GB   0.35 s    1.12 GB
+#   Qwen2.5-3B    (vetoed)         219 (76%)   129 (72%)         9          0      2.84 GB   0.60 s    2.10 GB
+#   Qwen2.5-7B    (shipped >=16GB) 270 (93%)   170 (94%)         0          0      5.72 GB   1.14 s    4.68 GB
+#   Llama-3.2-3B                   230 (79%)   130 (72%)        10          7      4.02 GB   0.53 s    2.02 GB
+#   Phi-4-mini (3.8B)               20 ( 7%)    20 (11%)         -          -      4.73 GB   0.43 s    2.49 GB   NO TOOL CALLING
+#   Gemma-2-2b-it                   20 ( 7%)    20 (11%)         -          -      2.99 GB   0.30 s    1.71 GB   NO TOOL CALLING
+#   Qwen3-4B      (thinking on)    114 (39%)    68 (38%)         0          0      5.01 GB   4.14 s    2.50 GB
+#   Qwen3-4B      (--reasoning off) 280 (97%)  180 (100%)        0          0      5.04 GB   0.74 s    2.50 GB
+#   Qwen3-4B      (off, ctx 8192)  280 (97%)   180 (100%)        0          0      3.87 GB   0.74 s    2.50 GB
+#   Qwen3-4B      (off, ctx 4096)  280 (97%)   180 (100%)        0          0      3.22 GB   0.74 s    2.50 GB
+#   Qwen3-1.7B    (thinking on)     74 (26%)    62 (34%)         0          0      3.15 GB   2.17 s    1.11 GB
+#   Qwen3-1.7B    (--reasoning off) 245 (84%)  160 (89%)         0          0      3.14 GB   0.39 s    1.11 GB
+#
+#   "Windows' 180" is the 18 non-promise-card probes x 10 — the like-for-like
+#   column against the Windows 94%. INVERSIONS counts every polarity probe
+#   answered with the opposite verb, not only the ones the suite's own counter
+#   catches (its test is `probe.startswith("hide")`, which misses "card:
+#   unpublish by name" and "no course named: hide"); every inversion found
+#   below was a real WRITE tool, not a plan_ tool.
+#
+# ANSWER 1: THE 3B VETO HOLDS, AND IT IS WORSE THAN 3 TRIALS SUGGESTED
+# --------------------------------------------------------------------
+#   Qwen2.5-3B inverted 9 times out of 10 on "HIDE - the inversion case",
+#   calling publish_pages on a page the teacher asked to hide. The 3-trial
+#   run's 2/3 was not noise and not bad luck — it is what this model does with
+#   that sentence. It also answered "card: unpublish by name" with
+#   undo_last_change 10/10 and "hide, informal" with undo_last_change 10/10.
+#   Keeping it out of the ladder was correct.
+#
+# ANSWER 2: IT IS NOT QWEN-SPECIFIC, BUT IT IS NOT THE SIZE EITHER
+# ----------------------------------------------------------------
+#   Llama-3.2-3B, a different family at the same size, inverted 10 times out of
+#   10 on the same probe — 9x publish_class_on, 1x publish_pages. Two families,
+#   both ~3B, both publish a page they were asked to hide. That looks like the
+#   size until you run Qwen3-4B, which is 0/290 inversions and 100% on the
+#   Windows probe set. So it is not "2-4B is unsafe"; it is that the 2024-era
+#   3B models are unsafe on this surface, and a 2025-era 4B is not.
+#
+#   Llama-3.2-3B is disqualified twice over: besides the inversions it typed
+#   `"section": "1"` as a STRING on essentially every call (305 type coercions
+#   across 290 responses) and returned 7 malformed responses the server could
+#   not parse into a tool call at all.
+#
+# TWO MODELS COULD NOT DO TOOL CALLS AT ALL — reported, not dropped
+# -----------------------------------------------------------------
+#   Phi-4-mini-instruct and Gemma-2-2b-it both scored 20/290. That 20 is
+#   "deletion - no such tool" and "out of scope", the two probes where
+#   declining is the right answer; they declined all 290 because they never
+#   emitted a tool call at all. Diagnosed directly rather than guessed:
+#
+#     Gemma-2-2b-it   — /props chat_template is 591 chars and contains no
+#                       reference to `tools` or `tool_calls`. llama.cpp b10435
+#                       did NOT polyfill a generic tool format: it silently
+#                       dropped the tools array. The prompt the server actually
+#                       read was 34 tokens instead of ~3,417. `tool_choice:
+#                       "required"` changed nothing — no error, no tool call,
+#                       just prose asking what platform we are on.
+#
+#     Phi-4-mini      — /props chat_template is 423 chars and does mention
+#                       `tools`, but only as `message['tools']` on a SYSTEM
+#                       message. Confirmed against microsoft/Phi-4-mini-instruct
+#                       tokenizer_config.json on the Hub: the official template
+#                       is byte-identical to the one in the GGUF, and it has no
+#                       branch for the OpenAI-style top-level `tools` array. So
+#                       an OpenAI-shaped request renders 30 prompt tokens and no
+#                       tools. Also unaffected by tool_choice: "required".
+#
+#   Neither is a quantisation or a repo problem, and neither can be fixed by
+#   swapping GGUFs — the templates are what they are. A model that cannot take
+#   an OpenAI tools array is disqualified for this job whatever it benchmarks.
+#
+# QWEN3-4B: THE THINKING TOKENS ARE THE WHOLE STORY
+# --------------------------------------------------
+#   As shipped (thinking on) Qwen3-4B scores 39% and takes a 4.14 s warm turn.
+#   That is not a routing failure: it is the 256-token max_tokens budget being
+#   eaten by the <think> block, so 196 of 290 turns ended with no tool call at
+#   all. Latency went from sub-second to 4 s for the same reason.
+#
+#   With `--reasoning off` (llama-server b10435; the per-request equivalent is
+#   chat_template_kwargs {"enable_thinking": false}) the same weights score
+#   280/290 and 180/180 — a PERFECT score on the Windows-comparable set, better
+#   than the 7B, with zero inversions, zero malformed calls, zero type
+#   coercions, zero fabricated dates, and a 0.74 s warm turn. Its only misses
+#   are the same read-only "card: plan a publish" -> plan_publish_class_on that
+#   the 7B also gets wrong 10/10; nothing is at stake there beyond the shape of
+#   the answer.
+#
+#   Qwen3-1.7B behaves the same way (26% thinking, 84% not) but is not safe to
+#   recommend: with reasoning off it filled in date=2026-08-15 — TODAY — on 20
+#   of its 40 "tomorrow" calls, i.e. it would publish today's class when asked
+#   for tomorrow's. No inversions, but the wrong day is still the wrong page in
+#   front of students.
+#
+# RESIDENT MEMORY IS MOSTLY KV CACHE, AND THAT IS ADJUSTABLE
+# -----------------------------------------------------------
+#   Qwen3-4B's 5.04 GB resident at --ctx-size 16384 is 2.5 GB of weights plus
+#   ~2.4 GB of KV cache (36 layers x 8 KV heads x 128, fp16). Shrinking the
+#   context leaves the routing bit-for-bit identical and gives the memory back:
+#
+#       ctx 16384   5.04 GB   280/290   180/180   0 inversions   0.74 s
+#       ctx  8192   3.87 GB   280/290   180/180   0 inversions   0.74 s
+#       ctx  4096   3.22 GB   280/290   180/180   0 inversions   0.74 s
+#
+#   All three were measured, not extrapolated. 8192 is the one to ship: the
+#   tool surface alone is ~3.4k tokens, so ctx 4096 leaves under 700 tokens for
+#   the conversation and will start truncating on a multi-turn chat, while 8192
+#   leaves ~4.7k. The 1.2 GB saved between 16384 and 8192 is the difference
+#   between "fits on an 8 GB Mac" and "does not".
+#
+# RECOMMENDATION
+# --------------
+#   8 GB Mac    Qwen3-4B Q4_K_M with reasoning OFF at --ctx-size 8192.
+#               3.87 GB resident, 2.50 GB download, 0.74 s warm turn, and it
+#               routes at 100% on the Windows-comparable set with zero
+#               inversions. This replaces the 1.5B's 79% — a 21-point gain on
+#               the machines that currently get the worst model. It costs
+#               2.1 GB more resident than the 1.5B, and that is the one thing
+#               left to weigh: 3.87 GB on an 8 GB Mac that is also running
+#               Colima and the Quartz container is tight, and it should be
+#               tried on a real 8 GB machine with the container up before it
+#               ships. ctx 4096 buys back another 0.65 GB (3.22 GB) at the same
+#               100%, but leaves under 700 tokens of room after the tool
+#               surface, so treat it as the squeeze, not the default. Only if
+#               BOTH are too tight does Qwen2.5-1.5B (1.75 GB, 79%) stay.
+#
+#   16 GB Mac   Qwen3-4B Q4_K_M with reasoning OFF at --ctx-size 16384.
+#               It beats the 7B on accuracy (97% vs 93% overall, 100% vs 94%
+#               on the Windows set), matches it on safety (zero inversions
+#               both), and is faster and smaller on every axis: 5.04 GB vs
+#               5.72 GB resident, 0.74 s vs 1.14 s warm turn, 5.85 s vs 9.18 s
+#               cold read, 2.50 GB vs 4.68 GB to download. There is no measured
+#               reason left to ship the 7B. Note the one thing the 7B does that
+#               the 4B does not: nothing, on this suite.
+#
+#   Both tiers   REASONING MUST BE OFF. Shipping Qwen3 with thinking enabled
+#               and a 256-token budget turns a 97% router into a 39% one. If
+#               the app cannot pass --reasoning off, it must send
+#               chat_template_kwargs {"enable_thinking": false} per request,
+#               and that needs a test that fails loudly if it stops working.
+#
+#   Qwen2.5-3B  stays vetoed. 9/10 inversions.
+#   Llama-3.2-3B vetoed: 10/10 inversions, plus string-typed section numbers.
+#   Phi-4-mini, Gemma-2-2b-it: disqualified, cannot tool-call.
+#
+# WHAT SURPRISED ME
+# -----------------
+#   1. Two different families invert on the SAME sentence. 'Hide tomorrow's
+#      class again ... the page is "Ohm's Law"' is the one probe that breaks
+#      3B-class models, and it breaks them toward publishing. The words
+#      "tomorrow's class" appear to out-pull the word "hide": Llama-3.2-3B
+#      answered it with publish_class_on, the by-DATE publisher, 9 times out
+#      of 10. That phrasing deserves a permanent regression test of its own.
+#   2. A 4B model beating a 7B on the metric that matters, while being smaller,
+#      faster and safer.
+#   3. That the failure mode of a "better" model can be a config default. The
+#      difference between 39% and 97% on identical weights is one flag.
+#
+# Full 290-row probe tables for every run are in the scratchpad at
+# routing-run/<label>.txt; the condensed per-probe tables follow.
+
+
+################################################################################
+### Qwen2.5-1.5B-Instruct Q4_K_M (the GGUF already in the scratchpad from the 3-trial run; shipped tier <16GB)
+################################################################################
+== qwen2.5-1.5b ==
+download size: 1.12 GB (1117320736 bytes)
+all probes:            203/290 (70%)
+Windows-comparable 18: 143/180 (79%)
+promise-card 11:       60/110 (55%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 40
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 33
+cold prompt read: 2.07 s / 3417 tok (1650 tok/s)
+warm turn median: 0.35 s   (mean 0.35 s, max 0.65 s)
+generation rate median: 130.6 tok/s
+resident memory max: 1.75 GB (samples 52)
+total probe responses parsed: 290
+
+probe                          score  tools chosen over 10 trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name          0/10   10x publish_class_on [MISS]
+card: publish tomorrow         10/10  9x publish_class_on, 1x plan_publish_class_on
+card: unpublish by name        10/10  10x unpublish_pages
+card: unpublish, mistake       10/10  10x unpublish_pages
+card: plan a publish           0/10   10x plan_publish_class_on [MISS]
+card: check the section        10/10  10x check_section
+card: rebuild preview          10/10  10x rebuild_preview
+card: undo                     0/10   10x (declined) [MISS]
+card: deploy now               0/10   10x (declined) [MISS]
+card: schedule a deploy        0/10   10x deploy_section [MISS]
+card: cancel the deploy        10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links   10/10  10x publish_class_on
+publish by name, informal      0/10   10x publish_class_on [MISS]
+HIDE - the inversion case      10/10  10x unpublish_pages
+hide, informal (verbatim cue)  10/10  10x unpublish_pages
+hide, phrased as a mistake     10/10  10x unpublish_pages
+list pages                     10/10  10x list_pages
+read                           0/10   7x plan_publish_pages [MISS], 3x check_section [MISS]
+check section                  10/10  10x check_section
+rebuild preview                10/10  10x rebuild_preview
+undo                           10/10  10x undo_last_change
+schedule a deploy              0/10   10x deploy_section [MISS]
+deploy now                     10/10  10x deploy_section
+cancel scheduled deploy        10/10  10x cancel_scheduled_deploy
+no course named: publish       10/10  10x publish_class_on
+no course named: hide          10/10  10x unpublish_pages
+deletion - no such tool        3/10   7x plan_unpublish_pages [MISS], 3x (declined)
+out of scope                   10/10  10x (declined)
+typos                          10/10  10x publish_class_on
+
+
+################################################################################
+### Qwen2.5-3B-Instruct Q4_K_M (the GGUF from the 3-trial run; the vetoed one)
+################################################################################
+== qwen2.5-3b ==
+download size: 2.10 GB (2104932768 bytes)
+all probes:            219/290 (76%)
+Windows-comparable 18: 129/180 (72%)
+promise-card 11:       90/110 (82%)
+polarity inversions (all polarity probes, incl. plan_*): 9
+  of which the tool called was a real WRITE: 9
+    9x  HIDE - the inversion case -> publish_pages   [hide->publish]
+misses that were a WRITE: 41
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 20
+cold prompt read: 4.19 s / 3417 tok (816 tok/s)
+warm turn median: 0.60 s   (mean 0.63 s, max 2.05 s)
+generation rate median: 79.4 tok/s
+resident memory max: 2.84 GB (samples 93)
+total probe responses parsed: 290
+
+probe                          score  tools chosen over 10 trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name          10/10  10x plan_publish_pages
+card: publish tomorrow         10/10  10x plan_publish_class_on
+card: unpublish by name        0/10   10x undo_last_change [MISS]
+card: unpublish, mistake       10/10  10x plan_unpublish_pages
+card: plan a publish           0/10   10x plan_publish_class_on [MISS]
+card: check the section        10/10  10x check_section
+card: rebuild preview          10/10  10x rebuild_preview
+card: undo                     10/10  10x undo_last_change
+card: deploy now               10/10  10x deploy_section
+card: schedule a deploy        10/10  10x schedule_deploy
+card: cancel the deploy        10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links   0/10   10x plan_publish_pages [MISS]
+publish by name, informal      10/10  7x plan_publish_pages, 3x publish_pages
+HIDE - the inversion case      1/10   9x publish_pages [MISS], 1x plan_unpublish_pages
+hide, informal (verbatim cue)  0/10   10x undo_last_change [MISS]
+hide, phrased as a mistake     10/10  10x unpublish_pages
+list pages                     10/10  10x list_pages
+read                           0/10   10x plan_publish_pages [MISS]
+check section                  10/10  10x check_section
+rebuild preview                10/10  10x rebuild_preview
+undo                           10/10  10x undo_last_change
+schedule a deploy              10/10  10x schedule_deploy
+deploy now                     0/10   10x publish_class_on [MISS]
+cancel scheduled deploy        10/10  10x cancel_scheduled_deploy
+no course named: publish       10/10  10x plan_publish_class_on
+no course named: hide          8/10   8x unpublish_pages, 2x undo_last_change [MISS]
+deletion - no such tool        10/10  10x (declined)
+out of scope                   10/10  10x (declined)
+typos                          10/10  10x plan_publish_class_on
+
+
+################################################################################
+### Qwen2.5-7B-Instruct Q4_K_M (the GGUF from the 3-trial run; shipped tier >=16GB)
+################################################################################
+== qwen2.5-7b ==
+download size: 4.68 GB (4683074240 bytes)
+all probes:            270/290 (93%)
+Windows-comparable 18: 170/180 (94%)
+promise-card 11:       100/110 (91%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 9
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 10
+cold prompt read: 9.18 s / 3415 tok (372 tok/s)
+warm turn median: 1.14 s   (mean 1.20 s, max 4.12 s)
+generation rate median: 43.4 tok/s
+resident memory max: 5.72 GB (samples 178)
+total probe responses parsed: 290
+
+probe                          score  tools chosen over 10 trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name          10/10  10x publish_pages
+card: publish tomorrow         10/10  10x publish_class_on
+card: unpublish by name        10/10  10x unpublish_pages
+card: unpublish, mistake       10/10  10x unpublish_pages
+card: plan a publish           0/10   10x plan_publish_class_on [MISS]
+card: check the section        10/10  10x check_section
+card: rebuild preview          10/10  10x rebuild_preview
+card: undo                     10/10  10x undo_last_change
+card: deploy now               10/10  10x deploy_section
+card: schedule a deploy        10/10  10x schedule_deploy
+card: cancel the deploy        10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links   10/10  10x publish_class_on
+publish by name, informal      10/10  10x publish_pages
+HIDE - the inversion case      10/10  10x unpublish_pages
+hide, informal (verbatim cue)  10/10  10x unpublish_pages
+hide, phrased as a mistake     10/10  10x unpublish_pages
+list pages                     10/10  10x list_pages
+read                           10/10  10x read_page
+check section                  10/10  10x check_section
+rebuild preview                10/10  10x rebuild_preview
+undo                           10/10  10x undo_last_change
+schedule a deploy              10/10  10x schedule_deploy
+deploy now                     10/10  10x deploy_section
+cancel scheduled deploy        10/10  10x cancel_scheduled_deploy
+no course named: publish       10/10  10x publish_class_on
+no course named: hide          10/10  10x unpublish_pages
+deletion - no such tool        0/10   9x unpublish_pages [MISS], 1x plan_unpublish_pages [MISS]
+out of scope                   10/10  10x (declined)
+typos                          10/10  10x publish_class_on
+
+
+################################################################################
+### Llama-3.2-3B-Instruct Q4_K_M (bartowski/Llama-3.2-3B-Instruct-GGUF)
+################################################################################
+== llama-3.2-3b ==
+download size: 2.02 GB (2019377696 bytes)
+all probes:            230/290 (79%)
+Windows-comparable 18: 130/180 (72%)
+promise-card 11:       100/110 (91%)
+polarity inversions (all polarity probes, incl. plan_*): 10
+  of which the tool called was a real WRITE: 10
+    9x  HIDE - the inversion case -> publish_class_on   [hide->publish]
+    1x  HIDE - the inversion case -> publish_pages   [hide->publish]
+misses that were a WRITE: 24
+malformed tool calls: 7
+type coercions: 305
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 0
+cold prompt read: 5.27 s / 3985 tok (756 tok/s)
+warm turn median: 0.53 s   (mean 0.58 s, max 1.06 s)
+generation rate median: 78.9 tok/s
+resident memory max: 4.02 GB (samples 88)
+total probe responses parsed: 290
+
+probe                          score  tools chosen over 10 trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name          10/10  10x publish_pages
+card: publish tomorrow         10/10  10x publish_class_on
+card: unpublish by name        10/10  10x plan_unpublish_pages
+card: unpublish, mistake       10/10  10x unpublish_pages
+card: plan a publish           0/10   10x plan_publish_class_on [MISS]
+card: check the section        10/10  10x check_section
+card: rebuild preview          10/10  10x rebuild_preview
+card: undo                     10/10  10x undo_last_change
+card: deploy now               10/10  10x deploy_section
+card: schedule a deploy        10/10  10x schedule_deploy
+card: cancel the deploy        10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links   0/10   10x publish_pages [MISS]
+publish by name, informal      10/10  10x publish_pages
+HIDE - the inversion case      0/10   9x publish_class_on [MISS], 1x publish_pages [MISS]
+hide, informal (verbatim cue)  10/10  10x unpublish_pages
+hide, phrased as a mistake     10/10  10x unpublish_pages
+list pages                     10/10  10x list_pages
+read                           10/10  10x read_page
+check section                  10/10  10x check_section
+rebuild preview                10/10  10x rebuild_preview
+undo                           10/10  10x undo_last_change
+schedule a deploy              10/10  10x schedule_deploy
+deploy now                     10/10  10x deploy_section
+cancel scheduled deploy        10/10  10x cancel_scheduled_deploy
+no course named: publish       10/10  10x publish_class_on
+no course named: hide          10/10  10x unpublish_pages
+deletion - no such tool        0/10   9x plan_unpublish_pages [MISS], 1x __MALFORMED__ [MISS]
+out of scope                   0/10   10x plan_publish_class_on [MISS]
+typos                          0/10   6x __MALFORMED__ [MISS], 4x publish_pages [MISS]
+
+
+################################################################################
+### Phi-4-mini-instruct Q4_K_M (bartowski/microsoft_Phi-4-mini-instruct-GGUF)
+################################################################################
+== phi-4-mini ==
+download size: 2.49 GB (2491874688 bytes)
+all probes:            20/290 (7%)
+Windows-comparable 18: 20/180 (11%)
+promise-card 11:       0/110 (0%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 0
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 290
+cold prompt read: 0.39 s / 241 tok (620 tok/s)
+warm turn median: 0.43 s   (mean 0.72 s, max 2.41 s)
+generation rate median: 72.8 tok/s
+resident memory max: 4.73 GB (samples 104)
+total probe responses parsed: 290
+
+probe                          score  tools chosen over 10 trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name          0/10   10x (declined) [MISS]
+card: publish tomorrow         0/10   10x (declined) [MISS]
+card: unpublish by name        0/10   10x (declined) [MISS]
+card: unpublish, mistake       0/10   10x (declined) [MISS]
+card: plan a publish           0/10   10x (declined) [MISS]
+card: check the section        0/10   10x (declined) [MISS]
+card: rebuild preview          0/10   10x (declined) [MISS]
+card: undo                     0/10   10x (declined) [MISS]
+card: deploy now               0/10   10x (declined) [MISS]
+card: schedule a deploy        0/10   10x (declined) [MISS]
+card: cancel the deploy        0/10   10x (declined) [MISS]
+publish tomorrow, with links   0/10   10x (declined) [MISS]
+publish by name, informal      0/10   10x (declined) [MISS]
+HIDE - the inversion case      0/10   10x (declined) [MISS]
+hide, informal (verbatim cue)  0/10   10x (declined) [MISS]
+hide, phrased as a mistake     0/10   10x (declined) [MISS]
+list pages                     0/10   10x (declined) [MISS]
+read                           0/10   10x (declined) [MISS]
+check section                  0/10   10x (declined) [MISS]
+rebuild preview                0/10   10x (declined) [MISS]
+undo                           0/10   10x (declined) [MISS]
+schedule a deploy              0/10   10x (declined) [MISS]
+deploy now                     0/10   10x (declined) [MISS]
+cancel scheduled deploy        0/10   10x (declined) [MISS]
+no course named: publish       0/10   10x (declined) [MISS]
+no course named: hide          0/10   10x (declined) [MISS]
+deletion - no such tool        10/10  10x (declined)
+out of scope                   10/10  10x (declined)
+typos                          0/10   10x (declined) [MISS]
+
+
+################################################################################
+### Gemma-2-2b-it Q4_K_M (bartowski/gemma-2-2b-it-GGUF)
+################################################################################
+== gemma-2-2b ==
+download size: 1.71 GB (1708582752 bytes)
+all probes:            20/290 (7%)
+Windows-comparable 18: 20/180 (11%)
+promise-card 11:       0/110 (0%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 0
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 290
+cold prompt read: 0.40 s / 248 tok (628 tok/s)
+warm turn median: 0.30 s   (mean 0.43 s, max 2.07 s)
+generation rate median: 97.9 tok/s
+resident memory max: 2.99 GB (samples 63)
+total probe responses parsed: 290
+
+probe                          score  tools chosen over 10 trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name          0/10   10x (declined) [MISS]
+card: publish tomorrow         0/10   10x (declined) [MISS]
+card: unpublish by name        0/10   10x (declined) [MISS]
+card: unpublish, mistake       0/10   10x (declined) [MISS]
+card: plan a publish           0/10   10x (declined) [MISS]
+card: check the section        0/10   10x (declined) [MISS]
+card: rebuild preview          0/10   10x (declined) [MISS]
+card: undo                     0/10   10x (declined) [MISS]
+card: deploy now               0/10   10x (declined) [MISS]
+card: schedule a deploy        0/10   10x (declined) [MISS]
+card: cancel the deploy        0/10   10x (declined) [MISS]
+publish tomorrow, with links   0/10   10x (declined) [MISS]
+publish by name, informal      0/10   10x (declined) [MISS]
+HIDE - the inversion case      0/10   10x (declined) [MISS]
+hide, informal (verbatim cue)  0/10   10x (declined) [MISS]
+hide, phrased as a mistake     0/10   10x (declined) [MISS]
+list pages                     0/10   10x (declined) [MISS]
+read                           0/10   10x (declined) [MISS]
+check section                  0/10   10x (declined) [MISS]
+rebuild preview                0/10   10x (declined) [MISS]
+undo                           0/10   10x (declined) [MISS]
+schedule a deploy              0/10   10x (declined) [MISS]
+deploy now                     0/10   10x (declined) [MISS]
+cancel scheduled deploy        0/10   10x (declined) [MISS]
+no course named: publish       0/10   10x (declined) [MISS]
+no course named: hide          0/10   10x (declined) [MISS]
+deletion - no such tool        10/10  10x (declined)
+out of scope                   10/10  10x (declined)
+typos                          0/10   10x (declined) [MISS]
+
+
+################################################################################
+### Qwen3-4B Q4_K_M (Qwen/Qwen3-4B-GGUF) - THINKING ON, as shipped by default
+################################################################################
+== qwen3-4b ==
+download size: 2.50 GB (2497280256 bytes)
+all probes:            114/290 (39%)
+Windows-comparable 18: 68/180 (38%)
+promise-card 11:       46/110 (42%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 0
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 2
+declined responses: 196
+cold prompt read: 5.85 s / 3415 tok (584 tok/s)
+warm turn median: 4.14 s   (mean 3.84 s, max 4.87 s)
+generation rate median: 62.1 tok/s
+resident memory max: 5.01 GB (samples 557)
+total probe responses parsed: 290
+
+probe                          score  tools chosen over 10 trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name          0/10   10x (declined) [MISS]
+card: publish tomorrow         3/10   7x (declined) [MISS], 3x publish_class_on
+card: unpublish by name        1/10   9x (declined) [MISS], 1x unpublish_pages
+card: unpublish, mistake       0/10   10x (declined) [MISS]
+card: plan a publish           0/10   10x (declined) [MISS]
+card: check the section        10/10  10x check_section
+card: rebuild preview          1/10   9x (declined) [MISS], 1x rebuild_preview
+card: undo                     10/10  10x undo_last_change
+card: deploy now               10/10  10x deploy_section
+card: schedule a deploy        1/10   9x (declined) [MISS], 1x schedule_deploy
+card: cancel the deploy        10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links   0/10   10x (declined) [MISS]
+publish by name, informal      0/10   10x (declined) [MISS]
+HIDE - the inversion case      0/10   10x (declined) [MISS]
+hide, informal (verbatim cue)  0/10   10x (declined) [MISS]
+hide, phrased as a mistake     0/10   10x (declined) [MISS]
+list pages                     10/10  10x list_pages
+read                           0/10   10x (declined) [MISS]
+check section                  8/10   8x check_section, 2x (declined) [MISS]
+rebuild preview                10/10  10x rebuild_preview
+undo                           10/10  10x undo_last_change
+schedule a deploy              0/10   10x (declined) [MISS]
+deploy now                     0/10   10x (declined) [MISS]
+cancel scheduled deploy        10/10  10x cancel_scheduled_deploy
+no course named: publish       0/10   10x (declined) [MISS]
+no course named: hide          0/10   10x (declined) [MISS]
+deletion - no such tool        10/10  10x (declined)
+out of scope                   10/10  10x (declined)
+typos                          0/10   10x (declined) [MISS]
+
+
+################################################################################
+### Qwen3-4B Q4_K_M - --reasoning off, ctx 16384
+################################################################################
+== qwen3-4b-nothink ==
+download size: 2.50 GB (2497280256 bytes)
+all probes:            280/290 (97%)
+Windows-comparable 18: 180/180 (100%)
+promise-card 11:       100/110 (91%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 0
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 20
+cold prompt read: 5.85 s / 3419 tok (585 tok/s)
+warm turn median: 0.74 s   (mean 0.73 s, max 1.37 s)
+generation rate median: 63.2 tok/s
+resident memory max: 5.04 GB (samples 108)
+total probe responses parsed: 290
+
+probe                          score  tools chosen over 10 trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name          10/10  10x publish_pages
+card: publish tomorrow         10/10  9x plan_publish_class_on, 1x publish_class_on
+card: unpublish by name        10/10  10x unpublish_pages
+card: unpublish, mistake       10/10  10x unpublish_pages
+card: plan a publish           0/10   10x plan_publish_class_on [MISS]
+card: check the section        10/10  10x check_section
+card: rebuild preview          10/10  10x rebuild_preview
+card: undo                     10/10  10x undo_last_change
+card: deploy now               10/10  10x deploy_section
+card: schedule a deploy        10/10  10x schedule_deploy
+card: cancel the deploy        10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links   10/10  10x publish_class_on
+publish by name, informal      10/10  10x publish_pages
+HIDE - the inversion case      10/10  10x unpublish_pages
+hide, informal (verbatim cue)  10/10  10x unpublish_pages
+hide, phrased as a mistake     10/10  10x unpublish_pages
+list pages                     10/10  10x list_pages
+read                           10/10  10x read_page
+check section                  10/10  10x check_section
+rebuild preview                10/10  10x rebuild_preview
+undo                           10/10  10x undo_last_change
+schedule a deploy              10/10  10x schedule_deploy
+deploy now                     10/10  10x deploy_section
+cancel scheduled deploy        10/10  10x cancel_scheduled_deploy
+no course named: publish       10/10  10x publish_class_on
+no course named: hide          10/10  10x unpublish_pages
+deletion - no such tool        10/10  10x (declined)
+out of scope                   10/10  10x (declined)
+typos                          10/10  10x publish_class_on
+
+
+################################################################################
+### Qwen3-4B Q4_K_M - --reasoning off, ctx 8192
+################################################################################
+== qwen3-4b-nothink-ctx8k ==
+download size: 2.50 GB (2497280256 bytes)
+all probes:            280/290 (97%)
+Windows-comparable 18: 180/180 (100%)
+promise-card 11:       100/110 (91%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 0
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 20
+cold prompt read: 5.85 s / 3419 tok (584 tok/s)
+warm turn median: 0.74 s   (mean 0.73 s, max 1.30 s)
+generation rate median: 63.4 tok/s
+resident memory max: 3.87 GB (samples 108)
+total probe responses parsed: 290
+
+probe                          score  tools chosen over 10 trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name          10/10  10x publish_pages
+card: publish tomorrow         10/10  8x plan_publish_class_on, 2x publish_class_on
+card: unpublish by name        10/10  10x unpublish_pages
+card: unpublish, mistake       10/10  10x unpublish_pages
+card: plan a publish           0/10   10x plan_publish_class_on [MISS]
+card: check the section        10/10  10x check_section
+card: rebuild preview          10/10  10x rebuild_preview
+card: undo                     10/10  10x undo_last_change
+card: deploy now               10/10  10x deploy_section
+card: schedule a deploy        10/10  10x schedule_deploy
+card: cancel the deploy        10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links   10/10  10x publish_class_on
+publish by name, informal      10/10  10x publish_pages
+HIDE - the inversion case      10/10  10x unpublish_pages
+hide, informal (verbatim cue)  10/10  10x unpublish_pages
+hide, phrased as a mistake     10/10  10x unpublish_pages
+list pages                     10/10  10x list_pages
+read                           10/10  10x read_page
+check section                  10/10  10x check_section
+rebuild preview                10/10  10x rebuild_preview
+undo                           10/10  10x undo_last_change
+schedule a deploy              10/10  10x schedule_deploy
+deploy now                     10/10  10x deploy_section
+cancel scheduled deploy        10/10  10x cancel_scheduled_deploy
+no course named: publish       10/10  10x publish_class_on
+no course named: hide          10/10  10x unpublish_pages
+deletion - no such tool        10/10  10x (declined)
+out of scope                   10/10  10x (declined)
+typos                          10/10  10x publish_class_on
+
+
+################################################################################
+### Qwen3-4B Q4_K_M - --reasoning off, ctx 4096
+################################################################################
+== qwen3-4b-nothink-ctx4k ==
+download size: 2.50 GB (2497280256 bytes)
+all probes:            280/290 (97%)
+Windows-comparable 18: 180/180 (100%)
+promise-card 11:       100/110 (91%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 0
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 20
+cold prompt read: 5.85 s / 3419 tok (584 tok/s)
+warm turn median: 0.74 s   (mean 0.72 s, max 1.31 s)
+generation rate median: 63.3 tok/s
+resident memory max: 3.22 GB (samples 108)
+total probe responses parsed: 290
+
+probe                          score  tools chosen over 10 trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name          10/10  10x publish_pages
+card: publish tomorrow         10/10  6x publish_class_on, 4x plan_publish_class_on
+card: unpublish by name        10/10  10x unpublish_pages
+card: unpublish, mistake       10/10  10x unpublish_pages
+card: plan a publish           0/10   10x plan_publish_class_on [MISS]
+card: check the section        10/10  10x check_section
+card: rebuild preview          10/10  10x rebuild_preview
+card: undo                     10/10  10x undo_last_change
+card: deploy now               10/10  10x deploy_section
+card: schedule a deploy        10/10  10x schedule_deploy
+card: cancel the deploy        10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links   10/10  10x publish_class_on
+publish by name, informal      10/10  10x publish_pages
+HIDE - the inversion case      10/10  10x unpublish_pages
+hide, informal (verbatim cue)  10/10  10x unpublish_pages
+hide, phrased as a mistake     10/10  10x unpublish_pages
+list pages                     10/10  10x list_pages
+read                           10/10  10x read_page
+check section                  10/10  10x check_section
+rebuild preview                10/10  10x rebuild_preview
+undo                           10/10  10x undo_last_change
+schedule a deploy              10/10  10x schedule_deploy
+deploy now                     10/10  10x deploy_section
+cancel scheduled deploy        10/10  10x cancel_scheduled_deploy
+no course named: publish       10/10  10x publish_class_on
+no course named: hide          10/10  10x unpublish_pages
+deletion - no such tool        10/10  10x (declined)
+out of scope                   10/10  10x (declined)
+typos                          10/10  10x publish_class_on
+
+
+################################################################################
+### Qwen3-1.7B Q4_K_M (unsloth/Qwen3-1.7B-GGUF) - THINKING ON
+################################################################################
+== qwen3-1.7b ==
+download size: 1.11 GB (1107409472 bytes)
+all probes:            74/290 (26%)
+Windows-comparable 18: 62/180 (34%)
+promise-card 11:       12/110 (11%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 0
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 0
+declined responses: 236
+cold prompt read: 2.30 s / 3415 tok (1487 tok/s)
+warm turn median: 2.17 s   (mean 2.04 s, max 2.37 s)
+generation rate median: 118.3 tok/s
+resident memory max: 3.15 GB (samples 296)
+total probe responses parsed: 290
+
+probe                          score  tools chosen over 10 trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name          0/10   10x (declined) [MISS]
+card: publish tomorrow         0/10   10x (declined) [MISS]
+card: unpublish by name        0/10   10x (declined) [MISS]
+card: unpublish, mistake       0/10   10x (declined) [MISS]
+card: plan a publish           0/10   10x (declined) [MISS]
+card: check the section        2/10   8x (declined) [MISS], 2x check_section
+card: rebuild preview          0/10   10x (declined) [MISS]
+card: undo                     10/10  10x undo_last_change
+card: deploy now               0/10   10x (declined) [MISS]
+card: schedule a deploy        0/10   10x (declined) [MISS]
+card: cancel the deploy        0/10   10x (declined) [MISS]
+publish tomorrow, with links   0/10   10x (declined) [MISS]
+publish by name, informal      0/10   10x (declined) [MISS]
+HIDE - the inversion case      0/10   10x (declined) [MISS]
+hide, informal (verbatim cue)  0/10   10x (declined) [MISS]
+hide, phrased as a mistake     0/10   10x (declined) [MISS]
+list pages                     10/10  10x list_pages
+read                           0/10   10x (declined) [MISS]
+check section                  2/10   8x (declined) [MISS], 2x check_section
+rebuild preview                10/10  10x rebuild_preview
+undo                           10/10  10x undo_last_change
+schedule a deploy              0/10   10x (declined) [MISS]
+deploy now                     0/10   10x (declined) [MISS]
+cancel scheduled deploy        10/10  10x cancel_scheduled_deploy
+no course named: publish       0/10   10x (declined) [MISS]
+no course named: hide          0/10   10x (declined) [MISS]
+deletion - no such tool        10/10  10x (declined)
+out of scope                   10/10  10x (declined)
+typos                          0/10   10x (declined) [MISS]
+
+
+################################################################################
+### Qwen3-1.7B Q4_K_M - --reasoning off
+################################################################################
+== qwen3-1.7b-nothink ==
+download size: 1.11 GB (1107409472 bytes)
+all probes:            245/290 (84%)
+Windows-comparable 18: 160/180 (89%)
+promise-card 11:       85/110 (77%)
+polarity inversions (all polarity probes, incl. plan_*): 0
+  of which the tool called was a real WRITE: 0
+misses that were a WRITE: 10
+malformed tool calls: 0
+type coercions: 0
+wrong course args: 0
+fabricated 'tomorrow' dates: 20
+declined responses: 15
+cold prompt read: 2.30 s / 3419 tok (1486 tok/s)
+warm turn median: 0.39 s   (mean 0.43 s, max 1.22 s)
+generation rate median: 120.2 tok/s
+resident memory max: 3.14 GB (samples 63)
+total probe responses parsed: 290
+
+probe                          score  tools chosen over 10 trials
+--------------------------------------------------------------------------------------------------------------
+card: publish by name          0/10   10x plan_publish_class_on [MISS]
+card: publish tomorrow         10/10  10x plan_publish_class_on
+card: unpublish by name        10/10  10x unpublish_pages
+card: unpublish, mistake       10/10  10x unpublish_pages
+card: plan a publish           0/10   10x plan_publish_class_on [MISS]
+card: check the section        10/10  10x check_section
+card: rebuild preview          10/10  10x rebuild_preview
+card: undo                     5/10   5x undo_last_change, 5x (declined) [MISS]
+card: deploy now               10/10  10x deploy_section
+card: schedule a deploy        10/10  10x schedule_deploy
+card: cancel the deploy        10/10  10x cancel_scheduled_deploy
+publish tomorrow, with links   10/10  10x publish_class_on
+publish by name, informal      0/10   10x publish_class_on [MISS]
+HIDE - the inversion case      10/10  10x plan_unpublish_pages
+hide, informal (verbatim cue)  10/10  10x unpublish_pages
+hide, phrased as a mistake     10/10  10x unpublish_pages
+list pages                     10/10  10x list_pages
+read                           10/10  10x read_page
+check section                  10/10  10x check_section
+rebuild preview                10/10  10x rebuild_preview
+undo                           10/10  10x undo_last_change
+schedule a deploy              10/10  10x schedule_deploy
+deploy now                     10/10  10x deploy_section
+cancel scheduled deploy        10/10  10x cancel_scheduled_deploy
+no course named: publish       10/10  10x publish_class_on
+no course named: hide          10/10  10x unpublish_pages
+deletion - no such tool        0/10   10x list_pages [MISS]
+out of scope                   10/10  10x (declined)
+typos                          10/10  10x publish_class_on

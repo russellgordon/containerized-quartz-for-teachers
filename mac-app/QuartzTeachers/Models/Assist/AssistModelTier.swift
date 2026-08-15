@@ -17,10 +17,10 @@ nonisolated enum AssistModelTier: String, CaseIterable, Sendable {
 
     // MARK: - Cases
 
-    /// Qwen2.5 1.5B — what the Windows build ships, and the floor here.
+    /// The conservative rung, for Macs under 16 GB.
     case small
 
-    /// Qwen2.5 7B — the model that is actually correct.
+    /// The full rung, for 16 GB and up.
     case large
 
     // There is deliberately NO 3B rung, and this is the most important
@@ -48,7 +48,7 @@ nonisolated enum AssistModelTier: String, CaseIterable, Sendable {
     var displayName: String {
         switch self {
         case .small: return "Qwen2.5 1.5B"
-        case .large: return "Qwen2.5 7B"
+        case .large: return "Qwen3 4B"
         }
     }
 
@@ -63,14 +63,36 @@ nonisolated enum AssistModelTier: String, CaseIterable, Sendable {
     var downloadBytes: Int64 {
         switch self {
         case .small: return 1_117_320_736
-        case .large: return 4_683_074_240
+        case .large: return 2_497_280_256
         }
     }
 
-    /// Roughly what the weights occupy once resident. Close enough to the
-    /// file size for a budget decision, and never smaller than it.
+    /// How much context to give the model.
+    ///
+    /// The tool surface alone is about 3,400 tokens, so this is mostly a
+    /// decision about how long a conversation can get before it truncates.
+    /// 8,192 leaves roughly 4,700 tokens of room; 4,096 would leave under
+    /// 700, which is why it is not offered even though it measured the same
+    /// on routing.
+    var contextTokens: Int {
+        switch self {
+        case .small: return 8_192
+        case .large: return 16_384
+        }
+    }
+
+    /// Roughly what the model occupies once resident.
+    ///
+    /// NOT the file size: most of the difference is KV cache, which scales
+    /// with the context. Measured on an M4 Pro rather than calculated —
+    /// Qwen3-4B is 2.5 GB of weights plus about 2.4 GB of cache at 16k, and
+    /// shrinking the context gives that back with the routing bit-for-bit
+    /// identical (280/290 at 16k, 8k and 4k alike).
     var residentBytes: Int64 {
-        return downloadBytes
+        switch self {
+        case .small: return 1_879_048_192   // 1.75 GB, Qwen2.5 1.5B at 8k
+        case .large: return 5_411_658_137   // 5.04 GB, Qwen3 4B at 16k
+        }
     }
 
     /// The file on disk. The tier is in the name so a machine that changes
@@ -79,7 +101,7 @@ nonisolated enum AssistModelTier: String, CaseIterable, Sendable {
     var fileName: String {
         switch self {
         case .small: return "qwen2.5-1.5b-instruct-q4_k_m.gguf"
-        case .large: return "qwen2.5-7b-instruct-q4_k_m.gguf"
+        case .large: return "qwen3-4b-q4_k_m.gguf"
         }
     }
 
@@ -91,7 +113,7 @@ nonisolated enum AssistModelTier: String, CaseIterable, Sendable {
         case .small:
             return URL(string: "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf")!
         case .large:
-            return URL(string: "https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf")!
+            return URL(string: "https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf")!
         }
     }
 
@@ -120,30 +142,36 @@ nonisolated enum AssistModelTier: String, CaseIterable, Sendable {
 
     /// The tier for a machine with this much physical memory.
     ///
-    /// **A threshold, not a fraction of RAM, and the measurements are why.**
-    /// A tidy "a fifth of memory" rule would put a 16 GB Mac on a 3.4 GB
-    /// budget, which the 7B (5.15 GB resident) does not fit — so the rule
-    /// would choose the smaller model on grounds of frugality. That is the
-    /// wrong trade for a tool that changes what a teacher's students can see:
+    /// **Every rung here was chosen by measurement, and two candidates were
+    /// vetoed outright.** 29 probes × 10 trials each, identical tool surface,
+    /// full results in `research/ai-assist/macos-native-10-trial-comparison.txt`:
     ///
-    /// | Model | Routing (like-for-like) | Polarity inversions |
+    /// | Model | Routing (Windows set) | Polarity inversions |
     /// |---|---|---|
-    /// | 1.5B | 81% | none |
-    /// | 7B   | **94%** | none |
+    /// | Qwen2.5 1.5B | 79% | none |
+    /// | Qwen2.5 3B | 72% | **9 of 10** |
+    /// | Llama-3.2 3B | 72% | **10 of 10** |
+    /// | Qwen2.5 7B | 94% | none |
+    /// | **Qwen3 4B** | **100%** | **none** |
     ///
-    /// So the question is not "what fraction of RAM is polite" but "does the
-    /// correct model fit at all". 5.15 GB resident on a 16 GB Mac leaves 11 GB
-    /// for the teacher, Colima and everything else, and it is only resident
-    /// while the assistant window is open — closing it stops the server.
+    /// Qwen3 4B beat the 7B on every axis — accuracy, latency, download and
+    /// memory — so the 7B has no measured advantage left and is not shipped.
     ///
-    /// | Machine | Model | First reply | Later replies |
-    /// |---|---|---|---|
-    /// |  8 GB | 1.5B | ~2.1 s | ~0.3 s |
-    /// | 16 GB and up | 7B | ~9.5 s | ~1.2 s |
+    /// **Zero inversions is a veto, not a tiebreaker.** Both 3B-class models
+    /// published a page when asked to HIDE it, and they failed on the SAME
+    /// sentence despite being unrelated families. That is the one mistake a
+    /// teacher cannot take back before students have seen it.
     ///
-    /// Measured on an M4 Pro. The first-reply figure is the one-off read of
-    /// the tool definitions, which the assistant warms in the background when
-    /// its window opens, so a teacher does not normally wait for it at all.
+    /// **8 GB Macs stay on the 1.5B for now, and that is a deliberate hold
+    /// rather than a result.** Qwen3 4B at 8k context measured 3.87 GB
+    /// resident and routes at 100%, which would be a 21-point gain on exactly
+    /// the machines that get the worst model today. But 3.87 GB is 48% of an
+    /// 8 GB Mac that is ALSO running Colima at 4 GB — and the assistant can
+    /// start a site build itself, so those two peak together rather than
+    /// taking turns. That wants trying on a real 8 GB machine with the
+    /// container up, which has not been done: every measurement here is from
+    /// a 48 GB M4 Pro. Until then the safe-but-mediocre model stays, because
+    /// its failure is a misroute the teacher can see, not a Mac that swaps.
     static func forPhysicalMemory(bytes: Int64) -> AssistModelTier {
         let sixteenGigabytes: Int64 = 16 * 1_073_741_824
         if bytes >= sixteenGigabytes {

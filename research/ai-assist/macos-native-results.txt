@@ -606,3 +606,26 @@ responses needing type coercion: 0
 malformed tool calls: 0
 'tomorrow' dates not equal to 2026-08-16: 0
 course arguments not equal to EXC2O: 0
+
+# ------------------------------------------------------------------------
+# SUPERSEDED IN PART, 2026-08-15 — see macos-native-10-trial-comparison.txt
+# ------------------------------------------------------------------------
+# The 3-trial numbers above were re-run at TEN trials on the same tool
+# surface, plus four models from other families in the 2-4B gap. In short:
+#
+#   * The Qwen2.5-3B veto HOLDS and is worse than 3 trials showed: 9 of 10
+#     trials on "HIDE - the inversion case" called publish_pages. Not noise.
+#   * It is not Qwen-specific. Llama-3.2-3B inverted 10 of 10 on the same
+#     probe, and also typed "section" as a string on nearly every call.
+#   * Phi-4-mini and Gemma-2-2b-it cannot tool-call at all here: their chat
+#     templates have no branch for an OpenAI-style top-level `tools` array,
+#     so llama.cpp b10435 silently drops it. Both scored 20/290 (declines).
+#   * Qwen3-4B Q4_K_M with reasoning OFF scores 280/290 overall and 180/180
+#     on the Windows-comparable probes — zero inversions, zero malformed
+#     calls, 0.74 s warm turns, 3.87 GB resident at ctx 8192. It beats the
+#     7B on accuracy, speed, download and memory. With thinking left ON it
+#     collapses to 39%, because the <think> block eats the 256-token budget.
+#
+# Recommendation there: Qwen3-4B (reasoning off) for BOTH tiers — ctx 8192
+# on 8 GB machines, ctx 16384 on 16 GB and up. The 1.5B and the 7B both
+# have no measured reason left to ship.

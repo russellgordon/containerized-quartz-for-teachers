@@ -89,4 +89,62 @@ final class AssistModelTierTests: XCTestCase {
             previous = chosen
         }
     }
+
+    // MARK: - The engine's arguments
+
+    /// The single most consequential flag in the whole feature.
+    ///
+    /// Qwen3 with thinking enabled spends its token budget inside `<think>`
+    /// and never reaches the tool call. Measured on identical weights: 39%
+    /// routing with thinking on, 97% with it off. Losing this flag would not
+    /// break anything visibly — the assistant would simply become bad at its
+    /// job — so it is asserted here rather than trusted.
+    func testThinkingIsTurnedOff() {
+        for tier in AssistModelTier.allCases {
+            let arguments: [String] = AssistServerHost.serverArguments(
+                modelPath: "/tmp/model.gguf", port: 8080, tier: tier, threadCount: 4
+            )
+            guard let flagAt = arguments.firstIndex(of: "--reasoning-budget") else {
+                return XCTFail("\(tier.displayName) starts without --reasoning-budget; thinking would be on")
+            }
+            XCTAssertEqual(arguments[arguments.index(after: flagAt)], "0",
+                           "A budget above zero lets the model think instead of calling a tool")
+        }
+    }
+
+    /// Metal is the entire reason for running natively rather than in Colima.
+    /// A partial offload would leave the slow path in play.
+    func testEveryLayerGoesToTheGPU() {
+        let arguments: [String] = AssistServerHost.serverArguments(
+            modelPath: "/tmp/model.gguf", port: 8080, tier: .large, threadCount: 4
+        )
+        guard let flagAt = arguments.firstIndex(of: "--n-gpu-layers") else {
+            return XCTFail("Without --n-gpu-layers the model runs on the CPU")
+        }
+        XCTAssertEqual(arguments[arguments.index(after: flagAt)], "999")
+    }
+
+    /// The context is most of what the model holds in memory, so the tiers
+    /// must not be handed the same figure.
+    func testTheContextIsSizedByTier() {
+        XCTAssertEqual(AssistModelTier.small.contextTokens, 8_192)
+        XCTAssertEqual(AssistModelTier.large.contextTokens, 16_384)
+
+        // The tool surface alone is ~3,400 tokens. Anything at or below 4,096
+        // leaves under 700 for the conversation and truncates on a multi-turn
+        // chat, however well it measures on single-turn routing.
+        for tier in AssistModelTier.allCases {
+            XCTAssertGreaterThan(tier.contextTokens, 4_096,
+                                 "\(tier.displayName) would truncate a conversation after the tool surface")
+        }
+    }
+
+    /// Tool calling is what the whole surface depends on, and it comes from
+    /// the model's own template rather than a guess at its format.
+    func testToolCallingUsesTheModelsOwnTemplate() {
+        let arguments: [String] = AssistServerHost.serverArguments(
+            modelPath: "/tmp/model.gguf", port: 8080, tier: .large, threadCount: 4
+        )
+        XCTAssertTrue(arguments.contains("--jinja"))
+    }
 }

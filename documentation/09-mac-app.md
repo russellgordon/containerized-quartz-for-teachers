@@ -67,21 +67,47 @@ The weights are downloaded once into
 out of every app update, and off the Macs of teachers who never open the
 assistant. Which model depends on the machine:
 
-| Machine | Model | Download | First reply | Later replies |
+| Machine | Model | Download | Resident | Routing |
 |---|---|---|---|---|
-| Under 16 GB | Qwen2.5 1.5B | 1.1 GB | ~2.1 s | ~0.3 s |
-| 16 GB and up | Qwen2.5 7B | 4.7 GB | ~9.5 s | ~1.2 s |
+| Under 16 GB | Qwen2.5 1.5B | 1.1 GB | 1.75 GB | 79% |
+| 16 GB and up | Qwen3 4B | 2.5 GB | 5.04 GB | **100%** |
 
-The "first reply" figure is the one-off read of the tool definitions, and the
-window warms it in the background as it opens, so a teacher does not normally
-wait for it at all. Closing the window stops the server and gives the memory
-back.
+Replies take about 0.7 s once the conversation is warm. The first reply is
+the one-off read of the tool definitions, which the window warms in the
+background as it opens, so a teacher does not normally wait for it. Closing
+the window stops the server and gives the memory back.
 
-**There is deliberately no middle rung.** Qwen2.5 3B was measured as the
-obvious step between the two and it inverts polarity — asked to hide a page it
-called publish, in two of three trials — while also scoring below the 1.5B.
-That failure is the exact one the tool design exists to prevent, so the rung
-was removed rather than documented as risky.
+**Every rung was chosen by measurement, and two candidates were vetoed.**
+29 probes × 10 trials each, identical tool surface
+(`research/ai-assist/macos-native-10-trial-comparison.txt`):
+
+| Model | Routing | Polarity inversions |
+|---|---|---|
+| Qwen2.5 1.5B | 79% | none |
+| Qwen2.5 3B | 72% | **9 of 10** |
+| Llama-3.2 3B | 72% | **10 of 10** |
+| Qwen2.5 7B | 94% | none |
+| Qwen3 4B | **100%** | none |
+
+Both 3B-class models published a page when asked to HIDE it — and failed on
+the same sentence, despite being unrelated families. Zero inversions is a
+veto rather than a tiebreaker, because that is the one mistake a teacher
+cannot take back before students have seen it. Qwen3 4B then beat the 7B on
+accuracy, latency, download and memory alike, so the 7B is not shipped
+either.
+
+**Thinking must be off.** Qwen3 with reasoning enabled spends its token
+budget inside `<think>` and never reaches the tool call: the same weights
+scored 39% with it on and 97% with it off. `--reasoning-budget 0` is passed
+at startup and a test asserts it, because losing it would make the assistant
+quietly worse rather than visibly broken.
+
+**8 GB Macs stay on the 1.5B for now, which is a hold rather than a result.**
+Qwen3 4B at 8k context measured 3.87 GB resident with the same 100% routing —
+a 21-point gain on exactly the machines that get the worst model today. But
+3.87 GB is 48% of an 8 GB Mac that is also running Colima at 4 GB, and the
+assistant can start a site build itself, so the two peak together. That needs
+trying on a real 8 GB machine; every measurement here is from a 48 GB M4 Pro.
 
 Three rules shape what the assistant can do, all inherited from the Windows
 implementation's measurements:
@@ -99,10 +125,15 @@ Only deploying waits for a button. Publishing and unpublishing happen when
 asked, because every change is backed up and can be undone — a gate in front
 of every write teaches a teacher to click through gates.
 
-The tool surface is written so it can also be served over MCP — the Windows
-build exposes the same tools to Claude Code that way, which is what keeps the
-safety rules from drifting between the two clients. The macOS side has the
-tools; exposing them over stdio is not built yet.
+The same tool surface is served over MCP, so Claude Code drives exactly what
+the built-in assistant drives and the safety rules cannot drift between the
+two clients. The app itself answers the flag —
+`Plantoir.app/Contents/MacOS/Plantoir --mcp-stdio <working-folder>` — rather
+than shipping a second binary, so no packaging step can leave it out. Claude
+Code is offered a slightly LONGER list than the local model: the tools that
+read the curriculum and point a page at the expectations that fit are a
+judgement about meaning, and the local model sees exactly the fifteen its
+routing was measured against.
 
 The complete behavioural specification — every interface decision, with
 the reasoning and a Windows-porting note per entry — is
