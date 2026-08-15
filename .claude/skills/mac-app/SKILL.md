@@ -30,10 +30,18 @@ cleaning, clearing stale state — do it and say you did.
      -destination 'platform=macOS' -only-testing:QuartzTeachersTests test
    ```
 
-3. **Tell him it is ready, where it is, and what he must do.** The app lands at
-   `~/Library/Developer/Xcode/DerivedData/Plantoir-*/Build/Products/Debug/Plantoir.app`.
-   Give him the `open` command. If a copy is already running it keeps running
-   the OLD build — say so, and let him quit it.
+3. **Tell him it is ready and what he must do.** He launches it from the
+   **Dock**, not from Terminal — his Dock entry points straight at the build
+   path (`~/Library/Developer/Xcode/DerivedData/Plantoir-*/Build/Products/Debug/Plantoir.app`),
+   so a normal build updates what that icon opens. Nothing to copy or
+   re-point.
+
+   **Check whether a copy is running** (`pgrep -x Plantoir`) and say so: a
+   running copy keeps running the OLD build, and clicking the Dock icon just
+   brings it forward rather than launching the new one. Quitting is his to
+   do. Comparing the running process's start time against the binary's
+   modification time tells you truthfully whether what he is looking at is
+   the change you just made.
 
 The one-line summary is the part that saves him time. It is one of:
 
@@ -64,8 +72,18 @@ cd mac-app && xcodebuild -project Plantoir.xcodeproj -scheme Plantoir clean && \
     -destination 'platform=macOS' build
 ```
 
-If that still misbehaves, remove the DerivedData folder for the project and
-build again. Say that you did — it costs him a slow first build.
+If that still misbehaves, removing the project's DerivedData folder is the
+last resort — but **it breaks his Dock icon**, so it is not a free move. The
+folder name carries a per-project hash (`Plantoir-bzuacszrcleopbgiavzdpqasfyky`)
+and Xcode generates a new one, so the Dock entry is left pointing at a path
+that no longer exists. Ask first, and if it is done, tell him to drag the
+freshly built app back to the Dock — or offer to repoint it:
+
+```bash
+# The path the Dock entry currently opens
+defaults read com.apple.dock persistent-apps \
+  | grep -A3 -i '_CFURLString.*plantoir'
+```
 
 ## When he needs a NEW COURSE
 
