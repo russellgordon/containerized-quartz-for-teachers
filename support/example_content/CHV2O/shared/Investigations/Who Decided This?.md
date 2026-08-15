@@ -1,0 +1,80 @@
+---
+title: Who Decided This?
+draft: false
+created: __CREATED__
+tags:
+  - investigations
+  - unit-1
+---
+Something in your daily life was decided by a person, in a room, on a
+date. The bus schedule, the age you can drive, the fee at the pool, the
+rule about phones, the price of a transfer, what your school is allowed to
+teach. This investigation traces one of them back to the decision.
+
+## The question
+
+**Who made this decision, under what authority, and what would it take to
+reverse it?**
+
+The trap is stopping at the first plausible answer. "The government did"
+is not an answer; neither is "the school board", unless you can name the
+motion and the meeting.
+
+## The trail
+
+```mermaid
+graph TD
+    T["The thing you noticed"] --> W["Which order of government?"]
+    W --> B["Which body inside it?<br/>council, legislature,<br/>ministry, agency, board"]
+    B --> I["Which instrument?<br/>Act, regulation, bylaw,<br/>policy, contract"]
+    I --> D["Which meeting, which date,<br/>which vote"]
+    D --> R["Who could change it,<br/>and when do they next decide?"]
+```
+
+Each arrow is a research step with a public record behind it. Ontario's
+laws are at ontario.ca/laws, federal ones at the Justice Laws Website,
+bylaws and council minutes on your municipality's site, and school board
+policies and agendas on the board's. Nearly all of it is free and
+searchable, and the minutes are usually the fastest route because they
+name the date.
+
+## Choosing well
+
+Choose something small enough to finish and real enough to matter. Good
+choices in past classes: a speed limit changed on one street; a library's
+opening hours; a fee added to a permit; a bus route removed; the rule
+governing an activity at your own school. Poor choices: a national policy
+with no traceable single decision, and anything where the answer is "it
+has always been that way", which is usually not true and always hard to
+prove.
+
+If your issue turns out to involve treaty land, jurisdiction on reserve,
+or an agreement with an Indigenous government, that is a strong choice —
+and it means the trail has more than one government on it. Read
+[[Indigenous Governance]] before you start rather than after.
+
+## What you produce
+
+A single page with five things on it, in this order: the decision, the
+body that made it, the instrument that carries it, the date and the vote
+if there was one, and the route to changing it. Every line gets a source
+a reader could follow.
+
+Then one paragraph of judgement, which is the part that is actually
+marked: was this decision made at the right level? Argue it. A decision
+can be legitimate and badly placed, and saying so precisely is worth more
+than approving or disapproving of the outcome.
+
+Use [[Who Decides What, and Where]] for the map and
+[[Bills and What Happens to Them]] if the trail leads to a statute. The
+result becomes evidence in [[The Issue Brief]].
+
+%%curriculum-start%%
+## Curriculum connection
+
+![[A1.1]]
+
+![[B2.2]]
+
+![[B2.7]]
+%%curriculum-end%%
