@@ -347,12 +347,15 @@ struct SectionDetailView: View {
             await PreviewStopper.waitForStopsToFinish(
                 courseCode: course.code, sectionNumber: sectionNumber
             )
+            // Noted BEFORE the build starts, so "the site is newer than this"
+            // can only be true of the build we are waiting for.
+            let startedBuildingAt: Date = Date()
             previewRunner.run(
                 scriptNamed: "preview.sh",
                 arguments: [course.code, String(sectionNumber), "--port", String(lease.port)],
                 workingDirectory: workspaceURL
             )
-            await waitForPreviewServer(port: lease.port)
+            await waitForPreviewServer(port: lease.port, startedBuildingAt: startedBuildingAt)
         }
     }
 
@@ -527,7 +530,7 @@ struct SectionDetailView: View {
     /// happily embed that stale site, so this waits for the script's own
     /// "Launching Quartz preview" line first and only then trusts a
     /// response from the port.
-    func waitForPreviewServer(port: Int) async {
+    func waitForPreviewServer(port: Int, startedBuildingAt: Date) async {
         // The launcher announces the real host address — the container's
         // ports map to a per-folder block, so the port cannot be assumed.
         var serverURL: URL = URL(string: "http://127.0.0.1:\(port)/")!
@@ -554,29 +557,34 @@ struct SectionDetailView: View {
             waitedSeconds += 1
         }
 
-        // Phase 2: wait for the BUILD to finish, which is not the same moment
-        // as the server coming up — and that difference is the whole bug.
+        // Phase 2: wait for THIS build to have written the site.
         //
-        // Quartz's own handlers.js, in this order:
+        // Quartz's own handlers.js does this, in this order:
         //
         //     server.listen(argv.port)
         //     "Started a Quartz server listening at ..."
         //     await build(clientRefresh)
         //
         // It SERVES THE EXISTING public/ BEFORE IT REBUILDS IT. So the server
-        // answers 200 straight away with the previous build, and the fresh one
-        // lands seconds later. Waiting for an HTTP 200 — or for the "Started a
-        // Quartz server" line, which prints just as early — means showing the
-        // site as it was before the teacher's change, with nothing on screen
-        // to say so. Pressing Reload a moment later fixed it, which is exactly
-        // the shape of a race against the build.
+        // answers 200 straight away with the previous build and the fresh one
+        // lands seconds later — which is why previewing after an edit showed
+        // the old page, why stopping and starting showed it too, why doing the
+        // same thing slowly worked, and why pressing Reload fixed it.
         //
-        // The honest signal is Quartz's emit line, printed once the output has
-        // actually been written: "Emitted N files to `public` in ...".
+        // The signal is the OUTPUT FILE, not a line of console text. Quartz's
+        // wording can change between versions and its progress lines are
+        // written through a spinner; `public/index.html` being newer than the
+        // moment we started this build is a fact, and it means precisely what
+        // needs to be true before a teacher is shown anything.
         //
-        // Bounded, so a Quartz that never prints it cannot leave a teacher
-        // watching a spinner: after 120 seconds we show it anyway, and the
-        // reload below covers that case.
+        // Bounded, so a build that never lands cannot leave a teacher watching
+        // a spinner: after 120 seconds we show it anyway, and that is the one
+        // case the reload below exists for.
+        let builtIndex: URL = course.directoryURL
+            .appendingPathComponent(".merged_output")
+            .appendingPathComponent("section\(sectionNumber)")
+            .appendingPathComponent("public")
+            .appendingPathComponent("index.html")
         var buildFinished: Bool = false
         var waitedForBuild: Int = 0
         while waitedSeconds < 600 && waitedForBuild < 120 {
@@ -588,7 +596,9 @@ struct SectionDetailView: View {
             if let announced = previewRunner.previewAddress {
                 serverURL = announced
             }
-            if previewRunner.transcript.displayText.contains("Emitted ") {
+            let written: Date? = (try? FileManager.default
+                .attributesOfItem(atPath: builtIndex.path)[.modificationDate]) as? Date
+            if let written, written > startedBuildingAt {
                 buildFinished = true
                 break
             }
@@ -597,7 +607,7 @@ struct SectionDetailView: View {
             waitedForBuild += 1
         }
         if !buildFinished {
-            AppLog.interface.info("preview never reported a finished build; showing it anyway")
+            AppLog.interface.info("preview showed before its build landed; it will reload once")
         }
 
         // Phase 3: poll until it actually answers, so the web view is never

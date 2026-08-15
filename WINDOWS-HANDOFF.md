@@ -812,10 +812,12 @@ current site while the screen showed an old one.
 
 Two rules follow:
 
-1. **Wait for the BUILD, not for the server.** Quartz prints
-   `Emitted N files to \`public\` in …` when the output has actually been
-   written; that is the honest signal. "Started a Quartz server" is printed
-   one line before the build begins and means almost nothing.
+1. **Wait for the BUILD, not for the server — and watch the OUTPUT FILE, not
+   the console.** Note the time before launching the build, then wait until
+   `<section>/public/index.html` is newer than that. It means exactly what has
+   to be true before a teacher is shown anything, and unlike Quartz's progress
+   lines it cannot be changed by a version bump or swallowed by a spinner. We
+   tried matching its emit line first; the file is strictly better.
 2. **Reload only when you never saw that line.** We first reloaded
    unconditionally, as cheap insurance, and it was worse than the problem it
    insured against: every preview in the app flickered, for a case that by
