@@ -347,15 +347,23 @@ struct SectionDetailView: View {
             await PreviewStopper.waitForStopsToFinish(
                 courseCode: course.code, sectionNumber: sectionNumber
             )
-            // Noted BEFORE the build starts, so "the site is newer than this"
-            // can only be true of the build we are waiting for.
-            let startedBuildingAt: Date = Date()
+            // What the built page looked like BEFORE this build — so we can
+            // wait for it to CHANGE rather than for it to look new.
+            //
+            // Comparing against a timestamp taken here does not work, and the
+            // reason is easy to miss: this file is written inside the Linux
+            // VM, whose clock is its own. If the VM is running ahead — which
+            // it does after the Mac sleeps — the OLD file already looks newer
+            // than any moment noted on the Mac, so the check passes at once
+            // and the teacher is shown the previous build. Waiting for the
+            // value to change asks nothing of either clock.
+            let siteAsItWas: Date? = builtIndexWrittenAt()
             previewRunner.run(
                 scriptNamed: "preview.sh",
                 arguments: [course.code, String(sectionNumber), "--port", String(lease.port)],
                 workingDirectory: workspaceURL
             )
-            await waitForPreviewServer(port: lease.port, startedBuildingAt: startedBuildingAt)
+            await waitForPreviewServer(port: lease.port, siteAsItWas: siteAsItWas)
         }
     }
 
@@ -530,7 +538,19 @@ struct SectionDetailView: View {
     /// happily embed that stale site, so this waits for the script's own
     /// "Launching Quartz preview" line first and only then trusts a
     /// response from the port.
-    func waitForPreviewServer(port: Int, startedBuildingAt: Date) async {
+    /// When this section's built landing page was last written, or nil when
+    /// it has never been built.
+    func builtIndexWrittenAt() -> Date? {
+        let builtIndex: URL = course.directoryURL
+            .appendingPathComponent(".merged_output")
+            .appendingPathComponent("section\(sectionNumber)")
+            .appendingPathComponent("public")
+            .appendingPathComponent("index.html")
+        return (try? FileManager.default
+            .attributesOfItem(atPath: builtIndex.path)[.modificationDate]) as? Date
+    }
+
+    func waitForPreviewServer(port: Int, siteAsItWas: Date?) async {
         // The launcher announces the real host address — the container's
         // ports map to a per-folder block, so the port cannot be assumed.
         var serverURL: URL = URL(string: "http://127.0.0.1:\(port)/")!
@@ -571,20 +591,21 @@ struct SectionDetailView: View {
         // the old page, why stopping and starting showed it too, why doing the
         // same thing slowly worked, and why pressing Reload fixed it.
         //
-        // The signal is the OUTPUT FILE, not a line of console text. Quartz's
+        // The signal is the OUTPUT FILE, not a line of console text: Quartz's
         // wording can change between versions and its progress lines are
-        // written through a spinner; `public/index.html` being newer than the
-        // moment we started this build is a fact, and it means precisely what
-        // needs to be true before a teacher is shown anything.
+        // written through a spinner.
+        //
+        // And it is the file CHANGING, not the file looking recent. The build
+        // happens inside the Linux VM, whose clock is its own — run ahead,
+        // which it does after the Mac sleeps, and the previous build's
+        // index.html already looks newer than any moment noted here, so a
+        // "is it newer than now?" test passes immediately and shows exactly
+        // the stale page it was written to prevent. Waiting for the value to
+        // differ from what it was asks nothing of either clock.
         //
         // Bounded, so a build that never lands cannot leave a teacher watching
         // a spinner: after 120 seconds we show it anyway, and that is the one
         // case the reload below exists for.
-        let builtIndex: URL = course.directoryURL
-            .appendingPathComponent(".merged_output")
-            .appendingPathComponent("section\(sectionNumber)")
-            .appendingPathComponent("public")
-            .appendingPathComponent("index.html")
         var buildFinished: Bool = false
         var waitedForBuild: Int = 0
         while waitedSeconds < 600 && waitedForBuild < 120 {
@@ -596,9 +617,7 @@ struct SectionDetailView: View {
             if let announced = previewRunner.previewAddress {
                 serverURL = announced
             }
-            let written: Date? = (try? FileManager.default
-                .attributesOfItem(atPath: builtIndex.path)[.modificationDate]) as? Date
-            if let written, written > startedBuildingAt {
+            if let written = builtIndexWrittenAt(), written != siteAsItWas {
                 buildFinished = true
                 break
             }
