@@ -23,7 +23,7 @@ namespace Plantoir.Services;
 /// course lock for free, and that a teacher gets the same answers whichever
 /// assistant they use.
 /// </summary>
-public sealed class McpClient : IAsyncDisposable
+public sealed class McpClient : Plantoir.Core.Assist.IToolServer, IAsyncDisposable
 {
     private readonly Process _server;
     private readonly StreamWriter _to;

@@ -32,7 +32,7 @@ namespace Plantoir.Services;
 /// explicit yes, and the container only runs while a conversation is open —
 /// a site build and an assistant never need the memory at the same time.
 /// </summary>
-public sealed class LocalModel
+public sealed class LocalModel : Plantoir.Core.Assist.IChatModel
 {
     /// <summary>The measured winner. 1,117,320,736 bytes — about 1.1 GB.</summary>
     private const string ModelFile = "Qwen2.5-1.5B-Instruct-Q4_K_M.gguf";

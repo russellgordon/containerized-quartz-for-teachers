@@ -5,7 +5,30 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Plantoir.Services;
+namespace Plantoir.Core.Assist;
+
+/// <summary>
+/// The model half of a conversation: given the messages so far and the tool
+/// schemas, one reply. LocalModel implements it over llama.cpp; the tests
+/// implement it with a script, which is what lets every promised task be
+/// exercised in milliseconds instead of a teacher's afternoon.
+/// </summary>
+public interface IChatModel
+{
+    Task<JsonObject?> Ask(JsonArray messages, JsonArray tools, CancellationToken cancellation);
+}
+
+/// <summary>
+/// The tool half: run one tool, return what it said as text, narrate through
+/// <paramref name="progress"/> along the way. McpClient implements it over
+/// stdio to plantoir-mcp.
+/// </summary>
+public interface IToolServer
+{
+    Task<string> CallTool(string name, JsonObject arguments,
+                          Action<string>? progress = null,
+                          CancellationToken cancellation = default);
+}
 
 /// <summary>
 /// The conversation loop: what the teacher said, what the model decided, what
@@ -29,8 +52,8 @@ namespace Plantoir.Services;
 /// </summary>
 public sealed class AssistAgent
 {
-    private readonly LocalModel _model;
-    private readonly McpClient _tools;
+    private readonly IChatModel _model;
+    private readonly IToolServer _tools;
     private readonly JsonArray _schemas;
     private readonly JsonArray _messages = new();
 
@@ -200,7 +223,7 @@ public sealed class AssistAgent
     /// </summary>
     private const int MostStepsPerTurn = 6;
 
-    public AssistAgent(LocalModel model, McpClient tools, JsonArray schemas, string courseCode, int section)
+    public AssistAgent(IChatModel model, IToolServer tools, JsonArray schemas, string courseCode, int section)
     {
         _model = model;
         _tools = tools;
@@ -271,6 +294,40 @@ public sealed class AssistAgent
 
     /// <summary>A line for the transcript.</summary>
     public sealed record Line(string Speaker, string Text, bool NeedsApproval = false, string? Pending = null);
+
+    /// <summary>
+    /// The promise card — what the window tells a teacher this assistant is
+    /// good at, in the wordings that work. It lives HERE, beside the loop
+    /// that keeps the promises, because the tests pin the two together:
+    /// every task on this card has a test proving the loop does its part.
+    /// Each line is a shape the local model routes reliably, and naming the
+    /// page ("Unit 2, Day 3") is what keeps it from having to guess — so the
+    /// examples all show it.
+    /// </summary>
+    public const string ExampleRequests =
+        "Here's what I'm good at. These wordings work well — copy one and change the details:\n\n" +
+        "**Publishing a class**\n" +
+        "  • Publish Unit 2, Day 3, and everything it links to\n" +
+        "  • Publish tomorrow's class\n\n" +
+        "**Taking something back down**\n" +
+        "  • Unpublish Unit 2, Day 3\n" +
+        "  • I published Unit 4, Day 1 by mistake — unpublish it\n\n" +
+        "**Looking before you leap**\n" +
+        "  • What would publishing Unit 3, Day 1 change?\n" +
+        "  • What would students see in this section right now?\n\n" +
+        "**Afterwards**\n" +
+        "  • Rebuild the preview\n" +
+        "  • Undo that\n\n" +
+        "**Putting it in front of students**\n" +
+        "  • Deploy this section now\n" +
+        "  • Deploy tomorrow's class at 6:30 AM\n" +
+        "  • Cancel that scheduled deploy\n\n" +
+        "Deploying is the one that students actually notice, so I'll always ask you to look at the " +
+        "preview first — and you press the button, not me.\n\n" +
+        "Name the page if you can — “Unit 2, Day 3” rather than “tomorrow's one” — and I'll be quicker " +
+        "and more certain. Bigger jobs — re-dating a term, rolling a course over, adding a unit's worth " +
+        "of pages — are beyond me, and want one of the more capable assistants in the same right-click " +
+        "menu.";
 
     /// <summary>
     /// Where a running tool's own narration goes — the toolchain's milestone

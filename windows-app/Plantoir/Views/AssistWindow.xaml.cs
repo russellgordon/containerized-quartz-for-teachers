@@ -216,7 +216,7 @@ public sealed partial class AssistWindow : Window
         // which is the one question it can only answer slowly and unhelpfully
         // — the examples are put in front of them before they type. These are
         // the shapes the routing was measured on.
-        Say("Assistant", ExampleRequests);
+        Say("Assistant", AssistAgent.ExampleRequests);
 
         // Typing is available from here. The teacher reads the briefing while
         // the model quietly evaluates that same 6,200-token prefix in the
@@ -346,38 +346,9 @@ public sealed partial class AssistWindow : Window
         return rest == 0 ? $"{minutes}m" : $"{minutes}m {rest}s";
     }
 
-    /// <summary>
-    /// The opening menu, in the teacher's own words.
-    ///
-    /// Deliberately phrased as things to SAY rather than features to have.
-    /// Each line is a shape the local model routes reliably, and naming the
-    /// page ("Unit 2, Day 3") is what keeps it from having to guess — so the
-    /// examples all show it.
-    /// </summary>
-    private const string ExampleRequests =
-        "Here's what I'm good at. These wordings work well — copy one and change the details:\n\n" +
-        "**Publishing a class**\n" +
-        "  • Publish Unit 2, Day 3, and everything it links to\n" +
-        "  • Publish tomorrow's class\n\n" +
-        "**Taking something back down**\n" +
-        "  • Unpublish Unit 2, Day 3\n" +
-        "  • I published Unit 4, Day 1 by mistake — unpublish it\n\n" +
-        "**Looking before you leap**\n" +
-        "  • What would publishing Unit 3, Day 1 change?\n" +
-        "  • What would students see in this section right now?\n\n" +
-        "**Afterwards**\n" +
-        "  • Rebuild the preview\n" +
-        "  • Undo that\n\n" +
-        "**Putting it in front of students**\n" +
-        "  • Deploy this section now\n" +
-        "  • Deploy tomorrow's class at 6:30 AM\n" +
-        "  • Cancel that scheduled deploy\n\n" +
-        "Deploying is the one that students actually notice, so I'll always ask you to look at the " +
-        "preview first — and you press the button, not me.\n\n" +
-        "Name the page if you can — “Unit 2, Day 3” rather than “tomorrow's one” — and I'll be quicker " +
-        "and more certain. Bigger jobs — re-dating a term, rolling a course over, adding a unit's worth " +
-        "of pages — are beyond me, and want one of the more capable assistants in the same right-click " +
-        "menu.";
+    // The opening menu of example requests lives on
+    // AssistAgent.ExampleRequests, beside the loop that keeps its promises,
+    // where the tests pin the two together.
 
     // ---- One turn --------------------------------------------------------
 
