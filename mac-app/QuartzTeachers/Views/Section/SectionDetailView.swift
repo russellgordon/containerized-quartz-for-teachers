@@ -12,6 +12,9 @@ struct SectionDetailView: View {
 
     @State var previewRunner = ScriptRunner()
     @State var deployRunner = ScriptRunner()
+
+    /// The assistant's way of asking this window to show its preview.
+    @State var previewRequests = SectionPreviewRequests.shared
     @State var previewController = WebPreviewController()
     @State var previewURL: URL?
     @State var isWaitingForServer: Bool = false
@@ -147,6 +150,27 @@ struct SectionDetailView: View {
             }
         }
         .focusedSceneValue(\.previewController, previewURL != nil ? previewController : nil)
+        // The assistant cannot show a preview itself — it holds neither the
+        // port lease nor the web view — so it asks, and this is the window
+        // that answers by pressing its own Preview. Same code as the button,
+        // rather than a second version of it that can drift.
+        //
+        // Only when nothing is running. The button is a TOGGLE, and an
+        // assistant that stopped a teacher's running preview because they
+        // asked to see it would be absurd; when one is already up, the
+        // rebuild the assistant has just done is what it serves.
+        .onChange(of: previewRequests.request) { _, asked in
+            guard let asked,
+                  let folder = workspace.workspaceURL,
+                  previewRequests.isFor(asked, folderPath: folder.path,
+                                        courseCode: course.code, sectionNumber: sectionNumber) else {
+                return
+            }
+            previewRequests.stopAsking()
+            if !previewRunner.isRunning {
+                startPreview()
+            }
+        }
         .onDisappear {
             stopPreview()
         }

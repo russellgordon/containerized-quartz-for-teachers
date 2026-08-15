@@ -69,7 +69,17 @@ struct AssistPromptShelfView: View {
     /// are organised.
     private var groups: [(String, [String])] {
         return [
-            ("Showing work to students", [
+            // NOT "showing work to students". Publishing a page marks it for
+            // inclusion — it goes into the next preview and the next deploy —
+            // and DEPLOYING is the act that reaches students. A title saying
+            // otherwise teaches a teacher that pressing Publish is the moment
+            // of no return, which is both wrong and the opposite of
+            // reassuring: publishing is the safe, undoable half.
+            //
+            // The group titles are UI only — never sent to the model — so this
+            // costs no routing accuracy. The phrasings inside it are the
+            // measured ones and are untouched.
+            ("Making pages visible", [
                 // No "and everything it links to" any more: publishing a page
                 // publishes what it links to by rule, so the short phrasing is
                 // the true one.
@@ -85,7 +95,10 @@ struct AssistPromptShelfView: View {
                 // link into a page students can't see, and a visible page
                 // nothing links to.
                 "What would students see in this section right now?",
-                "Rebuild the preview",
+                // "Preview", not "Rebuild the preview": it does exactly what
+                // the Preview button in the section window does, so it wears
+                // the same word.
+                "Preview",
             ]),
             ("Putting the site online", [
                 "Deploy now",
@@ -97,9 +110,15 @@ struct AssistPromptShelfView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text("Things you can ask for")
+            // Says what tapping one DOES. Without it a teacher either never
+            // taps — assuming it fires something — or taps once, is surprised,
+            // and does not tap again. Saying "then change it" is the important
+            // half: these are shapes to start from, and "Publish Unit 2, Day
+            // 3" is almost never the page actually wanted.
+            Text("Things you can ask for — tap one to put it in the box, then change it to suit")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 12)
                 .padding(.top, 8)
                 .padding(.bottom, 4)

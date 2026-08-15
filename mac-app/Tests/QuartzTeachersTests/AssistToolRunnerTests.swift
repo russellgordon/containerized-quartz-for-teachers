@@ -295,6 +295,53 @@ final class AssistToolRunnerTests: XCTestCase {
         XCTAssertTrue(text(ofCourseLevelPage: "Snippets", in: made.course).contains("publishForSection1: true"))
     }
 
+    /// A class page is a ROOT, not an orphan.
+    ///
+    /// The rule the courses are built to is that every page must be reachable
+    /// FROM a class page; the class page itself is reached through the site's
+    /// own navigation, and normally nothing wikilinks to it. Counting them
+    /// made a perfectly healthy 86-period course report 84 pages "linked from
+    /// nowhere" — every one of them a lesson — which teaches a teacher to
+    /// ignore the whole check.
+    @MainActor
+    func testClassPagesAreNotCountedAsLinkedFromNowhere() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        // Two lessons nothing links to, and one concept page that IS linked.
+        try write(page: "Unit 1, Day 1", publish: "true", body: "See [[Loops]].", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "true", body: "More practice.", in: made.course)
+        try write(courseLevelPage: "Loops", publishForSection1: "true",
+                  body: "About loops.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "check_section", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertTrue(outcome.summary.contains("0 linked from nowhere"), outcome.summary)
+        XCTAssertTrue(outcome.detail.contains("Every visible page is linked from somewhere."),
+                      outcome.detail)
+    }
+
+    /// A page that is genuinely stranded is still reported — the fix above
+    /// must not turn the check off.
+    @MainActor
+    func testAStrandedPageIsStillReported() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", body: "A lesson.", in: made.course)
+        try write(courseLevelPage: "Loops", publishForSection1: "true",
+                  body: "Nothing points at this.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "check_section", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertTrue(outcome.summary.contains("1 linked from nowhere"), outcome.summary)
+        XCTAssertTrue(outcome.detail.contains("Loops"), outcome.detail)
+    }
+
     /// The plan card shows the teacher `forTheCard`, not `detail`.
     ///
     /// `detail` ends with a sentence addressed to whatever is reading a plan
@@ -668,7 +715,12 @@ final class AssistToolRunnerTests: XCTestCase {
         try write(courseLevelPage: "Loops", publishForSection1: "false", body: "About loops.", in: made.course)
         // A visible page nothing links to: still in the site's explorer, and no
         // link-following rule will ever reach it.
-        try write(page: "Field Trip", publish: "true", body: "The museum.", in: made.course)
+        //
+        // A COURSE-LEVEL page deliberately. Written as a class page it would
+        // not count, and rightly: class pages are the roots a section is
+        // navigated from, so nothing linking to one is its ordinary state.
+        try write(courseLevelPage: "Field Trip", publishForSection1: "true",
+                  body: "The museum.", in: made.course)
 
         let outcome: AssistToolOutcome = await made.runner.run(call: call(
             "check_section", arguments: ["course": "ICS3U", "section": 1]

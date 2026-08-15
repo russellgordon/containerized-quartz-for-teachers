@@ -61,15 +61,36 @@ final class AssistPromptShelfTests: XCTestCase {
     /// The separator has to survive the real titles. None contains a "|",
     /// and this fails if somebody adds one that does.
     func testNoGroupTitleContainsTheSeparator() {
-        let titles: [String] = [
-            "Showing work to students",
-            "Taking it back",
-            "Checking",
-            "Putting the site online",
-        ]
-        for title in titles {
+        for title in AssistPromptShelfTests.groupTitles {
             XCTAssertFalse(title.contains("|"), "\(title) would corrupt the stored preference")
             XCTAssertFalse(title.isEmpty)
         }
     }
+
+    /// Publishing is not the act that reaches students — deploying is.
+    ///
+    /// The publish group was called "Showing work to students", which taught
+    /// exactly the wrong lesson: that pressing Publish is the moment of no
+    /// return. It is the opposite — publishing is the safe, undoable half, and
+    /// the deploy group is the one that says what it does. A teacher who
+    /// believes otherwise hesitates over the wrong button.
+    func testNoGroupTitleClaimsPublishingReachesStudents() {
+        for title in AssistPromptShelfTests.groupTitles {
+            if title == "Putting the site online" {
+                continue
+            }
+            XCTAssertFalse(title.lowercased().contains("student"),
+                           "“\(title)” promises what only a deploy does")
+        }
+    }
+
+    /// The titles as they appear in `AssistPromptShelfView.groups`. Listed
+    /// rather than read out of the view, which would make the test agree with
+    /// whatever the view said.
+    private static let groupTitles: [String] = [
+        "Making pages visible",
+        "Taking it back",
+        "Checking",
+        "Putting the site online",
+    ]
 }

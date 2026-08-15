@@ -26,6 +26,23 @@ struct AssistToolOutcome: Sendable, Equatable {
     /// Whether the model gets another turn after this.
     let shouldContinue: Bool
 
+    /// A longer answer written FOR the teacher, shown by unfolding the result
+    /// in the transcript — or nil when the one-line summary is the whole of
+    /// what a teacher needs.
+    ///
+    /// Deliberately not `detail`. That is written for the model and often ends
+    /// with instructions addressed to it; showing it would be the same leak
+    /// `forTheCard` exists to prevent. Only a tool whose long answer is a
+    /// TEACHER's answer fills this in — `check_section`'s list of what is
+    /// broken and what is stranded, which is useless as a count and useful as
+    /// a list.
+    ///
+    /// It also gets to be LONGER than what the model sees: the model's copy is
+    /// capped so a list of ninety pages does not fill the context before the
+    /// question is considered, while the teacher's copy is the whole list,
+    /// because a truncated list of what is broken cannot be acted on.
+    let teacherDetail: String?
+
     /// What a Go/Cancel card shows the teacher.
     ///
     /// The same as `detail` for everything except a PLAN, where `detail` ends
@@ -42,18 +59,33 @@ struct AssistToolOutcome: Sendable, Equatable {
 
     // MARK: - Initializer
 
-    init(summary: String, detail: String, shouldContinue: Bool, forTheCard: String? = nil) {
+    init(summary: String,
+         detail: String,
+         shouldContinue: Bool,
+         forTheCard: String? = nil,
+         teacherDetail: String? = nil) {
         self.summary = summary
         self.detail = detail
         self.shouldContinue = shouldContinue
         self.forTheCard = forTheCard ?? detail
+        self.teacherDetail = teacherDetail
     }
 
     // MARK: - Functions
 
     /// A read: the same words to both, and the model gets to answer.
-    static func read(_ summary: String, detail: String) -> AssistToolOutcome {
-        return AssistToolOutcome(summary: summary, detail: detail, shouldContinue: true)
+    ///
+    /// `showingTheTeacher` is the longer answer a teacher can unfold in the
+    /// transcript, when there is one worth unfolding.
+    static func read(_ summary: String,
+                     detail: String,
+                     showingTheTeacher teacherDetail: String? = nil) -> AssistToolOutcome {
+        return AssistToolOutcome(
+            summary: summary,
+            detail: detail,
+            shouldContinue: true,
+            teacherDetail: teacherDetail
+        )
     }
 
     /// A PLAN: what would happen if this went ahead, and nothing done yet.

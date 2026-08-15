@@ -360,8 +360,63 @@ final class AssistToolRunner {
             "\(graph.visiblePageCount) of \(graph.pages.count) pages are visible; "
             + "\(dangling.count) broken \(dangling.count == 1 ? "link" : "links"), "
             + "\(orphans.count) linked from nowhere.",
-            detail: lines.joined(separator: "\n")
+            detail: lines.joined(separator: "\n"),
+            showingTheTeacher: AssistToolRunner.everythingFound(
+                dangling: dangling, orphans: orphans,
+                courseCode: located.course.code, sectionNumber: located.sectionNumber
+            )
         )
+    }
+
+    /// The whole of what the check found, for the teacher to unfold.
+    ///
+    /// Uncapped, unlike the model's copy. A count is not actionable — "1 broken
+    /// link" tells a teacher something is wrong and nothing about where — and a
+    /// list truncated at fifteen is not actionable either, for the one teacher
+    /// whose sixteenth is the one that matters. The model's copy stays capped
+    /// because a list of ninety pages would fill its context before the
+    /// question was considered; the teacher's is scrollable, so it can be
+    /// whole.
+    private static func everythingFound(
+        dangling: [AssistSectionLink],
+        orphans: [AssistSectionPage],
+        courseCode: String,
+        sectionNumber: Int
+    ) -> String {
+        var lines: [String] = []
+
+        if dangling.isEmpty {
+            lines.append("No visible page links to a page students cannot see.")
+        } else {
+            let word: String = dangling.count == 1 ? "link goes" : "links go"
+            lines.append("\(dangling.count) \(word) to a page students cannot see:")
+            for link in dangling {
+                lines.append("   • \(link.fromRelativePath)")
+                lines.append("      → \(link.toTitle), which is not published")
+            }
+            lines.append("")
+            lines.append("Either publish the page each one points at, or take the link off the "
+                         + "page that points at it.")
+        }
+
+        lines.append("")
+
+        if orphans.isEmpty {
+            lines.append("Every visible page is reachable by following links.")
+        } else {
+            let word: String = orphans.count == 1 ? "page is" : "pages are"
+            lines.append("\(orphans.count) visible \(word) not linked from anywhere:")
+            for page in orphans {
+                lines.append("   • \(page.relativePath)")
+            }
+            lines.append("")
+            lines.append("Class pages are not counted here — they are what a section is navigated "
+                         + "FROM, so nothing linking to one is normal. These are pages a student "
+                         + "would only find through the site's explorer, and no publish or hide "
+                         + "rule that follows links will ever reach them.")
+        }
+
+        return lines.joined(separator: "\n")
     }
 
     // MARK: - The commonest request of all
@@ -668,6 +723,15 @@ final class AssistToolRunner {
             course: course, sectionNumber: sectionNumber
         )
         detail += "\n\n" + rebuild.message
+        // On screen, not merely built. A teacher who has just been told their
+        // change is in the preview should be looking at it.
+        if rebuild.succeeded {
+            SectionPreviewRequests.shared.ask(
+                folderPath: workspace.workspaceURL?.path ?? "",
+                courseCode: course.code,
+                sectionNumber: sectionNumber
+            )
+        }
         detail += "\n\nThis changed the teacher's files and their PREVIEW. It did not put anything in front "
                 + "of students — deploying does that, and only when they ask."
 
@@ -687,7 +751,33 @@ final class AssistToolRunner {
         if !result.succeeded {
             return AssistToolOutcome.refused(result.message)
         }
-        return AssistToolOutcome.wrote(result.message, detail: result.message)
+        showThePreview(for: located)
+        let message: String = "Rebuilt the preview for \(located.course.code) Section "
+                            + "\(located.sectionNumber) and put it on screen in that section's window."
+        return AssistToolOutcome.wrote(message, detail: message)
+    }
+
+    /// Ask the section's own window to show its preview.
+    ///
+    /// Building is only half of a preview — the other half is a server on a
+    /// leased port and a web view, both of which belong to the section window.
+    /// Doing the buildable half and telling the teacher to go and look left
+    /// the assistant reporting success beside a window reading "No Preview
+    /// Running", which is the worst thing it can say.
+    ///
+    /// The window answers by pressing its own Preview, so this and the button
+    /// are the same code rather than two versions of it. A preview already
+    /// running is left alone: the button is a toggle, and stopping a teacher's
+    /// preview because they asked to see it would be absurd.
+    private func showThePreview(for located: Located) {
+        guard let folder = workspace.workspaceURL else {
+            return
+        }
+        SectionPreviewRequests.shared.ask(
+            folderPath: folder.path,
+            courseCode: located.course.code,
+            sectionNumber: located.sectionNumber
+        )
     }
 
     private func undoLastChange() -> AssistToolOutcome {

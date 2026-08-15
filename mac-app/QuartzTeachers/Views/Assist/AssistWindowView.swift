@@ -40,6 +40,11 @@ struct AssistWindowView: View {
     /// apart from the walk's own writing.
     @State private var lastRecalled: String?
 
+    /// Whether the box has the keyboard. Tapping a suggestion puts text in it
+    /// and gives it focus, so the teacher can edit straight away rather than
+    /// having to click into it first.
+    @FocusState private var isComposerFocused: Bool
+
     // MARK: - Initializer
 
     init(courseCode: String, sectionNumber: Int, workingFolder: URL) {
@@ -66,8 +71,16 @@ struct AssistWindowView: View {
             // it. Shut by default, so it costs four scannable lines and
             // stays put however long the conversation grows.
             if session.readiness == .ready {
+                // Tapping puts the phrasing in the box; it does NOT send it.
+                // These are examples to start from, and most of them want
+                // editing before they are true — "Publish Unit 2, Day 3" is a
+                // shape, not usually the actual page. A card that fired
+                // immediately would make the shelf a row of buttons a teacher
+                // learns not to touch.
                 AssistPromptShelfView { phrasing in
-                    Task { await send(phrasing) }
+                    show(phrasing)
+                    history.stopBrowsing()
+                    isComposerFocused = true
                 }
                 Divider()
             }
@@ -281,6 +294,7 @@ struct AssistWindowView: View {
                         history.stopBrowsing()
                     }
                 }
+                .focused($isComposerFocused)
                 .disabled(!session.canAcceptTyping)
                 .accessibilityIdentifier("assistInputField")
 
@@ -409,10 +423,32 @@ private struct AssistEntryView: View {
         case .toolResult:
             // What ran is said in the teacher's terms, not the tool's name —
             // "Published Unit 2, Day 3", never "publish_pages returned ok".
-            Label(entry.text, systemImage: "checkmark.circle")
-                .font(.callout)
-                .foregroundStyle(.secondary)
+            //
+            // When the result has a list behind it, the line unfolds. A count
+            // on its own is not actionable — "1 broken link" says something is
+            // wrong and nothing about where — but the list is long enough to
+            // bury the conversation if it were always open, so it folds.
+            if let detail = entry.detail {
+                DisclosureGroup {
+                    Text(detail)
+                        .font(.callout)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 4)
+                        .padding(.leading, 4)
+                } label: {
+                    Label(entry.text, systemImage: "checkmark.circle")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityIdentifier("assistResultDetail")
                 .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Label(entry.text, systemImage: "checkmark.circle")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
 
         case .problem:
             Label(entry.text, systemImage: "exclamationmark.triangle")

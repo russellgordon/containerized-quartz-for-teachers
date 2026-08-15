@@ -33,6 +33,24 @@ struct AssistSectionPage {
         return fileURL.lastPathComponent.lowercased() == "index.md"
     }
 
+    /// A class page — one period of the course.
+    ///
+    /// These are the ROOTS of a section, not its leaves. The rule the example
+    /// content is built to is that every page must be reachable FROM a class
+    /// page; a class page itself is reached through the site's own navigation
+    /// of All Classes, and normally nothing wikilinks to it.
+    ///
+    /// So "nothing links to this" is the ordinary, correct state for a class
+    /// page, and counting them as orphans made a healthy course look broken:
+    /// a real 86-period credit reported 84 pages "linked from nowhere", which
+    /// were its lessons.
+    var isClassPage: Bool {
+        if isFolderIndex {
+            return false
+        }
+        return fileURL.deletingLastPathComponent().lastPathComponent.lowercased().contains("class")
+    }
+
     var lowercasedTitle: String {
         return title.lowercased()
     }
@@ -209,7 +227,7 @@ struct AssistSectionGraph {
 
         var orphans: [AssistSectionPage] = []
         for page in pages {
-            if !page.isVisibleToStudents || page.isFolderIndex {
+            if !page.isVisibleToStudents || page.isFolderIndex || page.isClassPage {
                 continue
             }
             if linkedFromSomewhere.contains(page.lowercasedTitle) {

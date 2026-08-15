@@ -64,6 +64,12 @@ nonisolated struct AssistCardCommand: Sendable, Equatable {
         ("what do students see right now?",
          AssistCardCommand(toolName: "check_section", arguments: [:])),
 
+        // The shelf says "Preview" — one word, and the same word the button
+        // in the section window wears, because they now do the same thing.
+        // The older, longer wording is kept for a teacher who learned it.
+        ("preview",
+         AssistCardCommand(toolName: "rebuild_preview", arguments: [:])),
+
         ("rebuild the preview",
          AssistCardCommand(toolName: "rebuild_preview", arguments: [:])),
 

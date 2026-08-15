@@ -20,6 +20,14 @@ final class AssistAgent {
         let speaker: Speaker
         let text: String
 
+        /// What unfolding this line shows, when there is more worth showing.
+        ///
+        /// A count is not something a teacher can act on: "1 broken link"
+        /// says something is wrong and nothing about where. The list is the
+        /// answer, and it belongs behind a disclosure rather than in the flow
+        /// of the conversation, which is why the line stays one line.
+        var detail: String? = nil
+
         enum Speaker: Equatable {
             case teacher
             case assistant
@@ -274,7 +282,11 @@ final class AssistAgent {
         activity = .running(toolName: call.function.name)
         let outcome: AssistToolOutcome = await tools.run(call: call)
 
-        entries.append(Entry(speaker: .toolResult(name: call.function.name), text: outcome.summary))
+        entries.append(Entry(
+            speaker: .toolResult(name: call.function.name),
+            text: outcome.summary,
+            detail: outcome.teacherDetail
+        ))
         messages.append(AssistMessage.toolResult(
             callID: call.id, name: call.function.name, text: outcome.detail
         ))
