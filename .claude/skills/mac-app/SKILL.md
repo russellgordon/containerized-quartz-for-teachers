@@ -88,6 +88,22 @@ cd mac-app && xcodebuild -project Plantoir.xcodeproj -scheme Plantoir clean && \
     -destination 'platform=macOS' build
 ```
 
+**After a clean, the Dock icon goes blank even once the app is back.** The
+bundle is fine — it carries `Assets.car`, `Plantoir.icns`, and both
+`CFBundleIconName` and `CFBundleIconFile` — but macOS cached "nothing there"
+while the app was missing, and rebuilding does not invalidate that cache. Fix
+it as part of the clean rather than leaving him with an unlabelled square:
+
+```bash
+APP=$(ls -d ~/Library/Developer/Xcode/DerivedData/Plantoir-*/Build/Products/Debug/Plantoir.app | head -1)
+touch "$APP"
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$APP"
+killall Dock
+```
+
+`killall Dock` is safe — the Dock restarts immediately and keeps its entries —
+but say that you did it, because the screen flickers.
+
 If that still misbehaves, removing the project's whole DerivedData folder is
 the last resort, and it is a bigger deal than a clean: the folder name carries
 a per-project hash (`Plantoir-bzuacszrcleopbgiavzdpqasfyky`) and Xcode
