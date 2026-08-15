@@ -1,0 +1,19 @@
+---
+title: Unit 2, Day 15
+draft: false
+created: __CREATED_CLASS_37__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-2
+---
+## Agenda
+
+1. [[The Cost of a Place to Live]] — the same diagram again, now for housing
+2. Ceilings, supply constraints, and which side of the market a policy actually touches
+3. Three levels of government, and what each one controls
+
+## Things to do before our next class
+
+- [ ] Read the case. Find one local housing figure and date it.

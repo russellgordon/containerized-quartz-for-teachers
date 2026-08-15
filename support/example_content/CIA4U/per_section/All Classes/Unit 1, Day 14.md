@@ -1,0 +1,19 @@
+---
+title: Unit 1, Day 14
+draft: false
+created: __CREATED_CLASS_14__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-1
+---
+## Agenda
+
+1. Who actually pays a tax: incidence worked on an elastic good and an inelastic one
+2. Total revenue tested against the elasticity you calculated
+3. Market model work period
+
+## Things to do before our next class
+
+- [ ] Draft the model half of the market model.

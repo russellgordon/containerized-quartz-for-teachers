@@ -1,0 +1,19 @@
+---
+title: Unit 4, Day 14
+draft: false
+created: __CREATED_CLASS_80__
+transcludeTitleSize: h2
+enableToc: false
+excludeBacklinks: true
+tags:
+  - unit-4
+---
+## Agenda
+
+1. Period 6 of 8: peer challenge
+2. Another student attacks your evidence, your model, and your assumptions, in that order
+3. Revision in the room, immediately afterwards
+
+## Things to do before our next class
+
+- [ ] Repair whichever of the three came off worst.
