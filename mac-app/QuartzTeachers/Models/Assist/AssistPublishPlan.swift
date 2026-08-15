@@ -473,6 +473,7 @@ enum AssistToolRefusal: LocalizedError, Equatable {
     case noSuchCourse(String)
     case noSuchSection(String, Int)
     case noSuchPage(String, String, Int)
+    case unreadablePage(String)
     case noClassOn(CalendarDay, String, Int)
     case unreadableDate(String, String)
     case unreadableTime(String)
@@ -490,6 +491,8 @@ enum AssistToolRefusal: LocalizedError, Equatable {
         case .noSuchPage(let title, let code, let number):
             return "No page in \(code) Section \(number) is called “\(title)”. "
                  + "Use list_pages to find its exact title."
+        case .unreadablePage(let title):
+            return "“\(title)” could not be read, so nothing was changed."
         case .noClassOn(let day, let code, let number):
             return "No class in \(code) Section \(number) is dated \(day.text), a \(day.weekdayName). "
                  + "Use list_pages to see what classes there are."

@@ -9,6 +9,13 @@ import Foundation
 /// or reimplementing the tools for this client, would let the two drift; the
 /// day they drift is the day one of them is missing a rule.
 ///
+/// This client is offered MORE of that one surface, not a different one. The
+/// local model sees fifteen tools because fifteen is what its routing accuracy
+/// was measured against; Claude Code is not that model, so it also gets the
+/// tools that ask for a judgement about meaning — reading a course's curriculum
+/// expectations and pointing a page at the ones that fit. Same definitions,
+/// same runner, same rules; `runner.mcpDefinitions` is simply the longer list.
+///
 /// **Why this is inside the app rather than a separate binary.** The tools
 /// are written against the app's own model layer, so a standalone executable
 /// would need that layer extracted into a shared framework — a large refactor
@@ -97,7 +104,7 @@ enum AssistMCPServer {
 
         case "tools/list":
             var tools: [[String: Any]] = []
-            for definition in runner.definitions {
+            for definition in runner.mcpDefinitions {
                 tools.append([
                     "name": definition.name,
                     "description": definition.description,

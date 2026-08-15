@@ -45,6 +45,24 @@ extension AssistToolRunner {
         cancelScheduledDeployTool,
     ]
 
+    /// The tools the MCP client is offered ON TOP of the fifteen.
+    ///
+    /// Kept apart because the fifteen are a MEASUREMENT: routing accuracy was
+    /// counted against exactly that surface, and a small local model routes
+    /// worse the more it is shown. Claude Code, on the other end of the MCP
+    /// server, is not that model — it can hold a larger surface and it can do
+    /// the one thing these tools need doing, which is deciding what a
+    /// curriculum expectation MEANS. So the fuller surface is served there and
+    /// nowhere else, and `AssistToolRunner.definitions` stays at fifteen.
+    static let mcpOnlyTools: [AssistToolDefinition] = [
+        listCurriculumExpectationsTool,
+        planCurriculumMentionsTool,
+        addCurriculumMentionsTool,
+    ]
+
+    /// Everything the MCP client may call: the fifteen, plus the rest.
+    static let mcpTools: [AssistToolDefinition] = tools + mcpOnlyTools
+
     // MARK: - Shared argument wording
 
     private static let courseHelp: AssistSchemaProperty = AssistSchemaProperty(
@@ -344,4 +362,78 @@ extension AssistToolRunner {
         readOnly: false,
         needsApproval: false
     )
+
+    // MARK: - Pointing a page at the curriculum
+    //
+    // The tools find the expectations and read out their FULL WORDING; which
+    // ones fit a lesson is a judgement about meaning, and that judgement is
+    // left to whoever is driving. Code cannot make it, and a tool that guessed
+    // would put a teacher's name to a claim they never agreed to.
+
+    private static let pageTitleHelp: AssistSchemaProperty = AssistSchemaProperty(
+        kind: .string, description: "The page title, for example \"Movement Concepts\"."
+    )
+
+    private static let codesHelp: AssistSchemaProperty = AssistSchemaProperty(
+        kind: .string,
+        description: "The expectation codes to add, separated by commas — for example \"A1.1, A2.2\"."
+    )
+
+    private static let listCurriculumExpectationsTool: AssistToolDefinition = AssistToolDefinition(
+        name: "list_curriculum_expectations",
+        description: "List this course's curriculum expectations with their FULL WORDING, changing nothing. "
+                   + "Call this when a teacher asks you to point a page at the expectations it covers. Read "
+                   + "the page first, then read these, then decide which genuinely fit — that judgement is "
+                   + "yours to make and the tools cannot make it. Propose the codes to the teacher with your "
+                   + "reasons and let them choose; do not add expectations they have not agreed to.",
+        parameters: [
+            "course": courseHelp,
+            "section": sectionHelp,
+            "matching": AssistSchemaProperty(
+                kind: .string,
+                description: "Only list expectations whose code or wording contains this. Leave empty for all."
+            ),
+        ],
+        required: ["course", "section"],
+        readOnly: true,
+        needsApproval: false
+    )
+
+    private static let planCurriculumMentionsTool: AssistToolDefinition = AssistToolDefinition(
+        name: "plan_curriculum_mentions",
+        description: "Work out what adding curriculum transclusions to a page would do, changing nothing. "
+                   + "Show the teacher what it says — it quotes each expectation's wording so they can tell "
+                   + "whether it fits their lesson without looking it up — then wait for them to agree.",
+        parameters: [
+            "course": courseHelp,
+            "section": sectionHelp,
+            "page": pageTitleHelp,
+            "codes": codesHelp,
+        ],
+        required: ["course", "section", "page", "codes"],
+        readOnly: true,
+        needsApproval: false
+    )
+
+    private static let addCurriculumMentionsTool: AssistToolDefinition = AssistToolDefinition(
+        name: "add_curriculum_mentions",
+        description: "Add transclusions of curriculum expectations to a page, inside the curriculum markers "
+                   + "so a course installed without curriculum still builds. Call plan_curriculum_mentions "
+                   + "FIRST and get the teacher's agreement to the specific codes. Changes nothing else on "
+                   + "the page, and changes no page's visibility. The course is backed up first.",
+        parameters: [
+            "course": courseHelp,
+            "section": sectionHelp,
+            "page": pageTitleHelp,
+            "codes": codesHelp,
+        ],
+        required: ["course", "section", "page", "codes"],
+        readOnly: false,
+        // Backed up before it writes and taken straight back by
+        // `undo_last_change`, so it happens when asked. Only deploying — the
+        // one act that reaches students and that Plantoir cannot undo for
+        // them — waits for a button.
+        needsApproval: false
+    )
+
 }

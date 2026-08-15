@@ -477,6 +477,13 @@ struct ScheduledDeployPlan {
         lines.append("  • with the lid open, if closing it puts it to sleep")
         lines.append("")
         lines.append("Plantoir does not wake this Mac up. If it is asleep or switched off at that time, macOS runs the deploy at the next wake instead — which could be well after the class it was meant for.")
+        lines.append("")
+        // The agent runs the deploy launcher and nothing else, exactly as
+        // the Deploy button does when the built site is already current.
+        // A page written after the last preview is therefore not in what
+        // goes out — so the teacher is told, rather than finding out from
+        // a student.
+        lines.append("What goes out is the site as it was last built. If you change any pages between now and then, preview this section again afterwards so the change is in what gets deployed.")
 
         if !unpublishedClasses.isEmpty {
             lines.append("")

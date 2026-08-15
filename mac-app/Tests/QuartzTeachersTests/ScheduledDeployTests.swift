@@ -458,6 +458,11 @@ final class ScheduledDeployTests: XCTestCase {
         // launchd really does run a missed calendar job at the next wake,
         // so the plan says that rather than promising nothing happens.
         XCTAssertTrue(text.contains("at the next wake"))
+        // The agent runs the deploy launcher only, so a page written after
+        // the last preview would not be in what goes out. Said plainly
+        // rather than left to be discovered by a student.
+        XCTAssertTrue(text.contains("the site as it was last built"))
+        XCTAssertTrue(text.contains("preview this section again"))
     }
 
     func testTheDestinationIsNamedInThePlan() throws {

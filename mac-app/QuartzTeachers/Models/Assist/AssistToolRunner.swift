@@ -58,9 +58,16 @@ final class AssistToolRunner {
 
     // MARK: - Computed properties
 
-    /// The tools, as the model sees them.
+    /// The tools, as the LOCAL model sees them. Fifteen, and staying fifteen:
+    /// routing accuracy was measured against exactly this surface.
     var definitions: [AssistToolDefinition] {
         return AssistToolRunner.tools
+    }
+
+    /// The tools the MCP client sees: the fifteen, plus the ones that ask for
+    /// judgement a small local model has no business making.
+    var mcpDefinitions: [AssistToolDefinition] {
+        return AssistToolRunner.mcpTools
     }
 
     // MARK: - Initializer
@@ -78,8 +85,13 @@ final class AssistToolRunner {
     // MARK: - Functions
 
     /// The tool by that name, or nil when there is none.
+    ///
+    /// Looks through everything either client may call, because `run(call:)`
+    /// runs everything either client may call — and the approval gate reads
+    /// `needsApproval` off whatever this hands back. A name that does not look
+    /// up is a write that never meets its gate.
     func definition(named name: String) -> AssistToolDefinition? {
-        for tool in AssistToolRunner.tools where tool.name == name {
+        for tool in AssistToolRunner.mcpTools where tool.name == name {
             return tool
         }
         return nil
@@ -151,6 +163,12 @@ final class AssistToolRunner {
             return scheduleDeploy(arguments)
         case "cancel_scheduled_deploy":
             return cancelScheduledDeploy(arguments)
+        case "list_curriculum_expectations":
+            return listCurriculumExpectations(arguments)
+        case "plan_curriculum_mentions":
+            return planCurriculumMentions(arguments)
+        case "add_curriculum_mentions":
+            return addCurriculumMentions(arguments)
         default:
             return AssistToolOutcome.couldNotRead(
                 "There is no tool called “\(call.function.name)”."
@@ -763,6 +781,159 @@ final class AssistToolRunner {
         return AssistToolOutcome.wrote(message, detail: message)
     }
 
+    // MARK: - Pointing a page at the curriculum
+
+    /// Read out every expectation, wording and all, and decide nothing.
+    ///
+    /// Which expectations fit a lesson is a judgement about MEANING. Handing
+    /// back the full wording is what makes that judgement possible for whoever
+    /// is driving; making it here would put a teacher's name to a claim they
+    /// never agreed to.
+    private func listCurriculumExpectations(_ arguments: [String: Any]) -> AssistToolOutcome {
+        let found: Result<Located, AssistToolRefusal> = locate(arguments)
+        guard case .success(let located) = found else {
+            return AssistToolOutcome.couldNotRead(refusal(from: found).message)
+        }
+
+        let all: [AssistCurriculumExpectation] = AssistCurriculumMentions.expectations(
+            forSection: located.sectionNumber, in: located.course,
+            workspaceURL: workspace.workspaceURL
+        )
+        let filter: String = text("matching", in: arguments).trimmingCharacters(in: .whitespaces)
+
+        var matching: [AssistCurriculumExpectation] = []
+        for expectation in all {
+            if filter.isEmpty
+                || expectation.code.localizedCaseInsensitiveContains(filter)
+                || expectation.text.localizedCaseInsensitiveContains(filter) {
+                matching.append(expectation)
+            }
+        }
+
+        if matching.isEmpty {
+            var reason: String = "No curriculum expectation in \(located.course.code) "
+                               + "matches “\(filter)”."
+            if filter.isEmpty {
+                reason = "\(located.course.code) has no curriculum expectations — this course was "
+                       + "installed without them."
+            }
+            return AssistToolOutcome.read("Nothing matched in \(located.course.code).", detail: reason)
+        }
+
+        var lines: [String] = []
+        for expectation in matching {
+            lines.append("\(expectation.code)  \(expectation.text)")
+        }
+        let word: String = matching.count == 1 ? "expectation" : "expectations"
+        return AssistToolOutcome.read(
+            "Found \(matching.count) curriculum \(word) in \(located.course.code).",
+            detail: lines.joined(separator: "\n")
+        )
+    }
+
+    private struct PlannedMentions {
+        let located: Located
+        let plan: AssistCurriculumMentionsPlan
+    }
+
+    private func mentionsPlan(
+        _ arguments: [String: Any]
+    ) -> Result<PlannedMentions, AssistToolRefusal> {
+        let found: Result<Located, AssistToolRefusal> = locate(arguments)
+        guard case .success(let located) = found else {
+            return .failure(refusal(from: found))
+        }
+
+        let title: String = text("page", in: arguments)
+        let graph: AssistSectionGraph = AssistSectionGraph.read(
+            forSection: located.sectionNumber, in: located.course,
+            workspaceURL: workspace.workspaceURL
+        )
+        guard let page = graph.page(titled: title) else {
+            return .failure(.noSuchPage(title, located.course.code, located.sectionNumber))
+        }
+        guard let pageText = try? String(contentsOf: page.fileURL, encoding: .utf8) else {
+            return .failure(.unreadablePage(page.title))
+        }
+
+        let plan: AssistCurriculumMentionsPlan = AssistCurriculumMentions.plan(
+            codes: codes("codes", in: arguments),
+            page: page,
+            pageText: pageText,
+            expectations: AssistCurriculumMentions.expectations(
+                forSection: located.sectionNumber, in: located.course,
+                workspaceURL: workspace.workspaceURL
+            ),
+            courseCode: located.course.code,
+            sectionNumber: located.sectionNumber
+        )
+        return .success(PlannedMentions(located: located, plan: plan))
+    }
+
+    private func planCurriculumMentions(_ arguments: [String: Any]) -> AssistToolOutcome {
+        switch mentionsPlan(arguments) {
+        case .failure(let refusal):
+            return AssistToolOutcome.couldNotRead(refusal.message)
+        case .success(let asked):
+            return AssistToolOutcome.read(
+                asked.plan.changesNothing
+                    ? "Nothing needs adding to “\(asked.plan.pageTitle)”."
+                    : "Worked out what pointing “\(asked.plan.pageTitle)” at those expectations would do.",
+                detail: asked.plan.describe() + "\n\n" + AssistToolRunner.nothingChangedYet
+            )
+        }
+    }
+
+    private func addCurriculumMentions(_ arguments: [String: Any]) -> AssistToolOutcome {
+        switch mentionsPlan(arguments) {
+        case .failure(let refusal):
+            return AssistToolOutcome.refused(refusal.message)
+        case .success(let asked):
+            if asked.plan.changesNothing {
+                return AssistToolOutcome.wrote(
+                    "Nothing needed adding.",
+                    detail: asked.plan.describe()
+                          + "\n\nNothing was changed, because nothing needed to be."
+                )
+            }
+
+            var backedUp: Bool = false
+            if let coursesDirectoryURL = workspace.coursesDirectoryURL {
+                // Before anything is touched, every time. The undo history
+                // covers this conversation; the backup outlives it.
+                backedUp = (try? CourseArchiver.backUpCourse(
+                    asked.located.course, coursesDirectoryURL: coursesDirectoryURL
+                )) != nil
+            }
+
+            let change: AssistChange
+            do {
+                change = try AssistCurriculumMentions.apply(asked.plan)
+            } catch {
+                return AssistToolOutcome.refused(
+                    "Nothing was changed: \(error.localizedDescription)"
+                )
+            }
+            history.record(change)
+
+            let word: String = asked.plan.adding.count == 1 ? "expectation" : "expectations"
+            let summary: String = "Added \(asked.plan.adding.count) curriculum \(word) to "
+                + "“\(asked.plan.pageTitle)”."
+            var detail: String = asked.plan.describe() + "\n\nDone: \(summary.dropLast()) — "
+                + AssistCurriculumMentions.codeList(of: asked.plan.adding) + "."
+            detail += "\n\nThey are wrapped in the curriculum markers, so a course installed without "
+                    + "curriculum still builds. Look the page over in Plantoir."
+            if backedUp {
+                detail += "\n\nThe course was backed up first, so this can also be undone from Plantoir's "
+                        + "Backups list."
+            }
+            detail += "\n\nThis changed the teacher's files. It did not put anything in front of students — "
+                    + "deploying does that, and only when they ask."
+
+            return AssistToolOutcome.wrote(summary, detail: detail)
+        }
+    }
+
     // MARK: - Finding the course and section
 
     /// A course and section the model named, both found.
@@ -893,6 +1064,37 @@ final class AssistToolRunner {
             }
         }
         return names
+    }
+
+    /// A list of curriculum expectation codes, however the model chose to send
+    /// it.
+    ///
+    /// Commas here, unlike the page lists, because `A1.1` has no comma in it
+    /// and commas are what the Windows server's schema asks for. Semicolons and
+    /// newlines are read too — a model that separated them another way still
+    /// said exactly which expectations it meant.
+    private func codes(_ key: String, in arguments: [String: Any]) -> [String] {
+        var raw: [String] = []
+        if let list = arguments[key] as? [Any] {
+            for entry in list {
+                if let string = entry as? String {
+                    raw.append(string)
+                }
+            }
+        } else if let string = arguments[key] as? String {
+            for piece in string.components(separatedBy: CharacterSet(charactersIn: ",;\n")) {
+                raw.append(piece)
+            }
+        }
+
+        var found: [String] = []
+        for entry in raw {
+            let tidied: String = entry.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !tidied.isEmpty {
+                found.append(tidied)
+            }
+        }
+        return found
     }
 
     /// A day the teacher named: `2026-09-15`, or the handful of words the

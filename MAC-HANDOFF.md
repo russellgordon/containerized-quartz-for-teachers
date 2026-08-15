@@ -145,7 +145,16 @@ where. Anything unmarked is still outstanding.
     expectations and read out their full wording; the MODEL decides which fit,
     because that is a judgement about meaning. Transclusions go inside the
     `%%curriculum-start%%` markers, or a course installed without curriculum
-    would keep a dangling reference on a live site.
+    would keep a dangling reference on a live site. **✅ DONE (macOS)** —
+    `Models/Assist/AssistCurriculumMentions.swift`, served on the **MCP
+    surface only**. The local model's fifteen tools are a MEASUREMENT (routing
+    accuracy was counted against exactly that surface), so
+    `AssistToolRunner.definitions` stays at fifteen and
+    `AssistToolRunner.mcpTools` is the longer list `AssistMCPServer` serves.
+    A page with no markers gets the whole block in the payload shape —
+    `%%curriculum-start%%`, `## Curriculum connection`, blank-line separated
+    `![[A1.2]]`, `%%curriculum-end%%` — placed before the things-to-do list
+    when there is one.
   - **Scheduled deploys** (`935ad9f`, `ad020d3`, `4400f80`) — see the next
     entry; the Windows half is `schtasks`.
 
@@ -179,6 +188,41 @@ where. Anything unmarked is still outstanding.
     **Ask the OS, do not keep a note**: the teacher can delete the task
     themselves, and a badge promising a deploy that will never happen is worse
     than no badge.
+
+  **✅ DONE (macOS).** `Models/ScheduledDeploy.swift` writes a launchd user
+  agent into `~/Library/LaunchAgents`, loaded with `launchctl bootstrap
+  gui/<uid>` and removed with `bootout` — not the deprecated `load`/`unload`.
+  Label is `ca.russellgordon.Plantoir.deploy.<CODE>.section<N>`, so two
+  sections cannot collide and scheduling replaces rather than stacks. The
+  plan/apply pair is `plan` (changes nothing) and
+  `scheduleDeploy`/`cancelScheduledDeploy`. Sidebar clock, tooltip and the
+  either/or menu item are in `SidebarView`; the picker is
+  `Views/Section/ScheduleDeploySheet.swift`.
+
+  Four places the mac differs, deliberately:
+
+  - **No zombie agent.** `StartCalendarInterval` has no year, so a fired
+    agent would come round again in twelve months. The job removes its own
+    plist FIRST (a Mac restarting mid-deploy comes back with nothing
+    pending) and `bootout`s itself LAST. `nextRun` also ignores an agent
+    whose moment has passed.
+  - **Cloudflare IS schedulable here.** The refusal on Windows is an
+    argument-passing limit, not a policy: the plist carries `--account`, so
+    the question is asked in the app and answered once. It is still refused
+    when the Account ID is missing.
+  - **launchd does NOT silently skip a missed job** — it runs it at the next
+    wake. So the plan says that, rather than Windows's "nothing happens".
+  - **The agent runs `deploy.sh` only**, as on Windows, so what goes out is
+    the site as it was last BUILT. The plan says so and asks the teacher to
+    preview again after later edits. Worth deciding whether a scheduled
+    deploy should run `preview.sh --build-only` first — it would cost a few
+    minutes nobody is waiting on, and would close the gap on both sides.
+
+  Pinned by `Tests/QuartzTeachersTests/ScheduledDeployTests.swift` (22 tests),
+  which never touches the real launchd: the agents folder is redirected to a
+  temporary one and `launchctl` is behind `LaunchControlRunning`. **Still
+  wanted: one live run** — schedule a section a few minutes out, quit
+  Plantoir, and check the site and `~/Library/Logs/Plantoir/<label>.log`.
 
 - **The built-in assistant, and what it cost** (Windows, 2026-08-14). A local
   model in a window of its own, reached from "Revise with AI…" on both the
@@ -533,6 +577,40 @@ where. Anything unmarked is still outstanding.
   This is the one real functional difference between the destinations, so
   a teacher should meet it while choosing rather than when a publish
   fails. The grey caption deliberately no longer repeats it.
+
+  **✅ DONE (macOS).** Both halves the mac owed.
+
+  `deploy.sh` gained `--target netlify|cloudflare` and `--account <ID>`,
+  its own Keychain entries (`containerized-quartz-cloudflare` and
+  `containerized-quartz-cloudflare-account`, separate from the Netlify one
+  so a teacher keeps both), validity against `/user/tokens/verify` kept
+  SEPARATE from the account lookup exactly as decision (3) asks, the
+  account resolved `--account` → discovery → remembered → ask, and the same
+  env hand-off into the container: `CLOUDFLARE_API_TOKEN`,
+  `CLOUDFLARE_ACCOUNT_ID`, `--target cloudflare` to `deploy.py`.
+  `--reset-token --target cloudflare` clears only the Cloudflare pair. The
+  token now lands at `/tmp/deploy_pat` rather than `/tmp/netlify_pat`,
+  since either token rides the same way.
+
+  GUI: `PublishingChoiceView` is now a three-way picker (`netlify` /
+  `cloudflare_pages` / `local_folder` — the same spellings Windows writes,
+  since the file is shared), with the Account ID field, live 32-hex
+  validation via `CourseConfiguration.cloudflareAccountProblem`, and the
+  permanent orange 25 MB note. The ID is in `Models/AppSettings.swift`
+  (app settings, not course settings), matching the Windows reasoning.
+  Save and Create are gated on it; the Deploy button refuses BEFORE any
+  building, with the same "under Deploying" wording. Milestones
+  `deployToCloudflare` / `buildAndDeployToCloudflare` never say "Netlify",
+  and the `Live URL:` parser needed no change, as promised.
+
+  New: `Models/DeployCommand.swift` is now the single place that decides
+  what `deploy.sh` is asked to do. Both the Deploy button and the scheduled
+  agent read it, so a scheduled deploy cannot quietly go to the wrong
+  destination.
+
+  Pinned by `Tests/QuartzTeachersTests/CloudflareDeployTests.swift`.
+  **Still wanted: one live Cloudflare deploy from the mac**, the way
+  Windows verified MCV4U — nothing here has yet met a real token.
 
 - **`sanitize_last_name` folds accents instead of dropping them**
   (shared, 2026-08-12, commit `0306c98`). Pre-existing bug in
