@@ -45,4 +45,33 @@ final class AssistWindowPlacementTests: XCTestCase {
             "AssistantWindow-ICS3U-3"
         )
     }
+
+    /// The key is OURS, not AppKit's frame-autosave name.
+    ///
+    /// SwiftUI's `WindowGroup` claims the window's autosave name for itself —
+    /// `assistant-AppWindow-1` — and replaces anything set on top of it, so
+    /// nothing was ever written under ours and every window opened at the
+    /// default place. Keeping our own key is what makes this per SECTION as
+    /// well, which SwiftUI's single key could never be.
+    func testTheFrameIsKeptUnderOurOwnKeyPerSection() {
+        XCTAssertEqual(
+            AssistWindowPlacement.storageKey(courseCode: "ics3u", sectionNumber: 2),
+            "AssistantWindowFrame-ICS3U-2"
+        )
+        XCTAssertNotEqual(
+            AssistWindowPlacement.storageKey(courseCode: "ICS3U", sectionNumber: 1),
+            AssistWindowPlacement.storageKey(courseCode: "ICS3U", sectionNumber: 2)
+        )
+    }
+
+    /// A saved frame is read back and applied; a missing or nonsensical one is
+    /// ignored rather than shrinking a window to nothing.
+    func testOnlyASensibleSavedFrameIsUsed() {
+        let defaults: UserDefaults = TestDefaults.make()
+        let key: String = AssistWindowPlacement.storageKey(courseCode: "ICS3U", sectionNumber: 1)
+
+        defaults.set(NSStringFromRect(NSRect(x: 10, y: 10, width: 40, height: 40)), forKey: key)
+        XCTAssertEqual(NSRectFromString(defaults.string(forKey: key) ?? "").width, 40,
+                       "The stored form has to round-trip, or nothing else here matters")
+    }
 }

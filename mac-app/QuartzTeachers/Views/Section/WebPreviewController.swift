@@ -78,7 +78,44 @@ class WebPreviewController {
             return
         }
         lastRequestedURL = url
-        webView.load(URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData))
+        loadIgnoringEverythingCached(url)
+    }
+
+    /// Empty WebKit's caches, then load.
+    ///
+    /// `cachePolicy` on the request is not enough, and this is why: a Quartz
+    /// site is a single-page app. The policy governs the MAIN request — the
+    /// HTML — while the scripts, the styles and the content the page fetches
+    /// for itself all come from whatever WebKit already has. So a preview
+    /// could be handed a freshly built index.html and still assemble last
+    /// week's page out of its own cache, which is precisely what "only a
+    /// manual refresh shows the new content" means.
+    ///
+    /// Emptying the caches costs nothing worth keeping. Everything here is
+    /// served from localhost, by a server that rebuilds the whole site every
+    /// time it starts; there is no slow network to spare and no version of
+    /// these files worth holding on to.
+    ///
+    /// Only the CACHES are cleared — not local storage or cookies — so the
+    /// preview keeps the things a teacher would notice losing, such as the
+    /// site's own light or dark setting.
+    private func loadIgnoringEverythingCached(_ url: URL) {
+        let caches: Set<String> = [
+            WKWebsiteDataTypeDiskCache,
+            WKWebsiteDataTypeMemoryCache,
+            WKWebsiteDataTypeFetchCache,
+            WKWebsiteDataTypeOfflineWebApplicationCache,
+        ]
+        URLCache.shared.removeAllCachedResponses()
+        webView.configuration.websiteDataStore.removeData(
+            ofTypes: caches,
+            modifiedSince: Date(timeIntervalSince1970: 0)
+        ) { [weak self] in
+            guard let self else {
+                return
+            }
+            self.webView.load(URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData))
+        }
     }
 
     /// Says that what the web view is showing is no longer current, so the
@@ -99,6 +136,14 @@ class WebPreviewController {
     /// because a teacher thinks the page is out of date, so serving them the
     /// copy they are already unhappy with is the one useless answer.
     func reload() {
+        // Same treatment as a first load: a teacher pressing Reload has
+        // already decided that what they are looking at is wrong, and
+        // `reloadFromOrigin` alone leaves the page's own fetches free to come
+        // back out of the cache.
+        if let url = lastRequestedURL {
+            loadIgnoringEverythingCached(url)
+            return
+        }
         webView.reloadFromOrigin()
     }
 }

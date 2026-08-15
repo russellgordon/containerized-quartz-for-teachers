@@ -133,6 +133,19 @@ struct AssistWindowView: View {
         // Quitting with the window open is the other moment a teacher has
         // finished arranging it, and `onDisappear` is not guaranteed a turn
         // during termination.
+        // Saved as it is moved and resized as well, so an arrangement is not
+        // lost to a force-quit or a crash. Cheap: one defaults write, and only
+        // when the teacher is actually dragging.
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didMoveNotification)) { note in
+            if note.object as AnyObject? === hostWindow {
+                savePlacement()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didEndLiveResizeNotification)) { note in
+            if note.object as AnyObject? === hostWindow {
+                savePlacement()
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.willTerminateNotification)) { _ in
             AssistWindowPlacement.save(
                 hostWindow,
@@ -437,6 +450,16 @@ struct AssistWindowView: View {
     }
 
     // MARK: - Functions
+
+    /// Write down where this window is, for the next time this section's
+    /// assistant is opened.
+    private func savePlacement() {
+        AssistWindowPlacement.save(
+            hostWindow,
+            courseCode: session.courseCode,
+            sectionNumber: session.sectionNumber
+        )
+    }
 
     /// Put a recalled line in the box, remembering that the walk is what put
     /// it there rather than the teacher.

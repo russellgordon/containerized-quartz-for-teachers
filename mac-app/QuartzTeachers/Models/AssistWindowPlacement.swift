@@ -26,47 +26,68 @@ enum AssistWindowPlacement {
 
     // MARK: - Functions
 
-    /// The autosave name for one section's assistant window.
+    /// Where one section's assistant window was left, as a defaults key.
     ///
-    /// The course code is upper-cased so that a course reached by two
-    /// differently-typed names — a teacher typing `ics3u` into a tool, the
-    /// sidebar showing `ICS3U` — cannot end up with two remembered positions
-    /// for one window.
+    /// Deliberately NOT an AppKit frame-autosave name. SwiftUI's `WindowGroup`
+    /// assigns its own — `assistant-AppWindow-1`, from the group's id — and it
+    /// wins: setting ours was silently replaced, so nothing was ever written
+    /// under it and every window opened at the default place. SwiftUI's own
+    /// key is also one key for ALL assistant windows, which is the wrong
+    /// grain: this is per section on purpose.
+    ///
+    /// So the frame is kept here and applied by hand. Fighting a framework
+    /// over ownership of a value is a fight to lose; keeping our own copy is
+    /// not a fight at all.
+    static func storageKey(courseCode: String, sectionNumber: Int) -> String {
+        return "AssistantWindowFrame-\(courseCode.uppercased())-\(sectionNumber)"
+    }
+
+    /// The autosave name we no longer use, kept only so the old key can be
+    /// read once by anyone who happens to have one.
     static func autosaveName(courseCode: String, sectionNumber: Int) -> String {
         return "AssistantWindow-\(courseCode.uppercased())-\(sectionNumber)"
     }
 
-    /// Put this window where that section's assistant was last left, and keep
-    /// it remembered from now on.
+    /// Put this window back where that section's assistant was left.
     ///
-    /// The order is not arbitrary: the saved frame is applied FIRST, and the
-    /// autosave name set after. Setting the name first invites AppKit to
-    /// write the window's current — default, freshly-cascaded — frame under
-    /// that name, which would quietly overwrite the position being restored
-    /// with the one being replaced.
-    static func remember(_ window: NSWindow, courseCode: String, sectionNumber: Int) {
-        let name: String = autosaveName(courseCode: courseCode, sectionNumber: sectionNumber)
-        window.setFrameUsingName(NSWindow.FrameAutosaveName(name))
-        window.setFrameAutosaveName(NSWindow.FrameAutosaveName(name))
+    /// Applied with `setFrame` rather than through an autosave name, for the
+    /// reason above. AppKit constrains the result to the visible screens, so a
+    /// frame saved on a monitor that is no longer attached comes back on one
+    /// that is rather than off the edge of the world.
+    static func remember(
+        _ window: NSWindow,
+        courseCode: String,
+        sectionNumber: Int,
+        defaults: UserDefaults = UserDefaults.standard
+    ) {
+        let key: String = storageKey(courseCode: courseCode, sectionNumber: sectionNumber)
+        guard let saved = defaults.string(forKey: key) else {
+            return
+        }
+        let frame: NSRect = NSRectFromString(saved)
+        if frame.width < 200 || frame.height < 200 {
+            return
+        }
+        window.setFrame(frame, display: true)
     }
 
     /// Write down where the window is, now.
     ///
-    /// The autosave name means AppKit records the frame as the window is moved
-    /// and resized, which covers the ordinary case — but it writes when it
-    /// chooses to, and the two moments that matter most are the two least
-    /// likely to leave it time: the window being closed, and the app being
-    /// quit with the window still open. Both are exactly when a teacher has
-    /// finished arranging things, so both save explicitly.
-    ///
-    /// Harmless if the frame has not moved, and cheap: it is one defaults
-    /// write.
-    static func save(_ window: NSWindow?, courseCode: String, sectionNumber: Int) {
+    /// Called when the window closes and when the app quits with it open —
+    /// the two moments a teacher has just finished arranging things, and the
+    /// two least likely to leave a framework's own lazy save a turn.
+    static func save(
+        _ window: NSWindow?,
+        courseCode: String,
+        sectionNumber: Int,
+        defaults: UserDefaults = UserDefaults.standard
+    ) {
         guard let window else {
             return
         }
-        window.saveFrame(usingName: NSWindow.FrameAutosaveName(
-            autosaveName(courseCode: courseCode, sectionNumber: sectionNumber)
-        ))
+        defaults.set(
+            NSStringFromRect(window.frame),
+            forKey: storageKey(courseCode: courseCode, sectionNumber: sectionNumber)
+        )
     }
 }

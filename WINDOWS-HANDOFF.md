@@ -843,6 +843,14 @@ Two rules follow:
    to be true before a teacher is shown anything, and unlike Quartz's progress
    lines it cannot be changed by a version bump or swallowed by a spinner. We
    tried matching its emit line first; the file is strictly better.
+1b. **Clear the web view's caches before loading, not just its cache policy.**
+   A Quartz site is a single-page app: a no-cache policy governs the main HTML
+   request while the scripts, styles and the content the page fetches for
+   itself still come from the cache — so a fresh index.html can still assemble
+   the previous site out of parts. This looked exactly like a build problem
+   and was not. Clear disk, memory and fetch caches; leave local storage and
+   cookies alone so the preview keeps its light/dark setting.
+
 2. **Reload only when you never saw that line.** We first reloaded
    unconditionally, as cheap insurance, and it was worse than the problem it
    insured against: every preview in the app flickered, for a case that by
