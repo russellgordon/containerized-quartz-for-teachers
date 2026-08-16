@@ -206,6 +206,27 @@ final class ObsidianLinkTests: XCTestCase {
         )
     }
 
+    /// The mark also survives a vault being CLOSED while Obsidian keeps
+    /// running — measured with every vault closed and Obsidian still up: no
+    /// windows on screen, and one vault still marked open. So the marks are
+    /// trusted only while Obsidian actually has a window.
+    ///
+    /// Conditional on the machine's state, and it asserts for real in exactly
+    /// the state that was reported broken: Obsidian running, nothing open.
+    @MainActor
+    func testNothingIsOpenWhileObsidianHasNoWindowsOnScreen() {
+        if !FolderActions.obsidianIsRunning {
+            return
+        }
+        if FolderActions.obsidianWindowCount() > 0 {
+            return
+        }
+        XCTAssertTrue(
+            FolderActions.openVaultPathsNow.isEmpty,
+            "A mark left behind by a CLOSED vault must not read as a vault that is open"
+        )
+    }
+
     /// Only a vault whose OWN root moves is stranded. A vault that contains
     /// the course — a teacher who opened the whole `courses` folder as one
     /// vault — is fine, because Obsidian follows a rename inside a vault

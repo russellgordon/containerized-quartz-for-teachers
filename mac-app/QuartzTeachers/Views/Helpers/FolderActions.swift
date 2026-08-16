@@ -134,24 +134,84 @@ enum FolderActions {
 
     // MARK: - Which vaults Obsidian has open
 
-    /// The vaults Obsidian has open RIGHT NOW, or none when it is not
-    /// running.
+    /// The vaults Obsidian has open RIGHT NOW, or none when nothing is.
     ///
-    /// Two facts have to agree, and the second one is the trap. Obsidian
-    /// marks a vault `"open": true` in its registry when the vault is
-    /// opened — and does NOT clear the mark when it quits. Measured on this
-    /// machine: a vault carried the mark while Obsidian was closed, hours
-    /// later. So the mark alone answers "which vault was opened last",
-    /// never "which vault is open now", and reading it without checking
-    /// that Obsidian is running would have Plantoir offer to close an
-    /// application nobody is using.
+    /// THREE facts have to agree, and the last two are both traps that shipped
+    /// as bugs before they were measured:
+    ///
+    /// 1. **Obsidian is running.** Obvious, and not enough on its own.
+    /// 2. **It has a window on screen.** Obsidian marks a vault
+    ///    `"open": true` in its registry when the vault opens and does not
+    ///    reliably clear the mark when the vault is CLOSED — measured with
+    ///    every vault closed and Obsidian still running: no windows at all,
+    ///    and one vault still marked open. Without this check a teacher who
+    ///    had closed their vaults was told the course was open in Obsidian
+    ///    and offered to have it closed for them.
+    /// 3. **The registry marks this vault open.** Which of the windows is
+    ///    which cannot be known: a window's TITLE names its vault, but
+    ///    reading another application's window titles needs the screen
+    ///    recording permission, and asking a teacher for that in order to
+    ///    rename a folder is out of all proportion. Owner and count need no
+    ///    permission, so the count is what is used.
+    ///
+    /// **What is still imprecise, said plainly.** Marks can over-report while
+    /// a window IS on screen: closing one of two vaults cleared its mark
+    /// here, closing the other did not. So with one vault genuinely open and
+    /// a stale mark beside it, one extra vault may be opened again after a
+    /// rename. An extra window is a small price; the alternative is a
+    /// permission prompt for every teacher.
     static var openVaultPathsNow: [String] {
         if !FolderActions.obsidianIsRunning {
+            return []
+        }
+        if FolderActions.obsidianWindowCount() == 0 {
             return []
         }
         return FolderActions.openVaultPaths(
             registryData: try? Data(contentsOf: FolderActions.obsidianRegistryFileURL)
         )
+    }
+
+    /// How many ordinary windows Obsidian has on screen.
+    ///
+    /// Asked of the window server, which hands out an owner and a size to
+    /// anybody. Only the window's NAME is privileged, and the name is the one
+    /// thing this does not need.
+    static func obsidianWindowCount() -> Int {
+        var obsidianProcessIDs: Set<pid_t> = []
+        for application in NSRunningApplication.runningApplications(withBundleIdentifier: "md.obsidian") {
+            obsidianProcessIDs.insert(application.processIdentifier)
+        }
+        if obsidianProcessIDs.isEmpty {
+            return 0
+        }
+        let listed: CFArray? = CGWindowListCopyWindowInfo(
+            [.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID
+        )
+        guard let windows = listed as? [[String: Any]] else {
+            return 0
+        }
+
+        var count: Int = 0
+        for window in windows {
+            guard let owner = window[kCGWindowOwnerPID as String] as? pid_t else {
+                continue
+            }
+            if !obsidianProcessIDs.contains(owner) {
+                continue
+            }
+            // Layer zero is an ordinary window. Menus, tooltips and panels
+            // sit above it, and counting those would put us back where we
+            // started.
+            guard let layer = window[kCGWindowLayer as String] as? Int else {
+                continue
+            }
+            if layer != 0 {
+                continue
+            }
+            count += 1
+        }
+        return count
     }
 
     /// The paths marked open in a registry. Split out from
