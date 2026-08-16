@@ -1,7 +1,7 @@
 import XCTest
 @testable import QuartzTeachers
 
-/// Runs `contracts/shared-rules.json` — four rule sets that both apps need and
+/// Runs `contracts/shared-rules.json` — five rule sets that both apps need and
 /// neither platform owns.
 ///
 /// Two of them sit on top of machinery that could not be less alike: launchd
@@ -112,6 +112,140 @@ final class SharedRulesContractTests: XCTestCase {
                 "input \(input.debugDescription)"
             )
         }
+    }
+
+    // MARK: - What is taken out of a problem report
+
+    /// The redaction rules, run against the same cases the Windows suite
+    /// runs. Both halves matter: what goes, and what STAYS — a redactor that
+    /// swallowed the image tag or the site address would produce reports
+    /// nobody could diagnose anything from.
+    func testProblemReportRedactionMatchesTheContract() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("problemReportRedaction")
+        for testCase in try XCTUnwrap(section["cases"] as? [[String: Any]]) {
+            let input: String = try XCTUnwrap(testCase["input"] as? String)
+            XCTAssertEqual(
+                LogRedactor.redacting(input),
+                try XCTUnwrap(testCase["expect"] as? String),
+                "input \(input.debugDescription)"
+            )
+        }
+    }
+
+    /// The phrases left behind are named in the contract rather than
+    /// described, so that a report reads identically on both platforms and
+    /// neither side has to copy a string out of prose.
+    func testTheRedactionPlaceholdersAreTheOnesInTheContract() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("problemReportRedaction")
+        let placeholders: [String: Any] = try XCTUnwrap(section["placeholders"] as? [String: Any])
+        XCTAssertEqual(placeholders["token"] as? String, LogRedactor.removedToken)
+        XCTAssertEqual(placeholders["email"] as? String, LogRedactor.removedEmail)
+        XCTAssertEqual(placeholders["account"] as? String, LogRedactor.removedAccount)
+        XCTAssertEqual(placeholders["person"] as? String, LogRedactor.removedPersonPath)
+        XCTAssertEqual(section["secretLength"] as? Int, LogRedactor.secretLength)
+    }
+
+    // MARK: - What the trail must record
+
+    /// The standing requirement, as a gate rather than as a paragraph.
+    ///
+    /// This is the test that makes "every new or changed feature leaves a
+    /// line" mean something. Adding an event to the contract turns the mac
+    /// suite red until the mac records it; dropping one the app still emits
+    /// turns it red the other way. A prose rule in a handoff document gets
+    /// read once; this gets read every run.
+    func testTheTrailRecordsEveryEventTheContractRequires() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("activityTrail")
+        let required: [[String: Any]] = try XCTUnwrap(section["mustRecord"] as? [[String: Any]])
+
+        var wanted: [String] = []
+        for entry in required {
+            wanted.append(try XCTUnwrap(entry["event"] as? String))
+            // An event nobody explained is an event nobody can implement.
+            XCTAssertNotNil(entry["carries"] as? String, "\(entry) has no 'carries'")
+            XCTAssertNotNil(entry["why"] as? String, "\(entry) has no 'why'")
+        }
+        wanted.sort()
+
+        var recorded: [String] = ActivityTrail.eventKeys
+        recorded.sort()
+
+        XCTAssertEqual(
+            recorded, wanted,
+            "The trail and the contract disagree. Add the event to ActivityTrail.Event, "
+            + "or to contracts/shared-rules.json, whichever is behind."
+        )
+    }
+
+    /// The teacher's own words are behind a fixed prefix so a report can drop
+    /// them without parsing anything — both apps must use the same one.
+    func testThePromptMarkerIsTheOneInTheContract() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("activityTrail")
+        let marker: [String: Any] = try XCTUnwrap(section["promptMarker"] as? [String: Any])
+        XCTAssertEqual(marker["prefix"] as? String, AssistTurnRecord.promptMarker)
+    }
+
+    // MARK: - The dialog that asks what to send
+
+    /// The question about the local AI assistant is only asked when there is
+    /// something to ask about, and the note then says one of three things.
+    func testTheReportDialogAsksAboutPromptsOnlyWhenTheContractSays() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("problemReportDialog")
+
+        XCTAssertEqual(
+            section["includePromptsLabel"] as? String,
+            ProblemReportPresenter.includePromptsLabel
+        )
+        XCTAssertEqual(section["supportEmail"] as? String, ProblemReportBuilder.supportEmail)
+
+        for testCase in try XCTUnwrap(section["askAboutPromptsWhen"] as? [[String: Any]]) {
+            let hasPrompts: Bool = try XCTUnwrap(testCase["trailHasPromptLines"] as? Bool)
+            let store: ProblemReportStore = try SharedRulesContractTests.storeWithTrail(
+                includingAPrompt: hasPrompts
+            )
+            XCTAssertEqual(
+                store.hasAssistantPrompts,
+                try XCTUnwrap(testCase["expect"] as? String) == "ask",
+                "prompt lines present: \(hasPrompts)"
+            )
+        }
+    }
+
+    /// Never used it, used it and kept it back, used it and sent it — three
+    /// different things to be told.
+    func testTheNoteSaysWhichOfTheThreeStatesApplies() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("problemReportDialog")
+        let states: [[String: Any]] = try XCTUnwrap(section["promptStates"] as? [[String: Any]])
+        XCTAssertEqual(states.count, 3)
+
+        XCTAssertEqual(
+            ProblemReportBuilder.promptState(hasAny: false, including: false), .none
+        )
+        XCTAssertEqual(
+            ProblemReportBuilder.promptState(hasAny: false, including: true), .none
+        )
+        XCTAssertEqual(
+            ProblemReportBuilder.promptState(hasAny: true, including: false), .excluded
+        )
+        XCTAssertEqual(
+            ProblemReportBuilder.promptState(hasAny: true, including: true), .included
+        )
+    }
+
+    /// A trail with, or without, a line carrying something the teacher typed.
+    private static func storeWithTrail(includingAPrompt: Bool) throws -> ProblemReportStore {
+        let folderURL: URL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("dialog-" + UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
+        let store: ProblemReportStore = ProblemReportStore(folderURL: folderURL)
+        store.appendActivityLine("2026-08-16 07:06:40 · started preview.sh COMP 1")
+        if includingAPrompt {
+            store.appendActivityLine(
+                "2026-08-16 07:07:00 · COMP/1 · chose check_section(course, section)\n"
+                + AssistTurnRecord.promptMarker + "What will students see?"
+            )
+        }
+        return store
     }
 
     // MARK: - The working-folder path bar

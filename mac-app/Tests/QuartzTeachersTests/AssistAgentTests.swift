@@ -11,6 +11,84 @@ import XCTest
 @MainActor
 final class AssistAgentTests: XCTestCase {
 
+    // MARK: - What the teacher said always reaches the trail
+
+    /// The regression that got reported twice, from the real app.
+    ///
+    /// A phrasing matched in code returns from `say` early and never reaches
+    /// the model — so a recording placed anywhere below that branch misses an
+    /// entire class of input, and the problem report's checkbox then hides
+    /// itself from a teacher who had plainly just used the assistant. The
+    /// sentence must be recorded ABOVE every branch, at the moment the
+    /// teacher's words are accepted.
+    func testAFixedPhraseIsStillRecordedOnTheTrail() async throws {
+        let made = try AssistFixture.makeRunner()
+        let folderURL: URL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("trail-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
+
+        let previousStore: ProblemReportStore = ActivityTrail.store
+        ActivityTrail.store = ProblemReportStore(folderURL: folderURL)
+        defer { ActivityTrail.store = previousStore }
+
+        let agent: AssistAgent = AssistAgent(
+            courseCode: "ICS3U",
+            sectionNumber: 1,
+            // Never contacted: a fixed phrase is answered without the model.
+            client: AssistModelClient(baseURL: URL(string: "http://127.0.0.1:1")!),
+            tools: made.runner,
+            planMode: AssistPlanMode(tier: .small, defaults: UserDefaults())
+        )
+        await agent.say("Undo that")
+
+        let trail: String = ActivityTrail.store.activityText(includingPrompts: true)
+        XCTAssertTrue(
+            trail.contains(AssistTurnRecord.promptMarker + "Undo that"),
+            "the teacher's sentence never reached the trail:\n\(trail)"
+        )
+        XCTAssertTrue(ActivityTrail.store.hasAssistantPrompts, trail)
+        // And the trail says WHY the model was not consulted, which is the
+        // only place that question is answered.
+        XCTAssertTrue(trail.contains("matched in code"), trail)
+
+        try? FileManager.default.removeItem(at: folderURL)
+        try? FileManager.default.removeItem(at: made.root)
+    }
+
+    /// The other half: an ordinary sentence, which does go to the model, is
+    /// recorded before the request is made rather than after a reply.
+    func testAnOrdinarySentenceIsRecordedBeforeTheModelIsAsked() async throws {
+        let made = try AssistFixture.makeRunner()
+        let folderURL: URL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("trail-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
+
+        let previousStore: ProblemReportStore = ActivityTrail.store
+        ActivityTrail.store = ProblemReportStore(folderURL: folderURL)
+        defer { ActivityTrail.store = previousStore }
+
+        let agent: AssistAgent = AssistAgent(
+            courseCode: "ICS3U",
+            sectionNumber: 1,
+            // Unreachable on purpose: the request FAILS, and the sentence must
+            // survive that. Tying the record to a reply lost exactly this case.
+            client: AssistModelClient(baseURL: URL(string: "http://127.0.0.1:1")!),
+            tools: made.runner,
+            planMode: AssistPlanMode(tier: .small, defaults: UserDefaults())
+        )
+        await agent.say("Hide the page about loops")
+
+        let trail: String = ActivityTrail.store.activityText(includingPrompts: true)
+        XCTAssertTrue(
+            trail.contains(AssistTurnRecord.promptMarker + "Hide the page about loops"),
+            "a sentence was lost because the engine did not answer:\n\(trail)"
+        )
+        XCTAssertTrue(trail.contains("could not answer"), trail)
+
+        try? FileManager.default.removeItem(at: folderURL)
+        try? FileManager.default.removeItem(at: made.root)
+    }
+
     // MARK: - The fixed shapes
 
     /// The card phrasings the window offers are matched in code. Measured on

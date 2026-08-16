@@ -46,6 +46,51 @@ Beyond the actions, the app owns delivery and resources:
   stopped when the folder's last window closes and at quit; Colima itself
   is stopped at quit only when nothing else is running in it.
 
+## Reporting a problem
+
+Plantoir keeps a note of every task it runs — in
+`~/Library/Logs/Plantoir/runs/`, one plain-text file per task, the newest
+twenty kept. **Help ▸ Report a Problem…** gathers those, adds a note saying
+what is and is not included, and saves a zip wherever the teacher chooses.
+
+Two decisions are worth knowing:
+
+**It records automatically, rather than offering a switch.** A teacher
+reports a problem after it has happened — the console is closed, the app may
+have been restarted — and the failures that matter here (a port collision, a
+stale `.toolchain`, a rate limit at 11pm) do not reproduce on request. A
+"turn on logging and try again" flow would always lose the first occurrence.
+Nothing is sent by recording; sending is a separate, deliberate act.
+
+**Redaction happens as each file is written, not as it is sent.** The account
+name becomes `/Users/person`, and email addresses and anything token-shaped
+are replaced by a phrase in square brackets. What a teacher has *written* on
+their pages is never recorded — though their page NAMES do appear, because
+the website builder lists every page it emits, and the report says so rather
+than promising otherwise. Writing it safe is what lets a teacher open the
+report and read every line before deciding to send it — a promise they can
+check rather than one they have to take. Just as deliberately KEPT: the image
+tag, the container name and the site address, which is what a report is read
+for. The rules are
+[`contracts/shared-rules.json`](../contracts/shared-rules.json) →
+`problemReportRedaction`, so both apps redact identically.
+
+Beside the task records sits **one breadcrumb trail**, `activity.txt`: a line
+for each thing a teacher would recognise as something they did — the app
+opening (with its version and which copy of it), a working folder opened,
+settings saved, tasks started and finished, the assistant opened, asked,
+answering or failing to. Task records say what a publish printed; the trail
+says what the teacher was doing when it went wrong, which is the question
+support actually opens with. The assistant's turns are in the same file
+rather than a second one, so the order can be read without interleaving two
+by hand.
+
+What the teacher typed to the local AI assistant is recorded there too, and
+withheld from a report unless they tick the box that includes it — and the
+box only appears if there is anything to include. The events that must be
+recorded are contract data (`activityTrail`), pinned by a test, so a new
+feature cannot ship without deciding what it leaves behind.
+
 ## The local assistant
 
 A teacher can open an assistant for one section — a window of its own, so the

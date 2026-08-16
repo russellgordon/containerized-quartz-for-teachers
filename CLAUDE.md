@@ -103,15 +103,39 @@ Neither app contains toolchain logic of its own: they write the same
    will make the MAC suite fail until the mac implements it, and that is the
    feature working, not a break: say so in `MAC-HANDOFF.md` so the failure is
    read as a request rather than as damage.
-5. **Colima is shared with other projects** on this machine (Supabase local dev,
+5. **A feature a teacher can see leaves a line on the trail — new or
+   CHANGED.** Plantoir keeps a breadcrumb trail (`~/Library/Logs/Plantoir/
+   activity.txt`; `%LOCALAPPDATA%\Plantoir\Logs` on Windows) so that a problem
+   reported next week can be looked into without asking the teacher to
+   reproduce it. Adding to it is part of writing the feature, not a follow-up:
+
+   - **Name the event** in `ActivityTrail.Event` AND in
+     [`contracts/shared-rules.json`](contracts/shared-rules.json) →
+     `activityTrail.mustRecord`, with what it carries and WHY. A test pins the
+     two lists against each other, so a missing event fails the suite on both
+     platforms rather than being noticed months later.
+   - **A changed behaviour changes its line too.** A line describing what the
+     feature used to do is worse than no line, because it will be believed.
+   - **Write the sentence a teacher would recognise**, not a function name:
+     "started preview.sh COMP 1", never "runScript(preview.sh)".
+   - **Never record what is written on a page**, and never a credential — see
+     `LogRedactor`, whose rules are contract cases and which redacts on the way
+     IN, so what is on disk is already safe to hand over.
+
+   The failure this prevents has already happened here: a teacher built a
+   preview, opened the assistant, asked for a report and was told there was
+   nothing to report, because neither of the two things they had just done was
+   among the things anybody had thought to record.
+
+6. **Colima is shared with other projects** on this machine (Supabase local dev,
    among others). Never `colima stop` unless `docker ps -q` comes back empty.
    The app's quit path and the scripts already enforce this; keep it that way.
    The Colima VM only mounts `$HOME`, so a working folder outside the home
    directory bind-mounts as an empty folder inside the container.
-6. **Swift follows the project style rules**: no `map`/`filter`/`reduce`,
+7. **Swift follows the project style rules**: no `map`/`filter`/`reduce`,
    `@Observable` (never `ObservableObject`), `// MARK: -` sections, clarity over
    concision.
-7. **Driving the interface leaves the machine as you found it — and gives the
+8. **Driving the interface leaves the machine as you found it — and gives the
    terminal back.** Written for **macOS sessions**, where the setup is known:
    Russell works at this Mac with the session running in iTerm. (A Windows
    session owes the same courtesy to whatever terminal it was launched from,
@@ -422,7 +446,7 @@ it rather than restating it:
 | How is a teacher's list of class dates read? | [`contracts/schedule-rules.json`](contracts/schedule-rules.json). |
 | Which page titles carry numbers, what is the next class called, what happens when room is made for one? | [`contracts/class-planning.json`](contracts/class-planning.json). |
 | What are the backup and archive files called, and what section number is offered next? | [`contracts/course-management.json`](contracts/course-management.json). |
-| What does a scheduled deploy refuse, what does the sidebar filter show, what is stripped from console output, what counts as a curriculum expectation? | [`contracts/shared-rules.json`](contracts/shared-rules.json). |
+| What does a scheduled deploy refuse, what does the sidebar filter show, what is stripped from console output, what counts as a curriculum expectation, what is taken out of (and kept in) a problem report, **which events every feature must record on the trail**, and when the report asks about the local AI assistant? | [`contracts/shared-rules.json`](contracts/shared-rules.json). |
 | What keys does `course_config.json` carry, and what decides whether students see a page? | [`contracts/file-formats.json`](contracts/file-formats.json) — a FORMAT rather than a behaviour, and the one both apps write and the Python reads. |
 | WHY is it that way, and what was rejected? | [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) for anything an implementer needs; a code comment for anything a reader of that file needs. |
 | WHAT changed, WHEN, and what it cost | [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) — a dated log. **Append-only history, not a specification**: a row records what was true that day, and is not edited when the behaviour changes again. Never quote a row as the current wording. |

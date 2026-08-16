@@ -82,6 +82,12 @@ struct QuartzTeachersApp: App {
             CommandGroup(after: .pasteboard) {
                 EditCommands()
             }
+            // Beside Plantoir Help, because "something has gone wrong and I
+            // need a person" is the same errand as looking for help — and it
+            // is the menu somebody opens when they have run out of ideas.
+            CommandGroup(after: .help) {
+                ProblemReportCommands()
+            }
         }
 
         // The assistant, one window per section.

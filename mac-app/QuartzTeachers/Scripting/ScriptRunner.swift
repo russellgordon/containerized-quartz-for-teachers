@@ -62,6 +62,25 @@ class ScriptRunner {
     /// rather than left in the wording of the question.
     var suggestedAnswer: String = ""
 
+    /// What the current (or most recent) run was, kept so that a record of
+    /// it can be written once it finishes. Held here rather than passed
+    /// through the termination handler because the handler runs on whatever
+    /// thread the process died on, and this is read on the main actor.
+    private var runScriptName: String = ""
+    private var runArguments: [String] = []
+    private var runWorkingFolderPath: String = ""
+
+    /// When this run's record was last written to disk, so a long task
+    /// refreshes its record occasionally rather than on every chunk.
+    private var recordWrittenAt: Date?
+
+    /// The pending "output has gone quiet, write the record" work.
+    private var recordWrite: DispatchWorkItem?
+
+    /// Where a finished task's record is written. Replaceable so a test can
+    /// point it at a folder of its own rather than at the real one.
+    var reportStore: ProblemReportStore = ProblemReportStore.standard
+
     private var promptCheck: DispatchWorkItem?
 
     private var process: Process?
@@ -177,7 +196,23 @@ class ScriptRunner {
         // first "still working… (Ns)" counted the time the teacher spent
         // filling in the form — opening at 35s and reading like a stall.
         lastOutputAt = Date()
-        AppLog.output.info("Started \(scriptName, privacy: .public) \(arguments, privacy: .public)")
+        runScriptName = scriptName
+        runArguments = arguments
+        runWorkingFolderPath = workingDirectory.path
+        // Redacted even here. The arguments carry a Cloudflare Account ID
+        // and a folder path with the teacher's account name in it, and
+        // `.public` in a Logger means exactly that — written out in full,
+        // to a log this app does not own and cannot clean up afterwards.
+        let describedArguments: String = LogRedactor.redacting(arguments.joined(separator: " "))
+        AppLog.output.info("Started \(scriptName, privacy: .public) \(describedArguments, privacy: .public)")
+        // A record exists from the first moment, not only at the end. A
+        // PREVIEW never ends on its own — it serves until the teacher stops
+        // it — so waiting for the finish meant the likeliest thing anybody
+        // reports ("the preview is stuck") was the one thing that left no
+        // trace at all.
+        recordWrittenAt = nil
+        writeRecordOfRun(exitCode: nil)
+        ActivityTrail.note(.taskStarted, "started " + LogRedactor.redacting(([scriptName] + arguments).joined(separator: " ")))
     }
 
     /// Waits for the current run to finish; true when it succeeded.
@@ -300,6 +335,7 @@ class ScriptRunner {
         }
         let started: Date = Date()
         receiveOutput(text)
+        refreshRecordIfDue()
         let elapsed: TimeInterval = Date().timeIntervalSince(started)
         if elapsed > 0.05 || chunkCount > 200 {
             AppLog.output.warning("""
@@ -894,6 +930,7 @@ class ScriptRunner {
 
     private func finishRun(exitCode: Int32) {
         promptCheck?.cancel()
+        recordWrite?.cancel()
         isAwaitingInput = false
         // Show anything still buffered when the script ended.
         flushBufferedOutput()
@@ -903,5 +940,151 @@ class ScriptRunner {
         terminal?.masterHandle.readabilityHandler = nil
         process = nil
         terminal = nil
+        writeRecordOfRun(exitCode: exitCode)
+        ActivityTrail.note(
+            .taskFinished,
+            runScriptName + " — "
+            + ScriptRunner.outcomeDescription(
+                exitCode: exitCode,
+                wasStoppedByUser: wasStoppedByUser,
+                wasCancelled: wasCancelled
+            ).lowercased()
+            + String(format: " after %.1fs", Date().timeIntervalSince(startedAt ?? Date()))
+        )
+    }
+
+    /// Rewrites this run's record if enough time has passed.
+    ///
+    /// Tied to output arriving rather than to a timer, so a preview that has
+    /// been sitting quietly for an hour costs nothing. The record is written
+    /// under the same name each time — it is named after the task's START —
+    /// so this replaces the file rather than filling the folder.
+    private func refreshRecordIfDue(now: Date = Date()) {
+        if ScriptRunner.shouldWriteRecordNow(lastWrittenAt: recordWrittenAt, now: now) {
+            writeRecordOfRun(exitCode: nil)
+        }
+        scheduleRecordWriteWhenOutputGoesQuiet()
+    }
+
+    /// Whether a running task's record is old enough to be worth rewriting.
+    ///
+    /// This is the ceiling for a CHATTY task — one printing steadily for an
+    /// hour still has a record no more than this far behind.
+    nonisolated static func shouldWriteRecordNow(lastWrittenAt: Date?, now: Date) -> Bool {
+        guard let lastWrittenAt else {
+            return true
+        }
+        return now.timeIntervalSince(lastWrittenAt) >= ScriptRunner.recordRefreshInterval
+    }
+
+    /// Writes the record shortly after output STOPS.
+    ///
+    /// The throttle above is not enough on its own, and the reason is worth
+    /// keeping because it took a real run to see. A preview with a warm
+    /// container prints for about five seconds and then serves in silence
+    /// for as long as the teacher leaves it open. Output therefore stopped
+    /// BEFORE the ten-second throttle expired, every refresh declined, and
+    /// the record kept its opening lines and nothing else — which is the
+    /// exact case the whole feature exists for. Measured on a real preview:
+    /// 19 flushes inside 5.2 seconds, zero refreshes, a 466-byte record.
+    ///
+    /// So the tail is caught by waiting for quiet instead: each flush pushes
+    /// this back, and two seconds after the last one the record is written
+    /// whole.
+    private func scheduleRecordWriteWhenOutputGoesQuiet() {
+        recordWrite?.cancel()
+        let work: DispatchWorkItem = DispatchWorkItem { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self, self.isRunning else {
+                    return
+                }
+                self.writeRecordOfRun(exitCode: nil)
+            }
+        }
+        recordWrite = work
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + ScriptRunner.recordQuietInterval, execute: work
+        )
+    }
+
+    /// How often a running task's record is brought up to date. Ten seconds
+    /// loses at most ten seconds of output if the app is force-quit, and a
+    /// hang — the case this is for — is not usually decided in that window.
+    nonisolated static let recordRefreshInterval: TimeInterval = 10
+
+    /// How long output must be quiet before the record is written whole.
+    /// MUST be shorter than the refresh interval, or a task whose output
+    /// stops before the throttle expires keeps a record with nothing in it.
+    nonisolated static let recordQuietInterval: TimeInterval = 2
+
+    /// What a task that has not finished is called.
+    nonisolated static let stillRunningOutcome: String = "Still running"
+
+    /// Keeps a record of the task, so a problem can still be looked into
+    /// after the window showing it has gone.
+    ///
+    /// Written for EVERY task, not only failures. Half of what makes a
+    /// failure legible is the run before it that worked — and a task that
+    /// "succeeded" while doing the wrong thing leaves no other trace at all.
+    private func writeRecordOfRun(exitCode: Int32?) {
+        if runScriptName.isEmpty {
+            return
+        }
+        let transcriptText: String = transcript.displayText
+        let wasFailure: Bool
+        if let exitCode {
+            wasFailure = exitCode != 0 && !wasStoppedByUser && !wasCancelled
+        } else {
+            wasFailure = false
+        }
+        var explanation: String?
+        if wasFailure {
+            explanation = FailureExplainer.explanation(in: transcriptText)
+        }
+        let record: RunRecord = RunRecord(
+            startedAt: startedAt ?? Date(),
+            finishedAt: Date(),
+            scriptName: runScriptName,
+            arguments: runArguments,
+            workingFolderPath: runWorkingFolderPath,
+            outcome: ScriptRunner.outcomeDescription(
+                exitCode: exitCode,
+                wasStoppedByUser: wasStoppedByUser,
+                wasCancelled: wasCancelled
+            ),
+            wasFailure: wasFailure,
+            explanation: explanation,
+            transcript: transcriptText,
+            appDescription: ProblemReportEnvironment.appDescription,
+            systemDescription: ProblemReportEnvironment.systemDescription
+        )
+        reportStore.write(record)
+        recordWrittenAt = Date()
+    }
+
+    /// How a finished task is described in its record.
+    ///
+    /// Stopping a task on purpose makes it exit non-zero, and so does
+    /// backing out of a question. Neither is a failure, and a record that
+    /// called them one would send somebody looking for a bug that is a
+    /// teacher changing their mind.
+    nonisolated static func outcomeDescription(
+        exitCode: Int32?,
+        wasStoppedByUser: Bool,
+        wasCancelled: Bool
+    ) -> String {
+        guard let exitCode else {
+            return ScriptRunner.stillRunningOutcome
+        }
+        if wasStoppedByUser {
+            return "Stopped on purpose"
+        }
+        if wasCancelled {
+            return "Backed out of a question"
+        }
+        if exitCode == 0 {
+            return "Finished"
+        }
+        return "Failed (exit \(exitCode))"
     }
 }

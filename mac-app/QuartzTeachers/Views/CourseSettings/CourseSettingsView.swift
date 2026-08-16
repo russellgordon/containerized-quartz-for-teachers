@@ -200,6 +200,7 @@ struct CourseSettingsView: View {
         }
         do {
             try course.configuration.write(to: course.configFileURL)
+            ActivityTrail.note(.settingsSaved, "saved the settings for " + course.code)
             didJustSave = true
             Task {
                 try? await Task.sleep(for: .seconds(3))
@@ -207,6 +208,7 @@ struct CourseSettingsView: View {
             }
         } catch {
             saveProblem = "Could not save: \(error.localizedDescription)"
+            ActivityTrail.note(.settingsCouldNotBeSaved, "could not save the settings for " + course.code + " — " + error.localizedDescription)
         }
     }
 }

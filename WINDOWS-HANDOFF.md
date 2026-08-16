@@ -2102,6 +2102,321 @@ teacher changed in that section during the conversation goes back too,
 including work done in Obsidian, and Plantoir cannot bring that part back.
 That sentence belongs in the alert.
 
+## Problem reports: what a teacher sends back when something breaks (entry 212)
+
+Windows has **no logging of any kind** today — no `ILogger`, no
+`Debug.WriteLine`, nothing. This is a from-zero build on that side, and the
+design below is worth copying rather than re-deriving, because most of it is
+decisions rather than code.
+
+### The problem it solves
+
+A teacher on a released build hits something and emails you. By then the sheet
+that showed the output is closed, the app may have been restarted, and the
+transcript — which is the entire diagnostic, because almost every real failure
+happens BELOW the GUI, in the launchers, the Python, Docker or wrangler — is
+gone. The app is a driver; its own state is rarely the interesting part.
+
+### The decision that shapes everything else: automatic, not opt-in
+
+Records are written as every task finishes, whether it succeeded or not. The
+tempting alternative — a "turn on detailed logging, then reproduce it" switch —
+was rejected outright, and it is worth knowing why, because it will be proposed
+again:
+
+- **The bugs that matter here do not reproduce on request.** Colima or WSL2
+  state, a port collision, a Cloudflare 429 at 11pm, a stale `.toolchain`. By
+  the time a teacher can be asked to turn something on, the conditions have
+  moved.
+- **A teacher reports a problem after it happened.** Retroactive is the whole
+  feature. A switch means the first occurrence is always lost.
+- **Nothing is transmitted either way.** Writing to disk is not sending. The
+  privacy control is the report step, which is explicit, manual, and shows the
+  teacher a file they can read first.
+
+Bounded rather than switched off: **newest 20 task records**, 250,000
+characters each (trimmed from the FRONT — a failure is at the end), and the
+assistant's own file trimmed to its last 400 lines when it passes 800.
+
+### Redaction is on the WAY IN, and this is the load-bearing decision
+
+Every byte is redacted as the file is written, never as it is sent. Two
+reasons, both of which have to survive review:
+
+1. **A report that is only safe when it leaves by the right button leaks the
+   first time somebody opens the folder it sits in** — a support person on a
+   screen-share, a backup, a synced Documents folder.
+2. **It is what makes the file inspectable.** The privacy promise a teacher
+   can actually check is not a sentence in a dialog; it is being able to open
+   the thing and read it. That only works if what is on disk is already safe.
+
+There is deliberately **no way to switch redaction off for a development
+build**. A redactor that is off while it is being worked on is a redactor
+nobody has run. It costs nothing: `/Users/person/Documents/Teaching` reads
+perfectly well while you are debugging.
+
+### Take the rules from the contract, do not re-derive them
+
+`problemReportRedaction` in [`contracts/shared-rules.json`](contracts/shared-rules.json)
+— 14 cases, `input` → `expect`, run by `SharedRulesContractTests` on the mac
+and ready for an xUnit `[Theory]`. It also carries `placeholders` (the exact
+phrases left behind) and `secretLength`, so nothing has to be copied out of
+prose. The mac implements the **Windows** `C:\Users\…` form as well as its own,
+on purpose: one case list, identical on both sides, and neither platform has a
+rule the other's tests cannot reach.
+
+**Half the cases are things that must NOT be redacted, and they are the half
+that gets broken.** A redactor tuned only for what to remove will happily
+swallow the image tag, the container name, the `.pages.dev` address and 40-char
+git SHAs — and then produce reports that cannot answer the first question
+anybody asks of them. The one hex exception is worth stating plainly: a
+40-character run that is entirely lowercase hex is a git commit or SHA-1, not a
+token, and a real token being all-hex by chance is about a 1-in-10^24 event.
+
+### What each record carries, and why
+
+| Field | Why it is there |
+|---|---|
+| App version, build, **bundle path, process id** | Not decoration. Two copies of the app can run at once (on the mac, Xcode's Run does not stop a copy it did not start), and when they do they take turns rewriting the same working folder. Two process ids in one folder of records is the fastest way that has ever existed to SEE that. The bundle path answers "am I testing my edit or the old copy?" — the trap that costs the most time in this repository. |
+| OS version, architecture, cores, RAM | The assistant runs natively on one architecture and not the other, and the whole toolchain emulates on the wrong one. |
+| Launcher name and arguments | What was actually asked for, as against what the teacher believes they asked for. |
+| Outcome | **Stopped on purpose** and **Backed out of a question** are distinguished from **Failed**. Both exit non-zero and neither is a bug; recording them as failures sends somebody hunting a teacher who changed their mind. |
+| The failure explanation, INCLUDING when there is none | `FailureExplainer`'s silence is the interesting case — an unrecognised failure is the one worth a person's attention, so the record says "nothing recognised" rather than omitting the line. |
+| The whole transcript | The diagnostic. |
+
+Records are named with a sortable timestamp (`2026-08-16-142733-deploy.txt`),
+so "keep the newest twenty" is dropping from one end of a name-sorted list —
+no file dates involved, and therefore nothing a copy or a restore can disturb.
+
+### A record exists from the START of a task, not only at the end
+
+Written at the end only, this feature had a hole exactly where it was needed
+most. **A preview never finishes** — it serves until the teacher stops it — so
+"my preview is stuck" and "the site won't load", the likeliest things anybody
+reports, were the two cases that left no trace at all. Reported from the real
+app within an hour of it being built, by doing nothing more unusual than
+building a preview and then asking for a report.
+
+So: the record is written the moment the task starts (outcome **Still
+running**), refreshed while it runs, and finalised when it ends. Three details
+worth copying:
+
+- **Throttling on output is NOT enough on its own, and this cost a debugging
+  session to learn.** The first version refreshed the record whenever output
+  arrived, no more than once every 10 seconds. It never once fired. A preview
+  with a warm container prints for about **five seconds** and then serves in
+  silence for as long as the teacher leaves it open — so output stopped before
+  the throttle expired, every refresh declined, and the record kept its opening
+  lines and nothing else. Measured from the real app: **19 flushes inside 5.2
+  seconds, zero refreshes, a 466-byte record of a preview that had just built a
+  whole site.** Reasoning about the code did not find this; instrumenting it and
+  reading the log did.
+- **So there are two triggers, and you need both.** A 10-second throttle is the
+  ceiling for a CHATTY task (one printing steadily for an hour is never more
+  than 10 seconds behind), and a **2-second debounce after output goes QUIET**
+  catches the tail — which, for anything that ends by going quiet rather than by
+  exiting, is the whole record. The invariant to pin in a test: the quiet wait
+  must be SHORTER than the throttle, or you have rebuilt the original bug.
+- **The file is named after the task's START**, so a refresh replaces the same
+  file instead of filling the folder with one record per flush.
+- **"Still running" is not a failure**, so it gets no explanation line — see
+  the note about stopped tasks above; this is the same trap in another coat.
+
+### The breadcrumb trail — one file, in order
+
+Task records answer "what did that publish print?". They do not answer the
+question support actually opens with: **what were you doing when it went
+wrong?** A teacher who says "it stopped working after I renamed something" is
+describing a sequence, and a pile of records is not one.
+
+`activity.txt` is that sequence — one line per thing the teacher would
+recognise as something they did:
+
+```
+2026-08-16 15:05:30 · Plantoir opened — Plantoir 1.0 (1) · pid 98183 · /Users/person/…
+2026-08-16 15:05:30 · running on macOS 26.6.0 · arm64 · 12 cores · 48 GB
+2026-08-16 15:06:02 · opened the working folder /Users/person/Desktop/…
+2026-08-16 15:06:31 · started preview.sh COMP 1 --port 8081
+2026-08-16 15:07:04 · COMP/1 · opened the assistant (the larger assistant)
+2026-08-16 15:07:19 · COMP/1 · the assistant was ready after 14.8s
+```
+
+- **ONE file, not one per subject.** The assistant's turns go in here too. Two
+  files each holding half a story force whoever reads them to interleave by
+  timestamp in their head, and they will get it wrong.
+- **Deliberately coarse.** Every line is something the teacher would recognise
+  as an action — opening a folder, saving settings, starting a task, the
+  assistant answering. Not view redraws, not state changes. The failure mode
+  of logging everything is that the one line that mattered is on page forty.
+- **Each launch opens with the app version, pid and BUNDLE PATH.** A trail
+  spanning several launches then says where each began, and the first
+  disagreement between a report and the code is answered without asking.
+**The standing requirement — this is the part that outlives the feature.**
+Every new feature, and every CHANGED behaviour, that a teacher can see leaves a
+line here. On both sides. It is written as CONTRACT DATA rather than as advice,
+because advice in a handoff gets read once:
+
+- `contracts/shared-rules.json` → `activityTrail.mustRecord` lists every event
+  both apps must record, with what it carries and why. `promptMarker` and
+  `lineShape` are there too.
+- A test pins that list against the app's own event list
+  (`ActivityTrail.Event` on the mac). **Add an event to the contract and the
+  mac suite goes red until the mac records it** — which, per the direction rule
+  in `CLAUDE.md`, is exactly how Windows proposes one. Say so in
+  `MAC-HANDOFF.md` and the red suite reads as a request rather than as damage.
+- Name the event; do not write free text at a call site. Naming it is what
+  forces the author of a feature to decide what it leaves behind, and what lets
+  a test notice when they did not.
+- **A changed behaviour changes its line too.** A trail line describing what
+  the feature used to do is worse than none, because it will be believed.
+
+- Capped at 1,200 lines, trimmed to the newest 600 — trimmed to HALF rather
+  than to the cap, or the file would be rewritten on every single line once it
+  filled up.
+
+### The assistant's record is part of the trail, for a reason of its own
+
+**Routing has no automated gate anywhere in this product** — whether the model
+still picks the right tool is measured by hand against a local engine, and once
+the app is on a teacher's machine nothing measures it at all. One line per turn
+is the only trace a routing mistake in the field ever leaves:
+
+```
+2026-08-16 07:06:40 · ICS3U/1 · chose publish_pages(course, section, titles) · 2.1s · 44 tokens · waited for the button
+  asked: publish tomorrow's class
+```
+
+- **Argument NAMES, never values.** Which tool, with which arguments filled in,
+  answers the routing question completely. The values are the teacher's page
+  titles.
+- **The token count is in there deliberately.** This is the number that would
+  have caught the thinking-flags bug in days rather than weeks: llama.cpp parses
+  the `<think>` block OUT of `message.content`, so an answer with thinking back
+  on looks perfectly clean and is merely slow. 44 tokens against 512, same
+  question. On Windows, read `usage.completion_tokens` off the chat-completions
+  response the same way — the mac added `AssistModelClient.reply(…)` returning
+  an `AssistReply` beside the existing `respond(…)` rather than changing the
+  return type, which kept the change to about fifteen lines.
+- **The teacher's sentence is written locally and left OUT of the report unless
+  they tick the box.** Both halves are needed: a routing problem cannot be
+  looked into without the sentence that caused it, and the sentence must
+  already exist by the time they report the problem — but their own words are
+  the one thing in the report that is unmistakably theirs to hand over or not.
+  The line is written with a fixed prefix (`  asked: `) so that leaving it out
+  is dropping lines by prefix rather than parsing anything.
+
+### Ask only what there is to ask
+
+The checkbox about the teacher's own sentences appears **only when the trail
+actually holds any** — and the test is the presence of PROMPT lines, not of
+assistant events, because opening the assistant and closing it again leaves
+turns behind but nothing they typed.
+
+The report's note has three states to match, and they are three different
+things to be told: never used it (say nothing about the assistant at all),
+used it and kept it back, used it and sent it. A teacher who has never opened
+the assistant must not read a line promising that what they typed to it was
+withheld — it invites them to wonder what else the app believes they did,
+which is the opposite of what a dialog asking for their trust should do.
+
+Both, plus the exact label and the support address, are contract data:
+`shared-rules.json` → `problemReportDialog`.
+
+**Say "the local AI assistant" in full.** Plantoir will grow ways to connect a
+teacher's own account to a hosted assistant, and from that day an unqualified
+"the assistant" is a question about the wrong thing — answered wrongly, about
+where their words have been. Three characters now against a rewording that
+would otherwise have to reach both apps at once.
+
+### Record at the moment it HAPPENS, never at the moment it succeeds
+
+The generalisation of a bug reported from the real app, and worth more than
+the bug: what the teacher typed to the local AI assistant was written to the
+trail only when the model REPLIED. Everything short of a completed answer —
+an engine error, a reply still running, the window closed mid-thought — left
+no record of the sentence at all. And because the report's checkbox keys off
+those lines, it stayed hidden from somebody who had plainly just used the
+assistant.
+
+The sentence is now recorded when the message is SENT. **Anything recorded on
+the success path is missing from exactly the sessions somebody asks for a
+report about**, which inverts the whole point of keeping records.
+
+**It bit a second time, one branch higher, and the second one is the sharper
+lesson.** Moving the write to "as the message goes to the model" still missed
+every phrasing matched in code — those return from `say()` early and never
+reach the model — so an entire class of teacher input left no trace, and the
+report's checkbox again hid itself from somebody who had plainly just used the
+assistant. Both bugs were reported as "the conditional is broken"; neither was.
+
+So the rule, in the form that survives both: **record what the teacher did
+where they did it — above every branch, never at a later point that a branch
+can skip.** In practice that means immediately after the input is accepted and
+before anything decides what to do with it. And when a branch means the model
+was never consulted, say SO on the trail: "why did it not think about what I
+said?" has no other answer.
+
+Worth copying too: the two regression tests drive the send path end to end and
+were confirmed to FAIL against the old placement before being kept. A test
+written after a fix that passes either way is the reason a bug gets reported
+three times.
+
+### The teacher-facing half
+
+**Help ▸ Report a Problem…** → a dialog saying what is and is not included,
+with one unticked checkbox ("Include what I typed to the assistant") → a save
+panel defaulting to the Desktop → a zip, revealed in the file manager. Inside:
+`what is in this report.txt` (an IN / NOT IN list, written for the teacher who
+is deciding whether to send it), `what you were doing.txt` — the trail, and
+the file to read first — and a `tasks/`
+folder.
+
+Rule 1 applies here more than anywhere, and it is where it slips: a teacher
+being asked to send something is exactly the moment somebody writes "log file"
+or "transcript". A mac test asserts that neither those nor "toolchain",
+"script", "Docker" or "container" appear in what the teacher reads. **Write
+that test on your side too** — the wording is yours, the rule is shared.
+
+Plain text and a plain zip, never a bundle format of our own: a teacher who
+cannot open the thing cannot decide whether to send it.
+
+**Three things only driving the real app caught**, all of them in what the
+teacher reads — every one passed the unit suite:
+
+- **The emptiness check must come BEFORE the question.** Asking somebody what
+  to include, taking them through a save panel, and only then telling them
+  there was nothing to send is a small rudeness that costs nothing to avoid.
+- **A task stopped on purpose is not a failure and must not be explained.**
+  It exits non-zero like a failure does, so the record said "Explained:
+  nothing recognised — worth a look" about a preview the teacher had simply
+  ended. Keep "was this a failure" as its own recorded fact rather than
+  reading the word "Failed" back out of the outcome sentence — that test
+  passes until somebody rewords the sentence.
+- **Page NAMES are in the report, and the note has to say so.** The first
+  wording promised that nothing from the teacher's pages was included; a real
+  preview transcript then turned out to list every page the builder emitted
+  (`ContentPage -> public/All-Classes/Unit-3,-Day-17.html`). A promise a
+  teacher can check and find false is worse than no promise, so the note now
+  says the names appear and only what is WRITTEN on them does not.
+
+### Rejected on the mac, and why
+
+- **`log collect` / a `.logarchive` as the support path.** Rejected outright.
+  It exports the WHOLE system's unified log — every application's activity,
+  network names, URLs — which is a far worse privacy outcome than anything the
+  feature was built to avoid. The Windows equivalent temptation is a full Event
+  Log export or a `sysdiagnose`-style dump; refuse it for the same reason. OS
+  logging stays useful for development and is not what you ask a released user
+  for.
+- **Recording file CONTENTS on a write.** Course notes are the teacher's work
+  and are the one place a student's name could plausibly appear (a class-list
+  page). Paths yes, redacted; bodies never. The mac's undo history holds
+  before/after copies of whole files and that stays in memory.
+- **Redacting the account identifier by SHAPE.** A 32-character hex run is also
+  every BLAKE3 and MD5 digest in deploy output. It is removed only in its
+  labelled forms (`--account …`, `Account ID: …`), which is where it actually
+  appears.
+
 ## Testing
 
 - The **PowerShell launchers are tested on real Windows** — all three have

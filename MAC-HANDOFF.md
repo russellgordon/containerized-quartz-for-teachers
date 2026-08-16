@@ -87,6 +87,23 @@ rather than being deleted.
 
 ## For awareness — no mac code needed
 
+- **Anything you build over there now owes a trail line** (mac, 2026-08-16).
+  Plantoir keeps a breadcrumb trail so a problem reported next week can be
+  looked into without asking the teacher to reproduce it, and the rule binds
+  both sides: **every new feature, and every changed behaviour, that a teacher
+  can see records an event.** The list lives in
+  [`contracts/shared-rules.json`](contracts/shared-rules.json) →
+  `activityTrail.mustRecord`, with `lineShape` and `promptMarker` beside it,
+  and a test pins it against each app's own event list.
+
+  The direction rule applies as usual and in your favour: **propose an event by
+  adding it to `mustRecord`.** The mac suite will go red until this side
+  records it — that is the mechanism working, not damage — so name the case in
+  "Contract cases waiting on the mac" above and it reads as a request. The
+  reasoning, the storage locations and what must never be recorded are in
+  `WINDOWS-HANDOFF.md` under "Problem reports"; `CLAUDE.md` rule 5 is the short
+  version.
+
 - **A divergence was reported TO Windows, not from them** (mac sweep,
   2026-08-16). The first-deploy marker: this side reads the marker for the
   course's CURRENT destination, `AssistWorkspace.cs` accepts either folder.

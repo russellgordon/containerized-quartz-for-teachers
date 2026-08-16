@@ -100,6 +100,20 @@ struct AssistModelClient: Sendable {
     /// learn to trust.
     func respond(messages: [AssistMessage],
                  tools: [AssistToolDefinition]) async throws -> AssistMessage {
+        return try await reply(messages: messages, tools: tools).message
+    }
+
+    /// The same request, with what the engine reported about the work it did.
+    ///
+    /// The completion-token count is here for one reason, and it is the
+    /// reason the thinking flags shipped wrong for days: llama.cpp parses a
+    /// `<think>` block OUT of the content before the app ever sees it, so an
+    /// answer with thinking turned back on looks perfectly clean and is
+    /// merely slow. The count is the honest check — 44 tokens with thinking
+    /// off against 512 with it on, for the same question — and in a released
+    /// app the problem report is the only place it can be seen.
+    func reply(messages: [AssistMessage],
+               tools: [AssistToolDefinition]) async throws -> AssistReply {
         var body: [String: Any] = [
             "messages": try encodeMessages(messages),
             "temperature": 0,
@@ -173,7 +187,7 @@ struct AssistModelClient: Sendable {
 
     // MARK: - Decoding
 
-    private func decodeReply(from data: Data) throws -> AssistMessage {
+    private func decodeReply(from data: Data) throws -> AssistReply {
         guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let choices = root["choices"] as? [[String: Any]],
               let first = choices.first,
@@ -211,12 +225,27 @@ struct AssistModelClient: Sendable {
             }
         }
 
-        return AssistMessage(
-            role: "assistant",
-            content: content,
-            toolCalls: calls.isEmpty ? nil : calls
+        let usage: [String: Any]? = root["usage"] as? [String: Any]
+        return AssistReply(
+            message: AssistMessage(
+                role: "assistant",
+                content: content,
+                toolCalls: calls.isEmpty ? nil : calls
+            ),
+            completionTokens: usage?["completion_tokens"] as? Int
         )
     }
+}
+
+/// A reply, with what the engine said it cost to produce.
+struct AssistReply: Sendable {
+
+    // MARK: - Stored properties
+
+    let message: AssistMessage
+
+    /// How many tokens the model wrote, when the engine reported it.
+    let completionTokens: Int?
 }
 
 /// What can go wrong talking to the engine.

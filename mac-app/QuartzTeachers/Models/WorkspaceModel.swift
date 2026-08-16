@@ -376,6 +376,7 @@ class WorkspaceModel {
     func chooseWorkspace(at url: URL) {
         let previousPath: String? = workspaceURL?.path
         workspaceURL = url
+        ActivityTrail.note(.workingFolderOpened, "opened the working folder " + url.path)
         if canRememberChoice {
             // Remembered app-wide so a NEW window opens where the last one
             // left off; each window then keeps its own choice in its scene.
@@ -429,7 +430,7 @@ class WorkspaceModel {
         }
         let refreshed: [String] = WorkspaceModel.refreshLaunchers(in: workspaceURL, from: sources)
         if !refreshed.isEmpty {
-            AppLog.interface.info("refreshed launchers in \(workspaceURL.path, privacy: .public): \(refreshed.joined(separator: ", "), privacy: .public)")
+            AppLog.interface.info("refreshed launchers in \(LogRedactor.redacting(workspaceURL.path), privacy: .public): \(refreshed.joined(separator: ", "), privacy: .public)")
         }
         refreshToolchain(in: workspaceURL)
     }
@@ -480,7 +481,7 @@ class WorkspaceModel {
             }
         }
         if changed > 0 {
-            AppLog.interface.info("refreshed .toolchain in \(workspaceURL.path, privacy: .public): \(changed) file(s)")
+            AppLog.interface.info("refreshed .toolchain in \(LogRedactor.redacting(workspaceURL.path), privacy: .public): \(changed) file(s)")
         }
     }
 

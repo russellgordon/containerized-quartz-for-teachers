@@ -5,6 +5,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Functions
 
+    /// Opens the trail for this launch.
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        ActivityTrail.noteLaunch()
+    }
+
     /// Without this, modern macOS quietly declines to restore state at all.
     nonisolated func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         return true

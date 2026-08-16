@@ -77,6 +77,10 @@ final class AssistAgent {
     /// The messages actually sent, including tool results.
     private var messages: [AssistMessage] = []
 
+    /// Where the record of each turn is written. Replaceable so a test can
+    /// point it somewhere of its own.
+    var reportStore: ProblemReportStore = ProblemReportStore.standard
+
     // MARK: - Computed properties
 
     /// The tool surface for this window, with the examples naming the real
@@ -131,9 +135,38 @@ final class AssistAgent {
         }
         entries.append(Entry(speaker: .teacher, text: trimmed))
 
+        // Recorded HERE — the moment the teacher's words are accepted, before
+        // ANY branch below can decide what happens to them.
+        //
+        // This sat lower down, just before the message went to the model, and
+        // that was wrong twice over. A sentence matching a fixed shape returns
+        // early and never reaches the model at all, so a whole class of input
+        // left no trace; and an engine that failed, or one still thinking when
+        // the teacher gave up, lost the sentence that caused the trouble. The
+        // rule the two share: **record what the teacher did where they did it,
+        // above every branch, not at any later point that can be skipped.**
+        ActivityTrail.note(
+            .assistantAsked,
+            AssistTurnRecord.askedLines(
+                prompt: trimmed,
+                courseCode: courseCode,
+                sectionNumber: sectionNumber,
+                at: Date()
+            ),
+            wholeLine: true
+        )
+
         // The fixed shapes never reach the model — see AssistCardCommand for
         // the measurement that decided this.
         if let command = AssistCardCommand.matching(trimmed) {
+            // Worth its own line: "why did it not think about what I said?"
+            // is answered by this and by nothing else in the trail.
+            ActivityTrail.note(
+                .assistantMatchedAFixedPhrase,
+                "matched in code, not sent to the model — ran " + command.toolName,
+                course: courseCode,
+                section: sectionNumber
+            )
             await run(call: AssistToolCall(
                 id: UUID().uuidString,
                 type: "function",
@@ -206,11 +239,14 @@ final class AssistAgent {
     /// Ask the model what to do next, then do it.
     private func think() async {
         activity = .thinking
+        let askedAt: Date = Date()
         do {
-            let reply: AssistMessage = try await client.respond(
+            let answer: AssistReply = try await client.reply(
                 messages: messages, tools: toolDefinitions
             )
+            let reply: AssistMessage = answer.message
             messages.append(reply)
+            recordTurn(reply: answer, askedAt: askedAt)
 
             if let calls = reply.toolCalls, let first = calls.first {
                 // One tool at a time, on purpose: a model that batches has
@@ -227,8 +263,44 @@ final class AssistAgent {
             activity = .idle
         } catch {
             entries.append(Entry(speaker: .problem, text: error.localizedDescription))
+            ActivityTrail.note(
+                .assistantCouldNotAnswer,
+                "the local AI assistant could not answer — " + error.localizedDescription,
+                course: courseCode,
+                section: sectionNumber
+            )
             activity = .idle
         }
+    }
+
+    /// Keeps a note of what the model was asked and what it chose.
+    ///
+    /// Only what the model DECIDED: the tool's name, the names of the
+    /// arguments it filled in, how long it took and how many tokens it
+    /// wrote. The argument values are the teacher's page titles and are not
+    /// part of the routing question.
+    private func recordTurn(reply: AssistReply, askedAt: Date) {
+        var toolName: String?
+        var argumentNames: [String] = []
+        var stoppedAtGate: Bool = false
+        if let call = reply.message.toolCalls?.first {
+            toolName = call.function.name
+            argumentNames = AssistTurnRecord.argumentNames(inJSON: call.function.arguments)
+            stoppedAtGate = tools.definition(named: call.function.name)?.needsApproval ?? false
+        }
+        let record: AssistTurnRecord = AssistTurnRecord(
+            at: askedAt,
+            courseCode: courseCode,
+            sectionNumber: sectionNumber,
+            toolName: toolName,
+            argumentNames: argumentNames,
+            seconds: Date().timeIntervalSince(askedAt),
+            completionTokens: reply.completionTokens,
+            stoppedAtGate: stoppedAtGate
+        )
+        // Through the trail's own entry point, so this event is named like
+        // every other and cannot be the one nobody accounted for.
+        ActivityTrail.note(.assistantChoseATool, record.lines, wholeLine: true)
     }
 
     /// Run a tool, stopping at the gate when it needs one.

@@ -63,17 +63,19 @@ struct WindowRootView: View {
             .background(WindowAccessor { window in
                 workspace.window = window
                 attemptClaim(for: window, attemptsLeft: 7)
+                let folderPath: String = LogRedactor.redacting(workspace.workspaceURL?.path ?? "")
                 AppLog.interface.info("""
                     window \(windowIdentity, privacy: .public) opened in \
-                    "\(workspace.workspaceURL?.path ?? "", privacy: .public)" \
+                    "\(folderPath, privacy: .public)" \
                     at \(NSStringFromRect(window.frame), privacy: .public)
                     """)
                 WorkspaceModel.rememberOpenFolders()
             })
             .onChange(of: workspace.workspaceURL) {
+                let folderPath: String = LogRedactor.redacting(workspace.workspaceURL?.path ?? "")
                 AppLog.interface.info("""
                     window \(windowIdentity, privacy: .public) moved to \
-                    "\(workspace.workspaceURL?.path ?? "", privacy: .public)"
+                    "\(folderPath, privacy: .public)"
                     """)
                 WorkspaceModel.rememberOpenFolders()
                 if workspace.window?.isKeyWindow == true, let path = workspace.workspaceURL?.path {
@@ -141,9 +143,10 @@ struct WindowRootView: View {
             workspace.selection = selection
         }
         workspace.isResolvingRestoredFolder = false
+        let claimedPath: String = LogRedactor.redacting(entry.path)
         AppLog.interface.info("""
             window \(windowIdentity, privacy: .public) claimed \
-            "\(entry.path, privacy: .public)" — \(detail, privacy: .public), \
+            "\(claimedPath, privacy: .public)" — \(detail, privacy: .public), \
             expanded: [\(entry.expandedCourses.joined(separator: ","), privacy: .public)], \
             archived: \(entry.archivedExpanded, privacy: .public), \
             selection: "\(entry.selection, privacy: .public)"

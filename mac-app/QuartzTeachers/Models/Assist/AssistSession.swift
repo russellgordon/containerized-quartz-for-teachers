@@ -195,6 +195,12 @@ final class AssistSession {
     /// Start the server and build the agent.
     private func startEngine() async {
         readiness = .starting
+        let startedAt: Date = Date()
+        ActivityTrail.note(
+            .assistantOpened,
+            "opened the assistant (" + tier.displayName + ")",
+            course: courseCode, section: sectionNumber
+        )
 
         let host: AssistServerHost = AssistServerHost(modelURL: store.fileURL, budget: budget)
         self.host = host
@@ -224,13 +230,28 @@ final class AssistSession {
             )
             self.agent = agent
             readiness = .ready
+            ActivityTrail.note(
+                .assistantReady,
+                String(format: "the assistant was ready after %.1fs", Date().timeIntervalSince(startedAt)),
+                course: courseCode, section: sectionNumber
+            )
             await warmUp(client: AssistModelClient(baseURL: baseURL), runner: runner)
 
         case .failed(let reason):
             readiness = .failed(reason: reason)
+            ActivityTrail.note(
+                .assistantWouldNotStart,
+                "the assistant would not start — " + reason,
+                course: courseCode, section: sectionNumber
+            )
 
         case .stopped, .starting:
             readiness = .failed(reason: "The assistant's engine did not become ready.")
+            ActivityTrail.note(
+                .assistantWouldNotStart,
+                "the assistant did not become ready",
+                course: courseCode, section: sectionNumber
+            )
         }
     }
 

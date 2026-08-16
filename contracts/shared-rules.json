@@ -1,4 +1,88 @@
 {
+  "activityTrail": {
+    "lineShape": {
+      "example": "2026-08-16 15:28:55 · COMP/1 · the assistant was ready after 1.8s",
+      "why": "Local time to the second, then the course and section when the line is about one, then a sentence in the words a teacher would use. Not a function name and not a level: the trail is read by a person deciding what went wrong, months later, and 'started preview.sh COMP 1' beats 'DEBUG runScript(preview.sh)'."
+    },
+    "mustRecord": [
+      {
+        "carries": "app version, build number, process id, bundle path",
+        "event": "app opened",
+        "why": "The bundle path and process id are not decoration. Two copies of the app can run at once, and when they do they take turns rewriting the same working folder; two process ids in one trail is the fastest way to see it. The bundle path answers 'is this build the one I think it is' without asking."
+      },
+      {
+        "carries": "OS version, architecture, core count, memory",
+        "event": "machine described",
+        "why": "The assistant runs natively on one architecture and not the other, and the whole toolchain emulates on the wrong one. Memory decides which model tier a teacher gets."
+      },
+      {
+        "carries": "the folder path, redacted",
+        "event": "working folder opened",
+        "why": "Almost every question about a course begins with which folder it is in - and a folder outside the home directory bind-mounts as an EMPTY folder inside the container, which is a whole class of report explained by this line alone."
+      },
+      {
+        "carries": "the course code",
+        "event": "settings saved",
+        "why": "'It broke after I changed something' is the commonest report there is, and this is the line that dates the change."
+      },
+      {
+        "carries": "the course code and the reason",
+        "event": "settings could not be saved",
+        "why": "A save that failed leaves the teacher believing it succeeded. Recording only successes would hide exactly the case worth seeing."
+      },
+      {
+        "carries": "the launcher and its arguments, redacted",
+        "event": "task started",
+        "why": "What was actually asked for, as against what the teacher believes they asked for."
+      },
+      {
+        "carries": "the launcher, the outcome, and how long it took",
+        "event": "task finished",
+        "why": "The outcome distinguishes a failure from a task stopped on purpose and from one backed out of at a question - all three exit non-zero, and only one is a fault."
+      },
+      {
+        "carries": "course, section, and which assistant",
+        "event": "assistant opened",
+        "why": "Which tier is running decides what routing accuracy to expect, and it is the first thing to establish about any report of the assistant misunderstanding something."
+      },
+      {
+        "carries": "course, section, and how long the engine took",
+        "event": "assistant ready",
+        "why": "A slow start and a failed start read identically to a teacher ('it just sat there'). The seconds tell them apart."
+      },
+      {
+        "carries": "course, section, and the reason",
+        "event": "assistant would not start",
+        "why": "The one assistant failure that leaves nothing else behind - no turn, no tool, no output."
+      },
+      {
+        "carries": "course, section, and the sentence the teacher typed, on its own marked line",
+        "event": "assistant asked",
+        "why": "Recorded the moment the teacher's words are ACCEPTED, above every branch below it - not when the message goes to the model, and not when an answer comes back. Two different bugs came from placing it lower: a sentence matching a fixed shape returns early and never reaches the model, so a whole class of input left no trace at all; and an engine that failed, or one still thinking when the teacher gave up, lost the sentence that caused the trouble. It is also what the report's checkbox keys off, so recording it late made the checkbox vanish for somebody who had plainly just used the assistant. The general rule: record what the teacher did where they did it, above every branch, never at a later point that can be skipped."
+      },
+      {
+        "carries": "course, section, and the tool it ran",
+        "event": "assistant matched a fixed phrase",
+        "why": "Some phrasings are matched in code and never reach the model at all. Without this line, 'why did it not think about what I said?' is unanswerable - the trail would show a tool running with nothing between it and the teacher's sentence."
+      },
+      {
+        "carries": "course, section, the tool name, the ARGUMENT NAMES, the seconds, the completion-token count, and whether it waited for the approval button",
+        "event": "assistant chose a tool",
+        "why": "Routing has no automated gate anywhere in this product, so the field is the only place a routing regression shows. Argument NAMES rather than values: which tool with which arguments filled in answers the routing question completely, while the values are the teacher's page titles. The token count is the honest check on thinking having been switched back on - the engine parses the thinking OUT of the content, so a bad reply looks clean and is merely slow."
+      },
+      {
+        "carries": "course, section, and the reason",
+        "event": "assistant could not answer",
+        "why": "The failure that leaves nothing else behind: no tool, no turn, no output. Without this line 'I asked it something and nothing happened' is unfalsifiable."
+      }
+    ],
+    "note": "The breadcrumb trail: what the teacher was doing, in the order they did it, in ONE file. Task records answer 'what did that publish print'; they do not answer the question support opens with, which is 'what were you doing when it went wrong'. Two files each holding half a story force whoever reads them to interleave by timestamp in their head, and they will get it wrong - so the assistant's turns go in here too. The list below is the MINIMUM: an app may record more, but a missing event is a gap in both apps at once. Deliberately coarse - every line is something a teacher would recognise as an action they took, never a view redraw or a state change, because the failure mode of logging everything is that the one line that mattered is on page forty.",
+    "promptMarker": {
+      "prefix": "  asked: ",
+      "why": "The teacher's own words go on their own line behind a fixed prefix, so leaving them out of a report is dropping lines by prefix rather than parsing anything. They are kept locally because a routing problem cannot be looked into without the sentence that caused it, and withheld from the report unless the teacher ticks the box, because their words are the one thing here unmistakably theirs to hand over."
+    },
+    "rule": "EVERY new feature, and every CHANGED behaviour, that a teacher can see leaves a line on this trail. Adding one means naming the event here and in both apps — not writing free text at a call site, and not deciding it is too small to bother with. The failure this prevents is the one already met in the field: a teacher builds a preview, opens the assistant, asks for a report, and is told there is nothing to report, because the two things they just did were not among the things anybody had thought to record. A feature that leaves no trace is a feature that can only be diagnosed by asking the teacher to do it again, which is the thing they came to you because they could not do."
+  },
   "curriculumRules": {
     "expectationWording": {
       "cases": [
@@ -90,7 +174,130 @@
     },
     "note": "What counts as a curriculum expectation. Written after checking the code rather than from memory: an expectation is not a code found in a page's TEXT, it is a PAGE named by a code inside a curriculum folder. A first draft of this contract asserted text-scanning and was wrong before it was ever run."
   },
-  "note": "Four rule sets that both apps need and neither platform owns. The MECHANISMS behind two of them differ completely - launchd against Task Scheduler, AppKit against WinUI - which is exactly why the rules are written here instead: what must be refused, matched, or stripped does not change with the machinery that does it.",
+  "note": "Eight rule sets that both apps need and neither platform owns. The MECHANISMS behind several of them differ completely - launchd against Task Scheduler, AppKit against WinUI, ~/Library/Logs against %LOCALAPPDATA% - which is exactly why the rules are written here instead: what must be refused, matched, stripped, or taken out of a problem report does not change with the machinery that does it.",
+  "problemReportDialog": {
+    "askAboutPromptsWhen": [
+      {
+        "expect": "ask",
+        "trailHasPromptLines": true,
+        "why": "There is something to answer the question about, so the teacher gets to decide whether their own sentences travel."
+      },
+      {
+        "expect": "do not ask",
+        "trailHasPromptLines": false,
+        "why": "A teacher who has never TYPED to the local AI assistant should not be shown a question implying they might have - the box governs their sentences, and with none recorded, ticking it would change nothing. An unanswerable choice reads as the app knowing something about them they do not recognise. This is why 'assistant asked' is recorded the moment a message is SENT: tie it to the reply instead and the box vanishes for somebody who plainly did use the assistant, which is exactly how this was first reported."
+      }
+    ],
+    "includePromptsLabel": "Include what I typed to the local AI assistant",
+    "labelWhy": "The LOCAL AI assistant, said in full. Plantoir will grow ways to connect a teacher's own account with a hosted assistant, and from that day an unqualified 'the assistant' is a question about the wrong thing - answered wrongly, about where their words have been. Naming it now costs three characters and saves a rewording that would have to reach both apps at once.",
+    "note": "The dialog that asks a teacher what to send. The rule worth sharing is not the layout - that is per-platform - but WHEN the question about the local AI assistant appears and what the report's own note then says. The condition is the presence of PROMPT lines on the trail, not of assistant events: opening the assistant and closing it again leaves turns but nothing the teacher typed, and the box controls only the typing.",
+    "promptStates": [
+      {
+        "noteSays": "nothing about the local AI assistant at all",
+        "state": "none",
+        "why": "Never used it, so neither an IN line nor a NOT IN line. Promising that something was left out invites the teacher to wonder what else the app thinks they did."
+      },
+      {
+        "noteSays": "listed under NOT IN THIS REPORT",
+        "state": "excluded",
+        "why": "They used it and left the box unticked, which is the default. Saying so is the point: it is the promise they can check by opening the file."
+      },
+      {
+        "noteSays": "listed under IN THIS REPORT, saying they asked for it",
+        "state": "included",
+        "why": "They ticked the box. The note records that it was their choice, so nobody reading it later assumes the app took the words on its own."
+      }
+    ],
+    "reportName": {
+      "example": "Plantoir problem report 2026-08-16 at 15.50.22.zip",
+      "format": "<name> yyyy-MM-dd 'at' HH.mm.ss",
+      "why": "Timed to the SECOND, not just dated. Somebody chasing a problem sends two or three reports in one afternoon - before a change and after it - and a date alone leaves a pile of files that must be opened to be told apart, or that silently overwrite one another. Dots rather than colons in the time because a colon is not legal in a file name on either platform. The folder INSIDE the archive carries the SAME stamp, or two reports unzipped side by side both land in a folder of the same name and collide on the machine of whoever is trying to help."
+    },
+    "supportEmail": "support@plantoir.app",
+    "supportEmailWhy": "Taken from here rather than from a screenshot of the mac dialog, and shown as something a teacher can CLICK rather than retype. One constant feeds the dialog and the note inside the report, so the two cannot drift."
+  },
+  "problemReportRedaction": {
+    "cases": [
+      {
+        "expect": "Working folder /Users/person/Documents/Teaching/ICS3U",
+        "input": "Working folder /Users/russellgordon/Documents/Teaching/ICS3U",
+        "why": "The account name is the single most common personal detail in this output, it appears in almost every line that names a path, and it is very often the teacher's real name. The REST of the path survives, because where a course folder sits is half of most diagnoses."
+      },
+      {
+        "expect": "Reading C:\\Users\\person\\Documents\\Teaching",
+        "input": "Reading C:\\Users\\Russell\\Documents\\Teaching",
+        "why": "The same rule in the Windows shape. BOTH apps carry BOTH forms, deliberately: a report then reads identically wherever it was made, and neither side is left with a rule the other side's tests cannot reach."
+      },
+      {
+        "expect": "Logged in as [removed: email address]",
+        "input": "Logged in as teacher@school.board.on.ca",
+        "why": "A deploy tool announces the account it is signed in as. A board email address names the teacher and often their school."
+      },
+      {
+        "expect": "CLOUDFLARE_API_TOKEN=[removed: token]",
+        "input": "CLOUDFLARE_API_TOKEN=abc123XYZ_super-secret-value",
+        "why": "The LABEL is kept and only the value goes. A report that says a token was present and empty is far easier to read than one with a hole in it, and the label is what tells you which credential the run was using."
+      },
+      {
+        "expect": "Paste Cloudflare token: [removed: token]",
+        "input": "Paste Cloudflare token: qQb7Z_kL8mN3pR5tV9wX1yA2cD4eF6gH8jK0lM2n",
+        "why": "Both token prompts use a silent read, so a pasted token does not echo into the output today. This rule is what stands behind that: the day a prompt is written without the silent flag, or a tool prints the token back in an error, the report is still safe."
+      },
+      {
+        "expect": "authorization: Bearer [removed: token]",
+        "input": "authorization: Bearer eyJhbGciOiJIUzI1NiJ9.abc.def",
+        "why": "A dumped HTTP header. The word Bearer survives so the line still reads as an authorization header."
+      },
+      {
+        "expect": "using [removed: token]",
+        "input": "using nfp_9aBcDeFgHiJkLmNoPqRsTuVwXyZ012345",
+        "why": "Netlify personal access tokens carry a fixed prefix, so this one is recognisable with no label beside it at all."
+      },
+      {
+        "expect": "deploy.sh ICS3U 1 --target cloudflare --account [removed: account id]",
+        "input": "deploy.sh ICS3U 1 --target cloudflare --account 9b2c4d6e8f0a1b3c5d7e9f0a1b2c3d4e",
+        "why": "An account identifier is not a credential, but it names the teacher's Cloudflare account and nothing can be diagnosed with it. The flag is kept so the report still shows that an account WAS passed, which is a real failure mode of its own."
+      },
+      {
+        "expect": "Paste Cloudflare Account ID: [removed: account id]",
+        "input": "Paste Cloudflare Account ID: 9b2c4d6e8f0a1b3c5d7e9f0a1b2c3d4e",
+        "why": "This prompt is NOT silent, so whatever the teacher types echoes into the output. It is the one place an identifier reaches the transcript by being typed."
+      },
+      {
+        "expect": "token [removed: token] rejected",
+        "input": "token qQb7Z_kL8mN3pR5tV9wX1yA2cD4eF6gH8jK0lM2n rejected",
+        "why": "A run of exactly 40 token characters is the shape of a Cloudflare API token, and it goes wherever it appears, with or without a label. Exactly 40 - neither 39 nor 41 - so ordinary long words and identifiers are left alone."
+      },
+      {
+        "expect": "commit da39a3ee5e6b4b0d3255bfef95601890afd80709 built the image",
+        "input": "commit da39a3ee5e6b4b0d3255bfef95601890afd80709 built the image",
+        "why": "THE ONE EXCEPTION, and it is worth having. A 40-character run that is entirely lowercase hexadecimal is a git commit or a SHA-1 digest, not a token, and those are exactly what a report about a build is read for. A real token being all-hex by chance is about a 1-in-10^24 event, so nothing is given up for it."
+      },
+      {
+        "expect": "image teaching-quartz:src-8f3a1c9d container teaching-quartz-4d5e6f70",
+        "input": "image teaching-quartz:src-8f3a1c9d container teaching-quartz-4d5e6f70",
+        "why": "KEPT, and this is the field the report exists to carry: the image tag says which recipe the folder actually built from, and the container name says which working folder it belongs to. Redacting these would leave a report that cannot answer the first question anybody asks of it."
+      },
+      {
+        "expect": "uploaded 12 of 48 files to https://ics3u-1.pages.dev",
+        "input": "uploaded 12 of 48 files to https://ics3u-1.pages.dev",
+        "why": "KEPT. A class site address is public by design - it is the thing the teacher hands to students - and it is how a report is matched to the site that went wrong."
+      },
+      {
+        "expect": "Netlify token missing",
+        "input": "Netlify token missing",
+        "why": "KEPT. A sentence that merely says the word 'token' is not a secret, and turning the product's own error messages into holes would make failures unreadable. The rule needs a value after a separator before it removes anything."
+      }
+    ],
+    "note": "What is taken OUT of a problem report before it is written to disk, and - just as important - what is KEPT. Redaction happens as the file is written, never as it is sent: a report that is only safe when it leaves by the right button leaks the first time somebody opens the folder it sits in, and writing it safe is what lets a teacher open the file and see for themselves what they are about to send. The rules lean towards removing too much, because removing a build hash by mistake costs a moment of puzzlement while a surviving token costs the teacher their account - but the four KEPT cases below are load-bearing, and a redactor that swallows them produces reports nobody can diagnose from. There is no way to switch this off in a development build: a redactor that is off while it is being worked on is a redactor nobody has run.",
+    "placeholders": {
+      "account": "[removed: account id]",
+      "email": "[removed: email address]",
+      "person": "person",
+      "token": "[removed: token]"
+    },
+    "secretLength": 40
+  },
   "scheduledDeployRefusals": {
     "alsoSaid": {
       "note": "Not a refusal - a teacher may be deploying deliberately without them - but the plan NAMES the section's unpublished class pages before the teacher agrees. A deploy that runs perfectly at half six and puts up a site missing tomorrow's class is the failure worth catching while somebody is awake.",
