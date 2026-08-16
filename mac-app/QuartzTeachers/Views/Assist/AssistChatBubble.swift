@@ -79,7 +79,7 @@ enum AssistChatLayout {
 ///
 /// | | |
 /// |---|---|
-/// | corner radius, multi-line | 12 |
+/// | corner radius, multi-line | 17 |
 /// | corner radius, single line | half the body height |
 /// | text inset, sides | 11 |
 /// | tail drop below the body | 5.7, one size for every bubble |
@@ -111,8 +111,15 @@ struct AssistChatBubbleShape: Shape {
     /// at the sides: the tail never reaches past the bubble's own edge.
     static let drop: CGFloat = 6
 
-    /// Messages' corner radius for bubbles of more than one line.
-    private let corner: CGFloat = 12
+    /// Messages' corner radius — an ABSOLUTE of the design, like the tail.
+    /// Measured same-screen at ~17pt here and ~16pt in a capture at a
+    /// different text size; an earlier 12 came from scaling their radius by
+    /// the font ratio, which made every bubble read as having straight ends
+    /// beside Messages. At 17, `min(corner, half the height)` is the entire
+    /// radius rule: a single-line bubble's half-height is smaller, so it
+    /// becomes a capsule with no separate branch — which is exactly the
+    /// capsule behaviour Messages shows.
+    private let corner: CGFloat = 17
 
     /// What the tail's measurements scale from — and it is neither the
     /// bubble's corner radius nor anything to do with the text size. A
@@ -130,18 +137,6 @@ struct AssistChatBubbleShape: Shape {
     /// corner landing, a 7.1 tip inset and a 16.3 hook.
     private let tailScale: CGFloat = 17
 
-    /// Below this half-height, a bubble is a CAPSULE — its corners are half
-    /// its height. Re-measured 2026-08-15 from a side-by-side screenshot at
-    /// 6x: Messages' single-line bubble bulges continuously from top to
-    /// bottom (a capsule, radius 24px at a 48px height), while its
-    /// multi-line bubbles settle to a fixed radius (19px at the same scale
-    /// — our 12, at our text size). The FIXED radius on a single-line
-    /// bubble was the visible difference: the corner finished tight and the
-    /// tail hung off it like a drip, where Messages' tail continues a broad
-    /// arc. One line at our text size gives a half-height of about 14.5;
-    /// two lines about 22. The limit sits between them.
-    private let capsuleLimit: CGFloat = 15
-
     // MARK: - Functions
 
     func path(in rect: CGRect) -> Path {
@@ -151,13 +146,7 @@ struct AssistChatBubbleShape: Shape {
         var body: CGRect = rect
         body.size.height -= AssistChatBubbleShape.drop
 
-        let halfHeight: CGFloat = body.height / 2
-        let radius: CGFloat
-        if halfHeight <= capsuleLimit {
-            radius = min(halfHeight, body.width / 2)
-        } else {
-            radius = min(corner, body.width / 2)
-        }
+        let radius: CGFloat = min(corner, body.height / 2, body.width / 2)
 
         guard hasTail, side != .neither else {
             return Path(roundedRect: body, cornerRadius: radius)
