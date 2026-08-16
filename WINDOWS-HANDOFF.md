@@ -291,22 +291,32 @@ renames a file.
 
 **The rule for what a code may be is now shared, and it is stricter than what
 the wizard used to allow.** `CourseCodeRule`: trimmed and upper-cased, ASCII
-letters and digits only, **at most eight characters**, no spaces, no
-punctuation, no emoji, and no clash with another course (compared
-case-insensitively — a Mac's disk is case-insensitive but case-preserving, so
-ICS3U and ics3u cannot both be folders). It moved out of the wizard because
-renaming asks the identical question, and a wizard that accepts a code
-renaming refuses is a course a teacher can create and then never re-type. The
-cases are in `contracts/course-management.json` → `courseCode`; **deserialise
-them, do not retype the sentences.**
+letters and digits, **single spaces between them**, **at most twelve
+characters**, no punctuation, no emoji, and no clash with another course
+(compared case-insensitively — a Mac's disk is case-insensitive but
+case-preserving, so ICS3U and ics3u cannot both be folders). It moved out of
+the wizard because renaming asks the identical question, and a wizard that
+accepts a code renaming refuses is a course a teacher can create and then
+never re-type. The cases are in `contracts/course-management.json` →
+`courseCode`; **deserialise them, do not retype the sentences.**
 
-Eight rather than six is a decision, not an oversight. Ontario codes are six
-characters, but clubs are named by the teacher, and refusing ROBOTICS would
-be refusing a real thing teachers do. CS-CLUB is still refused — punctuation
-is out because the code is a folder name, a zip-name prefix and part of a
-scheduled-publish identifier all at once, and each of those has its own
-opinion about what it will carry. CSCLUB is the answer, and the message says
-what is allowed rather than what is not.
+Twelve rather than six is a decision, not an oversight. Ontario codes are six
+characters, but clubs and locally-named courses are named by the teacher, and
+refusing ROBOTICS or AP CALC would be refusing real things teachers do. The
+space rule has three parts and they matter separately: a single space BETWEEN
+letters or numbers is fine; leading and trailing spaces are **trimmed rather
+than refused**, so a teacher is never told off for a space they did not mean
+to type; two spaces in a row is a typo every time and says so. CS-CLUB is
+still refused — punctuation is out because the code is a folder name, a
+zip-name prefix and part of a scheduled-publish identifier all at once, and
+each of those has its own opinion about what it will carry. CS CLUB, with a
+space, is how to write it.
+
+**A space in a code is safe downstream, and one piece of code already existed
+for it**: `ScheduledDeploy.sanitizedCode` is there precisely so that a club
+named with a space cannot produce a bad launchd label. Check your equivalent
+before turning the rule on — a code with a space reaches your scheduler, your
+zip names and your folder paths.
 
 **What renaming touches, and what it deliberately does not.** The full list
 is `courseCode.renameEffects` in the contract, with a reason on each; the
@@ -390,13 +400,90 @@ the field is open.
    (`CourseRenameInterfaceTests`). If your framework's tree exposes list rows
    honestly, that is worth a line in `MAC-HANDOFF.md`.
 
-**One known limitation, shared.** Renaming moves the course folder, which is
-the Obsidian vault. Obsidian's watcher is anchored to a folder's identity, so
-a vault already open for that course shows stale files until it is reopened —
-the same thing that happens if a teacher renames the folder in Finder. The
-next "Open in Obsidian" re-registers the new path and puts it right. Not
-worth blocking a rename over, but worth knowing before somebody reports it as
-a bug.
+### Obsidian: close it, rename, and open the vaults again
+
+Renaming moves the course folder, and that folder **is** the Obsidian vault.
+Obsidian's watcher is anchored to a folder's identity, so a vault open on that
+course goes on showing files that are no longer there. Obsidian has no way to
+close ONE vault, so putting it right means closing Obsidian — which is a big
+enough thing to do to somebody else's application that Plantoir asks first,
+with two buttons: **Close Obsidian and Rename**, or **Cancel**. There is no
+third answer that leaves Obsidian showing the truth, and a teacher who does
+not want it closed can close that vault themselves and rename after.
+
+**When the vault is not open, nothing Obsidian-related happens at all.** No
+registry writing, no questions. That is a deliberate limit on the blast
+radius, not an omission.
+
+The registry is `%APPDATA%/obsidian/obsidian.json` on Windows and
+`~/Library/Application Support/obsidian/obsidian.json` on the mac, **the same
+JSON shape**, so all three of the following are yours to inherit. Each was
+measured on a real machine rather than reasoned about, and the first two would
+each have shipped a bug:
+
+1. **`"open": true` is stale, and reading it alone is wrong.** Obsidian marks
+   a vault open when it opens it and does NOT unmark it when it quits. A vault
+   here carried the mark for hours while Obsidian was closed. So the mark
+   answers "which vault was opened last", never "which vault is open now" —
+   pair it with "is Obsidian running" or you will offer to close an
+   application nobody is using. The mark IS exclusive and written immediately:
+   opening a second vault moved it and cleared the first.
+
+2. **Obsidian does not restore its windows on relaunch.** This file used to
+   say it did, in the "Behaviours with platform-specific mechanics" section,
+   and that was wrong. With two vaults open, quitting and relaunching through
+   `obsidian://open?path=` brought back **only** the vault named in the link;
+   the other stayed closed. So every open vault is noted BEFORE the quit — the
+   marks survive it — and each is opened again afterwards, the course's own
+   one last so it lands in front. The same bug was in "Open in Obsidian",
+   which had been closing teachers' other vaults and not reopening them
+   whenever it registered a new vault; it is fixed with the same helper.
+
+3. **Repoint the existing registry entry; do not add a second one.** Keeping
+   the entry leaves the vault list the length the teacher expects and no dead
+   entry pointing at a folder that no longer exists. Verified end to end:
+   quit, move the folder, repoint, reopen — the vault comes back with its list
+   unchanged and the mark on the right row.
+
+Order matters, and for one reason: a running Obsidian holds its vault list in
+memory and writes it back out when it exits, so a registry edited underneath
+it is simply lost. Quit first, write after. And if the rename itself fails,
+open the vaults again anyway — closing somebody's editor and then not
+reopening it because a separate thing went wrong is the worst of both.
+
+### The sidebar could not hold the keyboard, and that is why Return did nothing
+
+Worth reading even though the mechanism is macOS's, because the SHAPE of the
+bug is not: a feature that is correct in every unit test and does nothing at
+all in the app.
+
+Return was wired to the sidebar and did nothing. The cause was not the key
+handling: **the course settings form's first text field takes the window's
+keyboard focus whenever a course is selected, and keeps it.** Nothing in the
+app asks for that — it is the framework's own initial focus, re-established
+every time the detail pane is rebuilt — and the accessibility API reported
+that field focused however the list asked for focus instead, including a
+deferred ask. So Return was going to the settings form the whole time, and so
+were the arrow keys: the sidebar could not be navigated by keyboard at all.
+
+Selecting a course now moves focus to the list explicitly, through AppKit,
+which is how a source list behaves everywhere else on the platform. **Check
+whether your detail pane does the same thing** — if the first field of your
+settings form takes focus on selection, your sidebar has the same silent
+problem, and any keyboard feature added to it will appear to be broken.
+
+Two more notes on the key itself, both of which cost time here:
+
+- **Do not give the menu item a bare Return shortcut.** It is matched before
+  the key reaches whatever has focus, so it takes Return away from every text
+  field and default button in the window — including the rename field the
+  feature itself opens. Finder's own Rename item carries no key equivalent.
+- **The key is answered by a narrow monitor**: only a bare Return or keypad
+  Enter, only in its own window, only while the thing with focus is the
+  courses list itself, and never when a text field is being typed into.
+  Anything looser renames a course from somewhere the teacher was not
+  looking — and a monitor with no window check renames in EVERY open window
+  at once.
 
 ## Fixed in shared code — nothing to port (entries 111–121)
 
