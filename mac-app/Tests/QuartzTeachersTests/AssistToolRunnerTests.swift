@@ -1223,8 +1223,14 @@ final class AssistToolRunnerTests: XCTestCase {
         let explanation: String = made.runner.explain(call: call(
             "deploy_section", arguments: ["course": "ICS3U", "section": 1]
         ))
-        XCTAssertTrue(explanation.contains("ICS3U Section 1"))
-        XCTAssertTrue(explanation.contains("students"))
+        // Named in full, and the destination named rather than described:
+        // "publishes to the folder you chose" tells a teacher with two courses
+        // nothing at all. The card also says who sees it, which is the fact
+        // the approval exists for.
+        XCTAssertTrue(explanation.contains("ICS3U Section 1"), explanation)
+        XCTAssertTrue(explanation.lowercased().contains("students will see"), explanation)
+        // No tool name, no machinery — this sentence is read by a teacher.
+        XCTAssertFalse(explanation.contains("deploy_section"), explanation)
 
         // Approved, it runs — through the app's own script runner, stubbed here
         // so a unit test never starts Docker.
