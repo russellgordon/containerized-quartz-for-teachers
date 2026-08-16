@@ -443,13 +443,33 @@ JSON shape**, so all three of the following are yours to inherit. Each was
 measured on a real machine rather than reasoned about, and the first two would
 each have shipped a bug:
 
-1. **`"open": true` is stale, and reading it alone is wrong.** Obsidian marks
-   a vault open when it opens it and does NOT unmark it when it quits. A vault
-   here carried the mark for hours while Obsidian was closed. So the mark
-   answers "which vault was opened last", never "which vault is open now" —
-   pair it with "is Obsidian running" or you will offer to close an
-   application nobody is using. The mark IS exclusive and written immediately:
-   opening a second vault moved it and cleared the first.
+1. **`"open": true` is stale in TWO ways, and reading it alone is wrong.**
+   Obsidian writes the mark when a vault opens and does not reliably remove it
+   afterwards. Both stale cases were found by testing, and each one shipped a
+   wrong dialog before it was:
+
+   - **It survives a quit.** A vault here carried the mark for hours with
+     Obsidian closed. So pair the mark with "is Obsidian running".
+   - **It survives the vault being CLOSED while Obsidian stays running.**
+     Measured with every vault closed and Obsidian still up: no windows on
+     screen at all, and one vault still marked open. So also require that
+     **Obsidian has at least one ordinary window on screen** — through the
+     window server's own list, which hands out an owner and a size to anybody.
+     A window's TITLE names its vault and would settle everything, but reading
+     another application's window titles needs the screen recording
+     permission, and asking a teacher for that so a folder can be renamed is
+     out of all proportion. Owner and count need no permission.
+
+   Do not assume the mark is exclusive — several vaults carry it at once when
+   several are open, which is what makes reopening the whole set possible.
+
+   **What is still imprecise, and it is worth writing down rather than
+   discovering:** the marks can over-report while a window IS on screen.
+   Closing one of two open vaults cleared its mark here; closing the other did
+   not. So with one vault genuinely open and a stale mark beside it, one extra
+   vault may be opened again after a rename. An extra window is a small price
+   against a permission prompt for every teacher — but know that it is the
+   remaining edge, so it is not re-diagnosed as a new bug.
 
 2. **Obsidian does not restore its windows on relaunch.** This file used to
    say it did, in the "Behaviours with platform-specific mechanics" section,
