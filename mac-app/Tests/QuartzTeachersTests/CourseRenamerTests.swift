@@ -88,13 +88,13 @@ final class CourseRenamerTests: XCTestCase {
 
         XCTAssertThrowsError(
             try CourseRenamer.rename(
-                course, to: "ICS 4U", coursesDirectoryURL: coursesURL, existingCodes: ["ICS3U"],
+                course, to: "ICS-4U", coursesDirectoryURL: coursesURL, existingCodes: ["ICS3U"],
                 runner: SilentLaunchControl()
             )
         ) { error in
             XCTAssertEqual(
                 (error as? CourseRenamer.Problem)?.errorDescription,
-                CourseCodeRule.problem("ICS 4U", existingCodes: ["ICS3U"])
+                CourseCodeRule.problem("ICS-4U", existingCodes: ["ICS3U"])
             )
         }
     }

@@ -8,7 +8,8 @@ import Foundation
 /// a teacher create could not necessarily be typed again anywhere else. A
 /// second copy of a rule is a rule that will disagree with itself.
 ///
-/// The rule is narrow on purpose. A course code is not a label the app keeps
+/// The rule is narrow on purpose — a single interior space is the only
+/// concession. A course code is not a label the app keeps
 /// to itself: it **is** the folder name under `courses/`, it is written into
 /// `course_config.json` for the shared Python to read, it rides in the name
 /// of every backup and archive zip, and it becomes part of a launchd label
@@ -21,11 +22,12 @@ enum CourseCodeRule {
 
     /// The most characters a course code may carry.
     ///
-    /// Ontario codes are six (ICS3U). Clubs are named by the teacher, and
-    /// eight leaves room for ROBOTICS without letting a code grow into a
-    /// sentence — the code has to stay readable as a sidebar row, a folder
+    /// Ontario codes are six (ICS3U). Clubs and locally-named courses are
+    /// named by the teacher, and twelve leaves room for the ones that carry
+    /// a word — "AP CALC", "ROBOTICS" — without letting a code grow into a
+    /// sentence. The code has to stay readable as a sidebar row, a folder
     /// name and a zip's prefix all at once.
-    static let mostCharacters: Int = 8
+    static let mostCharacters: Int = 12
 
     // MARK: - Functions
 
@@ -60,14 +62,17 @@ enum CourseCodeRule {
             return nil
         }
 
-        // Checked before the general character rule so the commonest
-        // mistake gets the sentence that names it.
-        if code.contains(" ") {
-            return "A course code cannot contain spaces."
+        // Spaces are allowed BETWEEN letters and numbers and nowhere else.
+        // Leading and trailing ones never reach here — `normalized` trims
+        // them, so a code typed with one simply has it dropped rather than
+        // being refused for a mistake nobody meant to make. What is left to
+        // catch is a run of them in the middle, which is a typo every time.
+        if code.contains("  ") {
+            return "A course code can’t have two spaces in a row."
         }
         for character in code {
             if !characterIsAllowed(character) {
-                return "A course code can only use letters and numbers."
+                return "A course code can only use letters, numbers and spaces."
             }
         }
         if code.count > mostCharacters {
@@ -88,14 +93,21 @@ enum CourseCodeRule {
     }
 
     /// True when this character may appear in a course code: an ASCII letter
-    /// or digit, and nothing else.
+    /// or digit, or a space.
     ///
-    /// Emoji fail here, and so does an accented letter. Both are refused for
-    /// the same reason a space is — see the type's own note. The message a
-    /// teacher reads says "letters and numbers", which is true of what is
-    /// allowed even though it is not the whole story about É; the alternative
-    /// is a sentence about character encodings in a sidebar row.
+    /// Emoji fail here, and so does an accented letter and every piece of
+    /// punctuation. They are refused for the same reason as anything else
+    /// awkward: the code is a folder name, a file name and part of a
+    /// scheduled publish's identifier, and each of those has its own opinion
+    /// about what it will carry. A space is the one exception, because
+    /// teachers really do name a course "AP CALC" — and everything
+    /// downstream already copes with one (`ScheduledDeploy.sanitizedCode`
+    /// exists precisely so a club named with a space cannot produce a bad
+    /// identifier).
     private static func characterIsAllowed(_ character: Character) -> Bool {
+        if character == " " {
+            return true
+        }
         if !character.isASCII {
             return false
         }

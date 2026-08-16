@@ -1,25 +1,29 @@
 {
   "courseCode": {
-    "mostCharacters": 8,
+    "mostCharacters": 12,
     "normalized": [
       { "typed": "ICS3U", "expect": "ICS3U" },
       { "typed": "  ics3u  ", "expect": "ICS3U", "why": "Trimmed and upper-cased before anything else looks at it. A Mac's disk is case-insensitive but case-preserving, so ICS3U and ics3u cannot both exist as folders — settling the case here is what stops a clash check missing one." },
       { "typed": "robotics", "expect": "ROBOTICS" },
       { "typed": "   ", "expect": "" }
     ],
-    "note": "What a course code may be. ONE rule, asked by the New Course wizard and by renaming a course, because a code one accepts and the other refuses is a course a teacher can create and then never re-type. The rule is narrow because a course code is not just a label: it IS the folder name under courses/, it is written into course_config.json for the shared Python, it prefixes every backup and archive zip, and on the mac it becomes part of a scheduled publish's launchd label. Each of those has its own opinion about what it will carry; one narrow rule beats four that disagree at the edges.",
+    "note": "What a course code may be — letters, numbers, and single spaces between them, at most twelve characters. ONE rule, asked by the New Course wizard and by renaming a course, because a code one accepts and the other refuses is a course a teacher can create and then never re-type. The rule is narrow because a course code is not just a label: it IS the folder name under courses/, it is written into course_config.json for the shared Python, it prefixes every backup and archive zip, and on the mac it becomes part of a scheduled publish's launchd label. Each of those has its own opinion about what it will carry; one narrow rule beats four that disagree at the edges.",
     "problems": [
       { "typed": "", "existing": ["ICS4U"], "expectProblem": null, "why": "An empty field is not-ready-yet, not an error. A warning that appears before the teacher has typed anything is noise." },
       { "typed": "SNC1W", "existing": ["ICS4U"], "expectProblem": null },
-      { "typed": "ICS 4U", "existing": ["ICS4U"], "expectProblem": "A course code cannot contain spaces.", "why": "Checked before the general character rule so the commonest mistake gets the sentence that names it." },
+      { "typed": "ICS 4U", "existing": ["ICS4U"], "expectProblem": null, "why": "A single space BETWEEN letters or numbers is allowed — teachers really do name a course “AP CALC”. Everything downstream already copes with one; the launchd label sanitiser exists precisely for it." },
+      { "typed": "AP  CALC", "existing": [], "expectProblem": "A course code can’t have two spaces in a row.", "why": "Two in a row is a typo every time, and it is checked before the character rule so the commonest mistake gets the sentence that names it." },
+      { "typed": "  ICS4U  ", "existing": [], "expectProblem": null, "why": "Leading and trailing spaces are TRIMMED rather than refused — the stored code never carries one, and refusing a teacher for a space they did not mean to type helps nobody." },
+      { "typed": "   ", "existing": [], "expectProblem": null, "why": "Nothing but spaces trims to nothing, which is not-ready-yet rather than an error." },
       { "typed": "ics4u", "existing": ["ICS4U"], "expectProblem": "A course named ICS4U already exists — choose a different code.", "why": "The clash is found case-insensitively — see normalized." },
       { "typed": "  MPM2D  ", "existing": ["ICS4U", "MPM2D"], "expectProblem": "A course named MPM2D already exists — choose a different code.", "why": "Whitespace never hides a clash." },
-      { "typed": "ICS3U!", "existing": [], "expectProblem": "A course code can only use letters and numbers." },
-      { "typed": "CS-CLUB", "existing": [], "expectProblem": "A course code can only use letters and numbers.", "why": "A hyphen is refused like any other punctuation. Clubs are named by the teacher, so this is the rule most likely to meet one — it is narrow on purpose, and CSCLUB is available." },
-      { "typed": "ICS3U🎉", "existing": [], "expectProblem": "A course code can only use letters and numbers.", "why": "Emoji fail the same test punctuation does: not an ASCII letter or digit." },
-      { "typed": "CAFÉ", "existing": [], "expectProblem": "A course code can only use letters and numbers.", "why": "An accented letter is refused too. The sentence says letters and numbers, which is true of what is ALLOWED — the alternative is a sentence about character encodings in a sidebar row." },
-      { "typed": "ROBOTICS", "existing": [], "expectProblem": null, "why": "Eight characters. Ontario codes are six; clubs are named by the teacher, and eight leaves room for this one without letting a code grow into a sentence." },
-      { "typed": "ROBOTICSX", "existing": [], "expectProblem": "A course code can be at most 8 characters." },
+      { "typed": "ICS3U!", "existing": [], "expectProblem": "A course code can only use letters, numbers and spaces." },
+      { "typed": "CS-CLUB", "existing": [], "expectProblem": "A course code can only use letters, numbers and spaces.", "why": "A hyphen is refused like any other punctuation. Clubs are named by the teacher, so this is the rule most likely to meet one — CS CLUB, with a space, is the way to write it." },
+      { "typed": "ICS3U🎉", "existing": [], "expectProblem": "A course code can only use letters, numbers and spaces.", "why": "Emoji fail the same test punctuation does: not an ASCII letter or digit." },
+      { "typed": "CAFÉ", "existing": [], "expectProblem": "A course code can only use letters, numbers and spaces.", "why": "An accented letter is refused too. The sentence says letters and numbers, which is true of what is ALLOWED — the alternative is a sentence about character encodings in a sidebar row." },
+      { "typed": "ROBOTICS", "existing": [], "expectProblem": null, "why": "Ontario codes are six; clubs and locally-named courses are named by the teacher." },
+      { "typed": "AP CALC AB", "existing": [], "expectProblem": null, "why": "Ten characters including a space — the shape twelve was chosen to allow." },
+      { "typed": "ROBOTICS CLUB", "existing": [], "expectProblem": "A course code can be at most 12 characters.", "why": "Thirteen. The limit counts the space." },
       { "typed": "ICS3U", "existing": ["ICS3U"], "currentCode": "ICS3U", "expectProblem": null, "why": "A course does not clash with itself. Re-typing a course's own code while renaming it is a teacher changing their mind, which is allowed." },
       { "typed": "ics3u", "existing": ["ICS3U"], "currentCode": "ICS3U", "expectProblem": null, "why": "Nor does it clash with its own capitalisation." },
       { "typed": "MPM2D", "existing": ["ICS3U", "MPM2D"], "currentCode": "ICS3U", "expectProblem": "A course named MPM2D already exists — choose a different code.", "why": "Renaming onto ANOTHER course's code is still a clash." }

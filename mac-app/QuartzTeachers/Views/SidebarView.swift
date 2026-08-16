@@ -13,6 +13,16 @@ struct SidebarView: View {
     /// Opens the assistant, which is a window of its own rather than a sheet.
     @Environment(\.openWindow) var openWindow
 
+    /// The courses list's accessibility identifier, named here because
+    /// `SidebarReturnKey` looks for it to decide whether Return belongs to
+    /// this list. Two spellings of it would be two features, one of which
+    /// silently does nothing.
+    static let listIdentifier: String = "coursesSidebar"
+
+    /// Watches for Return, which SwiftUI cannot see here — the type says
+    /// why.
+    @State var returnKey: SidebarReturnKey = SidebarReturnKey()
+
     /// The item the remove button is asking about, if any.
     @State var removalRequest: RemovalRequest?
 
@@ -231,32 +241,21 @@ struct SidebarView: View {
                 }
             }
             .listStyle(.sidebar)
-            .accessibilityIdentifier("coursesSidebar")
+            .accessibilityIdentifier(SidebarView.listIdentifier)
             // Return renames the selected course, as it does in Finder.
-            //
-            // Handled HERE rather than as a key equivalent on the menu item,
-            // and that is not a style choice: a bare Return on a menu item is
-            // matched by AppKit before the key ever reaches the responder
-            // chain, which would take Return away from every text field and
-            // default button in the window. Finder's own Rename item carries
-            // no key equivalent for the same reason.
-            .onKeyPress(.return) {
-                if workspace.renamingCourseCode != nil {
-                    // The field has it: let the field's own Return commit.
-                    return .ignored
+            // `.onKeyPress(.return)` was tried here first and is never
+            // called — see `SidebarReturnKey` for what actually happens to
+            // the key and why the menu item has no shortcut.
+            .background(WindowAccessor { window in
+                returnKey.window = window
+            })
+            .onAppear {
+                returnKey.start {
+                    return beginRenamingFromTheKeyboard()
                 }
-                if workspace.courseThatCanBeRenamed == nil {
-                    return .ignored
-                }
-                if workspace.renameIsUnavailableReason != nil {
-                    // Refused audibly rather than silently — the course menu
-                    // says why, and a Return that did nothing at all reads as
-                    // a broken key.
-                    NSSound.beep()
-                    return .handled
-                }
-                workspace.beginRenamingSelectedCourse()
-                return .handled
+            }
+            .onDisappear {
+                returnKey.stop()
             }
             .onChange(of: workspace.expandedCourseCodes) {
                 WorkspaceModel.rememberOpenFolders()
@@ -269,6 +268,13 @@ struct SidebarView: View {
             }
             .onChange(of: workspace.selection) {
                 WorkspaceModel.rememberOpenFolders()
+                // Clicking a row moves the keyboard to the sidebar, the way
+                // a source list behaves everywhere else on this platform.
+                // Deferred, because the detail pane rebuilds for the newly
+                // selected course and claims focus on its way up.
+                DispatchQueue.main.async {
+                    returnKey.focusTheCoursesList()
+                }
             }
             .overlay {
                 if showsNoFilterMatches {
@@ -871,6 +877,33 @@ struct SidebarView: View {
         Button("New Terminal at Folder", systemImage: "terminal") {
             FolderActions.openTerminal(at: folderURL)
         }
+    }
+
+    /// Return, pressed on a course in the sidebar. True when it has been
+    /// dealt with and the key should go no further.
+    ///
+    /// Only a COURSE row answers. A section's row is a different thing to
+    /// have selected, and renaming the course it belongs to because Return
+    /// was pressed on Section 2 is not what anybody meant — the Edit menu is
+    /// there for that, where the item says which course it will rename.
+    func beginRenamingFromTheKeyboard() -> Bool {
+        if workspace.renamingCourseCode != nil {
+            return false
+        }
+        guard case .course = workspace.selection else {
+            return false
+        }
+        if workspace.courseThatCanBeRenamed == nil {
+            return false
+        }
+        if workspace.renameIsUnavailableReason != nil {
+            // Refused audibly rather than silently — the course's own menu
+            // says why, and a key that does nothing at all reads as broken.
+            NSSound.beep()
+            return true
+        }
+        workspace.beginRenamingSelectedCourse()
+        return true
     }
 
     /// Works out what the remove button would do and asks first.

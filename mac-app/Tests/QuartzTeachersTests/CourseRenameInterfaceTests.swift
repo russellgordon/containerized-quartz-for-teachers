@@ -196,8 +196,8 @@ final class CourseRenameInterfaceTests: XCTestCase {
         await settle()
 
         XCTAssertEqual(
-            CourseCodeRule.problem("TOOLONGCODE", existingCodes: [course.code], currentCode: course.code),
-            "A course code can be at most 8 characters.",
+            CourseCodeRule.problem("MUCH TOO LONG A CODE", existingCodes: [course.code], currentCode: course.code),
+            "A course code can be at most 12 characters.",
             "the field shows this under itself rather than raising an alert"
         )
         XCTAssertNil(workspace.renameProblem, "and nothing has gone wrong that needs an alert")
@@ -205,5 +205,46 @@ final class CourseRenameInterfaceTests: XCTestCase {
 
         workspace.renamingCourseCode = nil
         try? FileManager.default.removeItem(at: fixtureURL)
+    }
+
+    // MARK: - The Return key
+
+    /// Only a bare Return or keypad Enter. Everything else belongs to
+    /// somebody else, and a monitor that swallowed ⌘-Return would break a
+    /// key the teacher pressed on purpose somewhere else in the window.
+    @MainActor
+    func testOnlyABareReturnIsAnswered() throws {
+        func press(_ keyCode: UInt16, _ flags: NSEvent.ModifierFlags) throws -> NSEvent {
+            return try XCTUnwrap(NSEvent.keyEvent(
+                with: .keyDown, location: .zero, modifierFlags: flags, timestamp: 0,
+                windowNumber: 0, context: nil, characters: "\r",
+                charactersIgnoringModifiers: "\r", isARepeat: false, keyCode: keyCode
+            ))
+        }
+
+        XCTAssertTrue(SidebarReturnKey.isPlainReturn(try press(36, [])), "Return")
+        XCTAssertTrue(SidebarReturnKey.isPlainReturn(try press(76, [.numericPad])), "keypad Enter")
+        XCTAssertFalse(SidebarReturnKey.isPlainReturn(try press(36, [.command])))
+        XCTAssertFalse(SidebarReturnKey.isPlainReturn(try press(36, [.shift])))
+        XCTAssertFalse(SidebarReturnKey.isPlainReturn(try press(0, [])), "not a Return at all")
+    }
+
+    /// The list is found by the identifier the sidebar gives it, which is
+    /// the same constant the sidebar applies — so the two cannot drift into
+    /// a feature that silently does nothing.
+    @MainActor
+    func testTheCoursesListIsFoundByTheSidebarsOwnIdentifier() throws {
+        let root: NSView = NSView(frame: NSRect(x: 0, y: 0, width: 100, height: 100))
+        let middle: NSView = NSView()
+        let list: NSView = NSView()
+        list.setAccessibilityIdentifier(SidebarView.listIdentifier)
+        middle.addSubview(list)
+        root.addSubview(middle)
+
+        XCTAssertTrue(
+            SidebarReturnKey.view(in: root, identified: SidebarView.listIdentifier) === list,
+            "found however deep it sits"
+        )
+        XCTAssertNil(SidebarReturnKey.view(in: root, identified: "somethingElse"))
     }
 }
