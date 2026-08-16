@@ -116,7 +116,7 @@ struct AssistPromptShelfView: View {
             // and does not tap again. Saying "then change it" is the important
             // half: these are shapes to start from, and "Publish Unit 2, Day
             // 3" is almost never the page actually wanted.
-            Text("Things you can ask for — tap one to put it in the box, then change it to suit")
+            Text("Things you can ask for — tap one to put it in the box, then change it to suit. Return or tap arrow to submit.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
