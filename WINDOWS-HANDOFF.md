@@ -280,6 +280,53 @@ shared Python: course-level pages now arrive with
   per-invocation loop — this cost half a minute before every preview and
   publish, and it grows with each payload added.
 
+## The toolchain mirror is on a hot path, and it cost seconds (entry 211)
+
+Both apps mirror the bundled build recipe into each working folder's
+`.toolchain`, because the launchers hash that folder to name the image. On the
+mac that mirror ran inside `reloadCourses()` — after every rename, backup,
+restore and archive — and it cost **3.80 seconds with nothing to do**. A
+teacher felt it as a pause between pressing Return on a renamed course and the
+field going away, and nobody would have attributed it to the mirror, because
+the mirror is not what they had just done.
+
+The measurements, from an M4 Pro with everything on an internal SSD:
+
+| | Before | After |
+|---|---|---|
+| Mirror with nothing to change | 3.80 s | 0.37 s |
+| On the rename path | every time | never |
+
+`support/` alone is **61 MB across 11,354 files** — the example content and the
+subject skeletons. Three things were wrong, and the first two are easy to
+write on any platform:
+
+1. **It read both copies of every file to prove they matched** — about 122 MB
+   per pass. A size-and-modification-date check answers the same question for
+   almost all of them. The catch: the copy must be **stamped with the
+   original's modification date**, or the check never matches and you have
+   bought nothing. (The image hash covers file CONTENTS, so restamping cannot
+   cause a spurious rebuild — check that is true of your hashing too before
+   copying this.)
+2. **The removal pass was quadratic**: an 11,354-element array asked
+   `contains` once per destination file, around 129 million string
+   comparisons. A set makes it nothing.
+3. **It ran far too often.** The source is inside the app's own bundle, which
+   cannot change while the app is running, so mirroring a given folder more
+   than once per launch cannot find anything the first pass missed. It now
+   runs once per folder per run. **This is the fix worth copying**, and the
+   justification is the same for you.
+
+**One latent bug found on the way, worth checking on your side.** The mirror
+worked out each file's place inside the folder by taking a fixed number of
+characters off the front of its path. Directory enumeration hands back
+RESOLVED paths, so a working folder reached through a symlink produced
+nonsense — every destination file looked extraneous, and the mirror deleted
+the entire toolchain and copied it back on every pass. A folder on the Desktop
+never showed it. If your path arithmetic assumes the prefix it asked for is
+the prefix it gets, you have the same bug waiting for the first teacher whose
+folder is reached through a link or a mapped drive.
+
 ## Renaming a course (entry 205)
 
 A teacher looks a course up by its CODE — it is how the wizard finds

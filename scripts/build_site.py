@@ -622,21 +622,25 @@ def resolve_section_emoji(config: dict, section_number: int) -> str:
 def resolve_header_label(config: dict, course_code: str) -> str:
     """Return the label that appears beside the emoji in the page title.
 
-    If the course code's 4th character is a digit (e.g., MPM2D, ICS3U),
-    we preserve the existing behavior of showing the COURSE CODE in UPPERCASE.
+    A course code is ALWAYS shown in uppercase, whatever shape it has.
 
-    If there is *no* numeric 4th character (e.g., CODING, MATH), we try to use
-    a custom short name saved in course_config.json under "custom_short_name".
-    If it's not present, we fall back to a title-cased version of the course code.
+    This used to title-case a code with no digit in its fourth character —
+    "CODING" became "Coding" — on the theory that a club's name reads better
+    that way. It does not: a code is a code, the teacher typed it in capitals,
+    and seeing it changed on their own site reads as a bug. It got worse once
+    codes could carry a space, where the same rule turned "AP CALC" into
+    "Ap Calc". A teacher who wants prose in that spot has "custom_short_name",
+    which is their own text and is used as typed.
     """
     grade_char = course_code[3] if len(course_code) >= 4 else ""
     if grade_char.isdigit():
         return course_code.upper()
-    # Club/Non-standard code
+    # Club or otherwise non-standard code: the teacher's own short name if
+    # they set one, and otherwise the code itself — in capitals.
     custom = (config.get("custom_short_name") or "").strip()
     if custom:
         return custom
-    return course_code.title()
+    return course_code.upper()
 def resolve_show_section_marker(config: dict, section_number: int) -> bool:
     """
     Return whether 'S{section}' should appear in the page title.

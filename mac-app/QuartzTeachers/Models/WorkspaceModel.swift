@@ -21,6 +21,10 @@ class WorkspaceModel {
     /// The key holding the most recently chosen folder.
     static let storedPathKey: String = "workspacePath"
 
+    /// Working folders whose `.toolchain` has already been brought up to date
+    /// in this run of the app. See `refreshToolchain` for why once is enough.
+    static var foldersWithFreshToolchain: Set<String> = []
+
     /// True when the hosted test suite is running. Tests drive the real
     /// window, and must not leave the teacher pointed at a fixture folder
     /// that is deleted when the run ends.
@@ -441,6 +445,21 @@ class WorkspaceModel {
         if !fileManager.fileExists(atPath: workspaceURL.appendingPathComponent("preview.sh").path) {
             return
         }
+
+        // Once per folder per run of the app, and that is not a shortcut: the
+        // SOURCE is the app's own bundle, which cannot change while the app
+        // is running, so a second mirror of the same folder cannot find
+        // anything the first one missed.
+        //
+        // It used to run inside every `reloadCourses()` — which is after
+        // every rename, backup, restore and archive — and cost 0.37 s each
+        // time even with nothing to do. That is what a teacher felt as a
+        // pause between pressing Return on a renamed course and the field
+        // going away. (Before the mirror was made cheap it was 3.8 s.)
+        if WorkspaceModel.foldersWithFreshToolchain.contains(workspaceURL.path) {
+            return
+        }
+        WorkspaceModel.foldersWithFreshToolchain.insert(workspaceURL.path)
         let toolchainURL: URL = workspaceURL.appendingPathComponent(".toolchain")
 
         var changed: Int = 0
@@ -468,10 +487,27 @@ class WorkspaceModel {
     /// Copies one file when the destination differs or is missing.
     static func syncFile(from sourceURL: URL, to destinationURL: URL) -> Int {
         let fileManager: FileManager = FileManager.default
+
+        // The cheap question first: same size, same modification date.
+        //
+        // This is what makes the mirror usable. `support/` alone is 61 MB
+        // across 11,354 files, and reading BOTH copies of every one of them to
+        // prove they match cost 3.8 seconds — every time the courses were
+        // reloaded, which is after every rename, backup, restore and archive.
+        // Two stat calls answer the same question for almost all of them.
+        if WorkspaceModel.filesLookIdentical(sourceURL, destinationURL) {
+            return 0
+        }
+
         guard let sourceData = try? Data(contentsOf: sourceURL) else {
             return 0
         }
         if let existing = try? Data(contentsOf: destinationURL), existing == sourceData {
+            // Same bytes, different stamp — which is every file in the bundle
+            // the first time the app is rebuilt. Copy the stamp across so the
+            // cheap check can answer next time instead of re-reading 61 MB
+            // for the rest of the session.
+            WorkspaceModel.copyModificationDate(from: sourceURL, to: destinationURL)
             return 0
         }
         do {
@@ -480,25 +516,94 @@ class WorkspaceModel {
             if destinationURL.pathExtension == "sh" {
                 try? fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: destinationURL.path)
             }
+            WorkspaceModel.copyModificationDate(from: sourceURL, to: destinationURL)
             return 1
         } catch {
             return 0
         }
     }
 
-    /// Mirrors a directory: copies what differs, removes what should not
-    /// be there. Returns how many files changed either way.
+    /// Whether two files can be taken for the same file without reading them.
+    ///
+    /// Size AND modification date, both. Either alone is far too easy to
+    /// match by accident. A file edited in place so cleverly that it keeps
+    /// both would be missed, and that is the trade: the alternative is
+    /// reading 122 MB to answer a question two stat calls almost always
+    /// answer correctly. The dates only line up because `syncFile` stamps
+    /// what it writes — see `copyModificationDate`.
+    static func filesLookIdentical(_ oneURL: URL, _ otherURL: URL) -> Bool {
+        let wanted: Set<URLResourceKey> = [.fileSizeKey, .contentModificationDateKey]
+        guard let one = try? oneURL.resourceValues(forKeys: wanted),
+              let other = try? otherURL.resourceValues(forKeys: wanted),
+              let oneSize = one.fileSize,
+              let otherSize = other.fileSize,
+              let oneDate = one.contentModificationDate,
+              let otherDate = other.contentModificationDate else {
+            return false
+        }
+        if oneSize != otherSize {
+            return false
+        }
+        // A tolerance rather than equality: a date makes a round trip through
+        // the file system as a floating-point number of seconds, and an exact
+        // comparison can fail on the last bit for two stamps that are the
+        // same moment. A millisecond is far tighter than any real edit.
+        return abs(oneDate.timeIntervalSince(otherDate)) < 0.001
+    }
+
+    /// Gives the copy the original's modification date, so the cheap check
+    /// recognises it next time.
+    static func copyModificationDate(from sourceURL: URL, to destinationURL: URL) {
+        guard let date = try? sourceURL.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate else {
+            return
+        }
+        try? FileManager.default.setAttributes([.modificationDate: date], ofItemAtPath: destinationURL.path)
+    }
+
+    /// Where a file sits inside a folder, as a relative path.
+    ///
+    /// This is arithmetic on strings, and it was wrong in a way that only
+    /// shows up on some paths: the enumerator hands back RESOLVED paths, so
+    /// a folder reached through a symlink (`/var/…`, which is really
+    /// `/private/var/…`) does not match the prefix it was asked about. The
+    /// old code took a fixed number of characters off the front regardless,
+    /// produced nonsense, and the mirror then decided every file in the
+    /// destination was extraneous — deleting the whole toolchain and copying
+    /// it back on every pass. A working folder on the Desktop never showed
+    /// it; one under a symlinked path would have.
+    ///
+    /// Returns nil when the file is not inside the folder at all, which the
+    /// callers treat as "not mine to touch".
+    static func relativePath(of fileURL: URL, under folderURL: URL) -> String? {
+        let candidates: [(String, String)] = [
+            (fileURL.path, folderURL.path),
+            (fileURL.resolvingSymlinksInPath().path, folderURL.resolvingSymlinksInPath().path),
+        ]
+        for (filePath, folderPath) in candidates {
+            if filePath.hasPrefix(folderPath + "/") {
+                return String(filePath.dropFirst(folderPath.count + 1))
+            }
+        }
+        return nil
+    }
+
     static func syncDirectory(from sourceURL: URL, to destinationURL: URL) -> Int {
         let fileManager: FileManager = FileManager.default
         var changed: Int = 0
 
-        var sourceFiles: [String] = []
+        // A SET, not an array. This was an array, and the removal pass below
+        // asked it `contains` once per destination file — 11,354 files each
+        // scanning an 11,354-element list is around 129 million string
+        // comparisons for a folder in which nothing had changed.
+        var sourceFiles: Set<String> = []
         if let enumerator = fileManager.enumerator(at: sourceURL, includingPropertiesForKeys: [.isRegularFileKey]) {
             for case let fileURL as URL in enumerator {
                 let isFile: Bool = (try? fileURL.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) ?? false
                 if isFile {
-                    let relative: String = String(fileURL.path.dropFirst(sourceURL.path.count + 1))
-                    sourceFiles.append(relative)
+                    guard let relative = WorkspaceModel.relativePath(of: fileURL, under: sourceURL) else {
+                        continue
+                    }
+                    sourceFiles.insert(relative)
                     changed += WorkspaceModel.syncFile(from: fileURL, to: destinationURL.appendingPathComponent(relative))
                 }
             }
@@ -509,7 +614,11 @@ class WorkspaceModel {
             for case let fileURL as URL in enumerator {
                 let isFile: Bool = (try? fileURL.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) ?? false
                 if isFile {
-                    let relative: String = String(fileURL.path.dropFirst(destinationURL.path.count + 1))
+                    guard let relative = WorkspaceModel.relativePath(of: fileURL, under: destinationURL) else {
+                        // Not recognisably inside the folder being mirrored,
+                        // so not ours to delete.
+                        continue
+                    }
                     if !sourceFiles.contains(relative) {
                         toRemove.append(fileURL)
                     }
