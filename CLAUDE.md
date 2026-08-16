@@ -127,15 +127,23 @@ Neither app contains toolchain logic of its own: they write the same
    nothing to report, because neither of the two things they had just done was
    among the things anybody had thought to record.
 
-6. **Colima is shared with other projects** on this machine (Supabase local dev,
+6. **Commit straight to `main`.** Do not open a feature branch first, even
+   though general guidance says to branch when on the default branch. Russell
+   is the sole developer here and the history is linear; a branch only adds a
+   merge he has to undo. (The "for now" is his — if this project gains other
+   contributors, a later instruction to branch supersedes this rather than
+   contradicting it.) Commit only when asked, and end the message with the
+   `Co-Authored-By` trailer.
+
+7. **Colima is shared with other projects** on this machine (Supabase local dev,
    among others). Never `colima stop` unless `docker ps -q` comes back empty.
    The app's quit path and the scripts already enforce this; keep it that way.
    The Colima VM only mounts `$HOME`, so a working folder outside the home
    directory bind-mounts as an empty folder inside the container.
-7. **Swift follows the project style rules**: no `map`/`filter`/`reduce`,
+8. **Swift follows the project style rules**: no `map`/`filter`/`reduce`,
    `@Observable` (never `ObservableObject`), `// MARK: -` sections, clarity over
    concision.
-8. **Driving the interface leaves the machine as you found it — and gives the
+9. **Driving the interface leaves the machine as you found it — and gives the
    terminal back.** Written for **macOS sessions**, where the setup is known:
    Russell works at this Mac with the session running in iTerm. (A Windows
    session owes the same courtesy to whatever terminal it was launched from,
