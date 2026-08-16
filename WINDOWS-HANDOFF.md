@@ -811,10 +811,10 @@ that section's console in Plantoir" from one code path and "…that section's
 window in Plantoir" from another, so which sentence a teacher got depended only
 on whether a window happened to be open.
 
-**How it stays true.** `Plantoir --assist-contract contracts` writes both files
-from `AssistWording`, `AssistCardCommand` and the tool surface itself, and
-`AssistContractTests` runs the same generator in-process and fails when what is
-committed disagrees. A changed sentence therefore fails on the mac in the same
+**How it stays true.** `Plantoir --write-contracts contracts` writes all three
+files from `AssistWording`, `AssistCardCommand`, the tool surface and
+`TaskMilestones`, and the contract tests run the same generator in-process and
+fail when what is committed disagrees. A changed sentence therefore fails on the mac in the same
 run that changed it, and reaches you as a **diff in `contracts/`** in the same
 commit as the Swift. Verified by breaking a sentence on purpose: the suite
 failed naming the key and the command to regenerate.

@@ -26,11 +26,11 @@ struct QuartzTeachersApp: App {
             AssistMCPServer.serve(workingFolder: folder)
         }
 
-        // Writing the contract in `contracts/` is the other thing this binary
+        // Writing the contracts in `contracts/` is the other thing this binary
         // does without becoming an app. Same reasoning as the MCP server: the
-        // files describe what the app SAYS and which tools it has, so they are
-        // written by the app rather than by a script that would have to be
-        // kept in step with it by hand.
+        // files describe what the app SAYS, which tools it has, and what it
+        // asks the launchers to do, so they are written by the app rather than
+        // by a script that would have to be kept in step with it by hand.
         if let directory = AssistContract.requestedDirectory(from: CommandLine.arguments) {
             print(AssistContract.write(into: directory))
             exit(0)

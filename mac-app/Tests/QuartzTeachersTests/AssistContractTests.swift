@@ -21,10 +21,10 @@ final class AssistContractTests: XCTestCase {
     /// How to put it right, said the same way in every failure here.
     private static let howToFix: String =
         "\n\nThe contract in contracts/ is out of date. Regenerate it:\n"
-      + "    Plantoir --assist-contract contracts\n"
+      + "    Plantoir --write-contracts contracts\n"
       + "…or, from a build tree:\n"
       + "    <DerivedData>/Build/Products/Debug/Plantoir.app/Contents/MacOS/Plantoir "
-      + "--assist-contract contracts\n"
+      + "--write-contracts contracts\n"
       + "Then commit the diff — that diff is how the Windows side finds out."
 
     // MARK: - Functions

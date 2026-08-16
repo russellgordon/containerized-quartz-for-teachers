@@ -1,5 +1,5 @@
 {
-  "note" : "Generated from mac-app AssistWording by `Plantoir --assist-contract`. Do not hand-edit; see contracts/README.md.",
+  "note" : "Generated from mac-app AssistWording by `Plantoir --write-contracts`. Do not hand-edit; see contracts/README.md.",
   "placeholders" : {
     "course" : "a course code, e.g. ICS3U",
     "section" : "a section number, e.g. 1"

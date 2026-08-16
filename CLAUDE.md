@@ -30,7 +30,28 @@ Neither app contains toolchain logic of its own: they write the same
    assistant's own plumbing: no model names, parameter counts, tokens, context
    windows or GPU talk. It says "the small assistant" and "the larger
    assistant", and a test enforces it.
-2. **Every macOS improvement is written up for Windows, as you go.** The
+2. **A new behaviour goes into the SHARED test suite, or its intent goes into
+   the other side's handoff. Never neither.** Every feature and every changed
+   behaviour lands in one of two places, and which one is a judgement about
+   portability, not about effort:
+   - **It belongs in [`contracts/`](contracts/README.md)** if it is a sentence
+     a teacher reads, a rule with inputs and expected outputs, or a sequence
+     that must happen in order. Add the case, run it here, commit the diff —
+     the other side then runs the identical case. Adding to `AssistWording` or
+     to a contract's authored half is part of writing the feature, not a
+     follow-up.
+   - **It belongs in the other side's handoff** — `WINDOWS-HANDOFF.md` for
+     work done on the mac, `MAC-HANDOFF.md` for work done on Windows — if it
+     cannot be expressed as data: anything visual, anything with platform
+     mechanics (WSL2, ConPTY, Colima, port leases), anything measured rather
+     than asserted. Then write the INTENT and the desired behaviour, not just
+     that it exists. `WINDOWS-HANDOFF.md` keeps the list of what the contract
+     cannot carry; if your change is on that list, the handoff is where it goes.
+
+   The failure this prevents is the quiet one: a behaviour that exists in one
+   app, is described nowhere the other app's tests can reach, and is discovered
+   months later as a difference nobody chose.
+3. **Every macOS improvement is written up for Windows, as you go.** The
    Windows app is built from what this side learns, by somebody who cannot read
    the Swift or watch it being tested, so a change that exists only in Swift is
    one they will re-derive from scratch — usually after shipping the same bug
@@ -52,15 +73,15 @@ Neither app contains toolchain logic of its own: they write the same
    options REJECTED and why, or they get proposed again and cost the same
    afternoon twice. This applies to decisions reached by discussion as much as by
    code, and it is not contingent on being asked.
-3. **Work that arrives FROM Windows is logged in
+4. **Work that arrives FROM Windows is logged in
    [`MAC-HANDOFF.md`](MAC-HANDOFF.md)**, and entries there are marked `✅ DONE`
    in place rather than deleted, so the ledger keeps its own history.
-4. **Colima is shared with other projects** on this machine (Supabase local dev,
+5. **Colima is shared with other projects** on this machine (Supabase local dev,
    among others). Never `colima stop` unless `docker ps -q` comes back empty.
    The app's quit path and the scripts already enforce this; keep it that way.
    The Colima VM only mounts `$HOME`, so a working folder outside the home
    directory bind-mounts as an empty folder inside the container.
-5. **Swift follows the project style rules**: no `map`/`filter`/`reduce`,
+6. **Swift follows the project style rules**: no `map`/`filter`/`reduce`,
    `@Observable` (never `ObservableObject`), `// MARK: -` sections, clarity over
    concision.
 
@@ -337,6 +358,7 @@ it rather than restating it:
 |---|---|
 | What does the assistant SAY to a teacher? | `AssistWording` in the mac app → generated into [`contracts/assist-wording.json`](contracts/assist-wording.json). |
 | What must HAPPEN, and in what order? | [`contracts/assist-cases.json`](contracts/assist-cases.json) — run by both test suites. |
+| What is the launcher asked to do, what is a teacher told about what they typed, which progress markers are shared? | [`contracts/app-rules.json`](contracts/app-rules.json). |
 | WHY is it that way, and what was rejected? | [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) for anything an implementer needs; a code comment for anything a reader of that file needs. |
 | WHAT changed, WHEN, and what it cost | [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) — a dated log. **Append-only history, not a specification**: a row records what was true that day, and is not edited when the behaviour changes again. Never quote a row as the current wording. |
 | How does the whole feature work? | [`documentation/10-local-ai-assistant.md`](documentation/10-local-ai-assistant.md). |
@@ -370,7 +392,7 @@ path from nothing to a change that will not be re-derived:
 2. **[`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md)** — architecture, the config
    contract, and the reasoning behind the decisions. Long, and the section
    headings are enough to navigate.
-3. **[`contracts/README.md`](contracts/README.md)**, then the two JSON files.
+3. **[`contracts/README.md`](contracts/README.md)**, then the three JSON files.
    These are the acceptance list: wire them into `Plantoir.Tests` and the
    assistant's behaviour is tested rather than eyeballed. **Do not retype the
    sentences or the scenarios into your test files** — deserialise them.
@@ -391,7 +413,7 @@ they are a fair first task: implementing them fixes a real bug on that side.
 | [`documentation/`](documentation/README.md) | How the toolchain works, numbered 01–10: overview, image, launchers, course setup, build pipeline, Quartz customizations, deployment, config reference, mac app, local AI assistant. |
 | [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) | The dated log of every GUI change, with a required "Notes for Windows port" column. Append here for any GUI change — and read it as HISTORY: it used to be described as "the spec", and `contracts/` is what a test should be written against now. |
 | [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) | Architecture, the config contract, platform notes, and the WSL2 background — start here for Windows work, and write architectural decisions into it. |
-| [`contracts/`](contracts/README.md) | What the two apps must agree on, as data both test suites run: every sentence the assistant says, and the behaviour cases in order. Generated from the macOS app; never hand-edited. |
+| [`contracts/`](contracts/README.md) | What the two apps must agree on, as data both test suites run: the assistant's sentences and behaviour cases, and the app-wide rules — launcher arguments, validation messages, progress markers, preview ports. Generated from the macOS app; never hand-edited. |
 | [`MAC-HANDOFF.md`](MAC-HANDOFF.md) | The mirror: work that originated on Windows or in shared `scripts/` and needs the mac's attention. Read it when syncing the two sides. |
 | [`RELEASING.md`](RELEASING.md) | Cutting a release: signing, bundling, and the frozen asset names both platforms depend on. |
 | [`TODO.md`](TODO.md) | Deferred work, with the research already done so picking one up is cheap. |

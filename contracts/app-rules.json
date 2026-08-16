@@ -1,0 +1,453 @@
+{
+  "configurationRules" : {
+    "cloudflareAccountID" : [
+      {
+        "expectProblem" : "Paste your Cloudflare Account ID.",
+        "input" : ""
+      },
+      {
+        "expectProblem" : "Paste your Cloudflare Account ID.",
+        "input" : "  ",
+        "why" : "Trimmed first — a pasted space is not an answer."
+      },
+      {
+        "expectProblem" : null,
+        "input" : "0123456789abcdef0123456789abcdef"
+      },
+      {
+        "expectProblem" : null,
+        "input" : "0123456789ABCDEF0123456789ABCDEF",
+        "why" : "Case does not matter; Cloudflare prints them lowercase but a teacher may retype."
+      },
+      {
+        "expectProblem" : "That doesn’t look like an Account ID — it’s 32 letters and digits.",
+        "input" : "abc"
+      },
+      {
+        "expectProblem" : "That doesn’t look like an Account ID — it’s 32 letters and digits.",
+        "input" : "0123456789abcdef0123456789abcdeg",
+        "why" : "32 characters but not all hexadecimal — length alone is not the test."
+      }
+    ],
+    "customDomain" : [
+      {
+        "expectNormalized" : "notes.example.ca",
+        "input" : "  notes.example.ca  "
+      },
+      {
+        "expectNormalized" : "notes.example.ca",
+        "input" : "https://notes.example.ca"
+      },
+      {
+        "expectNormalized" : "notes.example.ca",
+        "input" : "http://notes.example.ca"
+      },
+      {
+        "expectNormalized" : "notes.example.ca",
+        "input" : "https://notes.example.ca/ics3u/",
+        "why" : "A teacher pastes the address bar. Everything from the first slash is a path, not a host."
+      },
+      {
+        "expectNormalized" : "",
+        "input" : ""
+      }
+    ],
+    "deployFolder" : [
+      {
+        "expectProblem" : "Choose the folder this course deploys into.",
+        "input" : ""
+      },
+      {
+        "expectProblem" : "That folder doesn’t exist — use Choose… to pick or create one.",
+        "input" : "@MISSING@",
+        "why" : "@MISSING@ is a token the test runner replaces with a path that does not exist."
+      },
+      {
+        "expectProblem" : "That’s a file — deploying needs a folder.",
+        "input" : "@FILE@",
+        "why" : "@FILE@ is replaced with a real file, not a folder. A teacher can pick one in a file dialog."
+      },
+      {
+        "expectProblem" : null,
+        "input" : "@FOLDER@",
+        "why" : "@FOLDER@ is replaced with a real, writable folder."
+      }
+    ],
+    "note" : "What a teacher is told about what they typed. Both apps ask the same questions and must give the same answers; the exact sentences are the product's, so they are asserted by equality rather than by 'contains'."
+  },
+  "deployArguments" : {
+    "cases" : [
+      {
+        "cloudflareAccountID" : "",
+        "configuration" : {
+          "course_code" : "ICS3U"
+        },
+        "course" : "ICS3U",
+        "expectArguments" : [
+          "ICS3U",
+          "1"
+        ],
+        "name" : "Netlify, the default, passes no target flag",
+        "section" : 1
+      },
+      {
+        "cloudflareAccountID" : "0123456789abcdef0123456789abcdef",
+        "configuration" : {
+          "course_code" : "MCV4U",
+          "deploy_target" : "cloudflare_pages"
+        },
+        "course" : "MCV4U",
+        "expectArguments" : [
+          "MCV4U",
+          "2",
+          "--target",
+          "cloudflare",
+          "--account",
+          "0123456789abcdef0123456789abcdef"
+        ],
+        "name" : "Cloudflare passes the target and the account",
+        "section" : 2
+      },
+      {
+        "cloudflareAccountID" : "",
+        "configuration" : {
+          "course_code" : "MCV4U",
+          "deploy_target" : "cloudflare_pages"
+        },
+        "course" : "MCV4U",
+        "expectArguments" : [
+          "MCV4U",
+          "1",
+          "--target",
+          "cloudflare"
+        ],
+        "name" : "Cloudflare with no account ID still names the target",
+        "section" : 1,
+        "why" : "The launcher can discover the account from some tokens. A token scoped only to Pages cannot, which is why the app hands over what the teacher gave it — but an empty value must not be passed as an argument."
+      },
+      {
+        "cloudflareAccountID" : "0123456789abcdef0123456789abcdef",
+        "configuration" : {
+          "course_code" : "SPH3U",
+          "deploy_folder_path" : "/Users/teacher/Sites/sph3u",
+          "deploy_target" : "local_folder"
+        },
+        "course" : "SPH3U",
+        "expectArguments" : [
+          "SPH3U",
+          "3",
+          "--to-folder",
+          "/Users/teacher/Sites/sph3u"
+        ],
+        "name" : "A local folder wins over everything else",
+        "section" : 3,
+        "why" : "A folder deploy never touches a web host, so no target and no account are passed even when an account ID exists."
+      }
+    ],
+    "note" : "Given a course's configuration, what deploy.sh is asked to do. One place must decide this in each app — on the mac it is DeployCommand.arguments, shared by the Deploy button, the assistant and the scheduled-deploy alarm. Built separately anywhere and this happens: the assistant path never passed --target cloudflare, and a Cloudflare course deployed to Netlify. Nothing failed; the site simply appeared on the wrong host. Netlify passes NO target flag at all — it is the launcher's default, and every course written before Cloudflare existed relies on that."
+  },
+  "generated" : {
+    "keys" : [
+      "milestones"
+    ],
+    "note" : "Written by `Plantoir --write-contracts` from the app's own types and overwritten: milestones. The rest is hand-written expectation and is preserved."
+  },
+  "markerOrigins" : {
+    "knownDivergence" : {
+      "Setting up this Mac" : "Setting up this PC"
+    },
+    "note" : "Where each milestone's marker text actually comes from, which decides whether the two apps must match it. shared-python: printed by scripts/*.py, identical on both platforms, so the string must match EXACTLY. launcher: printed by setup.sh/preview.sh/deploy.sh, which have .ps1 counterparts written separately — these deliberately differ, and the mac's 'Setting up this Mac' is Windows' 'Setting up this PC'. elsewhere: printed by the Docker build or a tool, and worth checking by hand. Getting this wrong is silent: a progress bar that stops moving looks like a slow build.",
+    "origins" : {
+      "'Media' folder" : "shared-python",
+      "Building your website builder" : "launcher",
+      "Cloudflare project" : "shared-python",
+      "Copying shared folders" : "shared-python",
+      "Delta deploy created" : "shared-python",
+      "delta deploy manifest" : "shared-python",
+      "Deploy complete" : "shared-python",
+      "Deploying from local build" : "shared-python",
+      "Ensuring container is running" : "launcher",
+      "Host timezone offset" : "launcher",
+      "Installing dependencies" : "shared-python",
+      "Launching Quartz preview" : "shared-python",
+      "Netlify site" : "shared-python",
+      "PUBLISHED_FOLDER=" : "launcher",
+      "Quartz Locale" : "shared-python",
+      "Quartz v4" : "elsewhere",
+      "Select folders/files to HIDE" : "shared-python",
+      "set up successfully" : "shared-python",
+      "Setting up this Mac" : "launcher",
+      "Starting container if needed" : "launcher",
+      "timetable section numbers" : "shared-python",
+      "to a folder" : "launcher",
+      "Updated pageTitle" : "shared-python",
+      "Uploading the built site" : "shared-python",
+      "Welcome to the Course Setup Script" : "shared-python"
+    }
+  },
+  "milestones" : {
+    "buildAndDeploy" : [
+      {
+        "label" : "Getting this Mac ready…",
+        "marker" : "Setting up this Mac"
+      },
+      {
+        "label" : "Building your website builder…",
+        "marker" : "Building your website builder"
+      },
+      {
+        "label" : "Starting up…",
+        "marker" : "Starting container if needed"
+      },
+      {
+        "label" : "Gathering your content…",
+        "marker" : "Copying shared folders"
+      },
+      {
+        "label" : "Building your site…",
+        "marker" : "Quartz v4"
+      },
+      {
+        "label" : "Connecting to Netlify…",
+        "marker" : "Netlify site"
+      },
+      {
+        "label" : "Uploading your pages…",
+        "marker" : "Delta deploy created"
+      },
+      {
+        "label" : "Finishing up…",
+        "marker" : "Deploy complete"
+      }
+    ],
+    "buildAndDeployToCloudflare" : [
+      {
+        "label" : "Getting this Mac ready…",
+        "marker" : "Setting up this Mac"
+      },
+      {
+        "label" : "Building your website builder…",
+        "marker" : "Building your website builder"
+      },
+      {
+        "label" : "Starting up…",
+        "marker" : "Starting container if needed"
+      },
+      {
+        "label" : "Gathering your content…",
+        "marker" : "Copying shared folders"
+      },
+      {
+        "label" : "Building your site…",
+        "marker" : "Quartz v4"
+      },
+      {
+        "label" : "Connecting to Cloudflare…",
+        "marker" : "Cloudflare project"
+      },
+      {
+        "label" : "Uploading your pages…",
+        "marker" : "Uploading the built site"
+      },
+      {
+        "label" : "Finishing up…",
+        "marker" : "Deploy complete"
+      }
+    ],
+    "buildAndDeployToFolder" : [
+      {
+        "label" : "Getting this Mac ready…",
+        "marker" : "Setting up this Mac"
+      },
+      {
+        "label" : "Building your website builder…",
+        "marker" : "Building your website builder"
+      },
+      {
+        "label" : "Starting up…",
+        "marker" : "Starting container if needed"
+      },
+      {
+        "label" : "Gathering your content…",
+        "marker" : "Copying shared folders"
+      },
+      {
+        "label" : "Building your site…",
+        "marker" : "Quartz v4"
+      },
+      {
+        "label" : "Copying your files…",
+        "marker" : "to a folder"
+      },
+      {
+        "label" : "Finishing up…",
+        "marker" : "PUBLISHED_FOLDER="
+      }
+    ],
+    "courseCreation" : [
+      {
+        "label" : "Getting this Mac ready…",
+        "marker" : "Setting up this Mac"
+      },
+      {
+        "label" : "Building your website builder…",
+        "marker" : "Building your website builder"
+      },
+      {
+        "label" : "Getting ready…",
+        "marker" : "Welcome to the Course Setup Script"
+      },
+      {
+        "label" : "Preparing your course folder…",
+        "marker" : "'Media' folder"
+      },
+      {
+        "label" : "Choosing appearance…",
+        "marker" : "Quartz Locale"
+      },
+      {
+        "label" : "Setting up sections…",
+        "marker" : "timetable section numbers"
+      },
+      {
+        "label" : "Creating folders and files…",
+        "marker" : "Select folders/files to HIDE"
+      },
+      {
+        "label" : "Finishing up…",
+        "marker" : "set up successfully"
+      }
+    ],
+    "deploy" : [
+      {
+        "label" : "Getting this Mac ready…",
+        "marker" : "Setting up this Mac"
+      },
+      {
+        "label" : "Building your website builder…",
+        "marker" : "Building your website builder"
+      },
+      {
+        "label" : "Starting up…",
+        "marker" : "Ensuring container is running"
+      },
+      {
+        "label" : "Checking your site…",
+        "marker" : "Deploying from local build"
+      },
+      {
+        "label" : "Connecting to Netlify…",
+        "marker" : "Netlify site"
+      },
+      {
+        "label" : "Comparing what changed…",
+        "marker" : "delta deploy manifest"
+      },
+      {
+        "label" : "Uploading your pages…",
+        "marker" : "Delta deploy created"
+      },
+      {
+        "label" : "Finishing up…",
+        "marker" : "Deploy complete"
+      }
+    ],
+    "deployToCloudflare" : [
+      {
+        "label" : "Getting this Mac ready…",
+        "marker" : "Setting up this Mac"
+      },
+      {
+        "label" : "Building your website builder…",
+        "marker" : "Building your website builder"
+      },
+      {
+        "label" : "Starting up…",
+        "marker" : "Ensuring container is running"
+      },
+      {
+        "label" : "Checking your site…",
+        "marker" : "Deploying from local build"
+      },
+      {
+        "label" : "Connecting to Cloudflare…",
+        "marker" : "Cloudflare project"
+      },
+      {
+        "label" : "Uploading your pages…",
+        "marker" : "Uploading the built site"
+      },
+      {
+        "label" : "Finishing up…",
+        "marker" : "Deploy complete"
+      }
+    ],
+    "deployToFolder" : [
+      {
+        "label" : "Checking your site…",
+        "marker" : "Host timezone offset"
+      },
+      {
+        "label" : "Copying your files…",
+        "marker" : "to a folder"
+      },
+      {
+        "label" : "Finishing up…",
+        "marker" : "PUBLISHED_FOLDER="
+      }
+    ],
+    "note" : "label is what a teacher reads; marker is the text in the shared scripts' output that means the step has been reached. The marker is the load-bearing half — it is matched against output produced by shared Python, so both apps must match these strings exactly. A drifted marker does not crash anything: the progress bar simply stops moving, and neither app can tell.",
+    "preview" : [
+      {
+        "label" : "Getting this Mac ready…",
+        "marker" : "Setting up this Mac"
+      },
+      {
+        "label" : "Building your website builder…",
+        "marker" : "Building your website builder"
+      },
+      {
+        "label" : "Starting up…",
+        "marker" : "Starting container if needed"
+      },
+      {
+        "label" : "Gathering your content…",
+        "marker" : "Copying shared folders"
+      },
+      {
+        "label" : "Applying your settings…",
+        "marker" : "Updated pageTitle"
+      },
+      {
+        "label" : "Preparing components…",
+        "marker" : "Installing dependencies"
+      },
+      {
+        "label" : "Building your site…",
+        "marker" : "Quartz v4"
+      },
+      {
+        "label" : "Opening the preview…",
+        "marker" : "Launching Quartz preview"
+      }
+    ]
+  },
+  "note" : "What both apps must agree on outside the assistant. See contracts/README.md.",
+  "previewPorts" : {
+    "containerPorts" : [
+      8081,
+      8082,
+      8083,
+      8084
+    ],
+    "firstHostBlock" : [
+      8081,
+      8091,
+      8101
+    ],
+    "hostBlockStep" : 10,
+    "note" : "Several previews run at once, one per working folder, and they must not collide. These numbers are the toolchain's, not either app's: the container publishes fixed ports and the host side probes a block.",
+    "websocketOffset" : 1000,
+    "why" : "Quartz's live-reload websocket needs its own port (--wsPort = port + 1000). Without it, two previews collide on the websocket even when their site ports differ — which looks like one preview randomly failing to refresh rather than like a port clash."
+  }
+}

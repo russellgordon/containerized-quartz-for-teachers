@@ -46,7 +46,12 @@ enum AssistContract {
     static let generatedCaseKeys: [String] = ["cardPhrasings", "tools"]
 
     /// How the flag is spelled.
-    static let flag: String = "--assist-contract"
+    ///
+    /// It writes every contract, not only the assistant's — the name changed
+    /// from `--assist-contract` when `app-rules.json` joined them, because a
+    /// flag that writes three files and names one of them is the kind of small
+    /// lie that costs somebody an afternoon.
+    static let flag: String = "--write-contracts"
 
     // MARK: - Functions
 
@@ -84,7 +89,7 @@ enum AssistContract {
             "nothingToDo": AssistWording.nothingToDo,
         ]
         return [
-            "note": "Generated from mac-app AssistWording by `Plantoir --assist-contract`. "
+            "note": "Generated from mac-app AssistWording by `Plantoir --write-contracts`. "
                   + "Do not hand-edit; see contracts/README.md.",
             "placeholders": [
                 "course": "a course code, e.g. ICS3U",
@@ -193,13 +198,13 @@ enum AssistContract {
             cases[key] = value
         }
         cases["generated"] = [
-            "note": "These top-level keys are written by `Plantoir --assist-contract` from the app's own "
+            "note": "These top-level keys are written by `Plantoir --write-contracts` from the app's own "
                   + "types and will be overwritten: " + generatedCaseKeys.joined(separator: ", ")
                   + ". The rest — nearMisses, scenarios — is hand-written intent and is preserved.",
             "keys": generatedCaseKeys,
         ]
         if cases["note"] == nil {
-            cases["note"] = "Generated from the macOS app by `Plantoir --assist-contract`. "
+            cases["note"] = "Generated from the macOS app by `Plantoir --write-contracts`. "
                           + "Do not hand-edit; see contracts/README.md."
         }
 
@@ -209,7 +214,8 @@ enum AssistContract {
         } catch {
             return "Could not write the contract: \(error.localizedDescription)"
         }
-        return "Wrote \(wordingURL.path)\nWrote \(casesURL.path)"
+        return "Wrote \(wordingURL.path)\nWrote \(casesURL.path)\n"
+             + AppRulesContract.write(into: directory)
     }
 
     /// Sorted keys and a trailing newline, so a regeneration that changed

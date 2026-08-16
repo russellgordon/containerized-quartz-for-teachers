@@ -8,6 +8,7 @@ ends in a green Windows suite instead of a day of clicking.
 |---|---|
 | [`assist-wording.json`](assist-wording.json) | Every sentence the assistant says to a teacher about deploying, previewing and agreeing to things, with `{course}` and `{section}` where values go. |
 | [`assist-cases.json`](assist-cases.json) | The behaviour: which phrasings are matched in code rather than routed, which tools wait for a button, which tools the local model is shown, and what must happen in what ORDER when the assistant deploys. |
+| [`app-rules.json`](app-rules.json) | Everything outside the assistant: what `deploy.sh` is asked to do for a given configuration, what a teacher is told about an Account ID or a custom domain they typed, the progress markers and **where each marker's text comes from**, and the preview's ports. |
 
 ## What is generated and what is written by hand
 
@@ -20,10 +21,36 @@ the boundary is a TOP-LEVEL key — the file names them under `generated.keys`:
 | `tools` | `AssistToolRunner.tools` / `.localTools` / `.mcpOnlyTools`, and each definition's `needsApproval` and `planTwinName` |
 | `nearMisses`, `scenarios` | **Hand-written intent.** The generator preserves them; nothing in the code says what a near miss is, or what ORDER events must happen in — those are decisions, and decisions are why this repository has handoff documents. |
 
+In `app-rules.json` the same split applies: `milestones` is a readout of
+`TaskMilestones` and is overwritten; `deployArguments`, `configurationRules`,
+`previewPorts` and `markerOrigins` are authored and preserved. The rule behind
+the split is worth stating once — **a readout of the code cannot fail when the
+code changes**, so anything that must catch a regression is written by hand and
+executed against the real function.
+
+### The one in `app-rules.json` that is easiest to get wrong
+
+`markerOrigins` says, for every progress marker, where its text actually comes
+from. It decides whether your app must match the string exactly:
+
+- **`shared-python`** — printed by `scripts/*.py`, identical output on both
+  platforms. Match it to the character. Seventeen of the twenty-five are these.
+- **`launcher`** — printed by `setup.sh` / `preview.sh` / `deploy.sh`, which
+  have separately written `.ps1` counterparts. These **deliberately differ**:
+  the mac watches for "Setting up this Mac" and Windows for "Setting up this
+  PC". Seven of the twenty-five.
+- **`elsewhere`** — printed by the Docker build or a tool; check by hand.
+
+A mac test verifies the classification against the actual files, so a marker
+that moves from a launcher into shared Python (or the reverse) fails here
+rather than silently changing what Windows should be matching. Getting this
+wrong crashes nothing: the progress bar simply stops moving, which reads as a
+slow build.
+
 ## Regenerating
 
 ```bash
-Plantoir --assist-contract contracts
+Plantoir --write-contracts contracts
 ```
 
 The bundled binary writes both files from the app's own types — `AssistWording`,
