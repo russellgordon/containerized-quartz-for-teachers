@@ -479,8 +479,8 @@ final class AssistToolRunnerTests: XCTestCase {
             "check_section", arguments: ["course": "ICS3U", "section": 1]
         ))
 
-        XCTAssertTrue(outcome.summary.contains("0 linked from nowhere"), outcome.summary)
-        XCTAssertTrue(outcome.detail.contains("Every visible page is linked from somewhere."),
+        XCTAssertFalse(outcome.detail.contains("linked from nowhere"), outcome.detail)
+        XCTAssertTrue(outcome.detail.contains("None of the visible pages link to unpublished pages"),
                       outcome.detail)
     }
 
@@ -499,7 +499,7 @@ final class AssistToolRunnerTests: XCTestCase {
             "check_section", arguments: ["course": "ICS3U", "section": 1]
         ))
 
-        XCTAssertTrue(outcome.summary.contains("1 linked from nowhere"), outcome.summary)
+        XCTAssertTrue(outcome.detail.contains("1 visible page is linked from nowhere"), outcome.detail)
         XCTAssertTrue(outcome.detail.contains("Loops"), outcome.detail)
     }
 
@@ -886,8 +886,11 @@ final class AssistToolRunnerTests: XCTestCase {
         let outcome: AssistToolOutcome = await made.runner.run(call: call(
             "check_section", arguments: ["course": "ICS3U", "section": 1]
         ))
-        XCTAssertTrue(outcome.shouldContinue)
-        XCTAssertTrue(outcome.detail.contains("3 pages, 2 visible to students"))
+        // The answer is complete and deterministic, so the turn ENDS with it:
+        // a model lap after it could only restate the same facts as a second
+        // bubble, which is what the transcript used to show.
+        XCTAssertFalse(outcome.shouldContinue)
+        XCTAssertTrue(outcome.detail.contains("Students would see 2 pages in ICS3U Section 1."))
         XCTAssertTrue(outcome.detail.contains("Loops"))
         XCTAssertTrue(outcome.detail.contains("(hidden)"))
         XCTAssertTrue(outcome.detail.contains("linked from nowhere"))
@@ -976,7 +979,7 @@ final class AssistToolRunnerTests: XCTestCase {
         let checked: AssistToolOutcome = await made.runner.run(call: call(
             "check_section", arguments: ["course": "ICS3U", "section": 1]
         ))
-        XCTAssertTrue(checked.detail.contains("1 page, 0 visible to students"))
+        XCTAssertTrue(checked.detail.contains("Students would see 0 pages in ICS3U Section 1."))
 
         let published: AssistToolOutcome = await made.runner.run(call: call(
             "publish_pages",

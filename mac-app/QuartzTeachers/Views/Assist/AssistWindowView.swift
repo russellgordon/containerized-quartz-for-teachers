@@ -547,9 +547,7 @@ private struct AssistEntryView: View {
         case .teacher:
             HStack {
                 Spacer(minLength: 48)
-                Text(entry.text)
-                    .foregroundStyle(.white)
-                    .textSelection(.enabled)
+                SelectableBubbleText(text: entry.text, colour: .white, bubbleFill: AssistBubbleColour.teacherNS)
                     .padding(.leading, 11)
                     .padding(.trailing, 11)
                     .padding(.top, 7)
@@ -566,8 +564,7 @@ private struct AssistEntryView: View {
         // strong fills down one side is exhausting to read.
         case .assistant:
             HStack {
-                Text(AssistSaid.styled(entry.text))
-                    .textSelection(.enabled)
+                SelectableBubbleText(text: entry.text, colour: .labelColor, bubbleFill: AssistBubbleColour.assistantNS)
                     // The tail's side gets the extra room, so the words sit
                     // the same distance from the bubble's edge on both sides.
                     .padding(.leading, 11)
@@ -590,8 +587,7 @@ private struct AssistEntryView: View {
         case .toolResult:
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(AssistSaid.styled(entry.text))
-                        .textSelection(.enabled)
+                    SelectableBubbleText(text: entry.text, colour: .labelColor, bubbleFill: AssistBubbleColour.assistantNS)
                     // When there is a list behind the answer, it unfolds
                     // inside the bubble. A count on its own is not something
                     // a teacher can act on — "1 broken link" says something

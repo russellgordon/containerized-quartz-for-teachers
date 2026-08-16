@@ -314,109 +314,71 @@ final class AssistToolRunner {
         let dangling: [AssistSectionLink] = graph.linksIntoHiddenPages()
         let orphans: [AssistSectionPage] = graph.visiblePagesNothingLinksTo()
 
-        var lines: [String] = []
-        let pageWord: String = graph.pages.count == 1 ? "page" : "pages"
-        lines.append("\(located.course.code) Section \(located.sectionNumber): "
-                     + "\(graph.pages.count) \(pageWord), "
-                     + "\(graph.visiblePageCount) visible to students.")
-        lines.append("")
+        let visible: Int = graph.visiblePageCount
+        let pageWord: String = visible == 1 ? "page" : "pages"
+        var paragraphs: [String] = []
+        paragraphs.append("Students would see \(visible) \(pageWord) in "
+                          + "\(located.course.code) Section \(located.sectionNumber).")
 
         if dangling.isEmpty {
-            lines.append("No visible page links to an unpublished one.")
+            paragraphs.append("None of the visible pages link to unpublished pages, ensuring "
+                              + "that all links are functional and point to published content.")
         } else {
+            var lines: [String] = []
             let word: String = dangling.count == 1 ? "link" : "links"
             lines.append("\(dangling.count) \(word) would take a student to a page that isn't there:")
             var listed: Int = 0
             for link in dangling {
                 if listed == AssistToolRunner.mostListed {
-                    lines.append("  …and \(dangling.count - listed) more.")
+                    lines.append("…and \(dangling.count - listed) more.")
                     break
                 }
-                lines.append("  \(link.fromRelativePath)  →  \(link.toTitle)  (hidden)")
+                lines.append("• \(link.fromRelativePath)  →  \(link.toTitle)  (hidden)")
                 listed += 1
             }
+            lines.append("Either publish the page each one points at, or take the link off "
+                         + "the page that points at it.")
+            paragraphs.append(lines.joined(separator: "\n"))
         }
-        lines.append("")
 
-        if orphans.isEmpty {
-            lines.append("Every visible page is linked from somewhere.")
-        } else {
+        // Silence when nothing is stranded: the teacher asked what students
+        // would see, and "every page is linked from somewhere" is only an
+        // answer when it is bad news.
+        if !orphans.isEmpty {
+            var lines: [String] = []
             let word: String = orphans.count == 1 ? "page is" : "pages are"
-            lines.append("\(orphans.count) visible \(word) linked from nowhere. Students can still reach "
-                         + "these through the site's explorer, and no publish or hide rule that follows "
-                         + "links will ever touch them:")
+            lines.append("\(orphans.count) visible \(word) linked from nowhere. Students can still "
+                         + "reach these through the site's explorer, and no publish or hide rule "
+                         + "that follows links will ever touch them:")
             var listed: Int = 0
             for page in orphans {
                 if listed == AssistToolRunner.mostListed {
-                    lines.append("  …and \(orphans.count - listed) more.")
+                    lines.append("…and \(orphans.count - listed) more.")
                     break
                 }
-                lines.append("  " + page.relativePath)
+                lines.append("• " + page.relativePath)
                 listed += 1
             }
+            paragraphs.append(lines.joined(separator: "\n"))
         }
 
-        return AssistToolOutcome.read(
-            "\(graph.visiblePageCount) of \(graph.pages.count) pages are visible; "
-            + "\(dangling.count) broken \(dangling.count == 1 ? "link" : "links"), "
-            + "\(orphans.count) linked from nowhere.",
-            detail: lines.joined(separator: "\n"),
-            showingTheTeacher: AssistToolRunner.everythingFound(
-                dangling: dangling, orphans: orphans,
-                courseCode: located.course.code, sectionNumber: located.sectionNumber
-            )
-        )
-    }
-
-    /// The whole of what the check found, for the teacher to unfold.
-    ///
-    /// Uncapped, unlike the model's copy. A count is not actionable — "1 broken
-    /// link" tells a teacher something is wrong and nothing about where — and a
-    /// list truncated at fifteen is not actionable either, for the one teacher
-    /// whose sixteenth is the one that matters. The model's copy stays capped
-    /// because a list of ninety pages would fill its context before the
-    /// question was considered; the teacher's is scrollable, so it can be
-    /// whole.
-    private static func everythingFound(
-        dangling: [AssistSectionLink],
-        orphans: [AssistSectionPage],
-        courseCode: String,
-        sectionNumber: Int
-    ) -> String {
-        var lines: [String] = []
-
-        if dangling.isEmpty {
-            lines.append("No visible page links to a page students cannot see.")
-        } else {
-            let word: String = dangling.count == 1 ? "link goes" : "links go"
-            lines.append("\(dangling.count) \(word) to a page students cannot see:")
-            for link in dangling {
-                lines.append("• \(link.fromRelativePath)")
-                lines.append("   → \(link.toTitle), which is not published")
-            }
-            lines.append("")
-            lines.append("Either publish the page each one points at, or take the link off the "
-                         + "page that points at it.")
+        if previewController(for: located.course, sectionNumber: located.sectionNumber)?.isRunning() == true {
+            let these: String = visible == 1 ? "this page" : "these \(visible) pages"
+            paragraphs.append("The section's preview will show \(these) once any rebuild "
+                              + "in progress finishes.")
         }
 
-        lines.append("")
+        let answer: String = paragraphs.joined(separator: "\n\n")
 
-        if orphans.isEmpty {
-            lines.append("Every visible page is reachable by following links.")
-        } else {
-            let word: String = orphans.count == 1 ? "page is" : "pages are"
-            lines.append("\(orphans.count) visible \(word) not linked from anywhere:")
-            for page in orphans {
-                lines.append("• \(page.relativePath)")
-            }
-            lines.append("")
-            lines.append("Class pages are not counted here — they are what a section is navigated "
-                         + "FROM, so nothing linking to one is normal. These are pages a student "
-                         + "would only find through the site's explorer, and no publish or hide "
-                         + "rule that follows links will ever reach them.")
-        }
-
-        return lines.joined(separator: "\n")
+        // The whole answer, once, and the turn is over. This used to be a
+        // read — a terse count for the transcript, a "Show me" disclosure
+        // with the specifics, and then the model's own paraphrase of the same
+        // facts as a second bubble. Three renderings of one answer, and the
+        // only one a teacher actually read was the model's — which, being a
+        // paraphrase, was also the only one that could get the facts wrong.
+        // The answer is deterministic, so it is composed here and shown
+        // as-is; a model lap after it could only restate it.
+        return AssistToolOutcome(summary: answer, detail: answer, shouldContinue: false)
     }
 
     // MARK: - The commonest request of all

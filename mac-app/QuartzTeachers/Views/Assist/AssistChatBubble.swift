@@ -162,31 +162,32 @@ struct AssistChatBubbleShape: Shape {
 
         // Measured off Messages, expressed against `tailScale` — one size of
         // tail for every size of bubble, which is what Messages draws. The
-        // silhouette is the fussy part, and it was measured a
-        // SECOND time after a first pass got the tip in the right place and
-        // the shape wrong:
+        // tip sits LESS inset than the corner's landing, and that is the
+        // whole character of the thing: the outer edge comes in with the
+        // corner and then eases back out and down. An outer edge that keeps
+        // curving inward gives a fin, which is what two early attempts drew.
         //
-        //   base of the tail   about 5.5pt wide — a sliver, not a wedge
-        //   outer edge         drifts OUTWARD as it descends, ending in a
-        //                      small flick. Curling inward is what made ours
-        //                      read as a fin rather than a tail.
-        //   hook rejoins       about 11.5pt inside the bubble's edge
-        // Straight off the measurements, at r = 12:
-        //
-        //   the corner meets the bottom edge   6.5pt inside the right edge
-        //   the tip                            5pt inside, 4pt below
-        //   the hook rejoins the bottom edge   11.5pt inside
-        //
-        // The tip being LESS inset than the corner is the whole character of
-        // the thing: the outer edge comes in with the corner and then flicks
-        // back out and down. An outer edge that keeps curving inward gives a
-        // fin, which is what two earlier attempts drew.
-        let dropBelow: CGFloat = tailScale * 0.333    // 4.8
-        let cornerEnd: CGFloat = tailScale * 0.542    // 7.9
-        let tipInset: CGFloat = tailScale * 0.417     // 6
-        let hookBase: CGFloat = min(tailScale * 0.958, body.width / 2)
+        // Retraced 2026-08-15 at native 2x against a side-by-side capture,
+        // which settled three complaints at once: the tail was too WIDE (the
+        // hook rejoined too far in), the side above it swept in too steeply
+        // (the jog needs more height than the radius gives it), and the
+        // silhouette had sharp vertices where Messages has none — the tip is
+        // rounded about a point and a half across, and the hook meets the
+        // bottom edge in a small curve, not a corner.
+        let dropBelow: CGFloat = tailScale * 0.30     // 5.1
+        // Where the corner lands on the bottom line follows the RADIUS, not
+        // the tail scale: measured at just over half of it on a capsule and
+        // a multi-line bubble alike.
+        let cornerEnd: CGFloat = radius * 0.55
+        let tipInset: CGFloat = tailScale * 0.38      // 6.5
+        let hookBase: CGFloat = min(tailScale * 0.85, body.width / 2)
 
-        let tip: CGPoint = at(body.maxX - tipInset, body.maxY + dropBelow)
+        // The jog needs MORE height than the radius: Messages spreads about
+        // 8 points of inset over 16-20 of descent, and giving it only the
+        // radius is what read as the side "sweeping in" harder than theirs.
+        // Clamped so a capsule, whose edge above is already curved, never
+        // starts the jog before the side exists to jog from.
+        let jogSpan: CGFloat = min(radius * 1.4, body.height - radius)
 
         var path: Path = Path()
 
@@ -197,41 +198,46 @@ struct AssistChatBubbleShape: Shape {
                           control: at(body.maxX, body.minY))
 
         // Down the right edge, then the corner into the tail — and the whole
-        // character of the joint is the TANGENT it ends on. Traced row by row
-        // off Messages (2026-08-15): the outer silhouette reaches its deepest
-        // inset (0.542 of the tail scale) exactly at the bottom line while
-        // travelling straight DOWN, keeps descending a hair, and only then
-        // eases back out to the tip. A corner curve that lands travelling
-        // horizontally — a normal rounded corner, which is what was here —
-        // meets the descending tail edge in a cusp, and the tail reads as a
-        // comma stuck under the bubble rather than the corner pulled down.
-        path.addLine(to: at(body.maxX, body.maxY - radius))
+        // character of the joint is the TANGENT it ends on: the silhouette
+        // reaches its deepest inset exactly at the bottom line while
+        // travelling straight DOWN. A corner curve that lands travelling
+        // horizontally — a normal rounded corner — meets the descending tail
+        // edge in a cusp, and the tail reads as a comma stuck under the
+        // bubble rather than the corner pulled down. Weighted to hug the
+        // side and complete the jog late, like the top corner mirrored.
+        path.addLine(to: at(body.maxX, body.maxY - jogSpan))
         path.addCurve(
             to: at(body.maxX - cornerEnd, body.maxY),
-            // Weighted so the edge HUGS the side and completes the jog late:
-            // profiled against the top corner (2026-08-15), Messages' bottom
-            // corner matches its top corner almost row for row until the
-            // tail takes over — the same distance in at the same distance
-            // from the end. An earlier weighting carried the inset too
-            // early, and the bubble read as bulging on the tail side rather
-            // than vertically symmetric.
-            control1: at(body.maxX, body.maxY - radius * 0.37),
-            control2: at(body.maxX - cornerEnd, body.maxY - radius * 0.10)
+            control1: at(body.maxX, body.maxY - jogSpan * 0.30),
+            control2: at(body.maxX - cornerEnd, body.maxY - jogSpan * 0.08)
         )
 
-        // Still heading down at the bottom line; eases outward to the tip.
+        // Still heading down at the bottom line; eases outward toward the
+        // tip, stopping where the tip's rounding begins.
         path.addQuadCurve(
-            to: tip,
-            control: at(body.maxX - cornerEnd, body.maxY + dropBelow * 0.6)
+            to: at(body.maxX - tipInset + 0.7, body.maxY + dropBelow - 1.3),
+            control: at(body.maxX - cornerEnd + 0.4, body.maxY + dropBelow * 0.55)
         )
 
-        // The hook: back up and in, concave, rejoining the bottom edge. This
+        // The rounded tip, about a point and a half across.
+        path.addQuadCurve(
+            to: at(body.maxX - tipInset - 0.9, body.maxY + dropBelow - 0.4),
+            control: at(body.maxX - tipInset, body.maxY + dropBelow + 0.4)
+        )
+
+        // The hook: back up and in, concave, toward the bottom edge. This
         // curve — not the tip — is what makes the shape read as a tail. The
         // traced inner edge is a diagonal with a mild sag toward the bubble,
         // not a deep scoop.
         path.addQuadCurve(
-            to: at(body.maxX - hookBase, body.maxY),
-            control: at(body.maxX - tailScale * 0.85, body.maxY + dropBelow * 0.65)
+            to: at(body.maxX - hookBase + 1.2, body.maxY + 0.8),
+            control: at(body.maxX - tailScale * 0.72, body.maxY + dropBelow * 0.5)
+        )
+
+        // And a small curve into the bottom edge where a corner used to be.
+        path.addQuadCurve(
+            to: at(body.maxX - hookBase - 1.6, body.maxY),
+            control: at(body.maxX - hookBase, body.maxY)
         )
 
         // Bottom edge back to the far side, and up.
@@ -420,7 +426,12 @@ enum AssistBubbleColour {
 
     // MARK: - Stored properties
 
-    static let teacher: Color = Color(red: 20 / 255, green: 147 / 255, blue: 255 / 255)
+    /// The AppKit forms, for the selectable label inside the bubble — its
+    /// selection paints the glyphs in the bubble's own colour, so it needs
+    /// these as `NSColor`.
+    static let teacherNS: NSColor = NSColor(srgbRed: 20 / 255, green: 147 / 255, blue: 255 / 255, alpha: 1)
+
+    static let teacher: Color = Color(nsColor: AssistBubbleColour.teacherNS)
 
     /// Messages' grey, not a system token. The token this used to be —
     /// `secondary` at 0.16 — lands on (50, 50, 50) over a dark window while
@@ -430,10 +441,12 @@ enum AssistBubbleColour {
     /// light value is Messages' long-standing light-mode bubble grey, which
     /// there was no light-mode capture to confirm against — if the light
     /// preview ever looks off, measure before touching either number.
-    static let assistant: Color = Color(nsColor: NSColor(name: nil) { appearance in
+    static let assistantNS: NSColor = NSColor(name: nil) { appearance in
         if appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
             return NSColor(srgbRed: 59 / 255, green: 59 / 255, blue: 61 / 255, alpha: 1)
         }
         return NSColor(srgbRed: 233 / 255, green: 233 / 255, blue: 235 / 255, alpha: 1)
-    })
+    }
+
+    static let assistant: Color = Color(nsColor: AssistBubbleColour.assistantNS)
 }
