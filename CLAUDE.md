@@ -359,6 +359,7 @@ it rather than restating it:
 | What does the assistant SAY to a teacher? | `AssistWording` in the mac app → generated into [`contracts/assist-wording.json`](contracts/assist-wording.json). |
 | What must HAPPEN, and in what order? | [`contracts/assist-cases.json`](contracts/assist-cases.json) — run by both test suites. |
 | What is the launcher asked to do, what is a teacher told about what they typed, which progress markers are shared? | [`contracts/app-rules.json`](contracts/app-rules.json). |
+| How is a teacher's list of class dates read? | [`contracts/schedule-rules.json`](contracts/schedule-rules.json). |
 | WHY is it that way, and what was rejected? | [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) for anything an implementer needs; a code comment for anything a reader of that file needs. |
 | WHAT changed, WHEN, and what it cost | [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) — a dated log. **Append-only history, not a specification**: a row records what was true that day, and is not edited when the behaviour changes again. Never quote a row as the current wording. |
 | How does the whole feature work? | [`documentation/10-local-ai-assistant.md`](documentation/10-local-ai-assistant.md). |
@@ -392,7 +393,7 @@ path from nothing to a change that will not be re-derived:
 2. **[`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md)** — architecture, the config
    contract, and the reasoning behind the decisions. Long, and the section
    headings are enough to navigate.
-3. **[`contracts/README.md`](contracts/README.md)**, then the three JSON files.
+3. **[`contracts/README.md`](contracts/README.md)**, then the four JSON files.
    These are the acceptance list: wire them into `Plantoir.Tests` and the
    assistant's behaviour is tested rather than eyeballed. **Do not retype the
    sentences or the scenarios into your test files** — deserialise them.

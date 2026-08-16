@@ -84,6 +84,140 @@
     ]
   },
   "note" : "Generated from the macOS app by `Plantoir --assist-contract`. Do not hand-edit; see contracts/README.md.",
+  "promptHistory" : {
+    "cases" : [
+      {
+        "name" : "Up walks back, Down walks forward",
+        "remember" : [
+          "publish tomorrow's class",
+          "deploy now"
+        ],
+        "steps" : [
+          {
+            "do" : "up",
+            "expect" : "deploy now",
+            "typed" : ""
+          },
+          {
+            "do" : "up",
+            "expect" : "publish tomorrow's class"
+          },
+          {
+            "do" : "down",
+            "expect" : "deploy now"
+          }
+        ]
+      },
+      {
+        "name" : "the half-typed line is put aside, not thrown away",
+        "remember" : [
+          "deploy now"
+        ],
+        "steps" : [
+          {
+            "do" : "up",
+            "expect" : "deploy now",
+            "typed" : "unpublish Unit 2, D"
+          },
+          {
+            "do" : "down",
+            "expect" : "unpublish Unit 2, D"
+          }
+        ],
+        "why" : "Walking back Down past the newest entry hands the teacher's own half-written sentence back exactly as it was. Losing it is the thing that makes people stop trusting the arrow keys."
+      },
+      {
+        "name" : "Up at the oldest entry does nothing",
+        "remember" : [
+          "deploy now"
+        ],
+        "steps" : [
+          {
+            "do" : "up",
+            "expect" : "deploy now",
+            "typed" : ""
+          },
+          {
+            "do" : "up",
+            "expect" : null
+          }
+        ],
+        "why" : "Rather than wrapping round to the newest, which reads as the keyboard having misfired."
+      },
+      {
+        "name" : "Down with no walk under way does nothing",
+        "remember" : [
+          "deploy now"
+        ],
+        "steps" : [
+          {
+            "do" : "down",
+            "expect" : null
+          }
+        ]
+      },
+      {
+        "expectEntries" : [
+          "deploy now"
+        ],
+        "name" : "the same thing twice in a row is remembered once",
+        "remember" : [
+          "deploy now",
+          "deploy now"
+        ],
+        "why" : "Testing something by running it five times should not mean five presses of Up to get past it."
+      },
+      {
+        "expectEntries" : [
+          "deploy now",
+          "preview",
+          "deploy now"
+        ],
+        "name" : "an earlier, non-adjacent repeat is left alone",
+        "remember" : [
+          "deploy now",
+          "preview",
+          "deploy now"
+        ],
+        "why" : "The order a teacher did things in is the thing they are scrolling through. De-duplicating across the whole list would rewrite their history rather than shorten it."
+      },
+      {
+        "name" : "typing ends the walk",
+        "remember" : [
+          "deploy now",
+          "preview"
+        ],
+        "steps" : [
+          {
+            "do" : "up",
+            "expect" : "preview",
+            "typed" : ""
+          },
+          {
+            "do" : "type"
+          },
+          {
+            "do" : "down",
+            "expect" : null
+          }
+        ],
+        "why" : "Once a recalled line has been edited it is a new line, and Down must not silently replace what has just been typed."
+      },
+      {
+        "expectEntries" : [
+          "deploy now"
+        ],
+        "name" : "blank input is not remembered",
+        "remember" : [
+          "deploy now",
+          "   ",
+          ""
+        ]
+      }
+    ],
+    "mostRemembered" : 50,
+    "note" : "Walking back through what the teacher has asked before, the way a Terminal does. The KEYS are per platform (Up and Down on the mac); these semantics are not. Modelled on a Terminal deliberately, because that is what teachers compare it to, and the details a Terminal gets right are the ones people notice only when they are missing. Steps are applied in order to a fresh history; `type` means the teacher edited the box, which ends the walk."
+  },
   "scenarios" : {
     "cases" : [
       {

@@ -788,6 +788,54 @@ on its local list.** The cut is only safe because something else asks. And the
 audit worth running after any removal is not "does the surface still route"
 but "can every refusal still be acted on by the surface that receives it".
 
+### What the assistant's window must BE — and what it need not look like
+
+Decided 2026-08-16, in answer to "must the bubbles match?" — **no.** The mac's
+bubble geometry (13pt insets, 17pt corner radius, Messages' grey and its light
+blue selection) was measured against Messages on the same screen, and copying
+those numbers onto Windows would produce something that looks like a Mac
+application running in the wrong place. **Build a chat that looks at home on
+Windows.** WinUI's own type ramp, its own spacing, its own accent colour. Read
+the mac's chat sections below for what the arrangement has to achieve, and
+ignore the numbers.
+
+What is NOT negotiable is the shape of the interaction, because that is the
+product rather than the platform:
+
+1. **It is a CHAT.** Not a form, not a command palette, not a properties panel
+   with a text box on it. A teacher types a sentence and gets a sentence back.
+2. **Everything goes through the chat — input and output both.** No result
+   appears only in a status bar, a toast, a dialog, or a log pane. If the
+   assistant did something, the conversation says so, in the conversation.
+3. **The one exception is confirming an action**, where buttons appear — as
+   they do on the mac for a deploy or a plan. A teacher agreeing to publish to
+   students should not have to type "yes" and hope it was understood.
+4. **What the teacher chose with a button goes into their chat history**, in
+   their own bubble, as though they had typed it. Reading back a conversation
+   where the assistant asked, nothing answered, and something plainly happened
+   is worse than not being able to read it back at all. The two contract
+   scenarios "the deploy card is agreed to" and "the deploy card is cancelled"
+   assert exactly this, so your suite can check it rather than your eyes.
+5. **A thinking indicator is a MUST.** The local model takes seconds and the
+   toolchain takes minutes, and a window that sits still through either one is
+   indistinguishable from a window that has crashed. The mac shows one
+   indicator for BOTH thinking and running a tool, deliberately: a teacher does
+   not care which of the two the assistant is busy with, and two indicators
+   invite the question. It hides while a card is waiting for a button — nothing
+   is happening then, the teacher is.
+6. **The arrow keys walk back through what was asked before, as a Terminal
+   does.** This is a requirement, not a nicety: it is how somebody re-runs the
+   thing they just ran with one word changed. The KEYS are yours to choose
+   sensibly (Up and Down on the mac); the SEMANTICS are in
+   `contracts/assist-cases.json` under `promptHistory`, with eight cases —
+   including the two that get missed: the half-typed line is put aside and
+   handed back rather than lost, and typing ends the walk so Down cannot
+   silently replace what was just written.
+
+And the rule that governs all of it, from row 1 of the improvement log: **the
+window never names the machinery.** No tool names, no model names, no tokens,
+no containers. "The small assistant" and "the larger assistant".
+
 ### Do not re-derive the assistant's tests — read `contracts/`
 
 **This is the section that saves you a day per sync.** Two JSON files, both

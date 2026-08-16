@@ -1,0 +1,124 @@
+{
+  "acceptedDateForms": {
+    "expectDate": "2026-09-08",
+    "inputs": [
+      "2026-09-08",
+      "Sep 8, 2026",
+      "September 8 2026",
+      "8 September 2026",
+      "8 Sept. 2026",
+      "2026/09/08"
+    ],
+    "note": "Every one of these is the 8th of September 2026, written the way some teacher somewhere actually writes it. A form that is refused sends a teacher back to retype a hundred dates, so the list is generous on purpose."
+  },
+  "googleSheetLinks": {
+    "cases": [
+      {
+        "expectCSVURL": "https://docs.google.com/spreadsheets/d/1AbC_dEf-123/export?format=csv",
+        "input": "https://docs.google.com/spreadsheets/d/1AbC_dEf-123/edit?usp=sharing"
+      },
+      {
+        "expectCSVURL": "https://docs.google.com/spreadsheets/d/1AbC_dEf-123/export?format=csv&gid=845210",
+        "input": "https://docs.google.com/spreadsheets/d/1AbC_dEf-123/edit#gid=845210",
+        "why": "The tab they were looking at comes across, so they get the column they had on screen rather than whichever tab happens to be first."
+      },
+      {
+        "expectProblem": "notAGoogleSheetLink",
+        "input": "https://example.com/timetable"
+      },
+      {
+        "expectProblem": "aPublishedSheetLink",
+        "input": "https://docs.google.com/spreadsheets/d/e/2PACX-1vR/pubhtml",
+        "why": "A 'published to the web' link looks right and serves HTML forever. Told apart by the identifier being exactly 'e', and answered with its own message rather than 'that is not a Google Sheet link', which a teacher looking at a Google Sheet link will not believe."
+      }
+    ],
+    "note": "A teacher pastes the address from their browser. The address that hands back CSV is a different one, derived so nobody has to know that. The published-sheet link is the single most likely thing to go wrong and has its own answer."
+  },
+  "note": "How a teacher's own list of class dates is read — typed, pasted, from a CSV, from a calendar export, or from a Google Sheet. All of it is pure input to output, so all of it is portable. See contracts/README.md; the reasoning behind the rules is in WINDOWS-HANDOFF.md.",
+  "relativeDays": {
+    "cases": [
+      {
+        "expectDate": "2026-09-08",
+        "input": "today"
+      },
+      {
+        "expectDate": "2026-09-09",
+        "input": "tomorrow"
+      },
+      {
+        "expectDate": "2026-09-07",
+        "input": "yesterday"
+      },
+      {
+        "expectDate": "2026-10-01",
+        "input": "2026-10-01"
+      },
+      {
+        "expectDate": null,
+        "input": "next Thursday",
+        "why": "Not understood, and refused rather than guessed: a date guessed wrong dates a class wrong, silently."
+      }
+    ],
+    "note": "The words that reach the tools literally, because the card phrasings that carry them are matched in code and never sent to the model. 'Tomorrow' arriving as the word 'tomorrow' has to be understood where it lands.",
+    "today": "2026-09-08"
+  },
+  "slashOrdering": {
+    "cases": [
+      {
+        "expectAsksTheTeacher": false,
+        "expectDates": [
+          "2026-09-08",
+          "2026-09-10",
+          "2026-09-24"
+        ],
+        "input": [
+          "08/09/2026",
+          "10/09/2026",
+          "24/09/2026"
+        ],
+        "name": "a day past 12 settles the column as day-first",
+        "why": "24 cannot be a month, so every row reads day-first — including 08/09, which alone is ambiguous."
+      },
+      {
+        "expectAsksTheTeacher": false,
+        "expectDates": [
+          "2026-09-08",
+          "2026-09-24"
+        ],
+        "input": [
+          "09/08/2026",
+          "09/24/2026"
+        ],
+        "name": "a month past 12 settles it the other way"
+      },
+      {
+        "expectAsksTheTeacher": true,
+        "expectQuestionQuotes": "08/09/2026",
+        "input": [
+          "08/09/2026",
+          "01/10/2026"
+        ],
+        "name": "wholly ambiguous columns ask",
+        "why": "Every row reads both ways. The question quotes the teacher's OWN value back and offers both readings in words — 'the 8th of September' against 'the 9th of August' — because a dialog asking about 'date ordering' is asking about a concept nobody has."
+      }
+    ],
+    "note": "08/09/2026 is ambiguous on its own and both readings are somebody's convention. The rule: the COLUMN settles it, not the row. One value with a day past 12 anywhere in the column decides every row in it, and the teacher is not asked. Only a column where every row could be read either way becomes a question — and it is a question, not a refusal, because nothing is wrong with the teacher's file."
+  },
+  "tabIdentifier": {
+    "cases": [
+      {
+        "expectTab": "845210",
+        "input": "https://docs.google.com/spreadsheets/d/X/edit#gid=845210"
+      },
+      {
+        "expectTab": "0",
+        "input": "https://docs.google.com/spreadsheets/d/X/edit?gid=0#gid=0"
+      },
+      {
+        "expectTab": null,
+        "input": "https://docs.google.com/spreadsheets/d/X/edit"
+      }
+    ],
+    "note": "The gid a Sheets address carries, from either the query or the part after the #."
+  }
+}

@@ -8,6 +8,7 @@ ends in a green Windows suite instead of a day of clicking.
 |---|---|
 | [`assist-wording.json`](assist-wording.json) | Every sentence the assistant says to a teacher about deploying, previewing and agreeing to things, with `{course}` and `{section}` where values go. |
 | [`assist-cases.json`](assist-cases.json) | The behaviour: which phrasings are matched in code rather than routed, which tools wait for a button, which tools the local model is shown, and what must happen in what ORDER when the assistant deploys. |
+| [`schedule-rules.json`](schedule-rules.json) | How a teacher's own list of class dates is read: every accepted date form, how an ambiguous `08/09/2026` column is settled or asked about, and what a pasted Google Sheet address becomes. |
 | [`app-rules.json`](app-rules.json) | Everything outside the assistant: what `deploy.sh` is asked to do for a given configuration, what a teacher is told about an Account ID or a custom domain they typed, the progress markers and **where each marker's text comes from**, and the preview's ports. |
 
 ## What is generated and what is written by hand

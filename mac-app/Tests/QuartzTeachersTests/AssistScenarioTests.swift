@@ -64,6 +64,54 @@ final class AssistScenarioTests: XCTestCase {
         }
     }
 
+    /// The arrow-key history, from the same contract.
+    ///
+    /// The KEYS are per platform; these semantics are not, and they are the
+    /// part people notice. Each case applies its steps in order to a fresh
+    /// history, exactly as a Windows runner would.
+    func testThePromptHistoryBehavesAsTheContractSays() throws {
+        let cases: [String: Any] = try AssistScenarioTests.readContract(named: AssistContract.casesFileName)
+        let section: [String: Any] = try XCTUnwrap(cases["promptHistory"] as? [String: Any])
+        XCTAssertEqual(section["mostRemembered"] as? Int, AssistPromptHistory.mostRemembered)
+
+        for testCase in try XCTUnwrap(section["cases"] as? [[String: Any]]) {
+            let name: String = try XCTUnwrap(testCase["name"] as? String)
+            var history: AssistPromptHistory = AssistPromptHistory()
+            for prompt in try XCTUnwrap(testCase["remember"] as? [String]) {
+                history.remember(prompt)
+            }
+
+            if let expected = testCase["expectEntries"] as? [String] {
+                XCTAssertEqual(history.entries, expected, name)
+            }
+
+            for step in (testCase["steps"] as? [[String: Any]]) ?? [] {
+                let action: String = try XCTUnwrap(step["do"] as? String)
+                // `expect` is absent for a step that only sets things up, and
+                // present-but-null for a step that must hand back nothing.
+                let wantsAnswer: Bool = step.keys.contains("expect")
+                let expected: String? = step["expect"] as? String
+
+                switch action {
+                case "up":
+                    let answer: String? = history.earlier(startingFrom: step["typed"] as? String ?? "")
+                    if wantsAnswer {
+                        XCTAssertEqual(answer, expected, "\(name): Up")
+                    }
+                case "down":
+                    let answer: String? = history.later()
+                    if wantsAnswer {
+                        XCTAssertEqual(answer, expected, "\(name): Down")
+                    }
+                case "type":
+                    history.stopBrowsing()
+                default:
+                    XCTFail("\(name): the contract asks for a step this runner does not know: \(action)")
+                }
+            }
+        }
+    }
+
     // MARK: - Running one scenario
 
     private func run(_ scenario: Scenario) async throws {
