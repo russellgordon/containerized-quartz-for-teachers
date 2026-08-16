@@ -1,17 +1,24 @@
 # macOS App — Handoff
 
-The running ledger of work that originated on the **Windows side** and
-needs (or deserves a look from) the **macOS app**. The reverse of
-[`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md): read this when syncing the
-mac app after Windows-side sessions. Each entry names the commit that
-landed the Windows/shared work, what the mac side should do, and where
-the reference implementation lives. (Cross-side rebases rewrite commit
-hashes, so treat the hashes as hints from the moment of writing — the file
-and test references are the durable pointers.)
+The ledger of work that originated on the **Windows side** and needs — or
+deserves a look from — the **macOS app**. The reverse of
+[`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md): read this when syncing the mac
+after Windows-side sessions.
 
-Items are **marked done in place rather than removed**, so the ledger keeps
-its own history: a `✅ DONE` line names what landed on the mac side and
-where. Anything unmarked is still outstanding.
+**Read it top-down and stop when you like.** Everything still owed is in the
+first two sections; everything already dealt with is kept below them, in full,
+because the reasoning is the point of the file and deleting a finished entry
+throws away why the mac does what it does.
+
+| Section | What is in it |
+|---|---|
+| [Contract cases waiting on the mac](#contract-cases-waiting-on-the-mac) | Cases proposed from Windows that the mac suite is failing on. Read FIRST when a suite goes red. |
+| [Open — what the mac still owes](#open--what-the-mac-still-owes) | Work not yet done here. |
+| [For awareness — no mac code needed](#for-awareness--no-mac-code-needed) | Things to KNOW, not to do: shared decisions, frozen names, coordination points. |
+| [Done — the ledger](#done--the-ledger) | Finished, marked in place with what landed and where. History, and the reasoning behind decisions the code no longer explains. |
+
+Cross-side rebases rewrite commit hashes, so treat hashes as hints from the
+moment of writing — file and test names are the durable pointers.
 
 ## How to write an entry
 
@@ -63,7 +70,124 @@ Remove the line when the mac implements it, and mark the matching entry below
 `✅ DONE` — the ledger keeps the history, this section keeps only what is
 outstanding.
 
-## To implement
+## Open — what the mac still owes
+
+**Nothing outstanding as of 2026-08-16.** Every item that arrived from the
+Windows side has been dealt with and moved to the ledger below; the last one —
+a test race around process-wide statics — was checked on 2026-08-16 and found
+not to apply here.
+
+New items go at the TOP of this section, and move to the ledger when done
+rather than being deleted.
+
+## For awareness — no mac code needed
+
+
+Things to KNOW rather than to do. An item here that grows an ask should move
+up to **Open** instead of hiding a to-do in a list nobody reads for work — which
+is what happened to the test-race item, sitting here for three days with
+"worth ten minutes to check" in the middle of it.
+
+
+- **Cleanup that fails must not fail a test that passed** (Windows,
+  2026-08-14, `0479d44`). An intermittent failure that never reproduced turned
+  out to be 23 tests ending with a bare
+  `finally { Directory.Delete(root, recursive: true); }`. On Windows that
+  throws whenever anything still holds a handle in the folder — Defender
+  scanning the files the test just wrote, or the Search Indexer. Every
+  assertion had passed; the test failed on housekeeping. If the mac's tests
+  do the same on a machine with Spotlight indexing, the same shape is
+  available. Deleting a temp folder is housekeeping: when it does not work,
+  the OS will get to it.
+
+
+- **The MCP proposal's Phase 0 question is settled** (asked 2026-08-12,
+  answered 2026-08-15). The design for letting AI assistants drive Plantoir
+  over MCP — "publish the Science courses overnight and un-draft tomorrow's
+  class plus everything it links to" — asked the mac side whether to ship
+  **one** self-contained .NET binary serving both platforms, or reimplement
+  the tool contract in Swift. Both halves are now code rather than a
+  question: `windows-app/Plantoir.Mcp/` is built and on `main`, and the mac
+  reimplemented the contract in `Models/Assist/AssistMCPServer.swift` — the
+  app itself answers `--mcp-stdio <folder>` rather than shipping a second
+  binary, off the same `AssistToolSurface` the assistant window uses, so the
+  two clients cannot drift. The handshake is recorded in the entry above.
+  (The proposal itself is now folded into `research/ai-assist/HISTORY.md`.)
+
+
+- **The Windows icon derives from `mac-app/Plantoir.icon`** (2026-08-11).
+  `windows-app/Plantoir/Assets/make-icon.ps1` turns a full-bleed 1024px
+  Icon Composer export into the exe/.ico and About-panel assets, applying
+  the macOS rounded-rect silhouette; `site/icon.png` on plantoir.app
+  comes from the same export. If the icon art ever changes, tell the
+  Windows side so those derived assets are regenerated — nothing updates
+  them automatically.
+
+
+- **Auto-update plans need appcast coordination** (2026-08-12). Windows
+  will adopt WinSparkle (paired with an Inno Setup installer, planned
+  after v1.0); if/when the mac app adopts Sparkle, BOTH appcasts should
+  live on plantoir.app in this repo's `site/` — use per-platform file
+  names from the start (`appcast-windows.xml`, `appcast-macos.xml`) so
+  the two update feeds never collide, and add the release-time appcast
+  edit to the shared checklist in `RELEASING.md` when the
+  first one lands.
+
+
+- **The mac release asset must be named exactly `Plantoir-macOS.zip`**
+  (2026-08-11; SPECCED — the mac ships a zip, not a dmg: Safari
+  auto-unzips, average users fumble the dmg ritual, and Sparkle handles
+  zips natively). plantoir.app now lives in `site/` in this repo
+  (Netlify deploys it on push) and its download cards link straight to
+  `releases/latest/download/<asset-name>` — GitHub's evergreen URL that
+  only works while every release names its assets identically. Windows
+  ships `Plantoir-win-x64.zip`; the mac card expects
+  `Plantoir-macOS.zip`. The names are frozen: renaming an asset silently
+  breaks the site's download button.
+
+
+- **The release process is shared — read `RELEASING.md`**
+  (2026-08-11). The decisions that bind both sides: ONE product version
+  series in lockstep (Windows reads `<Version>` in `Plantoir.csproj`;
+  keep the mac marketing version matching), ONE GitHub release per
+  version carrying BOTH platforms' assets (plantoir.app's download cards
+  point at `releases/latest`), tag `v<version>`. Release notes are
+  drafted by Claude via the `cut-release` skill
+  (`.claude/skills/cut-release/`) — teacher-friendly bullets from the
+  commit log plus a SHA-256 downloads table; the mac asset should be
+  attached to the same release and hashed into the same table. (The
+  `.claude/skills/example-content/` skill has since arrived — the mac
+  side un-ignored `.claude/skills/` and committed it.)
+
+
+- **Course-catalog repairs** (`37dc6c8`): MTH1W read "Mathematics,
+  Grade 9, Grade 9, Destreamed" (short name "Math,") and PLF4M had the
+  same doubled-grade + trailing-comma pattern; both repaired in
+  `support/ontario_secondary_courses.json`. The mac app picks this up by
+  rebuilding (bundled support folder). No other entries matched either
+  pattern.
+
+
+- **Toolchain hash changed** (`94e25f8`): `scripts/deploy.py` changed,
+  so the next preview/deploy on any machine rebuilds the Docker image
+  once.
+
+
+- **Windows caught up with rows 91–96** (`e7076ae`): Starting Content
+  toggles, structure lock, LCS terminology switch, and the neutral
+  factory defaults are now mirrored on Windows (including the
+  `WizardDefaults` pairing and a Windows `ExampleContentCatalog`).
+  Nothing to do on mac — listed so the mac side knows the wizards agree
+  and that changes to `DEFAULT_*`/`LCS_*` in `scripts/setup_course.py`
+  must now be mirrored in BOTH apps' `WizardDefaults`.
+
+
+## Done — the ledger
+
+Kept in full, newest first. A finished entry is not deleted: the mac does what
+it does BECAUSE of these, and the `✅ DONE` line names what landed here and
+where.
+
 
 - **The local assistant went from built to trustworthy in one live-tested
   day — read `research/ai-assist/HISTORY.md` part 2 §10 before building the mac's**
@@ -124,6 +248,7 @@ outstanding.
   transcript speaks with ONE name, never shows content that rides with a
   tool call, and never shows the dateline.
 
+
 - **⚠️ Add Section was creating pages in the OLD schema — check yours**
   (Windows, 2026-08-14, `7a66200`). The publish/draft entry below was landed
   and then found INCOMPLETE: `SectionAdder`'s fallback template — the path
@@ -146,6 +271,7 @@ outstanding.
   when a sibling section exists its frontmatter is copied verbatim, which is
   right, because a course still using `draft:` should get a new section that
   matches its siblings rather than one page speaking a different language.
+
 
 - **A section remembers when its classes meet** (shared, 2026-08-14,
   `9fa510c`). `courses/<CODE>/.internal/timetable/section<N>.json` holds the
@@ -176,6 +302,7 @@ outstanding.
   `plan_remember_timetable`, `remember_timetable`) are dispatched in
   `Models/Assist/AssistToolRunner.swift`; pinned by
   `Tests/QuartzTeachersTests/SectionTimetableTests.swift`. Spec entry 145.
+
 
 - **Four new operations, all shared C# in `Plantoir.Core`** (Windows +
   shared, 2026-08-14). Nothing mac-specific except the UI that reaches them;
@@ -227,6 +354,7 @@ outstanding.
     when there is one.
   - **Scheduled deploys** (`935ad9f`, `ad020d3`, `4400f80`) — see the next
     entry; the Windows half is `schtasks`.
+
 
 - **Scheduled deploys — the mac needs launchd** (Windows, 2026-08-14). "Deploy
   tomorrow's class at 6:30 AM." Windows uses `schtasks` to run
@@ -302,6 +430,7 @@ outstanding.
   wanted: one live run** — schedule a section a few minutes out, quit
   Plantoir, and check the site and `~/Library/Logs/Plantoir/<label>.log`.
 
+
 - **The built-in assistant, and what it cost** (Windows, 2026-08-14). A local
   model in a window of its own, reached from "Revise with AI…" on both the
   course and every section menu. **Read
@@ -332,6 +461,7 @@ outstanding.
     name. The approval gate — every non-read-only tool waits for a button,
     decided from the server's own `readOnlyHint` — is the safety mechanism.
 
+
 - **The MCP server must SHIP with the app** (Windows, 2026-08-14, `b211b13`).
   `publish.ps1` never built `Plantoir.Mcp`, so the bundle contained no
   `plantoir-mcp.exe` and the whole feature would have shipped dead — on a
@@ -344,6 +474,7 @@ outstanding.
   packaging step that can forget to build it, and it is signed with the app
   because it IS the app. Worth considering on Windows if `plantoir-mcp.exe`
   ever goes missing from a bundle again.
+
 
 - **The publication flag is `publish:`, not `draft:`** (Windows +
   shared, 2026-08-13, `ai-assist` branch). Commits `2d6c59a` (the
@@ -421,6 +552,7 @@ outstanding.
   OPPOSITE for two sections — built correctly in all fourteen cases,
   with section 2's site the exact mirror of section 1's.
 
+
 - **"Deploy" comes back to the GUI — this REVERSES row 103** (Windows,
   2026-08-13, `ai-assist` branch, commit `ba4889c`). Row 103 had the mac
   drop "Deploy" as jargon and call the button "Publish". That has to be
@@ -450,6 +582,7 @@ outstanding.
   automation id — so nothing in the launchers or the config format
   moves. Also worth copying: the assistant's plan says "Unpublish", not
   "Hide", since hide/unhide is not a teacher's word.
+
 
 - **AI Assist — an MCP server, on the `ai-assist` branch** (Windows +
   shared, 2026-08-13). Commits `c6b1381` (the feasibility investigation
@@ -536,6 +669,7 @@ outstanding.
   under the working folder that both apps and the server honour, which
   **both sides would have to adopt**. Worth agreeing on the file shape
   before either side writes it.
+
 
 - **Cloudflare Pages as a third publishing destination** (Windows +
   shared, 2026-08-12). Commits `0306c98` (container side), `4575647`
@@ -692,6 +826,7 @@ outstanding.
   **Still wanted: one live Cloudflare deploy from the mac**, the way
   Windows verified MCV4U — nothing here has yet met a real token.
 
+
 - **`sanitize_last_name` folds accents instead of dropping them**
   (shared, 2026-08-12, commit `0306c98`). Pre-existing bug in
   `scripts/deploy.py`, found while testing Cloudflare project naming: the
@@ -705,6 +840,7 @@ outstanding.
 
   **✅ DONE (shared).** Already present in `scripts/deploy.py` on this side —
   arrived with the merge and verified: `Côté` → `cote`, not `ct`.
+
 
 - **About box credits match plantoir.app's footer** (Windows, 2026-08-11).
   The credits section is now: a rounded-rect callout carrying the full
@@ -725,6 +861,7 @@ outstanding.
 
   **✅ DONE (macOS, 2026-08-12).** Mirrored as spec entry 107.
 
+
 - **Preview builds are never deploy-fresh** (from `94e25f8`, 2026-08-11).
   Deploying right after previewing published the preview's build, whose
   pages carry Quartz's live-reload client (`new WebSocket('ws://localhost:…')`)
@@ -743,6 +880,7 @@ outstanding.
   `windows-app/Plantoir.Tests/ModelTests.cs`.
 
   **✅ DONE (macOS, 2026-08-12).** Mirrored as spec entry 108.
+
 
 - **Font samples show the course's own computed site title** (Windows,
   2026-08-11). The header font sample renders the title the build will
@@ -763,6 +901,7 @@ outstanding.
 
   **✅ DONE (macOS, 2026-08-12).** Already on macOS as spec entry 100.
 
+
 - **Explain a disabled Create button in the wizard** (from `2d10e4c`,
   2026-08-11). On Windows, a filled-in New Course form with a DUPLICATE
   course code left Create greyed with no explanation — the sections
@@ -781,18 +920,6 @@ outstanding.
   and the live code-field explanation — was picked up on 2026-08-12;
   spec entries 107–109 record those mirrors.)
 
-## Already shared — no mac code needed, just awareness
-
-- **Cleanup that fails must not fail a test that passed** (Windows,
-  2026-08-14, `0479d44`). An intermittent failure that never reproduced turned
-  out to be 23 tests ending with a bare
-  `finally { Directory.Delete(root, recursive: true); }`. On Windows that
-  throws whenever anything still holds a handle in the folder — Defender
-  scanning the files the test just wrote, or the Search Indexer. Every
-  assertion had passed; the test failed on housekeeping. If the mac's tests
-  do the same on a machine with Spotlight indexing, the same shape is
-  available. Deleting a temp folder is housekeeping: when it does not work,
-  the OS will get to it.
 
 - **Worth checking: the same test race may exist on the mac**
   (`3bbb1a7`, 2026-08-13). A Windows test failed about one run in three
@@ -806,75 +933,13 @@ outstanding.
   intermittent failure is possible there; it is the kind that gets
   written off as "flaky CI" for months. Worth ten minutes to check.
 
-- **The MCP proposal's Phase 0 question is settled** (asked 2026-08-12,
-  answered 2026-08-15). The design for letting AI assistants drive Plantoir
-  over MCP — "publish the Science courses overnight and un-draft tomorrow's
-  class plus everything it links to" — asked the mac side whether to ship
-  **one** self-contained .NET binary serving both platforms, or reimplement
-  the tool contract in Swift. Both halves are now code rather than a
-  question: `windows-app/Plantoir.Mcp/` is built and on `main`, and the mac
-  reimplemented the contract in `Models/Assist/AssistMCPServer.swift` — the
-  app itself answers `--mcp-stdio <folder>` rather than shipping a second
-  binary, off the same `AssistToolSurface` the assistant window uses, so the
-  two clients cannot drift. The handshake is recorded in the entry above.
-  (The proposal itself is now folded into `research/ai-assist/HISTORY.md`.)
-
-- **The Windows icon derives from `mac-app/Plantoir.icon`** (2026-08-11).
-  `windows-app/Plantoir/Assets/make-icon.ps1` turns a full-bleed 1024px
-  Icon Composer export into the exe/.ico and About-panel assets, applying
-  the macOS rounded-rect silhouette; `site/icon.png` on plantoir.app
-  comes from the same export. If the icon art ever changes, tell the
-  Windows side so those derived assets are regenerated — nothing updates
-  them automatically.
-
-- **Auto-update plans need appcast coordination** (2026-08-12). Windows
-  will adopt WinSparkle (paired with an Inno Setup installer, planned
-  after v1.0); if/when the mac app adopts Sparkle, BOTH appcasts should
-  live on plantoir.app in this repo's `site/` — use per-platform file
-  names from the start (`appcast-windows.xml`, `appcast-macos.xml`) so
-  the two update feeds never collide, and add the release-time appcast
-  edit to the shared checklist in `RELEASING.md` when the
-  first one lands.
-
-- **The mac release asset must be named exactly `Plantoir-macOS.zip`**
-  (2026-08-11; SPECCED — the mac ships a zip, not a dmg: Safari
-  auto-unzips, average users fumble the dmg ritual, and Sparkle handles
-  zips natively). plantoir.app now lives in `site/` in this repo
-  (Netlify deploys it on push) and its download cards link straight to
-  `releases/latest/download/<asset-name>` — GitHub's evergreen URL that
-  only works while every release names its assets identically. Windows
-  ships `Plantoir-win-x64.zip`; the mac card expects
-  `Plantoir-macOS.zip`. The names are frozen: renaming an asset silently
-  breaks the site's download button.
-
-- **The release process is shared — read `RELEASING.md`**
-  (2026-08-11). The decisions that bind both sides: ONE product version
-  series in lockstep (Windows reads `<Version>` in `Plantoir.csproj`;
-  keep the mac marketing version matching), ONE GitHub release per
-  version carrying BOTH platforms' assets (plantoir.app's download cards
-  point at `releases/latest`), tag `v<version>`. Release notes are
-  drafted by Claude via the `cut-release` skill
-  (`.claude/skills/cut-release/`) — teacher-friendly bullets from the
-  commit log plus a SHA-256 downloads table; the mac asset should be
-  attached to the same release and hashed into the same table. (The
-  `.claude/skills/example-content/` skill has since arrived — the mac
-  side un-ignored `.claude/skills/` and committed it.)
-
-- **Course-catalog repairs** (`37dc6c8`): MTH1W read "Mathematics,
-  Grade 9, Grade 9, Destreamed" (short name "Math,") and PLF4M had the
-  same doubled-grade + trailing-comma pattern; both repaired in
-  `support/ontario_secondary_courses.json`. The mac app picks this up by
-  rebuilding (bundled support folder). No other entries matched either
-  pattern.
-
-- **Toolchain hash changed** (`94e25f8`): `scripts/deploy.py` changed,
-  so the next preview/deploy on any machine rebuilds the Docker image
-  once.
-
-- **Windows caught up with rows 91–96** (`e7076ae`): Starting Content
-  toggles, structure lock, LCS terminology switch, and the neutral
-  factory defaults are now mirrored on Windows (including the
-  `WizardDefaults` pairing and a Windows `ExampleContentCatalog`).
-  Nothing to do on mac — listed so the mac side knows the wizards agree
-  and that changes to `DEFAULT_*`/`LCS_*` in `scripts/setup_course.py`
-  must now be mirrored in BOTH apps' `WizardDefaults`.
+  **✅ DONE (macOS, 2026-08-16) — checked, and the mac is not exposed.** The
+  test target is `parallelizable = "NO"` in the scheme, so XCTest runs these
+  classes one at a time and the shared statics cannot be reset under another
+  class mid-assertion. **The safety is a scheme setting, not a property of the
+  tests**: `PreviewLeaseTests` and `CourseActivityTests` both call
+  `PreviewLeases.reset()` / `CourseActivity.reset()` around individual methods,
+  so turning parallel testing ON would introduce exactly the Windows failure —
+  one run in three, a baffling null, and months of being written off as flaky.
+  If that setting is ever flipped, put these classes in a serialised group
+  first.

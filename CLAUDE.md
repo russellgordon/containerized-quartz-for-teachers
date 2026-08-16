@@ -357,6 +357,15 @@ in the normal Windows setup Docker Engine lives inside WSL2). Toolchain changes
 made on Windows have no automated gate: verify them by driving a real publish
 through the app, and re-run `verify.sh` from the mac after the next sync.
 
+**The mac suite runs its test classes one at a time, and that is load-bearing.**
+The scheme sets `parallelizable = "NO"` on the test target. `PreviewLeaseTests`
+and `CourseActivityTests` both reset process-wide statics
+(`PreviewLeases.reset()`, `CourseActivity.reset()`) around individual methods,
+so turning parallel testing on would let one class wipe the state another is
+mid-assertion on — an intermittent failure that looks exactly like a
+production bug and is not one. Windows hit precisely this, one run in three.
+If you ever flip that setting, put those classes in a serialised group first.
+
 **Windows tests touching process-wide state must not run in parallel.** Preview
 leases and the publish registry are statics and xUnit parallelises test
 *classes*, so any class touching them belongs in the shared serialized
@@ -444,7 +453,7 @@ they are a fair first task: implementing them fixes a real bug on that side.
 | [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) | The dated log of every GUI change, with a required "Notes for Windows port" column. Append here for any GUI change — and read it as HISTORY: it used to be described as "the spec", and `contracts/` is what a test should be written against now. |
 | [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) | Architecture, the config contract, platform notes, and the WSL2 background — start here for Windows work, and write architectural decisions into it. |
 | [`contracts/`](contracts/README.md) | **The Plantoir contract**: what the two apps must agree on, as data both test suites run — the assistant's sentences and behaviour, launcher arguments, validation wording, failure explanations, date reading, class naming, file names, progress markers, preview ports. Generated from the macOS app; never hand-edited. Its coverage table says what is deliberately NOT shared, and why. |
-| [`MAC-HANDOFF.md`](MAC-HANDOFF.md) | The mirror: work that originated on Windows or in shared `scripts/` and needs the mac's attention. Read it when syncing the two sides. |
+| [`MAC-HANDOFF.md`](MAC-HANDOFF.md) | The mirror: work that originated on Windows or in shared `scripts/` and needs the mac's attention. Ordered by STATUS — contract cases waiting, then what is still owed, then awareness, then the finished ledger — so it can be read top-down and abandoned at any point. |
 | [`RELEASING.md`](RELEASING.md) | Cutting a release: signing, bundling, and the frozen asset names both platforms depend on. |
 | [`TODO.md`](TODO.md) | Deferred work, with the research already done so picking one up is cheap. |
 | [`research/`](research/README.md) | Measurement records the code cites as evidence — the assistant's model choices and the preview-staleness findings. Not an automated gate; each file states its own conditions. |
