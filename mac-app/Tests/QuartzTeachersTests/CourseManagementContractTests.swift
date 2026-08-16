@@ -138,14 +138,21 @@ final class CourseManagementContractTests: XCTestCase {
 
         for testCase in try XCTUnwrap(section["problems"] as? [[String: Any]]) {
             let typed: String = try XCTUnwrap(testCase["typed"] as? String)
+            let existing: [String] = try XCTUnwrap(testCase["existing"] as? [String])
+            let current: String? = testCase["currentCode"] as? String
+
             XCTAssertEqual(
-                CourseCodeRule.problem(
-                    typed,
-                    existingCodes: try XCTUnwrap(testCase["existing"] as? [String]),
-                    currentCode: testCase["currentCode"] as? String
-                ),
+                CourseCodeRule.problem(typed, existingCodes: existing, currentCode: current),
                 testCase["expectProblem"] as? String,
                 "typed “\(typed)”"
+            )
+            // The SHORT form is teacher-facing too — it is what the sidebar
+            // row shows while a course is being renamed — so it is pinned
+            // here rather than left to whatever fits that day.
+            XCTAssertEqual(
+                CourseCodeRule.shortProblem(typed, existingCodes: existing, currentCode: current),
+                testCase["expectShort"] as? String,
+                "typed “\(typed)”, short form"
             )
         }
     }

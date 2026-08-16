@@ -1083,14 +1083,14 @@ struct CourseCodeField: View {
 
     // MARK: - Computed properties
 
-    /// Why what has been typed cannot be used, live — the same rule, and the
-    /// same sentences, the New Course wizard shows under its own code field.
+    /// Why what has been typed cannot be used, live — the same rule the New
+    /// Course wizard asks, in the short words a sidebar row has room for.
     var problem: String? {
         var existingCodes: [String] = []
         for existingCourse in workspace.courses {
             existingCodes.append(existingCourse.code)
         }
-        return CourseCodeRule.problem(text, existingCodes: existingCodes, currentCode: course.code)
+        return CourseCodeRule.shortProblem(text, existingCodes: existingCodes, currentCode: course.code)
     }
 
     // MARK: - Initializer
@@ -1103,11 +1103,24 @@ struct CourseCodeField: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 6) {
-                Image(systemName: "books.vertical")
+        HStack(spacing: 6) {
+            Image(systemName: "books.vertical")
+
+            // The field and its message share ONE solid card, and that is
+            // what makes them readable.
+            //
+            // A course is always SELECTED while it is being renamed, so this
+            // row is drawing on the selection colour — and everything inside
+            // a selected sidebar row is tinted to sit on it. Black-on-blue
+            // for the field and red-on-blue for the message were the result.
+            // Painting a card in the system's own text-background colour
+            // takes the content off the selection entirely, and because that
+            // colour is semantic it is white in Light Mode and near-black in
+            // Dark without a second code path.
+            VStack(alignment: .leading, spacing: 2) {
                 TextField("Course code", text: $text)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.plain)
+                    .foregroundStyle(Color(nsColor: .textColor))
                     .focused($isFocused)
                     .accessibilityIdentifier("renameField")
                     .onSubmit {
@@ -1121,13 +1134,28 @@ struct CourseCodeField: View {
                             commitOnLeaving()
                         }
                     }
+
+                if let problem {
+                    Text(problem)
+                        .font(.caption)
+                        .foregroundStyle(Color(nsColor: .systemRed))
+                        // Short enough to fit, and allowed to wrap rather
+                        // than truncate if a longer one ever arrives: half a
+                        // sentence with an ellipsis explains nothing.
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("renameProblem")
+                }
             }
-            if let problem {
-                Text(problem)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-                    .accessibilityIdentifier("renameProblem")
-            }
+            .padding(.horizontal, 5)
+            .padding(.vertical, 3)
+            .background(
+                RoundedRectangle(cornerRadius: 5)
+                    .fill(Color(nsColor: .textBackgroundColor))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 5)
+                    .strokeBorder(Color(nsColor: .separatorColor))
+            )
         }
         .onAppear {
             isFocused = true

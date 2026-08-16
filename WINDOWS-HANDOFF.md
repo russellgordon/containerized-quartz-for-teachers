@@ -312,6 +312,28 @@ zip-name prefix and part of a scheduled-publish identifier all at once, and
 each of those has its own opinion about what it will carry. CS CLUB, with a
 space, is how to write it.
 
+**Every problem has TWO wordings, and both are teacher-facing.** The full
+sentence ("A course code can be at most 12 characters.") goes under the New
+Course wizard's wide field, where it can afford to explain itself. The sidebar
+row renaming in place has room for about twenty-five characters before the
+message is cut off mid-word, so it shows a short form instead ("12 characters
+at most"). Both come off ONE enum in the code, so they cannot drift into two
+different rules, and both are in the contract — `expectProblem` and
+`expectShort` on each case. **Inherit both**: a truncated explanation explains
+nothing, and it is the kind of thing that only shows up on the narrow layout
+nobody tests.
+
+**The in-place editor needs its own background, and this is not a style
+preference.** A course is always SELECTED while it is being renamed, so the
+row is drawing on the selection colour and everything inside it is tinted to
+sit on that: the first version was black-on-blue in the field and red-on-blue
+for the message. Painting the field and its message on one card in the
+system's semantic text-background colour takes the content off the selection
+entirely — and because the colour is semantic it is white in Light Mode and
+near-black in Dark with no second code path. Finder does exactly this when it
+renames a selected row: blue row, white field, black text, thin border.
+Checked in both appearances on a running app.
+
 **A space in a code is safe downstream, and one piece of code already existed
 for it**: `ScheduledDeploy.sanitizedCode` is there precisely so that a club
 named with a space cannot produce a bad launchd label. Check your equivalent

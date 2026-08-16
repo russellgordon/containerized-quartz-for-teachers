@@ -43,7 +43,52 @@ enum CourseCodeRule {
         return raw.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
     }
 
-    /// Why a code can't be used, or nil when it is fine.
+    /// What is wrong with a code, as a value rather than a sentence.
+    ///
+    /// The sentence comes off this in two lengths — see `sentence` and
+    /// `short` — because the two places that ask have very different room.
+    /// One enum keeps them from drifting into two rules.
+    enum Trouble: Equatable {
+        case twoSpacesInARow
+        case charactersThatAreNotAllowed
+        case tooLong
+        case alreadyTaken(String)
+
+        // MARK: - Computed properties
+
+        /// The full sentence, for the New Course wizard, where the message
+        /// sits under a wide field and can afford to explain itself.
+        var sentence: String {
+            switch self {
+            case .twoSpacesInARow:
+                return "A course code can’t have two spaces in a row."
+            case .charactersThatAreNotAllowed:
+                return "A course code can only use letters, numbers and spaces."
+            case .tooLong:
+                return "A course code can be at most \(CourseCodeRule.mostCharacters) characters."
+            case .alreadyTaken(let code):
+                return "A course named \(code) already exists — choose a different code."
+            }
+        }
+
+        /// The short form, for the sidebar row, where the whole message has
+        /// perhaps twenty-five characters before it is cut off mid-word — and
+        /// a truncated explanation explains nothing.
+        var short: String {
+            switch self {
+            case .twoSpacesInARow:
+                return "No double spaces"
+            case .charactersThatAreNotAllowed:
+                return "Letters, numbers, spaces"
+            case .tooLong:
+                return "\(CourseCodeRule.mostCharacters) characters at most"
+            case .alreadyTaken(let code):
+                return "\(code) already exists"
+            }
+        }
+    }
+
+    /// What is wrong with a code as typed, or nil when it is fine.
     ///
     /// An EMPTY code is nil rather than a complaint: nothing has been said
     /// yet, so there is nothing to warn about, and a warning that appears
@@ -52,11 +97,11 @@ enum CourseCodeRule {
     /// `currentCode` is the code of the course being renamed, when there is
     /// one. A course does not clash with itself, so re-typing a course's own
     /// code — or only its capitalisation — is not an error.
-    static func problem(
+    static func trouble(
         _ text: String,
         existingCodes: [String],
         currentCode: String? = nil
-    ) -> String? {
+    ) -> Trouble? {
         let code: String = normalized(text)
         if code.isEmpty {
             return nil
@@ -68,15 +113,15 @@ enum CourseCodeRule {
         // being refused for a mistake nobody meant to make. What is left to
         // catch is a run of them in the middle, which is a typo every time.
         if code.contains("  ") {
-            return "A course code can’t have two spaces in a row."
+            return .twoSpacesInARow
         }
         for character in code {
             if !characterIsAllowed(character) {
-                return "A course code can only use letters, numbers and spaces."
+                return .charactersThatAreNotAllowed
             }
         }
         if code.count > mostCharacters {
-            return "A course code can be at most \(mostCharacters) characters."
+            return .tooLong
         }
 
         if let currentCode {
@@ -86,10 +131,28 @@ enum CourseCodeRule {
         }
         for existingCode in existingCodes {
             if normalized(existingCode) == code {
-                return "A course named \(code) already exists — choose a different code."
+                return .alreadyTaken(code)
             }
         }
         return nil
+    }
+
+    /// Why a code can't be used, said in full — the wizard's version.
+    static func problem(
+        _ text: String,
+        existingCodes: [String],
+        currentCode: String? = nil
+    ) -> String? {
+        return trouble(text, existingCodes: existingCodes, currentCode: currentCode)?.sentence
+    }
+
+    /// The same answer in the words a sidebar row has room for.
+    static func shortProblem(
+        _ text: String,
+        existingCodes: [String],
+        currentCode: String? = nil
+    ) -> String? {
+        return trouble(text, existingCodes: existingCodes, currentCode: currentCode)?.short
     }
 
     /// True when this character may appear in a course code: an ASCII letter
