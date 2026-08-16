@@ -164,4 +164,139 @@ final class ObsidianLinkTests: XCTestCase {
         let vaults: [String: Any] = try XCTUnwrap(decoded["vaults"] as? [String: Any])
         XCTAssertEqual(vaults.count, 1)
     }
+
+    // MARK: - Which vaults are open, and what a rename does to them
+
+    /// Obsidian marks the vault it opens and does NOT unmark it on quit, so
+    /// the mark answers "opened last", never "open now". Measured on a real
+    /// machine: a vault carried `"open": true` for hours while Obsidian was
+    /// closed. Anything that acts on the mark has to check that Obsidian is
+    /// running as well, and `openVaultPathsNow` is where that pairing lives.
+    @MainActor
+    func testTheOpenMarkIsReadFromTheRegistryAndSorted() throws {
+        let registry: [String: Any] = [
+            "vaults": [
+                "aaa": ["path": "/Users/t/Desktop/courses/ICS3U", "ts": 1, "open": true],
+                "bbb": ["path": "/Users/t/Desktop/courses/MPM2D", "ts": 2],
+                "ccc": ["path": "/Users/t/Notes", "ts": 3, "open": true],
+            ],
+        ]
+        let data: Data = try JSONSerialization.data(withJSONObject: registry)
+
+        XCTAssertEqual(
+            FolderActions.openVaultPaths(registryData: data),
+            ["/Users/t/Desktop/courses/ICS3U", "/Users/t/Notes"],
+            "Only the marked ones, in a settled order so reopening is predictable"
+        )
+        XCTAssertEqual(FolderActions.openVaultPaths(registryData: nil), [])
+        XCTAssertEqual(FolderActions.openVaultPaths(registryData: Data("not json".utf8)), [])
+    }
+
+    /// The pairing itself: with Obsidian closed the answer is nothing at
+    /// all, whatever the registry still says.
+    @MainActor
+    func testNothingIsOpenWhileObsidianIsNotRunning() {
+        if FolderActions.obsidianIsRunning {
+            // Nothing to prove on a machine that is using Obsidian right now.
+            return
+        }
+        XCTAssertTrue(
+            FolderActions.openVaultPathsNow.isEmpty,
+            "A stale mark in the registry must not be read as an open vault"
+        )
+    }
+
+    /// Only a vault whose OWN root moves is stranded. A vault that contains
+    /// the course — a teacher who opened the whole `courses` folder as one
+    /// vault — is fine, because Obsidian follows a rename inside a vault
+    /// perfectly well; it is the root moving out from under the watcher that
+    /// breaks it.
+    @MainActor
+    func testWhichOpenVaultsARenameWouldStrand() {
+        let course: String = "/Users/t/Desktop/courses/ICS3U"
+
+        XCTAssertTrue(FolderActions.openVaultWouldBeStranded(
+            byMoving: course, openVaultPaths: [course]
+        ), "the course folder IS the vault")
+
+        XCTAssertTrue(FolderActions.openVaultWouldBeStranded(
+            byMoving: course, openVaultPaths: ["/Users/t/Desktop/courses/ICS3U/section1"]
+        ), "a vault inside the course moves with it")
+
+        XCTAssertFalse(FolderActions.openVaultWouldBeStranded(
+            byMoving: course, openVaultPaths: ["/Users/t/Desktop/courses"]
+        ), "a vault CONTAINING the course keeps its own root, and Obsidian follows the rename")
+
+        XCTAssertFalse(FolderActions.openVaultWouldBeStranded(
+            byMoving: course, openVaultPaths: ["/Users/t/Desktop/courses/ICS3U2"]
+        ), "a longer name that merely starts the same way is a different course")
+
+        XCTAssertFalse(FolderActions.openVaultWouldBeStranded(byMoving: course, openVaultPaths: []))
+    }
+
+    @MainActor
+    func testAPathFollowsTheFolderThatMoved() {
+        let old: String = "/Users/t/courses/ICS3U"
+        let new: String = "/Users/t/courses/ICS4U"
+
+        XCTAssertEqual(FolderActions.path(old, movedFrom: old, to: new), new)
+        XCTAssertEqual(
+            FolderActions.path(old + "/section1", movedFrom: old, to: new), new + "/section1"
+        )
+        XCTAssertEqual(
+            FolderActions.path("/Users/t/courses/ICS3U2", movedFrom: old, to: new),
+            "/Users/t/courses/ICS3U2",
+            "a name that merely starts the same way is left alone"
+        )
+        XCTAssertEqual(FolderActions.path("/Users/t/Notes", movedFrom: old, to: new), "/Users/t/Notes")
+    }
+
+    /// The registry entry is REPOINTED rather than replaced: same
+    /// identifier, same number of vaults, no dead entry left behind
+    /// pointing at a folder that no longer exists.
+    @MainActor
+    func testRepointingAVaultKeepsItsEntryAndLeavesTheOthersAlone() throws {
+        let old: String = "/Users/t/courses/ICS3U"
+        let new: String = "/Users/t/courses/ICS4U"
+        let registry: [String: Any] = [
+            "vaults": [
+                "aaa": ["path": old, "ts": 1, "open": true],
+                "bbb": ["path": "/Users/t/Notes", "ts": 2],
+            ],
+            "openSchemes": ["something": true],
+        ]
+        let data: Data = try JSONSerialization.data(withJSONObject: registry)
+
+        let moved: Data = try XCTUnwrap(
+            FolderActions.registryData(afterMovingVaultsUnder: old, to: new, in: data)
+        )
+        let result: [String: Any] = try XCTUnwrap(
+            try JSONSerialization.jsonObject(with: moved) as? [String: Any]
+        )
+        let vaults: [String: Any] = try XCTUnwrap(result["vaults"] as? [String: Any])
+
+        XCTAssertEqual(vaults.count, 2, "no entry added, none removed")
+        let renamed: [String: Any] = try XCTUnwrap(vaults["aaa"] as? [String: Any])
+        XCTAssertEqual(renamed["path"] as? String, new)
+        XCTAssertEqual(renamed["ts"] as? Int, 1, "everything else about the entry survives")
+        XCTAssertEqual(renamed["open"] as? Bool, true)
+        let untouched: [String: Any] = try XCTUnwrap(vaults["bbb"] as? [String: Any])
+        XCTAssertEqual(untouched["path"] as? String, "/Users/t/Notes")
+        XCTAssertNotNil(result["openSchemes"], "the rest of the registry is not ours to drop")
+
+        XCTAssertNil(FolderActions.registryData(afterMovingVaultsUnder: old, to: new, in: nil))
+    }
+
+    /// The question names what will happen, and counts.
+    @MainActor
+    func testTheQuestionAsksAboutOneVaultOrSeveral() {
+        XCTAssertTrue(
+            CourseRenamer.obsidianQuestion(openVaultCount: 1).hasSuffix("and open it again."),
+            CourseRenamer.obsidianQuestion(openVaultCount: 1)
+        )
+        XCTAssertTrue(
+            CourseRenamer.obsidianQuestion(openVaultCount: 3).hasSuffix("and open your vaults again."),
+            CourseRenamer.obsidianQuestion(openVaultCount: 3)
+        )
+    }
 }

@@ -26,8 +26,15 @@ enum FolderActions {
     /// it has never seen is registered first, exactly the way Obsidian's
     /// own "Open folder as vault" writes the entry. A running Obsidian
     /// keeps its vault list in memory, so registering means quitting it
-    /// first (it restores its windows on relaunch); doing the quit before
-    /// the write also stops Obsidian overwriting the new entry on exit.
+    /// first; doing the quit before the write also stops Obsidian
+    /// overwriting the new entry on exit.
+    ///
+    /// **Obsidian does NOT restore its windows on relaunch** — this said
+    /// that it did, and it is measured to be false: with two vaults open,
+    /// quitting and then relaunching through `obsidian://open?path=` brings
+    /// back only the vault named in the link, and the other stays closed.
+    /// So every vault that was open is noted first and opened again
+    /// afterwards, the asked-for one last so it lands in front.
     static func openInObsidian(revealing folderURL: URL, vaultURL: URL) {
         let target: URL = FolderActions.obsidianTarget(forFolder: folderURL, vaultURL: vaultURL)
         guard let obsidianLink = FolderActions.obsidianURL(forFolder: target) else {
@@ -44,10 +51,12 @@ enum FolderActions {
             return
         }
         Task { @MainActor in
+            let wereOpen: [String] = FolderActions.openVaultPathsNow
             await FolderActions.quitObsidianAndWait()
             FolderActions.seedObsidianDefaultsIfMissing(inVault: vaultURL)
             FolderActions.enableAutoRevealInLayout(ofVault: vaultURL)
             FolderActions.registerVault(at: vaultURL)
+            FolderActions.reopenVaults(wereOpen)
             NSWorkspace.shared.open(obsidianLink)
         }
     }
@@ -121,6 +130,147 @@ enum FolderActions {
             return landingPage
         }
         return vaultURL
+    }
+
+    // MARK: - Which vaults Obsidian has open
+
+    /// The vaults Obsidian has open RIGHT NOW, or none when it is not
+    /// running.
+    ///
+    /// Two facts have to agree, and the second one is the trap. Obsidian
+    /// marks a vault `"open": true` in its registry when the vault is
+    /// opened — and does NOT clear the mark when it quits. Measured on this
+    /// machine: a vault carried the mark while Obsidian was closed, hours
+    /// later. So the mark alone answers "which vault was opened last",
+    /// never "which vault is open now", and reading it without checking
+    /// that Obsidian is running would have Plantoir offer to close an
+    /// application nobody is using.
+    static var openVaultPathsNow: [String] {
+        if !FolderActions.obsidianIsRunning {
+            return []
+        }
+        return FolderActions.openVaultPaths(
+            registryData: try? Data(contentsOf: FolderActions.obsidianRegistryFileURL)
+        )
+    }
+
+    /// The paths marked open in a registry. Split out from
+    /// `openVaultPathsNow` so the parsing can be tested without an
+    /// Obsidian on the machine.
+    static func openVaultPaths(registryData: Data?) -> [String] {
+        guard let registryData else {
+            return []
+        }
+        guard let registry = try? JSONSerialization.jsonObject(with: registryData) as? [String: Any] else {
+            return []
+        }
+        guard let vaults = registry["vaults"] as? [String: Any] else {
+            return []
+        }
+        var paths: [String] = []
+        for vaultEntry in vaults.values {
+            guard let vault = vaultEntry as? [String: Any] else {
+                continue
+            }
+            guard let vaultPath = vault["path"] as? String else {
+                continue
+            }
+            if vault["open"] as? Bool == true {
+                paths.append(vaultPath)
+            }
+        }
+        // Sorted so the order is the same every time it is asked, which
+        // makes the reopening order — and a test — predictable.
+        paths.sort()
+        return paths
+    }
+
+    /// Whether moving a course's folder would leave Obsidian showing files
+    /// that are no longer there.
+    ///
+    /// True only when an open vault IS the course's folder, or sits inside
+    /// it. A vault that CONTAINS the course — a teacher who opened the whole
+    /// `courses` folder as one vault — is not affected: its own root does
+    /// not move, and Obsidian follows a rename inside a vault perfectly
+    /// well. It is the vault's own root moving out from under the watcher
+    /// that strands it.
+    static func openVaultWouldBeStranded(byMoving folderPath: String, openVaultPaths: [String]) -> Bool {
+        for vaultPath in openVaultPaths {
+            if vaultPath == folderPath || vaultPath.hasPrefix(folderPath + "/") {
+                return true
+            }
+        }
+        return false
+    }
+
+    /// Opens each of these vaults again, in order — so the LAST one named
+    /// is the one left in front.
+    static func reopenVaults(_ vaultPaths: [String]) {
+        for vaultPath in vaultPaths {
+            guard let link = FolderActions.obsidianURL(forFolder: URL(fileURLWithPath: vaultPath)) else {
+                continue
+            }
+            NSWorkspace.shared.open(link)
+        }
+    }
+
+    /// The same path with one of its ancestors renamed — used to work out
+    /// where a vault has ended up after the course folder it is (or sits
+    /// inside) has moved.
+    static func path(_ path: String, movedFrom oldFolder: String, to newFolder: String) -> String {
+        if path == oldFolder {
+            return newFolder
+        }
+        if path.hasPrefix(oldFolder + "/") {
+            return newFolder + String(path.dropFirst(oldFolder.count))
+        }
+        return path
+    }
+
+    /// Points a vault's registry entry at where its folder has moved to,
+    /// keeping the SAME entry.
+    ///
+    /// Keeping the entry rather than adding a second one matters twice
+    /// over: Obsidian's list stays the length the teacher expects, and no
+    /// dead entry is left pointing at a folder that no longer exists.
+    /// Verified end to end — quit, move the folder, repoint, reopen — and
+    /// the vault comes back with its list unchanged.
+    static func registryData(afterMovingVaultsUnder oldFolder: String, to newFolder: String, in registryData: Data?) -> Data? {
+        guard let registryData else {
+            return nil
+        }
+        guard var registry = try? JSONSerialization.jsonObject(with: registryData) as? [String: Any] else {
+            return nil
+        }
+        guard let vaults = registry["vaults"] as? [String: Any] else {
+            return nil
+        }
+        var moved: [String: Any] = [:]
+        for (identifier, vaultEntry) in vaults {
+            guard var vault = vaultEntry as? [String: Any] else {
+                moved[identifier] = vaultEntry
+                continue
+            }
+            if let vaultPath = vault["path"] as? String {
+                vault["path"] = FolderActions.path(vaultPath, movedFrom: oldFolder, to: newFolder)
+            }
+            moved[identifier] = vault
+        }
+        registry["vaults"] = moved
+        return try? JSONSerialization.data(withJSONObject: registry)
+    }
+
+    /// Writes the repointed registry back.
+    static func repointVaults(under oldFolder: String, to newFolder: String) {
+        let registryFileURL: URL = FolderActions.obsidianRegistryFileURL
+        guard let updated = FolderActions.registryData(
+            afterMovingVaultsUnder: oldFolder,
+            to: newFolder,
+            in: try? Data(contentsOf: registryFileURL)
+        ) else {
+            return
+        }
+        try? updated.write(to: registryFileURL)
     }
 
     /// Where Obsidian keeps its list of known vaults.

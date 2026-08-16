@@ -70,6 +70,35 @@ enum CourseRenamer {
         }
     }
 
+    /// A rename held up by a question about Obsidian.
+    ///
+    /// Renaming moves the course's folder, and that folder IS the Obsidian
+    /// vault. Obsidian's file watcher is anchored to a folder's identity, so
+    /// a vault open on that course goes on showing files that are no longer
+    /// there — the same thing that happens if the folder is renamed in
+    /// Finder. Obsidian has no way to close ONE vault, so putting it right
+    /// means closing Obsidian altogether, which is a big enough thing to do
+    /// to somebody else's application that it is asked about first.
+    struct ObsidianRequest: Identifiable {
+
+        // MARK: - Stored properties
+
+        let course: Course
+        let requestedCode: String
+
+        /// EVERY vault open when the rename was asked for, not just this
+        /// course's. Closing Obsidian closes all of them, and relaunching
+        /// does not bring them back — measured — so the whole set has to be
+        /// remembered and opened again.
+        let openVaultPaths: [String]
+
+        // MARK: - Computed properties
+
+        var id: String {
+            return "\(course.code)-\(requestedCode)"
+        }
+    }
+
     /// What renaming did BEYOND moving the folder, so the teacher can be
     /// told rather than left to find out when a publish does not happen.
     struct Outcome {
@@ -230,6 +259,21 @@ enum CourseRenamer {
             ? "Scheduled publishing was turned off"
             : "A scheduled publish may still run"
         return Notice(title: title, message: sentences.joined(separator: "\n\n"))
+    }
+
+    /// What the teacher is asked before Obsidian is closed for them.
+    ///
+    /// Written as a whole sentence about what will happen rather than a
+    /// warning about what might: Plantoir knows exactly what it is going to
+    /// do, and an alert that says "may" when it means "will" teaches people
+    /// to stop reading alerts.
+    static func obsidianQuestion(openVaultCount: Int) -> String {
+        let ending: String = openVaultCount > 1 ? "open your vaults again" : "open it again"
+        return """
+            Renaming moves this course's folder, and Obsidian would keep showing files that are no longer there.
+
+            Plantoir can close Obsidian, rename the course, and \(ending).
+            """
     }
 
     /// "Section 1", "Sections 1 and 2", "Sections 1, 2 and 4".

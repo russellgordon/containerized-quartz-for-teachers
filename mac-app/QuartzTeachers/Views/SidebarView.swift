@@ -444,6 +444,26 @@ struct SidebarView: View {
         } message: {
             Text(scheduleProblem ?? "")
         }
+        // Asked BEFORE the rename, because the answer decides whether
+        // Obsidian is closed first. Two buttons on purpose: there is no
+        // third answer that leaves Obsidian showing the truth.
+        .alert(
+            "\(workspace.obsidianRenameRequest?.course.code ?? "") is open in Obsidian",
+            isPresented: obsidianRenameRequestIsPresented,
+            presenting: workspace.obsidianRenameRequest
+        ) { request in
+            Button("Close Obsidian and Rename") {
+                workspace.obsidianRenameRequest = nil
+                Task {
+                    await workspace.renameClosingObsidian(request)
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                workspace.obsidianRenameRequest = nil
+            }
+        } message: { request in
+            Text(CourseRenamer.obsidianQuestion(openVaultCount: request.openVaultPaths.count))
+        }
         .alert("Could not rename", isPresented: renameProblemBinding) {
             Button("OK") {
                 workspace.renameProblem = nil
@@ -679,6 +699,17 @@ struct SidebarView: View {
             set: { isPresented in
                 if !isPresented {
                     cancelScheduleRequest = nil
+                }
+            }
+        )
+    }
+
+    var obsidianRenameRequestIsPresented: Binding<Bool> {
+        return Binding(
+            get: { workspace.obsidianRenameRequest != nil },
+            set: { isPresented in
+                if !isPresented {
+                    workspace.obsidianRenameRequest = nil
                 }
             }
         )

@@ -210,6 +210,10 @@ class WorkspaceModel {
     /// Why a rename could not go ahead, shown as an alert.
     var renameProblem: String?
 
+    /// A rename waiting on the teacher's answer about Obsidian, because
+    /// this course's vault is open in it right now.
+    var obsidianRenameRequest: CourseRenamer.ObsidianRequest?
+
     /// What a rename that SUCCEEDED has to tell the teacher about — turning
     /// off a scheduled publish, so far. Nil in the ordinary case, which gets
     /// no interruption.
@@ -736,13 +740,16 @@ class WorkspaceModel {
         renamingCourseCode = course.code
     }
 
-    /// Changes a course's code and brings the sidebar with it.
+    /// Changes a course's code and brings the sidebar with it — after the
+    /// two things that can stand in the way.
     ///
     /// The busy check is made AGAIN here, not only when editing began: a
     /// preview can start while the field is open, and the check that matters
-    /// is the one nearest the folder being moved.
+    /// is the one nearest the folder being moved. The Obsidian check turns
+    /// the rename into a QUESTION rather than doing it, because putting it
+    /// right means closing an application the teacher is using.
     func rename(_ course: Course, to requestedCode: String) {
-        guard let coursesDirectoryURL else {
+        guard coursesDirectoryURL != nil else {
             return
         }
         if let workspacePath = workspaceURL?.path {
@@ -751,6 +758,72 @@ class WorkspaceModel {
                 renameProblem = "\(course.code) is previewing or deploying right now. Stop that first, then rename."
                 return
             }
+        }
+
+        // Only when the folder is actually going to move. Retyping the same
+        // code changes nothing on disk, so it has nothing to ask about.
+        let newCode: String = CourseCodeRule.normalized(requestedCode)
+        if !newCode.isEmpty && newCode != course.code {
+            let openVaultPaths: [String] = FolderActions.openVaultPathsNow
+            if FolderActions.openVaultWouldBeStranded(
+                byMoving: course.directoryURL.path, openVaultPaths: openVaultPaths
+            ) {
+                renamingCourseCode = nil
+                obsidianRenameRequest = CourseRenamer.ObsidianRequest(
+                    course: course,
+                    requestedCode: requestedCode,
+                    openVaultPaths: openVaultPaths
+                )
+                return
+            }
+        }
+
+        performRename(course, to: requestedCode)
+    }
+
+    /// Closes Obsidian, renames, and opens the vaults again — the answer to
+    /// the question `rename` asked.
+    ///
+    /// Obsidian is quit BEFORE the folder moves and the registry is written
+    /// afterwards, both for the same reason: a running Obsidian holds its
+    /// vault list in memory and writes it back out when it exits, so a
+    /// registry edited underneath it is simply lost.
+    ///
+    /// If the rename fails, the vaults still open again — where they were.
+    /// Closing somebody's editor and then not reopening it because a
+    /// separate thing went wrong would be the worst of both.
+    func renameClosingObsidian(_ request: CourseRenamer.ObsidianRequest) async {
+        let oldPath: String = request.course.directoryURL.path
+        await FolderActions.quitObsidianAndWait()
+
+        performRename(request.course, to: request.requestedCode)
+
+        var newPath: String = oldPath
+        if renameProblem == nil, let coursesDirectoryURL {
+            newPath = coursesDirectoryURL
+                .appendingPathComponent(CourseCodeRule.normalized(request.requestedCode)).path
+            FolderActions.repointVaults(under: oldPath, to: newPath)
+        }
+
+        // The course's own vault is opened LAST so it is the one left in
+        // front — it is the course the teacher was just working on.
+        var others: [String] = []
+        var moved: [String] = []
+        for vaultPath in request.openVaultPaths {
+            let whereItIsNow: String = FolderActions.path(vaultPath, movedFrom: oldPath, to: newPath)
+            if whereItIsNow == vaultPath {
+                others.append(whereItIsNow)
+            } else {
+                moved.append(whereItIsNow)
+            }
+        }
+        FolderActions.reopenVaults(others + moved)
+    }
+
+    /// The rename itself, once nothing is in the way.
+    private func performRename(_ course: Course, to requestedCode: String) {
+        guard let coursesDirectoryURL else {
+            return
         }
 
         var existingCodes: [String] = []
