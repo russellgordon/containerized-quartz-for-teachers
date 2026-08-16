@@ -9,6 +9,17 @@ ends in a green Windows suite instead of a day of clicking.
 | [`assist-wording.json`](assist-wording.json) | Every sentence the assistant says to a teacher about deploying, previewing and agreeing to things, with `{course}` and `{section}` where values go. |
 | [`assist-cases.json`](assist-cases.json) | The behaviour: which phrasings are matched in code rather than routed, which tools wait for a button, which tools the local model is shown, and what must happen in what ORDER when the assistant deploys. |
 
+## What is generated and what is written by hand
+
+`assist-wording.json` is generated in full. `assist-cases.json` is mixed, and
+the boundary is a TOP-LEVEL key — the file names them under `generated.keys`:
+
+| Key | Comes from |
+|---|---|
+| `cardPhrasings` | `AssistCardCommand.fixedShapes` |
+| `tools` | `AssistToolRunner.tools` / `.localTools` / `.mcpOnlyTools`, and each definition's `needsApproval` and `planTwinName` |
+| `nearMisses`, `scenarios` | **Hand-written intent.** The generator preserves them; nothing in the code says what a near miss is, or what ORDER events must happen in — those are decisions, and decisions are why this repository has handoff documents. |
+
 ## Regenerating
 
 ```bash
