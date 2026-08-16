@@ -1,5 +1,7 @@
 # Technical Documentation
 
+**Two things this folder does NOT hold.** What the two apps must AGREE on is data, in [`contracts/`](../contracts/README.md), because both test suites run it — the sentences the assistant says, the arguments the launchers get, the keys `course_config.json` carries, the image pins. And the reasoning behind decisions an implementer needs is in [`WINDOWS-HANDOFF.md`](../WINDOWS-HANDOFF.md) and [`MAC-HANDOFF.md`](../MAC-HANDOFF.md). These pages explain how the toolchain WORKS; those say what must stay true.
+
 **Audience:** computer science teachers who want to understand how this toolchain
 actually works under the hood — not just how to use it. (For usage instructions,
 see the main [README](../README.md); for the workshop walkthrough, see

@@ -46,6 +46,16 @@ probe set and the tool surface both have to match, or the numbers mean nothing.
 A change to a tool, a tool description, a model, a quant or a context size is a
 reason to re-run.
 
+## Sources kept in the repository
+
+| File | What it is, and why it is still here |
+|---|---|
+| [`../dcp.html`](../dcp.html) | A saved copy of Ontario's **Curriculum and Resources** site (`dcp.edu.gov.on.ca`), taken 2026-08-14. It is the source the CHC2D payload's expectations were transcribed from, and where the half-credit work came from — Career Studies and Civics are 55 hours each and taken back to back, which the linter's hard-coded 110 hours and the installer's fixed September anchor both got wrong. **6.4 MB, and it earns its place only while payloads are still being written**: the rule in this repository is that curriculum text is transcribed verbatim or not at all, and a live site cannot be quoted from six months later when it has changed. If payload work stops, this can go. |
+
+Recorded 2026-08-16 after a sweep found it tracked, six megabytes, and
+mentioned in no document at all — which is how a file becomes something nobody
+dares delete and nobody can explain.
+
 ## `preview-staleness/`
 
 `FINDINGS.md` — why a preview could show the page as it was before an edit:
