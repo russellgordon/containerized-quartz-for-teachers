@@ -884,7 +884,7 @@ chat, measure it the way we measured ours — see the last paragraph.
 | | Teacher | Assistant |
 |---|---|---|
 | Side | right | left |
-| Fill | blue, RGB **(20, 147, 255)** | a system grey at ~16% opacity |
+| Fill | blue, RGB **(20, 147, 255)** | dark: **(59, 59, 61)**; light: **#E9E9EB** — flat, never translucent |
 | Text | white | the ordinary label colour |
 
 **Do not use the system accent colour for the teacher's side.** We did, and it
@@ -894,43 +894,74 @@ bubbles the same grey as the assistant's — at which point the left/right,
 blue/grey distinction the whole window depends on silently disappears. The
 blue is its own constant.
 
+**The assistant's grey is a constant too, not a translucent token.** Ours was
+"a system grey at 16% opacity" for a while, and a translucent fill can only
+ever be as light as the window behind it allows — measured side by side on
+the same backdrop it sat visibly darker than Messages'. Flat colours, both
+appearances.
+
 ### The bubble
 
-Measured off a screenshot of a real Messages conversation, at 2x, in points:
+Ten rounds of measuring against the real thing, each round correcting the one
+before (`GUI-IMPROVEMENTS.md` rows 177–178 have the blow-by-blow). The final
+geometry, in points at 13pt text:
 
 | | |
 |---|---|
-| Body height, one line of 13pt text | 25.5 |
-| Corner radius | 12 |
-| Text inset, each side | 11 |
-| Text inset, top and bottom | ~5 |
-| Tail drop BELOW the body | 4.5 |
-| Tail tip, INSIDE the body's own edge | 5.5 |
+| Corner radius | **17** — an absolute of the design; it does NOT scale with the font |
+| Radius rule | `min(17, height/2, width/2)` — single-line bubbles fall out as capsules, no separate branch |
+| Visible text inset, each side | 13 |
+| Text inset, top and bottom | 7 |
+| Tail size | an absolute, like a pen width — one size on every bubble (`tailScale` = 17) |
+| Tail drop BELOW the body | 5.1 (0.30 × tailScale) |
+| Corner landing on the bottom line | 0.47 × radius — the one tail number that follows the radius |
+| Tail tip, INSIDE the body's edge | 6.5 (0.38 × tailScale) |
+| Hook rejoins the bottom edge | 14.5 in (0.85 × tailScale); root width ≈ 6.5 |
 
-Two of those are the ones to read twice, because both look right the other way
-round and we got both wrong before measuring:
+The two costliest wrong assumptions, both of which survived several rounds:
 
-- **The tail hangs below the bubble.** Its lowest point is beneath the bottom
-  edge, not level with it.
-- **The tail stays within the bubble's width.** Its tip is five and a half
-  points INSIDE the side, not outside it. A tail drawn past the edge reads as
-  a wedge stuck onto a corner.
+- **Nothing scales with the font.** The radius measured the same across two
+  text sizes; so did the whole tail. An early pass scaled both down by our
+  smaller font and every bubble read as subtly wrong beside Messages. (The
+  OLD version of this section said the opposite — "scale the proportions to
+  the corner radius". That advice cost us three passes. Constants.)
+- **Cross-app constants come only from screenshots with BOTH apps in them.**
+  Deriving one from two separate captures needs each capture's
+  pixels-per-point; we guessed one wrongly and shipped a tail a fifth too
+  large. Same screenshot, same screen — the scale cancels out.
 
-Three more things about drawing it:
+Drawing the outline (still one continuous path, not a rectangle plus a
+triangle):
 
-- **One continuous outline**, not a rounded rectangle with a triangle added.
-  Overlapping subpaths merge cleanly only under a non-zero fill AND matching
-  winding directions; get either wrong and a seam shows the moment the fill is
-  translucent.
-- **The underside of the tail is CONCAVE**, curving back up into the bottom
-  edge. That curve, not the tip, is what makes the shape read as a tail rather
-  than as something that happens to be pointy.
-- **Draw inside the bounds you are given.** Ours drew past the edge of its own
-  rect at first and was clipped — a clipped tail is severed, not pointed.
-- **Scale the proportions to the corner radius** rather than hard-coding them.
-  Fixed numbers are correct at exactly one bubble height and subtly wrong at
-  every other, and "subtly wrong" is what a person notices without being able
-  to say why.
+- **The corner-to-tail joint is about the TANGENT.** The silhouette reaches
+  its deepest inset exactly at the bottom line while travelling straight
+  DOWN. A corner that lands travelling horizontally meets the tail in a cusp
+  and the tail reads as a comma stuck under the bubble.
+- **The jog into the tail gets exactly the radius of height**, held nearly
+  flat for the first half with the dive concentrated in the last (a cubic
+  with vertical end-tangents; late control ~0.215 of the span, early ~0.30).
+  A longer span drifts early and reads as a diagonal cut into the side; a
+  weighting that carries inset early reads as the bubble bulging.
+- **No sharp vertices anywhere.** The tip is rounded about 1.5pt across, and
+  the hook meets the bottom edge in a small curve, not a corner.
+- **The underside of the tail is CONCAVE** — a diagonal with a mild sag
+  toward the bubble, not a deep scoop. That curve, not the tip, is what makes
+  the shape read as a tail.
+- **Draw inside the bounds you are given.** Ours drew past its rect at first
+  and was clipped — a clipped tail is severed, not pointed.
+
+### Selecting text in a bubble
+
+Messages pins its selection colours the way it pins its bubble colours:
+light-appearance selection blue **(174, 218, 255)** behind the selected run
+in BOTH appearances, with the selected glyphs painted in the bubble's own
+fill. The system's dark-mode selection colour is a grey-slate that reads as
+broken beside it. Two porting notes: our UI toolkit's built-in text selection
+drew an unstylable grey and we had to drop to the native text control to
+style it at all — check yours early; and the hook that styles selection must
+be one that runs when selection machinery actually attaches (ours had a
+first attempt that configured a text editor that did not exist yet, and it
+failed silently).
 
 ### Tails mark turns, not messages
 
@@ -972,15 +1003,24 @@ resolves.** Leave controls the choice and nothing else.
 
 ### The typing indicator
 
-Three dots in a grey bubble WITH a tail, on the assistant's side, shown
-whenever the model is thinking or a tool is running — both are waits with
-nothing on screen, and a teacher does not care which.
+**A THOUGHT bubble, not a speech bubble** — a capsule with two plain circles
+stepping down toward the speaker, the comic-strip sign for thinking, shown on
+the assistant's side whenever the model is thinking or a tool is running —
+both are waits with nothing on screen, and a teacher does not care which.
+Ours wore the speech tail for a while and it read as off without anyone
+being able to say why: a tailed bubble means SAID, circles mean composing.
 
-Proportions matter more than absolute size: **large dots against a small
-bubble.** Ours are 9 points across with 5 between them, and the bubble hugs
-them. A wide flat pill with three specks in it is the shape of a progress
-bar, not of somebody typing. Each dot lags the one before it (about 0.18s) so
-the three read as a wave rather than a blink.
+Measured from a screen recording of Messages, as ratios of the capsule's
+height (which equals a single-line message bubble, so the indicator occupies
+the slot of exactly the thing it stands for): capsule ~1.7× as wide as tall;
+dots 0.24 of the height with a gap about half a dot; the larger circle 0.41,
+poking about two points past the lower corner; the smaller 0.14, below and
+outside with a sliver of gap. Each dot lags the one before it (about 0.18s)
+so the three read as a wave rather than a blink.
+
+**Draw the capsule and both circles as ONE geometry filled once** (whatever
+your platform's path-union is). As separate shapes, any translucency doubles
+where they overlap and the join shows as a brighter seam.
 
 ### The box you type in
 
@@ -1012,13 +1052,26 @@ the three read as a wave rather than a blink.
 
 ### How to get this right in less time than we did
 
-Measure. Three careful guesses produced three different wrong shapes; one
-screenshot and a twenty-line script that read the pixels produced the right
-one in minutes. Screenshot the chat you are copying, find the bubble's bounding
-box, walk the rows to find where the body ends and the tail begins, and sample
-the fill colour directly. Every number in the table above came out that way,
-and the two assumptions that survived three rounds of eyeballing both died on
-first contact with the measurement.
+Measure — and close the loop. Guessing produced wrong shapes; one screenshot
+and a twenty-line script that read the pixels produced right ones in minutes.
+The full method, each part of which was learned by paying for its absence:
+
+1. **Trace silhouettes, don't eyeball.** Per-row min/max of the fill colour
+   gives the exact edge profile; every number in the tables above came out
+   that way.
+2. **Only same-screenshot comparisons.** Both apps in one capture, or the
+   pixels-per-point uncertainty eats the answer.
+3. **Render YOUR result and measure it the same way.** The passes that
+   shipped wrong all trusted arithmetic about what the code would draw;
+   the passes that stuck rendered the real control offscreen and walked its
+   pixels against the reference trace. Insets especially: native text
+   controls put slack around their glyphs that no spec predicts — our final
+   paddings are asymmetric (12 leading, 9 trailing) purely to cancel what
+   the label actually draws, and only the render-measure loop could have
+   found that.
+4. **Expect the reference to correct you more than once.** Ten passes, each
+   started by a human eye catching what the previous measurement missed, and
+   each ending with the pixels agreeing the eye was right.
 
 ## Plan mode, undo, and how often to back up
 

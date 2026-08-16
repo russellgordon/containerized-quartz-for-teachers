@@ -81,9 +81,10 @@ enum AssistChatLayout {
 /// |---|---|
 /// | corner radius, multi-line | 17 |
 /// | corner radius, single line | half the body height |
-/// | text inset, sides | 11 |
-/// | tail drop below the body | 5.7, one size for every bubble |
-/// | tail tip, INSIDE the body's edge | 7 |
+/// | visible text inset, sides | 13 (see `SelectableBubbleText`) |
+/// | tail drop below the body | 5.1, one size for every bubble |
+/// | corner landing on the bottom line | 0.47 of the radius |
+/// | tail tip, INSIDE the body's edge | 6.5 |
 ///
 /// Two of those corrected assumptions worth stating, because both look right
 /// until measured. The tail **hangs below** the bubble — it is not level with
@@ -178,16 +179,18 @@ struct AssistChatBubbleShape: Shape {
         // Where the corner lands on the bottom line follows the RADIUS, not
         // the tail scale: measured at just over half of it on a capsule and
         // a multi-line bubble alike.
-        let cornerEnd: CGFloat = radius * 0.55
+        let cornerEnd: CGFloat = radius * 0.47
         let tipInset: CGFloat = tailScale * 0.38      // 6.5
         let hookBase: CGFloat = min(tailScale * 0.85, body.width / 2)
 
-        // The jog needs MORE height than the radius: Messages spreads about
-        // 8 points of inset over 16-20 of descent, and giving it only the
-        // radius is what read as the side "sweeping in" harder than theirs.
-        // Clamped so a capsule, whose edge above is already curved, never
-        // starts the jog before the side exists to jog from.
-        let jogSpan: CGFloat = min(radius * 1.4, body.height - radius)
+        // The jog gets exactly the radius of height, like the corner it
+        // replaces: traced on a two-line bubble, Messages spends about 8
+        // points of inset over about 16 of descent, with the edge held
+        // nearly flat for the first half and the dive concentrated in the
+        // last — a LONGER span drifted visibly early and read as a diagonal
+        // cut into the side. Clamped so a capsule, whose edge above is
+        // already curved, never starts the jog before the side exists.
+        let jogSpan: CGFloat = min(radius, body.height - radius)
 
         var path: Path = Path()
 
@@ -209,7 +212,7 @@ struct AssistChatBubbleShape: Shape {
         path.addCurve(
             to: at(body.maxX - cornerEnd, body.maxY),
             control1: at(body.maxX, body.maxY - jogSpan * 0.30),
-            control2: at(body.maxX - cornerEnd, body.maxY - jogSpan * 0.08)
+            control2: at(body.maxX - cornerEnd, body.maxY - jogSpan * 0.215)
         )
 
         // Still heading down at the bottom line; eases outward toward the
