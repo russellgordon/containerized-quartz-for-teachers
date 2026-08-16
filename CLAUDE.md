@@ -112,11 +112,16 @@ Neither app contains toolchain logic of its own: they write the same
    `@Observable` (never `ObservableObject`), `// MARK: -` sections, clarity over
    concision.
 7. **Driving the interface leaves the machine as you found it — and gives the
-   terminal back.** Verifying a change by driving the real app (activating it,
-   sending keystrokes through System Events, taking screenshots) is encouraged:
-   it has already caught bugs that every unit test passed. But when that
-   stretch of work is done — not merely at the end of the whole task —
-   **bring the terminal back to the front**:
+   terminal back.** Written for **macOS sessions**, where the setup is known:
+   Russell works at this Mac with the session running in iTerm. (A Windows
+   session owes the same courtesy to whatever terminal it was launched from,
+   by whatever means that platform offers.)
+
+   Verifying a change by driving the real app — activating it, sending
+   keystrokes through System Events, taking screenshots — is encouraged: it
+   has already caught bugs that every unit test passed. But when that stretch
+   of work is done, not merely at the end of the whole task, **bring the
+   terminal back to the front**:
 
    ```bash
    osascript -e 'tell application "iTerm" to activate'
