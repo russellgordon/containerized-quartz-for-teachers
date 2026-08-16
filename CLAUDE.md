@@ -426,6 +426,11 @@ There are exactly **two**, and they point in opposite directions:
 was built, and it now lives in
 [`research/ai-assist/HISTORY.md`](research/ai-assist/HISTORY.md).)
 
+**Starting work on the macOS app? Open
+[`MAC-BOOTSTRAP.md`](MAC-BOOTSTRAP.md)** — how to add a feature here so it
+reaches Windows as data rather than as a surprise, and how to take work that
+came from Windows.
+
 **Starting work on the Windows app? Open
 [`WINDOWS-BOOTSTRAP.md`](WINDOWS-BOOTSTRAP.md) first** — it is the brief for
 that session: what to read, what to do in what order, and the obligations back
@@ -457,6 +462,7 @@ they are a fair first task: implementing them fixes a real bug on that side.
 |---|---|
 | [`documentation/`](documentation/README.md) | How the toolchain works, numbered 01–10: overview, image, launchers, course setup, build pipeline, Quartz customizations, deployment, config reference, mac app, local AI assistant. |
 | [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) | The dated log of every GUI change, with a required "Notes for Windows port" column. Append here for any GUI change — and read it as HISTORY: it used to be described as "the spec", and `contracts/` is what a test should be written against now. |
+| [`MAC-BOOTSTRAP.md`](MAC-BOOTSTRAP.md) | **The brief for a macOS session**: adding a feature responsibly here, and taking work that arrived from Windows. |
 | [`WINDOWS-BOOTSTRAP.md`](WINDOWS-BOOTSTRAP.md) | **The brief for a Windows session**: what to read, the order of work, the rules while working, and the plan-first rule. Point a Windows agent at this file. |
 | [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) | Architecture, the config contract, platform notes, and the WSL2 background — the reference a Windows session reads second, and where architectural decisions are written. |
 | [`contracts/`](contracts/README.md) | **The Plantoir contract**: what the two apps must agree on, as data both test suites run — the assistant's sentences and behaviour, launcher arguments, validation wording, failure explanations, date reading, class naming, file names, progress markers, preview ports. Generated from the macOS app; never hand-edited. Its coverage table says what is deliberately NOT shared, and why. |

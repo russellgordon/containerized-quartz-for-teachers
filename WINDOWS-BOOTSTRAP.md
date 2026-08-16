@@ -1,6 +1,9 @@
 # Start here for Windows work
 
-**This file is the brief.** It exists so a Windows session begins the same way
+**This file is the brief.** Its mirror is
+[`MAC-BOOTSTRAP.md`](MAC-BOOTSTRAP.md), which briefs a session on the macOS
+side — read it if you want to know what they are obliged to send you, and what
+they do with what you send back. It exists so a Windows session begins the same way
 every time: the same reading, the same order of work, and the same obligations
 back to the mac side. Read it top to bottom before touching anything, and
 follow the plan rule below — it is the only step that is not optional.

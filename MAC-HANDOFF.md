@@ -1,5 +1,10 @@
 # macOS App — Handoff
 
+> **New here? Read [`MAC-BOOTSTRAP.md`](MAC-BOOTSTRAP.md) first.** It says how
+> to take work that arrived from Windows, and how to add a feature on this side
+> so it reaches them as data rather than as a surprise. This file is the ledger
+> it sends you to.
+
 The ledger of work that originated on the **Windows side** and needs — or
 deserves a look from — the **macOS app**. The reverse of
 [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md): read this when syncing the mac
