@@ -85,6 +85,15 @@ nonisolated struct AssistCardCommand: Sendable, Equatable {
         ("deploy this section now",
          AssistCardCommand(toolName: "deploy_section", arguments: [:])),
 
+        // The bare word, which the shelf does not offer and a teacher types
+        // anyway — the button in the section window wears it, so it is the
+        // word they have in front of them. On its own it means one thing and
+        // there is nothing in it for the model to read out, which is the test
+        // for belonging on this list. Sent to the model it came back as a
+        // sentence about deploying rather than a deploy.
+        ("deploy",
+         AssistCardCommand(toolName: "deploy_section", arguments: [:])),
+
         ("publish tomorrow's class",
          AssistCardCommand(toolName: "publish_class_on", arguments: ["when": "tomorrow"])),
     ]

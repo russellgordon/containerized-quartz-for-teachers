@@ -439,13 +439,84 @@ final class AssistToolRunnerTests: XCTestCase {
                        "A running preview must be stopped, waited for, and started again")
     }
 
+    /// Deploying from the assistant is the two buttons a teacher would press,
+    /// in the order they would press them: Stop Preview, then Deploy.
+    ///
+    /// It used to be neither. The assistant ran `deploy.sh` in a runner of its
+    /// own that nothing on screen was watching, and a running preview made
+    /// that refuse outright — so the teacher approved a deploy, watched a
+    /// spinner, and saw nothing happen anywhere. Both halves are asserted
+    /// here: the stop must FINISH before the deploy begins, because stop mode
+    /// kills a section's processes by working directory and would take the
+    /// build with them.
+    @MainActor
+    func testDeployingStopsARunningPreviewFirstAndThenPressesDeploy() async throws {
+        let made = try makeRunner(registeringPreview: true)
+        defer {
+            FakePreview.shared.forget()
+            try? FileManager.default.removeItem(at: made.root)
+        }
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "deploy_section", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertEqual(FakePreview.shared.events, ["stop-begins", "stop-ends", "deploy"],
+                       "Deploy must wait for the preview to be fully stopped")
+        XCTAssertEqual(made.siteWork.deploys, 0,
+                       "With a window open the deploy goes through it, not the assistant's own runner")
+        XCTAssertTrue(outcome.summary.contains("deployed"), outcome.summary)
+        XCTAssertTrue(outcome.summary.contains("preview was stopped"),
+                      "A preview that vanished without a word is its own small alarm: " + outcome.summary)
+    }
+
+    /// The other order, and the one a teacher meets most: no preview running.
+    /// Nothing is stopped, the window's Deploy is pressed, and the answer does
+    /// not mention a preview that was never up.
+    @MainActor
+    func testDeployingWithNoPreviewRunningJustDeploys() async throws {
+        let made = try makeRunner(registeringPreview: true)
+        defer {
+            FakePreview.shared.forget()
+            try? FileManager.default.removeItem(at: made.root)
+        }
+        // Stop it the way the teacher would have, before asking to deploy.
+        _ = await made.runner.run(call: call(
+            "deploy_section", arguments: ["course": "ICS3U", "section": 1]
+        ))
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "deploy_section", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertEqual(FakePreview.shared.events,
+                       ["stop-begins", "stop-ends", "deploy", "deploy"],
+                       "A preview already stopped is not stopped again")
+        XCTAssertFalse(outcome.summary.contains("preview was stopped"), outcome.summary)
+    }
+
+    /// With no section window open there is nothing to press, and the deploy
+    /// falls back to running the launcher itself — the path Claude Code over
+    /// MCP and a deploy scheduled for half six in the morning both take.
+    @MainActor
+    func testDeployingWithNoSectionWindowOpenRunsTheLauncherItself() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+        SectionWindowControllers.shared.forgetAll()
+
+        _ = await made.runner.run(call: call(
+            "deploy_section", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertEqual(made.siteWork.deploys, 1)
+    }
+
     /// With no section window open there is nothing to drive, and the answer
     /// must say so rather than claim a preview nobody can see.
     @MainActor
     func testWithNoSectionWindowOpenTheAnswerSaysTheSiteWasBuilt() async throws {
         let made = try makeRunner()
         defer { try? FileManager.default.removeItem(at: made.root) }
-        SectionPreviewControllers.shared.forgetAll()
+        SectionWindowControllers.shared.forgetAll()
 
         try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08", body: "one", in: made.course)
 
@@ -804,6 +875,7 @@ final class AssistToolRunnerTests: XCTestCase {
             "undo that",
             "deploy now",
             "deploy this section now",
+            "deploy",
             "publish tomorrow's class",
         ]
         // Checked against what the LOCAL model is shown, because a card is a
@@ -1349,7 +1421,7 @@ final class AssistToolRunnerTests: XCTestCase {
             launchControl: SilentLaunchControl()
         )
 
-        SectionPreviewControllers.shared.forgetAll()
+        SectionWindowControllers.shared.forgetAll()
         if registeringPreview {
             FakePreview.shared.register(folderPath: root.path, courseCode: "ICS3U", sectionNumber: 1)
         }

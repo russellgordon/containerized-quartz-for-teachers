@@ -9,6 +9,23 @@ struct AssistSiteWorkResult {
 
     /// What happened, in words meant to be read to a teacher.
     let message: String
+
+    /// Whether what stopped it was the DESTINATION — no deploy folder, no
+    /// Cloudflare account — rather than anything that happened while running.
+    ///
+    /// The section window shows these as an alert, because they are the one
+    /// kind of refusal a teacher can go and fix in course settings, and the
+    /// button that raised it has no other voice. Everything else the window
+    /// says through its console, which is already on screen.
+    let isAboutTheDestination: Bool
+
+    // MARK: - Initializer
+
+    init(succeeded: Bool, message: String, isAboutTheDestination: Bool = false) {
+        self.succeeded = succeeded
+        self.message = message
+        self.isAboutTheDestination = isAboutTheDestination
+    }
 }
 
 /// The two acts that leave Swift and run the toolchain: building a section's
@@ -96,14 +113,29 @@ final class AssistToolchainWork: AssistSiteWork {
 
     /// Publishes the section, building first when the built site is out of
     /// date — so what goes to students is always current.
+    ///
+    /// **This is the path for callers with no window.** Claude Code over MCP,
+    /// and a deploy set for half six in the morning. When a section window IS
+    /// open the assistant presses ITS Deploy instead, so the output lands in
+    /// the console the teacher is looking at — `AssistToolRunner.deploySection`
+    /// decides which, and this runs when nothing is on screen to press.
     func deploy(course: Course, sectionNumber: Int) async -> AssistSiteWorkResult {
         guard let workspaceURL = workspace.workspaceURL else {
             return AssistSiteWorkResult(
                 succeeded: false, message: AssistToolRefusal.noWorkingFolder.message
             )
         }
-        if let busy = CourseActivity.busyDescription(folderPath: workspaceURL.path, courseCode: course.code) {
-            return AssistSiteWorkResult(succeeded: false, message: busy)
+        if CourseActivity.busyDescription(folderPath: workspaceURL.path, courseCode: course.code) != nil {
+            // A whole sentence, not the menu fragment `busyDescription`
+            // returns. That string is written to sit under a greyed-out menu
+            // item — "Available once preview completed" — and read out on its
+            // own in a conversation it says nothing about what was asked for
+            // or what to do about it. This refusal is the last word of a turn.
+            return AssistSiteWorkResult(
+                succeeded: false,
+                message: "\(course.code) is busy in Plantoir — a preview or a deploy is running. "
+                       + "Wait for that to finish, then ask again."
+            )
         }
 
         let needsBuild: Bool = BuildFreshness.needsRebuild(course: course, sectionNumber: sectionNumber)
@@ -118,9 +150,9 @@ final class AssistToolchainWork: AssistSiteWork {
 
         runner = ScriptRunner()
         if needsBuild {
-            runner.milestones = course.configuration.deploysToLocalFolder
-                ? TaskMilestones.buildAndDeployToFolder
-                : TaskMilestones.buildAndDeploy
+            runner.milestones = AssistToolchainWork.milestones(
+                for: course.configuration, buildingFirst: true
+            )
             runner.run(
                 scriptNamed: "preview.sh",
                 arguments: [course.code, String(sectionNumber), "--build-only"],
@@ -138,17 +170,24 @@ final class AssistToolchainWork: AssistSiteWork {
                 )
             }
         } else {
-            runner.milestones = course.configuration.deploysToLocalFolder
-                ? TaskMilestones.deployToFolder
-                : TaskMilestones.deploy
+            runner.milestones = AssistToolchainWork.milestones(
+                for: course.configuration, buildingFirst: false
+            )
         }
 
-        var arguments: [String] = [course.code, String(sectionNumber)]
-        if course.configuration.deploysToLocalFolder {
-            arguments.append(contentsOf: ["--to-folder", course.configuration.deployFolderPath])
-        }
+        // Asked of the SAME place the Deploy button asks. Built here instead,
+        // this path sent a Cloudflare course to Netlify — `--target` and
+        // `--account` were never passed, and `deploy.sh` defaults to Netlify
+        // because every course written before Cloudflare existed relies on
+        // that. Nothing failed; the site simply went to the wrong web host.
+        let arguments: [String] = DeployCommand.arguments(
+            courseCode: course.code,
+            sectionNumber: sectionNumber,
+            configuration: course.configuration,
+            cloudflareAccountID: AppSettings.shared.cloudflareAccountID
+        )
         runner.run(
-            scriptNamed: "deploy.sh",
+            scriptNamed: DeployCommand.scriptName,
             arguments: arguments,
             workingDirectory: workspaceURL,
             keepingTranscript: needsBuild
@@ -169,5 +208,23 @@ final class AssistToolchainWork: AssistSiteWork {
             succeeded: true,
             message: "\(course.code) Section \(sectionNumber) is deployed. Students can reach it now."
         )
+    }
+
+    /// The steps a teacher is shown for this course's destination.
+    ///
+    /// A folder or Cloudflare deploy never touches Netlify, so their progress
+    /// must not talk about it either — the section window works this out the
+    /// same way, and getting it wrong here narrated a Cloudflare deploy as a
+    /// Netlify one.
+    private static func milestones(
+        for configuration: CourseConfiguration, buildingFirst: Bool
+    ) -> [TaskMilestone] {
+        if configuration.deploysToLocalFolder {
+            return buildingFirst ? TaskMilestones.buildAndDeployToFolder : TaskMilestones.deployToFolder
+        }
+        if configuration.deploysToCloudflare {
+            return buildingFirst ? TaskMilestones.buildAndDeployToCloudflare : TaskMilestones.deployToCloudflare
+        }
+        return buildingFirst ? TaskMilestones.buildAndDeploy : TaskMilestones.deploy
     }
 }

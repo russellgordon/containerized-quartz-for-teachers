@@ -362,7 +362,7 @@ final class AssistToolRunner {
             paragraphs.append(lines.joined(separator: "\n"))
         }
 
-        if previewController(for: located.course, sectionNumber: located.sectionNumber)?.isRunning() == true {
+        if sectionWindow(for: located.course, sectionNumber: located.sectionNumber)?.isPreviewRunning() == true {
             let these: String = visible == 1 ? "this page" : "these \(visible) pages"
             paragraphs.append("The section's preview will show \(these) once any rebuild "
                               + "in progress finishes.")
@@ -710,14 +710,14 @@ final class AssistToolRunner {
         return AssistToolOutcome.wrote(message, detail: message)
     }
 
-    /// The section window driving this section's preview, if one is open.
-    private func previewController(
+    /// The window this section is open in, if one is on screen.
+    private func sectionWindow(
         for course: Course, sectionNumber: Int
-    ) -> SectionPreviewControllers.Controller? {
+    ) -> SectionWindowControllers.Controller? {
         guard let folder = workspace.workspaceURL else {
             return nil
         }
-        return SectionPreviewControllers.shared.controller(
+        return SectionWindowControllers.shared.controller(
             folderPath: folder.path, courseCode: course.code, sectionNumber: sectionNumber
         )
     }
@@ -731,16 +731,16 @@ final class AssistToolRunner {
     private func stopThePreviewBeforeWriting(
         for course: Course, sectionNumber: Int
     ) async -> Bool {
-        guard let controller = previewController(for: course, sectionNumber: sectionNumber) else {
+        guard let window = sectionWindow(for: course, sectionNumber: sectionNumber) else {
             return false
         }
-        if !controller.isRunning() {
+        if !window.isPreviewRunning() {
             return false
         }
         // Awaited. A stop that is still finishing when the rebuild starts
         // kills the rebuild, and the teacher is left with no preview and a
         // site on disk from before their change.
-        await controller.stop()
+        await window.stopPreview()
         return true
     }
 
@@ -766,7 +766,7 @@ final class AssistToolRunner {
     ) async -> String {
         let where_: String = "\(course.code) Section \(sectionNumber)"
 
-        if let controller = previewController(for: course, sectionNumber: sectionNumber) {
+        if let window = sectionWindow(for: course, sectionNumber: sectionNumber) {
             // Stop whatever is running first, and WAIT for it. "Preview" means
             // show me this section as it is now, so a preview already up is
             // the thing most in need of replacing — leaving it alone would
@@ -777,10 +777,10 @@ final class AssistToolRunner {
             // when the rebuild starts kills the rebuild, and what gets served
             // is the last build allowed to complete — the site as it was
             // before.
-            if controller.isRunning() {
-                await controller.stop()
+            if window.isPreviewRunning() {
+                await window.stopPreview()
             }
-            controller.start()
+            window.startPreview()
             return "The preview for \(where_) is rebuilding now, and will appear in that "
                  + "section's window when it is ready."
         }
@@ -832,18 +832,63 @@ final class AssistToolRunner {
         return AssistToolOutcome.wrote("Undid \(result.description).", detail: detail)
     }
 
+    /// Deploy the section — by doing exactly what the teacher would do with
+    /// the two buttons in the section's window: Stop Preview, then Deploy.
+    ///
+    /// **Why the buttons rather than the toolchain directly.** The old version
+    /// ran `deploy.sh` in a `ScriptRunner` the assistant made for itself, which
+    /// nothing on screen was watching. Two things went wrong with that, and
+    /// they compounded into "I pressed Deploy and nothing happened":
+    ///
+    /// * **Nothing showed.** No console, no progress header, no live-site link
+    ///   at the end — a deploy is minutes long, and every visible sign of it
+    ///   belongs to the section window. The teacher had a spinner in the chat
+    ///   and a section window sitting there saying "No Preview Running".
+    /// * **The preview blocked it.** A running preview is exactly when a
+    ///   teacher asks for this, and it made the deploy REFUSE — with
+    ///   `busyDescription`'s menu fragment, "Available once preview completed",
+    ///   which reads like nothing at all. The window's own Deploy button is
+    ///   greyed out then, so what a teacher does is press Stop Preview first.
+    ///   The assistant now does the same thing, in the same order.
+    ///
+    /// Stopping is AWAITED before the deploy starts, for the reason it is
+    /// awaited before a write: stop mode finds a section's processes by
+    /// working directory, so a stop still finishing when the build begins
+    /// kills the build.
+    ///
+    /// With no window open there is nothing to press, and `siteWork` runs the
+    /// launcher itself — the path Claude Code and a 6:30 a.m. alarm take.
     private func deploySection(_ arguments: [String: Any]) async -> AssistToolOutcome {
         let found: Result<Located, AssistToolRefusal> = locate(arguments)
         guard case .success(let located) = found else {
             return AssistToolOutcome.refused(refusal(from: found).message)
         }
-        let result: AssistSiteWorkResult = await siteWork.deploy(
-            course: located.course, sectionNumber: located.sectionNumber
+
+        let stoppedThePreview: Bool = await stopThePreviewBeforeWriting(
+            for: located.course, sectionNumber: located.sectionNumber
         )
+
+        let result: AssistSiteWorkResult
+        if let window = sectionWindow(for: located.course, sectionNumber: located.sectionNumber) {
+            result = await window.deploy()
+        } else {
+            result = await siteWork.deploy(
+                course: located.course, sectionNumber: located.sectionNumber
+            )
+        }
+
         if !result.succeeded {
             return AssistToolOutcome.refused(result.message)
         }
-        return AssistToolOutcome.wrote(result.message, detail: result.message)
+        // Said, not left to be noticed. The preview stopping is the one part
+        // of this the teacher did not ask for, and a preview window that has
+        // gone blank with no explanation is its own small alarm.
+        var message: String = result.message
+        if stoppedThePreview {
+            message += " The preview was stopped first, which is what pressing Deploy in that "
+                     + "section's window needs — press Preview there to bring it back."
+        }
+        return AssistToolOutcome.wrote(message, detail: message)
     }
 
     // MARK: - Deploying later

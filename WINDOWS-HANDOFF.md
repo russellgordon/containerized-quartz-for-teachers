@@ -681,6 +681,97 @@ on its local list.** The cut is only safe because something else asks. And the
 audit worth running after any removal is not "does the surface still route"
 but "can every refusal still be acted on by the surface that receives it".
 
+### The assistant presses the app's own buttons — Deploy included
+
+**Windows got here first and the mac has copied it.** `AssistAgent.RunTool`
+already intercepts `rebuild_preview` and `deploy_section` and calls
+`ShowPreviewInApp` / `StartDeployInApp` instead of the server, for the reason
+written in that file: a build nobody can see might as well not have happened.
+That is the right design. This section is the mac's version of it, the two
+bugs it fixed on the way, and the one half of it Windows is still missing.
+
+On the mac the mechanism is a registry of closures, `SectionWindowControllers`
+(renamed from `SectionPreviewControllers` when Deploy joined the preview
+there). A section window registers `isPreviewRunning`, `startPreview`,
+`stopPreview` and `deploy` while it is on screen; the assistant looks up the
+window for the course and section it is about and calls them directly, in
+order, on the main actor. A registry rather than a flag a view observes,
+because the assistant needs "stop, then write, then start" to MEAN that, and
+an observer acts whenever the UI framework next evaluates a body — which may
+be after the writes. Your `Action?` properties are the same idea; keep them.
+
+**What was wrong on the mac, and is worth checking on yours.**
+
+1. **A deploy nobody could watch.** `deploy_section` ran `deploy.sh` in a
+   script runner the assistant made for itself. It worked — and showed
+   nothing. No console, no progress header, no live-site link at the end, for
+   a job that takes minutes. The teacher had a spinner in the chat and a
+   section window still saying "No Preview Running". You do not have this
+   bug; this is the bug your design avoids.
+2. **A running preview refused the deploy.** The assistant-side path asked
+   `CourseActivity.busyDescription` first, which reports a course busy while
+   any of its sections is previewing — so the one moment a teacher most often
+   asks to deploy was the one moment it would not. Worse, the refusal was
+   that helper's own string, "Available once preview completed": written to
+   sit under a greyed-out menu item, and meaningless read out in a
+   conversation. **Any string you show in the chat has to be a sentence that
+   survives being read on its own** — menu labels, tooltips and button titles
+   do not qualify, however true they are.
+
+**What the mac does now, and what Windows still needs.** The assistant does
+what the teacher would do with the two buttons: **Stop Preview if one is
+running, wait for it, then Deploy.** Windows stops the preview only for page
+EDITS — `if (edits && PreviewIsShowing?.Invoke() == true) StopPreviewInApp?.Invoke();`
+— and never for a deploy. And `StartDeployForAutomation()` calls `Deploy_Click`
+directly, which walks straight past `DeployButton.IsEnabled = !IsBusy`: the
+guard that stops a teacher deploying mid-preview does not apply to the
+assistant, because a disabled button only disables clicking. So a Windows
+teacher who asks the assistant to deploy while previewing gets a deploy and a
+preview in the same container at once, which is exactly what that guard
+exists to prevent.
+
+Two things to get right when you fix it:
+
+- **Await the stop.** `StopPreviewIfRunning()` is `void` today. Stop mode
+  finds a section's processes BY WORKING DIRECTORY and so catches builds as
+  well as servers — a stop still finishing when the deploy's build begins
+  kills the build, and what gets deployed is the last `public/` that was
+  allowed to complete: the site as it was before. This is the same finding as
+  the preview-staleness work, arriving somewhere new.
+- **Say that the preview stopped.** The teacher did not ask for it, and a
+  preview window that goes blank with no explanation is its own small alarm.
+  The mac appends one sentence to the deploy's answer, and only when a
+  preview was actually stopped.
+
+**One place decides the launcher's arguments.** The mac's assistant path built
+its own `deploy.sh` arguments and never passed `--target cloudflare` or
+`--account`, so **a Cloudflare course deployed by the assistant went to
+Netlify** — no error anywhere, the site simply appeared on the wrong host,
+because Netlify is the launcher's default and every course written before
+Cloudflare existed relies on that. It now calls `DeployCommand.arguments`,
+the same function the Deploy button and the scheduled-deploy alarm call. If
+`Plantoir.Mcp` or your scheduled task composes its own arguments anywhere,
+that is the same bug waiting. The milestone list has the identical trap: the
+assistant's copy had no Cloudflare case, so a Cloudflare deploy narrated
+itself as a Netlify one.
+
+**Awaiting the deploy is optional; reporting it honestly is not.** The mac
+waits and answers "ICS3U Section 1 is deployed. Students can reach it now."
+Windows answers "The section is deploying from Plantoir's main window", which
+is a fair answer and ends the turn cleanly. What must not happen is telling a
+teacher a section IS deployed while the upload has three minutes left — they
+go and look at a site that is not there. If you do start awaiting it, send the
+destination refusals (no publishing folder, no Cloudflare account) back as
+chat text rather than as a dialog on a window the teacher is not looking at;
+the mac keeps the dialog for the button and returns a flag on the result so
+the assistant can say the same thing in words.
+
+**The fallback still matters.** With no section window open there is nothing
+to press, and the assistant runs the launcher itself. That path is not dead
+code — it is what Claude Code over MCP uses, and what a deploy scheduled for
+half six in the morning uses. Keep it working, and keep it asking the same
+place for its arguments.
+
 ### The model's list is SHORTER than the server's
 
 Two lists, deliberately. `definitions` is what the local model sees;

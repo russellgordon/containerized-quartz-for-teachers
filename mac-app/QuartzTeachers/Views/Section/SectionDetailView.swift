@@ -149,32 +149,40 @@ struct SectionDetailView: View {
         }
         .focusedSceneValue(\.previewController, previewURL != nil ? previewController : nil)
         // The assistant cannot drive a preview itself — it holds neither the
-        // port lease nor the web view — so this window hands it the two things
-        // it alone can do. Registered rather than observed: the assistant has
-        // to stop the preview, change files, and start it again IN THAT ORDER,
+        // port lease nor the web view — so this window hands it the things it
+        // alone can do. Registered rather than observed: the assistant has to
+        // stop the preview, change files, and start it again IN THAT ORDER,
         // and an observer that acts whenever SwiftUI next evaluates a body
         // cannot promise the stop happened before the writes.
         //
-        // These are the same functions the toolbar button calls, so the
-        // assistant and the button can never drift apart.
+        // Deploy is here for a different reason and the same conclusion. The
+        // assistant COULD run `deploy.sh` itself, and used to; what it cannot
+        // do is show it happening. The console, the progress header and the
+        // live-site link all belong to this window, so a deploy run anywhere
+        // else is a teacher watching a spinner for four minutes beside a
+        // window that says nothing is running.
+        //
+        // These are the same functions the toolbar buttons call, so the
+        // assistant and the buttons can never drift apart.
         .onAppear {
             guard let folder = workspace.workspaceURL else {
                 return
             }
-            SectionPreviewControllers.shared.register(
+            SectionWindowControllers.shared.register(
                 folderPath: folder.path,
                 courseCode: course.code,
                 sectionNumber: sectionNumber,
-                controller: SectionPreviewControllers.Controller(
-                    isRunning: { previewRunner.isRunning },
-                    start: { startPreview() },
-                    stop: { await stopPreviewAndWait() }
+                controller: SectionWindowControllers.Controller(
+                    isPreviewRunning: { previewRunner.isRunning },
+                    startPreview: { startPreview() },
+                    stopPreview: { await stopPreviewAndWait() },
+                    deploy: { await deployAndWait() }
                 )
             )
         }
         .onDisappear {
             if let folder = workspace.workspaceURL {
-                SectionPreviewControllers.shared.unregister(
+                SectionWindowControllers.shared.unregister(
                     folderPath: folder.path,
                     courseCode: course.code,
                     sectionNumber: sectionNumber
@@ -417,20 +425,58 @@ struct SectionDetailView: View {
         }
     }
 
+    /// The Deploy button. The work itself is `deployAndWait()`, so the
+    /// assistant can press the same button and be told how it went.
+    func startDeploy() {
+        Task {
+            let result: AssistSiteWorkResult = await deployAndWait()
+            // A refusal reaches the teacher as the alert this window has
+            // always shown. The assistant's copy of the same sentence goes
+            // into the conversation instead — see `deployAndWait()`.
+            if !result.succeeded, result.isAboutTheDestination {
+                deployRefusal = result.message
+            }
+        }
+    }
+
     /// Publishes the section. If the built site is missing or older than
     /// the teacher's content, it is rebuilt first — quietly, without
     /// showing a preview — so what gets published is always current.
-    func startDeploy() {
+    ///
+    /// **Why this returns a result rather than just doing it.** Two callers
+    /// press Deploy now: the toolbar button, and the assistant when a teacher
+    /// asks it to deploy. The button needs nothing back — the console and the
+    /// progress header in front of the teacher ARE the answer. The assistant
+    /// is in another window and has to say in words what happened, so the
+    /// answer has to come back to it. Duplicating the deploy for the second
+    /// caller is how a Cloudflare course quietly starts deploying to Netlify
+    /// from one of the two paths, so there is only ever one.
+    func deployAndWait() async -> AssistSiteWorkResult {
         guard let workspaceURL = workspace.workspaceURL else {
-            return
+            return AssistSiteWorkResult(
+                succeeded: false, message: AssistToolRefusal.noWorkingFolder.message
+            )
         }
 
         // Whatever is wrong with the destination is said here, before a
         // build starts: discovering it after several minutes of work would
         // waste the teacher's time and read as a failure of the deploy.
         if let problem = deployRefusalReason {
-            deployRefusal = problem
-            return
+            return AssistSiteWorkResult(
+                succeeded: false, message: problem, isAboutTheDestination: true
+            )
+        }
+
+        // What the Deploy button's `disabled` says, said in words. The
+        // assistant reaches this by pressing the button while the window is
+        // already busy — a teacher cannot, because the button is greyed out,
+        // and finding out which of those two it was needs a sentence rather
+        // than nothing happening.
+        if isBusy {
+            return AssistSiteWorkResult(
+                succeeded: false,
+                message: "\(titleText) is already busy in Plantoir. Wait for that to finish, then deploy."
+            )
         }
 
         let needsBuild: Bool = BuildFreshness.needsRebuild(course: course, sectionNumber: sectionNumber)
@@ -458,46 +504,64 @@ struct SectionDetailView: View {
             courseCode: course.code,
             sectionNumber: sectionNumber
         )
-
-        Task {
-            defer {
-                CourseActivity.endPublish(
-                    folderPath: workspaceURL.path,
-                    courseCode: course.code,
-                    sectionNumber: sectionNumber
-                )
-            }
-
-            if needsBuild {
-                deployRunner.run(
-                    scriptNamed: "preview.sh",
-                    arguments: [course.code, String(sectionNumber), "--build-only"],
-                    workingDirectory: workspaceURL
-                )
-                let built: Bool = await deployRunner.waitUntilFinished()
-                if !built {
-                    // The failure and its output are already on screen.
-                    return
-                }
-            }
-
-            // What the launcher is asked to do is decided in one place —
-            // shared with the scheduled deploy, so an alarm set for half
-            // six sends the site to the same destination this button does.
-            let deployArguments: [String] = DeployCommand.arguments(
+        defer {
+            CourseActivity.endPublish(
+                folderPath: workspaceURL.path,
                 courseCode: course.code,
-                sectionNumber: sectionNumber,
-                configuration: course.configuration,
-                cloudflareAccountID: AppSettings.shared.cloudflareAccountID
+                sectionNumber: sectionNumber
             )
-            deployRunner.run(
-                scriptNamed: DeployCommand.scriptName,
-                arguments: deployArguments,
-                workingDirectory: workspaceURL,
-                keepingTranscript: needsBuild
-            )
-            await deployRunner.waitUntilFinished()
         }
+
+        if needsBuild {
+            deployRunner.run(
+                scriptNamed: "preview.sh",
+                arguments: [course.code, String(sectionNumber), "--build-only"],
+                workingDirectory: workspaceURL
+            )
+            if let problem = deployRunner.launchProblem {
+                return AssistSiteWorkResult(succeeded: false, message: problem)
+            }
+            let built: Bool = await deployRunner.waitUntilFinished()
+            if !built {
+                // The failure and its output are already on screen.
+                return AssistSiteWorkResult(
+                    succeeded: false,
+                    message: "\(course.code) Section \(sectionNumber) could not be built, so nothing was "
+                           + "sent to students. The output is in that section's window in Plantoir."
+                )
+            }
+        }
+
+        // What the launcher is asked to do is decided in one place —
+        // shared with the scheduled deploy, so an alarm set for half
+        // six sends the site to the same destination this button does.
+        let deployArguments: [String] = DeployCommand.arguments(
+            courseCode: course.code,
+            sectionNumber: sectionNumber,
+            configuration: course.configuration,
+            cloudflareAccountID: AppSettings.shared.cloudflareAccountID
+        )
+        deployRunner.run(
+            scriptNamed: DeployCommand.scriptName,
+            arguments: deployArguments,
+            workingDirectory: workspaceURL,
+            keepingTranscript: needsBuild
+        )
+        if let problem = deployRunner.launchProblem {
+            return AssistSiteWorkResult(succeeded: false, message: problem)
+        }
+        let deployed: Bool = await deployRunner.waitUntilFinished()
+        if !deployed {
+            return AssistSiteWorkResult(
+                succeeded: false,
+                message: "The deploy of \(course.code) Section \(sectionNumber) did not finish. "
+                       + "The output is in that section's window in Plantoir."
+            )
+        }
+        return AssistSiteWorkResult(
+            succeeded: true,
+            message: "\(course.code) Section \(sectionNumber) is deployed. Students can reach it now."
+        )
     }
 
     /// Opens the page currently shown in the preview (not just the site

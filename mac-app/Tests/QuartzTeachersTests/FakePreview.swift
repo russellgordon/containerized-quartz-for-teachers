@@ -1,8 +1,8 @@
 import Foundation
 @testable import QuartzTeachers
 
-/// A stand-in for a section window's preview, which records the ORDER of what
-/// the assistant did to it.
+/// A stand-in for a section window, which records the ORDER of what the
+/// assistant did to it — its preview, and its Deploy.
 ///
 /// The order is the point. Stopping, writing and starting can all happen and
 /// still be wrong: a preview stopped after the pages were rewritten was
@@ -30,18 +30,18 @@ final class FakePreview {
         running = true
         watchedURL = nil
         textWhenWatched = nil
-        SectionPreviewControllers.shared.register(
+        SectionWindowControllers.shared.register(
             folderPath: folderPath,
             courseCode: courseCode,
             sectionNumber: sectionNumber,
-            controller: SectionPreviewControllers.Controller(
-                isRunning: { [weak self] in self?.running ?? false },
-                start: { [weak self] in
+            controller: SectionWindowControllers.Controller(
+                isPreviewRunning: { [weak self] in self?.running ?? false },
+                startPreview: { [weak self] in
                     self?.noteWriteIfItHappened()
                     self?.running = true
                     self?.events.append("start")
                 },
-                stop: { [weak self] in
+                stopPreview: { [weak self] in
                     // Records the stop as two events with a real suspension
                     // between them, so the test can tell "called the stop"
                     // apart from "waited for the stop to finish". The real
@@ -54,6 +54,18 @@ final class FakePreview {
                     self?.running = false
                     self?.noteWriteIfItHappened()
                     self?.events.append("stop-ends")
+                },
+                // The window's Deploy, which the assistant presses rather
+                // than running the launcher where nobody can see it. It goes
+                // into the same sequence as the preview events, because the
+                // order is the whole question: deploying while the preview is
+                // still up is what the button in the window will not let a
+                // teacher do.
+                deploy: { [weak self] in
+                    self?.events.append("deploy")
+                    return AssistSiteWorkResult(
+                        succeeded: true, message: "ICS3U Section 1 is deployed."
+                    )
                 }
             )
         )
@@ -66,7 +78,7 @@ final class FakePreview {
     }
 
     func forget() {
-        SectionPreviewControllers.shared.forgetAll()
+        SectionWindowControllers.shared.forgetAll()
         events = []
         watchedURL = nil
         textWhenWatched = nil

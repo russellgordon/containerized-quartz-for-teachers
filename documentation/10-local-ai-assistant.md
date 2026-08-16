@@ -349,6 +349,32 @@ corresponding Swift function. If the name is not in the table, nothing runs.
 This is the security boundary: **the set of things the assistant can do is a
 Swift array**, not something the model can extend by being clever.
 
+### Step 4 — The app presses its own buttons
+
+Two of those Swift functions do not do the work themselves. When a teacher
+asks for a preview or a deploy and the section is open in a window, the
+assistant calls that window's own Preview and Deploy — the same functions the
+buttons call — through a small registry the window fills in while it is on
+screen (`SectionWindowControllers`).
+
+The reason is that the *visible* part of this work all belongs to the window:
+the console the output streams into, the progress header, the site itself in
+the web view, and the live-site link at the end. Run anywhere else, a deploy
+still deploys, but the teacher watches a spinner in the conversation for four
+minutes beside a section window that says nothing is running — which is
+indistinguishable from a hang.
+
+A deploy also does what the teacher would do first: if a preview is running,
+it is **stopped, and waited for**, before the deploy begins. The window's
+Deploy button is greyed out while a preview runs, so pressing Stop Preview is
+the actual human procedure; and the wait is not politeness, because stopping a
+preview kills that section's processes by working directory and would
+otherwise take the deploy's build with it.
+
+With no window open there is nothing to press. Then the assistant runs the
+launcher itself — the path Claude Code takes over MCP, and the path a deploy
+scheduled for 6:30 a.m. takes when nobody is awake.
+
 ---
 
 ## Part 4 — Why it is built this way

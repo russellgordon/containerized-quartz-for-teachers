@@ -1,6 +1,7 @@
 import Foundation
 
-/// The section windows that are on screen, and the preview each one owns.
+/// The section windows that are on screen, and the work each one owns: its
+/// preview, and its deploy.
 ///
 /// **Why a registry of closures rather than a request an observer notices.**
 /// The assistant needs to do three things in order — stop the preview, change
@@ -12,21 +13,24 @@ import Foundation
 /// silently, which is worse than failing: the files changed, the preview did
 /// not move, and nothing anywhere said why.
 ///
-/// So the window hands over the two things it alone can do, and the runner
-/// calls them directly, in order, on the main actor. Ordering becomes ordinary
+/// So the window hands over the things it alone can do, and the runner calls
+/// them directly, in order, on the main actor. Ordering becomes ordinary
 /// sequential code.
 ///
 /// **Why the window still owns them.** A preview is a server on a leased port
 /// and a web view; both belong to the section window, and the assistant has
-/// neither. Registering the window's own `startPreview()` and `stopPreview()`
-/// means the assistant and the toolbar button run the SAME code rather than
-/// two versions of it that drift.
+/// neither. A deploy is the same story for a different reason: the window
+/// carries the console the output streams into, the progress header, and the
+/// live-site link at the end. Registering the window's own `startPreview()`,
+/// `stopPreview()` and `startDeploy()` means the assistant and the toolbar
+/// buttons run the SAME code rather than two versions of it that drift.
 ///
-/// Nothing registered is not an error. A teacher can change pages with no
-/// section window open at all, and then there is no preview to cycle — the
-/// caller builds the site and says so.
+/// Nothing registered is not an error. A teacher can change pages, or set a
+/// deploy for half six in the morning, with no section window open at all —
+/// and then there is nothing to press. The caller does the work itself and
+/// says where the answer went.
 @MainActor
-final class SectionPreviewControllers {
+final class SectionWindowControllers {
 
     // MARK: - Types
 
@@ -52,13 +56,13 @@ final class SectionPreviewControllers {
         }
     }
 
-    /// What a section window can be asked to do about its preview.
+    /// What a section window can be asked to do.
     struct Controller {
 
         // MARK: - Stored properties
 
-        let isRunning: () -> Bool
-        let start: () -> Void
+        let isPreviewRunning: () -> Bool
+        let startPreview: () -> Void
 
         /// Asynchronous, and that is the whole point of it.
         ///
@@ -68,18 +72,28 @@ final class SectionPreviewControllers {
         /// on — it is still running when the next preview begins, and kills
         /// that one too. Awaiting it is what makes "stop, write, start" mean
         /// what it says.
-        let stop: () async -> Void
+        let stopPreview: () async -> Void
+
+        /// Press this window's Deploy, and do not come back until the section
+        /// is out — or until something stopped it going out.
+        ///
+        /// Awaited for a plainer reason than the stop: the assistant has to
+        /// tell the teacher what happened, and a deploy it did not wait for
+        /// can only be reported as "started". A teacher who is told a section
+        /// is deployed, when the upload has three minutes left, will go and
+        /// look at a site that is not there yet.
+        let deploy: () async -> AssistSiteWorkResult
     }
 
     // MARK: - Stored properties
 
     private var controllers: [Key: Controller] = [:]
 
-    static let shared: SectionPreviewControllers = SectionPreviewControllers()
+    static let shared: SectionWindowControllers = SectionWindowControllers()
 
     // MARK: - Functions
 
-    /// A section window says it is on screen and can drive its preview.
+    /// A section window says it is on screen and can drive its own work.
     func register(
         folderPath: String,
         courseCode: String,
