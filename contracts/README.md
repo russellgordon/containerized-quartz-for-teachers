@@ -17,6 +17,7 @@ mechanics, a measurement taken on one machine: not.
 |---|---|
 | [`assist-wording.json`](assist-wording.json) | Every sentence the assistant says to a teacher about deploying, previewing and agreeing to things, with `{course}` and `{section}` where values go. |
 | [`assist-cases.json`](assist-cases.json) | The assistant's behaviour: which phrasings are matched in code rather than routed, which tools wait for a button, what must happen in what ORDER when it deploys, and how the arrow keys walk the prompt history. |
+| [`shared-rules.json`](shared-rules.json) | Four rule sets on top of machinery that could not be less alike: what a scheduled deploy refuses and in what order, what the sidebar's filter shows, what is stripped from the launchers' output, and what counts as a curriculum expectation. |
 | [`course-management.json`](course-management.json) | The names the three kinds of zip carry and how they are told apart, what section number is offered next and which entries are refused in whose words, and the grade a course code names. |
 | [`class-planning.json`](class-planning.json) | Which page titles carry numbers, what "the next class" would be called, and — the highest-stakes data here — the ORDER renames must run in when room is made for a class. |
 | [`schedule-rules.json`](schedule-rules.json) | How a teacher's own list of class dates is read: every accepted date form, how an ambiguous `08/09/2026` column is settled or asked about, and what a pasted Google Sheet address becomes. |
@@ -142,6 +143,10 @@ gap nobody has looked at. Counts are test functions, taken 2026-08-16.
 | Preview ports and the websocket offset | `app-rules.json` → `previewPorts` | PreviewLease (7) |
 | The browser-safe address | `app-rules.json` → `linkRules` | BrowserSafeURL (2) |
 | Reading a teacher's date list | `schedule-rules.json` | SectionScheduleSource (23) |
+| Scheduled-deploy refusals | `shared-rules.json` → `scheduledDeployRefusals` | ScheduledDeploy (23) |
+| Sidebar filtering | `shared-rules.json` → `sidebarFilter` | CourseFilter (9) |
+| Stripping the launchers' output | `shared-rules.json` → `transcriptStripping` | TranscriptBuilder (6) |
+| What counts as a curriculum expectation | `shared-rules.json` → `curriculumRules` | AssistCurriculumMentions (11) |
 | Backup, archive and wizard zip names | `course-management.json` → `zipNames` | BackupItem, ArchivedItem (18) |
 | Adding a section: suggestion, refusals, wording | `course-management.json` → `sectionNumbers` | SectionAdder, SectionNumbersValidation (21) |
 | Grade labels from a course code | `course-management.json` → `gradeLabels` | SectionAdder |
@@ -154,14 +159,14 @@ oversight:
 |---|---|---|
 | Windows, sheets, layout, hit areas, fonts, chat bubbles | ~71 | Platform look and feel. The mac's numbers were measured against Messages; matching them on WinUI would produce something that looks foreign. What must be TRUE of the assistant's window is in `WINDOWS-HANDOFF.md`. |
 | Script runner and preview stopper mechanics | 34 + 2 | ConPTY against a pseudo-terminal, WSL2 against Colima. The OUTPUT they parse is shared (see `markerOrigins`); the machinery is not. |
-| Scheduled deploys | 23 | launchd against Task Scheduler — nothing about the mechanism ports. The plan's REFUSALS (a section never deployed cannot be scheduled) are worth mirroring by hand. |
+| Scheduled deploys: the MECHANISM | ~14 | launchd against Task Scheduler — nothing about writing a plist or a task ports. The **refusals** are now shared (`shared-rules.json`), which is the half that matters. |
 | Model tiers, plan mode, activity | 30 | Measured on this hardware. See `research/`; a tier ladder measured on an M4 Pro says nothing about a teacher's laptop with integrated graphics. |
 | Restoring and archiving the FILES | ~8 | The zip NAMES are shared (above); unzipping, replacing a course folder and reporting what came back is filesystem work with different failure modes on each platform. |
 | Example content, skeletons, course names | 25 | Both apps read the SAME files under `support/`. The data is its own contract; run the same validity checks against it rather than copying expectations here. |
 | Workspace initialisation, folder containers | 18 | Filesystem shapes that differ (`~/Library/Application Support` against `%LOCALAPPDATA%`). |
 | Writing a new section's files | ~5 | The rules are shared (above); creating folders and extending each page's frontmatter is filesystem work. |
-| Curriculum mentions, section restore | 19 | MCP-only tools and section-scoped restore — no Windows counterpart yet. |
-| Sidebar filtering, transcript building, console focus | 20 | Small and local; port if the behaviour is ever questioned. |
+| Curriculum mention PLANS, section restore | ~13 | The plan's wording and the restore's file work are local; **what counts as a curriculum expectation** — the folder rule, the code shape, the anchor — is now shared (`shared-rules.json`), because `build_site.py` decides it and both apps must agree with the Python. |
+| Console focus and scrolling | ~5 | Which pane has focus and when it scrolls is per-platform. Sidebar filtering and transcript stripping are now shared (`shared-rules.json`). |
 
 ## The rule this exists to enforce
 

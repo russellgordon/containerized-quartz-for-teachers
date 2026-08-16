@@ -901,6 +901,43 @@ And the rule that governs all of it, from row 1 of the improvement log: **the
 window never names the machinery.** No tool names, no model names, no tokens,
 no containers. "The small assistant" and "the larger assistant".
 
+### The parts of those four areas that could NOT be a contract
+
+`shared-rules.json` carries the rules. These are the neighbouring pieces that
+are yours, written here because "not in the contract" must never mean "nobody
+mentioned it".
+
+**Scheduled deploys — the mechanism, and one refusal that may differ.** Writing
+a plist and writing a scheduled task have nothing in common, so only the
+refusals are shared. But one of them is a genuine fork: the mac refuses
+Cloudflare with no Account ID **because it can pass `--account` in the plist and
+therefore has to ask once, up front**. If a Windows scheduled task still cannot
+be handed an account, then Cloudflare is not schedulable there at all — and the
+right answer is a refusal that SAYS so, not a task that fails at 06:30 in
+silence. Check it, and record what you find in `MAC-HANDOFF.md`; the contract
+case says which of the two you are looking at.
+
+Two more that stay yours: the plan's own words (the mac's says what has to be
+true of the Mac — awake, plugged in, lid open — and yours will say something
+different about sleep and Modern Standby), and cancelling, which on the mac is
+`launchctl bootout` plus deleting the plist.
+
+**The sidebar filter — the empty state.** The contract says WHAT matches. It
+does not say what a teacher sees when nothing does, because that is a view: the
+mac shows a short sentence rather than an empty pane, and the rule behind it is
+that an empty list looks like a broken app while a sentence looks like an
+answer. Say something; the words are yours.
+
+**The transcript — everything except the stripping.** What is stripped is
+shared (a colour code is a colour code). How much scrollback is kept, when the
+view follows the tail, whether it scrolls on focus — all yours, and all
+different in WinUI.
+
+**Curriculum — the plan, not the recognition.** What COUNTS as an expectation
+is shared and must be, because `build_site.py` decides what ships and an app
+that disagreed would report coverage the site does not have. What a coverage
+plan SAYS to a teacher, and how it is offered, is yours.
+
 ### Two things to MEASURE on Windows rather than copy from the mac
 
 Both are in the contracts, and both would be wrong to implement by reading the
@@ -948,6 +985,7 @@ assistant's contract and is now the whole product's:
 | `contracts/schedule-rules.json` | Every accepted date form, how an ambiguous `08/09/2026` column is settled or asked about, what a pasted Google Sheet address becomes. |
 | `contracts/class-planning.json` | Which titles carry numbers, what the next class is called, and the ORDER renames must run in. |
 | `contracts/course-management.json` | The three kinds of zip and how they are told apart, the section number offered next and the refusals, grade labels from a course code. |
+| `contracts/shared-rules.json` | What a scheduled deploy refuses and in what ORDER, what the sidebar filter shows, what is stripped from the launchers' output, and what counts as a curriculum expectation. |
 
 An xUnit `[Theory]` with a `MemberData` source that deserialises these is the
 whole integration. Nothing in them is macOS-specific: the sentences are the

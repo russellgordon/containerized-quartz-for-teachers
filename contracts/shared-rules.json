@@ -1,0 +1,252 @@
+{
+  "curriculumRules": {
+    "expectationWording": {
+      "cases": [
+        {
+          "body": "Describe how data is stored. ^b21",
+          "expect": "Describe how data is stored.",
+          "why": "The anchor is machinery and is cut."
+        },
+        {
+          "body": "Describe how data is stored.",
+          "expect": "Describe how data is stored."
+        },
+        {
+          "body": "Compare two designs ^ and contrast them",
+          "expect": "Compare two designs ^ and contrast them",
+          "why": "Only a BARE word can be an anchor. Anything with a space after it is the teacher's own prose, and cutting there would lose wording."
+        }
+      ],
+      "note": "What an expectation page SAYS: the body after the frontmatter, without the `^anchor` Obsidian puts on the end of a block."
+    },
+    "isCurriculumPage": {
+      "cases": [
+        {
+          "expect": true,
+          "path": "Curriculum/B2.1.md"
+        },
+        {
+          "expect": true,
+          "path": "Ontario Curriculum/B2.1.md",
+          "why": "The normal case outside the example content — folders are rarely called plain 'Curriculum'."
+        },
+        {
+          "expect": true,
+          "path": "College Board Curriculum/Unit 3/A1.2.md"
+        },
+        {
+          "expect": true,
+          "path": "curriculum/B2.1.md",
+          "why": "Case-insensitive."
+        },
+        {
+          "expect": false,
+          "path": "All Classes/Curriculum notes.md",
+          "why": "The FILE name is ignored — a lesson that mentions the word is not curriculum material."
+        },
+        {
+          "expect": false,
+          "path": "All Classes/Unit 1, Day 1.md"
+        }
+      ],
+      "note": "Matches `build_site.py`'s own rule exactly, and that is the point — the Python decides what ships, so an app that disagreed would report coverage for pages the site does not treat as curriculum. Any FOLDER segment containing 'curriculum', case-insensitive; the FILE name is ignored."
+    },
+    "isExpectationCode": {
+      "cases": [
+        {
+          "code": "A1.1",
+          "expect": true
+        },
+        {
+          "code": "B2.11",
+          "expect": true
+        },
+        {
+          "code": "b2.3",
+          "expect": true,
+          "why": "Either case."
+        },
+        {
+          "code": "B2",
+          "expect": false,
+          "why": "A strand heading, not an expectation."
+        },
+        {
+          "code": "Overall Expectations",
+          "expect": false
+        },
+        {
+          "code": "B2.1 Introduction",
+          "expect": false,
+          "why": "Whole-name match: anything after the code makes it not a code."
+        },
+        {
+          "code": "12.3",
+          "expect": false,
+          "why": "Must start with a letter."
+        }
+      ],
+      "note": "A leaf expectation is coded like A1.1 or B2.3: one letter, digits, a dot, digits — the WHOLE name, not a prefix. Index and strand-heading pages sit in the same folder and must not be counted."
+    },
+    "note": "What counts as a curriculum expectation. Written after checking the code rather than from memory: an expectation is not a code found in a page's TEXT, it is a PAGE named by a code inside a curriculum folder. A first draft of this contract asserted text-scanning and was wrong before it was ever run."
+  },
+  "note": "Four rule sets that both apps need and neither platform owns. The MECHANISMS behind two of them differ completely - launchd against Task Scheduler, AppKit against WinUI - which is exactly why the rules are written here instead: what must be refused, matched, or stripped does not change with the machinery that does it.",
+  "scheduledDeployRefusals": {
+    "alsoSaid": {
+      "note": "Not a refusal - a teacher may be deploying deliberately without them - but the plan NAMES the section's unpublished class pages before the teacher agrees. A deploy that runs perfectly at half six and puts up a site missing tomorrow's class is the failure worth catching while somebody is awake.",
+      "rule": "list the class pages students cannot see yet, by name"
+    },
+    "cases": [
+      {
+        "expectRefusal": "hasAlreadyPassed",
+        "given": {
+          "whenIsInThePast": true
+        },
+        "name": "a time that has already passed",
+        "why": "First, because it is the one the teacher can fix without leaving the sheet."
+      },
+      {
+        "expectRefusal": "deployFolderNeedsAttention",
+        "given": {
+          "folderProblem": true,
+          "target": "local_folder"
+        },
+        "name": "a folder deploy whose folder is not usable"
+      },
+      {
+        "expectRefusal": "cloudflareAccountMissing",
+        "given": {
+          "cloudflareAccountID": "",
+          "target": "cloudflare_pages"
+        },
+        "name": "Cloudflare with no Account ID",
+        "why": "A deliberate divergence, and the reason is worth keeping. The mac's plist carries --account, so the question is asked here and answered once. On Windows the scheduled task could not be handed one, which would make Cloudflare unschedulable - if that is still true, refuse it with a sentence that says so rather than scheduling something that will fail at 06:30."
+      },
+      {
+        "expectRefusal": "neverDeployed",
+        "given": {
+          "hasDeployedBefore": false
+        },
+        "name": "a section that has never been deployed",
+        "why": "The FIRST deploy of a section asks what to call the website. Nobody is there to answer at the scheduled time and it would simply wait. Deploy once by hand, then it can be scheduled - which is what the refusal says."
+      },
+      {
+        "expectRefusal": null,
+        "given": {
+          "hasDeployedBefore": true
+        },
+        "name": "everything in order"
+      }
+    ],
+    "note": "Everything a deploy running at 06:30 would ASK is asked NOW instead, while somebody is awake to answer. A scheduled deploy that stops at a prompt in the dark is the worst outcome available: it reports nothing, changes nothing, and is discovered by a class looking at yesterday's site. Checked in this ORDER - the first match is what the teacher is told, so a time in the past is answered before a missing account."
+  },
+  "sidebarFilter": {
+    "cases": [
+      {
+        "expect": [
+          "ICS3U",
+          "SPH4U",
+          "MCV4U"
+        ],
+        "filter": "",
+        "why": "An empty filter shows everything."
+      },
+      {
+        "expect": [
+          "ICS3U",
+          "SPH4U",
+          "MCV4U"
+        ],
+        "filter": "   ",
+        "why": "Trimmed first."
+      },
+      {
+        "expect": [
+          "ICS3U",
+          "SPH4U"
+        ],
+        "filter": "ics",
+        "why": "Case-insensitive, and mid-word against the NAME as well as the code — so 'ics' finds ICS3U by its code AND SPH4U through 'Phys-ics'. That looks like a bug and is the rule working: a teacher hunting for a course types more letters, and one who typed 'ics' meaning Physics is served too. This case was written expecting ICS3U alone, and running it said otherwise."
+      },
+      {
+        "expect": [
+          "ICS3U",
+          "SPH4U"
+        ],
+        "filter": "ICS",
+        "why": "Case-insensitive, and mid-word against the NAME as well as the code — so 'ics' finds ICS3U by its code AND SPH4U through 'Phys-ics'. That looks like a bug and is the rule working: a teacher hunting for a course types more letters, and one who typed 'ics' meaning Physics is served too. This case was written expecting ICS3U alone, and running it said otherwise."
+      },
+      {
+        "expect": [
+          "ICS3U"
+        ],
+        "filter": "comp",
+        "why": "Mid-word, and against the NAME rather than the code."
+      },
+      {
+        "expect": [
+          "ICS3U",
+          "SPH4U",
+          "MCV4U"
+        ],
+        "filter": "u",
+        "why": "One letter matches all three codes."
+      },
+      {
+        "expect": [
+          "MCV4U"
+        ],
+        "filter": "vectors"
+      },
+      {
+        "expect": [],
+        "filter": "biology",
+        "why": "No match shows nothing - and the sidebar says so in words rather than showing an empty space."
+      }
+    ],
+    "courses": [
+      {
+        "code": "ICS3U",
+        "name": "Introduction to Computer Science"
+      },
+      {
+        "code": "SPH4U",
+        "name": "Physics"
+      },
+      {
+        "code": "MCV4U",
+        "name": "Calculus and Vectors"
+      }
+    ],
+    "note": "What the sidebar's filter field shows. Case-insensitive, matched against the course CODE and the course NAME, and mid-word - a teacher typing 'comp' should find Introduction to Computer Science without knowing it starts with ICS. Matching is CONTAINS rather than prefix, deliberately: a teacher who knows their course as 'Calculus' should not have to know it is filed under MCV4U."
+  },
+  "transcriptStripping": {
+    "cases": [
+      {
+        "expect": "Deploy complete",
+        "input": "\u001b[32mDeploy complete\u001b[0m",
+        "why": "CSI colour codes: ESC [ ... final letter."
+      },
+      {
+        "expect": "Building",
+        "input": "\u001b]0;Plantoir\u0007Building",
+        "why": "An OSC window-title sequence ends at BEL, not at a letter - a stripper that only knows CSI leaves the title text in the console."
+      },
+      {
+        "expect": "one\ntwo\tthree\r\n",
+        "input": "one\ntwo\tthree\r\n",
+        "why": "Newline, tab and carriage return are KEPT. Stripping the carriage return breaks the progress lines the launchers redraw in place."
+      },
+      {
+        "expect": "before after",
+        "input": "before\u0001 after",
+        "why": "Other control characters go, and nothing else moves."
+      },
+      {
+        "expect": "plain text",
+        "input": "plain text"
+      }
+    ],
+    "note": "The launchers' output is written for a terminal: colour codes, cursor moves, window-title sequences. Both apps show that output to a teacher, so both must strip the same things - and KEEP the same things. Newlines, carriage returns and tabs survive; every other control character does not. Inputs below use \\u001b for ESC and \\u0007 for BEL."
+  }
+}
