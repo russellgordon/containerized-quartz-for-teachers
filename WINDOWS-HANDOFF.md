@@ -972,11 +972,16 @@ failed naming the key and the command to regenerate.
 
 **Four things to know before you use them.**
 
-- **Never hand-edit `contracts/*.json`.** They are generated; the next mac
-  regeneration overwrites your edit and the diff looks like vandalism. If you
-  need something in the contract that is not there, ask for it. A behaviour
-  Windows has and the mac does not belongs in a new file
-  (`contracts/windows-*.json`), not in these.
+- **Never hand-edit the GENERATED keys** — `cardPhrasings`, `tools`,
+  `milestones`. Those are readouts of mac code; the next regeneration
+  overwrites your edit and the diff looks like vandalism.
+- **You CAN propose an authored case.** `scenarios`, `nearMisses`,
+  `promptHistory` and the case lists in the other files survive a mac
+  regeneration untouched, so a behaviour you invent can be written as a case
+  here — and the MAC suite will then fail until the mac implements it. That is
+  the mechanism working, and it has been verified by doing it on purpose. Name
+  the case so it reads as a proposal and log it in `MAC-HANDOFF.md`, or the
+  failure looks like damage rather than a request.
 - **`expectEvents` is an ORDER, not a set.** Every incorrect ordering passes a
   test that only checks all three events occurred — which is exactly how the
   mac shipped a preview that stopped after the writes it was meant to protect.

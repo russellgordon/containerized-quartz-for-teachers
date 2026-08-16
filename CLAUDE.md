@@ -50,7 +50,9 @@ Neither app contains toolchain logic of its own: they write the same
 
    The failure this prevents is the quiet one: a behaviour that exists in one
    app, is described nowhere the other app's tests can reach, and is discovered
-   months later as a difference nobody chose.
+   months later as a difference nobody chose. **It binds both ways** — see
+   rules 3 and 4 — and "the other side will notice" is not a plan: they will
+   notice the sixth time a teacher reports it.
 3. **Every macOS improvement is written up for Windows, as you go.** The
    Windows app is built from what this side learns, by somebody who cannot read
    the Swift or watch it being tested, so a change that exists only in Swift is
@@ -73,9 +75,31 @@ Neither app contains toolchain logic of its own: they write the same
    options REJECTED and why, or they get proposed again and cost the same
    afternoon twice. This applies to decisions reached by discussion as much as by
    code, and it is not contingent on being asked.
-4. **Work that arrives FROM Windows is logged in
-   [`MAC-HANDOFF.md`](MAC-HANDOFF.md)**, and entries there are marked `✅ DONE`
-   in place rather than deleted, so the ledger keeps its own history.
+4. **Every Windows improvement is written up for the mac, as you go — the
+   same rule, pointing the other way.** This is not the smaller half. Windows
+   has already been first on things the mac then copied: handing `deploy_section`
+   back to the app's own button was their design, and the mac ran its own
+   invisible script runner for weeks afterwards because nobody wrote it down
+   here. A change made on Windows is not finished until:
+   - **[`MAC-HANDOFF.md`](MAC-HANDOFF.md) has an entry** saying what was done,
+     what it fixed, and — the part that travels — WHY, including what was
+     rejected. Entries are marked `✅ DONE` in place rather than deleted, so
+     the ledger keeps its own history.
+   - **`GUI-IMPROVEMENTS.md` gets a row for anything a teacher can see**, so
+     the log stays the record of the product rather than of one platform.
+   - **anything measured is written with its NUMBERS and the hardware they
+     came from.** The mac side cannot find out what a Windows teacher's
+     machine does; "the Vulkan build was faster" is not usable, "43 tok/s
+     against 11 on CPU, Intel Iris Xe" is.
+
+   **The contract has a direction, and this is the one asymmetry to know.**
+   `Plantoir --write-contracts` runs on the MAC, so Windows cannot regenerate
+   the derived halves — but the AUTHORED halves (`scenarios`, `nearMisses`,
+   `promptHistory`, and every case list in the other files) are preserved by
+   the generator and can be proposed from either side. A case added on Windows
+   will make the MAC suite fail until the mac implements it, and that is the
+   feature working, not a break: say so in `MAC-HANDOFF.md` so the failure is
+   read as a request rather than as damage.
 5. **Colima is shared with other projects** on this machine (Supabase local dev,
    among others). Never `colima stop` unless `docker ps -q` comes back empty.
    The app's quit path and the scripts already enforce this; keep it that way.

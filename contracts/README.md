@@ -59,6 +59,29 @@ rather than silently changing what Windows should be matching. Getting this
 wrong crashes nothing: the progress bar simply stops moving, which reads as a
 slow build.
 
+## Proposing a case from the Windows side
+
+The generator runs on the **mac** — `Plantoir --write-contracts` — so Windows
+cannot regenerate the derived halves. The AUTHORED halves are a different
+matter and can be proposed from either side: `scenarios`, `nearMisses`,
+`promptHistory`, and every case list in the other four files survive a mac
+regeneration untouched.
+
+So a behaviour invented on Windows can be written here as a case, and **the
+mac suite will then fail until the mac implements it.** That is the mechanism
+working rather than breaking. Verified by adding a case for a step the mac has
+no support for: `AssistScenarioTests` failed naming the case and the missing
+event, rather than passing quietly.
+
+Two things make that failure read as a request instead of as damage:
+
+- **Name the case so it is obviously a proposal** and say in
+  [`MAC-HANDOFF.md`](../MAC-HANDOFF.md) that it is waiting — the ledger is
+  where the mac side looks for work that arrived from Windows.
+- **Do not touch the generated keys** (`cardPhrasings`, `tools`, `milestones`).
+  Those are readouts of mac code; an edit there is overwritten on the next
+  regeneration and the diff looks like vandalism.
+
 ## Regenerating
 
 ```bash
