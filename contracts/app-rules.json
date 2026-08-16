@@ -1,4 +1,31 @@
 {
+  "buildFreshness" : {
+    "note" : "Whether a deploy has to build first. Getting this wrong in one direction wastes minutes; in the other it publishes yesterday's site.",
+    "rules" : [
+      {
+        "expectRebuild" : true,
+        "when" : "nothing has been built yet"
+      },
+      {
+        "expectRebuild" : true,
+        "when" : "the built site is older than the teacher's newest content"
+      },
+      {
+        "expectRebuild" : true,
+        "when" : "the built site was made by a PREVIEW",
+        "why" : "**The one that is not obvious.** Serve mode bakes a live-reload client pointed at ws://localhost into every page. Publishing that makes visitors' browsers ask about 'access to other apps and services on this device' — so a preview build is never deploy-fresh, however recent it is. Detected by the built index.html containing 'ws://localhost:'."
+      },
+      {
+        "expectRebuild" : false,
+        "when" : "the built site is newer than the content and was not built by a preview"
+      },
+      {
+        "expectRebuild" : true,
+        "when" : "the built index cannot be read",
+        "why" : "Rebuild rather than trust it."
+      }
+    ]
+  },
   "configurationRules" : {
     "cloudflareAccountID" : [
       {
@@ -146,11 +173,76 @@
     ],
     "note" : "Given a course's configuration, what deploy.sh is asked to do. One place must decide this in each app — on the mac it is DeployCommand.arguments, shared by the Deploy button, the assistant and the scheduled-deploy alarm. Built separately anywhere and this happens: the assistant path never passed --target cloudflare, and a Cloudflare course deployed to Netlify. Nothing failed; the site simply appeared on the wrong host. Netlify passes NO target flag at all — it is the launcher's default, and every course written before Cloudflare existed relies on that."
   },
+  "failureExplanations" : {
+    "cases" : [
+      {
+        "expect" : "Netlify is limiting how often websites can be deployed right now. Try deploying again in about a minute.",
+        "output" : "Netlify API error 429: rate limited\nWindow resets at: 12:04 (in ~59s).",
+        "why" : "Under 90 seconds reads as 'about a minute' rather than '1 minutes'."
+      },
+      {
+        "expect" : "Netlify is limiting how often websites can be deployed right now. Try deploying again in about 3 minutes.",
+        "output" : "rate limit reached\nWindow resets at: 12:20 (in ~150s).",
+        "why" : "150s rounds UP to 3 minutes — telling a teacher to come back before the window opens sends them into the same failure twice."
+      },
+      {
+        "expect" : "Netlify is limiting how often websites can be deployed right now. Try deploying again in a few minutes.",
+        "output" : "Netlify API error 429: rate limited",
+        "why" : "No countdown in the output, so no number is invented."
+      },
+      {
+        "expect" : "Your Netlify account isn't connected yet. Add your Netlify access token, then deploy again.",
+        "output" : "Netlify token missing"
+      },
+      {
+        "expect" : "Netlify didn't accept your access token — it may have expired or been removed. Create a new one on Netlify, then deploy again.",
+        "output" : "Netlify API error 401: unauthorized"
+      },
+      {
+        "expect" : "Your computer couldn't reach the internet. Check your connection, then try again.",
+        "output" : "curl: (6) Could not resolve host: api.netlify.com"
+      },
+      {
+        "expect" : "Your computer couldn't reach the internet. Check your connection, then try again.",
+        "output" : "Temporary failure in name resolution"
+      },
+      {
+        "expect" : "This website hasn't been built yet. Preview it once, then deploy.",
+        "output" : "Built site not found at /courses/ICS3U/.merged_output/section1/public"
+      },
+      {
+        "expect" : null,
+        "output" : "Traceback (most recent call last):\n  File \"build_site.py\", line 42\nKeyError: 'x'",
+        "why" : "Recognised as nothing, so nothing is said and the app shows the output itself."
+      }
+    ],
+    "note" : "A failed task's raw output is written for whoever wrote the tools — API codes, hostnames, stack traces. This turns the ones we recognise into a sentence a teacher can act on. Both apps read the SAME output from the same shared scripts, so both must recognise the same things and say the same words. When nothing is recognised, say NOTHING and show the raw output: an honest fallback beats a confident guess."
+  },
   "generated" : {
     "keys" : [
       "milestones"
     ],
     "note" : "Written by `Plantoir --write-contracts` from the app's own types and overwritten: milestones. The rest is hand-written expectation and is preserved."
+  },
+  "linkRules" : {
+    "browserSafe" : {
+      "cases" : [
+        {
+          "expect" : "http://127.0.0.1:8081/",
+          "input" : "http://localhost:8081/"
+        },
+        {
+          "expect" : "http://127.0.0.1:8081/unit-1/day-2",
+          "input" : "http://localhost:8081/unit-1/day-2"
+        },
+        {
+          "expect" : "http://127.0.0.1:8081/",
+          "input" : "http://127.0.0.1:8081/"
+        }
+      ],
+      "note" : "The address handed to the teacher's browser. Safari tries IPv6 (::1) first for 'localhost' and the container only publishes the port on IPv4, which reads to a teacher as 'the server dropped the connection'. The numeric address sidesteps it entirely. Check whether your default browser has the same behaviour before deciding this is mac-only."
+    },
+    "note" : "Two URL rewrites that both apps do, for reasons that are not guessable from the code."
   },
   "markerOrigins" : {
     "knownDivergence" : {

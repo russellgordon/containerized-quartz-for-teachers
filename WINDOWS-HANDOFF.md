@@ -823,13 +823,18 @@ product rather than the platform:
    not care which of the two the assistant is busy with, and two indicators
    invite the question. It hides while a card is waiting for a button — nothing
    is happening then, the teacher is.
-6. **The arrow keys walk back through what was asked before, as a Terminal
-   does.** This is a requirement, not a nicety: it is how somebody re-runs the
-   thing they just ran with one word changed. The KEYS are yours to choose
-   sensibly (Up and Down on the mac); the SEMANTICS are in
-   `contracts/assist-cases.json` under `promptHistory`, with eight cases —
-   including the two that get missed: the half-typed line is put aside and
-   handed back rather than lost, and typing ends the walk so Down cannot
+6. **Up and Down walk back through what was asked before, as a Terminal
+   does — the SAME KEYS as the mac.** Not a per-platform choice: a teacher who
+   learns Up on one machine and finds it somewhere else on the other has
+   learned nothing. It is also a requirement rather than a nicety — it is how
+   somebody re-runs the thing they just ran with one word changed. The
+   semantics are in `contracts/assist-cases.json` under `promptHistory`: eight
+   step-by-step cases, the key names, and the two situations where the arrows
+   must instead do their ordinary job and move the caret (a box holding more
+   than one line, and nowhere further to walk — pass the key on rather than
+   swallowing it, because a key that silently does nothing reads as a dropped
+   keystroke). The two cases that get missed: the half-typed line is put aside
+   and handed back rather than lost, and typing ends the walk so Down cannot
    silently replace what was just written.
 
 And the rule that governs all of it, from row 1 of the improvement log: **the

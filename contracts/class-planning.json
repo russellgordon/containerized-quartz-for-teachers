@@ -1,0 +1,209 @@
+{
+  "insertion": {
+    "cases": [
+      {
+        "count": 1,
+        "existingClasses": [
+          {
+            "date": "2026-09-08",
+            "title": "Unit 1, Day 1"
+          },
+          {
+            "date": "2026-09-10",
+            "title": "Unit 1, Day 2"
+          },
+          {
+            "date": "2026-09-14",
+            "title": "Unit 1, Day 3"
+          }
+        ],
+        "expectRenamesInOrder": [
+          "Unit 1, Day 3 → Unit 1, Day 4",
+          "Unit 1, Day 2 → Unit 1, Day 3"
+        ],
+        "insertAtDay": 2,
+        "insertAtUnit": 1,
+        "name": "renames run highest day first",
+        "timetable": [
+          "2026-09-08",
+          "2026-09-10",
+          "2026-09-14",
+          "2026-09-16"
+        ],
+        "why": "Working UP would try to make Day 2 into Day 3 while a real Day 3 is still called that: either it overwrites a lesson, or — with a never-overwrite guard — it silently skips, leaving two pages claiming to be Day 3. Working down means every destination has already been vacated."
+      },
+      {
+        "count": 1,
+        "existingClasses": [
+          {
+            "date": "2026-09-08",
+            "title": "Unit 1, Day 1"
+          },
+          {
+            "date": "2026-09-10",
+            "title": "Unit 2, Day 1"
+          }
+        ],
+        "expectDateMoves": [
+          "Unit 2, Day 1"
+        ],
+        "expectRenamesInOrder": [],
+        "insertAtDay": 2,
+        "insertAtUnit": 1,
+        "name": "later units move their dates but are not renumbered",
+        "timetable": [
+          "2026-09-08",
+          "2026-09-10",
+          "2026-09-14"
+        ],
+        "why": "Unit 2 Day 1 stays Unit 2 Day 1 — its number means something to the teacher. It is the DATE that shifts, because the new class takes a teaching day."
+      },
+      {
+        "count": 1,
+        "existingClasses": [
+          {
+            "date": "2026-09-08",
+            "title": "Unit 1, Day 1"
+          },
+          {
+            "date": "2026-09-10",
+            "title": "Field Trip"
+          },
+          {
+            "date": "2026-09-14",
+            "title": "Unit 1, Day 2"
+          }
+        ],
+        "expectProblemMentions": "not named",
+        "expectRenamesInOrder": [
+          "Unit 1, Day 2 → Unit 1, Day 3"
+        ],
+        "insertAtDay": 2,
+        "insertAtUnit": 1,
+        "name": "a page named some other way is left where it is",
+        "timetable": [
+          "2026-09-08",
+          "2026-09-10",
+          "2026-09-14",
+          "2026-09-16"
+        ],
+        "why": "The trip keeps its date and its name, and the plan SAYS so before the teacher agrees — an unnumbered page silently keeping a date that everything around it moved off is the kind of thing noticed weeks later."
+      }
+    ],
+    "note": "Making room for a class in the middle of a unit. The RENAME ORDER is the part to get right and the part that looks like an implementation detail: it is the difference between a course that survives and one that loses a lesson."
+  },
+  "nextClass": {
+    "cases": [
+      {
+        "existing": [],
+        "expectDay": 1,
+        "expectUnit": 1,
+        "why": "A section with no numbered class at all starts at Unit 1, Day 1."
+      },
+      {
+        "existing": [
+          "Unit 1, Day 1",
+          "Unit 1, Day 2"
+        ],
+        "expectDay": 3,
+        "expectUnit": 1
+      },
+      {
+        "existing": [
+          "Unit 1, Day 9",
+          "Unit 2, Day 1"
+        ],
+        "expectDay": 2,
+        "expectUnit": 2,
+        "why": "The highest UNIT wins, then the highest day within it — a new class belongs to the unit the teacher is currently in, not to whichever unit has the most days."
+      },
+      {
+        "existing": [
+          "Field Trip",
+          "Exam Review"
+        ],
+        "expectDay": 1,
+        "expectUnit": 1
+      },
+      {
+        "existing": [
+          "Unit 1, Day 3",
+          "Field Trip"
+        ],
+        "expectDay": 4,
+        "expectUnit": 1
+      }
+    ],
+    "note": "What 'add the next class' would be called: the highest unit these pages name, and one past the highest day inside it."
+  },
+  "note": "Naming, numbering and making room for classes. All of it is pure rules over page titles and dates, so all of it is portable. The insertion cases are the highest-stakes data in these contracts: they rename files a teacher's lessons live in.",
+  "numberedClassOrder": {
+    "expectOrder": [
+      "Unit 1, Day 2",
+      "Unit 1, Day 10",
+      "Unit 2, Day 1"
+    ],
+    "input": [
+      "Unit 2, Day 1",
+      "Unit 1, Day 10",
+      "Field Trip",
+      "Unit 1, Day 2"
+    ],
+    "note": "Numbered pages sort by unit, then by day — not by date and not by filename.",
+    "why": "Day 10 after Day 2, so this cannot be a string sort. And 'Field Trip' is dropped from the list rather than sorted to one end."
+  },
+  "pageNaming": {
+    "cases": [
+      {
+        "expectDay": 1,
+        "expectUnit": 1,
+        "title": "Unit 1, Day 1"
+      },
+      {
+        "expectDay": 3,
+        "expectUnit": 12,
+        "title": "Unit 12, Day 3"
+      },
+      {
+        "expectDay": null,
+        "expectUnit": null,
+        "title": "Field Trip"
+      },
+      {
+        "expectDay": null,
+        "expectUnit": null,
+        "title": "Exam Review"
+      },
+      {
+        "expectDay": null,
+        "expectUnit": null,
+        "title": "Unit 2 Day 4",
+        "why": "The comma is part of the form. Accepting near-misses means guessing at what a teacher meant by a name, and the cost of guessing wrong is a renamed lesson."
+      }
+    ],
+    "note": "Which class-page titles carry numbers. A page named some other way — 'Field Trip', 'Exam Review' — is NOT guessed at: it is passed over everywhere classes are renumbered, and keeps its own date. The plan says how many were skipped so nobody is surprised."
+  },
+  "refusals": {
+    "cases": [
+      {
+        "count": 1,
+        "expectProblem": "unitOutOfRange",
+        "insertAtDay": 1,
+        "insertAtUnit": 0
+      },
+      {
+        "count": 1,
+        "expectProblem": "dayOutOfRange",
+        "insertAtDay": 0,
+        "insertAtUnit": 1
+      },
+      {
+        "count": 0,
+        "expectProblem": "countOutOfRange",
+        "insertAtDay": 1,
+        "insertAtUnit": 1
+      }
+    ],
+    "note": "Named by case, not by message: which refusal it is must match on both platforms, while the sentence a teacher reads is the product's wording."
+  }
+}

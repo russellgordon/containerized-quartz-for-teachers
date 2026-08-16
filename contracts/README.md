@@ -8,6 +8,7 @@ ends in a green Windows suite instead of a day of clicking.
 |---|---|
 | [`assist-wording.json`](assist-wording.json) | Every sentence the assistant says to a teacher about deploying, previewing and agreeing to things, with `{course}` and `{section}` where values go. |
 | [`assist-cases.json`](assist-cases.json) | The behaviour: which phrasings are matched in code rather than routed, which tools wait for a button, which tools the local model is shown, and what must happen in what ORDER when the assistant deploys. |
+| [`class-planning.json`](class-planning.json) | Which page titles carry numbers, what "the next class" would be called, and — the highest-stakes data here — the ORDER renames must run in when room is made for a class. |
 | [`schedule-rules.json`](schedule-rules.json) | How a teacher's own list of class dates is read: every accepted date form, how an ambiguous `08/09/2026` column is settled or asked about, and what a pasted Google Sheet address becomes. |
 | [`app-rules.json`](app-rules.json) | Everything outside the assistant: what `deploy.sh` is asked to do for a given configuration, what a teacher is told about an Account ID or a custom domain they typed, the progress markers and **where each marker's text comes from**, and the preview's ports. |
 
@@ -85,6 +86,46 @@ assistant's tests". Two of them matter enough to repeat:
   see [`research/README.md`](../research/README.md). A contract can say that
   "deploy now" never reaches the model; it cannot say what the model would do
   with a sentence it does reach.
+
+## Coverage: every mac test file, and where it stands
+
+No stone unturned — this table is the audit, and a file missing from it is a
+gap nobody has looked at. Counts are test functions, taken 2026-08-16.
+
+**Shared through a contract** (the Windows suite can run the same cases):
+
+| Area | Contract | Mac tests it draws on |
+|---|---|---|
+| The assistant's sentences | `assist-wording.json` | AssistToolRunner, AssistAgent |
+| Deploy/preview order, cards, cancels | `assist-cases.json` → `scenarios` | AssistToolRunner (49), AssistScenario |
+| Card phrasings and near misses | `assist-cases.json` → `cardPhrasings` | AssistAgent (8) |
+| Tool lists, approvals, plan twins | `assist-cases.json` → `tools` | AssistToolRunner |
+| Arrow-key history | `assist-cases.json` → `promptHistory` | AssistPromptHistory (15) |
+| Launcher arguments | `app-rules.json` → `deployArguments` | CloudflareDeploy (13) |
+| Validation messages | `app-rules.json` → `configurationRules` | CourseConfiguration (10), CustomDomain (4) |
+| Progress milestones and marker origins | `app-rules.json` → `milestones`, `markerOrigins` | TaskMilestone (12) |
+| Failure explanations | `app-rules.json` → `failureExplanations` | FailureExplainer (8) |
+| Whether a deploy must build first | `app-rules.json` → `buildFreshness` | BuildFreshness (6) |
+| Preview ports and the websocket offset | `app-rules.json` → `previewPorts` | PreviewLease (7) |
+| The browser-safe address | `app-rules.json` → `linkRules` | BrowserSafeURL (2) |
+| Reading a teacher's date list | `schedule-rules.json` | SectionScheduleSource (23) |
+| Naming, numbering, making room | `class-planning.json` | ClassPlanning (13), NextClass (13) |
+
+**Not shared, and why.** Each of these is a deliberate decision, not an
+oversight:
+
+| Area | Tests | Why it stays local |
+|---|---|---|
+| Windows, sheets, layout, hit areas, fonts, chat bubbles | ~71 | Platform look and feel. The mac's numbers were measured against Messages; matching them on WinUI would produce something that looks foreign. What must be TRUE of the assistant's window is in `WINDOWS-HANDOFF.md`. |
+| Script runner and preview stopper mechanics | 34 + 2 | ConPTY against a pseudo-terminal, WSL2 against Colima. The OUTPUT they parse is shared (see `markerOrigins`); the machinery is not. |
+| Scheduled deploys | 23 | launchd against Task Scheduler — nothing about the mechanism ports. The plan's REFUSALS (a section never deployed cannot be scheduled) are worth mirroring by hand. |
+| Model tiers, plan mode, activity | 30 | Measured on this hardware. See `research/`; a tier ladder measured on an M4 Pro says nothing about a teacher's laptop with integrated graphics. |
+| Backup, archive, restore | 26 | Portable in principle — the naming and pruning rules are ordinary logic. **Next candidate.** Not yet done. |
+| Example content, skeletons, course names | 25 | Both apps read the SAME files under `support/`. The data is its own contract; run the same validity checks against it rather than copying expectations here. |
+| Workspace initialisation, folder containers | 18 | Filesystem shapes that differ (`~/Library/Application Support` against `%LOCALAPPDATA%`). |
+| Section adding and numbering | 21 | Partly shared through `configurationRules`; the rest writes files and is worth mirroring by hand. |
+| Curriculum mentions, section restore | 19 | MCP-only tools and section-scoped restore — no Windows counterpart yet. |
+| Sidebar filtering, transcript building, console focus | 20 | Small and local; port if the behaviour is ever questioned. |
 
 ## The rule this exists to enforce
 

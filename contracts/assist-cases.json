@@ -215,8 +215,26 @@
         ]
       }
     ],
+    "keys" : {
+      "earlier" : "ArrowUp",
+      "later" : "ArrowDown",
+      "note" : "THE SAME ON BOTH PLATFORMS — decided 2026-08-16. Not a per-platform choice: a teacher who learns Up on one machine and finds it somewhere else on the other has learned nothing. Bind the arrow keys, in the composer, exactly as the mac does."
+    },
     "mostRemembered" : 50,
-    "note" : "Walking back through what the teacher has asked before, the way a Terminal does. The KEYS are per platform (Up and Down on the mac); these semantics are not. Modelled on a Terminal deliberately, because that is what teachers compare it to, and the details a Terminal gets right are the ones people notice only when they are missing. Steps are applied in order to a fresh history; `type` means the teacher edited the box, which ends the walk."
+    "note" : "Walking back through what the teacher has asked before, the way a Terminal does. Modelled on a Terminal deliberately, because that is what teachers compare it to, and the details a Terminal gets right are the ones people notice only when they are missing. Steps are applied in order to a fresh history; `type` means the teacher edited the box, which ends the walk.",
+    "passThroughWhen" : {
+      "cases" : [
+        {
+          "when" : "the box holds more than one line",
+          "why" : "The arrows have to move the caret between those lines. History would make a multi-line prompt impossible to edit."
+        },
+        {
+          "when" : "there is nowhere further to walk",
+          "why" : "Up at the oldest entry, or Down with no walk under way. Passing the key on lets the field answer it — the caret moves to the start or end of the line, which is what the key means when history has nothing to offer."
+        }
+      ],
+      "note" : "The two cases where the arrows must do their ORDINARY job instead — the key event is passed on to the text field rather than swallowed. A key that silently does nothing reads as a dropped keystroke."
+    }
   },
   "scenarios" : {
     "cases" : [

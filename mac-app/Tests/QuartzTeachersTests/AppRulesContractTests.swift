@@ -159,6 +159,87 @@ final class AppRulesContractTests: XCTestCase {
         }
     }
 
+    // MARK: - What a teacher is told when something fails
+
+    /// Both apps read the SAME output from the same shared scripts, so both
+    /// must recognise the same troubles and say the same words — and both must
+    /// say NOTHING about output they do not recognise, because a confident
+    /// wrong guess about a failure is worse than the raw text.
+    func testFailuresAreExplainedAsTheContractSays() throws {
+        let section: [String: Any] = try XCTUnwrap(
+            (try AppRulesContractTests.readRules())["failureExplanations"] as? [String: Any]
+        )
+        for testCase in try XCTUnwrap(section["cases"] as? [[String: Any]]) {
+            let output: String = try XCTUnwrap(testCase["output"] as? String)
+            XCTAssertEqual(
+                FailureExplainer.explanation(in: output),
+                testCase["expect"] as? String,
+                "Output beginning \"\(output.prefix(40))…\""
+            )
+        }
+    }
+
+    // MARK: - The browser-safe address
+
+    func testTheBrowserSafeAddressIsWhatTheContractSays() throws {
+        let rules: [String: Any] = try XCTUnwrap(
+            (try AppRulesContractTests.readRules())["linkRules"] as? [String: Any]
+        )
+        let section: [String: Any] = try XCTUnwrap(rules["browserSafe"] as? [String: Any])
+        for testCase in try XCTUnwrap(section["cases"] as? [[String: Any]]) {
+            let input: String = try XCTUnwrap(testCase["input"] as? String)
+            let url: URL = try XCTUnwrap(URL(string: input))
+            XCTAssertEqual(
+                SectionDetailView.browserSafeURL(for: url).absoluteString,
+                try XCTUnwrap(testCase["expect"] as? String), input
+            )
+        }
+    }
+
+    // MARK: - Whether a deploy has to build first
+
+    /// The contract's freshness rules, driven against real files.
+    ///
+    /// The one worth having is the third: a site built by a PREVIEW is never
+    /// deploy-fresh, however recent it is, because serve mode bakes a
+    /// live-reload client into every page.
+    func testBuildFreshnessFollowsTheContract() throws {
+        let rules: [String: Any] = try XCTUnwrap(
+            (try AppRulesContractTests.readRules())["buildFreshness"] as? [String: Any]
+        )
+        var expectations: [String: Bool] = [:]
+        for rule in try XCTUnwrap(rules["rules"] as? [[String: Any]]) {
+            expectations[try XCTUnwrap(rule["when"] as? String)] = rule["expectRebuild"] as? Bool
+        }
+
+        // A preview-built page carries the live-reload client; a deploy-built
+        // one does not. That is the whole of the distinction, and it is the
+        // string the contract names.
+        let root: URL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("freshness-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let previewBuilt: URL = root.appendingPathComponent("preview.html")
+        try "<script>new WebSocket('ws://localhost:9081')</script>".write(
+            to: previewBuilt, atomically: true, encoding: .utf8
+        )
+        let deployBuilt: URL = root.appendingPathComponent("deploy.html")
+        try "<html>no live reload here</html>".write(to: deployBuilt, atomically: true, encoding: .utf8)
+
+        XCTAssertEqual(
+            BuildFreshness.builtForPreview(previewBuilt), true,
+            expectations["the built site was made by a PREVIEW"] == true
+                ? "A preview build must be rebuilt before deploying"
+                : "The contract and the app disagree about preview builds"
+        )
+        XCTAssertFalse(BuildFreshness.builtForPreview(deployBuilt))
+        XCTAssertTrue(
+            BuildFreshness.builtForPreview(root.appendingPathComponent("nothing-here.html")),
+            "An unreadable built index is rebuilt rather than trusted"
+        )
+    }
+
     // MARK: - The preview's ports
 
     func testThePortsAreWhatTheContractSays() throws {
