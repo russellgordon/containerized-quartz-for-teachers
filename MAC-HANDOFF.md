@@ -5,10 +5,9 @@ needs (or deserves a look from) the **macOS app**. The reverse of
 [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md): read this when syncing the
 mac app after Windows-side sessions. Each entry names the commit that
 landed the Windows/shared work, what the mac side should do, and where
-the reference implementation lives. Remove entries once the mac side has
-picked them up. (Cross-side rebases rewrite commit hashes, so treat the
-hashes as hints from the moment of writing — the file and test
-references are the durable pointers.)
+the reference implementation lives. (Cross-side rebases rewrite commit
+hashes, so treat the hashes as hints from the moment of writing — the file
+and test references are the durable pointers.)
 
 Items are **marked done in place rather than removed**, so the ledger keeps
 its own history: a `✅ DONE` line names what landed on the mac side and
@@ -17,7 +16,7 @@ where. Anything unmarked is still outstanding.
 ## To implement
 
 - **The local assistant went from built to trustworthy in one live-tested
-  day — read `AI-ASSIST-HANDOFF.md` §10 before building the mac's**
+  day — read `research/ai-assist/HISTORY.md` part 2 §10 before building the mac's**
   (Windows + shared, 2026-08-14, the `ai-assist` branch from `7b18fe6` to
   `1961d07`). The short of it: everything measured, five design decisions
   worth inheriting rather than rediscovering, and the conversation loop is
@@ -120,6 +119,14 @@ where. Anything unmarked is still outstanding.
   refused rather than half-stored: a half-remembered timetable gets trusted
   and then dates the wrong classes.
 
+  **✅ DONE (macOS, 2026-08-15)** — `Models/SectionTimetable.swift` reads and
+  writes that exact file, the path built from the course directory rather
+  than from anywhere beside the app, and the partial list is refused whole
+  with nothing written. The three tools (`read_remembered_timetable`,
+  `plan_remember_timetable`, `remember_timetable`) are dispatched in
+  `Models/Assist/AssistToolRunner.swift`; pinned by
+  `Tests/QuartzTeachersTests/SectionTimetableTests.swift`. Spec entry 145.
+
 - **Four new operations, all shared C# in `Plantoir.Core`** (Windows +
   shared, 2026-08-14). Nothing mac-specific except the UI that reaches them;
   the mac inherits the logic if it ports `AssistWorkspace`.
@@ -129,7 +136,10 @@ where. Anything unmarked is still outstanding.
     existing class already sits on, so a reshuffled course still gets the
     right answer. Pages start `publish: false`. Never overwrites, checked
     twice: at plan time and again at write time, because Obsidian is open in
-    the other window.
+    the other window. **✅ DONE (macOS, 2026-08-15)** —
+    `Models/PlaceholderClassPlanner.swift`, landing on the section's
+    remembered meeting dates and skipping days already taken, pinned by
+    `Tests/QuartzTeachersTests/ClassPlanningTests.swift`.
   - **Insert a class and push the rest back** (`b913f85`) — the one a teacher
     called "a huge hassle". Later days of the SAME unit are renamed; every
     class after the insertion point, later units included, moves to a later
@@ -140,17 +150,27 @@ where. Anything unmarked is still outstanding.
     reads to it as a delete plus a create. All wikilink forms are handled
     (`[[P]]`, `[[P|alias]]`, `![[P]]`, `[[P#Heading]]`, `[[P#^block]]`);
     Markdown-style links are NOT, and that is written down rather than
-    discovered.
+    discovered. **✅ DONE (macOS, 2026-08-15)** —
+    `Models/ClassInsertionPlanner.swift` with `Models/WikiLinkRewriter.swift`
+    for the five wikilink forms, renaming highest day first, same
+    `ClassPlanningTests.swift`.
   - **Curriculum expectations for a page** (`e5a01ed`) — the tools find the
     expectations and read out their full wording; the MODEL decides which fit,
     because that is a judgement about meaning. Transclusions go inside the
     `%%curriculum-start%%` markers, or a course installed without curriculum
     would keep a dangling reference on a live site. **✅ DONE (macOS)** —
     `Models/Assist/AssistCurriculumMentions.swift`, served on the **MCP
-    surface only**. The local model's fifteen tools are a MEASUREMENT (routing
-    accuracy was counted against exactly that surface), so
-    `AssistToolRunner.definitions` stays at fifteen and
-    `AssistToolRunner.mcpTools` is the longer list `AssistMCPServer` serves.
+    surface only**. The local surface is a MEASUREMENT — routing accuracy was
+    counted against exactly the tools a teacher asks for, fifteen of them at
+    the time — so the curriculum tools are never added to it. Counted
+    2026-08-15: `AssistToolSurface` defines **twenty** tools;
+    `AssistToolRunner.definitions` narrows to the **thirteen** the local model
+    is shown (the six `plan_` twins are called in code, and
+    `remember_timetable` is withheld because a date the model invents silently
+    schedules the wrong day); and `AssistToolRunner.mcpTools` is the
+    **twenty-three** `AssistMCPServer` serves — the twenty plus three
+    MCP-only curriculum tools. The numbers move when something is measured
+    again, not casually.
     A page with no markers gets the whole block in the payload shape —
     `%%curriculum-start%%`, `## Curriculum connection`, blank-line separated
     `![[A1.2]]`, `%%curriculum-end%%` — placed before the things-to-do list
@@ -214,11 +234,19 @@ where. Anything unmarked is still outstanding.
     wake. So the plan says that, rather than Windows's "nothing happens".
   - **The agent runs `deploy.sh` only**, as on Windows, so what goes out is
     the site as it was last BUILT. The plan says so and asks the teacher to
-    preview again after later edits. Worth deciding whether a scheduled
-    deploy should run `preview.sh --build-only` first — it would cost a few
-    minutes nobody is waiting on, and would close the gap on both sides.
+    preview again after later edits.
 
-  Pinned by `Tests/QuartzTeachersTests/ScheduledDeployTests.swift` (22 tests),
+    **Superseded (macOS, 2026-08-15) — it builds first now.** The agent
+    writes the staleness test (`BuildFreshness.needsRebuild`) out in shell,
+    because the app is closed when the alarm fires and cannot be asked, then
+    runs `preview.sh <CODE> <N> --build-only` and only then `deploy.sh`
+    (`Models/ScheduledDeploy.swift`). This was not a nicety: `deploy.sh`
+    never builds and **refuses outright when there is no built site**, so an
+    agent running it alone either failed at half six or sent whatever was
+    last previewed. **Windows should mirror this** — its `schtasks` job has
+    the same gap. Spec entry 146.
+
+  Pinned by `Tests/QuartzTeachersTests/ScheduledDeployTests.swift` (23 tests),
   which never touches the real launchd: the agents folder is redirected to a
   temporary one and `launchctl` is behind `LaunchControlRunning`. **Still
   wanted: one live run** — schedule a section a few minutes out, quit
@@ -227,7 +255,7 @@ where. Anything unmarked is still outstanding.
 - **The built-in assistant, and what it cost** (Windows, 2026-08-14). A local
   model in a window of its own, reached from "Revise with AI…" on both the
   course and every section menu. **Read
-  [`AI-ASSIST-HANDOFF.md`](AI-ASSIST-HANDOFF.md) before building the mac
+  [`research/ai-assist/HISTORY.md`](research/ai-assist/HISTORY.md) part 2 before building the mac
   equivalent** — it is the full account of what worked and what did not, with
   the measurements. The headlines that will bite whoever ports it:
 
@@ -275,8 +303,8 @@ where. Anything unmarked is still outstanding.
 
   > **Branch note, verified 2026-08-14 (macOS side):** `ai-assist` is now an
   > ANCESTOR of `origin/main` — `git merge-base --is-ancestor origin/ai-assist
-  > origin/main` succeeds, and `Plantoir.Mcp`, `AI-ASSIST-HANDOFF.md` and
-  > `MCP-PROPOSAL.md` are all present on `main`. The "not on `main`" caveats
+  > origin/main` succeeds, and `Plantoir.Mcp` and the assist documents (now merged into
+  > `research/ai-assist/HISTORY.md`) are all present on `main`. The "not on `main`" caveats
   > below were true when written and are not any more; nothing needs merging
   > to reach this work.
 
@@ -379,15 +407,16 @@ where. Anything unmarked is still outstanding.
   `main`, and none of it is in 1.0** (see the branch note above — this is
   no longer accurate) — the branch exists so this can be
   folded into a later release or dropped without touching the impending
-  release. Read [`AI-ASSIST.md`](AI-ASSIST.md) first for the measurements,
+  release. Read [`research/ai-assist/HISTORY.md`](research/ai-assist/HISTORY.md) part 1 first for the measurements,
   then [`windows-app/Plantoir.Mcp/README.md`](windows-app/Plantoir.Mcp/README.md)
   for the tool surface and the reasoning behind its shape.
 
   **✅ DONE (macOS, 2026-08-15), by a different route.** Rather than a
   separate executable, the app itself answers `--mcp-stdio <folder>` and
   serves the same `AssistToolSurface` over JSON-RPC. Verified by handshake:
-  `initialize` and `tools/list` return all 15 tools with their schemas and
-  `readOnlyHint` annotations. Same surface, two clients, no drift possible
+  `initialize` and `tools/list` return `runner.mcpDefinitions` whole, with
+  their schemas and `readOnlyHint` annotations — 15 tools when this was first
+  verified, 23 when re-counted 2026-08-15. Same surface, two clients, no drift possible
   — and see the note on the entry below for why this route was taken.
 
   **What exists.** `plantoir-mcp`, a stdio MCP server over one working
@@ -727,14 +756,18 @@ where. Anything unmarked is still outstanding.
   intermittent failure is possible there; it is the kind that gets
   written off as "flaky CI" for months. Worth ten minutes to check.
 
-- **`MCP-PROPOSAL.md` is waiting on a mac-side opinion** (2026-08-12).
-  A design (nothing built) for letting AI assistants drive Plantoir over
-  MCP — "publish the Science courses overnight and un-draft tomorrow's
-  class plus everything it links to". The proposal's central question is
-  for the mac side: whether to ship **one** self-contained .NET binary
-  serving both platforms, or reimplement the tool contract in Swift. It
-  ends with four explicit questions. Nothing blocks on it, but it should
-  not get lost between syncs.
+- **The MCP proposal's Phase 0 question is settled** (asked 2026-08-12,
+  answered 2026-08-15). The design for letting AI assistants drive Plantoir
+  over MCP — "publish the Science courses overnight and un-draft tomorrow's
+  class plus everything it links to" — asked the mac side whether to ship
+  **one** self-contained .NET binary serving both platforms, or reimplement
+  the tool contract in Swift. Both halves are now code rather than a
+  question: `windows-app/Plantoir.Mcp/` is built and on `main`, and the mac
+  reimplemented the contract in `Models/Assist/AssistMCPServer.swift` — the
+  app itself answers `--mcp-stdio <folder>` rather than shipping a second
+  binary, off the same `AssistToolSurface` the assistant window uses, so the
+  two clients cannot drift. The handshake is recorded in the entry above.
+  (The proposal itself is now folded into `research/ai-assist/HISTORY.md`.)
 
 - **The Windows icon derives from `mac-app/Plantoir.icon`** (2026-08-11).
   `windows-app/Plantoir/Assets/make-icon.ps1` turns a full-bleed 1024px
@@ -750,7 +783,7 @@ where. Anything unmarked is still outstanding.
   live on plantoir.app in this repo's `site/` — use per-platform file
   names from the start (`appcast-windows.xml`, `appcast-macos.xml`) so
   the two update feeds never collide, and add the release-time appcast
-  edit to the shared checklist in `windows-app/RELEASING.md` when the
+  edit to the shared checklist in `RELEASING.md` when the
   first one lands.
 
 - **The mac release asset must be named exactly `Plantoir-macOS.zip`**
@@ -764,7 +797,7 @@ where. Anything unmarked is still outstanding.
   `Plantoir-macOS.zip`. The names are frozen: renaming an asset silently
   breaks the site's download button.
 
-- **The release process is shared — read `windows-app/RELEASING.md`**
+- **The release process is shared — read `RELEASING.md`**
   (2026-08-11). The decisions that bind both sides: ONE product version
   series in lockstep (Windows reads `<Version>` in `Plantoir.csproj`;
   keep the mac marketing version matching), ONE GitHub release per

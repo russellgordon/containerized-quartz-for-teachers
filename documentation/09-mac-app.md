@@ -56,11 +56,12 @@ key or subscription is involved.
 **The model runs natively, not in Colima, and that decision is the whole
 feature.** Colima is a Linux VM with no access to Metal, so a model inside it
 runs on virtual CPU cores while the GPU sits idle. Measured on an M4 Pro with
-the same model and the same 3,411-token tool surface: **175 seconds to read
-the prompt in a container, 2.1 seconds natively.** `llama-server` therefore
-ships inside the app (25 MB of llama.cpp, MIT-licensed, fetched by
-`mac-app/Vendor/fetch-llama.sh` at build time rather than committed) and is
-started as an ordinary child process.
+the same model and the tool surface as it then stood (3,411 tokens; today's
+is about 2,650): **175 seconds to read the prompt in a container, 2.1 seconds
+natively.** `llama-server` therefore ships inside the app (25 MB of
+llama.cpp, MIT-licensed, fetched by `mac-app/Vendor/fetch-llama.sh` before
+the build rather than committed) and is started as an ordinary child
+process.
 
 The weights are downloaded once into
 `~/Library/Application Support/Plantoir/models`, not bundled — that keeps them
@@ -141,22 +142,27 @@ implementation's measurements:
 - **Publish and unpublish are separate verbs**, never one tool with a boolean,
   because a boolean is a coin flip under pressure and a verb is not.
 
-Every tool that writes runs in **plan mode**: the assistant states what it
-understood and what it is about to do, and waits for Go or Cancel. Swift
-decides this from whether the tool writes, so the model is never asked to
-judge whether something is risky. A Mac running the smaller assistant cannot
+Every tool that changes a page runs in **plan mode**: the assistant states
+what it understood and what it is about to do, and waits for Go or Cancel.
+Swift decides this from whether the tool has a `plan_` twin, so the model is
+never asked to judge whether something is risky. Four writes have no plan —
+rebuilding the preview, undo, cancelling a scheduled deploy, and deploying,
+which waits on its own separate approval instead, whether or not plan mode is
+on. A Mac running the smaller assistant cannot
 turn plan mode off; on a 16 GB machine the app offers to stop asking after a
 run of plans the teacher has accepted unchanged. Behind it, every change is
 backed up once per conversation and can be undone.
 
 The same tool surface is served over MCP, so Claude Code drives exactly what
-the built-in assistant drives and the safety rules cannot drift between the
-two clients. The app itself answers the flag —
+the built-in assistant drives and the rules inside the tools cannot drift
+between the two clients. The two gates that belong to the WINDOW — plan mode
+and the deploy button — are the app's, not the tool's: over MCP the client is
+told which tools write (`readOnlyHint`) and does its own asking. The app itself answers the flag —
 `Plantoir.app/Contents/MacOS/Plantoir --mcp-stdio <working-folder>` — rather
 than shipping a second binary, so no packaging step can leave it out. Claude
 Code is offered a slightly LONGER list than the local model: the tools that
 read the curriculum and point a page at the expectations that fit are a
-judgement about meaning: 20 tools against 13, and the local model sees exactly
+judgement about meaning: 23 tools against 13, and the local model sees exactly
 the thirteen its routing was measured against.
 
 How all of that fits together — what the model is, how it is configured, and

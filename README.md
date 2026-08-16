@@ -29,39 +29,43 @@ In the session, optionally complete a series of “quests” to learn how to use
 
 ### ✅ Prerequisites
 
-None. Everything the toolchain needs on the host — the container runtime,
-the Docker command-line tools, and the image builder — installs itself into
-`~/Library/Application Support/Plantoir/tools` the first time you preview a
-site (no Homebrew, no administrator password). The first run needs an
+**On macOS, none.** Everything the toolchain needs on the host — the container
+runtime, the Docker command-line tools, and the image builder — installs itself
+into `~/Library/Application Support/Plantoir/tools` the first time you set up or
+preview a site (no Homebrew, no administrator password). The first run needs an
 internet connection and a few minutes; after that everything is cached.
+
+**On Windows, one thing: WSL2, installed once.** Installing it needs an
+Administrator PowerShell and a reboot, which is why the scripts cannot do it for
+you — see Step 1 below. Everything after that, including the Docker engine
+inside WSL, the scripts install and start themselves.
 
 ### 1. Set up the container runtime (one-time)
 
 **macOS (bash/zsh):**
 
-Install and start [Colima](https://github.com/abiosoft/colima), a free, open-source container runtime:
-```bash
-brew install colima docker && colima start
-```
+Nothing to do. The first time you run `./setup.sh` or `./preview.sh`, the script
+downloads [Colima](https://github.com/abiosoft/colima) — a free, open-source
+container runtime — along with the Docker tools, and starts it for you. It stays
+started; you never have to launch it by hand.
 
 > 💡 **Tip**
 >
-> This is the only time you need to start Colima by hand. From now on, the launcher scripts start it automatically whenever it is not running.
->
 > Already using Colima for other development work? No problem — the scripts share the running VM as-is and never shut it down. If another toolchain created the VM with its own CPU/RAM settings, those are respected.
+>
+> If you use Homebrew and would rather manage the runtime yourself, `brew install colima docker` is all you need: the scripts use whatever is already on the machine and download only what is missing.
 
 **Windows (PowerShell):**
 
-First, install WSL2 (Windows Subsystem for Linux) by running this in an **Administrator** PowerShell, then **reboot**:
+Install WSL2 (Windows Subsystem for Linux) by running this in an **Administrator** PowerShell, then **reboot**:
 ```powershell
 wsl --install
 ```
 
-After rebooting (and finishing the short Linux username/password setup that appears), install the Docker engine inside WSL:
-```powershell
-wsl -u root -e sh -c "apt-get update && apt-get install -y docker.io"
-wsl -u root -e sh -c "usermod -aG docker $(wsl whoami); service docker start"
-```
+After rebooting, finish the short Linux username/password setup that appears.
+That is the whole of it: the first time you run `.\setup.bat` or
+`.\preview.bat`, the script offers to install the Docker engine inside WSL and
+then starts it for you.
 
 > 💡 **Tip**
 >
@@ -69,9 +73,9 @@ wsl -u root -e sh -c "usermod -aG docker $(wsl whoami); service docker start"
 
 ### 2. Get the toolchain
 
-The easiest way is the **macOS app**, which sets up a working folder for you
-and keeps it up to date. Working from the command line instead, copy this
-repository (or the launcher scripts plus the `.toolchain/` folder from an
+The easiest way is the **macOS app** or the **Windows app**, which set up a
+working folder for you and keep it up to date. Working from the command line
+instead, copy this repository (or the launcher scripts plus the `.toolchain/` folder from an
 existing working folder) into the folder where your courses will live.
 
 Either way, the website-builder image is **built locally on your machine**
@@ -97,15 +101,18 @@ This will:
 - If you do not install the example course, it will:
    - Prompt you for the course code, name, and number of sections
    - Offer **ready-made content for that course code** where it exists —
-     eighteen Ontario codes ship with a full working course, including the
-     Ministry's expectations as linkable pages
+     dozens of Ontario codes (37 today) ship with a full working course,
+     including the Ministry's expectations as linkable pages. Accepting it
+     settles the structure completely: the pages were written for that exact
+     layout, so no folder questions are asked
    - Otherwise offer a **starting skeleton shaped for the subject** — a
      drama course opens with Conventions and Warm-Ups, a chemistry course
      with Investigations and lab safety — with four units of class pages to
      rename and placeholder pages saying what belongs where
-   - Let you adjust the shared folders it suggests (e.g., “Exercises”,
-     “Examples”)
-   - Let you choose a colour scheme for each section with a live swatch preview
+   - If you declined the ready-made content, let you adjust the shared
+     folders it suggests (e.g., “Exercises”, “Examples”)
+   - Let you choose a colour scheme for each section with a live swatch
+     preview — this and the other cosmetic choices are asked either way
    - Create everything under `./courses/<CourseCode>` ready for editing
 
 ---
@@ -145,8 +152,8 @@ On Windows:
 
 This will:
 - Combine content from shared folders and `section1`
-- Build a live Quartz site into `courses/ICS3U/section1_output`
-- Launch a local preview at:
+- Build a live Quartz site into `courses/ICS3U/.merged_output/section1`
+- Launch a local preview at the address the script prints, normally:
 
 👉 [http://localhost:8081](http://localhost:8081)
 
@@ -189,12 +196,14 @@ This will:
 
 ```
 containerized-quartz-for-teachers/
+├── .toolchain/                 # The image recipe and support files
 ├── courses/                    # Teacher-created content goes here
 │   └── ICS3U/
 │       ├── section1/
 │       ├── section2/
 │       ├── Examples/
-│       └── Exercises/
+│       ├── Exercises/
+│       └── Media/              # Images, videos, PDFs (created for you)
 ├── preview.sh / preview.bat    # Build + preview a section site
 ├── setup.sh / setup.bat        # Run course setup wizard
 ├── deploy.sh / deploy.bat      # Deploy a built site
@@ -215,10 +224,10 @@ containerized-quartz-for-teachers/
 
 ## 🧑‍💻 Contributing
 
-Working on the toolchain or the macOS app itself? Start with
-[DEVELOPERS.md](DEVELOPERS.md) — setup on a new machine (the Xcode project
-is generated, not committed), testing, and the conventions this repository
-follows.
+Working on the toolchain or the macOS and Windows apps themselves? Start with
+[CLAUDE.md](CLAUDE.md) — the single entry point: setup on a new machine (the
+Xcode project is generated, not committed), what gates what, the conventions
+this repository follows, and where everything else lives.
 
 ---
 

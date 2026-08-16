@@ -12,7 +12,7 @@ namespace Plantoir.Services;
 /// The assistant that runs on the teacher's own computer.
 ///
 /// Everything here follows from what was measured on the `ai-assist` branch
-/// (AI-ASSIST.md), and the numbers are unusually specific because the budget
+/// (research/ai-assist/HISTORY.md, part 1), and the numbers are unusually specific because the budget
 /// is unusually tight:
 ///
 /// * **Qwen2.5-1.5B-Instruct, Q4_K_M.** 1.08 GB resident, 100% routing across

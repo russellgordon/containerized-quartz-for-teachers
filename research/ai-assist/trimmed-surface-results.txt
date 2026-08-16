@@ -1,3 +1,7 @@
+# ⚠️ SUPERSEDED (2026-08-15). Windows-side, in-container, three trials per probe, on a
+# 15-tool surface. Later runs are macos-native-10-trial-comparison.txt (model choice)
+# and thirteen-tool-surface-results.txt (the shipping surface). Kept as the origin of
+# the dateline finding: the same line PREPENDED cost 15 points of routing accuracy.
 # Trimmed-surface routing measurements, 2026-08-14
 # Qwen2.5-1.5B-Instruct Q4_K_M, llama.cpp, 4 GB / 2 CPUs / --no-mmap / -c 16384 / --parallel 1
 # 15-tool surface from AssistAgent.NarrowToLocal, 3,411 prompt tokens. 18 probes x 3 trials.

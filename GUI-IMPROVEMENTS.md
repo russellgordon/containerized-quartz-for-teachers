@@ -5,9 +5,10 @@ this toolchain. Two purposes:
 
 1. Track what has been asked for and where it stands in the **macOS app**
    (`mac-app/`).
-2. Serve as a **specification feed for the planned Windows equivalent** of
-   the GUI — every entry here describes behaviour the Windows app must also
-   have, unless marked macOS-only.
+2. Serve as the **specification feed for the Windows app** (`windows-app/`,
+   built and shipping since 2026-08-11) — every entry here describes
+   behaviour the Windows app must also have, unless marked macOS-only, and
+   keeping the two in step is what this feed is now for.
 
 **The Windows column is required.** An entry is not finished until "Notes
 for Windows port" says something a Windows implementer can use: what to do
@@ -215,8 +216,13 @@ principle and [`mac-app/README.md`](mac-app/README.md) for architecture.
 
 The Windows counterpart lives in [`windows-app/`](windows-app/PROGRESS.md)
 (WinUI 3, first take built 2026-08-11). Statuses below are per entry
-number in the table above: ✅ implemented (behaviour present in the
+number in the table: ✅ implemented (behaviour present in the
 Windows app), 🟠 partial, ⬜ not yet, — no Windows work needed.
+
+**This section sits mid-table and stops at entry 106.** Entries 107–179 —
+the publication-flag rename, the Deploy/Publish reversal, and the whole
+local-assistant body of work among them — have NOT been assessed for
+Windows. An entry missing below is unassessed, not "not yet".
 
 - ✅ 1 (course-name auto-fill + suggestion buttons) · ✅ 4–6 (caption/
   header vocabulary) · ✅ 7, 9 (list editors: + always enabled, ".md"

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The TRIMMED surface (AssistAgent.NarrowToLocal, 15 tools), measured.
 
-Answers the question AI-ASSIST-HANDOFF.md section 6.1 left open: did the
+Answers the question HISTORY.md part 2 section 6.1 left open: did the
 TEACHERS SAY phrasings and the trim fix the 69%? Measured 2026-08-14
 (results in trimmed-surface-results.txt): 91% bare, 94% with the two fixes
 this suite can toggle, zero polarity inversions throughout.

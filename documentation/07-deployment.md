@@ -25,8 +25,9 @@ over the deploy method.
 ## Prerequisites and inputs
 
 - The static site must already exist at
-  `courses/<CODE>/.merged_output/section<N>/public/` (the launcher runs the
-  build first / tells you to).
+  `courses/<CODE>/.merged_output/section<N>/public/`. The deploy launcher
+  never builds it: if that folder is missing or empty it stops and tells the
+  teacher to run preview with `--build-only` first.
 - `NETLIFY_AUTH_TOKEN` must be in the environment. The deploy **launcher**
   owns the token (macOS Keychain / Windows Credential Manager — see
   [launcher scripts](03-launcher-scripts.md#deploysh)) and injects it; the

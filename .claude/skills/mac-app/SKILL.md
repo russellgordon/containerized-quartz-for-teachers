@@ -84,8 +84,11 @@ Clean when you have changed:
   CONTENTS change. Re-running `Vendor/fetch-llama.sh` and rebuilding gets you
   the old binaries.
 - **bundled toolchain files** the app carries — `../scripts`, `../support`,
-  `../patches`, `../Dockerfile`, the three `../*.sh` launchers. These are
-  resources; a stale copy in the bundle is a very confusing hour.
+  `../patches`, `../Dockerfile`, the launchers in all three forms (`../*.sh`,
+  `../*.bat`, `../*.ps1` — setup, preview and deploy of each), and the two
+  individually named `../support/*.json` files (`colour_schemes.json`,
+  `ontario_secondary_courses.json`). These are resources; a stale copy in the
+  bundle is a very confusing hour.
 
 **A clean DELETES the built app, so never stop halfway.** Verified: after
 `xcodebuild clean` the `.app` is gone from `Build/Products/Debug/` while the

@@ -105,11 +105,14 @@ happens to have one — the launcher uses it as-is and does nothing else.
 lightweight Linux VM with a Docker engine inside, driven entirely from the
 command line. The bash launchers:
 
-1. Verify Homebrew exists (with a friendly pointer to its installer if not).
-2. `brew install colima docker` for whichever is missing (quietly, with
-   Homebrew's output captured and shown only on failure, and
-   `HOMEBREW_NO_ASK=1` so dependency prompts cannot stall a teacher).
-3. Start Colima — sized from the Mac it is running on rather than pinned.
+1. Use whatever is already on the machine — Homebrew installs included —
+   found by `command -v`. Nothing is installed over a working tool.
+2. Download whatever is missing as a pinned static binary into
+   `~/Library/Application Support/Plantoir/tools/bin` (buildx into
+   `~/.docker/cli-plugins`): Colima `v0.10.3`, Lima `2.2.0`, Docker CLI
+   `29.7.2`, buildx `v0.36.1`. **No Homebrew and no administrator rights** —
+   a teacher cannot be asked for a password they may not have.
+3. Start Colima (`--vm-type vz` when the VM is first created) — sized from the Mac it is running on rather than pinned.
    `_colima_cpus` takes half the cores (floor 2, cap 6) and
    `_colima_memory_gb` a third of the RAM (floor 4 GB, cap 12 GB), so an 8 GB
    laptop gets exactly the old 2 CPU / 4 GB default and a 48 GB desktop gets
@@ -194,7 +197,9 @@ block. Every launcher inspects the existing container before using it:
    published only 8081; published ports cannot be changed after creation.)
    Recreate.
 5. **Mount correct but not writable?** (Checked by creating and deleting a
-   probe file inside the container.) Recreate. This catches macOS
+   probe file inside the container.) **`setup.sh` and `deploy.sh` only** —
+   `preview.sh` implements the other four checks but not this one, and no
+   comment in it says why. Recreate. This catches macOS
    permission/ACL oddities after folder moves or restores.
 6. Otherwise, start the container if stopped, or reuse it as-is.
 
@@ -220,10 +225,11 @@ Recreating the container is cheap because all state lives in the bind mount.
   understood by `build_site.py`: `--include-social-media-previews`,
   `--force-npm-install`, `--full-rebuild`, `--build-only` — plus its own
   `--port N` (container port 8081–8084) and `--image REF`.
-- Validates the requested section against `course_config.json`
-  (`section_numbers`) *on the host* before ever entering the container, so a
-  typo like section `2` in a course with sections `1,3,4` fails fast with a
-  helpful message.
+- Checks host-side that the course is set up (`course_config.json` exists)
+  and that the section folder is there. The `section_numbers` check itself
+  runs in the container once it is up (`docker exec … python3 -`), so a typo
+  like section `2` in a course with sections `1,3,4` still fails before any
+  build starts, with a helpful message.
 - Runs `build_site.py`, which (by default) ends by serving the site on
   the requested container port (8081–8084), with Quartz's live-reload
   websocket on port + 1000 (`--wsPort`) — the reason the container

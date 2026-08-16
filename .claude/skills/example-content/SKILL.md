@@ -482,7 +482,9 @@ the linter.
    importlib, call `install_example_content` into a temp dir for both
    curriculum states; assert no curriculum folder/links remain when
    declined, dates stagger, re-runs write 0 files.
-3. App suite (`ExampleContentTests` counts bundled pages):
+3. App suite (`ExampleContentTests` covers the catalogue lookup, the
+   wizard's curriculum/coverage answers, and the bundled payload's
+   `created` sentinel):
    `cd mac-app && xcodebuild -project Plantoir.xcodeproj -scheme Plantoir
    -configuration Debug test -only-testing:QuartzTeachersTests`.
 4. `script -q /dev/null ./verify.sh` — the toolchain gate.

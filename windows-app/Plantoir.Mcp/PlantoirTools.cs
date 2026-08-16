@@ -9,7 +9,7 @@ namespace Plantoir.Mcp;
 /// <summary>
 /// The tools an assistant may call.
 ///
-/// Four rules shape this surface. The first three are measured (AI-ASSIST.md
+/// Four rules shape this surface. The first three are measured (research/ai-assist/HISTORY.md
 /// has the numbers); the fourth came from watching a real teacher use it.
 ///
 /// 1. **Nothing destructive exists.** No delete, no archive, no rename. In

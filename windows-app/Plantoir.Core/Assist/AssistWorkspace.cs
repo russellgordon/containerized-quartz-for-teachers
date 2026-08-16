@@ -7,7 +7,7 @@ namespace Plantoir.Core.Assist;
 /// working folder.
 ///
 /// Two rules run through all of it, both earned from the measurements in
-/// AI-ASSIST.md:
+/// research/ai-assist/HISTORY.md, part 1:
 ///
 /// **Nothing named is taken on trust.** A course code, a section number and a
 /// page title are all validated against what is actually on disk before

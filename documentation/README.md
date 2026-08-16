@@ -3,7 +3,7 @@
 **Audience:** computer science teachers who want to understand how this toolchain
 actually works under the hood — not just how to use it. (For usage instructions,
 see the main [README](../README.md); for the workshop walkthrough, see
-[PRESENTATION](../PRESENTATION.md).)
+[archived workshop handout](../archive/PRESENTATION-2025-08.md).)
 
 This documentation explains the purpose, rationale, and mechanism of every part
 of the system, including a complete enumeration of the customizations made to
@@ -32,7 +32,7 @@ A teacher writes course notes as Markdown files in an
 common to every section of a course) and *per-section* folders. A Docker
 container — which bundles Python, Node.js, and a patched copy of Quartz
 v4.5.0 — merges the shared and section content into a single content tree,
-applies roughly thirty targeted patches to Quartz's configuration and
+applies roughly forty targeted patches to Quartz's configuration and
 components (colour scheme, fonts, locale, sidebar behaviour, date handling,
 and more, all driven by a per-course `course_config.json`), and builds a
 static website. The teacher previews the site locally (the launcher prints

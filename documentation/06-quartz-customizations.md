@@ -12,7 +12,7 @@ understanding the system:
 
 | Layer | When applied | How | Where the change lives |
 |---|---|---|---|
-| **A** | Docker image build | Whole-file replacement (`COPY` in Dockerfile) | `patches/` → `/opt/quartz/quartz/components/` |
+| **A** | Docker image build | Whole-file replacement (`COPY` in Dockerfile) | `patches/` → `/opt/quartz/quartz/{components,plugins/filters}/` |
 | **B** | Course setup | Idempotent regex patch of `/opt/quartz` | `setup_course.py` |
 | **C** | Site build (first build / every build) | Idempotent regex patch of the per-section output copy | `build_site.py` |
 | **D** | Site build | Whole-file replacement from `support/` | `build_site.py` + `support/` |
@@ -25,9 +25,10 @@ layers.
 
 ## A. Components replaced at image build time
 
-These three files in [`patches/`](../patches/) overwrite their stock
-counterparts inside the image. Together they implement the **two-tier
+These five files in [`patches/`](../patches/) overwrite their stock
+counterparts inside the image. The first three implement the **two-tier
 sidebar**: some folders are *expandable trees*, others are *plain links*.
+The last two (A4) replace Quartz's draft filter with a publish filter.
 
 ### A1. `Explorer.tsx` (sidebar component, server side)
 
@@ -81,6 +82,26 @@ Changes:
    page listing entirely, leaving only the index page's own prose. This lets
    a teacher write a fully curated folder landing page without an
    auto-generated file dump below it.
+
+### A4. `publish.ts` + `filters-index.ts` (which pages reach the site)
+
+Quartz ships two filters and neither says what a teacher means. `RemoveDrafts`
+publishes everything except `draft: true` — but "draft" reads as
+"unfinished", not "not visible to students", and teachers say a page IS or
+ISN'T published, never that it is or isn't a draft. `ExplicitPublish` uses the
+right word but flips the default to publish-nothing: in the example course 60
+pages carry no flag at all, including every curriculum page, and every one
+would silently vanish.
+
+`patches/publish.ts` defines a `PublishFlag` filter with the teacher's word
+and today's default: **a page is published unless it says `publish: false`**.
+Strings are accepted as well as booleans, because YAML quoting varies and a
+quoted `"false"` plainly means false. `patches/filters-index.ts` exports it
+alongside the stock filters.
+
+Forgetting the flag therefore leaves a page visible, which is a far kinder
+mistake than a page disappearing without anybody noticing. The switch itself
+is C1-13 — the image carries the filter, the build points the config at it.
 
 ---
 
@@ -149,7 +170,7 @@ only need to run when the scaffold is (re)created.
 |---|---|---|---|
 | C1-1 | **Remove the Graph view** | `quartz.layout.ts` | Deletes `Component.Graph(...)` from the right sidebar. The force-directed graph is Quartz's signature feature for personal wikis, but for a linear course site it is visual noise that confuses students more than it helps. |
 | C1-2 | **Drop git from date priority** | `quartz.config.ts` | `Plugin.CreatedModifiedDate` priority `["git","frontmatter","filesystem"]` → `["frontmatter","filesystem"]`. The output folder is not a git repo, and even if it were, file copy times would be meaningless. Frontmatter `created` (written by setup, managed per-section) is the source of truth. |
-| C1-3 | **`defaultDateType: "created"`** | `quartz.config.ts` | Stock shows *modified* dates. A class website should show when material was posted/covered — the `created` date — not when a typo was last fixed. This pairs with the [Curriculum date sync](05-build-pipeline.md#dates-drive-everything). |
+| C1-3 | **`defaultDateType: "created"`** | `quartz.config.ts` | Stock shows *modified* dates. A class website should show when material was posted/covered — the `created` date — not when a typo was last fixed. This pairs with the [Curriculum date sync](05-build-pipeline.md#dates-drive-everything). Applied on the first build AND re-applied on every build, so a scaffold from an older toolchain picks it up. |
 | C1-4 | **Folder page title = folder name** | `quartz/plugins/emitters/folderPage.tsx` | Title template `"Folder: X"` → just `"X"`. Cosmetic: "Exercises", not "Folder: Exercises". |
 | C1-5 | **`showFolderCount: false`** | `quartz/components/pages/FolderContent.tsx` | Belt-and-suspenders re-application of A3's default (protects against the file being replaced by an upstream copy). |
 | C1-6 | **Long-form dates** | `quartz/components/Date.tsx` | `formatDate` options `{year, month: "short", day}` → `{weekday: "long", year, month: "long", day: "numeric"}`. Lesson pages read "Friday, September 12, 2025" — teachers and students think in weekdays. |
@@ -159,6 +180,7 @@ only need to run when the scaffold is (re)created.
 | C1-10 | **`transcludeTitleSize` frontmatter flag** | `quartz/components/renderPage.tsx` | Stock renders a transcluded page's title as a hard-coded `<h1>`. Patched to `page.frontmatter?.transcludeTitleSize ?? "h1"`, so a page can declare e.g. `transcludeTitleSize: h2` and nest correctly in the host page's heading hierarchy. |
 | C1-11 | **Typography fonts** | `quartz.config.ts` | Writes the section's header/body/code font choices (from the setup wizard) into the `typography` block. |
 | C1-12 | **`.netlify` link** | output root | Symlinks (or copies) an existing `.netlify` folder into the output so Netlify CLI tooling can diff, if present. Convenience only — the bundled deployer does not need it. |
+| C1-13 | **Publish filter swap** | `quartz.config.ts` | `Plugin.RemoveDrafts()` → `Plugin.PublishFlag()`, activating the filter A4 baked into the image. Patched here rather than shipped as config because `quartz.config.ts` comes from Quartz's own repository at image build time. Idempotent: a config already naming `PublishFlag` is left alone. |
 
 <a name="c2-applied-on-every-build"></a>
 
@@ -191,7 +213,8 @@ build means a re-run of the setup wizard (or a hand edit of
 | C2-18 | **Right sidebar column sharing** | `base.scss` (appended) | On a much-linked page the backlinks crowded out the table of contents. The contents are capped at 50% of the column (only when they have a sibling), the backlinks take the rest, and both lists scroll. |
 | C2-19 | **Google Fonts request filtered** | `quartz/util/theme.ts`, `quartz/components/Head.tsx` | Quartz builds ONE stylesheet request from all three font choices, and this app offers system stacks. Google rejects the whole request if any family is unknown to it — HTTP 400, so NO fonts downloaded, including the code font mermaid measures in. System stacks and families are now filtered out, and an empty request is dropped entirely. |
 | C2-20 | **mhchem enabled** | `quartz/plugins/transformers/latex.ts` | Adds `import "katex/contrib/mhchem"`, so `$\ce{CaCO3(s) <=> CaO(s) + CO2(g)}$` renders. KaTeX runs at build time here, and the `katex` package Quartz already installs ships the extension, so this downloads nothing. |
-| C2-21 | **Curriculum coverage map styles** | `quartz/styles/base.scss` (appended) | The grid, chips, and the five-step red-to-green scale for the generated `Curriculum Coverage` page. The colours are deliberately NOT taken from the course's colour scheme — the map's whole meaning is the red-to-green reading, and a scheme that recoloured it would destroy that. Cells carry the expectation's code and nothing else: a digit in every cell turned the map into a table of numbers, so the count now reaches a screen reader through the cell's label and a teacher through the hover preview. The legend is a vertical list below a rule, worded "addressed once", "addressed twice", and so on. The ring marking assessed work is two rings — white inside dark — so that it stays legible on all five cell colours; a single tone disappeared on either yellow or the darkest green depending on which was chosen. The style block is REPLACED rather than skipped when it is already present, so a stylesheet surviving from an earlier build still picks up changes. |
+| C2-21 | **Curriculum coverage map styles** | `quartz/styles/base.scss` (appended) | The grid, chips, and the five-step red → orange → yellow → green → blue scale for the generated `Curriculum Coverage` page. The colours are deliberately NOT taken from the course's colour scheme — the map's whole meaning is that ordered reading, and a scheme that recoloured it would destroy that. The scale was SEARCHED rather than picked by eye: `scripts/choose_coverage_scale.py` scores candidates on CIEDE2000 separation and through deuteranopia and protanopia simulation, which is why the top step is blue rather than a darker green — the closest pair an ordinary-sighted reader now sees is ΔE 31, against ΔE 10 before. Cells carry the expectation's code and nothing else: a digit in every cell turned the map into a table of numbers, so the count now reaches a screen reader through the cell's label and a teacher through the hover preview. The legend is a vertical list below a rule, worded "addressed once", "addressed twice", and so on. The ring marking assessed work is two rings — white inside dark — so that it stays legible on all five cell colours; a single tone disappeared on either the yellow or the darkest step depending on which was chosen. The style block is REPLACED rather than skipped when it is already present, so a stylesheet surviving from an earlier build still picks up changes. |
+| C2-22 | **Backlinks "structural pages" set** | `quartz/components/Backlinks.tsx` | Rewrites the `const structural = new Set<string>([…])` block behind the `// CQ4T-STRUCTURAL-ANCHOR` comment in `support/Backlinks.tsx`, inserting the course's curriculum folder name and `Curriculum Coverage` in both title and slug form. Those pages link to everything by nature, so without this every content page's backlinks panel is dominated by the curriculum index and the generated coverage map — noise that buries the pages a teacher actually wants to see listed. |
 
 ### C3. Content-level transformations (every build)
 
@@ -253,10 +276,13 @@ Contents" are likewise renamed to plain-language labels.
 
 ### D1. Patched `Backlinks.tsx` (`support/Backlinks.tsx`)
 
-Complements the locale change: adds support for an `excludeBacklinks: true`
-frontmatter flag that suppresses the backlinks panel on a specific page.
-Useful for pages where "when did we do this?" makes no sense (a style guide,
-a syllabus) or where the link graph would mislead.
+Complements the locale change, and carries two changes. First, an
+`excludeBacklinks: true` frontmatter flag that suppresses the backlinks panel
+on a specific page — useful where "when did we do this?" makes no sense (a
+style guide, a syllabus) or where the link graph would mislead. Second, the
+`CQ4T-STRUCTURAL-ANCHOR` set that C2-22 rewrites each build, which keeps the
+curriculum index and the generated coverage map out of every other page's
+backlinks.
 
 ---
 

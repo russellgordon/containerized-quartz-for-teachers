@@ -29,7 +29,7 @@ This toolchain lets a teacher:
   into a website: it understands wikilinks (`[[Page Name]]`), transclusions
   (`![[Page Name]]`), callouts, and Obsidian-flavoured Markdown natively, and
   produces a modern site with full-text search. Version **4.5.0** is pinned so
-  the ~30 patches applied on top of it (see
+  the ~40 patches applied on top of it (see
   [Quartz Customizations](06-quartz-customizations.md)) always target known
   code.
 - **Docker** removes the single largest support burden when sharing the
@@ -66,7 +66,7 @@ This toolchain lets a teacher:
 |---|---|---|
 | `./setup.sh` / `.\setup.bat` | [`setup_course.py`](04-course-setup.md) | Ensures the container is running with the right folder mounted, then runs an interactive wizard that scaffolds `courses/<CODE>/` and writes `course_config.json` |
 | `./preview.sh ICS3U 1` / `.\preview.bat ICS3U 1` | [`build_site.py`](05-build-pipeline.md) | Merges shared + section-1 content into `.merged_output/section1/`, patches the Quartz scaffold, draws the section's social sharing card, and serves the site — the launcher prints the address (each working folder has its own probed host port block) |
-| `./deploy.sh ICS3U 1` / `.\deploy.bat ICS3U 1` | [`deploy.py`](07-deployment.md) | Runs a static build (`--build-only`), then publishes `public/` to the course's chosen destination: delta-upload to a Netlify site (the default), `--target cloudflare` for a Cloudflare Pages project, or `--to-folder` to copy it into a folder on the teacher's own machine |
+| `./deploy.sh ICS3U 1` / `.\deploy.bat ICS3U 1` | [`deploy.py`](07-deployment.md) | Publishes an EXISTING static build — it never builds one: if `public/` is missing or empty the launcher stops and tells the teacher to run preview with `--build-only` first. Then publishes `public/` to the course's chosen destination: delta-upload to a Netlify site (the default), `--target cloudflare` for a Cloudflare Pages project, or `--to-folder` to copy it into a folder on the teacher's own machine |
 
 ## Key design decisions worth understanding
 

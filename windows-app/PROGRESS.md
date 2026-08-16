@@ -1,102 +1,98 @@
 # Plantoir for Windows — Progress
 
-First take built overnight 2026-08-11 by Claude Code, per
-[`WINDOWS-HANDOFF.md`](../WINDOWS-HANDOFF.md). Everything below was
-**verified live on the maintainer's Windows 11 machine** (WSL2 +
-Ubuntu-24.04 + Docker Engine 29, no Docker Desktop) unless marked
-otherwise.
+What each project in the solution is, and what state the app is in. First take
+built overnight 2026-08-11 by Claude Code, per
+[`WINDOWS-HANDOFF.md`](../WINDOWS-HANDOFF.md); the assist subsystems folded
+into `main` on 2026-08-14. Everything below was **verified live on the
+maintainer's Windows 11 machine** (WSL2 + Ubuntu-24.04 + Docker Engine 29, no
+Docker Desktop) unless marked otherwise.
 
 ## Layout
 
 | Project | Role |
 |---|---|
 | `Plantoir/` | The WinUI 3 app (unpackaged, self-contained Windows App SDK, PerMonitorV2 DPI). Bundles the full toolchain recipe under `Toolchain/` and mirrors it into each working folder's `.toolchain/`. |
-| `Plantoir.Core/` | All logic, UI-free: config round-trip, container naming, port leases, build freshness, archiver/restorer, section adder, ConPTY process, transcript builder, script runner, milestones, question parsing, failure explainer, catalogs, workspace/toolchain services. |
-| `Plantoir.Tests/` | xUnit suite (200 tests) that runs **without Docker**: `dotnet test`. Classes touching process-wide state (preview leases, the publish registry) share a serialized collection — see `SharedActivityState`. |
+| `Plantoir.Core/` | All logic, UI-free: config round-trip, container naming, port leases, build freshness, archiver/restorer, section adder, ConPTY process, transcript builder, script runner, milestones, question parsing, failure explainer, catalogs, workspace/toolchain services — **and the whole assist subsystem** under `Assist/` (18 files): `AssistWorkspace`, `AssistAgent`, the plans (`PublishPlan`, `ReDatePlan`, `SyncPlan`, `InsertPlan`, `NewClassesPlan`, `CurriculumMentionsPlan`), `LinkGraph`, `SectionIndex`, `Timetable` and `TimetableMemory`, `DateAudit`, `UndoHistory`, `ScheduledDeploy` and `TaskScheduling`, `Briefing`, and `WorkLease`. |
+| `Plantoir.Tests/` | xUnit suite that runs **without Docker**: `dotnet test`. No count is given here on purpose — it rots. Classes touching process-wide state (preview leases, the publish registry) share a serialized collection — see `SharedActivityState`. |
 | `PtyDriver/` | Console harness that drives the launchers under a ConPTY with scripted prompt replies — how the E2E runs below were performed. |
-| `Plantoir.Mcp/` | **`ai-assist` branch only, not in 1.0.** A standalone MCP server exposing one working folder to an AI assistant. Not built by `publish.ps1`, which targets `Plantoir.csproj` alone. See [its README](Plantoir.Mcp/README.md). |
+| `Plantoir.Mcp/` | On `main` (`Plantoir.sln` lists it) and **it ships**: `publish.ps1` publishes it, copies `plantoir-mcp.exe` into the app's own output beside `Plantoir.exe`, and includes it in the signing list. A standalone MCP server exposing one working folder to an AI assistant. Load-bearing at runtime — `Plantoir/Services/ClaudeCodeLauncher.cs` looks for it beside the app, and `Plantoir/Services/McpClient.cs` launches it. See [its README](Plantoir.Mcp/README.md). |
+
+## The subsystems that table does not name
+
+- **A built-in local AI assistant.** `Views/AssistWindow.xaml` holds the
+  conversation, `Services/LocalModel.cs` runs a small model with no account
+  and no internet, and `Services/McpClient.cs` drives the same
+  `plantoir-mcp` Claude Code drives — one tool surface, two front ends.
+- **Claude Code integration.** `Services/ClaudeCodeLauncher.cs` writes
+  `%LOCALAPPDATA%\Plantoir\assist\mcp-<CODE>.json` and launches `claude` with
+  `--mcp-config … --strict-mcp-config`, so a teacher's own MCP servers are
+  neither used nor disturbed. Both doors sit on a course's context menu:
+  **Revise with Claude…** (only when Claude Code and the server are both
+  present) and **Revise with local AI assistant…**.
+- **A cross-process lease protocol**, `Plantoir.Core/Assist/WorkLease.cs`.
+  Four kinds — `assist`, `preview`, `publish`, `build` — as files under
+  `courses/.internal/activity/`, so the app and the server can see each
+  other's work. Only a *build* is exclusive; previewing during a conversation
+  is the point.
+- **Scheduled deploys**, `Assist/ScheduledDeploy.cs` + `TaskScheduling.cs`,
+  reached from the sidebar's Schedule Deploy… and from the assistant, sharing
+  one refusal path so the two cannot drift.
+- **Three publishing destinations**, not one: `deploy.ps1` handles Netlify,
+  Cloudflare Pages and a plain folder.
 
 ## Proven end to end
 
-- **Launchers on real Windows** (after the fixes in the repo-root
-  commits): `setup.ps1 --install-example` (image built locally from the
-  recipe, per-folder container created with a `/mnt/c` mount, EXC2O
-  installed), `preview.ps1 EXC2O 1` (site served; HTTP 200; the
-  announced `Preview will be available at:` line parsed), and
-  `deploy.ps1 EXC2O 1` (token from Windows Credential Manager, Netlify
-  site created, 233 files uploaded with streaming counts, live over
-  https).
-- **The app itself**: launched → folder picker (all four states) →
-  sidebar with EXC2O and sections → section view → **Preview built and
-  embedded the live site in the app's WebView2**, via the app's own
-  ConPTY runner. **Deploy runs entirely inside the app**: a repeat
-  publish of EXC2O section 1 reached "Uploading your pages… 25 of 230"
-  at Step 7 of 8 and the site went live over https — the upload count
-  parsed straight from the launcher output. All screenshot-verified.
-- **The wizard's answer pump** was driven against the real
-  `setup_course.py` end to end (Enter for every prompt including the
-  raw arrow-key colour picker): the interactive flow completed exit 0
-  and scaffolded a full course (shared folders, per-section files,
-  two section folders). This is the same `NewCourseCreator.PumpAnswers`
-  the Create Course button uses.
+Screenshot- or exit-code-verified on real hardware: the launchers
+(`setup.ps1 --install-example` built the image locally from the recipe and
+installed EXC2O; `preview.ps1 EXC2O 1` served HTTP 200; `deploy.ps1 EXC2O 1`
+took its token from Windows Credential Manager and put 233 files live over
+https); the app itself (folder picker → sidebar → section view, with Preview
+building and embedding the live site in the app's WebView2, and Deploy running
+end to end in-app — "Uploading your pages… 25 of 230" at Step 7 of 8, the
+count parsed from launcher output); and the wizard's answer pump against the
+real `setup_course.py`, exit 0 with a full course scaffolded, using the same
+`NewCourseCreator.PumpAnswers` the Create Course button uses.
 
 ## The hard-won platform lessons (do not relearn these)
 
-1. **ConPTY std-handle hygiene.** A process whose own stdio is
-   redirected leaks stale pipe handles into its pseudo-console child;
-   `wsl.exe` then reports "the input device is not a TTY" and every
-   interactive `docker exec -it` fails. A GUI app is naturally clean.
-   Test harnesses must be launched with their own console
-   (ShellExecute / `Start-Process`), never with redirected stdio.
-2. **ConPTY soft-wrap duplication.** Re-rendered wrapped lines arrive
-   with the boundary character doubled. The runner uses a 400-column
-   pseudo console so no real line wraps.
-3. **PowerShell 5.1 + `$ErrorActionPreference='Stop'` + wsl stderr.**
-   Any redirected call site (`*> $null`) wraps wsl's stderr lines into
-   terminating ErrorRecords. The launchers' global `docker` wrapper
-   relaxes the preference around the wsl call.
-4. **Container-name parity.** Everything hashes the folder's PHYSICAL
-   path (true on-disk casing via `GetFinalPathNameByHandle`, symlinks
-   resolved) plus `"\n"`, SHA-256, first 8 hex — `FolderContainers`
-   in Core and all three launchers agree byte for byte.
+1. **ConPTY std-handle hygiene.** A process whose own stdio is redirected leaks
+   stale pipe handles into its pseudo-console child; `wsl.exe` then reports
+   "the input device is not a TTY". A GUI app is naturally clean; test
+   harnesses must get their own console (ShellExecute / `Start-Process`).
+2. **ConPTY soft-wrap duplication.** Re-rendered wrapped lines arrive with the
+   boundary character doubled — hence the runner's 400-column pseudo console,
+   so no real line wraps.
+3. **PowerShell 5.1 + `$ErrorActionPreference='Stop'` + wsl stderr.** Any
+   redirected call site (`*> $null`) turns wsl's stderr into terminating
+   ErrorRecords; the launchers' `docker` wrapper relaxes the preference around
+   the wsl call.
+4. **Container-name parity.** Everything hashes the folder's PHYSICAL path
+   (true on-disk casing via `GetFinalPathNameByHandle`, symlinks resolved)
+   plus `"\n"`, SHA-256, first 8 hex — `FolderContainers` in Core and all
+   three launchers agree byte for byte.
 
-## Spec coverage (GUI-IMPROVEMENTS.md)
+## Spec coverage
 
-Implemented in this first take: the workspace picker states (13, 14,
-15, 17, 85), sidebar with footer +/− and filter (23, 52, 58), archive/
-restore (54, 55), stable toolbar + one-face-changing Preview button
-(19, 24), progress/milestones/step counts (16, 21, 22, 26, 51),
-question dialogs with lifted defaults and cancel tokens (30–35),
-finished-state link with custom-domain swap (32, 38, 87), stopped ≠
-failed (39, 40), failure explanations (36), console discipline (18,
-27), preview server gating and 127.0.0.1 hand-off (11), port leases
-(66), per-folder containers + quit-time release (67, 69), launcher/
-toolchain refresh (68, 71), settings forms with the shared vocabulary
-(1–9), grade-in-title literal switch + warning (89), Revert (90), the
-wizard with the example-course panel (41, 43) and validation (70),
-Add Section (74, 86), Obsidian integration (80), window memory (59–65
-as the app-owned list Windows needs), About (82).
-
-Not yet: bundled-font *registration* for previews beyond per-path
-FontFamily references (2 — works via `path#family`), UIA press-and-look
-regression tests (52, 81), WinSparkle (deferred on both platforms),
-several polish rounds that need human eyes on real hardware.
+Tracked in one place only: the **Windows status** section of
+[`GUI-IMPROVEMENTS.md`](../GUI-IMPROVEMENTS.md) (179 rows). Nothing here
+duplicates it, because a second copy is a copy that goes stale.
 
 ## Known rough edges for the next session
 
-- The toolbar can truncate at narrow widths; no window min-size clamp
-  is enforced yet (900×600 is only the default).
-- The Preview menu (Alt+Left/Right/Ctrl+R accelerators) is not yet a
-  separate menu; Back/Forward/Reload live on the toolbar only.
-- The wizard's Create button was not click-driven in-app (it needs a
-  code typed and a click), but its underlying `setup.ps1` + answer-pump
-  path was proven live to completion via PtyDriver. A first true
-  in-app click-through is the natural next check.
-- Deploying a BRAND-NEW section prompts for a site name; the "Input
-  required" dialog now fires for it (the first attempt exposed and
-  fixed the re-binding bug), but the new-site dialog path itself has
-  not yet been click-confirmed in-app — the verified deploy was a
-  repeat publish to an existing site.
-- `--auto-select CODE N` / `--auto-preview CODE N` /
-  `--auto-deploy CODE N` are smoke-test hooks that drive the real
-  button code paths.
+- The toolbar can still truncate at narrow widths. The window minimum **is**
+  enforced at 900×600 (`MainWindow.xaml.cs`, `PreferredMinimumWidth` /
+  `PreferredMinimumHeight`); the opening size is not 900×600 but a share of
+  the display's work area, clamped, so it looks right at any scale.
+- The preview accelerators exist — Ctrl+R, Alt+Left, Alt+Right, declared at
+  view scope in `Views/SectionDetailView.xaml` and handled in its code-behind.
+  What is missing is a **Preview menu-bar item**; Back/Forward/Reload are on
+  the toolbar only.
+- Two paths proven underneath but never click-driven in-app: the wizard's
+  Create button (the `setup.ps1` + answer-pump path ran to completion via
+  PtyDriver), and the new-site dialog a BRAND-NEW section's deploy raises —
+  the verified deploy was a repeat publish to an existing site.
+- Smoke-test hooks, all driving the real button code paths
+  (`MainWindow.xaml.cs`, `RunAutomationHooks`): `--auto-select CODE N`,
+  `--auto-preview CODE N`, `--auto-deploy CODE N`, `--auto-course CODE`,
+  `--auto-wizard`, `--auto-createcourse CODE [SECTIONS]`,
+  `--auto-addsection CODE`.

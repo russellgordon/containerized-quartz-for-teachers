@@ -2,7 +2,7 @@
 
 [◀ Previous: Course Setup](04-course-setup.md) · [Back to index](README.md) · [Next: Quartz Customizations ▶](06-quartz-customizations.md)
 
-`scripts/build_site.py` (2,300+ lines) is the engine of the toolchain. Given
+`scripts/build_site.py` (~3,800 lines) is the engine of the toolchain. Given
 a course code and section number, it assembles a complete, customized Quartz
 site at `courses/<CODE>/.merged_output/section<N>/` and either serves it
 (preview mode, the default) or builds it statically (`--build-only`, used by
@@ -25,9 +25,10 @@ exist, and that the requested section is one of the course's
 <a name="preflight-discovery"></a>
 
 It scans the course root and section folder for top-level folders/files that
-are *not yet listed* in `course_config.json` and appends them (add-only —
-nothing is ever removed automatically). Newly discovered folders are marked
-visible and expandable by default. The updated config is written atomically
+are *not yet listed* in `course_config.json` and appends them. The four copy
+lists are add-only — nothing is ever removed from them automatically — but a
+newly discovered folder is also taken OUT of `hidden` if it is listed there
+and added to `expandable`, so it appears with a chevron like any other. The updated config is written atomically
 with a `course_config.backup.json` safety copy.
 
 **Rationale:** teachers create folders in Obsidian mid-course. Without
@@ -114,13 +115,24 @@ changes.
 
 ### Wikilink rewriting
 
-In Obsidian, a link from shared content into section content looks like
+In Obsidian, a link into section content looks like
 `[[section2/All Classes/Thread 2, Day 8|Thread 2, Day 8]]`. In the built
 site there is no `section2/` prefix — the section's content *is* the site
 root. The build rewrites any aliased wikilink whose target contains a
 `section<digits>/` path down to its alias: `[[Thread 2, Day 8]]`. Quartz
 then resolves it by file name, which works because that file was copied into
 the content tree. (The same is done for transclusions, `![[…]]`.)
+
+**Where this applies.** `rewrite_section_wikilinks` runs on the section's
+`index.md`, on every markdown file inside a per-section folder, and on
+per-section loose files — that is, on content that came from
+`section<N>/`. Shared content is copied with frontmatter processing only, so
+a section-path wikilink written in a SHARED page is not rewritten, and
+would reach the site as a broken link. Nothing in the example course or the
+payloads writes one — a shared page is read by every section, so it has no
+one section to link into — but Obsidian produces that form whenever a
+teacher links across folders, so a shared page pointing at a class page
+needs the plain `[[Thread 2, Day 8]]` form.
 
 <a name="dates-drive-everything"></a>
 

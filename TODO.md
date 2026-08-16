@@ -4,16 +4,6 @@ Ideas and deferred work, in no particular order. Add items freely; remove
 an item when it ships (finished behaviour is recorded in
 [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md), not here).
 
-- **`brand_images.py` is mid-change, and `cut-release` already depends on
-  it** — noted 2026-08-14. The release skill instructs
-  `python scripts/brand_images.py --install-card` in the same commit as the
-  version line, and says the normal outcome is no diff at all. That script
-  is currently modified in the working tree with a new `brand/` directory
-  beside it. Cutting a release before that work lands would commit a
-  half-finished generator alongside the version bump — and `site/social-card.png`
-  is a public, widely-cached og:image, so a wrong one is expensive to undo.
-  Let the brand work land first.
-
 - **Nothing verifies that a release actually reached plantoir.app** — noted
   2026-08-14. The `cut-release` skill ends by saying the push "redeploys
   plantoir.app automatically (Netlify watches `site/`)" and stops there. No
@@ -111,7 +101,7 @@ an item when it ships (finished behaviour is recorded in
   (3) deploy latency (~a minute to go live — milestone wording should say
   "on its way", and the output needs a `.nojekyll`). Shared work: deploy.py
   plus both GUIs — write a proposal note for the mac side (like
-  MCP-PROPOSAL.md) when picking this up.
+  research/ai-assist/HISTORY.md, part 3) when picking this up.
 
 - **Publish stops an active preview itself** — deferred 2026-08-11. The
   idea: the Publish button stays enabled while a preview runs; clicking it
@@ -133,16 +123,32 @@ an item when it ships (finished behaviour is recorded in
   the promise card handled as deterministic commands, page edits doing
   stop-edit-offer around the app's own preview, and the whole loop moved
   to `Plantoir.Core` with tests covering every promise —
-  [`AI-ASSIST-HANDOFF.md`](AI-ASSIST-HANDOFF.md) §10 is the record, and
+  [`research/ai-assist/HISTORY.md`](research/ai-assist/HISTORY.md) part 2 §10 is the record, and
   `MAC-HANDOFF.md` carries the mac side's pickup entry. What remains:
 
-  **(a) The CSV reschedule.** Deliberately last. The routing works; the
-  tool does not exist. The hard part is parsing a teacher's real CSV and
-  rewriting links without breaking the schedule invariant in
-  `DEVELOPERS.md` (class pages' links *are* the schedule). Design it to
-  accept a *well-formed* CSV and show a diff table before it writes — if
-  the CSV is messy enough that the model has to interpret it, that is
-  planning, and the measurements say planning is where it fails.
+  **(a) The CSV reschedule — built; what is left is around the edges.**
+  It shipped in the plan-then-write shape this item asked for.
+  `Plantoir.Core/Assist/Timetable.cs` reads a school's sheet without
+  assuming its layout — which row is the header, which column holds dates,
+  and how the dates are written are all worked out from the sheet itself —
+  and `ReDatePlan.cs` produces the diff table shown before anything is
+  written. The MCP surface is `read_timetable` → `plan_re_date_classes` →
+  `re_date_classes`, plus `roll_over_section` for a new year, all in
+  `Plantoir.Mcp/PlantoirTools.cs`, with tests in
+  `Plantoir.Tests/TimetableTests.cs`. §5 of the handoff records 26 classes
+  re-dated against a teacher's own spreadsheet, checked by an independent
+  parser. Two things are genuinely left:
+
+  * **Only CSV comes off disk.** `TimetableSource` reads a local file as
+    plain text, or exports a shared Google Sheet by link. A teacher's
+    `.xlsx` sitting in Downloads is neither, so they have to export it
+    first — while the tool's own help text says “timetable.xlsx”.
+  * **Which lesson lands on which day is still the model's call.**
+    `plan_re_date_classes` takes matching `pages`/`meetings` lists and
+    falls back to an even spread, which the description itself calls a
+    starting point rather than an answer. That mapping is planning, and
+    planning is where the measurements say the local model fails; it has
+    not been measured on real phrasings.
 
   **(b) The shared activity lease, finished.** `WorkLease` files under the
   working folder now let the GUI decline a preview while the assistant
@@ -164,8 +170,8 @@ an item when it ships (finished behaviour is recorded in
 
   A teacher asked for "every class past Unit 1, Day 1, and everything those
   link to, into draft". Applied exactly, that rule left **32 course-level
-  pages still published** that no class page links to at all — a whole
-  unit's concepts, plus unassigned tasks and portfolio pages. The teacher
+  pages in SNC1W still published** that no class page links to at all — a
+  whole unit's concepts, plus unassigned tasks and portfolio pages. The teacher
   spotted one (`Concepts/Astronomical Phenomena`, reachable only from an
   investigation that is itself unreferenced) and the rest fell out of an
   audit script.
@@ -176,11 +182,20 @@ an item when it ships (finished behaviour is recorded in
   start-of-year operation, base it on unit number, date, or an explicit
   teacher-facing "not yet taught" flag — not on what is reachable.
 
-  The other half is worth building on its own: an **audit** that
-  cross-references every course-level page against every wikilink in every
-  class page and reports three groups — deliberately protected, unreachable
-  from any class, and linked-but-missed. The third group being empty is what
-  proved the job complete; the second is what proved the *rule* incomplete.
-  That is a read-only check the MCP server could offer directly, and it is
-  the sort of thing a teacher would want before a term starts regardless of
-  whether any AI is involved.
+  The audit half of this shipped, as the read-only `check_section` tool in
+  `Plantoir.Mcp/PlantoirTools.cs`. It cross-references a section's pages
+  against every wikilink and reports two of the three groups: links on
+  visible pages that lead to a hidden one (a student clicks and finds
+  nothing), and pages nothing links to — still published, still listed in
+  Quartz's explorer, and invisible to any rule that follows links. That
+  second group is what proved the *rule* incomplete.
+
+  What is still missing is the third group, **linked-but-missed**: pages a
+  class does link to that a bulk change should have caught and did not. Its
+  being empty is what proved the job complete, and `check_section` cannot
+  say so today. Missing too is the bulk start-of-year operation itself —
+  worth having with or without any AI, and per the lesson above it should
+  key off unit number, date, or an explicit "not yet taught" flag rather
+  than reachability. (`LinkGraph.cs`'s doc comment quotes 50 unreachable
+  course-level pages, but for a "sample course" it does not name — a
+  different measurement from the 32 above, not a contradiction of it.)

@@ -1,6 +1,6 @@
 """Build the starting skeletons that every Ontario course code gets.
 
-Eighteen course codes have real example content. Every other code — around
+Thirty-seven course codes have real example content. Every other code — around
 1,900 of them — used to start as empty folders with a one-line stub in
 each. This generator writes a SKELETON for each subject family instead: the
 same shape the example courses use (a semester of class pages, a Key Links
@@ -9,8 +9,9 @@ teacher edits rather than invents.
 
 The skeletons are generated rather than hand-written because the shapes
 repeat: a chemistry course and a biology course want the same folders with
-different words in them, and forty families times twenty-five pages is not
-something to maintain by hand. Run this after editing the tables below:
+different words in them, and fifty families times about thirty-nine pages —
+1,944 files as it stands — is not something to maintain by hand. Run this
+after editing the tables below:
 
     python3 .claude/skills/example-content/generate_skeletons.py
 

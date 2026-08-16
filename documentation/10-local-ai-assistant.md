@@ -55,10 +55,11 @@ or 16,384-token window depending on the Mac.
 
 Before generating a single token of reply, the model must read everything in
 the window. That is called **prompt processing**, and it is why the *first*
-message of a conversation is slower than the rest: about 2,650 tokens of tool
-descriptions have to be read before anything else happens. Afterwards the
-work is cached (the **KV cache**, which is also most of the memory the model
-occupies while running), so later turns only process the new sentence.
+message of a conversation is slower than the rest: about 2,650 tokens of
+prompt, nearly all of it tool descriptions, have to be read before anything
+else happens. Afterwards the work is cached (the **KV cache**, which is
+roughly the other half of the memory the model occupies while running), so
+later turns only process the new sentence.
 
 ### Quantisation, or why 4 billion parameters fits in 2.5 GB
 
@@ -147,7 +148,7 @@ engine's configuration lives:
 | `--model` | the `.gguf` path | Downloaded once to `~/Library/Application Support/Plantoir/models`, not bundled — that keeps 2.5 GB out of every app update and off the Macs of teachers who never open the assistant |
 | `--host` | `127.0.0.1` | Loopback only. Nothing on the network can reach it |
 | `--port` | chosen at launch | Each window gets a free port, so nothing collides |
-| `--ctx-size` | `8192` or `16384` | The context window, sized by tier. Most of the model's *running* memory is the cache this implies, so this is the main memory dial |
+| `--ctx-size` | `8192` or `16384` | The context window, sized by tier. The cache it implies is the part of the model's memory you can actually change — 2.5 GB of weights stays 2.5 GB — so this is the memory dial |
 | `--n-gpu-layers` | `999` | Put every layer on the GPU. "999" means "all of them, whatever the count". This is the entire reason for running natively; a partial offload would leave the slow path in play |
 | `--threads` | 2–6 | Half the performance cores, capped at six. Generation on Apple silicon is bound by memory bandwidth long before thread count, so taking every core buys almost nothing and makes the machine feel seized while a build may also be running |
 | `--jinja` | — | Use the chat template embedded in the model file (see below) rather than a guess at its format |
@@ -185,7 +186,10 @@ The two flags do different jobs, and only one of them actually stops it:
 
 Plantoir shipped with the budget alone for several days, on the
 reasonable-sounding assumption that a budget of zero meant no thinking. It
-does not. Measured on one prompt against the same tool surface:
+does not. Measured on one prompt against the 20-tool surface the model was
+shown at the time (4,475 tokens — larger than today's, so the seconds are not
+directly comparable with the table further down; the direction is what
+matters):
 
 | Flags | Time | Tokens generated | Tool call |
 |---|---|---|---|
@@ -257,7 +261,8 @@ Teacher types "Publish tomorrow's class"
 AssistAgent  (Swift)
         │   builds ONE HTTP request:
         │     • system prompt (the rules, in English)
-        │     • the conversation so far
+        │     • the conversation so far, each message with
+        │       "(Today is 2026-08-15, a Saturday.)" APPENDED
         │     • 13 tool definitions as JSON Schema
         ▼
 POST http://127.0.0.1:<port>/v1/chat/completions
@@ -288,6 +293,37 @@ The model reads it and writes one plain sentence for the teacher.
 
 The model appears exactly twice: once to choose the function, once to narrate
 the outcome. Everything between those two moments is Swift.
+
+### The sentences that never reach the model at all
+
+Some of them appear once, or not at all. The window's suggestion cards are the
+phrasings it TELLS a teacher it is good at, so a teacher clicks one — or types
+it word for word — and the assistant had better be good at it. Measured, the
+model misrouted **five of the eleven in every trial**, while filling in the
+arguments perfectly.
+
+So the fixed shapes with no ambiguity in them are matched in Swift
+(`AssistCardCommand`) and the tool call is built directly. The model keeps
+everything with a story in it: the requests a teacher phrases their own way,
+which is what a language model is actually for. Matching is deliberately
+strict — trimmed and case-insensitive, otherwise exact — because a loose match
+would swallow a sentence that only LOOKS like a card ("publish tomorrow's
+class, but not the linked pages") and answer the wrong question with total
+confidence, which is worse than routing it.
+
+This is the same principle as the coarse tools: reasoning moved out of the
+model is reliability bought back. It is also the honest caveat on the 110/110
+in Part 5 — some of those are perfect because they are not questions.
+
+### The dateline, and why its position is a finding
+
+A model has no clock. Every message the teacher sends therefore carries
+`(Today is 2026-08-15, a Saturday.)` — **appended**, never prepended. That is
+not a style choice: prepending the same sentence cost 15 points of routing
+accuracy in measurement, and the effect reproduced on a second model. A line
+of context at the front appears to compete with the instruction for the
+model's attention; at the back it reads as a footnote to a request already
+understood.
 
 ### Step 1 — What Swift sends
 
@@ -320,10 +356,12 @@ With a generic `ICS3U` left in the examples, a request that named no course
 copied `ICS3U` out of the example text **9 times out of 9**. A small model
 reads examples as suggestions.
 
-The request also carries `"temperature": 0.1`. Temperature controls how much
-randomness is used when picking each token; near zero, the model takes the
-most probable choice almost every time. For routing you want the boring,
-repeatable answer.
+The request also carries `"temperature": 0`. Temperature controls how much
+randomness is used when picking each token; at zero the model takes the most
+probable choice every time. For routing you want the boring, repeatable
+answer — a router that answers differently to the same request twice is a
+router a teacher cannot learn to trust. (The measurement suites ran at 0.1,
+so the shipped app is if anything more deterministic than the numbers below.)
 
 ### Step 2 — What comes back
 
@@ -448,15 +486,24 @@ that vetoed both 3B models.
 There is no delete tool, no rename tool and no archive tool. Not "guarded by a
 confirmation" — **absent**. A capability that does not exist cannot be reached
 by a misrouted sentence, an odd phrasing, or text a model read in a page.
-Asked to delete something, the assistant declines, in 10 trials out of 10,
-because there is nothing in the list to pick.
+Asked to delete something, the larger assistant declines in 10 trials out of
+10, because there is nothing in the list to pick; the smaller one misroutes to
+`rebuild_preview`, which changes no page. Neither can delete anything, because
+deletion is not a thing the list contains.
 
 ### Plan mode
 
-Every tool that writes is, by default, wrapped in **plan mode**: the assistant
-states what it understood and what it is about to do, and waits for Go or
-Cancel. This is applied by Swift based on whether the tool writes — the model
-is not asked to decide whether something is risky.
+Every tool that changes a PAGE is, by default, wrapped in **plan mode**: the
+assistant states what it understood and what it is about to do, and waits for
+Go or Cancel. This is applied by Swift, from whether the tool has a `plan_`
+twin — the model is not asked to decide whether something is risky.
+
+Four writes have no twin and no plan, deliberately: `rebuild_preview` (changes
+no page), `undo_last_change` (is the remedy), `cancel_scheduled_deploy`
+(re-scheduling is the remedy), and `deploy_section` — which instead waits on
+its own separate approval, in the teacher's words and naming the real
+destination, whether or not plan mode is on. Deploying is the one act that
+reaches students, so it never rides on a general setting.
 
 On a Mac running the smaller assistant, plan mode cannot be turned off. On a
 16 GB machine running the larger one, the app offers to stop asking after a
@@ -470,8 +517,8 @@ safety rules cannot drift between the two clients. The app answers this
 itself — `Plantoir.app/Contents/MacOS/Plantoir --mcp-stdio <working-folder>` —
 rather than shipping a second binary.
 
-Claude Code is offered a **longer** list than the local model: 20 tools
-against 13. The extra ones ask for judgement about meaning — reading the
+Claude Code is offered a **longer** list than the local model: 23 tools
+against 13 — the twenty that exist, plus three served only over MCP. The extra ones ask for judgement about meaning — reading the
 curriculum and deciding which expectations a page addresses — which a large
 model does well and a 4B model does not. Anything shown to the local model has
 been measured against it, and a unit test pins the count so the list cannot
@@ -491,8 +538,8 @@ The thirteen the local model sees:
 
 ## Part 5 — How it is measured
 
-None of the choices above were made by taste. The routing suite in
-`research/ai-assist/` sends 42 phrasings — including deliberately informal
+None of the choices above were made by taste. The routing suite (results in
+`research/ai-assist/thirteen-tool-surface-results.txt`) sends 42 phrasings — including deliberately informal
 ones, typos, out-of-scope requests and every phrasing the assistant's own
 window offers as a suggestion — through the real tool surface, ten trials
 each, and scores what came back.
@@ -507,10 +554,13 @@ Most recent run, Qwen3 4B against the shipping 13-tool surface:
 | Median warm reply | **0.53 s** |
 | Prompt size | ~2,650 tokens |
 
-The suggestion cards in the assistant window are not decoration: they are the
-phrasings that have been *measured*, word for word. A card offering something
-the model is unreliable at would be worse than no card at all, so one was
-removed for exactly that reason.
+The suggestion cards in the assistant window are not decoration: they are
+phrasings that have been *measured*, word for word — 110/110 over the eleven
+the suite carries. The window offers nine of them today, two reworded since
+that run; both reworded shapes are matched in Swift before the model is
+reached, so the wording change cannot cost a misroute. A card offering
+something the model is unreliable at would be worse than no card at all, so
+one was removed for exactly that reason.
 
 ---
 

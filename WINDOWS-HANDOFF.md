@@ -1,8 +1,11 @@
 # Windows App — Handoff
 
-Read this first if you are building the native Windows counterpart to
-Plantoir (the macOS app in `mac-app/`). It gathers everything a Windows
-implementation needs; the deep dives it links to are kept current.
+Read this first when working on the Windows app — `windows-app/`, WinUI 3,
+first take built 2026-08-11 — and especially when syncing it after a run of
+macOS-side sessions. It gathers everything a Windows implementation needs; the
+deep dives it links to are kept current. For what is already covered, see
+`GUI-IMPROVEMENTS.md`'s **Windows status** section rather than working through
+this file top to bottom.
 
 ## What you are building
 
@@ -129,7 +132,7 @@ Keys the Windows settings UI must round-trip (per-section maps use
 - `shared_folders`, `shared_files`, `per_section_folders`,
   `per_section_files`, `hidden`, `expandable`, `expandOnFolderClick`,
   `show_reading_time`, `footer_html`
-- `deploy_target` ("netlify" default | "local_folder") and
+- `deploy_target` ("netlify" default | "cloudflare_pages" | "local_folder") and
   `deploy_folder_path` (entries 101–102) — folder deploys pass
   `--to-folder <path>` to the launcher, which robocopy-mirrors each
   section into `<path>\sectionN`; completion is announced by a
@@ -148,19 +151,32 @@ Keys the Windows settings UI must round-trip (per-section maps use
   defaults use LCS's own set-up; the two factory sets live as
   `DEFAULT_*` vs `LCS_*` constants in `scripts/setup_course.py` and the
   Windows equivalent of `WizardDefaults` must mirror them exactly
+- `custom_short_name` — the ≤12-character label shown beside the header
+  emoji instead of the course code, in club mode. Already implemented on
+  Windows (`CourseConfiguration.cs`); listed here because this table is the
+  contract and it was missing from it
+- `include_curriculum_coverage` and `include_coverage_notes` (entries 125,
+  130) — whether the generated `Curriculum Coverage` map page is produced, and
+  whether it carries its explanatory sections or the map alone. Read by
+  `build_site.py`, both defaulting true. **Not yet implemented on Windows**:
+  neither key appears anywhere in `windows-app/`, so a teacher who turns the
+  map off on a Mac and opens the same course on Windows can silently have it
+  turned back on by a settings save
 - **Edit keys in place and preserve unknown keys** — the macOS app keeps
   the decoded JSON as a dictionary precisely so future toolchain keys
-  survive a settings round-trip.
+  survive a settings round-trip. The shared Python wizard does the same in
+  the other direction: it copies through every key it does not own, which is
+  what lets an app-written setting survive a wizard re-run.
 
 ## Example content (entries 92–96)
 
-Ready-made course payloads ship in `support/example_content/<CODE>/`
-(eighteen as of 2026-08-13: ADA1O, ICD2O, ICS3U, ICS4U, MCR3U,
-MCV4U, MDM4U, MHF4U, MPM2D, MTH1W, SCH3U, SCH4U, SNC1W, SNC2D, TEJ2O,
-TEJ3M, TEJ4M, TGJ2O — SNC1W is the example course's content converted
-to payload form, so a teacher actually teaching Grade 9 science gets
-it as starting content; SNC2D is its Grade 10 sequel, and SCH3U/SCH4U
-carry chemistry through Grades 11 and 12). All
+Ready-made course payloads ship in `support/example_content/<CODE>/` — 37 of
+them as of 2026-08-15 and growing, so read the directory rather than any list
+written here; detection is by the presence of `manifest.json`, which is what
+the code does anyway. (SNC1W is the example course's content converted to
+payload form, so a teacher actually teaching Grade 9 science gets it as
+starting content; SNC2D is its Grade 10 sequel, and SCH3U/SCH4U carry
+chemistry through Grades 11 and 12.) All
 the installing, date logic, and curriculum handling is shared Python —
 Windows needs exactly three UI behaviours:
 
@@ -188,7 +204,7 @@ generated output, so never hand-edit `support/skeletons/`.
 
 Two payload conventions have changed since these entries, both handled by
 shared Python: course-level pages now arrive with
-`createdSectionN`/`draftSectionN` (one pair per section — entry 122), and
+`createdSectionN`/`publishForSectionN` (one pair per section — entry 122), and
 `Key Links` ends with the site tour (entry 121).
 
 ## Behaviours with platform-specific mechanics
@@ -221,8 +237,12 @@ shared Python: course-level pages now arrive with
 - **New windows** (entry 84): inherit the folder of the window that was
   key when the command ran; with no windows open, show the folder picker.
   Decide the folder BEFORE first paint or the picker flashes.
-- **Updates**: WinSparkle, sharing the appcast Sparkle will use on macOS
-  (deferred on both platforms until the first release).
+- **Updates**: WinSparkle, with its own feed at `site/appcast-windows.xml`
+  alongside the mac's `site/appcast-macos.xml` — **per-platform file names from
+  the start**, so the two update feeds can never collide. (An earlier draft of
+  this line said the two would share one appcast; that is exactly the collision
+  the mac side asked to avoid. Deferred on both platforms until the first
+  release.)
 - **Stable code signing** (entry from the signing fix): sign dev builds
   with a stable identity or Windows will re-prompt for permissions —
   same class of problem as macOS ad-hoc signing.
@@ -233,7 +253,8 @@ shared Python: course-level pages now arrive with
   on BOTH platforms, for the same reason in two dialects. The image tag
   is a SHA-256 over every file in `.toolchain/`, and the recipe carries
   the eighteen example-content payloads and the fifty subject skeletons:
-  **5,694 files** as of 2026-08-13, and still growing. The `.sh`
+  **11,378 files** as of 2026-08-15, and still growing — it was 5,694 two days
+  earlier, which is the rate that makes this matter. The `.sh`
   launchers spawned one `shasum` process per file (36s of a 36.75s
   preview startup on an M4 Pro); they now pipe
   `find -print0 | sort -z | xargs -0 shasum` and take 0.16s.
@@ -242,7 +263,7 @@ shared Python: course-level pages now arrive with
   the loop, and PowerShell strings are immutable, so every one of those
   thousands of appends reallocated a string heading for a third of a
   megabyte. They now collect into `$hashes` and `-join` once. Measure this
-  when you test: on macOS the batched version hashes 5,694 files in 0.25s,
+  when you test: on macOS the batched version hashed 5,694 files in 0.25s,
   so anything near a second on Windows means the fix did not take.
   **This change is committed but never executed — there is no PowerShell
   on the Mac it was written on.** Please run it early and confirm two
@@ -295,7 +316,7 @@ diffs, and so nobody re-fixes them:
   `Key Links`**, so a teacher evaluating the app meets the site tour from
   the sidebar. Enforced by the linter.
 - **Per-section publishing in the installer**: a course-level page now
-  arrives with `createdSectionN` / `draftSectionN` for each section the
+  arrives with `createdSectionN` / `publishForSectionN` for each section the
   teacher chose, rather than one shared pair. Payloads keep the plain
   sentinel — the split happens at install time, because a payload cannot
   know the section count.
@@ -326,23 +347,41 @@ functions, `SkeletonCatalog.structureToAdopt` and `SkeletonCatalog.sidebar`
 **2. Adding a section must extend the course-level pages (entry 122).** The section
 folder is only half the job: every page at the course level — the shared
 folders and files, everything outside `sectionN/` — carries a
-`createdSectionN` / `draftSectionN` pair per section, and a section added
+`createdSectionN` / `publishForSectionN` pair per section, and a section added
 later needs its own pair or it builds those pages with no date and no
 publishing state at all. macOS does this in
 `SectionAdder.extendCourseLevelPages`: walk the course folder skipping the
 `sectionN` directories, and for each markdown page whose FRONTMATTER
 already uses the per-section form, append a fresh
-`createdSection<new>` plus a `draftSection<new>` copied from the
+`createdSection<new>` plus a `publishForSection<new>` copied from the
 lowest-numbered existing section. Leave pages with a plain `created:`
 alone — they already apply to every section — and never read past the
-frontmatter, because the site-tour page shows `draft: true` inside a code
+frontmatter, because the site-tour page shows `publish: false` inside a code
 block as documentation.
+
+> **The key changed name AND polarity (entries 140/141), so an implementation
+> written against the older text of this section would be wrong twice.** The
+> flag is `publish:` / `publishForSection<N>:`, and `draft: true` ≡
+> `publish: false`. The legacy `draft` spellings are still READ — a course
+> nobody has touched behaves exactly as it did — but they are **never
+> written**. Read new-then-legacy-inverted, write new only:
+> `PageFrontmatter.PublishKeyFor` on the Windows side,
+> `SectionAdder.swift` on the mac's.
 
 ## The local assistant: run the model natively, not in a container
 
+> **DECIDED, 2026-08-15: Windows should move its model out of the container
+> too.** What follows was written as a recommendation with measurements behind
+> it; the mac has since shipped the native arrangement, it works well, and the
+> Swift implementation is now the reference for how the assistant should be
+> built. This is no longer "worth measuring before committing to" — it is the
+> direction. Measure your own hardware to size the tiers, not to decide whether
+> to move.
+
 **Measured on macOS 2026-08-15, and the numbers are large enough that they are
-worth acting on rather than filing.** `AI-ASSIST-HANDOFF.md` §2 records the
-Windows engine's constraints — 4 GB, 2 cores, no GPU, ~21 tokens/second — and
+worth acting on rather than filing.** The feasibility work
+(`research/ai-assist/HISTORY.md`, part 2 §2) records the Windows engine's
+constraints — 4 GB, 2 cores, no GPU, ~21 tokens/second — and
 observes that "21 tokens/second is the number that governs everything." It
 does govern everything. It is also an artefact of running the model inside a
 container, not a property of the hardware.
@@ -378,10 +417,56 @@ does not care where the server is: it is the same OpenAI-shaped HTTP endpoint
 either way, so `LocalModel` should need little more than a different way of
 starting the process.
 
-Worth measuring before committing to it — a machine with no usable GPU falls
-back to CPU and lands somewhere between the two columns, and that is worth
-knowing rather than assuming. But the container is not buying anything here
-that a host process does not, and it is costing three minutes.
+A machine with no usable GPU falls back to CPU and lands somewhere between the
+two columns; that is worth knowing rather than assuming, and it is what decides
+the tier ladder on Windows. But the container is not buying anything here that
+a host process does not, and it is costing three minutes.
+
+### What moving out of the container changes, beyond the speed
+
+Six things the mac learned the hard way, each of which applies the moment the
+server is a host process:
+
+1. **`--no-mmap` stops being required, and should go.** It exists because
+   llama.cpp memory-maps the model and, inside a memory-capped container, the
+   page cache for that file counts against the cgroup limit — a 3B model
+   appeared to need 4 GB and died at 3 GB with no OOM message. There is no
+   cgroup on the host. macOS passes no such flag.
+2. **The prompt-cache save/restore machinery can be deleted**, as above: it
+   buys 175 seconds in a container and two seconds outside one, and it carries
+   real failure surface (an empty save silently poisons the next session).
+   Warm the prefix in the background when the window opens instead.
+3. **The model file moves to the host** — one file per machine, in the app's
+   own data directory, surviving app updates — and you get to verify the
+   download by exact byte count, which is worth doing: a captive portal or a
+   proxy answers 200 with something that is not a model, and the resulting
+   failure surfaces much later and looks like anything but a bad download.
+4. **A second executable ships**, and it must be signed with the rest — the
+   same lesson `plantoir-mcp.exe` already taught, since an unsigned binary
+   beside signed ones is what SmartScreen objects to. Pin the llama.cpp build
+   number the way the mac does (`b10435`), because an engine that changes under
+   you between two builds makes every measurement meaningless.
+5. **Which backend is a real choice, not a detail.** llama.cpp publishes CUDA,
+   Vulkan and CPU builds for Windows. The mac has one answer (Metal, every
+   layer, `--n-gpu-layers 999`); Windows has to decide what a teacher's Dell
+   with integrated graphics actually gets, and whether you ship more than one
+   backend or one that degrades. That is the measurement worth running.
+6. **If Windows follows the mac to Qwen3, the reasoning flags become
+   load-bearing.** `LocalModel` passes neither `--reasoning` nor
+   `--reasoning-budget` today, which is CORRECT for Qwen2.5 (no thinking
+   template) and would become a 97%-to-39% bug the day the model changes. Two
+   flags, `--reasoning off` **and** `--reasoning-budget 0`; the per-request
+   equivalent is `chat_template_kwargs {"enable_thinking": false}`. Confirm
+   `--reasoning` exists in your build's `--help` — it is newer than the budget
+   flag — and check the completion-token count and the clock, not whether a
+   tool call came back.
+
+The Swift implementation is the reference for all of this:
+`mac-app/QuartzTeachers/Models/Assist/AssistServerHost.swift` (starting and
+health-checking the process, and the flag list with its reasons),
+`AssistModelTier.swift` (the ladder, the vetoes, and how the tier is chosen
+from physical memory), and `AssistModelStore.swift` (download, verification,
+where the weights live).
 
 ### One assistant at a time, machine-wide
 
@@ -462,11 +547,33 @@ rather than marked risky, on the same reasoning as having no delete tool. If
 Windows ever offers a model choice, measure each candidate for inversions
 specifically, and treat that as a veto rather than a score.
 
+The table below was three trials per probe. It was re-run at **ten** trials on
+macOS across ten models on 2026-08-15
+(`research/ai-assist/macos-native-10-trial-comparison.txt`), and the veto got
+stronger, not weaker:
+
 | Model | Routing (like-for-like) | Inversions |
 |---|---|---|
-| 1.5B | 81% | none |
-| 3B | 70% | **2 of 3 trials** |
-| 7B | 94% | none |
+| Qwen2.5 1.5B | 79% | none |
+| Qwen2.5 3B | 72% | **9 of 10** |
+| **Llama-3.2 3B** | 72% | **10 of 10** |
+| Qwen2.5 7B | 94% | none |
+| **Qwen3 4B (reasoning off)** | **100%** | **none** |
+
+Two things in that table matter more than the numbers. First, a **second,
+unrelated family at the same size inverts on the same sentence** — 'Hide
+tomorrow's class again … the page is "Ohm's Law"' — which says the failure
+belongs to that generation of 3B models rather than to one vendor. Llama-3.2 3B
+also typed `"section": "1"` as a string on essentially every call. Second, it is
+**not** a size law: a 2025-era 4B is clean at 100%. So measure the model you
+intend to ship; do not reason from parameter count in either direction.
+
+What macOS ships today: **Qwen2.5 1.5B under 16 GB, Qwen3 4B at 16 GB and up**,
+no 3B rung, and the 7B dropped because the 4B beat it on accuracy, latency,
+download and memory at once. The 8 GB tier is a deliberate hold rather than a
+result — Qwen3 4B at 8k context measures 3.87 GB resident, which is 48% of an
+8 GB Mac that is also running a container, and that has not been tried on real
+8 GB hardware.
 
 ### Turning thinking off takes TWO flags, and we shipped the wrong one
 
@@ -1268,14 +1375,15 @@ That sentence belongs in the alert.
 
 ## Testing
 
-- The **PowerShell launchers are written but UNTESTED on real Windows** —
-  see [`WINDOWS-TESTING.md`](WINDOWS-TESTING.md). Test them first; they
-  are the foundation everything else drives. Two flags are newer than
-  any Windows test pass and need their own checks: `deploy.ps1
-  --to-folder <path>` (robocopy mirror into `<path>\sectionN`, exit
-  codes below 8 are success) and `preview.ps1 CODE N --stop` (kills the
-  section's container-side processes over stdin-piped Python; must
-  never start the engine or a container).
+- The **PowerShell launchers are tested on real Windows** — all three have
+  been driven end to end through the app: course creation, preview (including
+  `--stop` reclaiming container-side processes), and publishing to all three
+  destinations, most recently a live Cloudflare Pages publish. The WSL2
+  background and the original test plan are the appendix at the end of this
+  file; read it for *why* the launchers look as they do, not as a to-do list.
+  (An earlier version of this bullet said they were UNTESTED and told you to
+  test them first. That was a week out of date and would have sent a session
+  down a dead end.)
 - `verify.sh` is the toolchain gate on macOS/Linux; a Windows verify
   script should mirror it, including its cross-check that every helper a
   launcher calls is defined in that same launcher file (a missing helper
@@ -1286,9 +1394,282 @@ That sentence belongs in the alert.
 
 ## Documentation map
 
-- [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) — THE spec (106 entries).
-- [`documentation/`](documentation/README.md) — toolchain deep dives 01–09.
-- [`DEVELOPERS.md`](DEVELOPERS.md) — repo conventions, testing, setup.
-- [`WINDOWS-TESTING.md`](WINDOWS-TESTING.md) — .ps1 launcher status.
+- [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) — THE spec (179 entries as of
+  2026-08-15). Its **Windows status** section is where coverage is tracked.
+- [`documentation/`](documentation/README.md) — toolchain deep dives 01–10.
+- [`CLAUDE.md`](CLAUDE.md) — the repository's entry point: conventions,
+  testing, setup, and the traps that cost time.
+- [`RELEASING.md`](RELEASING.md) — cutting a release, both platforms.
+- [`research/ai-assist/`](research/README.md) — the assistant's
+  measurements, and `HISTORY.md`, which is the feasibility work, the build
+  handoff and the original MCP proposal in one place.
+- The WSL2 launcher background is the **appendix at the end of this file**.
 - [`mac-app/`](mac-app/README.md) — the reference implementation; when an
   entry's Windows note is thin, read the Swift it references.
+
+
+---
+
+# Appendix — WSL2 background and the original .ps1 test plan
+
+*Folded in from the former `WINDOWS-TESTING.md` on 2026-08-15. Read it for **why** the
+launchers look the way they do — the WSL2 container-runtime reasoning, the
+`ProcessStartInfo` token injection, the path translation — not as a to-do list.
+The launchers have since been driven end to end on real Windows 11, including a
+live Cloudflare Pages publish. Two facts in it were corrected on the way in: the
+token file is `/tmp/deploy_pat` (renamed when Cloudflare support arrived, since
+one file now serves both providers), and deploys are no longer Netlify-only.*
+
+> **Status (2026-08-13): the launchers are no longer untested.** All three
+> have been exercised repeatedly on real Windows 11 through the app —
+> course creation, preview (including `--stop` reclaiming container-side
+> processes), and publishing to all three destinations, most recently a
+> live Cloudflare Pages publish end to end. Treat this file as **the WSL2
+> background and the original test plan**, not as a to-do list: the
+> historical detail on the Docker-Engine-in-WSL2 path, port blocks, and
+> line-ending traps is still the best explanation of *why* the Windows
+> launchers look the way they do.
+>
+> One thing it does NOT cover, and worth knowing: `verify.sh`, the
+> toolchain gate named in [`CLAUDE.md`](CLAUDE.md), **cannot run
+> on Windows** — it is bash and expects `docker` on `PATH`, where here it
+> lives inside WSL2. Toolchain changes made on Windows are verified by
+> driving a real publish through the app instead.
+
+> **Audience:** a Claude Code session running on the maintainer's Windows 11 Pro
+> machine. This file gives you the context needed to test (and fix) this
+> toolchain's Windows launchers.
+> Read this fully before touching anything. If you are building the Windows
+> APP, start with [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md).
+
+### Mission
+
+The toolchain recently **dropped its Docker Desktop requirement**. On
+Windows, the PowerShell launchers (`setup.ps1`, `preview.ps1`, `deploy.ps1`)
+now provision and use the **Docker Engine inside WSL2** automatically. That
+code was written and parse-checked on macOS but has **never executed on a
+real Windows machine**. Your job: exercise it end to end on this machine,
+find what breaks, fix it, and report.
+
+### Background (5-minute orientation)
+
+- This repo publishes teaching websites from Obsidian vaults using a Docker
+  container that wraps a patched Quartz v4.5.0. There is **no registry**:
+  the launchers hash the folder's build recipe and build the image locally
+  as `teaching-quartz:src-<hash8>` (`Get-BuildContext` / `Get-ToolchainHash`
+  / `Build-ImageIfMissing` in the `.ps1` files). Full architecture docs:
+  [`documentation/README.md`](documentation/README.md),
+  especially [`documentation/03-launcher-scripts.md`](documentation/03-launcher-scripts.md)
+  (the section "Container runtime bootstrap" describes exactly what you are testing).
+- The teacher-facing flow is: `setup.bat` (interactive course wizard) →
+  `preview.bat COURSE SECTION` (build + serve; the launcher prints the
+  host address — each working folder gets its own probed port block) →
+  `deploy.bat COURSE SECTION` (delta deploy — Netlify by default,
+  `--target cloudflare`, or `--to-folder <path>`).
+- Each `.bat` is a thin wrapper that runs the `.ps1` beside it.
+- The macOS counterpart of this change (Colima) is **already tested and
+  working** — treat the `.sh` scripts as the reference for intended behaviour.
+
+### What the new Windows code does
+
+In each of the three `.ps1` scripts, near the top, there is an identical
+block: `Ensure-ContainerRuntime` plus helpers. Its intended behaviour:
+
+1. **Fast path:** if a native `docker` (docker.exe) works, use it unchanged.
+2. Otherwise require `wsl` + an installed distribution (else print
+   `wsl --install` guidance and exit).
+3. Probe `wsl -e docker info` as the default user, then as root
+   (`$global:WslUserArgs = @('-u','root')`).
+4. If the engine is missing inside WSL, offer to install it:
+   `apt-get install docker.io` as root, then `usermod -aG docker <user>`.
+5. Start it with `wsl -u root -e sh -c "service docker start"` and poll.
+6. On success, define `function global:docker { & wsl $global:WslUserArgs -e docker @args }`
+   so every later `docker …` call in the script transparently routes through
+   WSL. Bind-mount paths are translated with `Get-MountPath` (wslpath →
+   `/mnt/c/...`). `deploy.ps1` additionally has two
+   `System.Diagnostics.ProcessStartInfo` invocations that bypass PowerShell
+   command resolution — these use `$DOCKER_EXE` / `$DOCKER_PREFIX` variables
+   instead.
+
+### Environment notes for this machine
+
+- Windows 11 Pro (build 26100), PowerShell 5.1 minimum target (also test
+  under `pwsh` 7 if installed).
+- Clone/pull this repo; **test the repo's `.ps1` files directly** (in
+  production they reach teachers via the app's `.toolchain/` mirror).
+- The repo stores files with **LF line endings** (depending on
+  `core.autocrlf`, your checkout may or may not have CRLF). PowerShell
+  handles LF `.ps1` fine. If a `.bat` misbehaves with LF endings, invoke the
+  `.ps1` directly (`powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1`)
+  and note the finding — in production, teachers receive CRLF copies (the
+  image build runs `unix2dos`).
+- The container image is **built locally by the launcher on first run**
+  (BuildKit required — `Ensure-Buildx`); expect the first run to take a few
+  minutes and to need the network. A changed recipe changes the tag and
+  rebuilds.
+- `courses/` is gitignored — a fresh clone has no courses. The setup wizard
+  offers to install an Example Course (**EXC2O**); say yes and use it as the
+  test fixture throughout.
+
+### Test plan (in order)
+
+Work through these scenarios; after each, note PASS/FAIL and any output worth
+keeping.
+
+**1. Static review.** Read `Ensure-ContainerRuntime` in all three `.ps1`
+files and flag anything that cannot work on PowerShell 5.1 before running
+anything.
+
+**2. Specific mechanisms I could not verify from macOS** — test these in an
+interactive PowerShell first:
+   - Empty-array argument flattening: `$e = @(); wsl $e -e echo hi` — confirm
+     no stray empty argument reaches wsl (this pattern underpins
+     `Test-WslDockerReady` and the `docker` function).
+   - `$env:WSL_UTF8='1'; wsl -l -q` — confirm clean, parseable distro names.
+   - `Get-Command docker -CommandType Application` behaves on PS 5.1 when no
+     docker.exe exists (should return nothing, not throw).
+   - After `usermod -aG docker <user>`, does `wsl -e docker info` work
+     without `wsl --shutdown`? (The scripts fall back to root if not — confirm
+     the fallback engages.)
+
+**3. Scenario: engine not installed.** If this machine's WSL distro has no
+Docker engine (or remove it: `wsl -u root -e sh -c "apt-get remove -y docker.io"`),
+run `.\preview.ps1 EXC2O 1 --build-only` (after setup) or `.\setup.ps1` and
+confirm the install offer appears, works, and the run continues to success.
+
+**4. Scenario: engine stopped.** `wsl --shutdown`, then run a launcher —
+confirm it starts the engine itself and proceeds.
+
+**5. Scenario: engine running (fast path).** Re-run immediately — confirm no
+install/start work is repeated.
+
+**6. End-to-end teacher flow.**
+   - `.\setup.bat` → install the Example Course (EXC2O).
+   - `.\preview.bat EXC2O 1` → confirm the container is created with a
+     `/mnt/c/...` mount, the build succeeds, and `http://localhost:8081`
+     renders in a Windows browser (WSL2 localhost forwarding).
+   - Check interactive fidelity through the `wsl`-routed `docker exec -it`:
+     wizard prompts, and especially the arrow-key colour scheme picker if you
+     run a full course setup.
+   - `.\preview.bat EXC2O 1 --build-only` then, **only if a Netlify token for
+     a throwaway account is available**, `.\deploy.bat EXC2O 1`. Deploys
+     create real Netlify sites — skip otherwise and note as untested.
+
+**7. Edge cases.**
+   - Run from a folder whose path contains spaces (e.g.
+     `C:\Users\<me>\Class Websites Test\`) — mount translation and quoting.
+   - Move the folder, run again — the container NAME is derived from the
+     folder's path hash, so a moved folder gets a brand-new container (and
+     the old one is left stopped); confirm the new one mounts the new
+     `/mnt/c/...` path.
+   - Two working folders at once: confirm each gets its own container
+     (`teaching-quartz-<hash>`) and its own host port block (bases 8081,
+     8091, …, each with a +1000 websocket block), and that two previews can
+     run simultaneously.
+   - `.\preview.ps1 EXC2O 1 --port 8082` — the per-preview port flag.
+   - After any build, confirm the merged output contains the generated
+     social sharing card (`.merged_output/section1/quartz/static/og-image.png`
+     should be a title card in the course's colours, not the stock Quartz
+     crystal — the card is drawn by `scripts/social_card.py` inside the
+     container, so no Windows-side work is involved).
+   - `deploy.ps1`'s token-injection steps (the `ProcessStartInfo` ones) — the
+     `$DOCKER_PREFIX` quoting through `wsl.exe` is the riskiest untested
+     code; verify `/tmp/deploy_pat` arrives in the container intact
+     (test with a dummy: pipe text through the same command shape).
+
+### When you find problems
+
+- Fix them in the working tree, keeping the structure parallel across the
+  three `.ps1` files (the block is intentionally identical in each) and
+  consistent with the `.sh` reference behaviour.
+- Commit to a branch named `windows-wsl2-fixes` with clear messages; do not
+  push to `main` directly.
+- Finish with a summary: scenarios run, PASS/FAIL each, fixes made, and
+  anything that remains untested (e.g., a true fresh `wsl --install` if this
+  machine already had WSL).
+
+### Ground rules
+
+- Never uninstall WSL or delete existing WSL distros without asking first.
+- Images are only ever built locally; there is nothing to publish.
+- Netlify deploys are opt-in only (they create public sites).
+- The `.sh` files are macOS-only — do not "fix" them on Windows.
+
+---
+
+### Results — 2026-08-11 (Claude Code, maintainer's Windows 11 machine)
+
+Run on Windows 11 Pro 26200, WSL 2.5.10 (no distro pre-installed —
+Ubuntu-24.04 installed for the tests), Docker Engine 29.1.3 inside WSL,
+PowerShell 5.1. Fixes were committed to **main** at the maintainer's
+direction (overriding this brief's branch instruction). Interactive
+runs were driven through `windows-app/PtyDriver`, a ConPTY harness that
+gives the launchers a real TTY.
+
+**1. Static review — FAIL → fixed.** Beyond parse-checks (clean), five
+faults found and repaired: (a) preview.ps1's image resolution was
+inverted — every run without `--image` printed "missing the toolchain's
+build recipe" and exited 1; (b) a single trailing flag arrived as a
+STRING, so `$Flags[0]` indexed characters ("Unknown option: -") — now
+always an array; (c) the three scripts hashed different paths for the
+container name (setup hashed the invocation directory before its
+Set-Location; casing changed the hash) — all three now hash the
+folder's physical path via GetFinalPathNameByHandle, after
+Set-Location; (d) no exit-code propagation from the final docker exec;
+(e) `Ensure-Buildx` guarded WSL work with an always-true null check.
+Also: under `$ErrorActionPreference='Stop'`, PS 5.1 turns wsl.exe
+stderr into TERMINATING errors at any redirected call site — probes
+that legitimately fail (inspecting a not-yet-built image) killed the
+script. The global docker wrapper now relaxes the preference around the
+wsl call. Two milestone lines the app watches for were added
+("Setting up this PC - a one-time step ...", and preview's
+"Starting container if needed ...").
+
+**2. Mechanism checks — PASS.** Empty-array flattening (`wsl $e -e
+echo hi` → clean), `WSL_UTF8=1` distro names parse, `Get-Command
+docker` returns nothing without throwing when no docker.exe exists.
+usermod fallback untested (the test distro runs as root by default).
+
+**3. Engine not installed — PASS (command path).** `apt-get install
+docker.io` inside WSL (the script's exact command) installed engine
+29.1.3; the interactive install-offer prompt itself was not exercised
+end-to-end (the engine was installed before the first full run).
+
+**4. Engine stopped — PASS.** `service docker start` + poll brought the
+engine up from cold.
+
+**5. Fast path — PASS.** With the engine running, no install/start work
+repeats; runs go straight to the container checks.
+
+**6. End-to-end teacher flow — PASS.**
+- `setup.ps1 --install-example`: image built locally from the recipe
+  (BuildKit via buildx in WSL), container `teaching-quartz-<hash8>`
+  created with `/mnt/c/...` mount, EXC2O installed, and
+  `EXAMPLE_COURSE_CODE=EXC2O` printed for the app.
+- `preview.ps1 EXC2O 1`: "Preview will be available at:
+  http://localhost:8081/" announced; page served HTTP 200 with the
+  correct title through WSL2 localhost forwarding.
+- Interactive fidelity through the wsl-routed `docker exec -it`:
+  works under a pseudo console — with one CRITICAL caveat: the process
+  that creates the ConPTY must not itself have redirected stdio, or
+  the child inherits stale pipe handles and wsl reports "the input
+  device is not a TTY". (The Plantoir app, a GUI process, is naturally
+  clean.)
+- `deploy.ps1 EXC2O 1` with a throwaway token pre-stored in Credential
+  Manager: Netlify site created, 233 files uploaded with streaming
+  counts, "✅ Deploy complete.", exit 0, site live over https. The
+  first-run token-paste prompt was not exercised (token pre-stored);
+  `/tmp/deploy_pat` injection via ProcessStartInfo worked — the token
+  reached the container intact.
+
+**7. Edge cases.** Two-folder concurrency, moved-folder recreation,
+spaces-in-path, and `--port` were NOT yet exercised on this machine
+(the per-folder hash and port-block logic are covered by unit tests in
+`windows-app/Plantoir.Tests`). The generated social card was verified
+present after the build (`.merged_output/section1/quartz/static/
+og-image.png`, 28 KB, drawn in-container). Remaining scenarios are the
+first candidates for the next session.
+
+**Untested overall:** a true fresh `wsl --install` (WSL itself was
+already present), the docker-group/usermod fallback, and pwsh 7 runs
+(everything above ran under Windows PowerShell 5.1).

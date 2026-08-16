@@ -7,7 +7,7 @@ description: Cut a Plantoir GitHub release - drafts teacher-friendly release not
 
 You are drafting for TEACHERS, not developers. The release notes are the
 only part of the process that needs judgement; everything else is
-mechanical. `windows-app/RELEASING.md` is the authoritative checklist —
+mechanical. `RELEASING.md` is the authoritative checklist —
 this skill automates its steps 5–6 and the note-writing.
 
 ## Gather
@@ -27,6 +27,24 @@ this skill automates its steps 5–6 and the note-writing.
    breaks the site. Refuse to attach an asset under any other name.
 4. Confirm `<Version>` in `windows-app/Plantoir/Plantoir.csproj` matches
    the intended tag, and that the working tree is clean.
+5. Confirm the mac side agrees: `MARKETING_VERSION` in `mac-app/project.yml`
+   must carry the same version. `RELEASING.md` says the two move
+   in lockstep — one product, one version series — so a mismatch is a stop,
+   not a note. (`project.yml` is the source; the Xcode project is generated
+   from it, so edit `project.yml` and re-run `xcodegen`.)
+6. **Confirm WHICH REPOSITORY this release belongs in, before anything is
+   published.** These two do not currently agree:
+   - `git remote -v` here is `russellgordon/containerized-quartz-for-teachers`
+   - `site/index.html` builds every download link against
+     `github.com/russellgordon/plantoir`
+     (`releases/latest/download/<asset-name>`)
+   A release published to the wrong one leaves plantoir.app's download
+   buttons pointing at a release that does not exist. Do NOT guess and do
+   NOT let the remote decide by default: ask the user which repository is
+   the release home, then pass it explicitly on every `gh` call as
+   `-R <owner/repo>`. Verify the target first with
+   `gh repo view <owner/repo>` — if that fails, stop and say so rather than
+   publishing.
 
 ## Write the notes
 
@@ -52,7 +70,7 @@ Style rules, in order of importance:
 
   | File | Size | SHA-256 |
   | --- | --- | --- |
-  | Plantoir-1.0.0-win-x64.zip | 58.5 MB | `043a1c…` |
+  | Plantoir-win-x64.zip | 58.5 MB | `043a1c…` |
 
   Below the table, one line: "The SHA-256 lets your IT department verify
   the download is genuine."
@@ -70,14 +88,33 @@ publishing anything.
 ```
 git tag v<version>
 git push origin main v<version>
-gh release create v<version> <assets...> --title "Plantoir <version>" --notes-file <notes.md>
+gh release create v<version> <assets...> -R <owner/repo> \
+  --title "Plantoir <version>" --notes-file <notes.md>
 ```
+
+`-R <owner/repo>` is the repository settled in Gather step 6 — always
+explicit, never left to the remote.
 
 The push redeploys plantoir.app automatically (Netlify watches `site/`),
 and the evergreen download links now serve the new assets — nothing
-manual remains for the site. Remind the user only of: the mac asset (if
-it attaches separately, named exactly `Plantoir-macOS.zip`), and — once
-WinSparkle lands — the appcast entry.
+manual remains for the site. Remind the user only of: the mac asset (see
+below), and — once WinSparkle lands — the appcast entry.
+
+**The mac asset is made BY HAND today.** There is no mac packaging or
+signing script in this repository — `publish.ps1` has no counterpart, and
+`mac-app/Vendor/fetch-llama.sh` is the only script on that side. So
+whoever builds `Plantoir-macOS.zip` archives and signs it themselves, and
+two things must be true before they do:
+
+- `mac-app/Vendor/llama` must be fetched first (`mac-app/Vendor/fetch-llama.sh`).
+  The binaries are gitignored, `project.yml` copies the folder into the
+  bundle as-is, and an empty folder builds without complaint — so an app
+  built on a fresh clone ships an assistant that cannot start.
+- the asset must be named exactly `Plantoir-macOS.zip`, per the rule in
+  Gather step 3.
+
+If no such bundle exists, do not invent one: publish the Windows asset
+alone and say the mac asset is outstanding.
 
 **Redraw the brand images in the same commit as the version line.** After
 editing `site/index.html` and before tagging, run:
@@ -103,4 +140,4 @@ card and the release ship together.
 
 Stage by path — never `git add -A`. Other work may be in the tree.
 
-See "Brand images" in `windows-app/RELEASING.md`.
+See "Brand images" in `RELEASING.md`.

@@ -24,7 +24,7 @@ is cached and everything runs offline.
 The image is layered as follows (in order):
 
 1. **Base: `python:3.11-slim`** — Debian slim with Python 3.11. Python is
-   needed for the three orchestration scripts; 3.11 also provides `zoneinfo`
+   needed for the four orchestration scripts; 3.11 also provides `zoneinfo`
    for timezone-correct timestamps.
 2. **`pip install python-frontmatter Pillow`** — the two Python
    dependencies. `python-frontmatter` parses and rewrites the YAML
@@ -54,11 +54,15 @@ The image is layered as follows (in order):
    Pinning matters because most customizations are regex patches that target
    the exact source text of this version
    (see [Quartz Customizations](06-quartz-customizations.md)).
-6. **Overwrite three Quartz components with patched versions** from
-   [`patches/`](../patches/):
+6. **Overwrite five Quartz source files with patched versions** from
+   [`patches/`](../patches/) — three components and two filter files:
    - `patches/Explorer.tsx` → `quartz/components/Explorer.tsx`
    - `patches/FolderContent.tsx` → `quartz/components/pages/FolderContent.tsx`
    - `patches/explorer.inline.ts` → `quartz/components/scripts/explorer.inline.ts`
+   - `patches/publish.ts` → `quartz/plugins/filters/publish.ts` — the
+     `PublishFlag` filter that replaces Quartz's `RemoveDrafts`
+   - `patches/filters-index.ts` → `quartz/plugins/filters/index.ts`, which
+     exports it
 
    These three are replaced wholesale (rather than patched at build time)
    because their changes are structural — new imports, reordered rendering
@@ -102,7 +106,7 @@ The image is layered as follows (in order):
      three-letter prefix. Generated output; the generator and its linter
      live in `.claude/skills/example-content/`.
 
-   Together these are most of the recipe's file count (11,360 files as of
+   Together these are most of the recipe's file count (11,378 files as of
    August 2026), which is why the launchers' image-tag hash has to batch
    its work — see [launcher scripts](03-launcher-scripts.md).
 10. **Bake the launcher scripts into `/opt/export/`** and register an

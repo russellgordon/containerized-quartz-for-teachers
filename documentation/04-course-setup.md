@@ -24,7 +24,7 @@ already exists, it generates a random alternative code still ending in `2O`
 `course_config.json` so the copy calls itself by the code it was given.
 
 **What is in it.** The example is a full Grade 9 science course (SNC1W,
-de-streamed) of roughly 225 pages: five strands of curriculum expectations
+de-streamed) of roughly 350 pages: five strands of curriculum expectations
 reproduced from the Ministry's published document, 35 concept pages, 14 investigations, exercises with answers,
 marked tasks with rubrics, tutorials, discussions, portfolio prompts, and two
 sections of class-by-class pages paced a day apart.
@@ -32,8 +32,8 @@ sections of class-by-class pages paced a day apart.
 The dates simulate a real semestered Ontario school: classes begin on the
 first Tuesday after Labour Day (8 September 2026), run Monday to Friday,
 skip Thanksgiving Monday, a two-week winter break, and three PA days, and
-finish in late January — 90 class days, about 112 hours against the 110-hour
-credit requirement. Each shared page is dated to the day it was first used in
+finish in late January — 86 class days in section 1 and 82 in section 2,
+a full semester against the 110-hour credit requirement. Each shared page is dated to the day it was first used in
 class, which is derived from the class agendas rather than assigned by hand. It is written to
 demonstrate what the toolchain renders — Mermaid diagrams, KaTeX equations,
 callouts, transclusion, tags, checklists, footnotes, and per-section drafts —
@@ -52,7 +52,8 @@ Once a code has been entered (step 1), the wizard offers ONE of two kinds
 of starting content, and never both:
 
 - **Example content**, when `support/example_content/<CODE>/` exists —
-  eighteen course codes as of August 2026. A payload is a complete working
+  thirty-seven course codes as of August 2026, and growing; the code counts
+  the folders rather than trusting a number, and so should you. A payload is a complete working
   course written for that code: a semester of class pages, concept and task
   pages, and (optionally) every Ministry expectation as its own page. The
   payload's `manifest.json` is the course's ENTIRE structure, so step 5's

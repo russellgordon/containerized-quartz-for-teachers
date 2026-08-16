@@ -1,631 +1,136 @@
 # plantoir-mcp
 
 An [MCP](https://modelcontextprotocol.io) server that exposes one Plantoir
-working folder to an AI assistant, so a teacher can say
+working folder to an AI assistant, so a teacher can say *"publish tomorrow's
+class — Unit 2, Day 3 in ICS3U section 1 — and everything it links to"* and
+have it happen, after confirming a plain-words summary of what will change.
 
-> Publish tomorrow's class — Unit 2, Day 3 in ICS3U section 1 — and everything
-> it links to.
+It holds no AI model of its own: it is the tool surface, driven from two items
+on a course's context menu (`Plantoir/Views/SidebarPane.xaml.cs`) — **Revise
+with Claude…**, which launches Claude Code and appears only when Claude Code
+and this server are both present, and **Revise with local AI assistant…**,
+Plantoir's own assistant, which starts this same binary as a subprocess
+(`Plantoir/Services/McpClient.cs`). A change here reaches both.
 
-…and have it happen, after confirming a plain-words summary of what will
-change.
+**Status: on `main`, and it ships** — `publish.ps1` publishes this project,
+copies `plantoir-mcp.exe` into the app's output beside `Plantoir.exe`, and
+signs it with the rest.
 
-This is **step 1 of the plan in [`AI-ASSIST.md`](../../AI-ASSIST.md)**, and it
-deliberately contains no AI model of its own. It is useful immediately for a
-teacher who already has Claude Desktop or Claude Code, it can be tested with
-ordinary code, and building it first forces the tool surface to be right before
-anything depends on it.
-
-Status: **works, not yet shipped.** It lives on the `ai-assist` branch and is
-not part of the 1.0 release.
-
----
-
-## Building and running
+## Running it standalone
 
 ```powershell
-cd windows-app
-dotnet build Plantoir.Mcp/Plantoir.Mcp.csproj
-dotnet test  Plantoir.Tests/Plantoir.Tests.csproj      # the logic is covered here
+plantoir-mcp --folder "C:\Users\me\Documents\Teaching" --course ICS3U
 ```
 
-The server takes the working folder it serves and nothing else:
+`PLANTOIR_FOLDER` and `PLANTOIR_COURSE` work instead of the flags. The folder
+is fixed at startup and never changes — a server that could be re-pointed
+mid-session would make every path check meaningless. `--course` locks the
+session to one course: every other one becomes invisible, and naming one is
+refused with the reason. Plantoir always passes it, because a lock holds
+however the conversation wanders and an instruction in a prompt does not.
+**stdout belongs to the protocol**: logging goes to stderr
+(`LogToStandardErrorThreshold` in `Program.cs`), and one stray
+`Console.WriteLine` corrupts the session for the client.
 
-```powershell
-plantoir-mcp --folder "C:\Users\me\Documents\Teaching"
-```
-
-`PLANTOIR_FOLDER` works as an alternative. The folder is fixed at startup and
-never changes — a server that could be re-pointed mid-session would make every
-path check meaningless.
-
-For a release build, publish somewhere stable rather than leaving it in
-`bin\Release`, which a `dotnet clean` wipes:
-
-```powershell
-dotnet publish Plantoir.Mcp/Plantoir.Mcp.csproj -c Release -r win-x64 -o "$HOME\Plantoir\mcp"
-# macOS: -r osx-arm64
-```
-
-It publishes self-contained and single-file (~75 MB), so a teacher installs no
-runtime.
-
-**A connected client holds the binary open.** MCP servers run for the lifetime
-of the client session, so re-publishing over a copy that Claude Desktop or
-Claude Code still has connected fails with "the process cannot access the file
-… being used by another process". Close the client session first. The client
-has to be restarted to pick up a new build anyway — servers are connected at
-startup.
-
-### From inside Plantoir
-
-Right-click a course → **Revise with Claude…**. Plantoir writes a session
-config to its own app-data folder and launches a terminal in the working
-folder with:
-
-```
-claude --mcp-config "<appdata>\Plantoir\assist\mcp-ICS3U.json" --strict-mcp-config "<greeting>"
-```
-
-Nothing global is touched: `--strict-mcp-config` loads only this server, so a
-teacher's own MCP servers are neither used nor disturbed, and nothing is left
-behind when the session ends. No `.mcp.json` lands in the vault Obsidian is
-watching.
-
-Three things make that safe to offer:
-
-- **The session is locked to the course it was started from** (`--course`).
-  Every other course becomes invisible — `list_courses` shows one — and naming
-  one is refused with the reason rather than "no such course", which would be a
-  lie about something the teacher can see in the sidebar. A lock holds however
-  the conversation wanders; an instruction in a prompt does not.
-- **The course is marked busy for the life of the session**, so Preview,
-  Publish and Add Section decline while it is open — and the server refuses to
-  build while Plantoir is previewing or publishing. See below.
-- **The menu item only appears when Claude Code and the server are both
-  present.** A teacher who has neither is not offered a door onto an error.
-
-**Packaging note:** the item looks for `plantoir-mcp.exe` beside the app.
-`publish.ps1` builds `Plantoir.csproj` alone, so a release would need the
-server published into the same output for the menu item to appear.
-
-### Pointing a client at it
-
-Claude Desktop (`claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "plantoir": {
-      "command": "C:\\Program Files\\Plantoir\\plantoir-mcp.exe",
-      "args": ["--folder", "C:\\Users\\me\\Documents\\Teaching"]
-    }
-  }
-}
-```
-
-Claude Code:
-
-```powershell
-claude mcp add plantoir -- "C:\Program Files\Plantoir\plantoir-mcp.exe" --folder "C:\Users\me\Documents\Teaching"
-```
-
-Teachers should never have to write that by hand. Phase 3 of the proposal is
-Plantoir writing this snippet itself from an "AI Automation" settings pane.
-
----
+No config file is needed for either menu item — `ClaudeCodeLauncher.cs` writes
+`%LOCALAPPDATA%\Plantoir\assist\mcp-<CODE>.json` itself and passes
+`--mcp-config … --strict-mcp-config`, so a teacher's own MCP servers are
+neither used nor disturbed and no `.mcp.json` lands in the vault Obsidian
+watches. Write a config by hand only to point some *other* client at the
+server: one `mcpServers` entry, `command` the exe, `args` the same
+`--folder` (and optionally `--course`) shown above.
 
 ## The tools
 
-| Tool | Changes anything? | What it does |
-|---|---|---|
-| `list_courses` | no | Codes, names, sections, publish destination |
-| `list_pages` | no | Pages in a section; `matching` filters, output is capped |
-| `read_page` | no | One page's Markdown including frontmatter |
-| `plan_publish_pages` | **no** | What publishing would do — resolves links, names every file and key |
-| `plan_hide_pages` | **no** | The same for hiding |
-| `publish_pages` | yes | Backs up, un-drafts, rebuilds, publishes |
-| `hide_pages` | yes | Backs up, drafts, rebuilds, publishes |
-| `republish_section` | yes (site only) | Rebuild and deploy without touching any page |
-| `back_up_course` | yes (additive) | A whole-course backup, restorable from Plantoir |
-
-The write tools take a **list** of pages and accept **any** page — a class
-page, a concept, an exercise, anything. Both of those came from a real session
-the earlier one-class-page-at-a-time surface could not serve:
-
-- Hiding 25 classes meant 25 calls, each republishing the site: **26 deploys
-  for one logical change.** Pass them in one call instead, or use
-  `republish: false` on each and finish with `republish_section`.
-- A safety contract linked from *both* the first class (staying up) and a later
-  one (coming down) made the task **unsatisfiable**: `includeLinked` took it
-  down and nothing could put just that page back. Naming any page directly
-  dissolves it. That shape — a shared page reachable from several classes — is
-  the normal shape of a course, not an edge case.
-
-`includeLinked` has **no default on any of the four**, deliberately. It used to
-default to `true` for publishing and `false` for hiding, which is defensible
-but was nowhere written down; a caller has to decide.
-
-### "Publish tomorrow's class"
-
-The commonest request there is, and one tool rather than a sequence:
-
-```
-plan_publish_class_on(course: "ICS3U", section: 1, date: "2026-09-09")
-publish_class_on(...)
-```
-
-It finds the class by its own date, publishes it and the pages it links to,
-and then does the two things a teacher expects without asking for:
-
-- **Pages no other class links to take the class's date.** A page several
-  classes use belongs to the lesson that introduced it, so re-dating it every
-  time another class mentions it would shuffle the site's category listings
-  for no reason. Note the rule is "any other class links to it", not "an
-  earlier one does" — an unpublished later class still counts as an owner.
-- **The section's front page catches up**: the `# Most Recent Class` embed
-  points at the newest published class, and the index takes that class's date.
-
-### Publishing follows two hops, hiding follows one
-
-A class links to a concept; the concept links to the expectations behind it.
-Following one hop leaves a **visible page pointing at a hidden one** — measured
-at 42 pages sitting two or three hops out in the sample course. So publishing
-goes two hops, with one rule at the second:
-
-- **Hidden two hops out** → published, and takes the date of the class that
-  brought it in.
-- **Already published two hops out** → left completely alone. It belongs to
-  whatever published it, so it keeps its state *and* its date.
-
-**Hiding never goes past one hop**, and even at one hop it will not take down
-a page another *visible* class still links to. Publishing leaves no record of
-who published what, so hiding **cannot be a true inverse** — but it can refuse
-to break anything still in use, which is the half that matters. A concept used
-by both the lesson coming down and one still up belongs to the one still up.
-
-Classes being hidden in the *same* call do not count as "still using" a page,
-so hiding a whole unit does take its materials with it.
-
-Dates are not restored on hiding, and do not need to be: they are **derived**
-rather than remembered, so republishing a page re-derives it from the earliest
-class that links to it. The front page is computed the same way. Only the draft
-flags are genuinely one-way, and `back_up_course` — which every write calls
-first — is the real undo.
-
-**A class is never dragged along by a link, at any depth.** "Publish
-tomorrow's class" must not put next week's lesson in front of students because
-something mentioned it. The dead link is reported instead, so the teacher can
-publish that class deliberately if that is what they meant.
-
-**"Most recent" is computed, never remembered**, and that one decision makes it
-right in both directions with no code for either case: publishing an older
-class the teacher had missed does not drag the front page backwards, and
-hiding the newest class falls back to the previous one. Every publish and hide
-recomputes it.
-
-This is the only place anything here edits a page **body** rather than
-frontmatter, so it holds the same line: change the one line, leave every other
-byte alone. An index with no `# Most Recent Class` heading is reported rather
-than given a layout it never had.
-
-### Choosing classes by date
-
-The plan and write tools take `onOrAfter` and `before` (`YYYY-MM-DD`) instead
-of, or as well as, a list of page titles. So
-
-> Hide every class from September 9th onwards, and everything they link to.
-
-is **one call**, and the whole start-of-year task collapses into it:
-
-```
-plan_hide_pages(course="EXC2O", section=1, includeLinked=true, onOrAfter="2026-09-09")
-→ Hide 25 pages in EXC2O Section 1, and the 60 pages they link to.
-```
-
-This is the same principle as coarse tools generally: a date comparison is
-deterministic, so it belongs in code. Asking an assistant to read 27 class
-pages and work out which fall after a date is precisely the "planning" the
-measurements say it gets wrong.
-
-**Two rules keep it safe, and both matter:**
-
-- **"Class page" is read from the course's own `per_section_folders`**, and
-  never an `index.md`. It is *not* "any page with a date". A section's
-  `index.md`, its folder indexes and its `Key Links.md` all carry the **same
-  date as the first class** — a naive date filter would hide the site's front
-  door for a request that only mentioned classes.
-- **An undated page is never swept up by a date rule.** If a rule cannot see
-  a page, it must not act on it.
-
-`before` is exclusive, so `onOrAfter="2026-09-01", before="2026-10-01"` is
-September. A range that can match nothing (`before` on or earlier than
-`onOrAfter`) is refused rather than silently returning an empty plan, and a
-range that simply matches no class says so.
-
-Note that date selection picks **classes**. Concepts, exercises and the rest
-come along through `includeLinked`, or by being named — they have their own
-`createdSection<N>` dates, but those are set by the build from the first class
-that links to them, so filtering on them would be filtering on a shadow.
-
----
+**They are defined in [`PlantoirTools.cs`](PlantoirTools.cs) — read them
+there.** Their `[Description]` strings are *measured text*: routing accuracy
+was counted against that exact wording, so the code is the single authority
+and this file deliberately does not paraphrase it. One distinction belongs
+outside the code, because having it backwards is the expensive mistake:
+`publish_pages` and `unpublish_pages` rebuild the section **preview**, and
+only `deploy_section` reaches students.
 
 ## Why the surface looks like this
 
-Every rule below is the direct consequence of something measured on the
-`ai-assist` branch. The numbers are in [`AI-ASSIST.md`](../../AI-ASSIST.md);
-the reasoning is repeated here because this is the file someone will read
-before changing the tools.
+Measurements in [`research/ai-assist/HISTORY.md`](../../research/ai-assist/HISTORY.md).
+**The tools do the work and the assistant only picks one**: given fine-grained
+tools, a small model asked to publish a class "and everything it links to"
+skipped the link resolution 8 times out of 8; given one coarse tool that
+resolves links itself, 8 out of 8 right. So link resolution, the backup and
+the rebuild are **one** operation, and:
 
-**The tools do the work; the assistant only picks one.** Given fine-grained
-tools (`resolve_links`, `set_draft`, `publish_section`) and asked to publish a
-class "and everything it links to", a small model chose `publish_section` and
-skipped the link resolution — 8 times out of 8. Given a single coarse
-`publish_class` that resolves links itself, it was right 8 times out of 8. So
-link resolution, the backup, the rebuild and the publish are **one** operation
-here. Resist the urge to split them for tidiness: every unit of reasoning moved
-out of the model and into ordinary code is a unit of reliability bought back.
+- **Publishing and unpublishing are separate verbs, not one tool with a
+  flag.** The one dangerous failure observed was polarity inversion: asked to
+  hide a page the model published it, `includeLinked` set — then got the same
+  prompt right on a rerun, which is worse than a deterministic bug.
+- **There is no delete, archive, rename or overwrite tool, and that is the
+  point.** The model declined "delete the Unit 1 folder" not from judgement
+  but because it had no tool for it. Absence is the strongest guardrail there
+  is; please keep it.
+- **Every write backs the course up first**, from inside the write itself,
+  aborting if the backup fails — `courses/` is line 1 of the `.gitignore`, so
+  there is no `git checkout` undo. **And every write has a `plan_` twin that
+  changes nothing**, whose output is written to be read aloud.
+- **Publishing follows two hops, hiding one.** A class links to a concept and
+  the concept to its expectations, so one hop would leave a visible page
+  pointing at a hidden one — 42 pages sat two or three hops out in the sample
+  course. Hiding stops at one hop and spares any page a still-visible class
+  uses: publishing records no owner, so hiding cannot be a true inverse, but
+  it can refuse to break anything still in use.
+- **`includeLinked` has no default anywhere**, deliberately. It used to
+  default one way for publishing and the other for hiding — defensible, but
+  nowhere written down. A caller has to decide.
 
-**Publishing and hiding are separate tools, not one tool with a flag.** The
-one genuinely dangerous failure observed was polarity inversion — asked to
-*hide* a page, the model called publish, with "include everything it links to"
-set. It got the same prompt right on another run, so it is inconsistent rather
-than deterministic, which is worse. A boolean can be flipped; a verb in the
-tool name cannot.
+## Frontmatter: which key
 
-**Nothing named is taken on trust.** Asked to "clean up my course" — a request
-naming no course at all — the model proposed backing up `MCV4U`, a code it
-invented. Every course code, section number and page title is checked against
-what is on disk, and a miss is a refusal that names what *does* exist. A title
-matching two pages is refused rather than resolved by picking one.
-
-**There is no delete, archive, rename or overwrite tool, and that is the
-point.** The model reliably declined "delete the Unit 1 folder" — not from
-judgement, but because it had no tool for it. Absence is the strongest
-guardrail available. Please keep it.
-
-**Every write backs the course up first.** Not as a separate tool call the
-assistant might skip: `publish_class` and `hide_class` call it themselves, and
-abort if it fails. Row 106 built whole-course backups anticipating exactly
-this ("an LLM can make a mess that is hard to undo"), so undo is a real button.
-
-**Every write has a `plan_` twin that changes nothing.** The assistant is
-expected to plan, show the teacher, and only then act; the descriptions say so
-and the plan output is written to be read aloud.
-
----
-
-## The one genuinely subtle thing: which draft key
-
-A page's visibility is controlled by different frontmatter keys depending on
-where the page lives, and getting it wrong hides a page in a class the teacher
-never mentioned.
-
-- A page under `section<N>/` — a class page, `Key Links.md` — belongs to
-  exactly one section and carries a plain **`draft:`**.
-- A page at course level — `Concepts/`, `Discussions/` — is copied into
-  **every** section at build time and carries **`draftSection<N>:`**, one per
-  section. That is what lets "Ohm's Law" be published in section 1 and still
-  drafted in section 2.
-
-`build_site.py`'s `process_frontmatter` copies `draftSection<N>` over `draft`
-for the section being built, then strips every `draftSection*` key from the
-built copy. Source files keep both; only the build output is flattened.
-
-`PagePaths.SectionOf` decides this from the layout on disk — never from
-anything the caller claims — and `PageFrontmatter.DraftKeyFor` turns it into a
-key. This is not something a model should ever be asked to work out.
-
-Edits are **line-level**. Round-tripping the teacher's frontmatter through a
-YAML library would reorder keys, requote strings, reflow the tag list and drop
-their comments — a diff full of changes nobody asked for, in files Obsidian has
-open. `PageFrontmatter` finds the line, changes the value after the colon, and
-leaves every other byte alone, CRLF included.
-
----
-
-## Rolling a course onto a real timetable
-
-Example content ships with invented dates — it has to, since nobody knows when
-a given teacher's block meets. Putting it on a real timetable is therefore the
-first thing most teachers will want, and it touches every class at once.
-
-```
-read_timetable(timetable: "<sheets link or CSV path>", block: "F")
-plan_re_date_classes(course: "ICS3U", section: 1, timetable: "…", block: "F")
-re_date_classes(...)
-```
-
-### Nothing about one school's sheet is assumed
-
-Every school writes these differently, so three things are worked out from the
-sheet rather than hard-coded. Verified against a real board timetable — all
-eight blocks, 54–56 meetings each, different ranges and different exam dates.
-
-**Which row is the header** is found by looking for a row whose cells sit
-directly above dates — it never reads the labels. So `A`…`H`, `Block F`,
-`Period 3`, `1A` and `Green` all work, and a sheet's title and instructions
-above the header are ignored. Labels are matched loosely too: a teacher saying
-"F" finds a column headed "Block F". Two rules keep it honest — a row
-containing dates can't be a header (or the last row of dates would look like
-one), and ties go to the *later* row, since preamble sits above the header and
-never below.
-
-**What the dates look like** is decided for the column as a whole, not cell by
-cell. All of these read:
-
-| | |
-|---|---|
-| `Oct-13`, `October 13` | month name and day |
-| `13-Oct`, `13 October 2026` | day first |
-| `2026-10-13` | ISO |
-| `10/13/2026` | month/day/year |
-| `13/10/2026` | day/month/year |
-
-A style only wins if **every** date in the column reads under it, which is what
-stops `05/06` being guessed at. Where two styles both fit, the one implying the
-fewest year rollovers wins — a school year crosses at most one new year, so an
-interpretation needing three is the wrong one. A column written inconsistently
-is refused rather than half-read, because quietly dropping the rows that don't
-fit would produce a plausible, wrong timetable.
-
-**Whether there is a meeting-number column at all.** With one, its numbers are
-used and non-numeric cells (`MB`, `INT`, `Exam`, `Closing`) become
-non-teaching days — kept and reported, because a teacher planning a year wants
-to see where the exam sits. Without one, every dated row is a meeting, numbered
-in order.
-
-**Dates with no year** (`Oct-13` … `Jun-11`) get the academic year from today:
-a school year is named for the calendar year it starts in and starts in late
-summer, so August 2026 means 2026/2027 and March 2027 still does. `startYear`
-overrides it. Dates that carry their own year are used as written.
-
-**The tool does not choose which lesson lands on which day.** Pass `pages` and
-`meetings` as matching lists to say. That choice depends on what is *in* each
-lesson — whether it can be split, what must follow an investigation, which day
-would be left holding nothing but a warm-up — and the tool can see none of
-that. Omit both and it spreads the classes evenly across the block, anchoring
-the first and last; treat that as a starting point, not an answer.
-
-**Materials move with their lessons, by a delta.** Concepts, exercises and
-tutorials shift by the same number of days as the class that anchors them
-(the linking class whose current date sits nearest theirs). A delta rather
-than an assignment, so a handout deliberately dated a week ahead of its lesson
-is still a week ahead afterwards.
-
-This is not a nicety. Moving classes and leaving materials behind breaks the
-relationship the build depends on — every shared page inherits the date of the
-first class linking to it — and makes every material look like an unfinished
-copy-paste. Measured on the sample course: re-dating 26 classes *without*
-their materials produced **140 warnings, every one of them the re-date's own
-doing**. With the shift, the same operation reports one finding, and it is
-true.
-
-### What gets flagged
-
-- Two classes on one day, and classes filed out of teaching order (checked only
-  when every class names its unit and day, so the intended order isn't guessed).
-- Classes with no date, which will not sort with the others.
-- **Material dated nowhere near any class that uses it** — the copy-paste case:
-  a page duplicated for a new lesson whose date was never changed. Checked
-  against *every* linking class, not just the first, because a concept
-  introduced in October and revisited in May is correctly dated for October.
-- Pages left outside the taught range entirely, summarised as one finding with
-  the reason: nothing links to them, so nothing moved them.
-
-### And the fix for it
-
-Finding out that a June lesson links to a page dated in November is only half
-an answer. `plan_sync_page_dates` / `sync_page_dates` are the other half:
-
-```
-sync_page_dates(course: "ICS3U", section: 1, classes: ["Unit 4, Day 5"])
-→ brings everything that class links to onto that class's date
-```
-
-Name classes to fix just those. Name none and every material is brought into
-line with the **earliest** class linking to it — the build's own rule, since a
-shared page belongs to the lesson that introduced it rather than the one that
-revisited it.
-
-This is deliberately separate from re-dating, and re-dating never does it on
-its own. A re-date shifts materials by a *delta*, preserving spacing the
-teacher meant; this flattens that spacing, so it only runs when asked for.
-
-## Curriculum dates belong to the build, and that is deliberate
-
-`build_site.py` gives every curriculum page the section's **newest class
-date** when it builds — so on the site, curriculum always sits alongside the
-most recent lesson. **That behaviour stays.** Do not "fix" it.
-
-A rollover still re-dates curriculum pages in the teacher's files, to the
-first day of class, and that is not pointless: the build only overwrites a
-date that is **absent or older** than the newest class. A page left on a
-*later* date from a previous year is untouched by the build and would sort
-above everything, which is exactly what a course rolling backwards produces —
-last year ran to June, this year ends in February.
-
-So the source date is a floor, and the build owns what is displayed. The plan
-says so rather than claiming a change the teacher would then not see:
-
-```
-62 year-round pages … move to the first day of class.
-  (Of those, 60 are curriculum pages. Their dates change in your files, but
-  the website always shows curriculum alongside the newest class, so you
-  will not see a difference there.)
-```
-
-Curriculum is identified the way the build identifies it: **any folder segment
-containing "curriculum"**, case-insensitively, with file names ignored. A real
-course has `Ontario Curriculum` and `College Board Curriculum` — matching the
-literal folder name `Curriculum` would miss every page in it.
-
-## A naming trap, written down so nobody rediscovers it
-
-**Never call `Path.GetFileNameWithoutExtension` on a wikilink target.**
-
-Curriculum expectation pages are genuinely named `A1.1`, `B2.4`, `E2.6`, and
-concept pages link to them (`- [[E2.6]] — ![[E2.6#^text]]`). Asking for the
-"extension" of `E2.6` gives `.6`, and the name without it is `E2` — so every
-curriculum link resolves to nothing, silently, and a concept page's
-expectations vanish from every plan. Strip a trailing `.md` and nothing else.
-
-The same trap is why attachments (`![[diagram.png]]`) are detected against a
-**fixed list** of extensions rather than by taking whatever follows the last
-dot. Attachments resolve to `LinkOutcome.Attachment`: they ride along with the
-page that embeds them and have no draft flag of their own, so they are not
-reported as missing pages.
-
-## Why the plan output is shaped the way it is
-
-A real session ran `plan_publish_class` twice on the same page, with the file
-edited in between, and got:
-
-```
-Nothing would change — “Unit 4, Day 5” is already published, and so are the 2 pages it links to.
-```
-
-then
-
-```
-Publish “Unit 4, Day 5” … and publish the 1 page it links to.
-```
-
-**Both answers were correct** — there is no cache anywhere in the plan path,
-every call re-reads from disk, and a page had genuinely been drafted between
-them. But they read as a contradiction, and the reader reasonably concluded
-the plan tool could not be trusted. Which is the worst possible thing to
-conclude about the one output the whole workflow says to show the teacher.
-
-The cause was wording, and it is fixed by two rules:
-
-1. **One count never means two things.** "the N pages they link to" is always
-   the number of links followed. How many would *change* is a separate
-   sentence with its own number. The old phrasing used the same shape for
-   both, so a state change looked like an arithmetic error.
-2. **State is stated.** Every changing page prints its key and its transition
-   (`draftSection1: true → false`). A plan that says what it saw can differ
-   from an earlier plan without either looking wrong — and it makes the dual
-   frontmatter schema impossible to miss.
-
-## "Oops" — undoing within the conversation
-
-`list_recent_changes` and `undo_last_change`. A teacher in a rush publishes
-the wrong class; one sentence puts exactly those pages back, without
-disturbing anything else.
-
-A whole-course backup is still taken before every write and is the durable
-safety net — but it is a sledgehammer, and restoring it loses everything else
-done since. The common mistake is small and recent, and deserves a small and
-recent fix.
-
-**Deliberately in memory and session-scoped.** The history lives as long as the
-server process, which lives as long as the teacher's conversation. Nothing
-accumulates on disk, nothing needs pruning, and there is no second copy of
-course content to drift out of step with the files. Anything older than the
-conversation is what the backups are for, and the tool says so once its own
-history runs out.
-
-Each entry records what every file held **before** and what this session wrote
-**after**. The "after" is the important half: on undo, a file whose contents no
-longer match what we wrote has been changed by somebody else — Obsidian, the
-teacher, another session — so putting our copy back would destroy their work.
-Those files are named and left alone, and the change stays on the list so it
-can be retried.
-
-Two honest limits, both in the tool description: an operation that changed
-nothing is not remembered (so undo never burns a step doing nothing), and
-undoing the pages does **not** un-publish a website that was already
-republished — the section has to be republished to catch up.
+Visibility is **`publish:`** on a page under `section<N>/` and
+**`publishForSection<N>:`** on a course-level page the build copies into every
+section — which is what lets one page be visible in section 1 and not
+section 2. `true` means visible; the legacy `draft:` / `draftSection<N>:`
+spellings carry the opposite polarity and are still read, inverted, but never
+written. `PagePaths.SectionOf` decides which kind of page it is from the
+layout on disk and `PageFrontmatter.PublishKeyFor` turns that into a key,
+never anything the caller claims.
 
 ## The lease protocol, in both directions
 
-Plantoir and this server are separate processes. Preview leases and publish
-records live in the app's memory; an assist session lives in the server's.
-Neither can see the other, and **both build into
-`.merged_output/section<N>/`, which the build CLEARS before writing it** — so
-the loser of a race serves a half-written site, or ships files the other just
-deleted.
-
-Both sides now write what they are doing, and read what the other is doing.
-Files live in `courses/.internal/activity/`, named
-`<COURSE>.<kind>.<pid>.lease`, where kind is `assist`, `preview` or `publish`.
-Each file carries its owner's process id and process name.
+Plantoir and this server are separate processes, and both build into
+`.merged_output/section<N>/`, **which the build CLEARS before writing it** —
+so the loser of a race serves a half-written site. Both sides write what they
+are doing and read what the other is doing: files under
+`courses/.internal/activity/` named `<COURSE>.<kind>.<pid>.lease`, carrying
+the owner's pid and process name. `WorkLease.cs` defines four kinds:
+`assist`, `preview`, `publish` and `build`.
 
 | Situation | What happens |
 |---|---|
-| Assistant holds the course | Preview, Publish and Add Section decline in the app |
-| Plantoir is previewing or publishing | `publish_pages`, `hide_pages`, `re_date_classes` and `republish_section` decline |
+| An assistant holds the course (`assist`) | Structural work in the app declines: Add Section, restoring a backup, starting a second assistant. **Preview and Deploy carry on.** |
+| Plantoir holds `build` | This server's write tools decline (`RefuseIfPlantoirIsBuilding`, `AssistWorkspace.cs`) |
+| This server holds `build` | The app's Preview and Deploy stand off for the seconds it runs |
 | Either, on a **different** course | nothing is blocked |
 | Reading, planning, editing frontmatter | always allowed |
 
-Only *building* is blocked. A preview rebuilds from source anyway, so an
-edit lands rather than clashes — refusing those would make the assistant
-useless for the thing it is best at.
+Only *building* is exclusive, and an assist session is not a build: previewing
+**during** a conversation is the point of the assistant, not a conflict with
+it, and a preview lease lasts as long as the preview server runs. Staleness
+needs no cleanup pass and no timeout — a lease whose process is gone is not a
+lease, the process *name* is checked so a recycled pid cannot impersonate a
+dead one, and a process never counts its own leases.
 
-**Staleness needs no cleanup pass and no timeout.** A lease whose process is
-gone is not a lease, so a crashed app or a killed session cannot leave a
-course locked. The process *name* is checked too, so a recycled process id
-cannot impersonate a dead one. A process never counts its own leases —
-otherwise the app would refuse its own publish.
+## Known limits, and notes for anyone changing this
 
-This is the shared registry from `MCP-PROPOSAL.md` phase 2, deliberately
-**format-first rather than API-first**, so the mac side can adopt the same
-files rather than the same code.
-
-## Known limits
-
-- **The GUI cannot see this server, and it cannot see the GUI.** Busy-tracking
-  (`CourseActivity`, `PreviewLeases`) is in-process. Overnight this is moot —
-  the app is closed — but publishing from both at once could corrupt a build.
-  v2 is a lease file under the working folder that both the apps and this
-  server honour; it is a shared-design item, in the proposal.
-- **Cloudflare courses are refused.** A Pages-scoped token cannot list its own
-  account, so the account ID lives in Plantoir's settings; the server says so
-  and points at the app. Netlify and local-folder publishing work.
+- **Cloudflare courses cannot be deployed from here**: a Pages-scoped token
+  cannot list its own account, so the account ID lives in Plantoir's settings
+  and the server points at the app. Netlify and folder publishing work.
 - **stdin is closed for launcher runs on purpose.** `deploy.ps1` prompts for a
-  token it cannot find, and a prompt nobody can answer would hang the tool call
-  indefinitely while the assistant reports "still working". With stdin at EOF
-  it fails immediately and the server can say the useful thing: publish once
-  from Plantoir so the token gets stored.
-- **`courses/` is not in version control** — it is line 1 of the repo's
-  `.gitignore`. `git status` stays clean no matter how many course files
-  change, and there is no `git checkout` undo. `back_up_course` is the only
-  undo, which is why every write tool calls it first. Anything scripting bulk
-  edits against a course should do the same, and verify by reading files
-  rather than by `git diff`.
-- **A publish needs Docker and takes minutes**, and there is no way to ask how
-  far along it is beyond the progress notifications.
-
-### The TTY problem, and why it is no longer one
-
-`docker exec -t` **refuses to start** when stdin is not a terminal. The
-launchers used `-it` unconditionally, so a publish driven from this server —
-or from any script, or CI — failed at the last step with "the input device is
-not a TTY", *after* several minutes of Docker build. `verify.sh` had long
-refused up front for exactly this reason.
-
-The launchers now ask for a terminal only when there is one, and run Python
-unbuffered when there isn't, so progress still arrives line by line. Verified:
-`preview.ps1 EXC2O 1 --build-only < /dev/null` runs to completion. The
-interactive path is unchanged, so the GUI (which supplies a terminal through
-ConPTY) behaves exactly as before. The same fix is in `preview.sh` and
-`deploy.sh` for the mac side.
-
----
-
-## Notes for anyone changing this
-
-- **stdout belongs to the protocol.** All logging goes to stderr via
-  `LogToStandardErrorThreshold = LogLevel.Trace` in `Program.cs`. One stray
-  `Console.WriteLine` corrupts the session for the whole client.
-- **`[McpServerTool]`'s `Destructive` defaults to `true`.** Set it explicitly.
-- **A tool parameter is optional only if it has a C# default value.**
-  Nullability alone does not do it — `string? x` without `= null` is still
-  required, and the SDK throws at call time.
-- **Progress** comes from an `IProgress<ProgressNotificationValue>` parameter,
-  which the SDK excludes from the schema. Do not use MCP logging notifications;
-  they are deprecated as of spec 2026-07-28.
-- **Tool classes are constructed per invocation**, so state belongs in the
-  injected singleton (`AssistWorkspace`), not in the tool class.
-- The SDK's stdio transport **exits when stdin closes**, so a test harness must
-  hold stdin open rather than piping a finite file.
+  token it cannot find, and a prompt nobody can answer would hang the call
+  while the assistant reports "still working". At EOF it fails at once and the
+  server can say the useful thing: publish from Plantoir once, so the token
+  gets stored. A build also needs Docker and takes minutes.
+- **SDK traps.** `Destructive` defaults to `true` — set it explicitly. A
+  parameter is optional only if it has a C# default value (`string? x` without
+  `= null` still throws at call time). Progress comes from an
+  `IProgress<ProgressNotificationValue>` parameter, never from MCP logging
+  notifications, deprecated as of spec 2026-07-28. Tool classes are built per
+  invocation, so state belongs in the injected `AssistWorkspace`, and the
+  stdio transport exits when stdin closes.

@@ -1,5 +1,17 @@
 # Take Control of Publishing Your Content
 
+> **Archived, and kept as a record.** This is the handout for a workshop
+> session run in **August 2025**. It is out of date in ways that matter if you
+> follow it today: the software now ships as a macOS and a Windows app (this
+> document predates both and sends you to the command line), publishing now has
+> three destinations rather than Netlify alone, and — the one that would
+> actually mislead — **the claim below that you need to be an Administrator is
+> no longer true on macOS.** The launchers install everything they need into
+> the app's own space: no Homebrew, no administrator password. Administrator
+> rights are still needed once on Windows, to install WSL2.
+>
+> For current instructions, start at [`../README.md`](../README.md).
+
 > [!NOTE]
 > 
 > This material was initially shared on Thursday, August 14, 2025 at the [Summer Conference for Computer Studies and Mathematics Educators](https://cemc.uwaterloo.ca/workshops/educator-development/summer-conference-educators), organized by the [Centre for Education in Mathematics and Computing](https://www.cemc.uwaterloo.ca/).

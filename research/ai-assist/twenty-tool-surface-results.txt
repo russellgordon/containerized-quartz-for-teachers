@@ -1,3 +1,6 @@
+# ⚠️ SUPERSEDED (2026-08-15) by thirteen-tool-surface-results.txt — this run measured
+# the 20-tool surface, which is what an MCP client sees; the local model is shown 13.
+# Kept because it is what separates 'more tools' from 'changed schemas' as a cause.
 # The 20-TOOL surface, measured. TEN trials, 2026-08-15.
 # Apple M4 Pro (48 GB), macOS 26.6, llama.cpp b10435, Metal, native.
 # llama-server --ctx-size 16384 --threads 6 --n-gpu-layers 999 --jinja

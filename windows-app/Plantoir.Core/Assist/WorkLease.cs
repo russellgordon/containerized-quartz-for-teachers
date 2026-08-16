@@ -21,7 +21,7 @@ namespace Plantoir.Core.Assist;
 /// app cannot leave a course locked — no cleanup pass, no timeout to tune, no
 /// lock file to get stuck.
 ///
-/// **This is the shared registry from MCP-PROPOSAL.md phase 2**, and it is
+/// **This is the shared registry from research/ai-assist/HISTORY.md part 3 (the MCP proposal), phase 2**, and it is
 /// deliberately format-first rather than API-first so the mac side can adopt
 /// the same files rather than the same code.
 /// </summary>
