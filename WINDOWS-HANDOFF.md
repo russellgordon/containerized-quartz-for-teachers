@@ -845,10 +845,14 @@ Two things to get right when you fix it:
   kills the build, and what gets deployed is the last `public/` that was
   allowed to complete: the site as it was before. This is the same finding as
   the preview-staleness work, arriving somewhere new.
-- **Say that the preview stopped.** The teacher did not ask for it, and a
-  preview window that goes blank with no explanation is its own small alarm.
-  The mac appends one sentence to the deploy's answer, and only when a
-  preview was actually stopped.
+- **Do NOT say that the preview stopped.** The mac shipped a sentence for it
+  — "the preview was stopped first, which is what pressing Deploy in that
+  section's window needs" — and it was removed the same day, on sight: read in
+  place it was three lines of machinery after the one line that mattered.
+  "CIA4U Section 1 is deployed. Students can reach it now." is the entire
+  answer to what was asked. The teacher is looking at the window it happened
+  in, and an assistant that explains what it had to do in order to obey is
+  talking about itself. The stop still happens; it is simply not narrated.
 
 **One place decides the launcher's arguments.** The mac's assistant path built
 its own `deploy.sh` arguments and never passed `--target cloudflare` or

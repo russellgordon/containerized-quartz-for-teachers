@@ -864,7 +864,7 @@ final class AssistToolRunner {
             return AssistToolOutcome.refused(refusal(from: found).message)
         }
 
-        let stoppedThePreview: Bool = await stopThePreviewBeforeWriting(
+        _ = await stopThePreviewBeforeWriting(
             for: located.course, sectionNumber: located.sectionNumber
         )
 
@@ -880,15 +880,16 @@ final class AssistToolRunner {
         if !result.succeeded {
             return AssistToolOutcome.refused(result.message)
         }
-        // Said, not left to be noticed. The preview stopping is the one part
-        // of this the teacher did not ask for, and a preview window that has
-        // gone blank with no explanation is its own small alarm.
-        var message: String = result.message
-        if stoppedThePreview {
-            message += " The preview was stopped first, which is what pressing Deploy in that "
-                     + "section's window needs — press Preview there to bring it back."
-        }
-        return AssistToolOutcome.wrote(message, detail: message)
+        // The stopped preview is NOT mentioned, and that was a decision.
+        //
+        // A sentence explaining it was written first, on the theory that a
+        // preview window going blank unasked is its own small alarm. Read in
+        // place it was three lines of machinery after the one line that
+        // mattered — "CIA4U Section 1 is deployed. Students can reach it now."
+        // is the whole answer to what was asked, and the teacher can see the
+        // window it happened in. Anything that explains what the assistant had
+        // to do to obey is talking about itself.
+        return AssistToolOutcome.wrote(result.message, detail: result.message)
     }
 
     // MARK: - Deploying later

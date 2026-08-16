@@ -465,14 +465,13 @@ final class AssistToolRunnerTests: XCTestCase {
                        "Deploy must wait for the preview to be fully stopped")
         XCTAssertEqual(made.siteWork.deploys, 0,
                        "With a window open the deploy goes through it, not the assistant's own runner")
-        XCTAssertTrue(outcome.summary.contains("deployed"), outcome.summary)
-        XCTAssertTrue(outcome.summary.contains("preview was stopped"),
-                      "A preview that vanished without a word is its own small alarm: " + outcome.summary)
+        // The whole answer, and nothing about what it had to do to obey: the
+        // stopped preview is deliberately not narrated.
+        XCTAssertEqual(outcome.summary, "ICS3U Section 1 is deployed.")
     }
 
     /// The other order, and the one a teacher meets most: no preview running.
-    /// Nothing is stopped, the window's Deploy is pressed, and the answer does
-    /// not mention a preview that was never up.
+    /// Nothing is stopped, and the window's Deploy is pressed just the same.
     @MainActor
     func testDeployingWithNoPreviewRunningJustDeploys() async throws {
         let made = try makeRunner(registeringPreview: true)
@@ -491,7 +490,7 @@ final class AssistToolRunnerTests: XCTestCase {
         XCTAssertEqual(FakePreview.shared.events,
                        ["stop-begins", "stop-ends", "deploy", "deploy"],
                        "A preview already stopped is not stopped again")
-        XCTAssertFalse(outcome.summary.contains("preview was stopped"), outcome.summary)
+        XCTAssertEqual(outcome.summary, "ICS3U Section 1 is deployed.")
     }
 
     /// With no section window open there is nothing to press, and the deploy
