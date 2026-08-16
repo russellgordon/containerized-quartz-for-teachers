@@ -151,20 +151,26 @@ final class AssistToolRunner {
 
         switch call.function.name {
         case "deploy_section":
-            // Spoken in the FIRST PERSON, as the thing about to do it: "OK,
-            // I'll deploy…" is an assistant agreeing to a request, where
-            // "Deploy CIA4U Section 3 to Netlify." was a label on a button
-            // with two paragraphs of warning stapled to it. The teacher asked
-            // for this; the card is confirming what was heard, not talking
-            // them out of it.
+            // Two sentences, and neither of them restates the request.
             //
-            // What is left of the warning is the fact, not the alarm.
-            // Students see what is deployed, and reviewing your own changes is
-            // ordinary advice a teacher can act on — where "Plantoir cannot
-            // take it back for you" describes a limitation of the app at the
-            // moment somebody is trying to use it.
-            return "OK, I'll deploy \(code) Section \(number) to \(destination). Students will see "
-                 + "what is deployed. Be certain to review changes you have made."
+            // This has been cut twice. It began as a label with two paragraphs
+            // of warning stapled to it — "the one thing that changes what
+            // students see, and Plantoir cannot take it back for you" — which
+            // announces a limitation of the app to somebody who has already
+            // decided, and second-guesses their order of work. It then became
+            // "OK, I'll deploy CIA4U Section 3 to Netlify." plus the same two
+            // sentences, which read oddly against the "Shall I deploy?" that
+            // the agent says next: agreeing to do a thing and then asking
+            // permission for it.
+            //
+            // So what is left is the fact and the advice. The act itself is
+            // named by the question that follows this, and the section is on
+            // the window's own title bar.
+            //
+            // `code`, `number` and `destination` are deliberately unused here.
+            // Leave them: `schedule_deploy` below needs all three, and the one
+            // thing this text must never become is a description of a tool.
+            return "Students will see what is deployed. Be certain to review changes you have made."
         case "schedule_deploy":
             let raw: String = text("when", in: arguments)
             let when: String = AssistToolRunner.moment(named: raw)

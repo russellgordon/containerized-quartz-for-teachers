@@ -845,15 +845,29 @@ Two things to get right when you fix it:
   kills the build, and what gets deployed is the last `public/` that was
   allowed to complete: the site as it was before. This is the same finding as
   the preview-staleness work, arriving somewhere new.
-- **The approval sentence is written per tool, in the teacher's words.** The
-  mac's deploy card reads "OK, I'll deploy CIA4U Section 1 to Netlify.
-  Students will see what is deployed. Be certain to review changes you have
-  made." — first person, the real destination named, one piece of actionable
-  advice, and nothing about what the app cannot undo for you. `AssistAgent.AskFirst`
-  currently builds "I'd like to run **deploy section**. Shall I go ahead?" by
-  underscore-swapping the tool name, which puts machinery in front of a
-  teacher at the exact moment they are being asked to agree to something. The
-  wording above is the maintainer's own; copy it rather than composing one.
+- **The approval sentence is written per tool, in the teacher's words, and
+  it does not restate the request.** The mac's deploy card is two bubbles:
+
+  > Students will see what is deployed. Be certain to review changes you have made.
+  >
+  > Shall I deploy?
+
+  That is the whole of it — the consequence, one piece of advice a teacher can
+  act on, and the question. It was cut to this over two passes. It began as a
+  label with the warnings stapled on ("the one thing that changes what
+  students see, and Plantoir cannot take it back for you. Looking the preview
+  over first is the safer order"), which announces a limitation of the app to
+  somebody who has already decided and second-guesses their order of work. The
+  middle draft named the act — "OK, I'll deploy CIA4U Section 1 to Netlify." —
+  and read oddly against the question that follows it: agreeing to do a thing
+  and then asking permission for it. **If your card carries its own heading or
+  repeats the act, you will meet the same awkwardness.**
+
+  `AssistAgent.AskFirst` currently builds "I'd like to run **deploy section**.
+  Shall I go ahead?" by underscore-swapping the TOOL NAME, which puts
+  machinery in front of a teacher at the exact moment they are agreeing to
+  something. Copy the wording above rather than composing one — it is the
+  maintainer's own, twice.
 - **Do NOT say that the preview stopped.** The mac shipped a sentence for it
   — "the preview was stopped first, which is what pressing Deploy in that
   section's window needs" — and it was removed the same day, on sight: read in

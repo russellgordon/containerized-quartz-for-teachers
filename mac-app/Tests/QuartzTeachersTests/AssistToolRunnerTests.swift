@@ -1223,12 +1223,11 @@ final class AssistToolRunnerTests: XCTestCase {
         let explanation: String = made.runner.explain(call: call(
             "deploy_section", arguments: ["course": "ICS3U", "section": 1]
         ))
-        // Named in full, and the destination named rather than described:
-        // "publishes to the folder you chose" tells a teacher with two courses
-        // nothing at all. The card also says who sees it, which is the fact
-        // the approval exists for.
-        XCTAssertTrue(explanation.contains("ICS3U Section 1"), explanation)
-        XCTAssertTrue(explanation.lowercased().contains("students will see"), explanation)
+        // The fact and the advice, and nothing that restates the request:
+        // the act is named by the "Shall I deploy?" the agent says next, and
+        // the section is on the window's own title bar.
+        XCTAssertEqual(explanation,
+                       "Students will see what is deployed. Be certain to review changes you have made.")
         // No tool name, no machinery — this sentence is read by a teacher.
         XCTAssertFalse(explanation.contains("deploy_section"), explanation)
 
