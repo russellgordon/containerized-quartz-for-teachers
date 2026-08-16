@@ -280,6 +280,124 @@ shared Python: course-level pages now arrive with
   per-invocation loop — this cost half a minute before every preview and
   publish, and it grows with each payload added.
 
+## Renaming a course (entry 205)
+
+A teacher looks a course up by its CODE — it is how the wizard finds
+ready-made content — and the code they typed at setup can turn out to be the
+wrong one. Until now that meant building the course again, because the code
+is the folder name. It is now editable: **Return** on the selected course in
+the sidebar, or **Edit ▸ Rename Course**, edits it in place the way Finder
+renames a file.
+
+**The rule for what a code may be is now shared, and it is stricter than what
+the wizard used to allow.** `CourseCodeRule`: trimmed and upper-cased, ASCII
+letters and digits only, **at most eight characters**, no spaces, no
+punctuation, no emoji, and no clash with another course (compared
+case-insensitively — a Mac's disk is case-insensitive but case-preserving, so
+ICS3U and ics3u cannot both be folders). It moved out of the wizard because
+renaming asks the identical question, and a wizard that accepts a code
+renaming refuses is a course a teacher can create and then never re-type. The
+cases are in `contracts/course-management.json` → `courseCode`; **deserialise
+them, do not retype the sentences.**
+
+Eight rather than six is a decision, not an oversight. Ontario codes are six
+characters, but clubs are named by the teacher, and refusing ROBOTICS would
+be refusing a real thing teachers do. CS-CLUB is still refused — punctuation
+is out because the code is a folder name, a zip-name prefix and part of a
+scheduled-publish identifier all at once, and each of those has its own
+opinion about what it will carry. CSCLUB is the answer, and the message says
+what is allowed rather than what is not.
+
+**What renaming touches, and what it deliberately does not.** The full list
+is `courseCode.renameEffects` in the contract, with a reason on each; the
+short version:
+
+- **Moves the folder** and **rewrites `course_code`** inside
+  `course_config.json`. Both, together: your app reads a course's code from
+  the FOLDER name while the shared Python's site builder and social-card
+  maker read it from the settings, so a pair that disagree give a sidebar
+  saying one thing and a published page saying another, with no error
+  anywhere. Write the settings FIRST, while the folder is still where it was,
+  and put them back if the move then fails — that ordering is what makes a
+  failure leave nothing half-done.
+- **Leaves the course NAME alone.** `course_name` is the teacher's own
+  wording, editable in settings. Rewriting a title they may have hand-written
+  because they changed a code is the kind of helpfulness that loses work.
+  (Rejected: looking the new code up in `ontario_secondary_courses.json` and
+  offering to update the name. It needs a confirmation step, which breaks the
+  type-and-press-Return feel, and the teacher can already edit the name.)
+- **Leaves backups and archives under the OLD code**, in
+  `courses/_backups/<OLD CODE>/`, named as they were made. That is what they
+  are: a copy of the course as it stood, when it was called that. (Rejected:
+  moving and re-prefixing them. It was mechanically fine — the mac's restorer
+  names the restored folder after the ITEM rather than after whatever the zip
+  holds inside, so a renamed zip still restores — but a backup is a record of
+  a moment, and relabelling it with a name that moment never had makes the
+  list lie.)
+- **Leaves the published site where it is.** On the mac the Netlify site
+  marker lives INSIDE the course folder (`.netlify_sites/section<N>.json`),
+  so it travels with the move and the students' address does not change.
+  **Check that your equivalent marker is inside the course folder too** — if
+  yours is stored anywhere keyed by course code, renaming silently orphans
+  the site and the next publish creates a second one.
+- **Turns scheduled publishing OFF**, and says so in an alert naming the
+  sections. This is the one thing renaming has to break: a scheduled publish
+  is an alarm held OUTSIDE the working folder addressed by the old code (on
+  the mac, a launchd agent labelled
+  `ca.russellgordon.Plantoir.deploy.<CODE>.section<N>`), so after a rename it
+  fires at a course that is no longer there. The MECHANISM is yours to
+  choose; the decision — cancel rather than orphan, and tell the teacher — is
+  shared, and the alert is required. A scheduled publish that quietly stops
+  is exactly the failure worth interrupting somebody for.
+
+**Renaming waits while the course is previewing or publishing**, because it
+moves the folder the preview is serving out of. Same rule and same words as
+"Add Section…", checked twice: once to decide whether the menu item is
+dimmed, and again at the moment of commit, because a preview can start while
+the field is open.
+
+### Three traps, each of which cost real time here
+
+1. **Return must not be a menu key equivalent.** It is tempting to put the
+   shortcut on the Rename menu item and be done. On macOS a bare Return on a
+   menu item is matched before the key reaches the focused control, which
+   takes Return away from every text field and default button in the window —
+   Finder's own Rename item carries no key equivalent for exactly this
+   reason. Handle the key in the list instead, and ignore it when a field is
+   already open so the field's own Return commits. If your framework has the
+   same precedence, do the same; if it does not, say so in `MAC-HANDOFF.md`.
+
+2. **Switching apps is not clicking away.** Clicking elsewhere should commit
+   the rename, as Finder does. But a focused field cannot hold focus while
+   its application is inactive, so a blur handler that commits or cancels
+   fires the instant the teacher looks at Obsidian — and on a Mac where the
+   app was never brought to the front, the instant the field opens. Measured
+   here: the field appeared and vanished again before anything could be typed
+   into it. Guard the handler on the application being active. A code that
+   cannot be used reverts on blur rather than raising an alert, since the
+   teacher has already moved on; the reason is shown under the field while
+   they are still typing, which is also where the New Course wizard puts it.
+
+3. **Accessibility could not see the row, and nearly sent us the wrong way.**
+   macOS collapses a sidebar row — a `DisclosureGroup` label inside a `List` —
+   into a single element whose value does NOT follow the row's content: an
+   unconditional change to the label's text left the reported value
+   unchanged. That looked exactly like "the row is not redrawing", and an
+   afternoon went into fixing a bug that was not there while the feature
+   worked perfectly when driven by hand. The test that finally answered it
+   hosts the ROW VIEW on its own and asserts a text field appears in it —
+   deterministic, and no accessibility tree involved
+   (`CourseRenameInterfaceTests`). If your framework's tree exposes list rows
+   honestly, that is worth a line in `MAC-HANDOFF.md`.
+
+**One known limitation, shared.** Renaming moves the course folder, which is
+the Obsidian vault. Obsidian's watcher is anchored to a folder's identity, so
+a vault already open for that course shows stale files until it is reopened —
+the same thing that happens if a teacher renames the folder in Finder. The
+next "Open in Obsidian" re-registers the new path and puts it right. Not
+worth blocking a rename over, but worth knowing before somebody reports it as
+a bug.
+
 ## Fixed in shared code — nothing to port (entries 111–121)
 
 A run of rendering and content defects was found and fixed on the macOS

@@ -51,6 +51,12 @@ struct SidebarView: View {
     var body: some View {
         @Bindable var workspace = workspace
 
+        // Read HERE, in the sidebar's own body, and handed to each row as a
+        // plain `Bool`. The rows a `List` builds are lazy, so keeping the
+        // dependency on the model at this level — where the body is plainly
+        // re-evaluated — leaves nothing about the redraw to work out.
+        let renamingCourseCode: String? = workspace.renamingCourseCode
+
         VStack(spacing: 0) {
             List(selection: $workspace.selection) {
                 Section("Courses & Clubs") {
@@ -121,7 +127,10 @@ struct SidebarView: View {
                             // closure left the menu showing the state
                             // from whenever the row last drew.
                             let busyReason: String? = busyReason(for: course)
-                            courseRowLabel(for: course)
+                            CourseRowLabel(
+                                course: course,
+                                isBeingRenamed: renamingCourseCode == course.code
+                            )
                                 .tag(SidebarSelection.course(course.code))
                                 .accessibilityIdentifier("sidebar-\(course.code)")
                                 .contextMenu {
@@ -458,15 +467,7 @@ struct SidebarView: View {
         }
     }
 
-    /// A course's row: its code, or a field to type a new one into.
-    @ViewBuilder
-    func courseRowLabel(for course: Course) -> some View {
-        if workspace.renamingCourseCode == course.code {
-            CourseCodeField(course: course)
-        } else {
-            Label(course.code, systemImage: "books.vertical")
-        }
-    }
+
 
     /// A section's row, wearing a clock when it is set to deploy on its own.
     @ViewBuilder
@@ -965,6 +966,33 @@ struct RemovalRequest: Identifiable {
     }
 }
 
+/// One course's row: its code, or a field to type a new one into.
+///
+/// Which of the two it is arrives as a plain `Bool` rather than being read
+/// from the window's model here, because a row inside a `List` cannot be
+/// relied on to observe that model — see the note at the sidebar's own body,
+/// where the read happens instead.
+struct CourseRowLabel: View {
+
+    // MARK: - Stored properties
+
+    let course: Course
+
+    /// Decided by the sidebar rather than read here — see the note where it
+    /// is read.
+    let isBeingRenamed: Bool
+
+    // MARK: - Body
+
+    var body: some View {
+        if isBeingRenamed {
+            CourseCodeField(course: course)
+        } else {
+            Label(course.code, systemImage: "books.vertical")
+        }
+    }
+}
+
 /// The in-place editor for a course's code, behaving the way Finder's own
 /// rename does: the whole code arrives selected, Return commits it, Escape
 /// puts it back, and clicking away commits — but only if what was typed can
@@ -1014,7 +1042,7 @@ struct CourseCodeField: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 6) {
                 Image(systemName: "books.vertical")
-                TextField("", text: $text)
+                TextField("Course code", text: $text)
                     .textFieldStyle(.roundedBorder)
                     .focused($isFocused)
                     .accessibilityIdentifier("renameField")
@@ -1060,6 +1088,16 @@ struct CourseCodeField: View {
     /// cannot be used reverts instead, rather than putting an alert in front
     /// of a teacher who has already moved on to something else.
     func commitOnLeaving() {
+        // SWITCHING APPS IS NOT CLICKING AWAY, and the difference is not
+        // cosmetic: a focused field cannot hold focus while its app is
+        // inactive, so without this check the field closes itself the moment
+        // the teacher looks at Obsidian — or, on a Mac where Plantoir was
+        // never brought to the front, the instant it opens. Found exactly
+        // that way: the field appeared and vanished again before anything
+        // could be typed into it.
+        if !NSApplication.shared.isActive {
+            return
+        }
         // Only while this row is still the one being edited. The rename
         // itself clears that, and focus leaves immediately afterwards, so
         // without this check a successful rename would ask for a second one.
