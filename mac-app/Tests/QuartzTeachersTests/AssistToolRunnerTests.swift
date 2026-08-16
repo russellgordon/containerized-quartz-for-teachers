@@ -439,6 +439,54 @@ final class AssistToolRunnerTests: XCTestCase {
                        "A running preview must be stopped, waited for, and started again")
     }
 
+    /// Cancel answers a cancelled DEPLOY with the fact and nothing else.
+    ///
+    /// It used to say "Left as it was — nothing was changed." — true, and
+    /// reassurance about something nobody was worried about: a teacher who has
+    /// just pressed Cancel knows nothing was changed. A PLAN keeps that
+    /// wording, because there the reassurance IS the answer — the plan
+    /// described changes to pages, and whether they happened is the part in
+    /// doubt. Both branches are asserted, because the obvious tidy-up is to
+    /// give them one sentence again.
+    @MainActor
+    func testCancellingADeploySaysTheDeployWasCancelled() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        let agent: AssistAgent = makeAgent(tools: made.runner)
+        // The card phrasing is matched in code, so this never reaches a model.
+        await agent.say("deploy now")
+        XCTAssertNotNil(agent.pendingApproval, "Deploying always waits for a button")
+        XCTAssertTrue(agent.pendingIsDeploy)
+
+        agent.declinePending()
+
+        XCTAssertEqual(agent.entries.last?.text, "Deploy cancelled.")
+    }
+
+    /// The other branch: a cancelled plan still says nothing was changed.
+    @MainActor
+    func testCancellingAPlanStillSaysNothingWasChanged() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        // A class page dated tomorrow, so "publish tomorrow's class" has
+        // something real to plan about. `makeRunner` pins today to
+        // 2026-09-08, which is what makes "tomorrow" a fixed date here rather
+        // than a test that means something different every day.
+        try write(page: "Unit 1, Day 1", publish: "false", date: "2026-09-09", body: "one", in: made.course)
+
+        let agent: AssistAgent = makeAgent(tools: made.runner)
+        XCTAssertTrue(agent.planMode.isOn, "The smaller tier cannot turn plan mode off")
+        await agent.say("publish tomorrow's class")
+        XCTAssertNotNil(agent.pendingApproval)
+        XCTAssertFalse(agent.pendingIsDeploy, "Publishing is a plan, not a deploy")
+
+        agent.declinePending()
+
+        XCTAssertEqual(agent.entries.last?.text, "Left as it was — nothing was changed.")
+    }
+
     /// Deploying from the assistant is the two buttons a teacher would press,
     /// in the order they would press them: Stop Preview, then Deploy.
     ///
@@ -1430,6 +1478,19 @@ final class AssistToolRunnerTests: XCTestCase {
             FakePreview.shared.register(folderPath: root.path, courseCode: "ICS3U", sectionNumber: 1)
         }
         return (root, course, runner, siteWork)
+    }
+
+    /// An agent wired to a runner, with a client that is never reached: every
+    /// message these tests send is a card phrasing, matched in code.
+    @MainActor
+    private func makeAgent(tools: AssistToolRunner) -> AssistAgent {
+        return AssistAgent(
+            courseCode: "ICS3U",
+            sectionNumber: 1,
+            client: AssistModelClient(baseURL: URL(string: "http://127.0.0.1:1")!),
+            tools: tools,
+            planMode: AssistPlanMode(tier: .small, defaults: TestDefaults.make())
+        )
     }
 
     private func call(_ name: String, arguments: [String: Any] = [:]) -> AssistToolCall {

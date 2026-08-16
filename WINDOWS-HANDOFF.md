@@ -868,6 +868,12 @@ Two things to get right when you fix it:
   machinery in front of a teacher at the exact moment they are agreeing to
   something. Copy the wording above rather than composing one — it is the
   maintainer's own, twice.
+- **Cancel is answered by kind.** A cancelled deploy says "Deploy cancelled."
+  and stops; a cancelled plan says "Left as it was — nothing was changed."
+  The asymmetry is deliberate: a plan described changes to pages, so whether
+  they happened is the part in doubt and the reassurance IS the answer, while
+  a deploy that never started needs no reassuring about. Read which kind is
+  pending BEFORE clearing it — that is the one way to get this branch wrong.
 - **Do NOT say that the preview stopped.** The mac shipped a sentence for it
   — "the preview was stopped first, which is what pressing Deploy in that
   section's window needs" — and it was removed the same day, on sight: read in

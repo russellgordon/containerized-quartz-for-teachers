@@ -172,6 +172,9 @@ final class AssistAgent {
         guard let pending = pendingApproval else {
             return
         }
+        // Read before the pending call is cleared, because the answer depends
+        // on which of the two things was being asked about.
+        let wasDeploy: Bool = pendingIsDeploy
         entries.append(Entry(speaker: .teacher, text: "Cancel"))
         pendingApproval = nil
         activity = .idle
@@ -184,7 +187,17 @@ final class AssistAgent {
             name: pending.call.function.name,
             text: "The teacher decided not to. Nothing was done."
         ))
-        entries.append(Entry(speaker: .assistant, text: "Left as it was — nothing was changed."))
+        // A cancelled DEPLOY is answered with the fact and nothing else.
+        // "Left as it was — nothing was changed." is true and reassuring about
+        // a thing nobody was worried about: a teacher who has just pressed
+        // Cancel knows nothing was changed, and being reassured of it reads as
+        // the assistant explaining itself. A cancelled PLAN keeps that wording,
+        // because there the reassurance is the answer — the plan described
+        // changes to pages, and "nothing was changed" is the part in doubt.
+        entries.append(Entry(
+            speaker: .assistant,
+            text: wasDeploy ? "Deploy cancelled." : "Left as it was — nothing was changed."
+        ))
     }
 
     /// Ask the model what to do next, then do it.
