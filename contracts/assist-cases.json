@@ -70,9 +70,10 @@
   "generated" : {
     "keys" : [
       "cardPhrasings",
-      "tools"
+      "tools",
+      "toolSchemas"
     ],
-    "note" : "These top-level keys are written by `Plantoir --write-contracts` from the app's own types and will be overwritten: cardPhrasings, tools. The rest — nearMisses, scenarios — is hand-written intent and is preserved."
+    "note" : "These top-level keys are written by `Plantoir --write-contracts` from the app's own types and will be overwritten: cardPhrasings, tools, toolSchemas. The rest — nearMisses, scenarios — is hand-written intent and is preserved."
   },
   "nearMisses" : {
     "note" : "Must NOT match — each one only looks like a card phrasing, and answering the wrong question with total confidence is worse than routing it.",
@@ -402,5 +403,1020 @@
       "unpublish_pages" : "plan_unpublish_pages"
     },
     "planTwinsNote" : "A write with a twin is shown as a plan first. Four writes have none, deliberately: rebuild_preview changes no page, undo_last_change IS the remedy, deploy_section waits on its own button whatever plan mode says, and a cancelled scheduled deploy is remedied by scheduling it again."
+  },
+  "toolSchemas" : {
+    "local" : [
+      {
+        "function" : {
+          "description" : "List the pages in one section of a course, as paths relative to the working folder.",
+          "name" : "list_pages",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "matching" : {
+                "description" : "Only list pages whose path contains this text. Leave empty to list everything.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "Read one page's Markdown, including its frontmatter.",
+          "name" : "read_page",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "page" : {
+                "description" : "The page title as it appears in the sidebar, for example \"Unit 2, Day 3\".",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section",
+              "page"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"what do students see right now?\", \"is anything broken?\", \"what's live?\". Check a section's website as students would meet it, changing nothing.",
+          "name" : "check_section",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"publish tomorrow's class\", \"put up Monday's lesson\", \"put Unit 2, Day 3 up\", \"make Friday's class visible\", \"post next class\", \"put the class live for students\". Publish the class taught on a given day, along with the pages it links to, then rebuild the section's preview.",
+          "name" : "publish_class_on",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "date" : {
+                "description" : "The day the class is taught, as YYYY-MM-DD. For \"tomorrow\" or \"today\", work out the date first — the tool matches it exactly against each class's own date.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section",
+              "date"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "Make pages visible to students, along with every page they link to, then rebuild the section preview. The linked pages come by themselves — there is nothing to ask for and no way to leave them out, because a published page whose links lead nowhere is the one thing this must never make.",
+          "name" : "publish_pages",
+          "parameters" : {
+            "properties" : {
+              "before" : {
+                "description" : "Only classes strictly before this date. A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.",
+                "type" : "string"
+              },
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "onOrAfter" : {
+                "description" : "Only classes on or after this date. A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.",
+                "type" : "string"
+              },
+              "pages" : {
+                "description" : "The page titles to publish, separated by semicolons — for example \"Unit 2, Day 3; Unit 2, Day 4\". May be empty if you give dates instead.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"take Unit 4, Day 5 back down\", \"students shouldn't see it yet\", \"hide that page\", \"I posted it by mistake\", \"make it a draft again\", \"pull that lesson\", \"un-publish it\". Unpublish pages, so students no longer see them, along with any page ONLY they link to; a page another class still links to stays put, and the result says which stayed and why.",
+          "name" : "unpublish_pages",
+          "parameters" : {
+            "properties" : {
+              "before" : {
+                "description" : "Only classes strictly before this date. A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.",
+                "type" : "string"
+              },
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "onOrAfter" : {
+                "description" : "Only classes on or after this date. A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.",
+                "type" : "string"
+              },
+              "pages" : {
+                "description" : "The page titles to unpublish, separated by semicolons — for example \"Unit 2, Day 3; Unit 2, Day 4\". May be empty if you give dates instead.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"preview the site\", \"show me the preview\", \"start the preview\", \"open the preview\", \"rebuild the preview\", \"refresh what I'm looking at\", \"update the preview\", \"build it again\". Build a section's preview and put it on screen, without changing any page.",
+          "name" : "rebuild_preview",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"undo that\", \"put it back\", \"that was wrong, revert it\", \"never mind, undo\". Take back the most recent change this conversation made — the fix for publishing the wrong class in a hurry.",
+          "name" : "undo_last_change",
+          "parameters" : {
+            "properties" : {
+
+            },
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"deploy the site\", \"put it online\", \"push it live\", \"send it to the website\", \"make it live for students\", \"upload the site\". Put a section's website where students can actually reach it.",
+          "name" : "deploy_section",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"deploy tomorrow's class at 6:30 AM\", \"put it live before school\", \"send it out at 7am\", \"schedule the deploy for Monday morning\". Ask this computer to deploy a section at a set time.",
+          "name" : "schedule_deploy",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              },
+              "when" : {
+                "description" : "When to deploy, as YYYY-MM-DD HH:MM in 24-hour time — for example \"2026-09-09 06:30\".",
+                "type" : "string"
+              }
+            },
+            "required" : [
+              "course",
+              "section",
+              "when"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"cancel that scheduled deploy\", \"don't send it in the morning after all\", \"call it off\". Call off a deploy that was scheduled for a section.",
+          "name" : "cancel_scheduled_deploy",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"when does this class meet?\", \"what dates do you have for us?\", \"do you know our timetable?\", \"how many class days are left?\". Read back the class dates recorded for a section, and where the teacher said they came from, changing nothing.",
+          "name" : "read_remembered_timetable",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"add an entry for the next class\", \"add tomorrow's class page\", \"start the next class\", \"add the next class\", \"make a page for our next class\", \"set up next day's lesson\". Create the next class page in a section: it continues the unit the last class was in, and takes its date from the section's remembered timetable. Work out no numbers and no dates yourself — this tool does both. It starts unpublished, so students see nothing until the teacher publishes it.",
+          "name" : "add_next_class",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      }
+    ],
+    "mcp" : [
+      {
+        "function" : {
+          "description" : "List the pages in one section of a course, as paths relative to the working folder.",
+          "name" : "list_pages",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "matching" : {
+                "description" : "Only list pages whose path contains this text. Leave empty to list everything.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "Read one page's Markdown, including its frontmatter.",
+          "name" : "read_page",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "page" : {
+                "description" : "The page title as it appears in the sidebar, for example \"Unit 2, Day 3\".",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section",
+              "page"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"what do students see right now?\", \"is anything broken?\", \"what's live?\". Check a section's website as students would meet it, changing nothing.",
+          "name" : "check_section",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"what would publishing tomorrow's class do?\", \"show me before you put Monday up\". Work out what publishing the class taught on a given day would do, WITHOUT changing anything.",
+          "name" : "plan_publish_class_on",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "date" : {
+                "description" : "The day the class is taught, as YYYY-MM-DD. For \"tomorrow\" or \"today\", work out the date first — the tool matches it exactly against each class's own date.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section",
+              "date"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"publish tomorrow's class\", \"put up Monday's lesson\", \"put Unit 2, Day 3 up\", \"make Friday's class visible\", \"post next class\", \"put the class live for students\". Publish the class taught on a given day, along with the pages it links to, then rebuild the section's preview.",
+          "name" : "publish_class_on",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "date" : {
+                "description" : "The day the class is taught, as YYYY-MM-DD. For \"tomorrow\" or \"today\", work out the date first — the tool matches it exactly against each class's own date.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section",
+              "date"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "Work out exactly what publishing pages would do, WITHOUT changing anything.",
+          "name" : "plan_publish_pages",
+          "parameters" : {
+            "properties" : {
+              "before" : {
+                "description" : "Only classes strictly before this date. A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.",
+                "type" : "string"
+              },
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "onOrAfter" : {
+                "description" : "Only classes on or after this date. A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.",
+                "type" : "string"
+              },
+              "pages" : {
+                "description" : "The page titles to publish, separated by semicolons — for example \"Unit 2, Day 3; Unit 2, Day 4\". May be empty if you give dates instead.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "Make pages visible to students, along with every page they link to, then rebuild the section preview. The linked pages come by themselves — there is nothing to ask for and no way to leave them out, because a published page whose links lead nowhere is the one thing this must never make.",
+          "name" : "publish_pages",
+          "parameters" : {
+            "properties" : {
+              "before" : {
+                "description" : "Only classes strictly before this date. A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.",
+                "type" : "string"
+              },
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "onOrAfter" : {
+                "description" : "Only classes on or after this date. A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.",
+                "type" : "string"
+              },
+              "pages" : {
+                "description" : "The page titles to publish, separated by semicolons — for example \"Unit 2, Day 3; Unit 2, Day 4\". May be empty if you give dates instead.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"what happens if I take that down?\", \"check before you hide Unit 3, Day 2\". Work out exactly what unpublishing pages from students would do, WITHOUT changing anything.",
+          "name" : "plan_unpublish_pages",
+          "parameters" : {
+            "properties" : {
+              "before" : {
+                "description" : "Only classes strictly before this date. A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.",
+                "type" : "string"
+              },
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "onOrAfter" : {
+                "description" : "Only classes on or after this date. A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.",
+                "type" : "string"
+              },
+              "pages" : {
+                "description" : "The page titles to unpublish, separated by semicolons — for example \"Unit 2, Day 3; Unit 2, Day 4\". May be empty if you give dates instead.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"take Unit 4, Day 5 back down\", \"students shouldn't see it yet\", \"hide that page\", \"I posted it by mistake\", \"make it a draft again\", \"pull that lesson\", \"un-publish it\". Unpublish pages, so students no longer see them, along with any page ONLY they link to; a page another class still links to stays put, and the result says which stayed and why.",
+          "name" : "unpublish_pages",
+          "parameters" : {
+            "properties" : {
+              "before" : {
+                "description" : "Only classes strictly before this date. A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.",
+                "type" : "string"
+              },
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "onOrAfter" : {
+                "description" : "Only classes on or after this date. A date as YYYY-MM-DD, for example 2026-09-15. Leave empty for no limit.",
+                "type" : "string"
+              },
+              "pages" : {
+                "description" : "The page titles to unpublish, separated by semicolons — for example \"Unit 2, Day 3; Unit 2, Day 4\". May be empty if you give dates instead.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"preview the site\", \"show me the preview\", \"start the preview\", \"open the preview\", \"rebuild the preview\", \"refresh what I'm looking at\", \"update the preview\", \"build it again\". Build a section's preview and put it on screen, without changing any page.",
+          "name" : "rebuild_preview",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"undo that\", \"put it back\", \"that was wrong, revert it\", \"never mind, undo\". Take back the most recent change this conversation made — the fix for publishing the wrong class in a hurry.",
+          "name" : "undo_last_change",
+          "parameters" : {
+            "properties" : {
+
+            },
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"deploy the site\", \"put it online\", \"push it live\", \"send it to the website\", \"make it live for students\", \"upload the site\". Put a section's website where students can actually reach it.",
+          "name" : "deploy_section",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"what happens if I schedule it for 6:30?\", \"check before you set that up\". Work out what scheduling a deploy would mean, scheduling nothing.",
+          "name" : "plan_scheduled_deploy",
+          "parameters" : {
+            "properties" : {
+              "classes" : {
+                "description" : "The class pages this deploy is meant to publish, separated by semicolons. Checked for whether they are published yet.",
+                "type" : "string"
+              },
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              },
+              "when" : {
+                "description" : "When to deploy, as YYYY-MM-DD HH:MM in 24-hour time — for example \"2026-09-09 06:30\".",
+                "type" : "string"
+              }
+            },
+            "required" : [
+              "course",
+              "section",
+              "when"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"deploy tomorrow's class at 6:30 AM\", \"put it live before school\", \"send it out at 7am\", \"schedule the deploy for Monday morning\". Ask this computer to deploy a section at a set time.",
+          "name" : "schedule_deploy",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              },
+              "when" : {
+                "description" : "When to deploy, as YYYY-MM-DD HH:MM in 24-hour time — for example \"2026-09-09 06:30\".",
+                "type" : "string"
+              }
+            },
+            "required" : [
+              "course",
+              "section",
+              "when"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"cancel that scheduled deploy\", \"don't send it in the morning after all\", \"call it off\". Call off a deploy that was scheduled for a section.",
+          "name" : "cancel_scheduled_deploy",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"when does this class meet?\", \"what dates do you have for us?\", \"do you know our timetable?\", \"how many class days are left?\". Read back the class dates recorded for a section, and where the teacher said they came from, changing nothing.",
+          "name" : "read_remembered_timetable",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "Work out what recording these class dates would do, WITHOUT changing anything. Says how many days it would remember, the first and the last, and what it would replace.",
+          "name" : "plan_remember_timetable",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "dates" : {
+                "description" : "Every day this class meets, as YYYY-MM-DD, separated by semicolons — for example \"2026-09-08; 2026-09-10; 2026-09-14\". Give the dates themselves; this tool does not open timetable files or work dates out from a pattern.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              },
+              "source" : {
+                "description" : "Where the dates came from, in the teacher's own words — for example \"timetable.xlsx, block H\" or \"typed in by hand\". Read back later, so a stale answer can be recognised. Leave empty if they did not say.",
+                "type" : "string"
+              }
+            },
+            "required" : [
+              "course",
+              "section",
+              "dates"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"here are the days we meet\", \"remember our timetable\", \"these are our class dates\", \"save these dates\". Write down the days a section meets, so nothing has to ask for them again. Changes no page.",
+          "name" : "remember_timetable",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "dates" : {
+                "description" : "Every day this class meets, as YYYY-MM-DD, separated by semicolons — for example \"2026-09-08; 2026-09-10; 2026-09-14\". Give the dates themselves; this tool does not open timetable files or work dates out from a pattern.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              },
+              "source" : {
+                "description" : "Where the dates came from, in the teacher's own words — for example \"timetable.xlsx, block H\" or \"typed in by hand\". Read back later, so a stale answer can be recognised. Leave empty if they did not say.",
+                "type" : "string"
+              }
+            },
+            "required" : [
+              "course",
+              "section",
+              "dates"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"what would the next class page be?\", \"which day comes next?\", \"show me before you add it\". Work out which page adding the next class would create and which day it would fall on, WITHOUT changing anything.",
+          "name" : "plan_add_next_class",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"add an entry for the next class\", \"add tomorrow's class page\", \"start the next class\", \"add the next class\", \"make a page for our next class\", \"set up next day's lesson\". Create the next class page in a section: it continues the unit the last class was in, and takes its date from the section's remembered timetable. Work out no numbers and no dates yourself — this tool does both. It starts unpublished, so students see nothing until the teacher publishes it.",
+          "name" : "add_next_class",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "List this course's curriculum expectations with their FULL WORDING, changing nothing. Call this when a teacher asks you to point a page at the expectations it covers. Read the page first, then read these, then decide which genuinely fit — that judgement is yours to make and the tools cannot make it. Propose the codes to the teacher with your reasons and let them choose; do not add expectations they have not agreed to.",
+          "name" : "list_curriculum_expectations",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "matching" : {
+                "description" : "Only list expectations whose code or wording contains this. Leave empty for all.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "Work out what adding curriculum transclusions to a page would do, changing nothing. Show the teacher what it says — it quotes each expectation's wording so they can tell whether it fits their lesson without looking it up — then wait for them to agree.",
+          "name" : "plan_curriculum_mentions",
+          "parameters" : {
+            "properties" : {
+              "codes" : {
+                "description" : "The expectation codes to add, separated by commas — for example \"A1.1, A2.2\".",
+                "type" : "string"
+              },
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "page" : {
+                "description" : "The page title, for example \"Movement Concepts\".",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section",
+              "page",
+              "codes"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "Add transclusions of curriculum expectations to a page, inside the curriculum markers so a course installed without curriculum still builds. Call plan_curriculum_mentions FIRST and get the teacher's agreement to the specific codes. Changes nothing else on the page, and changes no page's visibility. The course is backed up first.",
+          "name" : "add_curriculum_mentions",
+          "parameters" : {
+            "properties" : {
+              "codes" : {
+                "description" : "The expectation codes to add, separated by commas — for example \"A1.1, A2.2\".",
+                "type" : "string"
+              },
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "page" : {
+                "description" : "The page title, for example \"Movement Concepts\".",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section",
+              "page",
+              "codes"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      }
+    ],
+    "note" : "The tool definitions exactly as each client sends them. The DESCRIPTIONS are measured, not decorative — see the note on steering with code rather than with tool descriptions. `local` is what the on-device model is shown; `mcp` is what Claude Code sees. Point a routing measurement at these rather than at a copy."
   }
 }

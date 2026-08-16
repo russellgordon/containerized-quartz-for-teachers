@@ -141,6 +141,33 @@ final class AssistContractTests: XCTestCase {
         }
     }
 
+    /// The emitted schemas are the ones a client would really send.
+    ///
+    /// This is what makes a routing measurement honest: the suite reads these,
+    /// so a score cannot be earned against a surface the app does not ship.
+    func testTheEmittedSchemasAreWhatAClientWouldSend() throws {
+        let committed: [String: Any] = try readContract(named: AssistContract.casesFileName)
+        let schemas: [String: Any] = try XCTUnwrap(committed["toolSchemas"] as? [String: Any])
+
+        let local: [[String: Any]] = try XCTUnwrap(schemas["local"] as? [[String: Any]])
+        let mcp: [[String: Any]] = try XCTUnwrap(schemas["mcp"] as? [[String: Any]])
+        XCTAssertEqual(local.count, AssistToolRunner.localTools.count)
+        XCTAssertEqual(mcp.count, AssistToolRunner.mcpTools.count)
+
+        // Name, description and parameters — all three, because the
+        // DESCRIPTIONS are the measured part.
+        for (index, definition) in AssistToolRunner.localTools.enumerated() {
+            let function: [String: Any] = try XCTUnwrap(local[index]["function"] as? [String: Any])
+            XCTAssertEqual(function["name"] as? String, definition.name)
+            XCTAssertEqual(
+                function["description"] as? String, definition.description,
+                "\(definition.name): a changed description is a ROUTING change, and the contract must "
+                + "carry the words the model is actually shown."
+            )
+            XCTAssertNotNil(function["parameters"], "\(definition.name) has no parameter schema")
+        }
+    }
+
     // MARK: - Private
 
     /// The repository's `contracts/` folder, found from this source file's own

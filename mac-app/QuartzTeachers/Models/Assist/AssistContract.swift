@@ -43,7 +43,7 @@ enum AssistContract {
 
     /// The top-level keys of the cases file that this writes. Everything else
     /// in that file is hand-written and survives a regeneration.
-    static let generatedCaseKeys: [String] = ["cardPhrasings", "tools"]
+    static let generatedCaseKeys: [String] = ["cardPhrasings", "tools", "toolSchemas"]
 
     /// How the flag is spelled.
     ///
@@ -104,7 +104,49 @@ enum AssistContract {
         return [
             "cardPhrasings": cardPhrasings(),
             "tools": tools(),
+            "toolSchemas": toolSchemas(),
         ]
+    }
+
+    /// The tool definitions EXACTLY as a model is sent them.
+    ///
+    /// **Why the descriptions are contract rather than commentary.** They are
+    /// measured artifacts. The "TEACHERS SAY:" phrasings in them came out of
+    /// the routing suite, and changing one is a routing change: adding a
+    /// single clarifying sentence to `publish_pages`' description to fix one
+    /// typo probe took the score from 110/110 to 90/110 and broke three
+    /// probes that had been perfect. A small model reads a sentence naming
+    /// another tool as a recommendation, not a boundary.
+    ///
+    /// So the surface a measurement runs against must be the surface that
+    /// ships. This emits both lists in the OpenAI shape the client sends, so
+    /// the routing suite can be pointed at the contract instead of at a
+    /// hand-written copy, and so Windows can compare its own schemas to these
+    /// rather than to a description of them.
+    private static func toolSchemas() -> [String: Any] {
+        return [
+            "note": "The tool definitions exactly as each client sends them. The DESCRIPTIONS are "
+                  + "measured, not decorative — see the note on steering with code rather than with "
+                  + "tool descriptions. `local` is what the on-device model is shown; `mcp` is what "
+                  + "Claude Code sees. Point a routing measurement at these rather than at a copy.",
+            "local": schemas(for: AssistToolRunner.localTools),
+            "mcp": schemas(for: AssistToolRunner.mcpTools),
+        ]
+    }
+
+    private static func schemas(for definitions: [AssistToolDefinition]) -> [[String: Any]] {
+        var written: [[String: Any]] = []
+        for definition in definitions {
+            written.append([
+                "type": "function",
+                "function": [
+                    "name": definition.name,
+                    "description": definition.description,
+                    "parameters": definition.parametersJSON,
+                ],
+            ])
+        }
+        return written
     }
 
     private static func cardPhrasings() -> [String: Any] {

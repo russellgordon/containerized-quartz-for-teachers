@@ -1003,12 +1003,13 @@ Windows teacher gets a skeleton and is never asked. That is the question MOST
 teachers meet, because around 1,900 course codes have a skeleton and no
 payload; only 37 have a ready-made course.
 
-Two ways to fix it, and the choice is yours: ask the question in the wizard and
-write the answer, as the mac does, or decide deliberately that Windows always
-starts from the skeleton and **write `use_skeleton: true` explicitly** so the
-behaviour is stated rather than inherited from a fallback nobody chose. Either
-is defensible; silence is not, because the next change to that default in the
-Python moves Windows and not the mac.
+**Decided 2026-08-16: match the mac — ask the question and write the answer.**
+The alternative was to always start from the skeleton and write
+`use_skeleton: true` explicitly, which was defensible; the reason it lost is
+that this is a real choice a teacher has, and the two apps should not differ on
+whether a teacher gets to make it. Silence was never an option either way,
+because the next change to that default in the Python would move Windows and
+not the mac.
 
 The mac writes each of these as `capabilityExists && teacherSaidYes` —
 `hasSkeleton(code) && startsFromSkeleton` — so a stale `true` in an old config
@@ -1080,7 +1081,7 @@ assistant's contract and is now the whole product's:
 | File | What it holds |
 |---|---|
 | `contracts/assist-wording.json` | Every sentence the assistant says to a teacher — nineteen, with `{course}` and `{section}` where values go. |
-| `contracts/assist-cases.json` | The nine phrasings matched in code, the four near misses that must NOT match, the three tool lists with approvals and plan twins, eight scenarios as `given` / `when` / `expectEvents` / `expectReply`, and the arrow-key prompt history. |
+| `contracts/assist-cases.json` | The nine phrasings matched in code, the four near misses that must NOT match, the three tool lists with approvals and plan twins, **the full tool SCHEMAS as a client sends them**, eight scenarios as `given` / `when` / `expectEvents` / `expectReply`, and the arrow-key prompt history. |
 | `contracts/app-rules.json` | Launcher arguments per configuration, the validation a teacher reads, failure output turned into a sentence, whether a deploy must build first, the progress markers and where each one's text comes from, the preview's ports. |
 | `contracts/schedule-rules.json` | Every accepted date form, how an ambiguous `08/09/2026` column is settled or asked about, what a pasted Google Sheet address becomes. |
 | `contracts/class-planning.json` | Which titles carry numbers, what the next class is called, and the ORDER renames must run in. |
@@ -1284,6 +1285,34 @@ to press, and the assistant runs the launcher itself. That path is not dead
 code — it is what Claude Code over MCP uses, and what a deploy scheduled for
 half six in the morning uses. Keep it working, and keep it asking the same
 place for its arguments.
+
+### The tool descriptions are measured, so compare against the contract
+
+`assist-cases.json` → `toolSchemas` now carries the tool definitions **exactly
+as each client sends them** — name, description and parameter schema, for both
+the 13-tool local surface and the 23-tool MCP one.
+
+The descriptions are the part to take seriously. They are measured artifacts,
+not commentary: the "TEACHERS SAY:" phrasings came out of the routing suite,
+and one added clarifying sentence in `publish_pages`' description took the
+promise-card score from 110/110 to 90/110 and broke three probes that had been
+perfect. A small model reads a sentence naming another tool as a
+recommendation, not a boundary. **Steer with code, never with a description.**
+
+Two things follow for your side. Compare your own schemas against these rather
+than against a description of them — a drifted description is a routing change
+nobody will attribute to a wording edit. And when you measure routing against
+your own backend, take the surface from the contract:
+
+```
+python3 research/ai-assist/tools-from-contract.py local > /tmp/real-tools.json
+python3 research/ai-assist/shipped-surface-suite.py 8099 10 /tmp/real-tools.json
+```
+
+The suites are plain Python over `http://127.0.0.1:<port>/v1/chat/completions`,
+so they run anywhere a llama-server does. `routing-suite.py` is marked
+HISTORICAL and hand-writes five tools; do not measure the shipping surface with
+it.
 
 ### The model's list is SHORTER than the server's
 

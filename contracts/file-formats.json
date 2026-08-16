@@ -131,7 +131,8 @@
         {
           "defaultWhenAbsent": true,
           "key": "use_skeleton",
-          "knownDivergence": "Windows: not written. Checked 2026-08-16.",
+          "knownDivergence": "Windows: not written as of 2026-08-16, so the Python's default of true wins and the teacher is never asked. To be closed by asking the question in the wizard.",
+          "requirement": "BOTH apps ask the teacher and write the answer. Decided 2026-08-16: Windows matches macOS.",
           "type": "boolean",
           "why": "Whether a course with no ready-made payload starts from its subject's SKELETON — folders that suit the subject, four units of class pages to rename, placeholders saying what belongs where — or from nothing. Around 1,900 course codes have a skeleton and no payload, so this is the question most teachers actually meet. The mac writes `hasSkeleton(code) && teacherSaidYes`; **Windows does not write it at all**, so the Python takes its own default of TRUE and a Windows teacher cannot decline."
         },
@@ -146,7 +147,7 @@
           "why": "Whether the payload's Curriculum folder comes with it."
         }
       ],
-      "note": "Written by the WIZARD at course creation, not by the settings form. `setup_course.py` reads each as the default for a question it would otherwise ask — so an app that omits one leaves the Python to take its own default, and the teacher never gets the choice."
+      "note": "Written by the WIZARD at course creation, not by the settings form. `setup_course.py` reads each as the default for a question it would otherwise ask — so an app that omits one leaves the Python to take its own default, and the teacher never gets the choice. All three are the TEACHER's answers, on both platforms: the wizard asks, the app writes `capabilityExists && teacherSaidYes`, and the Python's own default is a fallback that should never be the thing deciding."
     }
   },
   "firstDeployMarkers": {

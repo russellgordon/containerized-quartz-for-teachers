@@ -23,6 +23,7 @@ vetoed and for what, and what the flags cost.
 | `HISTORY.md` | The narrative: the feasibility investigation, the build handoff, and the original MCP proposal, merged with a status block saying what has since been overturned. |
 | `macos-native-10-trial-comparison.txt` | **The model decision.** Ten models × 29 probes × 10 trials on one identical tool surface. The source of the 3B veto (two unrelated families inverting on the same sentence), and of Qwen3-4B replacing the 7B. Cited from `AssistModelTier.swift`. |
 | `reasoning-flag-measurement.txt` | Why thinking must be turned off with **two** flags, and why the fault hid for days: llama.cpp parses the thinking out of the reply, so only the token count and the clock show it. |
+| `tools-from-contract.py` | **Start here for a new measurement.** Writes the tool surface the suites take as input, read from `contracts/assist-cases.json` — which is generated from the app, so a run cannot be against a surface that does not ship. `local` (13 tools) is what the on-device model sees; `mcp` (23) is Claude Code's. |
 | `thirteen-tool-surface-results.txt` | The **current** shipping surface, 42 probes × 10 trials on both tiers. Also records the description-steer regression: fixing one probe in a tool description broke three others. |
 
 **Earlier runs, superseded but kept**
@@ -46,15 +47,30 @@ probe set and the tool surface both have to match, or the numbers mean nothing.
 A change to a tool, a tool description, a model, a quant or a context size is a
 reason to re-run.
 
-## Sources kept in the repository
+## A source that was NOT kept
 
-| File | What it is, and why it is still here |
-|---|---|
-| [`../dcp.html`](../dcp.html) | A saved copy of Ontario's **Curriculum and Resources** site (`dcp.edu.gov.on.ca`), taken 2026-08-14. It is the source the CHC2D payload's expectations were transcribed from, and where the half-credit work came from — Career Studies and Civics are 55 hours each and taken back to back, which the linter's hard-coded 110 hours and the installer's fixed September anchor both got wrong. **6.4 MB, and it earns its place only while payloads are still being written**: the rule in this repository is that curriculum text is transcribed verbatim or not at all, and a live site cannot be quoted from six months later when it has changed. If payload work stops, this can go. |
+`dcp.html` — a 6.4 MB saved copy of Ontario's **Curriculum and Resources**
+site, taken 2026-08-14 and used when transcribing the CHC2D expectations and
+when working out half credits (Career Studies and Civics are 55 hours each and
+taken back to back, which the linter's hard-coded 110 hours and the installer's
+fixed September anchor both got wrong).
 
-Recorded 2026-08-16 after a sweep found it tracked, six megabytes, and
-mentioned in no document at all — which is how a file becomes something nobody
-dares delete and nobody can explain.
+**Removed 2026-08-16, deliberately.** The ministry updates these documents
+whenever it likes, so a copy held here does not preserve a source — it
+manufactures a second, stale one, and the next person to transcribe from it
+would be quoting a curriculum that has moved. The rule this repository already
+had says curriculum text is transcribed **verbatim or not at all**; the
+corollary, now written down, is that it is transcribed **from the live site at
+the time of writing**, and the payload records what it says rather than the
+repository hoarding the page it came from.
+
+If a payload's expectations need checking, go to `dcp.edu.gov.on.ca` and read
+what is there now. If it differs from a payload, the payload is what needs
+updating.
+
+(The file remains in git history, which is where a removed 6.4 MB file belongs
+— recoverable if it is ever genuinely needed, and not in anybody's working
+tree.)
 
 ## `preview-staleness/`
 

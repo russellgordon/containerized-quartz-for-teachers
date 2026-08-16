@@ -19,6 +19,13 @@ NO changes for a new course code — a new payload is pure content.
 
 ## Phase 1 — Research the curriculum (verbatim or not at all)
 
+**From the LIVE site, every time.** `dcp.edu.gov.on.ca` is the source; do not
+work from a saved copy, and do not add one to this repository. A copy held here
+does not preserve the curriculum, it manufactures a stale second version of it —
+the ministry updates these documents whenever it likes. (One was kept for two
+days in August 2026 and removed for exactly this reason; see
+[`research/README.md`](../../../research/README.md).)
+
 Launch a research agent (WebSearch/WebFetch) to capture, from the
 Ministry's own published document, for the exact course code:
 strand titles; every OVERALL expectation (code + verbatim text); every

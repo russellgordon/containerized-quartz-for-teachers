@@ -469,7 +469,7 @@ they are a fair first task: implementing them fixes a real bug on that side.
 | [`MAC-HANDOFF.md`](MAC-HANDOFF.md) | The mirror: work that originated on Windows or in shared `scripts/` and needs the mac's attention. Ordered by STATUS — contract cases waiting, then what is still owed, then awareness, then the finished ledger — so it can be read top-down and abandoned at any point. |
 | [`RELEASING.md`](RELEASING.md) | Cutting a release: signing, bundling, and the frozen asset names both platforms depend on. |
 | [`TODO.md`](TODO.md) | Deferred work, with the research already done so picking one up is cheap. |
-| [`research/`](research/README.md) | Measurement records the code cites as evidence — the assistant's model choices, the preview-staleness findings — and the provenance of `dcp.html`, the saved curriculum source the payloads are transcribed from. Not an automated gate; each file states its own conditions. |
+| [`research/`](research/README.md) | Measurement records the code cites as evidence — the assistant's model choices, the preview-staleness findings. Not an automated gate; each file states its own conditions. |
 | [`mac-app/README.md`](mac-app/README.md) · [`windows-app/PROGRESS.md`](windows-app/PROGRESS.md) | Per-app build, test and layout notes. |
 | [`README.md`](README.md) | The teacher-facing introduction. Written for them, not for us — it deliberately says nothing about the assistant until a release ships it. |
 | `.claude/skills/` | Task-specific procedures: `example-content` (payloads and skeletons), `mac-app` (building so it can actually be run), `cut-release`. Invoke the skill rather than reconstructing its steps. |

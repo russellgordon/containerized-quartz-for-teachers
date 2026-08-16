@@ -5,6 +5,19 @@ Routing accuracy for a small local model against a Plantoir-shaped tool set.
 The premise under test: if the TOOLS do the work, the model only has to pick
 one and fill its arguments. This measures how often it picks correctly, and
 whether the arguments are usable after type coercion.
+
+**HISTORICAL — do not run this to measure the shipping surface.** The five
+tools below are hand-written and were the surface as it stood when this ran;
+the app's real surface has thirteen. Kept unchanged because its results are
+dated records and rewriting it would make them unreproducible.
+
+For a measurement of what actually ships:
+
+    python3 research/ai-assist/tools-from-contract.py local > /tmp/real-tools.json
+    python3 research/ai-assist/shipped-surface-suite.py 8099 10 /tmp/real-tools.json
+
+A routing score measured against tools the app does not ship is worse than no
+score, because it reads as evidence.
 """
 import json
 import sys
