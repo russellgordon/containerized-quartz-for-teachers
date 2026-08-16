@@ -108,6 +108,42 @@ final class ExampleContentContractTests: XCTestCase {
         )
     }
 
+    // MARK: - Sentinels, not dates
+
+    /// Every payload's class pages carry a sentinel rather than a literal
+    /// date. The failure this catches is invisible rather than loud: the
+    /// course installs, the pages open, and every class claims a date from
+    /// whenever the payload happened to be authored.
+    func testNoPayloadShipsAHardCodedClassDate() throws {
+        let payloads: URL = ExampleContentContractTests.repositoryRoot()
+            .appendingPathComponent("support/example_content")
+        let sentinel: String = "__CREATED"
+
+        for code in try FileManager.default.contentsOfDirectory(atPath: payloads.path).sorted()
+        where !code.hasPrefix(".") {
+            let classes: URL = payloads.appendingPathComponent(code)
+                .appendingPathComponent("per_section/All Classes")
+            guard let pages = try? FileManager.default.contentsOfDirectory(atPath: classes.path) else {
+                continue
+            }
+            for page in pages where page.hasSuffix(".md") {
+                let text: String = try String(
+                    contentsOf: classes.appendingPathComponent(page), encoding: .utf8
+                )
+                guard let created = text.range(of: "created:") else {
+                    continue
+                }
+                let line: String = String(text[created.upperBound...].prefix(40))
+                XCTAssertTrue(
+                    line.contains(sentinel),
+                    "\(code)/per_section/All Classes/\(page) has a literal created date (\(line.trimmingCharacters(in: .whitespacesAndNewlines))). "
+                    + "It must carry a sentinel, or every teacher who installs this course gets classes "
+                    + "dated from whenever the payload was written."
+                )
+            }
+        }
+    }
+
     // MARK: - Private
 
     /// Nothing in the payload tree is missing from the manifest's lists.

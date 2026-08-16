@@ -249,5 +249,27 @@
         "why": "A no-op write still updates the modification time, which makes the next build think the content changed."
       }
     ]
+  },
+  "sectionTimetable": {
+    "fields": [
+      {
+        "field": "dates",
+        "type": "array of YYYY-MM-DD strings",
+        "why": "Plain dates, not a recurrence rule. A school timetable has holidays, PA days and the week the schedule turned inside out for exams — no rule survives contact with it."
+      },
+      {
+        "field": "source",
+        "type": "string",
+        "why": "Where the dates came from, IN THE TEACHER'S OWN WORDS — 'timetable.xlsx, block H'. It is what they read months later when they wonder where these came from, and 'a Google Sheet' answers that far less well than they can themselves. Read back as 'not recorded' when absent rather than blank."
+      },
+      {
+        "field": "recorded",
+        "type": "YYYY-MM-DD string",
+        "why": "When they were written down, so a teacher can tell a timetable from last semester."
+      }
+    ],
+    "note": "`courses/<CODE>/.internal/timetable/section<N>.json` — the dates a section actually meets, written down once by whichever app the teacher used and read by both. It lives INSIDE the course folder so it travels with a backup, an archive and a restore; a teacher who restores a course gets its timetable back with it.",
+    "path": "courses/<CODE>/.internal/timetable/section<N>.json",
+    "verified": "Both apps use this exact path — mac `SectionTimetable`, Windows `TimetableMemory.cs`."
   }
 }

@@ -85,5 +85,22 @@
       "rule": "The curriculum folder installs only when the teacher asked for curriculum",
       "why": "A teacher who turned coverage off should not be given a folder of expectations they will have to delete."
     }
-  ]
+  ],
+  "sentinels": {
+    "note": "A payload ships pages with no dates in them. The installer substitutes these at install time, so a course created in March is not full of a September the teacher never taught.",
+    "rule": "A payload page must carry a sentinel rather than a literal date.",
+    "tokens": [
+      {
+        "becomes": "the moment the course was created",
+        "meansFor": "every ordinary page",
+        "token": "__CREATED__"
+      },
+      {
+        "becomes": "that class's own meeting date, spread across the section's timetable — which is why `class_weekday_step` exists in the manifest",
+        "meansFor": "class pages, where K is the class's index",
+        "token": "__CREATED_CLASS_K__"
+      }
+    ],
+    "why": "A literal date is not merely wrong, it is invisible: the course installs, the pages open, and every class claims a date from whenever the payload was authored. A mac test (`testTheBundledPayloadUsesTheCreatedSentinel`) pins the bundled payload against this."
+  }
 }
