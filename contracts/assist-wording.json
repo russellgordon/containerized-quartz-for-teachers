@@ -1,28 +1,28 @@
 {
-  "note": "Generated from mac-app AssistWording by `Plantoir --assist-contract`. Do not hand-edit; see contracts/README.md.",
-  "placeholders": {
-    "course": "a course code, e.g. ICS3U",
-    "section": "a section number, e.g. 1"
+  "note" : "Generated from mac-app AssistWording by `Plantoir --assist-contract`. Do not hand-edit; see contracts/README.md.",
+  "placeholders" : {
+    "course" : "a course code, e.g. ICS3U",
+    "section" : "a section number, e.g. 1"
   },
-  "wording": {
-    "builtWithNoWindowOpen": "Rebuilt the site for {course} Section {section}. Open that section in Plantoir and press Preview to look it over — no window is showing it at the moment.",
-    "cancelled": "Cancel",
-    "couldNotBuildBeforeDeploying": "{course} Section {section} could not be built, so nothing was sent to students. The output is in that section's window in Plantoir.",
-    "courseIsBusy": "{course} is busy in Plantoir — a preview or a deploy is running. Wait for that to finish, then ask again.",
-    "deployAccepted": "Deploy",
-    "deployApproval": "Students will see what is deployed. Be certain to review changes you have made.",
-    "deployDidNotFinish": "The deploy of {course} Section {section} did not finish. The output is in that section's window in Plantoir.",
-    "deployQuestion": "Shall I deploy?",
-    "deployWasCancelled": "Deploy cancelled.",
-    "deployed": "{course} Section {section} is deployed. Students can reach it now.",
-    "nothingToDo": "I am not sure what to do with that.",
-    "planAccepted": "Go",
-    "planQuestion": "Shall I go ahead?",
-    "planWasCancelled": "Left as it was — nothing was changed.",
-    "previewDidNotBuild": "The preview for {course} Section {section} did not finish building. The output is in that section's window in Plantoir.",
-    "previewIsRebuilding": "The preview for {course} Section {section} is rebuilding now, and will appear in that section's window when it is ready.",
-    "rebuiltForACallerWithNoWindow": "Rebuilt the preview for {course} Section {section}. Open that section in Plantoir to look it over.",
-    "sectionIsBusy": "{course}-S{section} is already busy in Plantoir. Wait for that to finish, then deploy.",
-    "whereTheOutputIs": "The output is in that section's window in Plantoir."
+  "wording" : {
+    "builtWithNoWindowOpen" : "Rebuilt the site for {course} Section {section}. Open that section in Plantoir and press Preview to look it over — no window is showing it at the moment.",
+    "cancelled" : "Cancel",
+    "couldNotBuildBeforeDeploying" : "{course} Section {section} could not be built, so nothing was sent to students. The output is in that section's window in Plantoir.",
+    "courseIsBusy" : "{course} is busy in Plantoir — a preview or a deploy is running. Wait for that to finish, then ask again.",
+    "deployAccepted" : "Deploy",
+    "deployApproval" : "Students will see what is deployed. Be certain to review changes you have made.",
+    "deployDidNotFinish" : "The deploy of {course} Section {section} did not finish. The output is in that section's window in Plantoir.",
+    "deployed" : "{course} Section {section} is deployed. Students can reach it now.",
+    "deployQuestion" : "Shall I deploy?",
+    "deployWasCancelled" : "Deploy cancelled.",
+    "nothingToDo" : "I am not sure what to do with that.",
+    "planAccepted" : "Go",
+    "planQuestion" : "Shall I go ahead?",
+    "planWasCancelled" : "Left as it was — nothing was changed.",
+    "previewDidNotBuild" : "The preview for {course} Section {section} did not finish building. The output is in that section's window in Plantoir.",
+    "previewIsRebuilding" : "The preview for {course} Section {section} is rebuilding now, and will appear in that section's window when it is ready.",
+    "rebuiltForACallerWithNoWindow" : "Rebuilt the preview for {course} Section {section}. Open that section in Plantoir to look it over.",
+    "sectionIsBusy" : "{course}-S{section} is already busy in Plantoir. Wait for that to finish, then deploy.",
+    "whereTheOutputIs" : "The output is in that section's window in Plantoir."
   }
 }

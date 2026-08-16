@@ -1,0 +1,160 @@
+import XCTest
+@testable import QuartzTeachers
+
+/// The files in `contracts/` are what the Windows suite tests against, so this
+/// asks the only question that matters about them: **are they still true?**
+///
+/// It regenerates them in memory from the app's own types and compares against
+/// what is committed. A sentence changed in `AssistWording` and not regenerated
+/// fails HERE, in the same run that changed it, with the command to fix it —
+/// rather than three weeks later on a Windows machine, as behaviour that was
+/// implemented faithfully from a file that had quietly stopped being true.
+///
+/// Comparison is of PARSED JSON, deliberately, not of bytes. Whitespace and
+/// key order are a formatting argument between two JSON writers; the contract
+/// is the content.
+@MainActor
+final class AssistContractTests: XCTestCase {
+
+    // MARK: - Stored properties
+
+    /// How to put it right, said the same way in every failure here.
+    private static let howToFix: String =
+        "\n\nThe contract in contracts/ is out of date. Regenerate it:\n"
+      + "    Plantoir --assist-contract contracts\n"
+      + "…or, from a build tree:\n"
+      + "    <DerivedData>/Build/Products/Debug/Plantoir.app/Contents/MacOS/Plantoir "
+      + "--assist-contract contracts\n"
+      + "Then commit the diff — that diff is how the Windows side finds out."
+
+    // MARK: - Functions
+
+    /// Every sentence in the committed wording file is one the app really says.
+    func testTheCommittedWordingIsWhatTheAppSays() throws {
+        let committed: [String: Any] = try readContract(named: AssistContract.wordingFileName)
+        let generated: [String: Any] = AssistContract.wording()
+
+        let committedWording: [String: String] = try XCTUnwrap(committed["wording"] as? [String: String])
+        let generatedWording: [String: String] = try XCTUnwrap(generated["wording"] as? [String: String])
+
+        // Named one at a time. A whole-dictionary assertion prints both
+        // dictionaries and leaves you to find the difference by eye.
+        for (key, sentence) in generatedWording {
+            XCTAssertEqual(
+                committedWording[key], sentence,
+                "contracts/assist-wording.json disagrees about \"\(key)\"." + AssistContractTests.howToFix
+            )
+        }
+        for key in committedWording.keys where generatedWording[key] == nil {
+            XCTFail(
+                "contracts/assist-wording.json still carries \"\(key)\", which the app no longer says."
+                + AssistContractTests.howToFix
+            )
+        }
+    }
+
+    /// The generated half of the cases file matches the tool surface and the
+    /// card shapes as they stand.
+    func testTheCommittedCasesMatchTheToolSurface() throws {
+        let committed: [String: Any] = try readContract(named: AssistContract.casesFileName)
+        let generated: [String: Any] = AssistContract.generatedCases()
+
+        for key in AssistContract.generatedCaseKeys {
+            let left: Data = try AssistContract.encode(
+                ["value": try XCTUnwrap(generated[key], "Nothing generated for \(key)")]
+            )
+            let right: Data = try AssistContract.encode(
+                ["value": try XCTUnwrap(committed[key], "contracts/assist-cases.json has no \(key)")]
+            )
+            XCTAssertEqual(
+                String(decoding: right, as: UTF8.self), String(decoding: left, as: UTF8.self),
+                "contracts/assist-cases.json disagrees about \"\(key)\"." + AssistContractTests.howToFix
+            )
+        }
+    }
+
+    /// The hand-written half is still there.
+    ///
+    /// This is the failure a careless regeneration produces, and it would
+    /// otherwise look like a successful run: the scenarios and the near misses
+    /// are the only things in `contracts/` that no code can reconstruct, so
+    /// losing them loses the reasoning outright.
+    func testTheHandWrittenHalfSurvives() throws {
+        let committed: [String: Any] = try readContract(named: AssistContract.casesFileName)
+
+        let scenarios: [String: Any] = try XCTUnwrap(committed["scenarios"] as? [String: Any])
+        let cases: [[String: Any]] = try XCTUnwrap(scenarios["cases"] as? [[String: Any]])
+        XCTAssertGreaterThanOrEqual(cases.count, 8, "The scenarios have been thinned out")
+        for scenario in cases {
+            XCTAssertNotNil(scenario["name"], "A scenario with no name")
+            XCTAssertNotNil(scenario["why"], "A scenario with no reason is a scenario that gets deleted")
+        }
+
+        let nearMisses: [String: Any] = try XCTUnwrap(committed["nearMisses"] as? [String: Any])
+        let phrasings: [String] = try XCTUnwrap(nearMisses["phrasings"] as? [String])
+        XCTAssertFalse(phrasings.isEmpty)
+    }
+
+    /// Every near miss really is one. The contract tells Windows these must
+    /// not match; if one of them started matching here, the contract would be
+    /// asking them to enforce something this app does not do.
+    func testTheNearMissesDoNotMatch() throws {
+        let committed: [String: Any] = try readContract(named: AssistContract.casesFileName)
+        let nearMisses: [String: Any] = try XCTUnwrap(committed["nearMisses"] as? [String: Any])
+        for phrasing in try XCTUnwrap(nearMisses["phrasings"] as? [String]) {
+            XCTAssertNil(
+                AssistCardCommand.matching(phrasing),
+                "\"\(phrasing)\" is listed as a near miss and is being matched as a card."
+            )
+        }
+    }
+
+    /// And every scenario's `expectReply` names a sentence that exists. The
+    /// two files refer to each other by NAME rather than by quoting, which
+    /// only helps if the names are checked.
+    func testEveryScenarioReplyNamesARealSentence() throws {
+        let cases: [String: Any] = try readContract(named: AssistContract.casesFileName)
+        let wording: [String: String] = try XCTUnwrap(
+            (try readContract(named: AssistContract.wordingFileName))["wording"] as? [String: String]
+        )
+        let scenarios: [String: Any] = try XCTUnwrap(cases["scenarios"] as? [String: Any])
+
+        for scenario in try XCTUnwrap(scenarios["cases"] as? [[String: Any]]) {
+            var named: [String] = []
+            if let reply = scenario["expectReply"] as? String {
+                named.append(reply)
+            }
+            for line in (scenario["expectTranscript"] as? [String]) ?? [] {
+                named.append(line)
+            }
+            for reference in named {
+                // "assistant: wording.deployWasCancelled" → "deployWasCancelled"
+                guard let range = reference.range(of: "wording.") else {
+                    continue
+                }
+                let key: String = String(reference[range.upperBound...])
+                XCTAssertNotNil(
+                    wording[key],
+                    "Scenario \"\(scenario["name"] ?? "?")\" names wording.\(key), which does not exist."
+                )
+            }
+        }
+    }
+
+    // MARK: - Private
+
+    /// The repository's `contracts/` folder, found from this source file's own
+    /// path — the test bundle does not carry it, and it must not: the point of
+    /// the file is that it is committed and reviewable, not shipped.
+    private func readContract(named name: String) throws -> [String: Any] {
+        let here: URL = URL(fileURLWithPath: #filePath)
+        let repository: URL = here
+            .deletingLastPathComponent()   // QuartzTeachersTests
+            .deletingLastPathComponent()   // Tests
+            .deletingLastPathComponent()   // mac-app
+            .deletingLastPathComponent()   // the repository
+        let url: URL = repository.appendingPathComponent("contracts").appendingPathComponent(name)
+        let data: Data = try Data(contentsOf: url)
+        return try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+    }
+}

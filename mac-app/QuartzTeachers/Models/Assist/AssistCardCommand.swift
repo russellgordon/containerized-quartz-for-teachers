@@ -47,6 +47,25 @@ nonisolated struct AssistCardCommand: Sendable, Equatable {
         return nil
     }
 
+    /// One fixed shape, for anything that has to enumerate them — the
+    /// contract generator does, and a tuple array cannot be handed out.
+    struct FixedShape: Sendable, Equatable {
+
+        // MARK: - Stored properties
+
+        let phrasing: String
+        let command: AssistCardCommand
+    }
+
+    /// Every shape, in the order they are matched.
+    static var everyFixedShape: [FixedShape] {
+        var shapes: [FixedShape] = []
+        for (phrasing, command) in fixedShapes {
+            shapes.append(FixedShape(phrasing: phrasing, command: command))
+        }
+        return shapes
+    }
+
     /// The fixed shapes, worded exactly as the shelf offers them.
     ///
     /// Anything whose arguments depend on what the teacher said — a page

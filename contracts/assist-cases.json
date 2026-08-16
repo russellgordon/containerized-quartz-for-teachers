@@ -1,183 +1,201 @@
 {
-  "cardPhrasings": {
-    "matches": [
+  "cardPhrasings" : {
+    "matches" : [
       {
-        "arguments": {},
-        "phrasing": "what would students see in this section right now?",
-        "tool": "check_section"
-      },
-      {
-        "arguments": {},
-        "phrasing": "what do students see right now?",
-        "tool": "check_section"
-      },
-      {
-        "arguments": {},
-        "phrasing": "preview",
-        "tool": "rebuild_preview"
-      },
-      {
-        "arguments": {},
-        "phrasing": "rebuild the preview",
-        "tool": "rebuild_preview"
-      },
-      {
-        "arguments": {},
-        "phrasing": "undo that",
-        "tool": "undo_last_change"
-      },
-      {
-        "arguments": {},
-        "phrasing": "deploy now",
-        "tool": "deploy_section"
-      },
-      {
-        "arguments": {},
-        "phrasing": "deploy this section now",
-        "tool": "deploy_section"
-      },
-      {
-        "arguments": {},
-        "phrasing": "deploy",
-        "tool": "deploy_section"
-      },
-      {
-        "arguments": {
-          "when": "tomorrow"
+        "arguments" : {
+
         },
-        "phrasing": "publish tomorrow's class",
-        "tool": "publish_class_on"
+        "phrasing" : "what would students see in this section right now?",
+        "tool" : "check_section"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "what do students see right now?",
+        "tool" : "check_section"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "preview",
+        "tool" : "rebuild_preview"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "rebuild the preview",
+        "tool" : "rebuild_preview"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "undo that",
+        "tool" : "undo_last_change"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "deploy now",
+        "tool" : "deploy_section"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "deploy this section now",
+        "tool" : "deploy_section"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "deploy",
+        "tool" : "deploy_section"
+      },
+      {
+        "arguments" : {
+          "when" : "tomorrow"
+        },
+        "phrasing" : "publish tomorrow's class",
+        "tool" : "publish_class_on"
       }
     ],
-    "note": "Matched in CODE and never sent to the model. Trimmed, case-folded, trailing . and ! removed, then compared for EQUALITY. Measured: the model misrouted five of the eleven suggested phrasings in every trial while filling arguments perfectly, so the shapes with no ambiguity in them do not reach it."
+    "note" : "Matched in CODE and never sent to the model. Trimmed, case-folded, trailing . and ! removed, then compared for EQUALITY. Measured: the model misrouted five of the eleven suggested phrasings in every trial while filling arguments perfectly, so the shapes with no ambiguity in them do not reach it."
   },
-  "generated": {
-    "keys": [
+  "generated" : {
+    "keys" : [
       "cardPhrasings",
       "tools"
     ],
-    "note": "These top-level keys are written by `Plantoir --assist-contract` from the app's own types and will be overwritten: cardPhrasings, tools. The rest — nearMisses, scenarios — is hand-written intent and is preserved."
+    "note" : "These top-level keys are written by `Plantoir --assist-contract` from the app's own types and will be overwritten: cardPhrasings, tools. The rest — nearMisses, scenarios — is hand-written intent and is preserved."
   },
-  "nearMisses": {
-    "note": "Must NOT match — each one only looks like a card phrasing, and answering the wrong question with total confidence is worse than routing it.",
-    "phrasings": [
+  "nearMisses" : {
+    "note" : "Must NOT match — each one only looks like a card phrasing, and answering the wrong question with total confidence is worse than routing it.",
+    "phrasings" : [
       "Undo that change to Unit 2, Day 3",
       "Deploy this section now, but only the published pages",
       "Publish tomorrow's class, but not the linked pages",
       ""
     ]
   },
-  "note": "Generated from the macOS app by `Plantoir --assist-contract`. Do not hand-edit; see contracts/README.md.",
-  "scenarios": {
-    "cases": [
+  "note" : "Generated from the macOS app by `Plantoir --assist-contract`. Do not hand-edit; see contracts/README.md.",
+  "scenarios" : {
+    "cases" : [
       {
-        "expectEvents": [
+        "expectEvents" : [
           "stopPreview.begins",
           "stopPreview.ends",
           "deploy"
         ],
-        "expectReply": "wording.deployed",
-        "given": {
-          "previewRunning": true,
-          "sectionWindowOpen": true
+        "expectReply" : "wording.deployed",
+        "given" : {
+          "previewRunning" : true,
+          "sectionWindowOpen" : true
         },
-        "name": "deploy with a preview running",
-        "when": "deploy_section",
-        "why": "The window's Deploy button is greyed out while a preview runs, so what a teacher does is press Stop Preview first. The stop must FINISH before the deploy starts: stop mode finds a section's processes by working directory and would take the deploy's build with it."
+        "name" : "deploy with a preview running",
+        "when" : "deploy_section",
+        "why" : "The window's Deploy button is greyed out while a preview runs, so what a teacher does is press Stop Preview first. The stop must FINISH before the deploy starts: stop mode finds a section's processes by working directory and would take the deploy's build with it."
       },
       {
-        "expectEvents": [
+        "expectEvents" : [
           "deploy"
         ],
-        "expectReply": "wording.deployed",
-        "given": {
-          "previewRunning": false,
-          "sectionWindowOpen": true
+        "expectReply" : "wording.deployed",
+        "given" : {
+          "previewRunning" : false,
+          "sectionWindowOpen" : true
         },
-        "name": "deploy with no preview running",
-        "when": "deploy_section",
-        "why": "Nothing to stop. The reply says nothing about a preview either way — an assistant that accounts for what it had to do in order to obey is talking about itself."
+        "name" : "deploy with no preview running",
+        "when" : "deploy_section",
+        "why" : "Nothing to stop. The reply says nothing about a preview either way — an assistant that accounts for what it had to do in order to obey is talking about itself."
       },
       {
-        "expectEvents": [
+        "expectEvents" : [
           "runLauncherDirectly"
         ],
-        "expectReply": "wording.deployed",
-        "given": {
-          "previewRunning": false,
-          "sectionWindowOpen": false
+        "expectReply" : "wording.deployed",
+        "given" : {
+          "previewRunning" : false,
+          "sectionWindowOpen" : false
         },
-        "name": "deploy with no section window open",
-        "when": "deploy_section",
-        "why": "There is no button to press. This is the path Claude Code over MCP takes, and a deploy scheduled for half six in the morning. It must ask the same place for its launcher arguments as the button does, or a Cloudflare course goes to Netlify."
+        "name" : "deploy with no section window open",
+        "when" : "deploy_section",
+        "why" : "There is no button to press. This is the path Claude Code over MCP takes, and a deploy scheduled for half six in the morning. It must ask the same place for its launcher arguments as the button does, or a Cloudflare course goes to Netlify."
       },
       {
-        "expectEvents": [],
-        "expectReply": "wording.sectionIsBusy",
-        "given": {
-          "sectionBusy": true,
-          "sectionWindowOpen": true
+        "expectEvents" : [
+
+        ],
+        "expectReply" : "wording.sectionIsBusy",
+        "given" : {
+          "sectionBusy" : true,
+          "sectionWindowOpen" : true
         },
-        "name": "deploy while that section is already busy",
-        "when": "deploy_section",
-        "why": "A refusal in a whole sentence. The menu fragment that sits under a greyed-out menu item says nothing when read out in a conversation."
+        "name" : "deploy while that section is already busy",
+        "when" : "deploy_section",
+        "why" : "A refusal in a whole sentence. The menu fragment that sits under a greyed-out menu item says nothing when read out in a conversation."
       },
       {
-        "expectTranscript": [
+        "expectTranscript" : [
           "teacher: wording.deployAccepted"
         ],
-        "given": {
-          "pending": "deploy_section"
+        "given" : {
+          "pending" : "deploy_section"
         },
-        "name": "the deploy card is agreed to",
-        "when": "approve",
-        "why": "What the teacher chose is part of the history, in their own bubble. A conversation where the assistant asked, nothing answered, and something plainly happened is worse than one you cannot read back at all."
+        "name" : "the deploy card is agreed to",
+        "when" : "approve",
+        "why" : "What the teacher chose is part of the history, in their own bubble. A conversation where the assistant asked, nothing answered, and something plainly happened is worse than one you cannot read back at all."
       },
       {
-        "expectTranscript": [
+        "expectTranscript" : [
           "teacher: wording.cancelled",
           "assistant: wording.deployWasCancelled"
         ],
-        "given": {
-          "pending": "deploy_section"
+        "given" : {
+          "pending" : "deploy_section"
         },
-        "name": "the deploy card is cancelled",
-        "when": "decline",
-        "why": "The fact, and nothing else. Read which kind of card is pending BEFORE clearing it."
+        "name" : "the deploy card is cancelled",
+        "when" : "decline",
+        "why" : "The fact, and nothing else. Read which kind of card is pending BEFORE clearing it."
       },
       {
-        "expectTranscript": [
+        "expectTranscript" : [
           "teacher: wording.cancelled",
           "assistant: wording.planWasCancelled"
         ],
-        "given": {
-          "pending": "publish_class_on"
+        "given" : {
+          "pending" : "publish_class_on"
         },
-        "name": "a plan card is cancelled",
-        "when": "decline",
-        "why": "Here the reassurance IS the answer: the plan described changes to pages, so whether they happened is the part in doubt."
+        "name" : "a plan card is cancelled",
+        "when" : "decline",
+        "why" : "Here the reassurance IS the answer: the plan described changes to pages, so whether they happened is the part in doubt."
       },
       {
-        "expectEvents": [
+        "expectEvents" : [
           "stopPreview.begins",
           "stopPreview.ends",
           "write",
           "startPreview"
         ],
-        "expectReply": "wording.previewIsRebuilding",
-        "given": {
-          "previewRunning": true,
-          "sectionWindowOpen": true
+        "expectReply" : "wording.previewIsRebuilding",
+        "given" : {
+          "previewRunning" : true,
+          "sectionWindowOpen" : true
         },
-        "name": "a page edit, with a preview running",
-        "when": "unpublish_pages",
-        "why": "The stop sits beside the WRITES, not beside the start: a preview left serving while the pages beneath it are rewritten serves a half-changed site, and the teacher's next refresh is a race they cannot see they are in."
+        "name" : "a page edit, with a preview running",
+        "when" : "unpublish_pages",
+        "why" : "The stop sits beside the WRITES, not beside the start: a preview left serving while the pages beneath it are rewritten serves a half-changed site, and the teacher's next refresh is a race they cannot see they are in."
       }
     ],
-    "note": "What must happen, and in what ORDER. The order is the assertion: every wrong ordering still passes a test that only checks all three events occurred. Event names are this contract's own; map them to whatever your app calls them."
+    "note" : "What must happen, and in what ORDER. The order is the assertion: every wrong ordering still passes a test that only checks all three events occurred. Event names are this contract's own; map them to whatever your app calls them."
   },
-  "tools": {
-    "all": [
+  "tools" : {
+    "all" : [
       "list_pages",
       "read_page",
       "check_section",
@@ -199,7 +217,7 @@
       "plan_add_next_class",
       "add_next_class"
     ],
-    "local": [
+    "local" : [
       "list_pages",
       "read_page",
       "check_section",
@@ -214,24 +232,24 @@
       "read_remembered_timetable",
       "add_next_class"
     ],
-    "mcpOnly": [
+    "mcpOnly" : [
       "list_curriculum_expectations",
       "plan_curriculum_mentions",
       "add_curriculum_mentions"
     ],
-    "needsApproval": [
+    "needsApproval" : [
       "deploy_section",
       "schedule_deploy"
     ],
-    "note": "Three lists, deliberately. `all` is what the runner can execute; `local` is what the small model is SHOWN (the plan twins and remember_timetable are taken off, because the model never has to name a plan and dates it supplies are dates it may have invented); `mcpOnly` is offered to Claude Code on top of everything, being the three that ask for judgement about meaning.",
-    "planTwins": {
-      "add_next_class": "plan_add_next_class",
-      "publish_class_on": "plan_publish_class_on",
-      "publish_pages": "plan_publish_pages",
-      "remember_timetable": "plan_remember_timetable",
-      "schedule_deploy": "plan_scheduled_deploy",
-      "unpublish_pages": "plan_unpublish_pages"
+    "note" : "Three lists, deliberately. `all` is what the runner can execute; `local` is what the small model is SHOWN (the plan twins and remember_timetable are taken off, because the model never has to name a plan and dates it supplies are dates it may have invented); `mcpOnly` is offered to Claude Code on top of everything, being the three that ask for judgement about meaning.",
+    "planTwins" : {
+      "add_next_class" : "plan_add_next_class",
+      "publish_class_on" : "plan_publish_class_on",
+      "publish_pages" : "plan_publish_pages",
+      "remember_timetable" : "plan_remember_timetable",
+      "schedule_deploy" : "plan_scheduled_deploy",
+      "unpublish_pages" : "plan_unpublish_pages"
     },
-    "planTwinsNote": "A write with a twin is shown as a plan first. Four writes have none, deliberately: rebuild_preview changes no page, undo_last_change IS the remedy, deploy_section waits on its own button whatever plan mode says, and a cancelled scheduled deploy is remedied by scheduling it again."
+    "planTwinsNote" : "A write with a twin is shown as a plan first. Four writes have none, deliberately: rebuild_preview changes no page, undo_last_change IS the remedy, deploy_section waits on its own button whatever plan mode says, and a cancelled scheduled deploy is remedied by scheduling it again."
   }
 }
