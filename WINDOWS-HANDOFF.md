@@ -985,6 +985,7 @@ assistant's contract and is now the whole product's:
 | `contracts/schedule-rules.json` | Every accepted date form, how an ambiguous `08/09/2026` column is settled or asked about, what a pasted Google Sheet address becomes. |
 | `contracts/class-planning.json` | Which titles carry numbers, what the next class is called, and the ORDER renames must run in. |
 | `contracts/course-management.json` | The three kinds of zip and how they are told apart, the section number offered next and the refusals, grade labels from a course code. |
+| `contracts/file-formats.json` | Every `course_config.json` key with type and default, and the frontmatter that decides who sees a page — `publish:`, the legacy `draft:` that means the opposite, and the per-section keys. |
 | `contracts/shared-rules.json` | What a scheduled deploy refuses and in what ORDER, what the sidebar filter shows, what is stripped from the launchers' output, and what counts as a curriculum expectation. |
 
 An xUnit `[Theory]` with a `MemberData` source that deserialises these is the

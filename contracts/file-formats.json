@@ -1,0 +1,210 @@
+{
+  "courseConfigKeys": {
+    "keys": [
+      {
+        "example": "ICS3U",
+        "key": "course_code",
+        "type": "string"
+      },
+      {
+        "example": "Introduction to Computer Science",
+        "key": "course_name",
+        "type": "string"
+      },
+      {
+        "key": "custom_domains",
+        "type": "per-section map of strings"
+      },
+      {
+        "key": "custom_short_name",
+        "type": "string"
+      },
+      {
+        "key": "deploy_folder_path",
+        "type": "string"
+      },
+      {
+        "key": "deploy_target",
+        "type": "string",
+        "values": [
+          "",
+          "cloudflare_pages",
+          "local_folder"
+        ],
+        "why": "EMPTY means Netlify, and that is not an oversight: every course written before the other destinations existed has no key at all, and must keep working."
+      },
+      {
+        "key": "emojis",
+        "type": "per-section map of strings"
+      },
+      {
+        "default": false,
+        "key": "expandOnFolderClick",
+        "type": "boolean",
+        "why": "Whether clicking a folder in the site's explorer expands it rather than navigating. Read by `setup_course.py` and baked into Explorer.tsx by `build_site.py` — so this is a key the PYTHON acts on, and an app that never writes it leaves the teacher's choice unrecorded. Found missing from this contract by the count check on its first run, which is what that check is for."
+      },
+      {
+        "key": "expandable",
+        "type": "array of strings"
+      },
+      {
+        "key": "fonts",
+        "type": "per-section map of strings"
+      },
+      {
+        "key": "footer_html",
+        "type": "per-section map of strings"
+      },
+      {
+        "key": "hidden",
+        "type": "array of strings",
+        "why": "Folders and files kept out of the built site."
+      },
+      {
+        "key": "include_coverage_notes",
+        "type": "per-section map of booleans"
+      },
+      {
+        "key": "include_curriculum_coverage",
+        "type": "per-section map of booleans"
+      },
+      {
+        "default": "en-US",
+        "key": "locale",
+        "type": "string"
+      },
+      {
+        "key": "num_sections",
+        "type": "number"
+      },
+      {
+        "key": "per_section_files",
+        "type": "array of strings"
+      },
+      {
+        "key": "per_section_folders",
+        "type": "array of strings"
+      },
+      {
+        "key": "section_numbers",
+        "type": "array of numbers",
+        "why": "The timetable sections a teacher actually teaches — not 1...N. A teacher with sections 2 and 5 has exactly those."
+      },
+      {
+        "key": "shared_files",
+        "type": "array of strings"
+      },
+      {
+        "key": "shared_folders",
+        "type": "array of strings"
+      },
+      {
+        "key": "show_grade_in_title",
+        "type": "per-section map of booleans"
+      },
+      {
+        "key": "show_reading_time",
+        "type": "per-section map of booleans"
+      },
+      {
+        "default": true,
+        "key": "show_section_marker",
+        "type": "per-section map of booleans",
+        "why": "Absent means TRUE — the 'S1' marker shows unless a teacher turns it off."
+      }
+    ],
+    "note": "`courses/<CODE>/course_config.json`. Written by the wizard and the settings form, read by both apps AND by `scripts/*.py` — so a key spelled differently on one platform is not a disagreement between two apps, it is a setting the site build silently ignores. Nested keys are per-section maps: `{\"sections\": {\"section1\": <value>}}`.",
+    "rules": [
+      {
+        "detail": "Read the documented default and carry on.",
+        "rule": "An ABSENT key is not an error",
+        "why": "Courses created by older versions are missing keys that exist today, and they must open without complaint."
+      },
+      {
+        "detail": "Read the file, change what the teacher changed, write the rest back untouched.",
+        "rule": "Keys a platform does not understand are PRESERVED",
+        "why": "The two apps ship at different times. A course saved by the newer one must not lose its settings when opened by the older, and a key dropped this way is invisible until a teacher notices their footer has gone."
+      }
+    ]
+  },
+  "note": "The two files both apps WRITE, and the Python then reads. Everything else in these contracts describes behaviour; this describes a format, and a format that drifts corrupts a teacher's course quietly. Both spellings below have already caused a real bug: `SectionAdder` was found writing the OLD frontmatter key on both platforms, so a section added through the app was born in a schema everything else had moved off, and the TEST agreed with the code.",
+  "pageVisibility": {
+    "keys": {
+      "courseLevelPage": {
+        "current": "publishForSection<N>",
+        "legacy": "draftSection<N>"
+      },
+      "sectionLocalPage": {
+        "current": "publish",
+        "legacy": "draft"
+      }
+    },
+    "note": "Frontmatter. Whether students see a page — the single most consequential field in the product, since getting it backwards publishes something a teacher held back. TWO spellings exist and both must be read: `publish:` (current) and `draft:` (legacy, meaning the OPPOSITE). Course-level pages carry a key per section instead.",
+    "readingCases": [
+      {
+        "expectVisible": true,
+        "page": "publish: true",
+        "sectionLocal": true
+      },
+      {
+        "expectVisible": false,
+        "page": "publish: false",
+        "sectionLocal": true
+      },
+      {
+        "expectVisible": false,
+        "page": "draft: true",
+        "sectionLocal": true,
+        "why": "The legacy key means the opposite. Reading it as-is publishes a page the teacher hid."
+      },
+      {
+        "expectVisible": true,
+        "page": "draft: false",
+        "sectionLocal": true
+      },
+      {
+        "expectVisible": true,
+        "page": "title: Unit 1, Day 1",
+        "sectionLocal": true,
+        "why": "A page that says nothing is VISIBLE — that is Quartz's own default, and changing it here would hide every page written before the field existed."
+      },
+      {
+        "expectVisible": true,
+        "page": "publishForSection2: true",
+        "section": 2,
+        "sectionLocal": false
+      },
+      {
+        "expectVisible": false,
+        "page": "draftSection2: true",
+        "section": 2,
+        "sectionLocal": false
+      },
+      {
+        "expectVisible": false,
+        "page": "publishForSection2: false",
+        "section": 2,
+        "sectionLocal": false
+      }
+    ],
+    "writingRules": [
+      {
+        "detail": "Publishing a `draft:` page writes `draft: false`, not `publish: true`.",
+        "rule": "A page written in the old spelling KEEPS it, inverted",
+        "why": "The teacher's file is theirs. Rewriting the key would change a page they did not ask to have changed, and a course half in each spelling is harder to reason about than one consistently old."
+      },
+      {
+        "rule": "Edit the LINE, never round-trip the YAML",
+        "why": "A YAML library reorders keys and strips comments. The frontmatter is the teacher's, and they will see the diff in Obsidian."
+      },
+      {
+        "rule": "A page with no frontmatter at all gets a block of its own"
+      },
+      {
+        "detail": "Report 'no change' rather than rewriting the file.",
+        "rule": "Writing the value it already has changes nothing",
+        "why": "A no-op write still updates the modification time, which makes the next build think the content changed."
+      }
+    ]
+  }
+}
