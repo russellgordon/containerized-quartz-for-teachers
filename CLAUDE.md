@@ -325,13 +325,73 @@ results in [`research/ai-assist/`](research/README.md).
 refreshes any that differ from its bundled copies. A launcher fix reaches folders
 through the app bundle — rebuild the app to test it end to end.
 
+## Where the truth lives, per kind of truth
+
+The same rule used to be written in four places at once, and three of them
+would drift — a sentence in the Swift that says it, in the test that pins it,
+in the log row that specified it, and in the handoff telling Windows to copy
+it. So each kind of truth now has **one** home, and everywhere else points at
+it rather than restating it:
+
+| The question | The one place that answers it |
+|---|---|
+| What does the assistant SAY to a teacher? | `AssistWording` in the mac app → generated into [`contracts/assist-wording.json`](contracts/assist-wording.json). |
+| What must HAPPEN, and in what order? | [`contracts/assist-cases.json`](contracts/assist-cases.json) — run by both test suites. |
+| WHY is it that way, and what was rejected? | [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) for anything an implementer needs; a code comment for anything a reader of that file needs. |
+| WHAT changed, WHEN, and what it cost | [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) — a dated log. **Append-only history, not a specification**: a row records what was true that day, and is not edited when the behaviour changes again. Never quote a row as the current wording. |
+| How does the whole feature work? | [`documentation/10-local-ai-assistant.md`](documentation/10-local-ai-assistant.md). |
+| What did we MEASURE? | [`research/`](research/README.md) — routing accuracy, model tiers, preview staleness. Never asserted in a test; each file states its own conditions. |
+| Which rules override default behaviour? | This file. |
+
+The practical rule that falls out of it: **if you are about to type one of the
+assistant's sentences into a document or a test, don't — name it instead.**
+`AssistWording.deployWasCancelled`, or `wording.deployWasCancelled` in the
+contract. A quoted copy is the one that keeps passing after the product's
+words change.
+
+## The two handoff documents, and where a Windows session begins
+
+There are exactly **two**, and they point in opposite directions:
+
+- [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) — mac → Windows. Everything this
+  side learned, written for somebody who cannot read the Swift.
+- [`MAC-HANDOFF.md`](MAC-HANDOFF.md) — Windows → mac. Work that originated
+  over there and needs attention here; entries are marked `✅ DONE` in place
+  rather than deleted.
+
+(The old `AI-ASSIST-HANDOFF.md` is gone: it was a record of how the assistant
+was built, and it now lives in
+[`research/ai-assist/HISTORY.md`](research/ai-assist/HISTORY.md).)
+
+**Starting work on the Windows app? Read in this order.** It is the shortest
+path from nothing to a change that will not be re-derived:
+
+1. **This file**, for the rules that override default behaviour.
+2. **[`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md)** — architecture, the config
+   contract, and the reasoning behind the decisions. Long, and the section
+   headings are enough to navigate.
+3. **[`contracts/README.md`](contracts/README.md)**, then the two JSON files.
+   These are the acceptance list: wire them into `Plantoir.Tests` and the
+   assistant's behaviour is tested rather than eyeballed. **Do not retype the
+   sentences or the scenarios into your test files** — deserialise them.
+4. **[`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md)**, newest rows first, for
+   what changed recently and why. Read it as history; where a row and the
+   contract disagree, the contract is what is true now.
+5. **[`windows-app/PROGRESS.md`](windows-app/PROGRESS.md)** for where that app
+   actually stands.
+
+Two known-failing cases are waiting in `contracts/assist-cases.json` — "deploy
+with a preview running" and "deploy while that section is already busy" — and
+they are a fair first task: implementing them fixes a real bug on that side.
+
 ## Where everything else lives
 
 | Read this | When |
 |---|---|
 | [`documentation/`](documentation/README.md) | How the toolchain works, numbered 01–10: overview, image, launchers, course setup, build pipeline, Quartz customizations, deployment, config reference, mac app, local AI assistant. |
-| [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) | THE spec: every GUI behaviour, dated, with a required "Notes for Windows port" column. Append here for any GUI change. |
+| [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) | The dated log of every GUI change, with a required "Notes for Windows port" column. Append here for any GUI change — and read it as HISTORY: it used to be described as "the spec", and `contracts/` is what a test should be written against now. |
 | [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) | Architecture, the config contract, platform notes, and the WSL2 background — start here for Windows work, and write architectural decisions into it. |
+| [`contracts/`](contracts/README.md) | What the two apps must agree on, as data both test suites run: every sentence the assistant says, and the behaviour cases in order. Generated from the macOS app; never hand-edited. |
 | [`MAC-HANDOFF.md`](MAC-HANDOFF.md) | The mirror: work that originated on Windows or in shared `scripts/` and needs the mac's attention. Read it when syncing the two sides. |
 | [`RELEASING.md`](RELEASING.md) | Cutting a release: signing, bundling, and the frozen asset names both platforms depend on. |
 | [`TODO.md`](TODO.md) | Deferred work, with the research already done so picking one up is cheap. |

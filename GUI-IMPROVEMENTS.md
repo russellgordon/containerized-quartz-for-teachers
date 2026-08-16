@@ -10,6 +10,15 @@ this toolchain. Two purposes:
    behaviour the Windows app must also have, unless marked macOS-only, and
    keeping the two in step is what this feed is now for.
 
+**This log is HISTORY, not a specification.** A row records what was true on
+the day it was written and is never edited when the behaviour changes again —
+so a sentence quoted in row 183 may have been replaced by row 184, and both
+rows are correct about their own day. What is true NOW lives in
+[`contracts/`](contracts/README.md): `assist-wording.json` for what the
+assistant says, `assist-cases.json` for what must happen. Write tests against
+those; read this for why things are the way they are. See "Where the truth
+lives" in [`CLAUDE.md`](CLAUDE.md).
+
 **The Windows column is required.** An entry is not finished until "Notes
 for Windows port" says something a Windows implementer can use: what to do
 differently, what is inherited unchanged, or the trap that would pass review.
@@ -476,6 +485,9 @@ Windows. An entry missing below is unassessed, not "not yet".
 
 
 | 190 | 2026-08-16 | Close the loop: the mac's own tests should RUN the contract's scenarios, not mirror them by hand, so both platforms execute the same list. | ✅ `AssistScenarioTests` reads `contracts/assist-cases.json` and runs all eight scenarios plus the nine card phrasings — the same file the Windows suite reads. `AssistFixture` is extracted so both test files build the course-on-disk identically; two files building it differently would let the same scenario mean two different things. **Running the hand-written cases immediately proved two of them wrong**, which is the entire argument for executing a contract rather than reading it: "deploy while that section is already busy" claimed NO events, and in fact the assistant does press Deploy and the WINDOW declines — the event fires; and "a page edit, with a preview running" claimed the preview sentence as its reply, when the reply is about the pages that changed. Both corrected in the file, each carrying a note that running it is what said so. A third thing surfaced in the fixture rather than the product: `StubSiteWork` answered "Deployed.", so a scenario could assert the contract's wording and pass against words the product never says — it now speaks the real sentences. Transcript checks assert ORDER but not adjacency, because a transcript's exact composition is genuinely per-platform while its order is not. **Verified by breaking it**: moving the preview stop to after the deploy failed with `["deploy", "stop-begins", "stop-ends"] is not equal to ["stop-begins", "stop-ends", "deploy"]`. 508 unit tests, 0 failures. | This is the file to implement against, and the eight scenarios are your acceptance list. Two you will fail today: "deploy with a preview running" (you never stop it) and "deploy while that section is already busy" (`StartDeployForAutomation` walks past the disabled button). Map the six event names onto your own; do not rename them in the file. And do what the mac now does with `AssistFixture` — one place that builds the course-on-disk for every assistant test, or the same case will mean two things in two of your test classes. |
+
+
+| 191 | 2026-08-16 | Name the canonical source for each rule and retire the copies; make sure a Windows session knows where to begin. | ✅ `CLAUDE.md` gains two sections. **"Where the truth lives, per kind of truth"** gives each question exactly one home — what the assistant SAYS is `AssistWording` (generated into `contracts/assist-wording.json`); what must HAPPEN is `contracts/assist-cases.json`; WHY is `WINDOWS-HANDOFF.md` and the code comments; WHAT CHANGED is this log; what was MEASURED is `research/`; which rules override defaults is `CLAUDE.md` itself. The rule that falls out: if you are about to type one of the assistant's sentences into a document or a test, name it instead. **"The two handoff documents, and where a Windows session begins"** answers the count (two, pointing in opposite directions; the third was retired into `research/ai-assist/HISTORY.md`) and gives a five-step reading order ending at the two known-failing contract cases, which are a fair first task. Two corrections came with it, both of the kind that gets followed if left: this log described itself as "THE spec" and is now marked as **history** — a row records what was true that day, so row 183 quotes a sentence that row 184 replaced, and both are correct about their own day — and `WINDOWS-HANDOFF.md`'s three wording bullets no longer quote the sentences at all. They name contract keys and keep what a document is uniquely good for: the reasoning, and the drafts that were rejected. | Nothing to implement — this is how to READ the repository. The one habit worth taking: when you need one of the assistant's sentences, deserialise it from the contract, never retype it, in tests and documents alike. And if you write a decision down, put the reasoning in `MAC-HANDOFF.md` where the mac side will read it, not only in a commit message. |
 
 
 ## Planned

@@ -840,13 +840,23 @@ failed naming the key and the command to regenerate.
   yourself. A test that quotes its own copy of a sentence is how this problem
   started.
 
-**What is NOT in there, and must not be put there.** Routing accuracy: whether
-the model picks the right tool is measured against a real `llama-server` and
-recorded in [`research/`](research/README.md), never asserted. A contract can
-say that "deploy now" never reaches the model; it cannot say what the model
-would do with a sentence that does. And anything with real platform mechanics
-— WSL2, ConPTY, your preview leases — stays in your own tests; the contract
-says what must happen, not how to make it happen.
+**What the contract CANNOT do, so you still write these tests yourself.**
+The list is short but each item is a real gap, and a gap nobody names is a gap
+both sides assume the other is covering:
+
+| Not in the contract | Why not, and what to do instead |
+|---|---|
+| **Routing accuracy** | Whether the model picks the right tool for a sentence it actually sees is a measurement, not an assertion — it varies by model, quant and context size. Measured against a real `llama-server`; see [`research/`](research/README.md). The contract can say "deploy now" never reaches the model; it cannot say what the model does with a sentence that does. |
+| **Anything with platform mechanics** | How a preview is stopped (WSL2, ConPTY, port leases, container naming) is yours. The contract says a stop must FINISH before a deploy begins; it cannot say what finishing means on your side. |
+| **That an await is really an await** | This is the subtle one. The ordering assertion only proves anything if your fake preview emits the stop as TWO events with a real suspension between them, as the mac's does (`stopPreview.begins` … `stopPreview.ends`). A fire-and-forget stop that happens to complete quickly will satisfy a single-event fake and ship the bug the ordering was written to catch. |
+| **Transcript composition** | The scenarios assert that named lines appear IN ORDER, never that they are adjacent or last. After an approval the tool's own result is the final line on the mac, and your renderer may differ. Order is portable; arrangement is not. |
+| **Anything visual** | Bubble geometry, toolbar disabled states, progress headers, window layout. The contract has no vocabulary for these and should not grow one — that is what `GUI-IMPROVEMENTS.md` is for, and what a screenshot settles in a minute. |
+| **Launcher arguments** | That a Cloudflare course deploys to Cloudflare is enforced on the mac by one function (`DeployCommand.arguments`) and by a unit test, not by the contract. If your `Plantoir.Mcp` or scheduled task composes its own arguments, write that test on your side — the bug is silent, and the site simply appears on the wrong host. |
+| **Plan mode's offer to stop asking** | Tier-dependent (the smaller assistant cannot turn plan mode off at all), so it is a mac measurement and a mac rule until Windows has measured its own tiers. |
+
+If you find yourself wanting to add one of these to the contract, the answer is
+usually a second file rather than a stretched first one — `contracts/windows-*.json`
+for behaviour only your side has.
 
 ### The assistant presses the app's own buttons — Deploy included
 
@@ -905,40 +915,42 @@ Two things to get right when you fix it:
   kills the build, and what gets deployed is the last `public/` that was
   allowed to complete: the site as it was before. This is the same finding as
   the preview-staleness work, arriving somewhere new.
-- **The approval sentence is written per tool, in the teacher's words, and
-  it does not restate the request.** The mac's deploy card is two bubbles:
+- **The approval sentence is written per tool, in the teacher's words, and it
+  does not restate the request.** The card is two bubbles:
+  `wording.deployApproval`, then `wording.deployQuestion` — the consequence,
+  one piece of advice a teacher can act on, and the question. **The sentences
+  themselves are in `contracts/assist-wording.json` and are not repeated here**,
+  because a document that quotes them becomes wrong the day they change; what
+  is here is the reasoning, which does not.
 
-  > Students will see what is deployed. Be certain to review changes you have made.
-  >
-  > Shall I deploy?
-
-  That is the whole of it — the consequence, one piece of advice a teacher can
-  act on, and the question. It was cut to this over two passes. It began as a
-  label with the warnings stapled on ("the one thing that changes what
-  students see, and Plantoir cannot take it back for you. Looking the preview
-  over first is the safer order"), which announces a limitation of the app to
-  somebody who has already decided and second-guesses their order of work. The
-  middle draft named the act — "OK, I'll deploy CIA4U Section 1 to Netlify." —
-  and read oddly against the question that follows it: agreeing to do a thing
-  and then asking permission for it. **If your card carries its own heading or
-  repeats the act, you will meet the same awkwardness.**
+  It was cut down over two passes, and both rejected drafts are worth knowing.
+  It began as a label with warnings stapled on — the act, then that this is the
+  one thing that changes what students see, that Plantoir cannot take it back
+  for you, and that looking the preview over first would be the safer order.
+  That announces a limitation of the app to somebody who has already decided,
+  and second-guesses the order they work in. The middle draft named the act
+  ("OK, I'll deploy … to Netlify.") and read oddly against the question that
+  follows: agreeing to do a thing and then asking permission for it. **If your
+  card carries its own heading or repeats the act, you will meet the same
+  awkwardness.** What it cost: the destination is no longer named in the
+  conversation, so a teacher with one course on Netlify and another on
+  Cloudflare is told what will happen but not where — the section window's own
+  progress names it. `schedule_deploy` DOES still name its destination, because
+  that one is agreed to now and runs when nobody is watching.
 
   `AssistAgent.AskFirst` currently builds "I'd like to run **deploy section**.
-  Shall I go ahead?" by underscore-swapping the TOOL NAME, which puts
-  machinery in front of a teacher at the exact moment they are agreeing to
-  something. Copy the wording above rather than composing one — it is the
-  maintainer's own, twice.
-- **Cancel is answered by kind.** A cancelled deploy says "Deploy cancelled."
-  and stops; a cancelled plan says "Left as it was — nothing was changed."
-  The asymmetry is deliberate: a plan described changes to pages, so whether
-  they happened is the part in doubt and the reassurance IS the answer, while
-  a deploy that never started needs no reassuring about. Read which kind is
-  pending BEFORE clearing it — that is the one way to get this branch wrong.
+  Shall I go ahead?" by underscore-swapping the TOOL NAME, which puts machinery
+  in front of a teacher at the exact moment they are agreeing to something.
+- **Cancel is answered by kind**: `wording.deployWasCancelled` for a deploy,
+  `wording.planWasCancelled` for a plan. The asymmetry is deliberate and is the
+  part to understand — a plan described changes to pages, so whether they
+  happened is genuinely in doubt and the reassurance IS the answer, while a
+  deploy that never started needs no reassuring about. Read which kind is
+  pending BEFORE clearing it; that is the one way to get this branch wrong.
+  Both are scenarios in `assist-cases.json`, so your suite can simply run them.
 - **Do NOT say that the preview stopped.** The mac shipped a sentence for it
-  — "the preview was stopped first, which is what pressing Deploy in that
-  section's window needs" — and it was removed the same day, on sight: read in
-  place it was three lines of machinery after the one line that mattered.
-  "CIA4U Section 1 is deployed. Students can reach it now." is the entire
+  and removed it the same day, on sight: read in place it was three lines of
+  machinery after the one line that mattered. `wording.deployed` is the entire
   answer to what was asked. The teacher is looking at the window it happened
   in, and an assistant that explains what it had to do in order to obey is
   talking about itself. The stop still happens; it is simply not narrated.

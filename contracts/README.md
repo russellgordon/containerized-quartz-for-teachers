@@ -45,7 +45,10 @@ Both files are plain data — an xUnit `[Theory]` with a `MemberData` source tha
 deserialises the JSON is the whole integration. Nothing here is macOS-specific:
 the sentences are the product's, and the sequences are the toolchain's.
 
-Two things NOT to take from here, because they are genuinely per-platform:
+The full list of what the contract cannot cover — and therefore what each side
+still tests for itself — is in
+[`WINDOWS-HANDOFF.md`](../WINDOWS-HANDOFF.md), under "Do not re-derive the
+assistant's tests". Two of them matter enough to repeat:
 
 - **How the preview is stopped and started.** WSL2, ConPTY and the preview
   leases have real Windows mechanics; `assist-cases.json` says the ORDER the
