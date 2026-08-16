@@ -24,15 +24,26 @@ final class FakePreview {
 
     private(set) var events: [String] = []
     private var running: Bool = true
+    private var deployRefusal: String?
     private var watchedURL: URL?
     private var textWhenWatched: String?
 
     // MARK: - Functions
 
-    /// Pretend a section window is open and showing a running preview.
-    func register(folderPath: String, courseCode: String, sectionNumber: Int) {
+    /// Pretend a section window is open.
+    ///
+    /// `running` and `refusingToDeploy` exist because the contract's scenarios
+    /// need them: "deploy with no preview running" and "deploy while that
+    /// section is already busy" are two of the eight, and a fake that could
+    /// only be one thing could only test one of them.
+    func register(folderPath: String,
+                  courseCode: String,
+                  sectionNumber: Int,
+                  running previewIsRunning: Bool = true,
+                  refusingToDeploy refusal: String? = nil) {
         events = []
-        running = true
+        running = previewIsRunning
+        deployRefusal = refusal
         watchedURL = nil
         textWhenWatched = nil
         SectionWindowControllers.shared.register(
@@ -68,6 +79,13 @@ final class FakePreview {
                 // teacher do.
                 deploy: { [weak self] in
                     self?.events.append("deploy")
+                    // A window that is already busy answers with a sentence
+                    // rather than deploying. The event still fires: the
+                    // assistant DID press the button — the window is what
+                    // declined, which is the real shape of it.
+                    if let refusal = self?.deployRefusal {
+                        return AssistSiteWorkResult(succeeded: false, message: refusal)
+                    }
                     return AssistSiteWorkResult(
                         succeeded: true, message: FakePreview.deployedMessage
                     )

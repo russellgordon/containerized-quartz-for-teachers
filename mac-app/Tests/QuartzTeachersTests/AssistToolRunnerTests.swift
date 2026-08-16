@@ -1386,115 +1386,22 @@ final class AssistToolRunnerTests: XCTestCase {
     }
 
     // MARK: - Fixtures
-
-    /// Records what it was asked to do instead of starting Docker.
-    @MainActor
-    final class StubSiteWork: AssistSiteWork {
-
-        // MARK: - Stored properties
-
-        private(set) var previewRebuilds: Int = 0
-        private(set) var deploys: Int = 0
-
-        // MARK: - Functions
-
-        func rebuildPreview(course: Course, sectionNumber: Int) async -> AssistSiteWorkResult {
-            previewRebuilds += 1
-            return AssistSiteWorkResult(succeeded: true, message: "Rebuilt the preview.")
-        }
-
-        func deploy(course: Course, sectionNumber: Int) async -> AssistSiteWorkResult {
-            deploys += 1
-            return AssistSiteWorkResult(succeeded: true, message: "Deployed.")
-        }
-    }
-
-    /// Watches what would be asked of launchd without asking it.
-    struct SilentLaunchControl: LaunchControlRunning {
-        func bootstrap(plistURL: URL) -> String? {
-            return nil
-        }
-
-        func bootOut(label: String) {
-        }
-    }
+    //
+    // The world these tests run in is built by `AssistFixture`, shared with
+    // `AssistScenarioTests` so that a case written once means one thing.
 
     @MainActor
     private func makeRunner(hasDeployedBefore: Bool = false,
                             registeringPreview: Bool = false) throws
         -> (root: URL, course: Course, runner: AssistToolRunner, siteWork: StubSiteWork) {
-        let fileManager: FileManager = FileManager.default
-        let root: URL = fileManager.temporaryDirectory
-            .appendingPathComponent("assist-tools-\(UUID().uuidString)")
-        let courseURL: URL = root.appendingPathComponent("courses").appendingPathComponent("ICS3U")
-        try fileManager.createDirectory(
-            at: courseURL.appendingPathComponent("section1/All Classes"), withIntermediateDirectories: true
+        return try AssistFixture.makeRunner(
+            hasDeployedBefore: hasDeployedBefore, registeringPreview: registeringPreview
         )
-        try fileManager.createDirectory(
-            at: courseURL.appendingPathComponent("Concepts"), withIntermediateDirectories: true
-        )
-        // A working folder is recognised by its launchers; a stub is enough,
-        // and nothing in these tests ever runs one.
-        try "#!/bin/bash\n".write(
-            to: root.appendingPathComponent("preview.sh"), atomically: true, encoding: .utf8
-        )
-        try "#!/bin/bash\n".write(
-            to: root.appendingPathComponent("deploy.sh"), atomically: true, encoding: .utf8
-        )
-        if hasDeployedBefore {
-            // The marker `deploy.py` leaves the first time a section goes out.
-            // Without it, scheduling is refused — deploying a section for the
-            // first time asks what to call the website.
-            try fileManager.createDirectory(
-                at: courseURL.appendingPathComponent(".netlify_sites"), withIntermediateDirectories: true
-            )
-            try "{}".write(
-                to: courseURL.appendingPathComponent(".netlify_sites/section1.json"),
-                atomically: true, encoding: .utf8
-            )
-        }
-
-        let configuration: [String: Any] = [
-            "course_code": "ICS3U",
-            "course_name": "Introduction to Computer Science",
-            "section_numbers": [1],
-            "num_sections": 1,
-            "per_section_folders": ["All Classes"],
-            "per_section_files": [],
-        ]
-        try JSONSerialization.data(withJSONObject: configuration, options: [.prettyPrinted])
-            .write(to: courseURL.appendingPathComponent("course_config.json"))
-
-        let workspace: WorkspaceModel = WorkspaceModel(defaults: TestDefaults.make())
-        workspace.chooseWorkspace(at: root)
-        let course: Course = try XCTUnwrap(workspace.courses.first)
-
-        let siteWork: StubSiteWork = StubSiteWork()
-        let runner: AssistToolRunner = AssistToolRunner(
-            workspace: workspace,
-            siteWork: siteWork,
-            today: CalendarDay(year: 2026, month: 9, day: 8)!,
-            launchControl: SilentLaunchControl()
-        )
-
-        SectionWindowControllers.shared.forgetAll()
-        if registeringPreview {
-            FakePreview.shared.register(folderPath: root.path, courseCode: "ICS3U", sectionNumber: 1)
-        }
-        return (root, course, runner, siteWork)
     }
 
-    /// An agent wired to a runner, with a client that is never reached: every
-    /// message these tests send is a card phrasing, matched in code.
     @MainActor
     private func makeAgent(tools: AssistToolRunner) -> AssistAgent {
-        return AssistAgent(
-            courseCode: "ICS3U",
-            sectionNumber: 1,
-            client: AssistModelClient(baseURL: URL(string: "http://127.0.0.1:1")!),
-            tools: tools,
-            planMode: AssistPlanMode(tier: .small, defaults: TestDefaults.make())
-        )
+        return AssistFixture.makeAgent(tools: tools)
     }
 
     private func call(_ name: String, arguments: [String: Any] = [:]) -> AssistToolCall {
@@ -1514,24 +1421,12 @@ final class AssistToolRunnerTests: XCTestCase {
                        date: String = "2026-09-08",
                        body: String,
                        in course: Course) throws {
-        let text: String = """
-        ---
-        title: \(title)
-        publish: \(publish)
-        created: \(date)T07:00:00.000-0400
-        ---
-
-        \(body)
-        """
-        try text.write(
-            to: ClassPages.folderURL(forSection: 1, in: course).appendingPathComponent(title + ".md"),
-            atomically: true, encoding: .utf8
-        )
+        try AssistFixture.write(page: title, publish: publish, date: date, body: body, in: course)
     }
 
     @MainActor
     private func pageURL(of title: String, in course: Course) -> URL {
-        return ClassPages.folderURL(forSection: 1, in: course).appendingPathComponent(title + ".md")
+        return AssistFixture.pageURL(of: title, in: course)
     }
 
     /// A section's landing page, shaped like the real ones: a class
