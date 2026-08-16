@@ -426,8 +426,12 @@ There are exactly **two**, and they point in opposite directions:
 was built, and it now lives in
 [`research/ai-assist/HISTORY.md`](research/ai-assist/HISTORY.md).)
 
-**Starting work on the Windows app? Read in this order.** It is the shortest
-path from nothing to a change that will not be re-derived:
+**Starting work on the Windows app? Open
+[`WINDOWS-BOOTSTRAP.md`](WINDOWS-BOOTSTRAP.md) first** — it is the brief for
+that session: what to read, what to do in what order, and the obligations back
+to this side. It also carries the one rule that is not optional there: **outline
+the plan before implementing anything**, then work autonomously once it is
+agreed. What follows is the same reading order, in short:
 
 1. **This file**, for the rules that override default behaviour.
 2. **[`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md)** — architecture, the config
@@ -453,7 +457,8 @@ they are a fair first task: implementing them fixes a real bug on that side.
 |---|---|
 | [`documentation/`](documentation/README.md) | How the toolchain works, numbered 01–10: overview, image, launchers, course setup, build pipeline, Quartz customizations, deployment, config reference, mac app, local AI assistant. |
 | [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) | The dated log of every GUI change, with a required "Notes for Windows port" column. Append here for any GUI change — and read it as HISTORY: it used to be described as "the spec", and `contracts/` is what a test should be written against now. |
-| [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) | Architecture, the config contract, platform notes, and the WSL2 background — start here for Windows work, and write architectural decisions into it. |
+| [`WINDOWS-BOOTSTRAP.md`](WINDOWS-BOOTSTRAP.md) | **The brief for a Windows session**: what to read, the order of work, the rules while working, and the plan-first rule. Point a Windows agent at this file. |
+| [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) | Architecture, the config contract, platform notes, and the WSL2 background — the reference a Windows session reads second, and where architectural decisions are written. |
 | [`contracts/`](contracts/README.md) | **The Plantoir contract**: what the two apps must agree on, as data both test suites run — the assistant's sentences and behaviour, launcher arguments, validation wording, failure explanations, date reading, class naming, file names, progress markers, preview ports. Generated from the macOS app; never hand-edited. Its coverage table says what is deliberately NOT shared, and why. |
 | [`MAC-HANDOFF.md`](MAC-HANDOFF.md) | The mirror: work that originated on Windows or in shared `scripts/` and needs the mac's attention. Ordered by STATUS — contract cases waiting, then what is still owed, then awareness, then the finished ledger — so it can be read top-down and abandoned at any point. |
 | [`RELEASING.md`](RELEASING.md) | Cutting a release: signing, bundling, and the frozen asset names both platforms depend on. |

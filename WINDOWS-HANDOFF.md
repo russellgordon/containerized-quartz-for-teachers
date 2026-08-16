@@ -1,5 +1,10 @@
 # Windows App — Handoff
 
+> **New to this side? Read [`WINDOWS-BOOTSTRAP.md`](WINDOWS-BOOTSTRAP.md)
+> first.** It says what to read, what to do in what order, and asks you to
+> outline the plan before implementing. This file is the reference it sends
+> you to.
+
 Read this first when working on the Windows app — `windows-app/`, WinUI 3,
 first take built 2026-08-11 — and especially when syncing it after a run of
 macOS-side sessions. It gathers everything a Windows implementation needs; the
