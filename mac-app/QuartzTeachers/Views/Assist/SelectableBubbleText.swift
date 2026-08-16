@@ -115,7 +115,17 @@ struct SelectableBubbleText: NSViewRepresentable {
             x: 0, y: 0, width: width, height: CGFloat.greatestFiniteMagnitude
         )
         let measured: NSSize = cell.cellSize(forBounds: bounds)
-        return CGSize(width: min(width, ceil(measured.width)), height: ceil(measured.height))
+
+        // The width is the CELL's, kept FRACTIONAL, and both facts matter.
+        // The cell's: measuring the glyphs typographically and sizing to
+        // that was tried, and the cell responded to the too-small frame by
+        // shrinking the text. Fractional: ceiling the width leaves the spare
+        // fraction after the last glyph, and every spare point lands on the
+        // trailing side — measured as visibly lopsided padding beside
+        // Messages. The cell also pads itself about three points a side
+        // inside this width; the bubble's own padding is chosen with that
+        // built-in slice counted in.
+        return CGSize(width: min(width, measured.width), height: ceil(measured.height))
     }
 
     /// The same **bold** rendering `AssistSaid.styled` gives SwiftUI, carried

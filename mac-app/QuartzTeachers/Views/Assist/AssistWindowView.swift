@@ -548,8 +548,8 @@ private struct AssistEntryView: View {
             HStack {
                 Spacer(minLength: 48)
                 SelectableBubbleText(text: entry.text, colour: .white, bubbleFill: AssistBubbleColour.teacherNS)
-                    .padding(.leading, 11)
-                    .padding(.trailing, 11)
+                    .padding(.leading, 12)
+                    .padding(.trailing, 9)
                     .padding(.top, 7)
                 .padding(.bottom, 7 + AssistChatBubbleShape.drop)
                     .background(
@@ -567,8 +567,8 @@ private struct AssistEntryView: View {
                 SelectableBubbleText(text: entry.text, colour: .labelColor, bubbleFill: AssistBubbleColour.assistantNS)
                     // The tail's side gets the extra room, so the words sit
                     // the same distance from the bubble's edge on both sides.
-                    .padding(.leading, 11)
-                    .padding(.trailing, 11)
+                    .padding(.leading, 12)
+                    .padding(.trailing, 9)
                     .padding(.top, 7)
                 .padding(.bottom, 7 + AssistChatBubbleShape.drop)
                     .background(
@@ -605,8 +605,8 @@ private struct AssistEntryView: View {
                         .accessibilityIdentifier("assistResultDetail")
                     }
                 }
-                .padding(.leading, 11)
-                .padding(.trailing, 11)
+                .padding(.leading, 12)
+                .padding(.trailing, 9)
                 .padding(.top, 7)
                 .padding(.bottom, 7 + AssistChatBubbleShape.drop)
                 .background(
@@ -622,8 +622,8 @@ private struct AssistEntryView: View {
                 Label(entry.text, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.orange)
                     .textSelection(.enabled)
-                    .padding(.leading, 11)
-                    .padding(.trailing, 11)
+                    .padding(.leading, 12)
+                    .padding(.trailing, 9)
                     .padding(.top, 7)
                 .padding(.bottom, 7 + AssistChatBubbleShape.drop)
                     .background(
