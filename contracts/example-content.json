@@ -1,0 +1,89 @@
+{
+  "discovery": {
+    "countNote": "Count the folders rather than trusting this number.",
+    "countToday": 37,
+    "rule": "A code has a payload if and only if `support/example_content/<CODE>/manifest.json` exists.",
+    "why": "Adding a course code is pure CONTENT — drop in a payload, no code changes anywhere. The existence of the manifest is the whole registration, and it automatically retires that code's generated skeleton."
+  },
+  "layout": {
+    "manifest.json": "The structure. Required.",
+    "per_section/": "Copied into EVERY sectionN/ the teacher asked for.",
+    "shared/": "Copied to the course root — folders and files every section shares."
+  },
+  "manifestKeys": [
+    {
+      "key": "shared_folders",
+      "required": true,
+      "type": "array of strings"
+    },
+    {
+      "key": "shared_files",
+      "required": true,
+      "type": "array of strings"
+    },
+    {
+      "key": "per_section_folders",
+      "required": true,
+      "type": "array of strings"
+    },
+    {
+      "key": "per_section_files",
+      "required": true,
+      "type": "array of strings"
+    },
+    {
+      "key": "hidden",
+      "required": true,
+      "type": "array of strings",
+      "why": "Kept out of the built site — Curriculum and the utility files, in every payload that has them."
+    },
+    {
+      "key": "expandable",
+      "required": true,
+      "type": "array of strings",
+      "why": "Folders the site's explorer opens rather than navigates into."
+    },
+    {
+      "key": "curriculum_folder",
+      "required": false,
+      "type": "string",
+      "why": "Names the folder holding expectation pages, so the installer can date and link them. Absent for a course with no curriculum pages."
+    },
+    {
+      "default": 2,
+      "key": "class_weekday_step",
+      "required": false,
+      "type": "number",
+      "why": "How many weekdays apart the generated classes sit: 1 for a course that meets daily, 2 for one meeting every other day. The default is 2, so a daily course MUST say so or its classes land on the wrong dates."
+    }
+  ],
+  "note": "The ready-made course a teacher can pre-populate: `support/example_content/<CODE>/`. Both apps OFFER these — the wizard asks no structure questions when a payload exists, because the manifest IS the course's entire structure — and the shared Python installs them. So the shape is a contract even though neither app writes it: an app that mis-reads a manifest offers a teacher a course that installs wrong.",
+  "rules": [
+    {
+      "rule": "The manifest is the WHOLE structure",
+      "why": "When a payload exists the wizard asks no structure questions at all, so anything missing from the manifest is missing from the course a teacher gets."
+    },
+    {
+      "detail": "`shared/` and `per_section/` may supply content for SOME of what the manifest names; anything named but not shipped is created by the ordinary course scaffolding — a 'Private Notes.md' arrives empty, which is what it should be.",
+      "rule": "The manifest's lists are an ALLOW-LIST over the payload trees, not a packing list",
+      "why": "Checked against `setup_course.py` (`top_level_allowed`) after a first draft of this contract asserted the opposite and failed against nine payloads. The lists say what the course HAS; the trees say what arrives with words already in it."
+    },
+    {
+      "detail": "This is the direction that fails silently. ONE exception: `index.md` is always installed without being named, because it is the landing page of the folder it sits in — a section's own front page — and every payload ships one.",
+      "exceptions": [
+        "index.md"
+      ],
+      "rule": "Anything IN the payload trees must be named in the manifest",
+      "why": "`top_level_allowed` filters the copy by those lists, so a folder or file sitting in `shared/` or `per_section/` that the manifest does not name is never installed. The work is in the repository, looks finished, and reaches no teacher."
+    },
+    {
+      "rule": "ADA1O is the reference payload",
+      "why": "Mirror its hidden/expandable choices: Curriculum and the utility files hidden, content folders expandable, All Classes visible but not expandable."
+    },
+    {
+      "detail": "`top_level_allowed` requires BOTH that the folder is named in `shared_folders` AND that the teacher chose to include curriculum coverage.",
+      "rule": "The curriculum folder installs only when the teacher asked for curriculum",
+      "why": "A teacher who turned coverage off should not be given a folder of expectations they will have to delete."
+    }
+  ]
+}

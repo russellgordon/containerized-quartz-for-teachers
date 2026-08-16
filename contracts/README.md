@@ -17,6 +17,8 @@ mechanics, a measurement taken on one machine: not.
 |---|---|
 | [`assist-wording.json`](assist-wording.json) | Every sentence the assistant says to a teacher about deploying, previewing and agreeing to things, with `{course}` and `{section}` where values go. |
 | [`assist-cases.json`](assist-cases.json) | The assistant's behaviour: which phrasings are matched in code rather than routed, which tools wait for a button, what must happen in what ORDER when it deploys, and how the arrow keys walk the prompt history. |
+| [`toolchain.json`](toolchain.json) | The image both platforms build from the same recipe: the four pins with the REASON each sits where it does, and what each of the five Quartz patches changes and why it cannot be dropped. |
+| [`example-content.json`](example-content.json) | The ready-made courses: how a payload is discovered, the manifest's keys, and the allow-list rule that decides what actually installs. |
 | [`file-formats.json`](file-formats.json) | **The two files both apps WRITE and the Python then reads**: every `course_config.json` key with its type and default, and the frontmatter that decides whether students see a page — including the legacy `draft:` spelling, which means the opposite. |
 | [`shared-rules.json`](shared-rules.json) | Four rule sets on top of machinery that could not be less alike: what a scheduled deploy refuses and in what order, what the sidebar's filter shows, what is stripped from the launchers' output, and what counts as a curriculum expectation. |
 | [`course-management.json`](course-management.json) | The names the three kinds of zip carry and how they are told apart, what section number is offered next and which entries are refused in whose words, and the grade a course code names. |
@@ -145,6 +147,8 @@ gap nobody has looked at. Counts are test functions, taken 2026-08-16.
 | The browser-safe address | `app-rules.json` → `linkRules` | BrowserSafeURL (2) |
 | `course_config.json` keys, types, defaults | `file-formats.json` → `courseConfigKeys` | CourseConfiguration (10) |
 | Page visibility: `publish:`, legacy `draft:`, per-section keys | `file-formats.json` → `pageVisibility` | ~33 tests across the suite |
+| Image pins and the Quartz patches | `toolchain.json` | checked against `Dockerfile` and `patches/` |
+| Example-content payloads (all 37) | `example-content.json` | ExampleContent (10), and the payloads themselves |
 | Reading a teacher's date list | `schedule-rules.json` | SectionScheduleSource (23) |
 | Scheduled-deploy refusals | `shared-rules.json` → `scheduledDeployRefusals` | ScheduledDeploy (23) |
 | Sidebar filtering | `shared-rules.json` → `sidebarFilter` | CourseFilter (9) |

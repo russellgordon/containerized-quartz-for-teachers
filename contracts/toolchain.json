@@ -1,0 +1,75 @@
+{
+  "note": "The image both platforms build from the same recipe, and the patched Quartz inside it. Neither app can change these — the launchers build the image from `Dockerfile`, `patches/` and `scripts/`, and tag it by a hash of that whole context. It is in the contract because both sides must know WHY each pin is where it is: a version raised for a good local reason can break every teacher's site build, and the reasons are not visible from the version numbers.",
+  "patches": [
+    {
+      "cannotBeDropped": "Without it a course either publishes what a teacher hid, or hides most of itself.",
+      "does": "Decides page visibility from `publish:`, defaulting to VISIBLE.",
+      "file": "publish.ts",
+      "replaces": "quartz/plugins/filters/publish.ts",
+      "whyNotStock": "Quartz ships two filters and neither says what a teacher means. RemoveDrafts publishes everything except `draft: true` — the word reads as 'unfinished' rather than 'students cannot see it', and the polarity is backwards from how teachers talk. ExplicitPublish publishes only `publish: true` — the right word, but it flips the default: in the example course 60 of 225 pages carry no flag at all, including every curriculum page, and every one would silently vanish."
+    },
+    {
+      "cannotBeDropped": "publish.ts is not reachable without it.",
+      "does": "Exports the filter above in place of the stock pair.",
+      "file": "filters-index.ts",
+      "replaces": "quartz/plugins/filters/index.ts"
+    },
+    {
+      "cannotBeDropped": "The teacher's own choices in the settings form stop reaching the site.",
+      "does": "Reads `expandable` and `expandOnFolderClick` from course_config.json, sorts the tree the way a course reads, and passes both to the client script.",
+      "file": "Explorer.tsx",
+      "replaces": "quartz/components/Explorer.tsx"
+    },
+    {
+      "cannotBeDropped": "The server-rendered attributes are read by nothing.",
+      "does": "The client half of the same: which folders expand, and what a click on one does.",
+      "file": "explorer.inline.ts",
+      "replaces": "quartz/components/scripts/explorer.inline.ts"
+    },
+    {
+      "cannotBeDropped": "Folder landing pages revert to Quartz's own listing.",
+      "does": "What a folder's own page shows.",
+      "file": "FolderContent.tsx",
+      "replaces": "quartz/components/pages/FolderContent.tsx"
+    }
+  ],
+  "pins": [
+    {
+      "pin": "baseImage",
+      "value": "python:3.11-slim",
+      "why": "Python for the build scripts, with Node added on top. The site build is Node; the pipeline around it is Python."
+    },
+    {
+      "pin": "node",
+      "value": "20",
+      "why": "**What Quartz v4.5.0 is known-good against.** Raising it means revalidating every teacher's site build, which is why the wrangler pin below bends around this rather than the reverse."
+    },
+    {
+      "mustStayBelow": "4.100",
+      "pin": "wrangler",
+      "value": "4.80.0",
+      "why": "Cloudflare's own deploy CLI, used by `deploy.py` for the Pages destination. From 4.100 it requires Node 22. Staying on the newest Node-20 wrangler is a far smaller risk than raising Node. The exact pin also keeps the image reproducible and stops an upstream CLI change from breaking publishing for a teacher mid-semester."
+    },
+    {
+      "pin": "quartz",
+      "value": "v4.5.0",
+      "why": "The site generator, cloned at a tag. The patches below are written against this version; a newer Quartz means re-deriving all five."
+    }
+  ],
+  "rules": [
+    {
+      "detail": "Every file in `Dockerfile`, `patches/`, `scripts/`, `support/` and the launchers.",
+      "rule": "The image tag is a HASH of the whole build context",
+      "why": "A changed recipe means a new tag, a rebuild and a recreated container — with no update checks anywhere, and no way for a teacher to be running a mismatched image."
+    },
+    {
+      "rule": "Build with BuildKit (`docker buildx build --load`)",
+      "why": "The legacy builder corrupts a layer. Do not remove that flag."
+    },
+    {
+      "rule": "If you raise Node, revalidate Quartz BEFORE chasing a newer CLI",
+      "why": "The order is the whole point of the wrangler pin."
+    }
+  ],
+  "whyWranglerAtAll": "Cloudflare's upload protocol — BLAKE3 hashing, short-lived JWT, batched uploads — is undocumented enough that reimplementing it would break teachers' publishing whenever Cloudflare changed it. So the image carries their CLI instead."
+}
