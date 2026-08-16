@@ -461,7 +461,7 @@ final class AssistToolRunnerTests: XCTestCase {
 
         agent.declinePending()
 
-        XCTAssertEqual(agent.entries.last?.text, "Deploy cancelled.")
+        XCTAssertEqual(agent.entries.last?.text, AssistWording.deployWasCancelled)
     }
 
     /// The other branch: a cancelled plan still says nothing was changed.
@@ -484,7 +484,7 @@ final class AssistToolRunnerTests: XCTestCase {
 
         agent.declinePending()
 
-        XCTAssertEqual(agent.entries.last?.text, "Left as it was — nothing was changed.")
+        XCTAssertEqual(agent.entries.last?.text, AssistWording.planWasCancelled)
     }
 
     /// Deploying from the assistant is the two buttons a teacher would press,
@@ -515,7 +515,12 @@ final class AssistToolRunnerTests: XCTestCase {
                        "With a window open the deploy goes through it, not the assistant's own runner")
         // The whole answer, and nothing about what it had to do to obey: the
         // stopped preview is deliberately not narrated.
-        XCTAssertEqual(outcome.summary, "ICS3U Section 1 is deployed.")
+        //
+        // Asked of AssistWording rather than typed again. The sentence exists
+        // once, and `contracts/assist-wording.json` is generated from it, so a
+        // test that quoted its own copy could pass while the contract Windows
+        // is built from said something else.
+        XCTAssertEqual(outcome.summary, FakePreview.deployedMessage)
     }
 
     /// The other order, and the one a teacher meets most: no preview running.
@@ -538,7 +543,7 @@ final class AssistToolRunnerTests: XCTestCase {
         XCTAssertEqual(FakePreview.shared.events,
                        ["stop-begins", "stop-ends", "deploy", "deploy"],
                        "A preview already stopped is not stopped again")
-        XCTAssertEqual(outcome.summary, "ICS3U Section 1 is deployed.")
+        XCTAssertEqual(outcome.summary, FakePreview.deployedMessage)
     }
 
     /// With no section window open there is nothing to press, and the deploy
@@ -1274,8 +1279,7 @@ final class AssistToolRunnerTests: XCTestCase {
         // The fact and the advice, and nothing that restates the request:
         // the act is named by the "Shall I deploy?" the agent says next, and
         // the section is on the window's own title bar.
-        XCTAssertEqual(explanation,
-                       "Students will see what is deployed. Be certain to review changes you have made.")
+        XCTAssertEqual(explanation, AssistWording.deployApproval)
         // No tool name, no machinery — this sentence is read by a teacher.
         XCTAssertFalse(explanation.contains("deploy_section"), explanation)
 

@@ -788,6 +788,66 @@ on its local list.** The cut is only safe because something else asks. And the
 audit worth running after any removal is not "does the surface still route"
 but "can every refusal still be acted on by the surface that receives it".
 
+### Do not re-derive the assistant's tests — read `contracts/`
+
+**This is the section that saves you a day per sync.** Two JSON files, both
+written by the macOS binary, both meant to be read by `Plantoir.Tests`:
+
+| File | What it holds |
+|---|---|
+| `contracts/assist-wording.json` | Every sentence the assistant says to a teacher about deploying, previewing and agreeing to things — nineteen of them, with `{course}` and `{section}` where values go. |
+| `contracts/assist-cases.json` | The nine phrasings matched in code, the four near misses that must NOT match, the three tool lists with approvals and plan twins, and eight scenarios as `given` / `when` / `expectEvents` / `expectReply`. |
+
+An xUnit `[Theory]` with a `MemberData` source that deserialises these is the
+whole integration. Nothing in them is macOS-specific: the sentences are the
+product's and the sequences are the toolchain's.
+
+**Why this exists.** Every wording change on the mac used to reach you as prose
+in `GUI-IMPROVEMENTS.md` and a paragraph here, which you then retyped as tests
+by hand — a day of it, and the sentences drifted the moment one side edited
+without telling the other. They had been living in four places at once, and
+three were already wrong: the identical deploy failure said "the output is in
+that section's console in Plantoir" from one code path and "…that section's
+window in Plantoir" from another, so which sentence a teacher got depended only
+on whether a window happened to be open.
+
+**How it stays true.** `Plantoir --assist-contract contracts` writes both files
+from `AssistWording`, `AssistCardCommand` and the tool surface itself, and
+`AssistContractTests` runs the same generator in-process and fails when what is
+committed disagrees. A changed sentence therefore fails on the mac in the same
+run that changed it, and reaches you as a **diff in `contracts/`** in the same
+commit as the Swift. Verified by breaking a sentence on purpose: the suite
+failed naming the key and the command to regenerate.
+
+**Four things to know before you use them.**
+
+- **Never hand-edit `contracts/*.json`.** They are generated; the next mac
+  regeneration overwrites your edit and the diff looks like vandalism. If you
+  need something in the contract that is not there, ask for it. A behaviour
+  Windows has and the mac does not belongs in a new file
+  (`contracts/windows-*.json`), not in these.
+- **`expectEvents` is an ORDER, not a set.** Every incorrect ordering passes a
+  test that only checks all three events occurred — which is exactly how the
+  mac shipped a preview that stopped after the writes it was meant to protect.
+- **The event names are the contract's own**, deliberately not Swift's. Map
+  `stopPreview.begins` / `stopPreview.ends` / `deploy` / `write` /
+  `startPreview` / `runLauncherDirectly` onto whatever your app calls them.
+  Two `given` flags decide the interesting cases: `sectionWindowOpen: false`
+  is the headless path (`Plantoir.Mcp`, and a scheduled deploy), and
+  `previewRunning: true` is the case Windows currently gets wrong.
+- **Replies are NAMED, not quoted** — `wording.deployed`, not the sentence.
+  Look them up in the wording file and substitute `{course}` and `{section}`
+  yourself. A test that quotes its own copy of a sentence is how this problem
+  started.
+
+**What is NOT in there, and must not be put there.** Routing accuracy: whether
+the model picks the right tool is measured against a real `llama-server` and
+recorded in [`research/`](research/README.md), never asserted. A contract can
+say that "deploy now" never reaches the model; it cannot say what the model
+would do with a sentence that does. And anything with real platform mechanics
+— WSL2, ConPTY, your preview leases — stays in your own tests; the contract
+says what must happen, not how to make it happen.
+
 ### The assistant presses the app's own buttons — Deploy included
 
 **Windows got here first and the mac has copied it.** `AssistAgent.RunTool`

@@ -17,6 +17,11 @@ final class FakePreview {
 
     static let shared: FakePreview = FakePreview()
 
+    /// What a real window's Deploy answers with, asked of the one place that
+    /// sentence is written. A literal here would let the app's wording change
+    /// while every test still passed against the old words.
+    static let deployedMessage: String = AssistWording.deployed(course: "ICS3U", section: "1")
+
     private(set) var events: [String] = []
     private var running: Bool = true
     private var watchedURL: URL?
@@ -64,7 +69,7 @@ final class FakePreview {
                 deploy: { [weak self] in
                     self?.events.append("deploy")
                     return AssistSiteWorkResult(
-                        succeeded: true, message: "ICS3U Section 1 is deployed."
+                        succeeded: true, message: FakePreview.deployedMessage
                     )
                 }
             )
