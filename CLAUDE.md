@@ -81,10 +81,13 @@ Neither app contains toolchain logic of its own: they write the same
    back to the app's own button was their design, and the mac ran its own
    invisible script runner for weeks afterwards because nobody wrote it down
    here. A change made on Windows is not finished until:
-   - **[`MAC-HANDOFF.md`](MAC-HANDOFF.md) has an entry** saying what was done,
-     what it fixed, and — the part that travels — WHY, including what was
-     rejected. Entries are marked `✅ DONE` in place rather than deleted, so
-     the ledger keeps its own history.
+   - **[`MAC-HANDOFF.md`](MAC-HANDOFF.md) has an entry**, written to the
+     template at the top of that file: what was done, what it fixed, and — the
+     part that travels — WHY, including what was rejected. Entries are marked
+     `✅ DONE` in place rather than deleted, so the ledger keeps its own
+     history, and a proposed contract case is named in that file's
+     "Contract cases waiting on the mac" section so a red mac suite reads as a
+     request rather than as damage.
    - **`GUI-IMPROVEMENTS.md` gets a row for anything a teacher can see**, so
      the log stays the record of the product rather than of one platform.
    - **anything measured is written with its NUMBERS and the hardware they

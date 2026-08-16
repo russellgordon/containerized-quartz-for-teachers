@@ -975,6 +975,12 @@ failed naming the key and the command to regenerate.
 - **Never hand-edit the GENERATED keys** — `cardPhrasings`, `tools`,
   `milestones`. Those are readouts of mac code; the next regeneration
   overwrites your edit and the diff looks like vandalism.
+- **Write the entry to the template.** `MAC-HANDOFF.md` opens with "How to
+  write an entry" — title and source, what it fixed and WHY (including what
+  was rejected), numbers with the hardware they came from, the file and test
+  names to look at, and whether the mac must match it or merely know. That
+  file also has a **"Contract cases waiting on the mac"** section at the top,
+  which is where a proposed case gets named.
 - **You CAN propose an authored case.** `scenarios`, `nearMisses`,
   `promptHistory` and the case lists in the other files survive a mac
   regeneration untouched, so a behaviour you invent can be written as a case

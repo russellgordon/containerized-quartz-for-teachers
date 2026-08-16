@@ -13,6 +13,56 @@ Items are **marked done in place rather than removed**, so the ledger keeps
 its own history: a `✅ DONE` line names what landed on the mac side and
 where. Anything unmarked is still outstanding.
 
+## How to write an entry
+
+The good entries below already do this; it is written down so the next one
+does not have to infer it from twenty examples. An entry carries:
+
+1. **A bold title that says what CHANGED**, then `(source, date, commit)` —
+   "Windows", "shared", or "Windows + shared" for work in `scripts/`.
+2. **What it fixed, and WHY it was done that way.** The why is the half that
+   travels: the mac can read a diff, it cannot read a decision. Include what
+   was **rejected**, or it gets proposed again and costs the same afternoon
+   twice.
+3. **Numbers, with the hardware they came from**, for anything measured. This
+   side has no way to find out what a Windows teacher's machine does. "The
+   Vulkan build was faster" cannot be acted on; "43 tok/s against 11 on CPU,
+   Intel Iris Xe" can.
+4. **Where the reference implementation lives** — file and test names, which
+   outlast commit hashes across rebases.
+5. **Whether the mac is expected to match it, or merely to know.** Those are
+   different asks, and the second section of this file exists for the latter.
+
+If a teacher can see the change, it also wants a row in
+[`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) — that log is the record of the
+product, not of one platform.
+
+## Contract cases waiting on the mac
+
+**Nothing waiting right now.** This section exists so that when something is,
+it is the first thing read here — and so a red mac suite is instantly
+explicable rather than alarming.
+
+The mechanism, in one paragraph. `Plantoir --write-contracts` runs on the mac,
+so the Windows side cannot regenerate the derived halves of
+[`contracts/`](contracts/README.md) — but the **authored** halves (`scenarios`,
+`nearMisses`, `promptHistory`, and the case lists in the other files) survive
+regeneration untouched. So a behaviour invented on Windows can be proposed as
+a case, and **the mac suite then fails until the mac implements it.** That is
+the mechanism working, not a break: verified on purpose by adding a case for
+an event the mac has no support for, which failed naming the case and the
+missing step rather than passing quietly.
+
+When a case is proposed, add a line here naming it, so whoever meets the red
+suite reads it as a request:
+
+> - `contracts/assist-cases.json` → `scenarios` → **"<case name>"**, proposed
+>   <date>. What it asks for, and why. Reference: `<Windows file>`.
+
+Remove the line when the mac implements it, and mark the matching entry below
+`✅ DONE` — the ledger keeps the history, this section keeps only what is
+outstanding.
+
 ## To implement
 
 - **The local assistant went from built to trustworthy in one live-tested
