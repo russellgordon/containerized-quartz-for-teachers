@@ -161,7 +161,10 @@ final class AssistAgent {
         // Reading back a conversation where the assistant asked and nothing
         // answered — but something plainly happened — is worse than not being
         // able to read it back at all.
-        entries.append(Entry(speaker: .teacher, text: pendingIsDeploy ? "Deploy" : "Go"))
+        entries.append(Entry(
+            speaker: .teacher,
+            text: pendingIsDeploy ? AssistWording.deployAccepted : AssistWording.planAccepted
+        ))
         pendingApproval = nil
         planMode.recordAccepted()
         await execute(call: pending.call)
@@ -175,7 +178,7 @@ final class AssistAgent {
         // Read before the pending call is cleared, because the answer depends
         // on which of the two things was being asked about.
         let wasDeploy: Bool = pendingIsDeploy
-        entries.append(Entry(speaker: .teacher, text: "Cancel"))
+        entries.append(Entry(speaker: .teacher, text: AssistWording.cancelled))
         pendingApproval = nil
         activity = .idle
         // A Cancel resets the run of accepted plans. Somebody who has just
@@ -196,7 +199,7 @@ final class AssistAgent {
         // changes to pages, and "nothing was changed" is the part in doubt.
         entries.append(Entry(
             speaker: .assistant,
-            text: wasDeploy ? "Deploy cancelled." : "Left as it was — nothing was changed."
+            text: wasDeploy ? AssistWording.deployWasCancelled : AssistWording.planWasCancelled
         ))
     }
 
@@ -218,7 +221,9 @@ final class AssistAgent {
             }
 
             let text: String = (reply.content ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            entries.append(Entry(speaker: .assistant, text: text.isEmpty ? "I am not sure what to do with that." : text))
+            entries.append(Entry(
+                speaker: .assistant, text: text.isEmpty ? AssistWording.nothingToDo : text
+            ))
             activity = .idle
         } catch {
             entries.append(Entry(speaker: .problem, text: error.localizedDescription))
@@ -282,7 +287,7 @@ final class AssistAgent {
         if definition.needsApproval {
             let explanation: String = tools.explain(call: call)
             entries.append(Entry(speaker: .assistant, text: explanation))
-            entries.append(Entry(speaker: .assistant, text: "Shall I deploy?"))
+            entries.append(Entry(speaker: .assistant, text: AssistWording.deployQuestion))
             pendingApproval = PendingApproval(call: call, explanation: explanation)
             activity = .waitingForApproval
             return
@@ -360,7 +365,7 @@ final class AssistAgent {
         // The question is a message too, so the card below can be nothing but
         // the two buttons. A card that carries its own heading is a second
         // voice in a conversation that already has two.
-        entries.append(Entry(speaker: .assistant, text: "Shall I go ahead?"))
+        entries.append(Entry(speaker: .assistant, text: AssistWording.planQuestion))
         pendingApproval = PendingApproval(call: call, explanation: outcome.forTheCard)
         activity = .waitingForApproval
     }

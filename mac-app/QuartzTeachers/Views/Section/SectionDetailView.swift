@@ -475,7 +475,9 @@ struct SectionDetailView: View {
         if isBusy {
             return AssistSiteWorkResult(
                 succeeded: false,
-                message: "\(titleText) is already busy in Plantoir. Wait for that to finish, then deploy."
+                message: AssistWording.sectionIsBusy(
+                    course: course.code, section: String(sectionNumber)
+                )
             )
         }
 
@@ -526,8 +528,9 @@ struct SectionDetailView: View {
                 // The failure and its output are already on screen.
                 return AssistSiteWorkResult(
                     succeeded: false,
-                    message: "\(course.code) Section \(sectionNumber) could not be built, so nothing was "
-                           + "sent to students. The output is in that section's window in Plantoir."
+                    message: AssistWording.couldNotBuildBeforeDeploying(
+                        course: course.code, section: String(sectionNumber)
+                    )
                 )
             }
         }
@@ -554,13 +557,14 @@ struct SectionDetailView: View {
         if !deployed {
             return AssistSiteWorkResult(
                 succeeded: false,
-                message: "The deploy of \(course.code) Section \(sectionNumber) did not finish. "
-                       + "The output is in that section's window in Plantoir."
+                message: AssistWording.deployDidNotFinish(
+                    course: course.code, section: String(sectionNumber)
+                )
             )
         }
         return AssistSiteWorkResult(
             succeeded: true,
-            message: "\(course.code) Section \(sectionNumber) is deployed. Students can reach it now."
+            message: AssistWording.deployed(course: course.code, section: String(sectionNumber))
         )
     }
 

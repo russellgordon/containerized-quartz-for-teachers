@@ -100,14 +100,16 @@ final class AssistToolchainWork: AssistSiteWork {
         if !built {
             return AssistSiteWorkResult(
                 succeeded: false,
-                message: "The preview for \(course.code) Section \(sectionNumber) did not finish building. "
-                       + "The output is in that section's console in Plantoir."
+                message: AssistWording.previewDidNotBuild(
+                    course: course.code, section: String(sectionNumber)
+                )
             )
         }
         return AssistSiteWorkResult(
             succeeded: true,
-            message: "Rebuilt the preview for \(course.code) Section \(sectionNumber). "
-                   + "Open that section in Plantoir to look it over."
+            message: AssistWording.rebuiltForACallerWithNoWindow(
+                course: course.code, section: String(sectionNumber)
+            )
         )
     }
 
@@ -133,8 +135,7 @@ final class AssistToolchainWork: AssistSiteWork {
             // or what to do about it. This refusal is the last word of a turn.
             return AssistSiteWorkResult(
                 succeeded: false,
-                message: "\(course.code) is busy in Plantoir — a preview or a deploy is running. "
-                       + "Wait for that to finish, then ask again."
+                message: AssistWording.courseIsBusy(course: course.code)
             )
         }
 
@@ -165,8 +166,9 @@ final class AssistToolchainWork: AssistSiteWork {
             if !built {
                 return AssistSiteWorkResult(
                     succeeded: false,
-                    message: "\(course.code) Section \(sectionNumber) could not be built, so nothing was "
-                           + "sent to students. The output is in that section's console in Plantoir."
+                    message: AssistWording.couldNotBuildBeforeDeploying(
+                        course: course.code, section: String(sectionNumber)
+                    )
                 )
             }
         } else {
@@ -200,13 +202,14 @@ final class AssistToolchainWork: AssistSiteWork {
         if !deployed {
             return AssistSiteWorkResult(
                 succeeded: false,
-                message: "The deploy of \(course.code) Section \(sectionNumber) did not finish. "
-                       + "The output is in that section's console in Plantoir."
+                message: AssistWording.deployDidNotFinish(
+                    course: course.code, section: String(sectionNumber)
+                )
             )
         }
         return AssistSiteWorkResult(
             succeeded: true,
-            message: "\(course.code) Section \(sectionNumber) is deployed. Students can reach it now."
+            message: AssistWording.deployed(course: course.code, section: String(sectionNumber))
         )
     }
 

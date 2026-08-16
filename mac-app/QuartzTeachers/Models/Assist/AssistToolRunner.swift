@@ -170,7 +170,7 @@ final class AssistToolRunner {
             // `code`, `number` and `destination` are deliberately unused here.
             // Leave them: `schedule_deploy` below needs all three, and the one
             // thing this text must never become is a description of a tool.
-            return "Students will see what is deployed. Be certain to review changes you have made."
+            return AssistWording.deployApproval
         case "schedule_deploy":
             let raw: String = text("when", in: arguments)
             let when: String = AssistToolRunner.moment(named: raw)
@@ -781,8 +781,6 @@ final class AssistToolRunner {
     private func bringThePreviewUpToDate(
         for course: Course, sectionNumber: Int
     ) async -> String {
-        let where_: String = "\(course.code) Section \(sectionNumber)"
-
         if let window = sectionWindow(for: course, sectionNumber: sectionNumber) {
             // Stop whatever is running first, and WAIT for it. "Preview" means
             // show me this section as it is now, so a preview already up is
@@ -798,8 +796,9 @@ final class AssistToolRunner {
                 await window.stopPreview()
             }
             window.startPreview()
-            return "The preview for \(where_) is rebuilding now, and will appear in that "
-                 + "section's window when it is ready."
+            return AssistWording.previewIsRebuilding(
+                course: course.code, section: String(sectionNumber)
+            )
         }
 
         let rebuild: AssistSiteWorkResult = await siteWork.rebuildPreview(
@@ -808,8 +807,9 @@ final class AssistToolRunner {
         if !rebuild.succeeded {
             return rebuild.message
         }
-        return "Rebuilt the site for \(where_). Open that section in Plantoir and press Preview "
-             + "to look it over — no window is showing it at the moment."
+        return AssistWording.builtWithNoWindowOpen(
+            course: course.code, section: String(sectionNumber)
+        )
     }
 
     private func undoLastChange() -> AssistToolOutcome {
