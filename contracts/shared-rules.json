@@ -248,5 +248,64 @@
       }
     ],
     "note": "The launchers' output is written for a terminal: colour codes, cursor moves, window-title sequences. Both apps show that output to a teacher, so both must strip the same things - and KEEP the same things. Newlines, carriage returns and tabs survive; every other control character does not. Inputs below use \\u001b for ESC and \\u0007 for BEL."
+  },
+  "workingFolderPathBar": {
+    "actions": [
+      {
+        "action": "reveal",
+        "gesture": "context menu",
+        "macLabel": "Show in Finder",
+        "means": "Open the folder's PARENT with the folder selected.",
+        "why": "The same words and the same meaning this action has everywhere else in the app.",
+        "windowsLabel": "Show in File Explorer"
+      },
+      {
+        "action": "open",
+        "gesture": "double-click, and a second context-menu item",
+        "macLabel": "Open Folder",
+        "means": "Open the folder ITSELF in the file manager.",
+        "why": "Two different things, and a teacher wants both: revealing shows where a folder sits, opening shows what is in it. Finder's own path bar makes the same distinction, which is why the gestures match it — double-click opens, right-click reveals.",
+        "windowsLabel": "Open Folder"
+      },
+      {
+        "action": "tooltip",
+        "gesture": "hover",
+        "means": "The full path of that crumb.",
+        "why": "The crumbs show display names, which can be localised or truncated; the tooltip is how a teacher checks they are looking at the folder they think they are."
+      }
+    ],
+    "ancestorPaths": {
+      "cases": [
+        {
+          "expect": [
+            "/",
+            "/Users",
+            "/Users/teacher",
+            "/Users/teacher/Desktop",
+            "/Users/teacher/Desktop/Courses"
+          ],
+          "path": "/Users/teacher/Desktop/Courses"
+        },
+        {
+          "expect": [
+            "/",
+            "/Users",
+            "/Users/teacher"
+          ],
+          "path": "/Users/teacher"
+        }
+      ],
+      "note": "Every ancestor from the volume root DOWN TO and including the folder itself. The root is included — a teacher scanning for where their folder lives reads the whole line.",
+      "windowsEquivalent": "Start at the drive rather than at '/': C:\\\\ , C:\\\\Users, C:\\\\Users\\\\teacher, … The RULE is 'every ancestor, root first, folder last'; the spelling of a root is the platform's."
+    },
+    "everyCrumbIsLive": {
+      "rule": "EVERY ancestor is clickable, not just the last one.",
+      "why": "It is how a teacher gets to the folder ABOVE their working folder — to make a sibling, or to see where things sit — without leaving the app to find it."
+    },
+    "icons": {
+      "rule": "Each crumb shows the folder's real icon from the host file manager.",
+      "why": "Not decoration: a teacher recognises their Desktop or their iCloud Drive by its icon before reading the word. Optional if the platform makes it expensive — say so rather than dropping it silently."
+    },
+    "note": "The 'Working folder:' bar under the sidebar. Modelled on the host file manager's own path bar — Finder's on the mac — because a teacher who has seen one knows what it does without being told. Reported missing on Windows 2026-08-16, in use: the context menu is not there. The LABELS are per platform ('Finder' against 'File Explorer'); the actions, the gestures and the crumb list are not."
   }
 }

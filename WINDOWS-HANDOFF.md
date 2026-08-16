@@ -938,6 +938,47 @@ is shared and must be, because `build_site.py` decides what ships and an app
 that disagreed would report coverage the site does not have. What a coverage
 plan SAYS to a teacher, and how it is offered, is yours.
 
+### The working-folder path bar — reported missing in use, 2026-08-16
+
+The bar under the sidebar that reads "Working folder: … › … › Courses". On the
+mac it does four things; on Windows the `BreadcrumbBar` currently does one, and
+the difference was found by a teacher using it rather than by any test, which
+is the point of writing it down now.
+
+| What | mac | Windows today |
+|---|---|---|
+| Click a crumb | selects nothing — see below | **reveals it in File Explorer** |
+| Double-click a crumb | opens that folder | nothing |
+| Right-click a crumb | menu: **Show in Finder** / **Open Folder** | **no menu at all** |
+| Hover a crumb | tooltip with the full path | nothing |
+| Each crumb shows | the real folder icon + display name | name only |
+
+**The two actions are genuinely different and a teacher wants both.**
+*Revealing* opens the folder's PARENT with the folder selected — it answers
+"where does this live?". *Opening* opens the folder itself — it answers "what
+is in it?". Collapsing them into one gesture loses the other question, and
+which one survives is arbitrary. The gestures follow the host file manager
+deliberately, so a teacher who has used Finder or Explorer already knows them:
+double-click opens, right-click offers both.
+
+**Every crumb is live, not just the last.** That is how a teacher reaches the
+folder ABOVE their working folder — to make a sibling, or to see where things
+sit — without leaving the app to go and find it.
+
+The testable half is in `contracts/shared-rules.json` → `workingFolderPathBar`:
+the crumb list (every ancestor, root first, folder last — on Windows starting
+at the drive rather than at `/`), the two actions with each platform's label,
+and the gestures. The labels differ on purpose: "Show in Finder" against
+"Show in File Explorer".
+
+**The general lesson, which is why this went unnoticed for months.** An
+affordance that lives ONLY in a context menu is invisible to everything: no
+screenshot shows it, no test on the other side asks for it, and the person
+building the other app has no way to know it exists. When a change adds a right
+-click menu, a double-click, a hover, or a keyboard shortcut, it needs a line
+here **even though nothing on screen changed** — those are exactly the changes
+a diff of the UI will not reveal.
+
 ### Two things to MEASURE on Windows rather than copy from the mac
 
 Both are in the contracts, and both would be wrong to implement by reading the

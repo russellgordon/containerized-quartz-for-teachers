@@ -114,6 +114,34 @@ final class SharedRulesContractTests: XCTestCase {
         }
     }
 
+    // MARK: - The working-folder path bar
+
+    /// Only the crumb LIST is testable here — the gestures and the menu live
+    /// in a view. The contract carries all four so Windows has the whole
+    /// picture; this pins the half a test can reach.
+    func testThePathBarListsEveryAncestor() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("workingFolderPathBar")
+        let ancestors: [String: Any] = try XCTUnwrap(section["ancestorPaths"] as? [String: Any])
+
+        for testCase in try XCTUnwrap(ancestors["cases"] as? [[String: Any]]) {
+            let path: String = try XCTUnwrap(testCase["path"] as? String)
+            XCTAssertEqual(
+                FinderPathBarView.ancestorPaths(for: URL(fileURLWithPath: path)),
+                try XCTUnwrap(testCase["expect"] as? [String]), path
+            )
+        }
+
+        // And the two actions really are two different things, which is the
+        // part Windows is missing — one reveals, one opens.
+        let actions: [[String: Any]] = try XCTUnwrap(section["actions"] as? [[String: Any]])
+        var named: [String] = []
+        for action in actions {
+            named.append(try XCTUnwrap(action["action"] as? String))
+        }
+        XCTAssertTrue(named.contains("reveal"), "\(named)")
+        XCTAssertTrue(named.contains("open"), "\(named)")
+    }
+
     // MARK: - What counts as a curriculum expectation
 
     func testCurriculumPagesAreRecognisedAsTheContractSays() throws {
