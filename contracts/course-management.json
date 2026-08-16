@@ -1,0 +1,206 @@
+{
+  "gradeLabels": {
+    "cases": [
+      {
+        "code": "ICS3U",
+        "expect": "Grade 11"
+      },
+      {
+        "code": "ADA1O",
+        "expect": "Grade 9"
+      },
+      {
+        "code": "SPH4U",
+        "expect": "Grade 12"
+      },
+      {
+        "code": "MPM2D",
+        "expect": "Grade 10"
+      },
+      {
+        "code": "CODING",
+        "expect": "",
+        "why": "No digit in the fourth place, so no grade is claimed."
+      },
+      {
+        "code": "ABC",
+        "expect": "",
+        "why": "Too short to have a fourth character."
+      },
+      {
+        "code": "ICS9U",
+        "expect": "Grade ?",
+        "why": "A digit that is not 1–4 is honest about not knowing rather than silently dropping it."
+      }
+    ],
+    "note": "The grade named by an Ontario course code's FOURTH character, matching the wizard. A club code with no digit there gets no grade label at all rather than a wrong one."
+  },
+  "note": "Names on disk and the rules for adding a section. All of it is string handling over files both apps read, so all of it ports — and the naming grammar in particular MUST, because the two apps list each other's files. A course backed up on a Mac and opened on Windows has to appear in the Backups list, not vanish because the parser was rewritten from memory.",
+  "sectionNumbers": {
+    "addable": [
+      {
+        "entry": "3",
+        "existing": [
+          1
+        ],
+        "expect": true
+      },
+      {
+        "entry": "1",
+        "existing": [
+          1
+        ],
+        "expect": false
+      },
+      {
+        "entry": "",
+        "existing": [
+          1
+        ],
+        "expect": false
+      },
+      {
+        "entry": "0",
+        "existing": [],
+        "expect": false
+      }
+    ],
+    "entryProblems": [
+      {
+        "entry": "",
+        "existing": [
+          1
+        ],
+        "expectProblem": null,
+        "why": "An empty field is quietly invalid: nothing has been said yet, so there is nothing to warn about. A warning that appears before the teacher types is noise."
+      },
+      {
+        "entry": "   ",
+        "existing": [
+          1
+        ],
+        "expectProblem": null
+      },
+      {
+        "entry": "3",
+        "existing": [
+          1
+        ],
+        "expectProblem": null
+      },
+      {
+        "entry": "1",
+        "existing": [
+          1
+        ],
+        "expectProblem": "Section 1 of ICS3U already exists."
+      },
+      {
+        "entry": "0",
+        "existing": [
+          1
+        ],
+        "expectProblem": "“0” isn’t a section number — sections are 1 or higher."
+      },
+      {
+        "entry": "-2",
+        "existing": [
+          1
+        ],
+        "expectProblem": "“-2” isn’t a section number — sections are 1 or higher."
+      },
+      {
+        "entry": "two",
+        "existing": [
+          1
+        ],
+        "expectProblem": "“two” isn’t a section number — sections are 1 or higher."
+      }
+    ],
+    "note": "Adding a section: what is offered, what is refused, and in whose words.",
+    "suggested": [
+      {
+        "existing": [],
+        "expect": 1
+      },
+      {
+        "existing": [
+          1
+        ],
+        "expect": 2
+      },
+      {
+        "existing": [
+          2,
+          3
+        ],
+        "expect": 1,
+        "why": "The SMALLEST number not in use, not one past the highest — so 'add section 1' and 'add the next one' are each a single click."
+      },
+      {
+        "existing": [
+          1,
+          2,
+          4
+        ],
+        "expect": 3
+      }
+    ]
+  },
+  "timestampFormat": {
+    "example": "2026-08-10T14:30:00.000-0400",
+    "format": "yyyy-MM-dd'T'HH:mm:ss.000Z",
+    "note": "The `created:` frontmatter stamp the wizard writes, matched exactly so pages added later sit beside pages made at setup without a teacher seeing two forms."
+  },
+  "zipNames": {
+    "cases": [
+      {
+        "kind": "backup",
+        "maker": "teacher",
+        "name": "ICS3U_backup_2026-08-11_221530.zip"
+      },
+      {
+        "kind": "backup",
+        "maker": "assistant",
+        "name": "ICS3U_backup_2026-08-11_221530_assistant-section3.zip",
+        "section": 3,
+        "why": "The assistant's own backups say so in the name, so a teacher can see which copies Plantoir made and what each was for. A name WITHOUT that ending is one of the teacher's own — which is exactly what every backup made before this existed is, and why the suffix is added rather than the teacher's being marked."
+      },
+      {
+        "kind": "archive",
+        "name": "ICS3U_2026-08-10_143005.zip"
+      },
+      {
+        "kind": "archive",
+        "name": "ICS3U-section2_2026-08-10_143005.zip",
+        "section": 2
+      },
+      {
+        "kind": "neither",
+        "name": "2026-08-10_143005.zip",
+        "why": "The setup wizard's automatic zip. It belongs to neither list."
+      },
+      {
+        "kind": "neither",
+        "name": "ICS3U_backup_2026-08-11_221530_something-else.zip",
+        "why": "An unrecognised maker makes the WHOLE name unrecognised, rather than quietly reading as a teacher's own backup. A backup attributed to the wrong maker is worse than one not listed."
+      },
+      {
+        "kind": "neither",
+        "name": "MCV4U_backup_2026-08-11_221530.zip",
+        "why": "Another course's backup, when reading ICS3U's folder."
+      },
+      {
+        "kind": "neither",
+        "name": "ICS3U_backup_not-a-date.zip"
+      },
+      {
+        "kind": "neither",
+        "name": "ICS3U_backup_2026-08-11_221530.txt",
+        "why": "Not a zip."
+      }
+    ],
+    "courseCode": "ICS3U",
+    "note": "Three kinds of zip live side by side in `courses/_backups/<CODE>/`, told apart by NAME. Each parser accepts only its own form, so the three can never appear in each other's lists — an archive showing up under Backups is a teacher restoring the wrong thing. The timestamp is `yyyy-MM-dd_HHmmss` and contains an underscore of its own, which is why the pieces are counted rather than split on the last underscore."
+  }
+}

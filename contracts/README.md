@@ -1,16 +1,26 @@
-# The assistant contract — what both apps must agree on
+# The Plantoir contract — what both apps must agree on
 
-Two JSON files, both **generated from the macOS app** and both read by the
-Windows test suite. They exist so that "implement what changed on the mac"
-ends in a green Windows suite instead of a day of clicking.
+Six JSON files, **generated from the macOS app** and read by both test suites.
+They exist so that "implement what changed on the mac" ends in a green Windows
+suite instead of a day of clicking.
+
+This began as the assistant's contract and is no longer only that: it now
+covers what the launcher is asked to do, what a teacher is told about what they
+typed, how their list of class dates is read, what the files a course keeps are
+called, and how classes are named and renumbered. **The test is not which
+feature a rule belongs to — it is whether the rule is the product's or the
+platform's.** A sentence a teacher reads, an input with one right output, an
+order events must happen in: shared. A window's layout, a container's
+mechanics, a measurement taken on one machine: not.
 
 | File | What it holds |
 |---|---|
 | [`assist-wording.json`](assist-wording.json) | Every sentence the assistant says to a teacher about deploying, previewing and agreeing to things, with `{course}` and `{section}` where values go. |
-| [`assist-cases.json`](assist-cases.json) | The behaviour: which phrasings are matched in code rather than routed, which tools wait for a button, which tools the local model is shown, and what must happen in what ORDER when the assistant deploys. |
+| [`assist-cases.json`](assist-cases.json) | The assistant's behaviour: which phrasings are matched in code rather than routed, which tools wait for a button, what must happen in what ORDER when it deploys, and how the arrow keys walk the prompt history. |
+| [`course-management.json`](course-management.json) | The names the three kinds of zip carry and how they are told apart, what section number is offered next and which entries are refused in whose words, and the grade a course code names. |
 | [`class-planning.json`](class-planning.json) | Which page titles carry numbers, what "the next class" would be called, and — the highest-stakes data here — the ORDER renames must run in when room is made for a class. |
 | [`schedule-rules.json`](schedule-rules.json) | How a teacher's own list of class dates is read: every accepted date form, how an ambiguous `08/09/2026` column is settled or asked about, and what a pasted Google Sheet address becomes. |
-| [`app-rules.json`](app-rules.json) | Everything outside the assistant: what `deploy.sh` is asked to do for a given configuration, what a teacher is told about an Account ID or a custom domain they typed, the progress markers and **where each marker's text comes from**, and the preview's ports. |
+| [`app-rules.json`](app-rules.json) | The app itself: what `deploy.sh` is asked to do for a given configuration, what a teacher is told about an Account ID or a custom domain they typed, how a failure's raw output becomes a sentence, whether a deploy must build first, the progress markers and **where each marker's text comes from**, and the preview's ports. |
 
 ## What is generated and what is written by hand
 
@@ -109,6 +119,9 @@ gap nobody has looked at. Counts are test functions, taken 2026-08-16.
 | Preview ports and the websocket offset | `app-rules.json` → `previewPorts` | PreviewLease (7) |
 | The browser-safe address | `app-rules.json` → `linkRules` | BrowserSafeURL (2) |
 | Reading a teacher's date list | `schedule-rules.json` | SectionScheduleSource (23) |
+| Backup, archive and wizard zip names | `course-management.json` → `zipNames` | BackupItem, ArchivedItem (18) |
+| Adding a section: suggestion, refusals, wording | `course-management.json` → `sectionNumbers` | SectionAdder, SectionNumbersValidation (21) |
+| Grade labels from a course code | `course-management.json` → `gradeLabels` | SectionAdder |
 | Naming, numbering, making room | `class-planning.json` | ClassPlanning (13), NextClass (13) |
 
 **Not shared, and why.** Each of these is a deliberate decision, not an
@@ -120,10 +133,10 @@ oversight:
 | Script runner and preview stopper mechanics | 34 + 2 | ConPTY against a pseudo-terminal, WSL2 against Colima. The OUTPUT they parse is shared (see `markerOrigins`); the machinery is not. |
 | Scheduled deploys | 23 | launchd against Task Scheduler — nothing about the mechanism ports. The plan's REFUSALS (a section never deployed cannot be scheduled) are worth mirroring by hand. |
 | Model tiers, plan mode, activity | 30 | Measured on this hardware. See `research/`; a tier ladder measured on an M4 Pro says nothing about a teacher's laptop with integrated graphics. |
-| Backup, archive, restore | 26 | Portable in principle — the naming and pruning rules are ordinary logic. **Next candidate.** Not yet done. |
+| Restoring and archiving the FILES | ~8 | The zip NAMES are shared (above); unzipping, replacing a course folder and reporting what came back is filesystem work with different failure modes on each platform. |
 | Example content, skeletons, course names | 25 | Both apps read the SAME files under `support/`. The data is its own contract; run the same validity checks against it rather than copying expectations here. |
 | Workspace initialisation, folder containers | 18 | Filesystem shapes that differ (`~/Library/Application Support` against `%LOCALAPPDATA%`). |
-| Section adding and numbering | 21 | Partly shared through `configurationRules`; the rest writes files and is worth mirroring by hand. |
+| Writing a new section's files | ~5 | The rules are shared (above); creating folders and extending each page's frontmatter is filesystem work. |
 | Curriculum mentions, section restore | 19 | MCP-only tools and section-scoped restore — no Windows counterpart yet. |
 | Sidebar filtering, transcript building, console focus | 20 | Small and local; port if the behaviour is ever questioned. |
 

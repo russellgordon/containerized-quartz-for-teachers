@@ -841,15 +841,53 @@ And the rule that governs all of it, from row 1 of the improvement log: **the
 window never names the machinery.** No tool names, no model names, no tokens,
 no containers. "The small assistant" and "the larger assistant".
 
-### Do not re-derive the assistant's tests — read `contracts/`
+### Two things to MEASURE on Windows rather than copy from the mac
 
-**This is the section that saves you a day per sync.** Two JSON files, both
-written by the macOS binary, both meant to be read by `Plantoir.Tests`:
+Both are in the contracts, and both would be wrong to implement by reading the
+mac's answer. They are small, and each is an hour that turns into a day when
+skipped.
+
+**1. Whether the browser needs `127.0.0.1` instead of `localhost`.**
+`app-rules.json` → `linkRules.browserSafe` says the mac rewrites the preview
+address before handing it to the browser. The reason is specific to Safari: it
+tries IPv6 (`::1`) first for "localhost", the container publishes the port on
+IPv4 only, and the failure reads to a teacher as "the server dropped the
+connection" — not as anything to do with addresses. **Find out what Edge does**
+before deciding you need the same rewrite. Open a preview, then try
+`http://localhost:<port>` in Edge by hand. If it connects first time, drop the
+rewrite and say so in `MAC-HANDOFF.md` — that is a finding, not an omission,
+and the contract should then note that the rule is mac-only. If Edge behaves
+the same way, keep it and the contract stays as it is.
+
+**2. Which progress markers you must match, and which are yours to write.**
+`app-rules.json` → `markerOrigins` classifies all twenty-five. Seventeen come
+from `scripts/*.py`, which both platforms run, and must match to the
+character. Seven come from the launchers, which exist separately as `.sh` and
+`.ps1` — those you write, and they already differ: the mac watches for
+"Setting up this Mac" where `setup.ps1` prints "Setting up this PC". One is
+"elsewhere" (`Quartz v4`, from the Docker build) and wants a human to look.
+
+**Do NOT copy the mac's seven launcher markers into your milestone lists.**
+Read your own `.ps1` files and match what they actually print. This fails
+silently in the worst way: the app does not crash, the progress bar simply
+stops advancing part-way and then jumps at the end, which reads as a slow
+build rather than as a bug — and the only way to notice is to watch a whole
+deploy with the old and new bars side by side.
+
+### Do not re-derive Plantoir's tests — read `contracts/`
+
+**This is the section that saves you a day per sync.** Six JSON files, written
+by the macOS binary, meant to be read by `Plantoir.Tests`. It started as the
+assistant's contract and is now the whole product's:
 
 | File | What it holds |
 |---|---|
-| `contracts/assist-wording.json` | Every sentence the assistant says to a teacher about deploying, previewing and agreeing to things — nineteen of them, with `{course}` and `{section}` where values go. |
-| `contracts/assist-cases.json` | The nine phrasings matched in code, the four near misses that must NOT match, the three tool lists with approvals and plan twins, and eight scenarios as `given` / `when` / `expectEvents` / `expectReply`. |
+| `contracts/assist-wording.json` | Every sentence the assistant says to a teacher — nineteen, with `{course}` and `{section}` where values go. |
+| `contracts/assist-cases.json` | The nine phrasings matched in code, the four near misses that must NOT match, the three tool lists with approvals and plan twins, eight scenarios as `given` / `when` / `expectEvents` / `expectReply`, and the arrow-key prompt history. |
+| `contracts/app-rules.json` | Launcher arguments per configuration, the validation a teacher reads, failure output turned into a sentence, whether a deploy must build first, the progress markers and where each one's text comes from, the preview's ports. |
+| `contracts/schedule-rules.json` | Every accepted date form, how an ambiguous `08/09/2026` column is settled or asked about, what a pasted Google Sheet address becomes. |
+| `contracts/class-planning.json` | Which titles carry numbers, what the next class is called, and the ORDER renames must run in. |
+| `contracts/course-management.json` | The three kinds of zip and how they are told apart, the section number offered next and the refusals, grade labels from a course code. |
 
 An xUnit `[Theory]` with a `MemberData` source that deserialises these is the
 whole integration. Nothing in them is macOS-specific: the sentences are the

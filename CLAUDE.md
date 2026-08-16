@@ -361,6 +361,7 @@ it rather than restating it:
 | What is the launcher asked to do, what is a teacher told about what they typed, which progress markers are shared? | [`contracts/app-rules.json`](contracts/app-rules.json). |
 | How is a teacher's list of class dates read? | [`contracts/schedule-rules.json`](contracts/schedule-rules.json). |
 | Which page titles carry numbers, what is the next class called, what happens when room is made for one? | [`contracts/class-planning.json`](contracts/class-planning.json). |
+| What are the backup and archive files called, and what section number is offered next? | [`contracts/course-management.json`](contracts/course-management.json). |
 | WHY is it that way, and what was rejected? | [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) for anything an implementer needs; a code comment for anything a reader of that file needs. |
 | WHAT changed, WHEN, and what it cost | [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) — a dated log. **Append-only history, not a specification**: a row records what was true that day, and is not edited when the behaviour changes again. Never quote a row as the current wording. |
 | How does the whole feature work? | [`documentation/10-local-ai-assistant.md`](documentation/10-local-ai-assistant.md). |
@@ -394,7 +395,7 @@ path from nothing to a change that will not be re-derived:
 2. **[`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md)** — architecture, the config
    contract, and the reasoning behind the decisions. Long, and the section
    headings are enough to navigate.
-3. **[`contracts/README.md`](contracts/README.md)**, then the five JSON files — its coverage table says what is shared and what deliberately is not.
+3. **[`contracts/README.md`](contracts/README.md)**, then the six JSON files — its coverage table says what is shared and what deliberately is not.
    These are the acceptance list: wire them into `Plantoir.Tests` and the
    assistant's behaviour is tested rather than eyeballed. **Do not retype the
    sentences or the scenarios into your test files** — deserialise them.
@@ -415,7 +416,7 @@ they are a fair first task: implementing them fixes a real bug on that side.
 | [`documentation/`](documentation/README.md) | How the toolchain works, numbered 01–10: overview, image, launchers, course setup, build pipeline, Quartz customizations, deployment, config reference, mac app, local AI assistant. |
 | [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) | The dated log of every GUI change, with a required "Notes for Windows port" column. Append here for any GUI change — and read it as HISTORY: it used to be described as "the spec", and `contracts/` is what a test should be written against now. |
 | [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) | Architecture, the config contract, platform notes, and the WSL2 background — start here for Windows work, and write architectural decisions into it. |
-| [`contracts/`](contracts/README.md) | What the two apps must agree on, as data both test suites run: the assistant's sentences and behaviour cases, and the app-wide rules — launcher arguments, validation messages, progress markers, preview ports. Generated from the macOS app; never hand-edited. |
+| [`contracts/`](contracts/README.md) | **The Plantoir contract**: what the two apps must agree on, as data both test suites run — the assistant's sentences and behaviour, launcher arguments, validation wording, failure explanations, date reading, class naming, file names, progress markers, preview ports. Generated from the macOS app; never hand-edited. Its coverage table says what is deliberately NOT shared, and why. |
 | [`MAC-HANDOFF.md`](MAC-HANDOFF.md) | The mirror: work that originated on Windows or in shared `scripts/` and needs the mac's attention. Read it when syncing the two sides. |
 | [`RELEASING.md`](RELEASING.md) | Cutting a release: signing, bundling, and the frozen asset names both platforms depend on. |
 | [`TODO.md`](TODO.md) | Deferred work, with the research already done so picking one up is cheap. |
