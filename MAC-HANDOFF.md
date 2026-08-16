@@ -87,6 +87,14 @@ rather than being deleted.
 
 ## For awareness — no mac code needed
 
+- **A divergence was reported TO Windows, not from them** (mac sweep,
+  2026-08-16). The first-deploy marker: this side reads the marker for the
+  course's CURRENT destination, `AssistWorkspace.cs` accepts either folder.
+  Written up in `WINDOWS-HANDOFF.md`. Nothing to do here — the mac's behaviour
+  is the correct one — but if they answer with a reason for their version,
+  that answer belongs in `contracts/file-formats.json` beside the rule.
+
+
 
 Things to KNOW rather than to do. An item here that grows an ask should move
 up to **Open** instead of hiding a to-do in a list nobody reads for work — which

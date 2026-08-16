@@ -129,6 +129,71 @@ final class FileFormatsContractTests: XCTestCase {
         XCTAssertTrue(bare.text.hasPrefix("---\npublish: false\n---\n"), bare.text)
     }
 
+    // MARK: - Has this section ever been deployed to where it is going NOW?
+
+    /// The marker is per DESTINATION, and that is the whole point of it.
+    ///
+    /// A course deployed to Netlify and then switched to Cloudflare has never
+    /// been deployed to Cloudflare. Accepting the old marker as proof
+    /// schedules the one deploy that will stop at a prompt at half six with
+    /// nobody there.
+    func testTheFirstDeployMarkerIsReadPerDestination() throws {
+        let section: [String: Any] = try FileFormatsContractTests.section("firstDeployMarkers")
+        let root: URL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("markers-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        // A course configured for Cloudflare, carrying only a NETLIFY marker.
+        let courseURL: URL = root.appendingPathComponent("courses/MCV4U")
+        try FileManager.default.createDirectory(
+            at: courseURL.appendingPathComponent(".netlify_sites"), withIntermediateDirectories: true
+        )
+        try "{}".write(
+            to: courseURL.appendingPathComponent(".netlify_sites/section1.json"),
+            atomically: true, encoding: .utf8
+        )
+        let values: [String: Any] = ["course_code": "MCV4U", "deploy_target": "cloudflare_pages"]
+        try JSONSerialization.data(withJSONObject: values)
+            .write(to: courseURL.appendingPathComponent("course_config.json"))
+        let course: Course = Course(
+            code: "MCV4U",
+            directoryURL: courseURL,
+            configuration: try CourseConfiguration(
+                contentsOf: courseURL.appendingPathComponent("course_config.json")
+            )
+        )
+
+        XCTAssertFalse(
+            DeployCommand.hasDeployedBefore(section: 1, in: course),
+            "\((section["why"] as? String) ?? "")"
+        )
+        XCTAssertEqual(
+            DeployCommand.firstDeployMarkerURL(forSection: 1, in: course)?.lastPathComponent,
+            "section1.json"
+        )
+        XCTAssertTrue(
+            DeployCommand.firstDeployMarkerURL(forSection: 1, in: course)?.path
+                .contains(".cloudflare_sites") ?? false,
+            "A Cloudflare course looks for its Cloudflare marker"
+        )
+
+        // A folder deploy keeps no marker and counts as always-deployed.
+        let folderValues: [String: Any] = [
+            "course_code": "MCV4U", "deploy_target": "local_folder", "deploy_folder_path": root.path,
+        ]
+        try JSONSerialization.data(withJSONObject: folderValues)
+            .write(to: courseURL.appendingPathComponent("course_config.json"))
+        let toFolder: Course = Course(
+            code: "MCV4U",
+            directoryURL: courseURL,
+            configuration: try CourseConfiguration(
+                contentsOf: courseURL.appendingPathComponent("course_config.json")
+            )
+        )
+        XCTAssertNil(DeployCommand.firstDeployMarkerURL(forSection: 1, in: toFolder))
+        XCTAssertTrue(DeployCommand.hasDeployedBefore(section: 1, in: toFolder))
+    }
+
     // MARK: - Private
 
     private func documentedKeys() throws -> [String] {

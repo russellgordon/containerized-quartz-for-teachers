@@ -984,6 +984,30 @@ building the other app has no way to know it exists. When a change adds a right
 here **even though nothing on screen changed** — those are exactly the changes
 a diff of the UI will not reveal.
 
+### One divergence found by sweeping, 2026-08-16: the first-deploy marker
+
+`deploy.py` writes a marker the first time a section goes out —
+`.netlify_sites/section<N>.json` or `.cloudflare_sites/section<N>.json` — and
+both apps read it to answer "has this ever been deployed?". That answer decides
+whether a scheduled deploy is allowed, because a FIRST deploy asks what to call
+the website and nobody is awake at 06:30 to answer.
+
+**The mac reads the marker for the destination the course is configured for
+NOW. `AssistWorkspace.cs` accepts EITHER folder.** So a course deployed to
+Netlify and later switched to Cloudflare reads as "already deployed" on
+Windows, and a teacher there can schedule the one deploy guaranteed to stop at
+a prompt in the dark.
+
+Narrow it to the current destination. The rule and the paths are in
+`contracts/file-formats.json` → `firstDeployMarkers`, including the third case:
+a folder deploy keeps no marker at all and counts as always-deployed, because
+it asks nothing.
+
+Worth knowing how this was found: not by a failing test, but by walking
+`documentation/07-deployment.md` and asking which of its facts anything
+verifies. Several of these contracts came out of reading the documentation
+against the code that way.
+
 ### Two things to MEASURE on Windows rather than copy from the mac
 
 Both are in the contracts, and both would be wrong to implement by reading the
