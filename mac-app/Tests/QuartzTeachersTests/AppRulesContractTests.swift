@@ -269,6 +269,90 @@ final class AppRulesContractTests: XCTestCase {
         }
     }
 
+    // MARK: - The flags the app passes the launcher
+
+    /// Checks the LAUNCHER, not the app.
+    ///
+    /// The app passing `--build-only` is easy to see in Swift; what nobody
+    /// sees is `preview.sh` quietly losing the flag in a refactor. The
+    /// launcher then prints "Unknown option" and exits, and to a teacher that
+    /// is a preview which simply did not start. Windows runs the same check
+    /// against `preview.ps1`.
+    func testTheLauncherStillAcceptsEveryFlagTheAppPasses() throws {
+        let section: [String: Any] = try XCTUnwrap(
+            (try AppRulesContractTests.readRules())["launcherFlags"] as? [String: Any]
+        )
+        let script: String = try String(
+            contentsOf: AppRulesContractTests.repositoryRoot().appendingPathComponent("preview.sh"),
+            encoding: .utf8
+        )
+
+        var documented: [String] = []
+        for entry in try XCTUnwrap(section["preview"] as? [[String: Any]]) {
+            documented.append(try XCTUnwrap(entry["flag"] as? String))
+        }
+        for entry in (section["alsoAccepted"] as? [String: Any])?["flags"] as? [String] ?? [] {
+            documented.append(entry)
+        }
+
+        try assertAccepts(documented, script: script, named: "preview.sh")
+
+        // The same for the other two launchers, because a flag is only ever
+        // missed in the script nobody thought to check.
+        var setupFlags: [String] = []
+        for entry in try XCTUnwrap(section["setup"] as? [[String: Any]]) {
+            setupFlags.append(try XCTUnwrap(entry["flag"] as? String))
+        }
+        try assertAccepts(
+            setupFlags,
+            script: try String(
+                contentsOf: AppRulesContractTests.repositoryRoot().appendingPathComponent("setup.sh"),
+                encoding: .utf8
+            ),
+            named: "setup.sh"
+        )
+
+        var deployFlags: [String] = ["--target", "--account", "--to-folder"]
+        for entry in (section["deployExtras"] as? [[String: Any]]) ?? [] {
+            deployFlags.append(try XCTUnwrap(entry["flag"] as? String))
+        }
+        try assertAccepts(
+            deployFlags,
+            script: try String(
+                contentsOf: AppRulesContractTests.repositoryRoot().appendingPathComponent("deploy.sh"),
+                encoding: .utf8
+            ),
+            named: "deploy.sh"
+        )
+    }
+
+    /// A flag in the contract must still be a case the script answers to.
+    private func assertAccepts(_ flags: [String], script: String, named name: String) throws {
+        for flag in flags {
+            // "--port <n>" in the contract is "--port)" in the script, and
+            // "-- <args>" is the bare separator.
+            let word: String = String(flag.split(separator: " ").first ?? "")
+            XCTAssertTrue(
+                script.contains("\(word))"),
+                "\(name) no longer accepts \(word), which contracts/app-rules.json says the app passes. "
+                + "A launcher that meets a flag it does not know exits, and to a teacher that is a step "
+                + "which simply did not happen."
+            )
+        }
+    }
+
+    /// And the app really does pass the stop flag — the one whose absence is
+    /// silent, because the host-side script ends either way and only the
+    /// container-side processes are left behind.
+    func testTheStopPathPassesTheStopFlag() throws {
+        let source: String = try String(
+            contentsOf: AppRulesContractTests.repositoryRoot()
+                .appendingPathComponent("mac-app/QuartzTeachers/Scripting/PreviewStopper.swift"),
+            encoding: .utf8
+        )
+        XCTAssertTrue(source.contains("\"--stop\""), "PreviewStopper must ask the launcher to stop")
+    }
+
     // MARK: - The preview's ports
 
     func testThePortsAreWhatTheContractSays() throws {
