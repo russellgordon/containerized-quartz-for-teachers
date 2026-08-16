@@ -422,6 +422,66 @@ two columns; that is worth knowing rather than assuming, and it is what decides
 the tier ladder on Windows. But the container is not buying anything here that
 a host process does not, and it is costing three minutes.
 
+### The requirement: pick whatever makes it FASTEST on Windows
+
+Stated plainly by the maintainer, 2026-08-16, and it is a requirement rather
+than a preference: **choose the design that gives the fastest possible
+performance on Windows.** The mac's answer was to take the model out of Colima
+and run it on Metal. Yours will not be Metal — it should be whatever Windows
+offers that wins, and the only way to know which that is is to measure on real
+teacher-grade hardware.
+
+**Why this is worth an afternoon of measurement rather than a default.** The
+container costs more than it looks. Same model, same 3,411-token prompt, on an
+M4 Pro: **175 seconds inside Colima against 2.1 seconds natively** — 5.5
+tokens/second against 158. That is not a tuning difference, it is the
+difference between a feature a teacher uses and one they close the window on.
+A Linux VM has no access to the host's GPU; the same will be true of yours.
+
+**The candidates, in the order worth trying.** llama.cpp publishes Windows
+builds for all of these in the same release as the macOS one, and the server
+speaks the same OpenAI-shaped HTTP either way, so `LocalModel` should need
+little more than a different way of starting the process:
+
+| Backend | Where it wins | What to check |
+|---|---|---|
+| **CUDA** | An NVIDIA GPU, which many teacher laptops with discrete graphics have | Needs the right driver; the build is large. Fastest by a distance when present. |
+| **Vulkan** | Broadest coverage — AMD, Intel Arc, and NVIDIA without CUDA | The pragmatic default if you ship ONE build. Measure it against CPU on integrated graphics before assuming it wins. |
+| **DirectML / ONNX Runtime** | A Windows-native path across vendors | A different runtime and a different model format — only worth it if it measurably beats Vulkan on the machines teachers actually have. |
+| **CPU** | The floor, and the fallback that must always work | Measure it. On a modern laptop with a 1.5B model at short context it may be perfectly usable, and it is the only path with no driver story. |
+
+**Do not ship a backend you have not measured on integrated graphics.** The
+teacher this feature is for is more likely to have an Intel iGPU than a 4090,
+and a design that is fast on the developer's machine and unusable on theirs is
+worse than one that is merely adequate everywhere.
+
+**Two rungs, chosen from the hardware — same as the mac.** `app-rules.json` →
+`modelTiers` carries the requirements: a smaller assistant and a larger one,
+the rung picked by reading the machine rather than by asking the teacher, and
+the interface saying only "the small assistant" and "the larger assistant".
+The mac's own thresholds (under 16 GB / 16 GB and up) and its models are in
+that file marked **macReference — do not copy**. Yours depend on what your
+backend needs resident, and on a GPU there is VRAM to account for as well as
+system memory, which the mac's unified memory does not have to separate.
+
+**What must NOT change with the backend**, because these were measured and cost
+days to find:
+
+- **Zero polarity inversions is a veto**, not a tiebreaker. Two 3B-class models
+  were rejected on it alone. Re-run the routing suite whenever the model, the
+  quant or the context size changes — a faster model that publishes a page the
+  teacher asked to hide is not faster, it is broken.
+- **Thinking off takes TWO flags** if you follow the mac to Qwen3
+  (`--reasoning off` AND `--reasoning-budget 0`). See the section below; it is
+  a 97%-to-39% difference and it looks fine while being wrong.
+- **The teacher never learns the model's name.** A faster backend does not buy
+  a licence to say "CUDA" or "Qwen" in the interface.
+
+When you have measured, write the numbers into `MAC-HANDOFF.md` — tokens per
+second per backend, on named hardware. The mac side has no way to find out what
+a Windows teacher's machine does, and those numbers are the only thing that
+makes the next decision on either side a measurement rather than a guess.
+
 ### What moving out of the container changes, beyond the speed
 
 Six things the mac learned the hard way, each of which applies the moment the

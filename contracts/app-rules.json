@@ -524,6 +524,60 @@
       }
     ]
   },
+  "modelTiers" : {
+    "macReference" : {
+      "largeTier" : {
+        "context" : 16384,
+        "forMachinesFrom" : "16 GB",
+        "model" : "Qwen3-4B Q4_K_M"
+      },
+      "note" : "The mac's own answers, for comparison only — do not copy these onto Windows.",
+      "routingScores" : {
+        "Llama-3.2 3B" : "72% + 10/10 inversions",
+        "Qwen2.5 1.5B" : "79%",
+        "Qwen2.5 3B" : "72% + 9/10 inversions",
+        "Qwen2.5 7B" : "94%",
+        "Qwen3 4B" : "100%"
+      },
+      "smallTier" : {
+        "context" : 8192,
+        "forMachinesUnder" : "16 GB",
+        "model" : "Qwen2.5-1.5B-Instruct Q4_K_M"
+      }
+    },
+    "note" : "What must be TRUE of the local assistant's model choice on both platforms. The numbers are NOT shared — a threshold measured on one machine says nothing about another's — but the shape is, and so is every word a teacher sees.",
+    "requirements" : [
+      {
+        "detail" : "A smaller assistant and a larger one. Not one, not four.",
+        "rule" : "Two rungs, no more",
+        "why" : "One rung means either the weakest machine cannot run it or the strongest is wasted. Four means four ladders to re-measure whenever a model, quant or context size changes."
+      },
+      {
+        "detail" : "Read the machine's memory (and whatever else your platform can see) and pick.",
+        "rule" : "The rung is CHOSEN from the hardware, never asked",
+        "why" : "A teacher cannot answer 'how much memory does this need?' and should not be asked to. The mac reads physical memory and decides."
+      },
+      {
+        "detail" : "The interface says exactly these, and nothing else.",
+        "names" : {
+          "large" : "the larger assistant",
+          "small" : "the small assistant"
+        },
+        "rule" : "The teacher never learns the model's name",
+        "why" : "A download sheet reading 'Plantoir picked Qwen3 4B to suit this Mac's memory' tells a teacher nothing they can act on and quite a lot about plumbing they never asked about. The real model lives in the filename and the download URL, which are never shown. A mac test fails if a model name, parameter count or file format reaches that string."
+      },
+      {
+        "detail" : "Never inside the container that builds the site.",
+        "rule" : "The model runs on the HOST, with hardware acceleration",
+        "why" : "Measured on an M4 Pro, same model and same 3,411-token prompt: 175 seconds inside Colima against 2.1 seconds natively on Metal, and 5.5 tokens/second against 158. That is the largest single number in the feature. See WINDOWS-HANDOFF.md for what to use on Windows."
+      },
+      {
+        "detail" : "Re-run the routing suite when the model, quant or context size changes.",
+        "rule" : "A model that inverts polarity is VETOED, whatever it scores",
+        "why" : "An inversion publishes a page the teacher asked to hide — the one failure that reports success. Two 3B-class models were rejected on this alone: Qwen2.5 3B inverted 9 trials in 10, Llama-3.2 3B 10 in 10, on the same sentence."
+      }
+    ]
+  },
   "note" : "What both apps must agree on outside the assistant. See contracts/README.md.",
   "previewPorts" : {
     "containerPorts" : [

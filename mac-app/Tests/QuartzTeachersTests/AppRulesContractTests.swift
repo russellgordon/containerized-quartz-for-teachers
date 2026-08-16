@@ -240,6 +240,35 @@ final class AppRulesContractTests: XCTestCase {
         )
     }
 
+    // MARK: - What the teacher is told about the model
+
+    /// The contract says the interface names exactly two things and never a
+    /// model. This checks the app agrees — the rest of that section is a
+    /// requirement for the other platform, which no test here can reach.
+    func testTheTierNamesAreTheOnesTheContractAllows() throws {
+        let section: [String: Any] = try XCTUnwrap(
+            (try AppRulesContractTests.readRules())["modelTiers"] as? [String: Any]
+        )
+        var names: [String: String] = [:]
+        for requirement in try XCTUnwrap(section["requirements"] as? [[String: Any]]) {
+            if let given = requirement["names"] as? [String: String] {
+                names = given
+            }
+        }
+        XCTAssertEqual(AssistModelTier.small.displayName, names["small"])
+        XCTAssertEqual(AssistModelTier.large.displayName, names["large"])
+
+        // And nothing about the machinery leaks through them.
+        for shown in [AssistModelTier.small.displayName, AssistModelTier.large.displayName] {
+            for machinery in ["Qwen", "Llama", "GGUF", "B ", "quant", "token"] {
+                XCTAssertFalse(
+                    shown.contains(machinery),
+                    "\"\(shown)\" names machinery a teacher never asked about"
+                )
+            }
+        }
+    }
+
     // MARK: - The preview's ports
 
     func testThePortsAreWhatTheContractSays() throws {
