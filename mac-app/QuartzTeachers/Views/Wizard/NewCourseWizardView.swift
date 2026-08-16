@@ -143,32 +143,19 @@ struct NewCourseWizardView: View {
         return NewCourseWizardView.sectionNumbersProblem(sectionNumbersText)
     }
 
-    /// Why a non-empty code can't be used — a space, or a clash with an
-    /// existing course. Nil means the code is fine (or still empty,
-    /// which is simply not-ready-yet, not an error worth showing).
-    /// Shown live under the field AND checked again at Create, so the
-    /// explanation and the gate can never disagree.
-    static func courseCodeProblem(_ text: String, existingCodes: [String]) -> String? {
-        let code: String = text.trimmingCharacters(in: .whitespaces).uppercased()
-        if code.isEmpty {
-            return nil
-        }
-        if code.contains(" ") {
-            return "A course code cannot contain spaces."
-        }
-        if existingCodes.contains(code) {
-            return "A course named \(code) already exists — choose a different code."
-        }
-        return nil
-    }
-
     /// The problem with the code as typed, live.
+    ///
+    /// Shown under the field AND checked again at Create, so the explanation
+    /// and the gate can never disagree. The rule itself lives in
+    /// `CourseCodeRule` rather than here: renaming a course asks the same
+    /// question, and a wizard that accepted a code renaming would refuse is
+    /// a wizard that hands a teacher a course they cannot re-type.
     var courseCodeProblem: String? {
         var existingCodes: [String] = []
         for course in workspace.courses {
             existingCodes.append(course.code)
         }
-        return NewCourseWizardView.courseCodeProblem(courseCode, existingCodes: existingCodes)
+        return CourseCodeRule.problem(courseCode, existingCodes: existingCodes)
     }
 
     /// True when the example content, not the teacher, decides the

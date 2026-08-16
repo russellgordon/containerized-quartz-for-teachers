@@ -76,6 +76,12 @@ struct QuartzTeachersApp: App {
             CommandGroup(after: .newItem) {
                 WorkspaceCommands()
             }
+            // Renaming a course sits in the Edit menu, under the standard
+            // cut/copy/paste group, because that is the menu a teacher looks
+            // in for "change this thing I have selected".
+            CommandGroup(after: .pasteboard) {
+                EditCommands()
+            }
         }
 
         // The assistant, one window per section.

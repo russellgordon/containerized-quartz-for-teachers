@@ -121,11 +121,21 @@ struct SidebarView: View {
                             // closure left the menu showing the state
                             // from whenever the row last drew.
                             let busyReason: String? = busyReason(for: course)
-                            Label(course.code, systemImage: "books.vertical")
+                            courseRowLabel(for: course)
                                 .tag(SidebarSelection.course(course.code))
                                 .accessibilityIdentifier("sidebar-\(course.code)")
                                 .contextMenu {
                                     openInObsidianItem(revealing: course.directoryURL, vaultURL: course.directoryURL)
+                                    Divider()
+                                    // Renaming moves the folder a preview is
+                                    // serving out of, so it waits for the
+                                    // same quiet moment adding a section
+                                    // does — and says so in the same words.
+                                    Button("Rename Course", systemImage: "pencil") {
+                                        workspace.renamingCourseCode = course.code
+                                    }
+                                    .disabled(busyReason != nil)
+                                    .accessibilityIdentifier("renameCourse-\(course.code)")
                                     Divider()
                                     // Adding a section re-runs the course
                                     // setup, which rewrites the course's
@@ -213,6 +223,32 @@ struct SidebarView: View {
             }
             .listStyle(.sidebar)
             .accessibilityIdentifier("coursesSidebar")
+            // Return renames the selected course, as it does in Finder.
+            //
+            // Handled HERE rather than as a key equivalent on the menu item,
+            // and that is not a style choice: a bare Return on a menu item is
+            // matched by AppKit before the key ever reaches the responder
+            // chain, which would take Return away from every text field and
+            // default button in the window. Finder's own Rename item carries
+            // no key equivalent for the same reason.
+            .onKeyPress(.return) {
+                if workspace.renamingCourseCode != nil {
+                    // The field has it: let the field's own Return commit.
+                    return .ignored
+                }
+                if workspace.courseThatCanBeRenamed == nil {
+                    return .ignored
+                }
+                if workspace.renameIsUnavailableReason != nil {
+                    // Refused audibly rather than silently — the course menu
+                    // says why, and a Return that did nothing at all reads as
+                    // a broken key.
+                    NSSound.beep()
+                    return .handled
+                }
+                workspace.beginRenamingSelectedCourse()
+                return .handled
+            }
             .onChange(of: workspace.expandedCourseCodes) {
                 WorkspaceModel.rememberOpenFolders()
             }
@@ -398,6 +434,37 @@ struct SidebarView: View {
             }
         } message: {
             Text(scheduleProblem ?? "")
+        }
+        .alert("Could not rename", isPresented: renameProblemBinding) {
+            Button("OK") {
+                workspace.renameProblem = nil
+            }
+        } message: {
+            Text(workspace.renameProblem ?? "")
+        }
+        // Shown only when the rename had a consequence beyond itself. An
+        // ordinary rename says nothing at all: a teacher who has just watched
+        // the row change does not need an alert to confirm it.
+        .alert(
+            workspace.renameNotice?.title ?? "",
+            isPresented: renameNoticeIsPresented,
+            presenting: workspace.renameNotice
+        ) { _ in
+            Button("OK") {
+                workspace.renameNotice = nil
+            }
+        } message: { notice in
+            Text(notice.message)
+        }
+    }
+
+    /// A course's row: its code, or a field to type a new one into.
+    @ViewBuilder
+    func courseRowLabel(for course: Course) -> some View {
+        if workspace.renamingCourseCode == course.code {
+            CourseCodeField(course: course)
+        } else {
+            Label(course.code, systemImage: "books.vertical")
         }
     }
 
@@ -611,6 +678,28 @@ struct SidebarView: View {
             set: { isPresented in
                 if !isPresented {
                     cancelScheduleRequest = nil
+                }
+            }
+        )
+    }
+
+    var renameProblemBinding: Binding<Bool> {
+        return Binding(
+            get: { workspace.renameProblem != nil },
+            set: { isPresented in
+                if !isPresented {
+                    workspace.renameProblem = nil
+                }
+            }
+        )
+    }
+
+    var renameNoticeIsPresented: Binding<Bool> {
+        return Binding(
+            get: { workspace.renameNotice != nil },
+            set: { isPresented in
+                if !isPresented {
+                    workspace.renameNotice = nil
                 }
             }
         )
@@ -873,5 +962,130 @@ struct RemovalRequest: Identifiable {
             return "\(courseCode)-section\(sectionNumber)"
         }
         return courseCode
+    }
+}
+
+/// The in-place editor for a course's code, behaving the way Finder's own
+/// rename does: the whole code arrives selected, Return commits it, Escape
+/// puts it back, and clicking away commits — but only if what was typed can
+/// actually be used.
+///
+/// The reason for a code being refused is shown UNDER the field rather than
+/// in an alert. An alert would take focus off the field the moment the
+/// teacher pressed Return, which is exactly when they most want to keep
+/// typing; and the New Course wizard already explains a bad code this way,
+/// so the two fields answer the same question in the same voice.
+struct CourseCodeField: View {
+
+    // MARK: - Stored properties
+
+    @Environment(WorkspaceModel.self) var workspace
+
+    let course: Course
+
+    /// What is in the field. Starts as the code the course already has, so
+    /// pressing Return straight away is a no-op rather than a surprise.
+    @State var text: String
+
+    @FocusState var isFocused: Bool
+
+    // MARK: - Computed properties
+
+    /// Why what has been typed cannot be used, live — the same rule, and the
+    /// same sentences, the New Course wizard shows under its own code field.
+    var problem: String? {
+        var existingCodes: [String] = []
+        for existingCourse in workspace.courses {
+            existingCodes.append(existingCourse.code)
+        }
+        return CourseCodeRule.problem(text, existingCodes: existingCodes, currentCode: course.code)
+    }
+
+    // MARK: - Initializer
+
+    init(course: Course) {
+        self.course = course
+        _text = State(initialValue: course.code)
+    }
+
+    // MARK: - Body
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 6) {
+                Image(systemName: "books.vertical")
+                TextField("", text: $text)
+                    .textFieldStyle(.roundedBorder)
+                    .focused($isFocused)
+                    .accessibilityIdentifier("renameField")
+                    .onSubmit {
+                        commit()
+                    }
+                    .onExitCommand {
+                        workspace.renamingCourseCode = nil
+                    }
+                    .onChange(of: isFocused) {
+                        if !isFocused {
+                            commitOnLeaving()
+                        }
+                    }
+            }
+            if let problem {
+                Text(problem)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .accessibilityIdentifier("renameProblem")
+            }
+        }
+        .onAppear {
+            isFocused = true
+            selectEverything()
+        }
+    }
+
+    // MARK: - Functions
+
+    /// Return: rename if the code can be used, and refuse audibly if it
+    /// cannot. The reason is already on screen under the field, so saying it
+    /// again in an alert would only take the field away.
+    func commit() {
+        if problem != nil {
+            NSSound.beep()
+            return
+        }
+        workspace.rename(course, to: text)
+    }
+
+    /// Clicking away is a commit, as it is in Finder — but a code that
+    /// cannot be used reverts instead, rather than putting an alert in front
+    /// of a teacher who has already moved on to something else.
+    func commitOnLeaving() {
+        // Only while this row is still the one being edited. The rename
+        // itself clears that, and focus leaves immediately afterwards, so
+        // without this check a successful rename would ask for a second one.
+        if workspace.renamingCourseCode != course.code {
+            return
+        }
+        if problem != nil {
+            workspace.renamingCourseCode = nil
+            return
+        }
+        workspace.rename(course, to: text)
+    }
+
+    /// Hands the field over with the whole code selected, the way Finder
+    /// hands over a name — replacing it outright is the commonest edit, and
+    /// a teacher who wants to keep part of it can still click into it.
+    ///
+    /// SwiftUI has no way to ask for this, so it is asked of the field
+    /// editor — the shared NSTextView a text field borrows while it has
+    /// focus — one pass of the run loop later, once focus has landed.
+    func selectEverything() {
+        DispatchQueue.main.async {
+            guard let editor = NSApp.keyWindow?.firstResponder as? NSTextView else {
+                return
+            }
+            editor.selectAll(nil)
+        }
     }
 }

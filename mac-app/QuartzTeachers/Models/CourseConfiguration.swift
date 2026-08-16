@@ -336,6 +336,17 @@ class CourseConfiguration {
 
     // MARK: - Functions
 
+    /// Changes the course code recorded in the settings, so it matches the
+    /// folder the course lives in after a rename.
+    ///
+    /// Both have to move together. The app reads a course's code from its
+    /// FOLDER name, while the site builder and the social-card maker read it
+    /// from here — so a pair that disagree produce a sidebar saying one thing
+    /// and a published page saying another, with no error anywhere.
+    func setCourseCode(_ courseCode: String) {
+        values["course_code"] = courseCode
+    }
+
     /// Replaces the course's timetable section numbers (used when a
     /// section is archived and removed).
     func setSectionNumbers(_ sectionNumbers: [Int]) {

@@ -199,6 +199,22 @@ class WorkspaceModel {
     /// Why a backup action could not go ahead, shown as an alert.
     var backupProblem: String?
 
+    /// The course whose code is being edited IN PLACE in the sidebar, or
+    /// nil when nothing is being renamed.
+    ///
+    /// It lives on the window's model rather than in the sidebar's own state
+    /// because two things start a rename — the Edit menu and the Return key
+    /// — and a menu command can only reach the focused window's model.
+    var renamingCourseCode: String?
+
+    /// Why a rename could not go ahead, shown as an alert.
+    var renameProblem: String?
+
+    /// What a rename that SUCCEEDED has to tell the teacher about — turning
+    /// off a scheduled publish, so far. Nil in the ordinary case, which gets
+    /// no interruption.
+    var renameNotice: CourseRenamer.Notice?
+
     /// The current sidebar selection.
     var selection: SidebarSelection?
 
@@ -676,6 +692,115 @@ class WorkspaceModel {
         }
         isShowingBackups = true
         reloadCourses()
+    }
+
+    // MARK: - Renaming a course
+
+    /// The course a rename would act on — the selected one, whether its own
+    /// row or one of its sections is what is selected. A teacher who has
+    /// clicked into Section 2 and presses Return means the course it belongs
+    /// to; there is nothing else in a section's row to rename.
+    var courseThatCanBeRenamed: Course? {
+        return selectedCourse
+    }
+
+    /// Why the selected course cannot be renamed right now, or nil when it
+    /// can be.
+    ///
+    /// Renaming moves the folder a preview is serving out of and a publish
+    /// is reading, so it waits for both — the same rule "Add Section…"
+    /// follows, worded the same way so the two read as one idea rather than
+    /// as two coincidences.
+    var renameIsUnavailableReason: String? {
+        guard let course = courseThatCanBeRenamed else {
+            return nil
+        }
+        guard let workspaceURL else {
+            return nil
+        }
+        return CourseActivity.busyDescription(folderPath: workspaceURL.path, courseCode: course.code)
+    }
+
+    /// Puts the selected course's sidebar row into edit mode.
+    ///
+    /// Silent when there is no course selected or it is busy: the menu item
+    /// is disabled in both cases, and a Return key that did something
+    /// half-way would be worse than one that does nothing.
+    func beginRenamingSelectedCourse() {
+        guard let course = courseThatCanBeRenamed else {
+            return
+        }
+        if renameIsUnavailableReason != nil {
+            return
+        }
+        renamingCourseCode = course.code
+    }
+
+    /// Changes a course's code and brings the sidebar with it.
+    ///
+    /// The busy check is made AGAIN here, not only when editing began: a
+    /// preview can start while the field is open, and the check that matters
+    /// is the one nearest the folder being moved.
+    func rename(_ course: Course, to requestedCode: String) {
+        guard let coursesDirectoryURL else {
+            return
+        }
+        if let workspacePath = workspaceURL?.path {
+            if CourseActivity.courseIsBusy(folderPath: workspacePath, courseCode: course.code) {
+                renamingCourseCode = nil
+                renameProblem = "\(course.code) is previewing or deploying right now. Stop that first, then rename."
+                return
+            }
+        }
+
+        var existingCodes: [String] = []
+        for existingCourse in courses {
+            existingCodes.append(existingCourse.code)
+        }
+
+        let previousCode: String = course.code
+        do {
+            let outcome: CourseRenamer.Outcome = try CourseRenamer.rename(
+                course,
+                to: requestedCode,
+                coursesDirectoryURL: coursesDirectoryURL,
+                existingCodes: existingCodes
+            )
+            renamingCourseCode = nil
+            if outcome.newCode != previousCode {
+                followRename(from: previousCode, to: outcome.newCode)
+            }
+            reloadCourses()
+            renameNotice = CourseRenamer.noticeAfterRenaming(outcome)
+        } catch {
+            renamingCourseCode = nil
+            renameProblem = error.localizedDescription
+        }
+    }
+
+    /// Keeps the sidebar pointing at what it was pointing at: the same row
+    /// selected and the same disclosure triangle open, under the new code.
+    ///
+    /// Without this a rename looks like a deletion followed by an unrelated
+    /// course appearing — the selection empties, the detail pane clears, and
+    /// the sections the teacher had unfolded fold themselves back up.
+    private func followRename(from previousCode: String, to newCode: String) {
+        if expandedCourseCodes.contains(previousCode) {
+            expandedCourseCodes.remove(previousCode)
+            expandedCourseCodes.insert(newCode)
+        }
+        switch selection {
+        case .course(let code):
+            if code == previousCode {
+                selection = SidebarSelection.course(newCode)
+            }
+        case .section(let code, let sectionNumber):
+            if code == previousCode {
+                selection = SidebarSelection.section(newCode, sectionNumber)
+            }
+        default:
+            break
+        }
     }
 
     /// Puts a backed-up course back in place of the current one. The

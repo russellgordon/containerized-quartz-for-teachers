@@ -115,7 +115,193 @@ final class CourseManagementContractTests: XCTestCase {
         XCTAssertNotNil(CalendarDay(text: head), "\(head) should be a yyyy-MM-dd date")
     }
 
+    // MARK: - What a course code may be
+
+    /// The rule the New Course wizard and renaming BOTH ask. They used to
+    /// ask separately, and a wizard that accepts a code renaming refuses is
+    /// a course a teacher can create and then never re-type.
+    func testTheCourseCodeRuleIsWordedAsTheContractSays() throws {
+        let section: [String: Any] = try CourseManagementContractTests.section("courseCode")
+
+        XCTAssertEqual(
+            CourseCodeRule.mostCharacters,
+            section["mostCharacters"] as? Int,
+            "The limit the sentence quotes has to be the limit the rule enforces"
+        )
+
+        for testCase in try XCTUnwrap(section["normalized"] as? [[String: Any]]) {
+            let typed: String = try XCTUnwrap(testCase["typed"] as? String)
+            XCTAssertEqual(
+                CourseCodeRule.normalized(typed), testCase["expect"] as? String, "typed “\(typed)”"
+            )
+        }
+
+        for testCase in try XCTUnwrap(section["problems"] as? [[String: Any]]) {
+            let typed: String = try XCTUnwrap(testCase["typed"] as? String)
+            XCTAssertEqual(
+                CourseCodeRule.problem(
+                    typed,
+                    existingCodes: try XCTUnwrap(testCase["existing"] as? [String]),
+                    currentCode: testCase["currentCode"] as? String
+                ),
+                testCase["expectProblem"] as? String,
+                "typed “\(typed)”"
+            )
+        }
+    }
+
+    // MARK: - What renaming touches, and what it leaves alone
+
+    /// Drives a REAL rename over a real folder and checks each effect the
+    /// contract names. The list is the interesting half: renaming is defined
+    /// as much by what it refuses to touch — the teacher's own course name,
+    /// their backups, the address their students have — as by the move
+    /// itself.
+    func testRenamingHasTheEffectsTheContractNames() throws {
+        let section: [String: Any] = try CourseManagementContractTests.section("courseCode")
+        let fileManager: FileManager = FileManager.default
+        let fixture: RenameFixture = try makeCourseReadyToRename()
+
+        let oldCourseURL: URL = fixture.course.directoryURL
+        let oldBackupURL: URL = fixture.coursesURL
+            .appendingPathComponent("_backups")
+            .appendingPathComponent("ICS3U")
+            .appendingPathComponent("ICS3U_backup_2026-01-01_120000.zip")
+        let scheduledURL: URL = ScheduledDeploy.plistURL(courseCode: "ICS3U", sectionNumber: 1)
+
+        let outcome: CourseRenamer.Outcome = try CourseRenamer.rename(
+            fixture.course,
+            to: "ICS4U",
+            coursesDirectoryURL: fixture.coursesURL,
+            existingCodes: ["ICS3U"],
+            runner: SilentLaunchControl()
+        )
+
+        let newCourseURL: URL = fixture.coursesURL.appendingPathComponent("ICS4U")
+        let written: CourseConfiguration = try CourseConfiguration(
+            contentsOf: newCourseURL.appendingPathComponent("course_config.json")
+        )
+
+        for effect in try XCTUnwrap(section["renameEffects"] as? [[String: Any]]) {
+            let name: String = try XCTUnwrap(effect["effect"] as? String)
+            let expected: Bool = try XCTUnwrap(effect["expect"] as? Bool)
+
+            switch name {
+            case "courseFolderMoves":
+                let moved: Bool = fileManager.fileExists(atPath: newCourseURL.path)
+                    && !fileManager.fileExists(atPath: oldCourseURL.path)
+                XCTAssertEqual(moved, expected, name)
+                XCTAssertTrue(
+                    fileManager.fileExists(atPath: newCourseURL.appendingPathComponent("section1").path),
+                    "everything inside travels with the folder"
+                )
+            case "courseCodeInSettingsRewritten":
+                XCTAssertEqual(written.courseCode == "ICS4U", expected, name)
+            case "courseNameRewritten":
+                XCTAssertEqual(
+                    written.courseName != "Introduction to Computer Science", expected, name
+                )
+            case "backupsAndArchivesMove":
+                let backupsMoved: Bool = fileManager.fileExists(
+                    atPath: fixture.coursesURL
+                        .appendingPathComponent("_backups")
+                        .appendingPathComponent("ICS4U").path
+                )
+                XCTAssertEqual(backupsMoved, expected, name)
+                XCTAssertTrue(
+                    fileManager.fileExists(atPath: oldBackupURL.path),
+                    "and the copy itself is never touched — it is the way back"
+                )
+            case "publishingIdentityTravelsWithTheFolder":
+                let travelled: Bool = fileManager.fileExists(
+                    atPath: newCourseURL
+                        .appendingPathComponent(".netlify_sites")
+                        .appendingPathComponent("section1.json").path
+                )
+                XCTAssertEqual(travelled, expected, name)
+            case "scheduledPublishingCancelled":
+                let cancelled: Bool = !fileManager.fileExists(atPath: scheduledURL.path)
+                    && outcome.stoppedScheduledSections == [1]
+                XCTAssertEqual(cancelled, expected, name)
+                XCTAssertNotNil(
+                    CourseRenamer.noticeAfterRenaming(outcome),
+                    "and the teacher is told, because a scheduled publish that quietly stops is the failure worth an alert"
+                )
+            default:
+                XCTFail("The contract names a rename effect no test drives: \(name)")
+            }
+        }
+    }
+
     // MARK: - Private
+
+    /// What a rename needs around it: a course with a section, a publishing
+    /// marker, a backup, and one section set to publish on its own.
+    struct RenameFixture {
+
+        // MARK: - Stored properties
+
+        let coursesURL: URL
+        let course: Course
+    }
+
+    private func makeCourseReadyToRename() throws -> RenameFixture {
+        let fileManager: FileManager = FileManager.default
+        let root: URL = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("rename-\(UUID().uuidString)")
+        let coursesURL: URL = root.appendingPathComponent("courses")
+        let courseURL: URL = coursesURL.appendingPathComponent("ICS3U")
+
+        try fileManager.createDirectory(
+            at: courseURL.appendingPathComponent("section1"), withIntermediateDirectories: true
+        )
+        let markersURL: URL = courseURL.appendingPathComponent(".netlify_sites")
+        try fileManager.createDirectory(at: markersURL, withIntermediateDirectories: true)
+        try "{}".write(
+            to: markersURL.appendingPathComponent("section1.json"), atomically: true, encoding: .utf8
+        )
+
+        let backupsURL: URL = coursesURL
+            .appendingPathComponent("_backups")
+            .appendingPathComponent("ICS3U")
+        try fileManager.createDirectory(at: backupsURL, withIntermediateDirectories: true)
+        try "not really a zip".write(
+            to: backupsURL.appendingPathComponent("ICS3U_backup_2026-01-01_120000.zip"),
+            atomically: true,
+            encoding: .utf8
+        )
+
+        let configURL: URL = courseURL.appendingPathComponent("course_config.json")
+        let values: [String: Any] = [
+            "course_code": "ICS3U",
+            "course_name": "Introduction to Computer Science",
+            "section_numbers": [1],
+            "num_sections": 1,
+        ]
+        try JSONSerialization.data(withJSONObject: values, options: [.prettyPrinted]).write(to: configURL)
+
+        let agentsURL: URL = root.appendingPathComponent("LaunchAgents")
+        try fileManager.createDirectory(at: agentsURL, withIntermediateDirectories: true)
+        ScheduledDeploy.launchAgentsDirectoryOverride = agentsURL
+        addTeardownBlock {
+            MainActor.assumeIsolated {
+                ScheduledDeploy.launchAgentsDirectoryOverride = nil
+            }
+            try? FileManager.default.removeItem(at: root)
+        }
+        try "<plist></plist>".write(
+            to: ScheduledDeploy.plistURL(courseCode: "ICS3U", sectionNumber: 1),
+            atomically: true,
+            encoding: .utf8
+        )
+
+        let configuration: CourseConfiguration = try CourseConfiguration(contentsOf: configURL)
+        return RenameFixture(
+            coursesURL: coursesURL,
+            course: Course(code: "ICS3U", directoryURL: courseURL, configuration: configuration)
+        )
+    }
+
 
     private static func section(_ name: String) throws -> [String: Any] {
         let url: URL = URL(fileURLWithPath: #filePath)

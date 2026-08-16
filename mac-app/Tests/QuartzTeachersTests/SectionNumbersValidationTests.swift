@@ -54,21 +54,13 @@ final class SectionNumbersValidationTests: XCTestCase {
         XCTAssertNil(NewCourseWizardView.sectionNumbersProblem("7,2"))
     }
 
-    @MainActor
-    func testTheCodeFieldExplainsItsOwnProblems() {
-        let existing: [String] = ["ICS4U", "MPM2D"]
+    // MARK: - The code field
 
-        XCTAssertNil(NewCourseWizardView.courseCodeProblem("", existingCodes: existing),
-                     "An empty code is not-ready-yet, not an error worth showing")
-        XCTAssertNil(NewCourseWizardView.courseCodeProblem("SNC1W", existingCodes: existing))
+    // The course-code cases used to live here, as a copy of the wizard's own
+    // rule. They now live in `contracts/course-management.json` under
+    // `courseCode`, run by `CourseManagementContractTests`, because RENAMING
+    // a course asks the identical question — and a rule written down twice
+    // is a rule that will disagree with itself. The wizard consults
+    // `CourseCodeRule`; so does the sidebar's rename field.
 
-        XCTAssertEqual(NewCourseWizardView.courseCodeProblem("ICS 4U", existingCodes: existing),
-                       "A course code cannot contain spaces.")
-        XCTAssertEqual(NewCourseWizardView.courseCodeProblem("ics4u", existingCodes: existing),
-                       "A course named ICS4U already exists — choose a different code.",
-                       "The clash is found case-insensitively")
-        XCTAssertEqual(NewCourseWizardView.courseCodeProblem("  MPM2D  ", existingCodes: existing),
-                       "A course named MPM2D already exists — choose a different code.",
-                       "Whitespace never hides a clash")
-    }
 }

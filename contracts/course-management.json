@@ -1,4 +1,38 @@
 {
+  "courseCode": {
+    "mostCharacters": 8,
+    "normalized": [
+      { "typed": "ICS3U", "expect": "ICS3U" },
+      { "typed": "  ics3u  ", "expect": "ICS3U", "why": "Trimmed and upper-cased before anything else looks at it. A Mac's disk is case-insensitive but case-preserving, so ICS3U and ics3u cannot both exist as folders — settling the case here is what stops a clash check missing one." },
+      { "typed": "robotics", "expect": "ROBOTICS" },
+      { "typed": "   ", "expect": "" }
+    ],
+    "note": "What a course code may be. ONE rule, asked by the New Course wizard and by renaming a course, because a code one accepts and the other refuses is a course a teacher can create and then never re-type. The rule is narrow because a course code is not just a label: it IS the folder name under courses/, it is written into course_config.json for the shared Python, it prefixes every backup and archive zip, and on the mac it becomes part of a scheduled publish's launchd label. Each of those has its own opinion about what it will carry; one narrow rule beats four that disagree at the edges.",
+    "problems": [
+      { "typed": "", "existing": ["ICS4U"], "expectProblem": null, "why": "An empty field is not-ready-yet, not an error. A warning that appears before the teacher has typed anything is noise." },
+      { "typed": "SNC1W", "existing": ["ICS4U"], "expectProblem": null },
+      { "typed": "ICS 4U", "existing": ["ICS4U"], "expectProblem": "A course code cannot contain spaces.", "why": "Checked before the general character rule so the commonest mistake gets the sentence that names it." },
+      { "typed": "ics4u", "existing": ["ICS4U"], "expectProblem": "A course named ICS4U already exists — choose a different code.", "why": "The clash is found case-insensitively — see normalized." },
+      { "typed": "  MPM2D  ", "existing": ["ICS4U", "MPM2D"], "expectProblem": "A course named MPM2D already exists — choose a different code.", "why": "Whitespace never hides a clash." },
+      { "typed": "ICS3U!", "existing": [], "expectProblem": "A course code can only use letters and numbers." },
+      { "typed": "CS-CLUB", "existing": [], "expectProblem": "A course code can only use letters and numbers.", "why": "A hyphen is refused like any other punctuation. Clubs are named by the teacher, so this is the rule most likely to meet one — it is narrow on purpose, and CSCLUB is available." },
+      { "typed": "ICS3U🎉", "existing": [], "expectProblem": "A course code can only use letters and numbers.", "why": "Emoji fail the same test punctuation does: not an ASCII letter or digit." },
+      { "typed": "CAFÉ", "existing": [], "expectProblem": "A course code can only use letters and numbers.", "why": "An accented letter is refused too. The sentence says letters and numbers, which is true of what is ALLOWED — the alternative is a sentence about character encodings in a sidebar row." },
+      { "typed": "ROBOTICS", "existing": [], "expectProblem": null, "why": "Eight characters. Ontario codes are six; clubs are named by the teacher, and eight leaves room for this one without letting a code grow into a sentence." },
+      { "typed": "ROBOTICSX", "existing": [], "expectProblem": "A course code can be at most 8 characters." },
+      { "typed": "ICS3U", "existing": ["ICS3U"], "currentCode": "ICS3U", "expectProblem": null, "why": "A course does not clash with itself. Re-typing a course's own code while renaming it is a teacher changing their mind, which is allowed." },
+      { "typed": "ics3u", "existing": ["ICS3U"], "currentCode": "ICS3U", "expectProblem": null, "why": "Nor does it clash with its own capitalisation." },
+      { "typed": "MPM2D", "existing": ["ICS3U", "MPM2D"], "currentCode": "ICS3U", "expectProblem": "A course named MPM2D already exists — choose a different code.", "why": "Renaming onto ANOTHER course's code is still a clash." }
+    ],
+    "renameEffects": [
+      { "effect": "courseFolderMoves", "expect": true, "why": "The code IS the folder name under courses/, so renaming is a move. Everything inside the folder travels with it untouched." },
+      { "effect": "courseCodeInSettingsRewritten", "expect": true, "why": "The app reads a course's code from its FOLDER name while the site builder and the social-card maker read it from course_config.json. A pair that disagree produce a sidebar saying one thing and a published page saying another, with no error anywhere." },
+      { "effect": "courseNameRewritten", "expect": false, "why": "course_name is the teacher's own wording and is editable in Course Settings. Rewriting a title they may have hand-written, because they changed a code, is the kind of helpfulness that loses work." },
+      { "effect": "backupsAndArchivesMove", "expect": false, "why": "They stay in courses/_backups/<OLD CODE>/ under the names they were made with, because that is what they are: a copy of the course as it stood, when it was called that. Restoring one still works — the restorer names the restored folder after the ITEM rather than after whatever the zip holds inside." },
+      { "effect": "publishingIdentityTravelsWithTheFolder", "expect": true, "why": "Where a section publishes to is recorded INSIDE the course folder (.netlify_sites/section<N>.json), so it moves with it and the site's address does not change. A rename is a change to the teacher's filing, not a move of their students' URL." },
+      { "effect": "scheduledPublishingCancelled", "expect": true, "why": "The one thing renaming has to break. A scheduled publish is an alarm held OUTSIDE the working folder, addressed by the old code, and after a rename it would fire at a course that is no longer there. It is turned off and the teacher is told — silently losing a scheduled publish is the failure worth spending an alert on." }
+    ]
+  },
   "gradeLabels": {
     "cases": [
       {
