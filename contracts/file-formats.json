@@ -113,7 +113,7 @@
         "why": "Absent means TRUE — the 'S1' marker shows unless a teacher turns it off."
       }
     ],
-    "note": "`courses/<CODE>/course_config.json`. Written by the wizard and the settings form, read by both apps AND by `scripts/*.py` — so a key spelled differently on one platform is not a disagreement between two apps, it is a setting the site build silently ignores. Nested keys are per-section maps: `{\"sections\": {\"section1\": <value>}}`.",
+    "note": "`courses/<CODE>/course_config.json`. Written by the wizard and the settings form, read by both apps AND by `scripts/*.py` — so a key spelled differently on one platform is not a disagreement between two apps, it is a setting the site build silently ignores. Nested keys are per-section maps: `{\"sections\": {\"section1\": <value>}}`. The keys fall into TWO groups, and a first draft of this contract only had the first: the settings form round-trips most of them, while a handful are written ONCE by the wizard and read back by `setup_course.py` as the defaults for its own questions. Missing the second group means a teacher on one platform is asked a question the other platform answers for them.",
     "rules": [
       {
         "detail": "Read the documented default and carry on.",
@@ -125,7 +125,29 @@
         "rule": "Keys a platform does not understand are PRESERVED",
         "why": "The two apps ship at different times. A course saved by the newer one must not lose its settings when opened by the older, and a key dropped this way is invisible until a teacher notices their footer has gone."
       }
-    ]
+    ],
+    "wizardAnswerKeys": {
+      "keys": [
+        {
+          "defaultWhenAbsent": true,
+          "key": "use_skeleton",
+          "knownDivergence": "Windows: not written. Checked 2026-08-16.",
+          "type": "boolean",
+          "why": "Whether a course with no ready-made payload starts from its subject's SKELETON — folders that suit the subject, four units of class pages to rename, placeholders saying what belongs where — or from nothing. Around 1,900 course codes have a skeleton and no payload, so this is the question most teachers actually meet. The mac writes `hasSkeleton(code) && teacherSaidYes`; **Windows does not write it at all**, so the Python takes its own default of TRUE and a Windows teacher cannot decline."
+        },
+        {
+          "key": "prepopulate_example_content",
+          "type": "boolean",
+          "why": "Whether one of the 37 ready-made courses is poured in. Written as `hasContent(code) && teacherSaidYes`, so a stale true can never mean anything."
+        },
+        {
+          "key": "include_curriculum_pages",
+          "type": "boolean",
+          "why": "Whether the payload's Curriculum folder comes with it."
+        }
+      ],
+      "note": "Written by the WIZARD at course creation, not by the settings form. `setup_course.py` reads each as the default for a question it would otherwise ask — so an app that omits one leaves the Python to take its own default, and the teacher never gets the choice."
+    }
   },
   "firstDeployMarkers": {
     "knownDivergence": "Checked 2026-08-16: the mac picks the folder from the configured target, while `AssistWorkspace.cs` on Windows checks BOTH folders and accepts either. Windows should narrow to the current destination.",

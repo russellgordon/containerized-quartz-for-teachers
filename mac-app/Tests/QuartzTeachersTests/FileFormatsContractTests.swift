@@ -71,6 +71,26 @@ final class FileFormatsContractTests: XCTestCase {
         )
     }
 
+    /// The wizard's own answer keys — the second group, which a first draft
+    /// of this contract missed entirely because they are written at creation
+    /// rather than round-tripped by the settings form.
+    func testTheWizardStillWritesItsAnswerKeys() throws {
+        let section: [String: Any] = try FileFormatsContractTests.section("courseConfigKeys")
+        let group: [String: Any] = try XCTUnwrap(section["wizardAnswerKeys"] as? [String: Any])
+        let wizard: String = try FileFormatsContractTests.readSource(
+            "QuartzTeachers/Views/Wizard/NewCourseWizardView.swift"
+        )
+        for entry in try XCTUnwrap(group["keys"] as? [[String: Any]]) {
+            let key: String = try XCTUnwrap(entry["key"] as? String)
+            XCTAssertTrue(
+                wizard.contains("\"\(key)\""),
+                "The wizard no longer writes \"\(key)\". setup_course.py reads it as the default for a "
+                + "question it would otherwise ASK, so dropping it hands the teacher's choice to the "
+                + "Python's own default."
+            )
+        }
+    }
+
     // MARK: - Frontmatter: who sees a page
 
     func testVisibilityIsReadAsTheContractSays() throws {

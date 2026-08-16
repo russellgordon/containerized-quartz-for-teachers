@@ -984,6 +984,36 @@ building the other app has no way to know it exists. When a change adds a right
 here **even though nothing on screen changed** — those are exactly the changes
 a diff of the UI will not reveal.
 
+### A second: the wizard's own answer keys, and the skeleton question
+
+`course_config.json` carries two GROUPS of keys, and only one of them is the
+settings form's. The other three are written once by the wizard, and
+`setup_course.py` reads each as the DEFAULT for a question it would otherwise
+ask:
+
+| Key | What it decides |
+|---|---|
+| `use_skeleton` | Whether a course with no ready-made payload starts from its subject's skeleton — folders that suit the subject, four units of class pages to rename, placeholders saying what belongs where — or from nothing at all. |
+| `prepopulate_example_content` | Whether one of the 37 ready-made courses is poured in. |
+| `include_curriculum_pages` | Whether that payload's Curriculum folder comes with it. |
+
+**`use_skeleton` is not written by the Windows wizard at all** (checked
+2026-08-16). The Python then falls back to its own default — `True` — so a
+Windows teacher gets a skeleton and is never asked. That is the question MOST
+teachers meet, because around 1,900 course codes have a skeleton and no
+payload; only 37 have a ready-made course.
+
+Two ways to fix it, and the choice is yours: ask the question in the wizard and
+write the answer, as the mac does, or decide deliberately that Windows always
+starts from the skeleton and **write `use_skeleton: true` explicitly** so the
+behaviour is stated rather than inherited from a fallback nobody chose. Either
+is defensible; silence is not, because the next change to that default in the
+Python moves Windows and not the mac.
+
+The mac writes each of these as `capabilityExists && teacherSaidYes` —
+`hasSkeleton(code) && startsFromSkeleton` — so a stale `true` in an old config
+can never mean anything.
+
 ### One divergence found by sweeping, 2026-08-16: the first-deploy marker
 
 `deploy.py` writes a marker the first time a section goes out —
