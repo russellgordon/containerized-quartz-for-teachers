@@ -111,6 +111,25 @@ Neither app contains toolchain logic of its own: they write the same
 6. **Swift follows the project style rules**: no `map`/`filter`/`reduce`,
    `@Observable` (never `ObservableObject`), `// MARK: -` sections, clarity over
    concision.
+7. **Driving the interface leaves the machine as you found it — and gives the
+   terminal back.** Verifying a change by driving the real app (activating it,
+   sending keystrokes through System Events, taking screenshots) is encouraged:
+   it has already caught bugs that every unit test passed. But when that
+   stretch of work is done — not merely at the end of the whole task —
+   **bring the terminal back to the front**:
+
+   ```bash
+   osascript -e 'tell application "iTerm" to activate'
+   ```
+
+   Russell watches progress at a glance from across the room, and an app left
+   frontmost hides the transcript, so he has to walk over to find out what is
+   happening. The same rule covers everything else a test borrowed: put the
+   system appearance back if you toggled Dark Mode, restore another
+   application's state if you changed it (Obsidian's vault registry, say —
+   back it up first, and check afterwards that it matches), and leave no
+   half-finished edit open in the app. Say what you touched and that you put
+   it back.
 
 ## Setting up on a new machine
 

@@ -64,6 +64,16 @@ Two conditions on that:
    His Dock entry points straight at that build path, so nothing needs
    copying or re-pointing; the icon opens whatever was last built.
 
+**If you drove the interface to check the change** — activating the app,
+sending keystrokes, taking screenshots — bring the terminal back to the front
+when that stretch is done, and put back anything the test borrowed (system
+appearance, another app's state). Rule 7 in [`CLAUDE.md`](../../../CLAUDE.md)
+says why.
+
+```bash
+osascript -e 'tell application "iTerm" to activate'
+```
+
 The one-line summary is the part that saves him time. It is one of:
 
 > Relaunched — nothing else needed.
