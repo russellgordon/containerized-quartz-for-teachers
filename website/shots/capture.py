@@ -327,9 +327,26 @@ def build_section(workspace: Path, code: str) -> None:
         raise SystemExit(f"{code} did not build; nothing to publish.")
 
 
+def remember_teacher_name(workspace: Path, last_name: str = "gordon") -> None:
+    """Answer the one question a first publish asks about the teacher.
+
+    Publishing asks for a last name once per working folder, to suggest a site
+    name from it. Writing the answer straight into the profile it would save
+    means the only thing left on the prompt queue is the site name — and a
+    queue of answers that can slip by one is a queue that names a site after
+    the wrong prompt.
+    """
+    profile = workspace / "courses" / ".internal" / "profile.json"
+    if profile.exists():
+        return
+    profile.parent.mkdir(parents=True, exist_ok=True)
+    profile.write_text(json.dumps({"teacher_last_name": last_name}, indent=2), encoding="utf-8")
+    profile.chmod(0o600)
+
+
 def publish_section(workspace: Path, code: str, site_name: str) -> None:
     print(f"   Publishing {code} to {site_name}.netlify.app…")
-    answers = f"Gordon\n{site_name}\n\n\n\n"
+    answers = f"{site_name}\n\n\n\n"
     result = subprocess.run(
         ["./deploy.sh", code, "1"],
         cwd=workspace,
@@ -345,6 +362,7 @@ def publish_section(workspace: Path, code: str, site_name: str) -> None:
 def publish_demo_sites(workspace: Path) -> None:
     announce("Building and publishing the demo class sites")
     mirror_toolchain(workspace)
+    remember_teacher_name(workspace)
     for course in DEMO_COURSES:
         build_section(workspace, course["code"])
         publish_section(workspace, course["code"], course["site"])
