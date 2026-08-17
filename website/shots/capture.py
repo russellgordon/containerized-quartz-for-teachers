@@ -74,8 +74,17 @@ ROCKETSIM = Path("/Applications/RocketSim.app/Contents/Helpers/rocketsim")
 REMEMBERED_FRAME_KEYS = [
     "NSWindow Frame SwiftUI.ModifiedContent<QuartzTeachers.WindowRootView, "
     "SwiftUI._FlexFrameLayout>-1-AppWindow-1",
-    "NSWindow Frame AssistantWindow-ENG2D-1",
+    # The assistant keeps its own frame under its own key rather than an
+    # autosave name — SwiftUI owns the autosave name for that window and
+    # overwrites anything put there.
+    "AssistantWindowFrame-ENG2D-1",
 ]
+
+# Where the assistant window should sit for its portrait. Written into the
+# app's own preference before the run and put back afterwards, because a
+# launch argument does not reliably win against a value the app applies by
+# hand after the window is shown.
+ASSISTANT_FRAME = "{{500, 60}, {520, 900}}"
 
 
 # ---------- Running things ----------
@@ -133,6 +142,10 @@ class RememberedWindowFrames:
         for key, value in self.saved.items():
             write_defaults(key, value)
         return False
+
+    def stage_assistant_frame(self) -> None:
+        """Put the assistant window where its portrait wants it."""
+        write_defaults("AssistantWindowFrame-ENG2D-1", ASSISTANT_FRAME)
 
 
 # ---------- The UI tests ----------
@@ -384,7 +397,8 @@ def publish_demo_sites(workspace: Path) -> None:
 
 def capture_app(workspace: Path) -> None:
     announce("Photographing the app")
-    with RememberedWindowFrames():
+    with RememberedWindowFrames() as frames:
+        frames.stage_assistant_frame()
         for dark in (False, True):
             suffix = "dark" if dark else "light"
             print(f"   {suffix} appearance")

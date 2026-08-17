@@ -43,8 +43,8 @@
         "kind": "app-window",
         "test": "testPreviewInWindow"
       },
-      "alt": "A finished class website shown inside the Plantoir window, beside the list of sections.",
-      "caption": "The site appears in the same window, before anyone else sees it."
+      "alt": "The Plantoir window with a class website shown inside it, beside the list of courses and sections.",
+      "caption": "The site, in the app, before anyone else has seen it."
     },
     {
       "id": "assistant",
@@ -62,8 +62,8 @@
         "course": "ENG2D",
         "path": "/"
       },
-      "alt": "A Grade 10 English class website, with a navigation sidebar, a page of notes and a search field.",
-      "caption": "What a class sees: ENG2D."
+      "alt": "A Grade 10 English class website in a browser, with a navigation sidebar, a search field and a page of class notes.",
+      "caption": "What a class sees."
     },
     {
       "id": "site-mcv4u",
@@ -72,8 +72,8 @@
         "course": "MCV4U",
         "path": "/style/what-this-site-can-do#mathematics-typeset-properly"
       },
-      "alt": "A Grade 12 Calculus and Vectors page showing typeset mathematics.",
-      "caption": "Mathematics is typeset, not photographed."
+      "alt": "A Grade 12 Calculus and Vectors page showing typeset mathematics, with the course navigation beside it.",
+      "caption": "The preview is the real site \u2014 equations and all."
     },
     {
       "id": "site-sch3u",

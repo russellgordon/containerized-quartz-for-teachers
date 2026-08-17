@@ -110,7 +110,13 @@
   <p>Each of those is a sentence and a confirmation, and you're told in plain terms what happened.</p>
   <p>Longer jobs — building a site, publishing it — describe their progress in words rather than in output, so you can tell at a glance whether to wait or to walk away.</p>
   <figure class="shot">
-    <div class="shot-missing">Screenshot pending: progress</div>
+    <picture>
+      <source srcset="/img/progress-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="/img/progress-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="/img/progress-light.webp" type="image/webp">
+      <img src="/img/progress-light.png" alt="A progress view describing, in plain language, the step the site build has reached."
+           width="850" height="580" loading="lazy" decoding="async">
+    </picture>
     <figcaption>Progress is described in words, not in log output.</figcaption>
 </figure>
 </section>
