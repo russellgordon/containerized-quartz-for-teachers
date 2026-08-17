@@ -42,6 +42,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from appearance import Appearance          # noqa: E402
+from images import prepare, WIDEST_PHONE_PIXELS, WIDEST_WINDOW_PIXELS  # noqa: E402
 from safari import SafariWindow            # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent.parent
@@ -201,6 +202,7 @@ def export_attachments(bundle: Path, suffix: str) -> list[str]:
             source = exported / attachment["exportedFileName"]
             destination = IMAGE_DIR / f"{shot_name}-{suffix}.png"
             shutil.copy2(source, destination)
+            prepare(destination, WIDEST_WINDOW_PIXELS)
             saved.append(destination.name)
     return saved
 
@@ -381,6 +383,7 @@ def capture_sites() -> None:
                     window.load(url, settle_seconds=8.0)
                     destination = IMAGE_DIR / f"site-{course['code'].lower()}-{suffix}.png"
                     window.capture(destination)
+                    prepare(destination, WIDEST_WINDOW_PIXELS)
                     print(f"   saved {destination.name}")
         capture_phone(dark=dark)
 
@@ -437,6 +440,7 @@ def capture_phone(dark: bool) -> None:
         # A plain simulator screenshot is better than no phone shot at all.
         run(["xcrun", "simctl", "io", udid, "screenshot", str(destination)],
             capture_output=True)
+    prepare(destination, WIDEST_PHONE_PIXELS)
     print(f"   saved {destination.name}")
 
     if not was_booted:

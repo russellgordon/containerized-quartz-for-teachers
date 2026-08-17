@@ -129,10 +129,27 @@ def picture_element(shot: dict, problems: list[str], modifier: str) -> str:
     display_width = width // 2
     display_height = height // 2
 
+    # A smaller WebP is written beside every capture. Offering it first saves
+    # a visitor roughly two thirds of the download; the PNG stays as the one
+    # the <img> falls back to, so nothing depends on WebP being understood.
+    sources: list[str] = []
+    for scheme, path in (("dark", dark), ("light", light)):
+        query = ' media="(prefers-color-scheme: dark)"' if scheme == "dark" else ""
+        if path.with_suffix(".webp").exists():
+            sources.append(
+                f'      <source srcset="/img/{identifier}-{scheme}.webp" '
+                f'type="image/webp"{query}>'
+            )
+        if scheme == "dark":
+            sources.append(
+                f'      <source srcset="/img/{identifier}-dark.png"{query}>'
+            )
+    joined = "\n".join(sources)
+
     return (
         f'<figure class="{classes}">\n'
         f'    <picture>\n'
-        f'      <source srcset="/img/{identifier}-dark.png" media="(prefers-color-scheme: dark)">\n'
+        f'{joined}\n'
         f'      <img src="/img/{identifier}-light.png" alt="{shot["alt"]}"\n'
         f'           width="{display_width}" height="{display_height}" loading="lazy" decoding="async">\n'
         f'    </picture>{caption_html}\n'
