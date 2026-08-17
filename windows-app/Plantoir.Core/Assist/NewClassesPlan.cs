@@ -27,6 +27,9 @@ public sealed class NewClassesPlan
     /// <summary>Meeting dates still spare after these classes take theirs.</summary>
     public required int SpareDatesLeft { get; init; }
 
+    /// <summary>How many of these pages have no class date of their own and are sharing the last one.</summary>
+    public int SharingTheLastDay { get; init; }
+
     public bool ChangesNothing => Classes.Count == 0;
 
     /// <summary>The proposal, as a teacher would read it.</summary>
@@ -43,7 +46,7 @@ public sealed class NewClassesPlan
         }
 
         lines.Add($"Add {Classes.Count} class page{(Classes.Count == 1 ? "" : "s")} to Unit {Unit} of " +
-                  $"{CourseCode} Section {SectionNumber}, on the days this class actually meets:");
+                  $"{CourseCode} Section {SectionNumber}, on the {(Classes.Count == 1 ? "day" : "days")} this class actually meets:");
         lines.Add("");
         foreach (var created in Classes)
             lines.Add($"  {created.Title}  ({created.Date:yyyy-MM-dd} {created.Date.DayOfWeek})");
@@ -62,8 +65,21 @@ public sealed class NewClassesPlan
         // their new pages in the preview and wondering where they went.
         lines.Add("They start unpublished, so they stay out of the site until you publish them — " +
                   "write them first, publish when they are ready.");
-        lines.Add($"{SpareDatesLeft} more class date{(SpareDatesLeft == 1 ? "" : "s")} " +
-                  $"{(SpareDatesLeft == 1 ? "is" : "are")} spare after these.");
+
+        if (SharingTheLastDay > 0)
+        {
+            lines.Add($"{(SharingTheLastDay == 1 ? "This one has" : $"{SharingTheLastDay} of these have")} " +
+                      $"no class date left, so {(SharingTheLastDay == 1 ? "it shares" : "they share")} " +
+                      $"the last day with the class already on it. Give " +
+                      $"{(SharingTheLastDay == 1 ? "it a day" : "them days")} of your own when you " +
+                      "know what they are.");
+        }
+        else
+        {
+            lines.Add($"{SpareDatesLeft} more class date{(SpareDatesLeft == 1 ? "" : "s")} " +
+                      $"{(SpareDatesLeft == 1 ? "is" : "are")} spare after these.");
+        }
+
         return string.Join("\n", lines);
     }
 }

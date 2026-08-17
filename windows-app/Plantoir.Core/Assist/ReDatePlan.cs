@@ -83,6 +83,9 @@ public sealed class ReDatePlan
     /// <summary>Meetings the spread did not use.</summary>
     public required int UnusedMeetings { get; init; }
 
+    /// <summary>Classes with no day of their own, all sitting on the last one.</summary>
+    public int Overflowing { get; init; }
+
     public IEnumerable<PlannedDate> Changing =>
         Dates.Concat(Materials).Concat(Reference).Where(d => d.WillChange);
 
@@ -105,6 +108,16 @@ public sealed class ReDatePlan
 
         if (UnusedMeetings > 0)
             lines.Add($"{UnusedMeetings} of block {Block}’s meetings are left unused.");
+
+        if (Overflowing > 0)
+        {
+            var lastDay = Dates.Count > 0 ? Dates[^1].New : DateOnly.MinValue;
+            lines.Add($"{Overflowing} {(Overflowing == 1 ? "class has" : "classes have")} no day " +
+                      $"of {(Overflowing == 1 ? "its" : "their")} own this year, so " +
+                      $"{(Overflowing == 1 ? "it goes" : "they all go")} on " +
+                      $"{lastDay:yyyy-MM-dd} with the last one. Move or delete " +
+                      $"{(Overflowing == 1 ? "it" : "them")} when you have decided what to do.");
+        }
 
         if (NonTeachingDays.Count > 0)
         {

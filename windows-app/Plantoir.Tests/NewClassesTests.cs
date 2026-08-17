@@ -61,8 +61,8 @@ public sealed class NewClassesTests : IDisposable
         // Inventing dates for a class it knows nothing about is the one thing
         // it must not do — a whole unit landing on the wrong days is worse
         // than being asked a question.
-        Assert.Contains("I don't know when ICS3U Section 1 meets", refusal.Message);
-        Assert.Contains("remember_timetable", refusal.Message);
+        Assert.Contains("ICS3U Section 1", refusal.Message);
+        Assert.Contains(AssistWording.MayIAskForYourDates, refusal.Message);
     }
 
     // ---- Dating from the section's own timetable --------------------------
@@ -152,10 +152,13 @@ public sealed class NewClassesTests : IDisposable
 
         var plan = Open().PlanAddClasses("ICS3U", 1, 2, firstDay: 1, count: 5);
 
-        // What it CAN do, it plans; what it cannot, it says plainly rather
-        // than inventing dates past the end of the timetable.
-        Assert.Equal(2, plan.Classes.Count);
-        Assert.Contains(plan.Problems, p => p.Contains("Only 2 unused class date"));
+        // What it CAN do, it plans; overflow classes land on the final date
+        Assert.Equal(5, plan.Classes.Count);
+        Assert.Equal(3, plan.SharingTheLastDay);
+        Assert.Equal(new DateOnly(2026, 9, 10), plan.Classes[2].Date);
+        Assert.Equal(new DateOnly(2026, 9, 10), plan.Classes[3].Date);
+        Assert.Equal(new DateOnly(2026, 9, 10), plan.Classes[4].Date);
+        Assert.Contains("share", plan.Describe());
         Assert.Equal(0, plan.SpareDatesLeft);
     }
 

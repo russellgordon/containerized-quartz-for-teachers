@@ -455,6 +455,74 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
             return workspace.ApplyAddClasses(plan).Message;
         });
 
+    [McpServerTool(Name = "plan_add_next_class", Title = "Plan adding the next class",
+                   ReadOnly = true, Destructive = false)]
+    [Description("Work out what the next class page would be called and what date it would land on, " +
+                 "changing nothing. Use this for \"add the next class\" or \"start a new unit for the next class\". " +
+                 "The title continues the highest unit's count; the date is the next unused day in the section's timetable.")]
+    public string PlanAddNextClass(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description("Pass \"next\" to start a new unit. Leave empty to continue the current unit.")]
+        string unit = "",
+        [Description("Pass a number to add that many days to the specified unit number. Leave 0 for a single class.")]
+        int days = 0)
+        => Guarded(() => workspace.PlanAddNextClass(course, section, unit, days > 0 ? days : null).Describe());
+
+    [McpServerTool(Name = "add_next_class", Title = "Add the next class page", Destructive = false, Idempotent = false)]
+    [Description("Create the next class page, dated to the day the section next meets. " +
+                 "Call plan_add_next_class FIRST and show the teacher what it said. " +
+                 "The page starts UNPUBLISHED — an empty skeleton for the teacher to write, which stays out of the site " +
+                 "until they publish it. An existing page is never written over.")]
+    public string AddNextClass(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description("Pass \"next\" to start a new unit. Leave empty to continue the current unit.")]
+        string unit = "",
+        [Description("Pass a number to add that many days to the specified unit number. Leave 0 for a single class.")]
+        int days = 0)
+        => Guarded(() =>
+        {
+            var plan = workspace.PlanAddNextClass(course, section, unit, days > 0 ? days : null);
+            return workspace.ApplyAddClasses(plan).Message;
+        });
+
+    [McpServerTool(Name = "plan_remember_timetable", Title = "Plan remembering class dates",
+                   ReadOnly = true, Destructive = false)]
+    [Description("Work out what remembering a section's class dates would do, changing nothing. " +
+                 "Dates are YYYY-MM-DD, separated by commas or spaces.")]
+    public string PlanRememberTimetable(
+        [Description("The course code, for example ICS3U.")] string course,
+        [Description("The section number, for example 1.")] int section,
+        [Description("Every date this section meets, as YYYY-MM-DD, separated by commas.")] string dates,
+        [Description("Where these came from, in the teacher's words — \"timetable.xlsx, block H\", \"typed in by hand\".")]
+        string source = "the teacher")
+        => Guarded(() =>
+        {
+            var found = workspace.Course(course);
+            int number = workspace.Section(found, section);
+
+            var parsed = new List<DateOnly>();
+            var unreadable = new List<string>();
+            foreach (string piece in dates.Split([',', ';', ' ', '\t', '\n', '\r'],
+                                                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                if (DateOnly.TryParse(piece, out var date)) parsed.Add(date);
+                else unreadable.Add(piece);
+            }
+
+            if (unreadable.Count > 0)
+                throw new AssistRefusal(
+                    $"Nothing was recorded — {unreadable.Count} of those aren't dates I can read " +
+                    $"({string.Join(", ", unreadable.Take(5))}). Give them as YYYY-MM-DD.");
+            if (parsed.Count == 0)
+                throw new AssistRefusal("Nothing was recorded — no dates were given.");
+
+            parsed.Sort();
+            return $"Would record {parsed.Count} class dates for {found.Code} Section {number}, " +
+                   $"{parsed[0]:yyyy-MM-dd} to {parsed[^1]:yyyy-MM-dd}, from {source}.";
+        });
+
     [McpServerTool(Name = "read_remembered_timetable", Title = "What dates this section meets",
                    ReadOnly = true, Destructive = false)]
     [Description("Read the class meeting dates Plantoir already knows for a section, changing nothing. " +

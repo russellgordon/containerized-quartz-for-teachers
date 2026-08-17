@@ -1136,8 +1136,11 @@ public sealed class AssistWorkspace
         else
         {
             var spread = timetable.EvenSpread(classPages.Count);
-            for (int i = 0; i < classPages.Count && i < spread.Count; i++)
-                chosen.Add((classPages[i], spread[i]));
+            for (int i = 0; i < classPages.Count; i++)
+            {
+                var meeting = i < spread.Count ? spread[i] : (spread.Count > 0 ? spread[^1] : timetable.Meetings[^1]);
+                chosen.Add((classPages[i], meeting));
+            }
         }
 
         string tail = SiblingTimeAndOffset(course, section, classPages);
@@ -1178,6 +1181,7 @@ public sealed class AssistWorkspace
             }),
             NonTeachingDays = timetable.NonTeachingDays,
             UnusedMeetings = Math.Max(0, timetable.Meetings.Count - chosen.Count),
+            Overflowing = Math.Max(0, classPages.Count - timetable.Meetings.Count),
             // Every date this plan would set, including the year-round pages —
             // auditing without them warns about pages the same plan is about
             // to fix, which reads as a fault in the plan itself.
@@ -2063,8 +2067,11 @@ public sealed class AssistWorkspace
 
         var remembered = TimetableMemory.Read(_folder, course.Code, section)
             ?? throw new AssistRefusal(
-                $"I don't know when {course.Code} Section {section} meets, so I can't date new classes. " +
-                "Ask the teacher for their class dates, then record them with remember_timetable.");
+                $"I don’t know when {course.Code} Section {section} meets, so I can’t date new classes. {AssistWording.MayIAskForYourDates}");
+
+        if (remembered.Dates.Count == 0)
+            throw new AssistRefusal(
+                $"I don’t know when {course.Code} Section {section} meets, so I can’t date new classes. {AssistWording.MayIAskForYourDates}");
 
         string folder = ClassFolder(course, section);
         var existing = ClassPages(course, section);
@@ -2082,6 +2089,7 @@ public sealed class AssistWorkspace
         var classes = new List<NewClass>();
         var alreadyThere = new List<string>();
         var problems = new List<string>();
+        int sharingCount = 0;
 
         for (int i = 0; i < count; i++)
         {
@@ -2093,15 +2101,17 @@ public sealed class AssistWorkspace
             // teacher wrote months ago.
             if (File.Exists(path)) { alreadyThere.Add(title); continue; }
 
-            if (classes.Count >= free.Count)
+            DateOnly classDate;
+            if (classes.Count < free.Count)
             {
-                problems.Add(
-                    $"Only {free.Count} unused class date{(free.Count == 1 ? "" : "s")} remain in the " +
-                    $"timetable, so the last {count - alreadyThere.Count - classes.Count} " +
-                    "can't be dated. Add more dates to the timetable and ask again.");
-                break;
+                classDate = free[classes.Count];
             }
-            classes.Add(new NewClass(title, Relative(path), free[classes.Count], day));
+            else
+            {
+                classDate = remembered.Dates[^1];
+                sharingCount++;
+            }
+            classes.Add(new NewClass(title, Relative(path), classDate, day));
         }
 
         return new NewClassesPlan
@@ -2113,7 +2123,43 @@ public sealed class AssistWorkspace
             AlreadyThere = alreadyThere,
             Problems = problems,
             SpareDatesLeft = Math.Max(0, free.Count - classes.Count),
+            SharingTheLastDay = sharingCount,
         };
+    }
+
+    public NewClassesPlan PlanAddNextClass(string courseCode, int sectionNumber, string? unitAsked = null, int? days = null)
+    {
+        var course = Course(courseCode);
+        int section = Section(course, sectionNumber);
+
+        var remembered = TimetableMemory.Read(_folder, course.Code, section)
+            ?? throw new AssistRefusal(
+                $"I don’t know when {course.Code} Section {section} meets, so I can’t date a new class. {AssistWording.MayIAskForYourDates}");
+
+        if (remembered.Dates.Count == 0)
+            throw new AssistRefusal(
+                $"I don’t know when {course.Code} Section {section} meets, so I can’t date a new class. {AssistWording.MayIAskForYourDates}");
+
+        var existing = ClassPages(course, section);
+        var existingTitles = existing.Select(Path.GetFileNameWithoutExtension).ToList();
+
+        if (days is { } howMany && howMany > 0 && int.TryParse(unitAsked, out int specificUnit))
+        {
+            int highestDay = 0;
+            foreach (var t in existingTitles)
+            {
+                if (UnitDay.Parse(t) is { } ud && ud.Unit == specificUnit && ud.Day > highestDay)
+                    highestDay = ud.Day;
+            }
+            return PlanAddClasses(courseCode, sectionNumber, specificUnit, highestDay + 1, howMany);
+        }
+
+        bool startingANewUnit = string.Equals(unitAsked, "next", StringComparison.OrdinalIgnoreCase);
+        UnitDay next = startingANewUnit
+            ? NextClassPlanner.FirstDayOfANewUnit(existingTitles)
+            : NextClassPlanner.NextUnitAndDay(existingTitles);
+
+        return PlanAddClasses(courseCode, sectionNumber, next.Unit, next.Day, 1);
     }
 
     /// <summary>Create the pages the plan describes. Backed up first, and undoable.</summary>

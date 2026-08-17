@@ -248,7 +248,7 @@ public sealed class LocalModel : Plantoir.Core.Assist.IChatModel
                 // ~6,200 tokens — three quarters of an 8k context before the
                 // teacher has said anything, leaving a conversation that would
                 // run out of room within a few turns.
-                $"-m /models/{ModelFile} --no-mmap --parallel 1 -c 16384 " +
+                $"-m /models/{ModelFile} --no-mmap --parallel 1 -c 16384 --reasoning off --reasoning-budget 0 " +
                 "--jinja --host 0.0.0.0 --port 8080"), cancellation);
         }
 
