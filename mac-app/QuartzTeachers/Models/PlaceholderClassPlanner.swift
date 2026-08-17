@@ -248,6 +248,16 @@ struct PlaceholderClassPlan {
     /// Meeting dates still spare once these classes take theirs.
     let spareDatesLeft: Int
 
+    /// How many of these pages have no class date of their own and are
+    /// sharing the last one.
+    ///
+    /// Adding a class used to REFUSE once every recorded date was spoken for.
+    /// A teacher who has just finished teaching and wants tomorrow's page does
+    /// not want to be sent away to record dates first — see the note in
+    /// `NextClassPlanner`. So the page is made on the last day and this says
+    /// how many are stacked there.
+    var sharingTheLastDay: Int = 0
+
     /// Where the dates came from, so a stale timetable can be recognised.
     let timetableSource: String
 
@@ -288,7 +298,17 @@ struct PlaceholderClassPlan {
         // Said plainly, because it is the difference between a teacher seeing
         // their new pages in the preview and wondering where they went.
         lines.append("They start unpublished, so they stay off the site until you publish them — write them first, publish when they are ready.")
-        lines.append("\(spareDatesLeft) more class date\(spareDatesLeft == 1 ? "" : "s") \(spareDatesLeft == 1 ? "is" : "are") spare after these, out of the timetable recorded from \(timetableSource).")
+        if sharingTheLastDay > 0 {
+            // Said out loud, because a date shared with another class is the
+            // one thing on this list a teacher has to go and fix.
+            lines.append("\(sharingTheLastDay == 1 ? "This one has" : "\(sharingTheLastDay) of these have") "
+                         + "no class date left, so \(sharingTheLastDay == 1 ? "it shares" : "they share") "
+                         + "the last day with the class already on it. Give "
+                         + "\(sharingTheLastDay == 1 ? "it a day" : "them days") of your own when you "
+                         + "know what they are.")
+        } else {
+            lines.append("\(spareDatesLeft) more class date\(spareDatesLeft == 1 ? "" : "s") \(spareDatesLeft == 1 ? "is" : "are") spare after these, out of the timetable recorded from \(timetableSource).")
+        }
         return lines.joined(separator: "\n")
     }
 
@@ -302,6 +322,7 @@ struct PlaceholderClassPlan {
         alreadyThere: [String],
         problems: [String],
         spareDatesLeft: Int,
+        sharingTheLastDay: Int = 0,
         timetableSource: String
     ) {
         self.courseCode = courseCode
@@ -311,6 +332,7 @@ struct PlaceholderClassPlan {
         self.alreadyThere = alreadyThere
         self.problems = problems
         self.spareDatesLeft = spareDatesLeft
+        self.sharingTheLastDay = sharingTheLastDay
         self.timetableSource = timetableSource
     }
 }

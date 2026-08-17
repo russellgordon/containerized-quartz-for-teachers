@@ -2408,13 +2408,14 @@ final class AssistToolRunnerTests: XCTestCase {
         }
     }
 
-    /// Asking for more days than the timetable has left refuses whole, rather
-    /// than creating some and leaving the teacher to work out how many.
+    /// Running out of dates does not stop a page being made.
     ///
-    /// The same rule a single new class follows, and the schedule sheet opens
-    /// on the back of it — the remedy is more dates, and the app can ask.
+    /// It used to refuse. A teacher who has just finished teaching and wants
+    /// tomorrow's page does not want to be sent away to record dates first —
+    /// so the pages are made on the LAST class date, stacked where they cannot
+    /// be missed, and the plan says how many are sharing it.
     @MainActor
-    func testAskingForMoreDaysThanThereAreDatesRefusesWhole() async throws {
+    func testPagesPastTheEndOfTheTimetableGoOnTheLastDay() async throws {
         let made = try makeRunner()
         defer { try? FileManager.default.removeItem(at: made.root) }
 
@@ -2427,12 +2428,40 @@ final class AssistToolRunnerTests: XCTestCase {
 
         let outcome: AssistToolOutcome = await made.runner.run(call: call(
             "add_next_class",
-            arguments: ["course": "ICS3U", "section": 1, "unit": "4", "days": "5"]
+            arguments: ["course": "ICS3U", "section": 1, "unit": "4", "days": "3"]
         ))
 
-        XCTAssertTrue(outcome.summary.contains("no date left"), outcome.summary)
-        XCTAssertTrue(text(ofPage: "Unit 4, Day 2", in: made.course).isEmpty,
-                      "It created some of them and refused the rest")
+        // One page had a date of its own; the other two share the last day.
+        XCTAssertTrue(text(ofPage: "Unit 4, Day 2", in: made.course).contains("created: 2026-09-10"))
+        XCTAssertTrue(text(ofPage: "Unit 4, Day 3", in: made.course).contains("created: 2026-09-10"),
+                      "A page past the end of the timetable was not created")
+        XCTAssertTrue(text(ofPage: "Unit 4, Day 4", in: made.course).contains("created: 2026-09-10"),
+                      "A page past the end of the timetable was not created")
+        XCTAssertTrue(outcome.detail.contains("share the last day"), outcome.detail)
+    }
+
+    /// And a single next class, past the end, is made the same way.
+    @MainActor
+    func testTheNextClassIsStillMadeWhenTheDatesHaveRunOut() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08",
+                  body: "One.", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "true", date: "2026-09-10",
+                  body: "Two.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+        ))
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "add_next_class", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 3", in: made.course).contains("created: 2026-09-10"),
+                      "The teacher was sent away to record dates instead of getting their page")
+        XCTAssertTrue(outcome.detail.contains("shares the last day"), outcome.detail)
     }
 
     /// The digits work as well as the words.

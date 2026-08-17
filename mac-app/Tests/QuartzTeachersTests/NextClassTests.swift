@@ -273,8 +273,16 @@ final class NextClassTests: XCTestCase {
 
     /// A timetable that has run out says how many classes and how many dates,
     /// because "index out of range" tells a teacher nothing they can act on.
+    ///
+    /// **It no longer refuses.** Running out of dates used to mean no page at
+    /// all, on the reasoning that a page with a made-up date is worse than
+    /// none — but that is not the choice a teacher faces. They have just
+    /// finished teaching and want tomorrow's page to write into; being sent
+    /// away to record dates first costs them the ten minutes they had. The
+    /// page is made on the LAST class date, where it sits beside the final
+    /// class and cannot be missed, and the plan says it is sharing.
     @MainActor
-    func testATimetableThatHasRunOutIsRefusedWithTheNumbersInIt() async throws {
+    func testAClassPastTheEndOfTheTimetableIsMadeOnTheLastDay() async throws {
         let made = try makeWorkspace(meetingDates: ["2026-09-08", "2026-09-10"])
         defer { try? FileManager.default.removeItem(at: made.root) }
 
@@ -284,13 +292,12 @@ final class NextClassTests: XCTestCase {
         let outcome: AssistToolOutcome = await made.runner.run(call: call(
             "add_next_class", arguments: ["course": "ICS3U", "section": 1]
         ))
-        XCTAssertTrue(outcome.summary.contains("2 class pages"), outcome.summary)
-        XCTAssertTrue(outcome.summary.contains("2 class dates"), outcome.summary)
-        // Says what has to happen, without naming a tool the local model
-        // cannot see — the teacher supplies dates, not the model.
-        XCTAssertTrue(outcome.summary.contains("teacher needs to give the rest"), outcome.summary)
+        XCTAssertEqual(pageCount(in: made.course), 3, "The teacher was sent away instead of helped")
+        XCTAssertTrue(text(ofClass: "Unit 1, Day 3", in: made.course).contains("2026-09-10"),
+                      "It should share the last class date")
+        XCTAssertTrue(outcome.detail.contains("shares the last day"), outcome.detail)
         XCTAssertFalse(outcome.summary.contains("remember_timetable"), outcome.summary)
-        XCTAssertEqual(pageCount(in: made.course), 2, "Nothing was written")
+        // The class that was already there is untouched.
         XCTAssertTrue(text(ofClass: "Unit 1, Day 2", in: made.course).contains("two"))
     }
 

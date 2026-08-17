@@ -46,18 +46,29 @@ enum NextClassPlanner {
     /// different again.
     enum Problem: LocalizedError {
         case noTimetable(String, Int)
-        case timetableRanOut(String, Int, Int, Int)
 
         var errorDescription: String? {
             switch self {
             case .noTimetable(let code, let number):
                 return "I don’t know when \(code) Section \(number) meets, so I can’t date a new class. "
                      + AssistWording.mayIAskForYourDates
-            case .timetableRanOut(let code, let number, let classes, let dates):
-                return "\(code) Section \(number) has \(classes) class page\(classes == 1 ? "" : "s") and only \(dates) class date\(dates == 1 ? "" : "s") on file, so there is no date left for another class. The teacher needs to give the rest of the section’s dates before another class can be added."
             }
         }
     }
+
+    // There is deliberately NO "the timetable ran out" refusal.
+    //
+    // It used to refuse to add a class once every recorded date was spoken
+    // for. The reasoning was that a page with a made-up date is worse than no
+    // page — but that is not the choice a teacher faces. They have finished
+    // teaching, they want tomorrow's page to exist so they can start writing
+    // it, and being told to go and record more dates first is being sent away
+    // to do admin at the one moment they were ready to write.
+    //
+    // Same answer as re-dating a section: the page is created on the LAST
+    // class date, where it sits beside the final class and is impossible to
+    // miss, and the plan says so. Fixing a date is a keystroke; recovering
+    // the ten minutes they had is not.
 
     // MARK: - Functions
 
@@ -84,12 +95,9 @@ enum NextClassPlanner {
         // Position, not numbering: the class after this section's 15th class
         // takes the 16th date, whatever the 15 pages happen to be called.
         let position: Int = existing.count
-        if position >= remembered.dates.count {
-            throw Problem.timetableRanOut(
-                course.code, sectionNumber, existing.count, remembered.dates.count
-            )
-        }
-        let date: CalendarDay = remembered.dates[position]
+        let date: CalendarDay = try NextClassPlanner.date(
+            at: position, from: remembered.dates, course: course, sectionNumber: sectionNumber
+        )
 
         let pageURL: URL = ClassPages.folderURL(forSection: sectionNumber, in: course)
             .appendingPathComponent(next.title + ".md")
@@ -115,6 +123,7 @@ enum NextClassPlanner {
             alreadyThere: alreadyThere,
             problems: [],
             spareDatesLeft: max(0, remembered.dates.count - (position + 1)),
+            sharingTheLastDay: position >= remembered.dates.count ? 1 : 0,
             timetableSource: remembered.source
         )
     }
@@ -198,13 +207,12 @@ enum NextClassPlanner {
                 alreadyThere.append(title)
                 continue
             }
-            if position >= remembered.dates.count {
-                throw Problem.timetableRanOut(
-                    course.code, sectionNumber, existing.count, remembered.dates.count
-                )
-            }
             classes.append(PlannedClass(
-                title: title, fileURL: pageURL, day: day, date: remembered.dates[position]
+                title: title, fileURL: pageURL, day: day,
+                date: try NextClassPlanner.date(
+                    at: position, from: remembered.dates,
+                    course: course, sectionNumber: sectionNumber
+                )
             ))
             position += 1
         }
@@ -217,8 +225,30 @@ enum NextClassPlanner {
             alreadyThere: alreadyThere,
             problems: [],
             spareDatesLeft: max(0, remembered.dates.count - position),
+            sharingTheLastDay: max(0, position - remembered.dates.count),
             timetableSource: remembered.source
         )
+    }
+
+    /// The date for a class in this position — and the LAST recorded date for
+    /// anything past the end of the list.
+    ///
+    /// See the note above `Problem`. An empty timetable is a different thing
+    /// and still refuses: there is no last date to fall back to, and a class
+    /// with no date at all would sort nowhere.
+    private static func date(
+        at position: Int,
+        from dates: [CalendarDay],
+        course: Course,
+        sectionNumber: Int
+    ) throws -> CalendarDay {
+        if dates.isEmpty {
+            throw Problem.noTimetable(course.code, sectionNumber)
+        }
+        if position < dates.count {
+            return dates[position]
+        }
+        return dates[dates.count - 1]
     }
 
     /// The first class of the NEXT unit: one past the highest unit, Day 1.
