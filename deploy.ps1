@@ -480,9 +480,14 @@ this computer.
   3. Name it something you will recognise later, such as "Class websites".
   4. Give it ONE permission, chosen from the three dropdowns:
      Account  ->  Cloudflare Pages  ->  Edit
-  5. Leave everything else as it is, then choose "Continue to summary"
-     and "Create Token".
-  6. Copy the long code Cloudflare shows you - it is only shown once - and
+  5. Under "Account Resources", choose "Include" and then your own account
+     by name. A token that names no account cannot publish anything, and
+     what you get back if you skip this does not mention accounts at all.
+  6. Under "TTL", set the end date to after the end of your school year -
+     next July is a safe choice - or leave it with no end date. An expired
+     token stops your publishing working, with nothing to say why.
+  7. Choose "Continue to summary", then "Create Token".
+  8. Copy the long code Cloudflare shows you - it is only shown once - and
      paste it below. Nothing appears as you paste; that is normal.
 "@ | Out-Host
     $pastedSec = Read-Host -AsSecureString "Paste Cloudflare token"
@@ -562,8 +567,10 @@ this computer.
   2. Choose "New access token".
   3. Describe it as something you will recognise later, such as
      "Class websites".
-  4. Set it to never expire, so your publishing does not stop working
-     partway through the year.
+  4. Change the expiry - it starts at 7 days. A token that expires stops
+     your publishing working, with nothing on screen to say why, so set a
+     date after the end of your school year: next July is a safe choice.
+     Choose "No expiration" instead if it is offered.
   5. Choose "Generate token", then copy the long code Netlify shows you -
      it is only shown once.
   6. Paste it below. Nothing appears as you paste; that is normal.

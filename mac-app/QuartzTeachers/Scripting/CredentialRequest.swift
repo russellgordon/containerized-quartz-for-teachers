@@ -61,7 +61,10 @@ struct CredentialRequest: Equatable {
                 "Open the Netlify page linked below, and sign in if you are asked to.",
                 "Choose “New access token”.",
                 "Describe it as something you will recognise later, such as “Class websites”.",
-                "Set it to never expire, so your publishing does not stop working partway through the year.",
+                "Change the expiry — it starts at 7 days. A token that expires stops your "
+                    + "publishing working, with nothing on screen to say why, so set a date "
+                    + "after the end of your school year: next July is a safe choice. Choose "
+                    + "“No expiration” instead if it is offered.",
                 "Choose “Generate token”, then copy the long code Netlify shows you — it is only shown once.",
                 "Paste it below.",
             ],
@@ -87,8 +90,15 @@ struct CredentialRequest: Equatable {
                 "Open the Cloudflare page linked below, and sign in if you are asked to.",
                 "Choose “Create Token”, then “Create Custom Token”.",
                 "Name it something you will recognise later, such as “Class websites”.",
-                "Give it one permission, chosen from the three dropdowns: Account, then Cloudflare Pages, then Edit.",
-                "Leave everything else as it is, then choose “Continue to summary” and “Create Token”.",
+                "Give it one permission, chosen from the three dropdowns: Account, then "
+                    + "Cloudflare Pages, then Edit.",
+                "Under “Account Resources”, choose “Include” and then your own account by "
+                    + "name. A token that names no account cannot publish anything, and what "
+                    + "you get back if you skip this does not mention accounts at all.",
+                "Under “TTL”, set the end date to after the end of your school year — next "
+                    + "July is a safe choice — or leave it with no end date. An expired token "
+                    + "stops your publishing working, with nothing on screen to say why.",
+                "Choose “Continue to summary”, then “Create Token”.",
                 "Copy the long code Cloudflare shows you — it is only shown once — and paste it below.",
             ],
             linkTitle: "Open Cloudflare’s API tokens page",
@@ -96,6 +106,19 @@ struct CredentialRequest: Equatable {
             fieldLabel: "Cloudflare token",
             isSecret: true
         )
+    }
+
+    /// Where an Account ID is found. Written once and used by both of the
+    /// requests below, because they differ only in why they are asking:
+    /// two copies would drift, and the steps are the part that must not.
+    static var accountIDSteps: [String] {
+        return [
+            "Open the Cloudflare dashboard linked below, and sign in if you are asked to.",
+            "Choose “Workers & Pages” from the list on the left.",
+            "Find “Account ID” on the right-hand side, and copy it.",
+            "Paste it below. (It is also the long code in your browser's address bar, "
+                + "just after dash.cloudflare.com/.)",
+        ]
     }
 
     /// Cloudflare's account ID, asked only when the token cannot say which
@@ -107,13 +130,34 @@ struct CredentialRequest: Equatable {
             explanation: "The token you just made is allowed to publish, but not to look up which "
                        + "Cloudflare account it belongs to — so the account's ID is needed as well. "
                        + "This is the only time you will be asked for it.",
-            steps: [
-                "Open the Cloudflare dashboard linked below.",
-                "Choose “Workers & Pages” from the list on the left.",
-                "Find “Account ID” on the right-hand side, and copy it.",
-                "Paste it below. (It is also the long code in your browser's address bar, "
-                    + "just after dash.cloudflare.com/.)",
-            ],
+            steps: CredentialRequest.accountIDSteps,
+            linkTitle: "Open the Cloudflare dashboard",
+            linkAddress: URL(string: "https://dash.cloudflare.com")!,
+            fieldLabel: "Account ID",
+            isSecret: false
+        )
+    }
+
+    /// The same instructions, shown because the TEACHER asked for them —
+    /// the button beside the Account ID field in Course Settings and in the
+    /// new-course wizard.
+    ///
+    /// A separate request rather than a flag on the one above, because the
+    /// two are asking at opposite moments and only the WHY differs. The
+    /// launcher's version arrives mid-publish and explains itself as "one
+    /// more thing"; this one is opened by somebody filling in a form who
+    /// has quite reasonably no idea what a Cloudflare account ID is, and
+    /// may not have made a token yet — so it must not talk about the token
+    /// they just made.
+    static var cloudflareAccountIDHelp: CredentialRequest {
+        return CredentialRequest(
+            name: "cloudflareAccountIDHelp",
+            title: "Where to find your Account ID",
+            explanation: "Cloudflare gives every account a 32-character ID, and it says which "
+                       + "account your class websites are published into. It identifies you "
+                       + "rather than a class, so you enter it once here and every course "
+                       + "published to Cloudflare uses it.",
+            steps: CredentialRequest.accountIDSteps,
             linkTitle: "Open the Cloudflare dashboard",
             linkAddress: URL(string: "https://dash.cloudflare.com")!,
             fieldLabel: "Account ID",
@@ -123,7 +167,12 @@ struct CredentialRequest: Equatable {
 
     /// Every request there is, so a test can walk them.
     static var all: [CredentialRequest] {
-        return [CredentialRequest.netlifyToken, CredentialRequest.cloudflareToken, CredentialRequest.cloudflareAccountID]
+        return [
+            CredentialRequest.netlifyToken,
+            CredentialRequest.cloudflareToken,
+            CredentialRequest.cloudflareAccountID,
+            CredentialRequest.cloudflareAccountIDHelp,
+        ]
     }
 
     // MARK: - Functions

@@ -427,6 +427,48 @@ final class AppRulesContractTests: XCTestCase {
         XCTAssertEqual(written.count, CredentialRequest.all.count)
     }
 
+    /// The help variant exists to be opened from a FORM, possibly before any
+    /// token has been made, so it must never be what a launcher's prompt
+    /// resolves to — its twin's "the token you just made" would be a lie
+    /// there, and this one's calm explanation would be wrong mid-publish.
+    func testTheHelpVariantIsNeverWhatAPromptMatches() {
+        XCTAssertNotEqual(CredentialRequest.matching("Paste Cloudflare Account ID: ")?.name, "cloudflareAccountIDHelp")
+        XCTAssertEqual(CredentialRequest.matching("Paste Cloudflare Account ID: ")?.name, "cloudflareAccountID")
+
+        // One list of steps between the two: the wording of where an
+        // Account ID lives is the half that must not drift.
+        XCTAssertEqual(
+            CredentialRequest.cloudflareAccountIDHelp.steps,
+            CredentialRequest.cloudflareAccountID.steps
+        )
+        XCTAssertNotEqual(
+            CredentialRequest.cloudflareAccountIDHelp.explanation,
+            CredentialRequest.cloudflareAccountID.explanation,
+            "They differ in WHY they are asking, which is the whole reason there are two"
+        )
+    }
+
+    /// Netlify's expiry box starts at 7 days and an expired token announces
+    /// nothing: publishing just stops, weeks later, and gets reported as the
+    /// app breaking. Both token requests must say so, and Cloudflare's must
+    /// also name the account-resources step a token cannot publish without.
+    func testTheTokenStepsCarryTheAdviceThatPreventsASilentFailure() {
+        var netlifySteps: String = ""
+        for step in CredentialRequest.netlifyToken.steps {
+            netlifySteps += step + " "
+        }
+        XCTAssertTrue(netlifySteps.contains("7 days"), netlifySteps)
+        XCTAssertTrue(netlifySteps.contains("school year"), netlifySteps)
+
+        var cloudflareSteps: String = ""
+        for step in CredentialRequest.cloudflareToken.steps {
+            cloudflareSteps += step + " "
+        }
+        XCTAssertTrue(cloudflareSteps.contains("TTL"), cloudflareSteps)
+        XCTAssertTrue(cloudflareSteps.contains("school year"), cloudflareSteps)
+        XCTAssertTrue(cloudflareSteps.contains("Account Resources"), cloudflareSteps)
+    }
+
     /// The launchers used to open the token page themselves, and a browser
     /// tab arriving unasked reads as a fault rather than as help. Nothing
     /// in the toolchain may do that any more.

@@ -16,6 +16,9 @@ struct PublishingChoiceView: View {
     /// — so it is entered once and every Cloudflare course uses it.
     @Binding var cloudflareAccountID: String
 
+    /// True while the "Where do I find this?" instructions are open.
+    @State var isShowingAccountHelp: Bool = false
+
     // MARK: - Computed properties
 
     /// What is wrong with the chosen folder, or nil when nothing is.
@@ -57,6 +60,19 @@ struct PublishingChoiceView: View {
                 TextField("Cloudflare Account ID", text: $cloudflareAccountID)
                     .textFieldStyle(.roundedBorder)
                     .accessibilityIdentifier("cloudflareAccountField")
+
+                // The instructions used to be squeezed into the caption
+                // below, where a teacher had to read four sentences of
+                // dashboard navigation to find out this field wanted a
+                // code from a website they had not opened. They are a
+                // dialog now, on request, and the caption says what the
+                // destination IS again.
+                Button("Where do I find this?") {
+                    showAccountHelp()
+                }
+                .buttonStyle(.link)
+                .accessibilityIdentifier("cloudflareAccountHelpButton")
+
                 if let accountProblem {
                     // The same orange every other inline warning wears.
                     Text(accountProblem)
@@ -64,7 +80,7 @@ struct PublishingChoiceView: View {
                         .foregroundStyle(.orange)
                         .accessibilityIdentifier("cloudflareAccountProblem")
                 } else {
-                    ExampleCaption("Each section gets its own free site at yourproject.pages.dev. Sign in at dash.cloudflare.com and open Workers and Pages — the Account ID is shown on the right, and it’s also the long code in the address bar. You only enter it once. The first deploy asks for an API token with the Cloudflare Pages permission.")
+                    ExampleCaption("Each section gets its own free site at yourproject.pages.dev. You only enter this once, and every course you publish to Cloudflare uses it. The first publish asks for an API token as well, and explains how to make one.")
                 }
 
                 // Not a warning that comes and goes: a fact about this
@@ -76,6 +92,25 @@ struct PublishingChoiceView: View {
                     .font(.caption)
                     .foregroundStyle(.orange)
                     .accessibilityIdentifier("cloudflareSizeNote")
+            }
+            // The same dialog the launcher shows when it has to ask for an
+            // Account ID mid-publish, opened here on purpose instead. What
+            // is typed into it lands in the field above, so a teacher who
+            // has just fetched the code does not have to close this and
+            // find the field again.
+            .sheet(isPresented: $isShowingAccountHelp) {
+                CredentialRequestSheet(
+                    request: CredentialRequest.cloudflareAccountIDHelp,
+                    initialAnswer: cloudflareAccountID,
+                    confirmTitle: "Use this ID",
+                    onSend: { typed in
+                        cloudflareAccountID = typed
+                        isShowingAccountHelp = false
+                    },
+                    onCancel: {
+                        isShowingAccountHelp = false
+                    }
+                )
             }
         }
 
@@ -104,6 +139,17 @@ struct PublishingChoiceView: View {
     }
 
     // MARK: - Functions
+
+    /// Opens the instructions for finding an Account ID.
+    ///
+    /// Recorded on the trail: a teacher who had to go looking for this is
+    /// the same teacher whose first publish is about to fail on it, and the
+    /// line says which credential they were looking for. What they type is
+    /// never recorded.
+    func showAccountHelp() {
+        ActivityTrail.note(.askedForACredential, "opened the instructions for finding a Cloudflare Account ID")
+        isShowingAccountHelp = true
+    }
 
     /// The standard folder chooser, writing straight into the setting.
     func chooseDeployFolder() {

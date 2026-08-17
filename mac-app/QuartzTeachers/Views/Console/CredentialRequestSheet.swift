@@ -13,6 +13,17 @@ struct CredentialRequestSheet: View {
 
     let request: CredentialRequest
 
+    /// What the field starts with. Empty for a secret — a token is never
+    /// shown back — but the Account ID field is opened from a form that may
+    /// already hold one, and clearing it on the way in would look like the
+    /// dialog had thrown it away.
+    var initialAnswer: String = ""
+
+    /// What the button that accepts the answer says. "Continue" while a
+    /// publish is waiting on it; something calmer when a teacher opened
+    /// these instructions themselves and nothing is paused.
+    var confirmTitle: String = "Continue"
+
     /// What to do with the finished answer, and with a change of mind.
     let onSend: (String) -> Void
     let onCancel: () -> Void
@@ -86,7 +97,7 @@ struct CredentialRequestSheet: View {
                     onCancel()
                 }
                 .keyboardShortcut(.cancelAction)
-                Button("Continue") {
+                Button(confirmTitle) {
                     sendAnswer()
                 }
                 .keyboardShortcut(.defaultAction)
@@ -97,6 +108,9 @@ struct CredentialRequestSheet: View {
         .padding(20)
         .frame(width: 460)
         .accessibilityIdentifier("credentialSheet")
+        .onAppear {
+            answer = initialAnswer
+        }
     }
 
     // MARK: - Functions

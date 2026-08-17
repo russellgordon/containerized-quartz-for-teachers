@@ -3217,13 +3217,62 @@ console gets the same explanation.
   trailing space or newline, which is invisible and rejected, and the teacher is
   told their token is wrong when it is not.
 
+**Two things in the steps that are load-bearing, not padding (entry 254).**
+Both were added after a teacher walked through the real pages:
+
+- **Expiry.** Netlify's expiry box starts at **7 days**, and an expired token
+  announces nothing — publishing simply stops working a week later, which gets
+  reported as the app breaking. Both token requests now tell the teacher to set
+  a date after the end of their school year (next July), or "No expiration"
+  where Netlify offers it. Cloudflare's `TTL` section is the same trap and gets
+  the same advice.
+- **Cloudflare's Account Resources.** A custom token needs `Include` + the
+  teacher's own account chosen by name, in the section below the three
+  permission dropdowns. A token that names no account cannot publish, and what
+  comes back does not mention accounts at all — so this cannot be left to the
+  teacher to infer. Verified against the live Create Custom Token page: the
+  dropdowns read Account / Cloudflare Pages / Edit, then Account Resources,
+  then TTL.
+
+Both notes are in `credentialPrompts.expiryAdviceIsLoadBearing`, and a mac test
+asserts the strings "7 days", "school year", "TTL" and "Account Resources"
+survive in the steps — so a future tidy-up cannot quietly drop them.
+
+**The Account ID also has a button, and it needs the same one on Windows
+(entry 254).** The Cloudflare Account ID field — in Course Settings AND in the
+new-course wizard, which on the mac is one shared view — now has a **"Where do
+I find this?"** link button under it, opening the same kind of dialog on
+purpose rather than mid-publish. Three things about it:
+
+- It is a SECOND request, `cloudflareAccountIDHelp`, sharing **one** list of
+  steps with the launcher-driven `cloudflareAccountID` and differing only in
+  the explanation. Copy the steps into two places and they drift; the mac keeps
+  them in `CredentialRequest.accountIDSteps` and a test pins the two equal.
+- **It must never be returned by the prompt matching** — see
+  `credentialPrompts.theHelpVariantIsNeverMatched`. It can be opened by
+  somebody who has not made a token yet, so its twin's "the token you just
+  made" would be a lie; equally, its calm "you enter it once here" is wrong
+  when a publish is paused waiting for an answer.
+- What the teacher types in the dialog is **written back into the form field**,
+  so a teacher who has just fetched the code does not have to close the dialog
+  and find the field again. The accept button is labelled "Use this ID" rather
+  than "Continue", because nothing is waiting on it.
+
+The caption under that field used to carry the dashboard directions in four
+sentences of small grey text; it now says what the destination IS, and the
+directions live in the dialog. On WinUI: a `HyperlinkButton` under the Account
+ID `TextBox`, the same dialog, the value written back on accept — and, still,
+nothing that opens a browser by itself.
+
 **The trail.** `asked for a publishing credential` is in
 `contracts/shared-rules.json` → `activityTrail.mustRecord`, so the Windows
 pinning test fails until that enum case exists. It records WHICH credential was
 asked for and never the answer. It is there because a first publish waiting
 behind a dialog nobody noticed is reported as a publish that "never finished",
 and this line is the difference between reading that as a hang and reading it
-as a question waiting.
+as a question waiting. The same event covers a teacher opening the Account ID
+instructions from the button — the line says which credential they went looking
+for, which is the same question being answered a different way round.
 
 ## Testing
 

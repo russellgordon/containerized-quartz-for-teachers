@@ -127,6 +127,10 @@
       {
         "expectRequest" : "",
         "prompt" : "Select folders/files to HIDE (comma-separated numbers):"
+      },
+      {
+        "expectRequest" : "",
+        "prompt" : "Where do I find this?"
       }
     ],
     "everyRequest" : [
@@ -144,11 +148,18 @@
         "expectLink" : "https://dash.cloudflare.com",
         "expectSecret" : false,
         "name" : "cloudflareAccountID"
+      },
+      {
+        "expectLink" : "https://dash.cloudflare.com",
+        "expectSecret" : false,
+        "name" : "cloudflareAccountIDHelp"
       }
     ],
     "everyRequestNote" : "An account ID is not a secret and is shown as it is typed; a token is, and is not. Getting that backwards either puts a live credential on a screen a class can see, or hides a code the teacher needs to check they pasted correctly.",
+    "expiryAdviceIsLoadBearing" : "Both token steps tell the teacher to set an expiry past the end of the school year. Netlify's box starts at 7 DAYS, and an expired token does not announce itself - publishing simply stops working weeks later, which is diagnosed as the app breaking. Cloudflare's TTL is the same trap. The Cloudflare steps also require choosing 'Include' and the teacher's own account under 'Account Resources': a token that names no account cannot publish, and what comes back does not mention accounts at all.",
     "matchedOnWordsNotWholeLine" : "The two launchers word these prompts slightly differently and are free to keep doing so, so the match is on the words that NAME the credential — 'netlify token', 'cloudflare token', 'cloudflare account id' — not on the whole line.",
     "note" : "Which launcher prompt is a request for a publishing credential, and which one it is. Authored rather than read out of the code, because this is the half that must fail when the matching changes: a prompt that stops being recognised does not crash anything — the teacher simply gets the old one-line question back and no way to answer it.",
+    "theHelpVariantIsNeverMatched" : "cloudflareAccountIDHelp carries the SAME steps and link as cloudflareAccountID and differs only in why it is asking, so it must never be returned by the prompt matching: it is opened by a teacher pressing a button beside the Account ID field in Course Settings or the new-course wizard, possibly before any token exists, so it must not talk about 'the token you just made'. Both apps should share one list of steps between the two rather than copying it, because the steps are the half that must not drift.",
     "whyNoBrowserOpens" : "The launchers used to run `open` (macOS) or `Start-Process` (Windows) on the token page the moment they asked, so a browser tab appeared unasked while the teacher was looking at the app. Reported as disconcerting: an application that takes over the screen reads as something going wrong, not as help. The address is now offered as a link in the dialog and printed in the launcher's own output, and the teacher decides when to follow it. Neither app may open a page on the teacher's behalf here."
   },
   "credentialRequests" : {
@@ -165,7 +176,7 @@
           "Open the Netlify page linked below, and sign in if you are asked to.",
           "Choose “New access token”.",
           "Describe it as something you will recognise later, such as “Class websites”.",
-          "Set it to never expire, so your publishing does not stop working partway through the year.",
+          "Change the expiry — it starts at 7 days. A token that expires stops your publishing working, with nothing on screen to say why, so set a date after the end of your school year: next July is a safe choice. Choose “No expiration” instead if it is offered.",
           "Choose “Generate token”, then copy the long code Netlify shows you — it is only shown once.",
           "Paste it below."
         ],
@@ -183,7 +194,9 @@
           "Choose “Create Token”, then “Create Custom Token”.",
           "Name it something you will recognise later, such as “Class websites”.",
           "Give it one permission, chosen from the three dropdowns: Account, then Cloudflare Pages, then Edit.",
-          "Leave everything else as it is, then choose “Continue to summary” and “Create Token”.",
+          "Under “Account Resources”, choose “Include” and then your own account by name. A token that names no account cannot publish anything, and what you get back if you skip this does not mention accounts at all.",
+          "Under “TTL”, set the end date to after the end of your school year — next July is a safe choice — or leave it with no end date. An expired token stops your publishing working, with nothing on screen to say why.",
+          "Choose “Continue to summary”, then “Create Token”.",
           "Copy the long code Cloudflare shows you — it is only shown once — and paste it below."
         ],
         "title" : "Connect to Cloudflare"
@@ -196,12 +209,27 @@
         "linkTitle" : "Open the Cloudflare dashboard",
         "name" : "cloudflareAccountID",
         "steps" : [
-          "Open the Cloudflare dashboard linked below.",
+          "Open the Cloudflare dashboard linked below, and sign in if you are asked to.",
           "Choose “Workers & Pages” from the list on the left.",
           "Find “Account ID” on the right-hand side, and copy it.",
           "Paste it below. (It is also the long code in your browser's address bar, just after dash.cloudflare.com/.)"
         ],
         "title" : "One more thing from Cloudflare"
+      },
+      {
+        "explanation" : "Cloudflare gives every account a 32-character ID, and it says which account your class websites are published into. It identifies you rather than a class, so you enter it once here and every course published to Cloudflare uses it.",
+        "fieldLabel" : "Account ID",
+        "isSecret" : false,
+        "linkAddress" : "https://dash.cloudflare.com",
+        "linkTitle" : "Open the Cloudflare dashboard",
+        "name" : "cloudflareAccountIDHelp",
+        "steps" : [
+          "Open the Cloudflare dashboard linked below, and sign in if you are asked to.",
+          "Choose “Workers & Pages” from the list on the left.",
+          "Find “Account ID” on the right-hand side, and copy it.",
+          "Paste it below. (It is also the long code in your browser's address bar, just after dash.cloudflare.com/.)"
+        ],
+        "title" : "Where to find your Account ID"
       }
     ]
   },
