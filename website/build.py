@@ -190,6 +190,8 @@ def static_element(shot: dict, problems: list[str], modifier: str, up: str) -> s
     """One image, served to everybody, whatever their colour scheme."""
     identifier = shot["id"]
     source = IMAGE_DIR / f"{identifier}.png"
+    win_source = IMAGE_DIR / f"{identifier}-windows.png"
+    has_windows = win_source.exists()
 
     classes = "shot shot-static"
     if modifier:
@@ -209,15 +211,20 @@ def static_element(shot: dict, problems: list[str], modifier: str, up: str) -> s
 
     width, height = png_size(source)
     webp = source.with_suffix(".webp")
+    win_webp = IMAGE_DIR / f"{identifier}-windows.webp"
+
     webp_source = ""
     if webp.exists():
-        webp_source = f'      <source srcset="{up}img/{identifier}.webp" type="image/webp">\n'
+        win_webp_attr = f' data-win-srcset="{up}img/{identifier}-windows.webp"' if (has_windows and win_webp.exists()) else ""
+        webp_source = f'      <source srcset="{up}img/{identifier}.webp"{win_webp_attr} type="image/webp">\n'
+
+    win_src_attr = f' data-win-src="{up}img/{identifier}-windows.png"' if has_windows else ""
 
     return (
         f'<figure class="{classes}">\n'
         f'    <picture>\n'
         f'{webp_source}'
-        f'      <img src="{up}img/{identifier}.png" alt="{shot["alt"]}"\n'
+        f'      <img src="{up}img/{identifier}.png"{win_src_attr} alt="{shot["alt"]}"\n'
         f'           width="{width // 2}" height="{height // 2}" loading="lazy" decoding="async">\n'
         f'    </picture>{caption_html}\n'
         f'</figure>'

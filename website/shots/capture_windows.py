@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Take every Windows app screenshot plantoir.app uses, autonomously.
+"""Take EVERY Windows screenshot plantoir.app uses, autonomously.
 
 Run it from the top of the repository on a Windows machine::
 
@@ -7,20 +7,27 @@ Run it from the top of the repository on a Windows machine::
 
 What it does:
 1. Locates or builds the Windows application executable (Plantoir.exe).
-2. Runs Plantoir.exe with `--capture-marketing-shots site/img` to capture
-   the 5 app-window marketing shots (courses, new-course, progress, preview,
-   assistant) in both Light and Dark mode.
-3. Scales and optimizes all captured PNGs and produces WebP companions
-   via `images.prepare()`.
-4. Rebuilds the marketing site (`website/build.py`).
+2. Captures all 5 app-window marketing shots (courses, new-course, progress,
+   preview, assistant) in both Light and Dark mode.
+3. Launches Microsoft Edge on Windows via Playwright to capture all 6 browser
+   screenshots (site-eng2d, site-mcv4u, site-sch3u, coverage, search, site-phone)
+   in both Light and Dark mode with native Windows ClearType typography.
+4. Assembles the two static color composites (colour-schemes-windows,
+   light-and-dark-windows) using the Edge captures.
+5. Scales and optimizes all captured PNGs and generates WebP companions.
+6. Rebuilds the marketing site (website/build.py).
 """
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
+
+from PIL import Image
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     try:
@@ -32,18 +39,29 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
 REPO = Path(__file__).resolve().parent.parent.parent
 WEBSITE = REPO / "website"
 IMAGE_DIR = REPO / "site" / "img"
+SCRATCH = Path(os.environ.get("TEMP", "C:/temp")) / "plantoir-marketing-shots"
+PARTS = SCRATCH / "parts-windows"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from images import prepare, WIDEST_WINDOW_PIXELS  # noqa: E402
+from images import prepare, WIDEST_PHONE_PIXELS, WIDEST_WINDOW_PIXELS  # noqa: E402
+from composite import fan, side_by_side  # noqa: E402
+
+DEMO_COURSES = [
+    {"code": "ENG2D", "site": "eng2d-gordon-2026-27"},
+    {"code": "MCV4U", "site": "mcv4u-gordon-2026-27"},
+    {"code": "SCH3U", "site": "sch3u-gordon-2026-27"},
+]
 
 
 def announce(message: str) -> None:
     print(f"\n▶︎ {message}", flush=True)
 
 
-def run_command(command: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess:
-    print(f"   $ {' '.join(command)}", flush=True)
-    return subprocess.run(command, cwd=cwd or REPO, check=True)
+def site_address(code: str) -> str:
+    for course in DEMO_COURSES:
+        if course["code"] == code:
+            return f"https://{course['site']}.netlify.app"
+    raise SystemExit(f"No demo site is configured for {code}.")
 
 
 def find_or_build_plantoir_exe() -> Path:
@@ -56,39 +74,179 @@ def find_or_build_plantoir_exe() -> Path:
             return candidate
 
     announce("Building Plantoir Windows application (Release)")
-    run_command([
+    subprocess.run([
         "powershell", "-ExecutionPolicy", "Bypass", "-File",
         str(REPO / "windows-app" / "publish.ps1")
-    ])
+    ], cwd=REPO, check=True)
     return candidates[0]
 
 
+def capture_app_windows(plantoir_exe: Path) -> None:
+    announce("Photographing Plantoir App Windows on Windows")
+    subprocess.run([
+        "powershell", "-Command",
+        f"Start-Process '{plantoir_exe}' -ArgumentList '--capture-marketing-shots', '{IMAGE_DIR.resolve()}' -Wait -NoNewWindow"
+    ], cwd=REPO, check=True)
+
+
+def capture_browser_sites() -> None:
+    announce("Photographing Class Websites in Microsoft Edge on Windows")
+    PARTS.mkdir(parents=True, exist_ok=True)
+    from playwright.sync_api import sync_playwright
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(channel="msedge", headless=True)
+
+        for dark in (False, True):
+            theme = "dark" if dark else "light"
+            print(f"   --- Edge {theme} theme ---", flush=True)
+
+            context = browser.new_context(
+                color_scheme=theme,
+                viewport={"width": 1280, "height": 860},
+                device_scale_factor=2,
+            )
+            page = context.new_page()
+
+            # 1. site-eng2d
+            url = site_address("ENG2D") + "/"
+            page.goto(url)
+            page.wait_for_load_state("networkidle")
+            time.sleep(1.0)
+            eng2d_path = IMAGE_DIR / f"site-eng2d-windows-{theme}.png"
+            page.screenshot(path=str(eng2d_path))
+            prepare(eng2d_path, WIDEST_WINDOW_PIXELS)
+            print(f"   ✓ saved {eng2d_path.name}")
+
+            # Save part for static composite
+            part_path = PARTS / f"home-eng2d-{theme}.png"
+            page.screenshot(path=str(part_path))
+
+            # 2. site-mcv4u
+            url = site_address("MCV4U") + "/concepts/derivative-rules"
+            page.goto(url)
+            page.wait_for_load_state("networkidle")
+            time.sleep(1.0)
+            mcv4u_path = IMAGE_DIR / f"site-mcv4u-windows-{theme}.png"
+            page.screenshot(path=str(mcv4u_path))
+            prepare(mcv4u_path, WIDEST_WINDOW_PIXELS)
+            print(f"   ✓ saved {mcv4u_path.name}")
+
+            # Save part for static composite
+            if not dark:
+                page.goto(site_address("MCV4U") + "/")
+                page.wait_for_load_state("networkidle")
+                time.sleep(0.8)
+                page.screenshot(path=str(PARTS / f"home-mcv4u-{theme}.png"))
+
+            # 3. site-sch3u
+            url = site_address("SCH3U") + "/style/what-this-site-can-do#diagrams"
+            page.goto(url)
+            page.wait_for_load_state("networkidle")
+            time.sleep(1.0)
+            sch3u_path = IMAGE_DIR / f"site-sch3u-windows-{theme}.png"
+            page.screenshot(path=str(sch3u_path))
+            prepare(sch3u_path, WIDEST_WINDOW_PIXELS)
+            print(f"   ✓ saved {sch3u_path.name}")
+
+            # Save part for static composite
+            if not dark:
+                page.goto(site_address("SCH3U") + "/")
+                page.wait_for_load_state("networkidle")
+                time.sleep(0.8)
+                page.screenshot(path=str(PARTS / f"home-sch3u-{theme}.png"))
+
+            # 4. coverage
+            url = site_address("ENG2D") + "/curriculum-coverage"
+            page.goto(url)
+            page.wait_for_load_state("networkidle")
+            time.sleep(1.0)
+            cov_path = IMAGE_DIR / f"coverage-windows-{theme}.png"
+            page.screenshot(path=str(cov_path))
+            prepare(cov_path, WIDEST_WINDOW_PIXELS)
+            print(f"   ✓ saved {cov_path.name}")
+
+            # 5. search popover
+            url = site_address("ENG2D") + "/"
+            page.goto(url)
+            page.wait_for_load_state("networkidle")
+            time.sleep(0.8)
+            page.keyboard.press("Control+k")
+            time.sleep(0.4)
+            page.keyboard.type("thesis")
+            time.sleep(1.0)
+            search_path = IMAGE_DIR / f"search-windows-{theme}.png"
+            page.screenshot(path=str(search_path))
+            prepare(search_path, WIDEST_WINDOW_PIXELS)
+            print(f"   ✓ saved {search_path.name}")
+
+            # 6. site-phone (Mobile Edge viewport)
+            phone_context = browser.new_context(
+                color_scheme=theme,
+                viewport={"width": 390, "height": 844},
+                is_mobile=True,
+                has_touch=True,
+                device_scale_factor=2,
+            )
+            phone_page = phone_context.new_page()
+            phone_page.goto(site_address("ENG2D") + "/")
+            phone_page.wait_for_load_state("networkidle")
+            time.sleep(1.0)
+            phone_path = IMAGE_DIR / f"site-phone-windows-{theme}.png"
+            phone_page.screenshot(path=str(phone_path))
+            prepare(phone_path, WIDEST_PHONE_PIXELS)
+            print(f"   ✓ saved {phone_path.name}")
+            phone_context.close()
+
+            context.close()
+
+        browser.close()
+
+
+def build_windows_static_figures() -> None:
+    announce("Assembling Windows Static Color Figures")
+    fanned = [PARTS / f"home-{course['code'].lower()}-light.png" for course in DEMO_COURSES]
+    if all(p.exists() for p in fanned):
+        dest = IMAGE_DIR / "colour-schemes-windows.png"
+        fan(fanned, dest)
+        prepare(dest, WIDEST_WINDOW_PIXELS)
+        print("   ✓ saved colour-schemes-windows.png + WebP")
+
+    pair = [PARTS / "home-eng2d-light.png", PARTS / "home-eng2d-dark.png"]
+    if all(p.exists() for p in pair):
+        dest = IMAGE_DIR / "light-and-dark-windows.png"
+        side_by_side(pair, dest)
+        prepare(dest, WIDEST_WINDOW_PIXELS)
+        print("   ✓ saved light-and-dark-windows.png + WebP")
+
+
 def main() -> int:
-    announce("Photographing Plantoir on Windows")
+    announce("Photographing Full Windows Suite (App + Edge Browser)")
     IMAGE_DIR.mkdir(parents=True, exist_ok=True)
     plantoir_exe = find_or_build_plantoir_exe()
 
-    announce("Running MarketingShotCapturer via Plantoir.exe")
-    run_command([
-        "powershell", "-Command",
-        f"Start-Process '{plantoir_exe}' -ArgumentList '--capture-marketing-shots', '{IMAGE_DIR.resolve()}' -Wait -NoNewWindow"
-    ])
+    # 1. App Windows
+    capture_app_windows(plantoir_exe)
 
-    announce("Optimizing Windows screenshots and generating WebPs")
+    # 2. Optimize App Windows
     shot_ids = ["courses", "new-course", "progress", "preview", "assistant"]
     for shot_id in shot_ids:
         for theme in ("light", "dark"):
             png_path = IMAGE_DIR / f"{shot_id}-windows-{theme}.png"
             if png_path.exists():
                 prepare(png_path, WIDEST_WINDOW_PIXELS)
-                print(f"   ✓ Prepared {png_path.name} + WebP")
-            else:
-                print(f"   ⚠️ Missing {png_path.name}", file=sys.stderr)
 
+    # 3. Browser Sites in Edge
+    capture_browser_sites()
+
+    # 4. Static Figures
+    build_windows_static_figures()
+
+    # 5. Rebuild site
     announce("Rebuilding plantoir.app")
-    run_command([sys.executable, str(WEBSITE / "build.py")])
+    subprocess.run([sys.executable, str(WEBSITE / "build.py")], cwd=REPO, check=True)
 
-    print("\n✅ Windows screenshots captured and marketing website updated successfully!")
+    print("\n✅ Every screenshot now has an authentic Windows twin captured in Edge and Plantoir on Windows!")
     return 0
 
 

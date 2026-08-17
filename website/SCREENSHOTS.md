@@ -180,6 +180,8 @@ two distinct `<figure>` blocks:
 
 ## 5. Summary of Captured Assets
 
+Every screenshot on plantoir.app has both a macOS version (Safari / SwiftUI) and an authentic Windows twin (Microsoft Edge / WinUI 3 with native ClearType typography):
+
 | ID | Subject | macOS Files | Windows Files |
 |---|---|---|---|
 | `preview` | Main window with live Quartz preview | `preview-light.png/.webp`<br>`preview-dark.png/.webp` | `preview-windows-light.png/.webp`<br>`preview-windows-dark.png/.webp` |
@@ -187,11 +189,11 @@ two distinct `<figure>` blocks:
 | `new-course` | New Course wizard / modal | `new-course-light.png/.webp`<br>`new-course-dark.png/.webp` | `new-course-windows-light.png/.webp`<br>`new-course-windows-dark.png/.webp` |
 | `progress` | Build / deploy milestone progress | `progress-light.png/.webp`<br>`progress-dark.png/.webp` | `progress-windows-light.png/.webp`<br>`progress-windows-dark.png/.webp` |
 | `assistant` | Local AI assistant conversation & cards | `assistant-light.png/.webp`<br>`assistant-dark.png/.webp` | `assistant-windows-light.png/.webp`<br>`assistant-windows-dark.png/.webp` |
-| `site-eng2d` | Rendered class website (English) | `site-eng2d-light.png/.webp`<br>`site-eng2d-dark.png/.webp` | *(Shared browser capture)* |
-| `site-mcv4u` | Rendered class website (Calculus math) | `site-mcv4u-light.png/.webp`<br>`site-mcv4u-dark.png/.webp` | *(Shared browser capture)* |
-| `site-sch3u` | Rendered class website (Chemistry) | `site-sch3u-light.png/.webp`<br>`site-sch3u-dark.png/.webp` | *(Shared browser capture)* |
-| `site-phone` | Rendered class website on iPhone | `site-phone-light.png/.webp`<br>`site-phone-dark.png/.webp` | *(Shared browser capture)* |
-| `coverage` | Curriculum expectation tag browser | `coverage-light.png/.webp`<br>`coverage-dark.png/.webp` | *(Shared browser capture)* |
-| `search` | Quartz live search popover | `search-light.png/.webp`<br>`search-dark.png/.webp` | *(Shared browser capture)* |
-| `colour-schemes`| 4 Quartz built-in colour palettes | `colour-schemes.png/.webp` | *(Shared static composite)* |
-| `light-and-dark`| Split light/dark class page composite | `light-and-dark.png/.webp` | *(Shared static composite)* |
+| `site-eng2d` | Rendered class website (English) | `site-eng2d-light.png/.webp`<br>`site-eng2d-dark.png/.webp` | `site-eng2d-windows-light.png/.webp`<br>`site-eng2d-windows-dark.png/.webp` |
+| `site-mcv4u` | Rendered class website (Calculus math) | `site-mcv4u-light.png/.webp`<br>`site-mcv4u-dark.png/.webp` | `site-mcv4u-windows-light.png/.webp`<br>`site-mcv4u-windows-dark.png/.webp` |
+| `site-sch3u` | Rendered class website (Chemistry) | `site-sch3u-light.png/.webp`<br>`site-sch3u-dark.png/.webp` | `site-sch3u-windows-light.png/.webp`<br>`site-sch3u-windows-dark.png/.webp` |
+| `site-phone` | Rendered class website on Mobile Viewport | `site-phone-light.png/.webp`<br>`site-phone-dark.png/.webp` | `site-phone-windows-light.png/.webp`<br>`site-phone-windows-dark.png/.webp` |
+| `coverage` | Curriculum expectation tag browser | `coverage-light.png/.webp`<br>`coverage-dark.png/.webp` | `coverage-windows-light.png/.webp`<br>`coverage-windows-dark.png/.webp` |
+| `search` | Quartz live search popover | `search-light.png/.webp`<br>`search-dark.png/.webp` | `search-windows-light.png/.webp`<br>`search-windows-dark.png/.webp` |
+| `colour-schemes`| 3 Quartz built-in colour palettes | `colour-schemes.png/.webp` | `colour-schemes-windows.png/.webp` |
+| `light-and-dark`| Split light/dark class page composite | `light-and-dark.png/.webp` | `light-and-dark-windows.png/.webp` |

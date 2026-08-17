@@ -246,6 +246,8 @@ public static class MarketingShotCapturer
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch
         };
+        Grid.SetRow(overlay, 0);
+        Grid.SetRowSpan(overlay, 3);
 
         var dialogCard = new Border
         {
