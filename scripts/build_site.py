@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import shutil
+import sys
 import argparse
 import frontmatter
 import subprocess
@@ -2430,25 +2431,52 @@ def patch_render_page_transclude_title(render_page_tsx_path: Path):
 # --- HARDENING TWEAK #2: Preflight to ensure omit anchor exists --------------
 def ensure_quartz_layout_anchor(quartz_layout_path: Path) -> bool:
     """
-    Make sure quartz.layout.ts contains an 'omit' Set declaration.
-    If missing, warn (likely setup.sh wasn't run) and inject a safe default.
+    Make sure quartz.layout.ts carries the Explorer filter that hides pages.
+
+    This is the one preflight that must never be allowed to "pass anyway".
+    What it guards is the teacher's hide list: the Explorer's `filterFn` and
+    the `CQ4T-OMIT-ANCHOR` marker inside it. Later on, `update_quartz_layout`
+    only rewrites the CONTENTS of that Set — it cannot create the filter that
+    reads it.
+
+    It used to warn and inject a bare `const omit = new Set([])` "to unblock
+    the build". That is worse than failing, and it shipped: the Set was then
+    populated, NOTHING consumed it, the build succeeded, and every page the
+    teacher had hidden — Private Notes, Curriculum, Learning Goals — went up
+    on the class site. The build printed two lines about it and carried on.
+
+    The block belongs to `setup_course.py`, which is also where the identical
+    patch runs at course-creation time; it is imported rather than copied so
+    the two cannot drift. Baked into the image as well (see the Dockerfile),
+    so a freshly created container has it from birth — that is the real fix,
+    and this is the belt to its braces for containers that predate it.
     """
     if not quartz_layout_path.exists():
-        print(f"⚠️ quartz.layout.ts not found at {quartz_layout_path}")
+        print(f"❌ quartz.layout.ts not found at {quartz_layout_path}")
         return False
 
     txt = quartz_layout_path.read_text(encoding="utf-8")
-    if "const omit = new Set" in txt:
+    if "CQ4T-OMIT-ANCHOR" in txt:
         return True
 
-    print("⚠️ Expected omit set not found in quartz.layout.ts.")
-    print("   Did you run setup.sh? (which runs setup_course.py)")
-    # Insert a default omit line after imports to unblock the build
-    m = re.search(r'^(?:import .*?;\s*)+', txt, flags=re.MULTILINE | re.DOTALL)
-    insert_at = m.end() if m else 0
-    injected = txt[:insert_at] + ("" if insert_at == 0 else "\n") + "const omit = new Set([])\n" + txt[insert_at:]
-    quartz_layout_path.write_text(injected, encoding="utf-8")
-    print("ℹ️ Inserted a default omit set; running setup.sh is still recommended.")
+    print("⚠️ The Explorer's hide filter is missing from quartz.layout.ts.")
+    print("   Repairing it before building — without it, pages you have")
+    print("   hidden would be published.")
+
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from setup_course import _patch_explorer_with_anchor
+        repaired, changed = _patch_explorer_with_anchor(txt)
+    except Exception as exc:
+        print(f"❌ Could not load the Explorer patch: {exc}")
+        return False
+
+    if not changed or "CQ4T-OMIT-ANCHOR" not in repaired:
+        print("❌ Could not restore the Explorer's hide filter.")
+        return False
+
+    quartz_layout_path.write_text(repaired, encoding="utf-8")
+    print("✅ Restored the Explorer's hide filter.")
     return True
 # -----------------------------------------------------------------------------
 
@@ -3682,7 +3710,15 @@ def build_section_site(
     # Update Quartz layout & footer
     quartz_layout_ts = output_dir / "quartz.layout.ts"
     quartz_footer_tsx = output_dir / "quartz/components/Footer.tsx"
-    ensure_quartz_layout_anchor(quartz_layout_ts)  # HARDENING: make sure anchor exists
+    # HARDENING: the hide filter must exist. A build that cannot guarantee it
+    # is a build that would publish pages the teacher hid, so it stops here
+    # rather than producing a site that looks finished and is not.
+    if not ensure_quartz_layout_anchor(quartz_layout_ts):
+        print()
+        print("❌ Refusing to build: the Explorer's hide filter could not be")
+        print("   established, so anything you have hidden would appear on")
+        print("   your site. Run setup.sh for this course to restore it.")
+        sys.exit(1)
 
     # ensure 'Media' is always hidden in Explorer omit set
     if "Media" not in hidden_list:

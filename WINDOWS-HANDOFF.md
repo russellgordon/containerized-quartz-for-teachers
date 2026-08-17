@@ -3352,6 +3352,59 @@ marketing site ends up showing an interface that no longer exists), and a
 headless browser for the class sites (it approximates macOS type rendering,
 scrollbars and window chrome rather than showing them).
 
+## The hide filter belongs to the IMAGE, not to a running container
+
+Fixed 2026-08-17. **Shared Python and a shared Dockerfile, so Windows inherits
+the fix with nothing to port** — but read this anyway, because the shape of the
+bug is one that can be reintroduced from either side.
+
+A teacher marks pages hidden — Private Notes, Curriculum, Learning Goals — and
+the Explorer honours that through a `filterFn` in `quartz.layout.ts` carrying a
+`CQ4T-OMIT-ANCHOR` marker. `build_site.py` only ever rewrites the CONTENTS of
+the `omit` Set inside that filter. It cannot create the filter.
+
+The filter used to be established in exactly one place: `setup_course.py`
+patching `/opt/quartz/quartz.layout.ts` **in the running container**, at
+course-creation time. That made it container state. And a container is
+recreated whenever the recipe hash changes — which is the documented design
+after most toolchain updates. So:
+
+1. Teacher's courses work; the container carries the patch.
+2. An update changes the recipe. New image tag, container recreated.
+3. Next preview copies a pristine `/opt/quartz` scaffold. No filter.
+4. `build_site.py` warned twice and **carried on**, injecting a bare
+   `const omit = new Set([])` "to unblock the build". The Set was then
+   populated and nothing consumed it.
+5. Build succeeded. Everything the teacher had hidden went up on the class
+   site.
+
+Verified rather than reasoned about: `docker run --rm <image> grep -c
+CQ4T-OMIT-ANCHOR /opt/quartz/quartz.layout.ts` returned **0** before the fix
+and **2** after.
+
+### What changed
+
+- **The Dockerfile bakes it in**, right after `scripts/` is copied, by calling
+  `setup_course.ensure_quartz_explorer_anchor()` — the same function setup
+  uses, imported rather than copied so the two cannot drift — then asserting
+  the marker is present and mirroring the result into `/opt/quartz-site`. A
+  container now has the filter from birth.
+- **`build_site.py` repairs instead of papering over.** If the marker is
+  missing it injects the real anchored Explorer block (again the same function),
+  so containers predating the fix self-heal on the next build.
+- **A build that cannot establish the filter now REFUSES.** `sys.exit(1)`, with
+  a sentence saying why: anything hidden would otherwise be published. The old
+  behaviour — warn, continue, publish — is the thing that made this invisible
+  for as long as it was.
+
+### The rule worth keeping
+
+**Anything that decides whether students can see something belongs in the
+image, and its absence must stop a build.** Not in container state, which
+disappears; and never behind a warning, because the failure is silent and the
+consequence is a teacher's private notes on a public site. If a future change
+adds another such guard, it goes in the Dockerfile and it fails closed.
+
 ## Testing
 
 - The **PowerShell launchers are tested on real Windows** — all three have

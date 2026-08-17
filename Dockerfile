@@ -44,6 +44,26 @@ COPY scripts/build_site.py /opt/scripts/build_site.py
 COPY scripts/deploy.py /opt/scripts/deploy.py
 COPY scripts/social_card.py /opt/scripts/social_card.py
 
+# Bake the Explorer's hide filter into the image.
+#
+# The filter — a `filterFn` carrying the CQ4T-OMIT-ANCHOR marker — is what
+# makes a teacher's hidden pages actually hidden. `build_site.py` can only
+# rewrite the CONTENTS of the `omit` Set inside it; it cannot create the
+# filter. And `/opt/quartz` is the scaffold every section's site is copied
+# from, so if the filter is not here, it is not in the built site either.
+#
+# It used to be established only by `setup_course.py` patching the RUNNING
+# container at course-creation time. That made it container state rather than
+# image state, and any container recreation — which is the documented
+# behaviour whenever the recipe hash changes, i.e. after most toolchain
+# updates — silently threw it away. The next build then published every page
+# the teacher had hidden: Private Notes, Curriculum, Learning Goals. Baking it
+# here means a container has it from birth, and setup's identical patch
+# becomes a harmless no-op instead of the only source of truth.
+#
+# Same function, imported rather than copied, so the two cannot drift.
+RUN python3 -c "import sys; sys.path.insert(0, '/opt/scripts');     import setup_course; setup_course.ensure_quartz_explorer_anchor()"  && grep -q 'CQ4T-OMIT-ANCHOR' /opt/quartz/quartz.layout.ts  && cp /opt/quartz/quartz.layout.ts /opt/quartz-site/quartz.layout.ts
+
 # Copy course metadata lookup & other support files into container
 COPY support/ /opt/support/
 

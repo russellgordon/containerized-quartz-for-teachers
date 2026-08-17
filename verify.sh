@@ -206,6 +206,25 @@ check_baked support/Backlinks.tsx         /opt/support/Backlinks.tsx
 check_baked support/colour_schemes.json   /opt/support/colour_schemes.json
 [[ "$BAKED_OK" == "true" ]] && pass "Baked scripts, patches, and support files match the working tree"
 
+# -------------------- 4b. The hide filter must be IN THE IMAGE --------------------
+# The Explorer's filterFn is what makes a teacher's hidden pages hidden, and
+# build_site.py can only rewrite the omit Set inside it — never create it. It
+# used to be patched into a RUNNING container by setup_course.py, which meant
+# any container recreation silently published Private Notes, Curriculum and
+# Learning Goals. Asserted against the IMAGE on purpose: a check that ran in a
+# long-lived container would have passed throughout the whole time this was
+# broken.
+echo ""
+echo "🔎 Checking the Explorer's hide filter is baked into the image…"
+ANCHOR_OK="true"
+for layout in /opt/quartz/quartz.layout.ts /opt/quartz-site/quartz.layout.ts; do
+  if ! docker run --rm "$DEV_TEST_IMAGE" grep -q 'CQ4T-OMIT-ANCHOR' "$layout" 2>/dev/null; then
+    fail "The Explorer's hide filter is missing from $layout in the image — hidden pages would be published"
+    ANCHOR_OK="false"
+  fi
+done
+[[ "$ANCHOR_OK" == "true" ]] && pass "The Explorer's hide filter is baked into the image (both Quartz copies)"
+
 # -------------------- 5. Drive the real launcher against the image --------------------
 echo ""
 echo "🧹 Removing existing '$CONTAINER_NAME' container so the launcher recreates it"
