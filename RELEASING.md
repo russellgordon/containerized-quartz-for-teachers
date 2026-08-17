@@ -127,11 +127,26 @@ For future-you, mid-school-year, who remembers nothing. The whys are below.
    `python3 website/build.py --check` reports any page that still refers to a
    screenshot nobody has taken — run it before tagging.
 
-   Screenshots are captured from the real app and the real class sites by
-   `python3 website/shots/capture.py`, in both light and dark appearance. That
-   is NOT part of cutting a release: re-shoot when the interface has visibly
-   changed, look at the results, and commit them as their own change. See
-   `website/README.md`.
+   **The rebuild always happens; the SCREENSHOTS are a separate decision.**
+   The two jobs have opposite costs. Rebuilding is seconds and is what puts the
+   new version and the new download URLs on the page, so it happens every time.
+   Capturing screenshots drives the real app for the better part of an hour,
+   needs the Mac left alone, and briefly switches its appearance — so it is an
+   answer to a question, never automatic:
+
+       python3 website/shots/capture.py --app      # the app windows
+       python3 website/shots/capture.py --sites    # the class websites
+
+   Re-shoot when the interface a teacher SEES has visibly changed since the
+   last release, and only the half that changed. `git diff --stat <last-tag>..HEAD
+   -- mac-app/QuartzTeachers/Views support/example_content` answers that in one
+   line. Most releases need neither.
+
+   Commit new screenshots as their own change rather than folding them into the
+   release commit, so one that turns out wrong can be reverted without
+   unpicking the version bump. Do not run the bare `capture.py` with no flags
+   during a release — it also provisions courses and publishes the demo sites,
+   which is first-run setup. See `website/README.md`.
 
    Cutting the release also redraws the brand images and installs the card:
 

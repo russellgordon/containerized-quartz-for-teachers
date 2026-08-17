@@ -94,7 +94,45 @@ python3 website/build.py --check
    together. If `--check` reports a screenshot that has never been taken,
    stop and say so rather than publishing a page with a placeholder on
    it; `website/README.md` explains the capture run.
-2. Tag and release:
+
+   **This rebuild ALWAYS happens.** It is what puts the new version and
+   the new download URLs on the page, and it takes seconds.
+
+2. **Ask whether to re-shoot the screenshots. The default is no.**
+
+   Capturing them drives the real app for the better part of an hour,
+   needs the Mac left alone, and briefly switches the machine's
+   appearance. It is worth it when the interface a teacher sees has
+   visibly changed since the last release, and a waste of an hour when
+   it has not — most releases do not need it.
+
+   Help the user decide rather than making them guess. Look at what has
+   changed in the views since the last tag:
+
+```
+git diff --stat <last-tag>..HEAD -- mac-app/QuartzTeachers/Views   support/example_content
+```
+
+   Say what you find — "nothing under Views has changed since v1.2, so
+   the screenshots are still accurate" is an answer they can act on —
+   then ask. On a yes:
+
+```
+python3 website/shots/capture.py --app      # the app windows
+python3 website/shots/capture.py --sites    # the class websites
+```
+
+   Run only the half that changed: app-interface work needs `--app`,
+   changes to the example course content or to Quartz need `--sites`.
+   Look at the results before committing them, and commit them as their
+   own change rather than folding them into the release commit — a
+   screenshot that turns out wrong should be revertable without
+   unpicking the version bump.
+
+   Never run the bare `capture.py` with no flags during a release: it
+   also provisions courses and publishes the demo sites, which is
+   first-run setup rather than anything a release needs.
+3. Tag and release:
 
 ```
 git tag v<version>
