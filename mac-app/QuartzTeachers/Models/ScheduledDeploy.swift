@@ -272,9 +272,28 @@ enum ScheduledDeploy {
         //    finished in 144 seconds. Same files, same script, different
         //    caller.
         //
-        // Running the app's own signed binary fixes both: the notice names
-        // Plantoir, and a script the APP spawns is attributed to the app,
-        // which is exactly why pressing Deploy has always worked.
+        // Running the app's own signed binary fixes the second outright and
+        // the first as far as macOS allows.
+        //
+        // **What the notice actually says is the signing certificate's
+        // ORGANISATION — "Russell Gordon" — not "Plantoir", and that is Apple's
+        // design rather than a fault here.** Background Task Management lists
+        // background items by developer, which is why that pane shows "Google
+        // LLC" and "Dropbox, Inc." rather than Chrome and Dropbox. Verified
+        // against the certificate: `O=Russell Gordon`, and that is the string
+        // shown. It is a large improvement on "bash", which named nobody.
+        //
+        // **Getting the app's own name there would mean `SMAppService.agent`,
+        // and it cannot work here.** That API associates an agent with the app
+        // bundle, but only for a plist BAKED INTO the bundle at build time —
+        // and this plist's whole content is a `StartCalendarInterval` chosen
+        // by the teacher, one per course and section. A bundled plist cannot
+        // carry a time that changes. Rejected for that reason, not overlooked;
+        // do not propose it again without a way to express a per-section alarm.
+        //
+        // The permission half is what actually mattered: a script the APP
+        // spawns is attributed to the app, which is exactly why pressing
+        // Deploy has always worked.
         plist["ProgramArguments"] = [
             Bundle.main.executableURL?.path ?? "/bin/bash",
             runFlag,
