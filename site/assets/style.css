@@ -296,6 +296,17 @@ ol.steps li::before {
   text-align: center;
 }
 
+/* Platform-specific screenshots: show Windows shots to Windows visitors and macOS shots to others */
+.shot-platform-windows {
+  display: none;
+}
+html.is-windows .shot-platform-mac {
+  display: none;
+}
+html.is-windows .shot-platform-windows {
+  display: block;
+}
+
 .shot img {
   max-width: 100%;
   height: auto;

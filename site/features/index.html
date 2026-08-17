@@ -32,7 +32,12 @@
 
 <link rel="icon" href="../icon.png">
 <link rel="apple-touch-icon" href="../icon.png">
-
+<script>
+(function() {
+  var isWin = /Win/i.test(navigator.platform || (navigator.userAgentData && navigator.userAgentData.platform) || navigator.userAgent);
+  if (isWin) document.documentElement.classList.add('is-windows');
+})();
+</script>
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 
@@ -100,13 +105,23 @@
       <p>It costs nothing and the source is public. Nothing about your course depends on a company's plans for its product.</p>
     </div>
   </div>
-  <figure class="shot">
+  <figure class="shot shot-platform-mac">
     <picture>
       <source srcset="../img/courses-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
       <source srcset="../img/courses-dark.png" media="(prefers-color-scheme: dark)">
       <source srcset="../img/courses-light.webp" type="image/webp">
       <img src="../img/courses-light.png" alt="The Plantoir window listing three courses in a sidebar, with one section open beside it."
            width="850" height="580" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>Every course and every class section, in one window.</figcaption>
+</figure>
+<figure class="shot shot-platform-windows">
+    <picture>
+      <source srcset="../img/courses-windows-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/courses-windows-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/courses-windows-light.webp" type="image/webp">
+      <img src="../img/courses-windows-light.png" alt="The Plantoir window listing three courses in a sidebar, with one section open beside it."
+           width="850" height="531" loading="lazy" decoding="async">
     </picture>
     <figcaption>Every course and every class section, in one window.</figcaption>
 </figure>
@@ -118,13 +133,23 @@
   <h2>Adding a course</h2>
   <p>A course code is enough to start.</p>
   <p>If ready-made material exists for that code, the pages, folders and curriculum expectations arrive in one step. If it doesn't, you get an outline that suits the subject — a drama course opens with conventions and warm-ups, a chemistry course with investigations and lab safety.</p>
-  <figure class="shot">
+  <figure class="shot shot-platform-mac">
     <picture>
       <source srcset="../img/new-course-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
       <source srcset="../img/new-course-dark.png" media="(prefers-color-scheme: dark)">
       <source srcset="../img/new-course-light.webp" type="image/webp">
       <img src="../img/new-course-light.png" alt="The new course panel, with a course code entered and a summary of the pages about to be created."
            width="850" height="580" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>Adding a course takes one panel and about a minute.</figcaption>
+</figure>
+<figure class="shot shot-platform-windows">
+    <picture>
+      <source srcset="../img/new-course-windows-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/new-course-windows-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/new-course-windows-light.webp" type="image/webp">
+      <img src="../img/new-course-windows-light.png" alt="The new course panel, with a course code entered and a summary of the pages about to be created."
+           width="850" height="531" loading="lazy" decoding="async">
     </picture>
     <figcaption>Adding a course takes one panel and about a minute.</figcaption>
 </figure>
@@ -256,13 +281,23 @@
   <h2>You can just ask</h2>
   <p>An assistant runs on your own computer, as part of the app. "Publish Thursday's class for section 2." "Hide Unit 4, Day 12 — we didn't get to it." "What would students see right now?"</p>
   <p>It tells you what it's about to do and waits for you to say go. Nothing you write is sent anywhere, there's no account and no cost per request, and you can leave it switched off entirely.</p>
-  <figure class="shot">
+  <figure class="shot shot-platform-mac">
     <picture>
       <source srcset="../img/assistant-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
       <source srcset="../img/assistant-dark.png" media="(prefers-color-scheme: dark)">
       <source srcset="../img/assistant-light.webp" type="image/webp">
       <img src="../img/assistant-light.png" alt="The assistant window: a request typed in plain English, and the assistant describing what it is about to change with a button to approve it."
            width="560" height="940" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>It says what it will do, then waits.</figcaption>
+</figure>
+<figure class="shot shot-platform-windows">
+    <picture>
+      <source srcset="../img/assistant-windows-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/assistant-windows-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/assistant-windows-light.webp" type="image/webp">
+      <img src="../img/assistant-windows-light.png" alt="The assistant window: a request typed in plain English, and the assistant describing what it is about to change with a button to approve it."
+           width="560" height="760" loading="lazy" decoding="async">
     </picture>
     <figcaption>It says what it will do, then waits.</figcaption>
 </figure>

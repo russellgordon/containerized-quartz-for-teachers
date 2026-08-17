@@ -32,7 +32,12 @@
 
 <link rel="icon" href="{{up}}icon.png">
 <link rel="apple-touch-icon" href="{{up}}icon.png">
-
+<script>
+(function() {
+  var isWin = /Win/i.test(navigator.platform || (navigator.userAgentData && navigator.userAgentData.platform) || navigator.userAgent);
+  if (isWin) document.documentElement.classList.add('is-windows');
+})();
+</script>
 <link rel="stylesheet" href="{{up}}assets/style.css">
 </head>
 

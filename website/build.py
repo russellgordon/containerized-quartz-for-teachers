@@ -36,6 +36,13 @@ import struct
 import sys
 from pathlib import Path
 
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 WEBSITE = Path(__file__).resolve().parent
 REPO = WEBSITE.parent
 OUTPUT = REPO / "site"
@@ -113,6 +120,8 @@ def picture_element(shot: dict, problems: list[str], modifier: str, up: str) -> 
 
     light = IMAGE_DIR / f"{identifier}-light.png"
     dark = IMAGE_DIR / f"{identifier}-dark.png"
+    win_light = IMAGE_DIR / f"{identifier}-windows-light.png"
+    win_dark = IMAGE_DIR / f"{identifier}-windows-dark.png"
 
     classes = "shot"
     if modifier:
@@ -132,38 +141,43 @@ def picture_element(shot: dict, problems: list[str], modifier: str, up: str) -> 
             f'</figure>'
         )
 
-    width, height = png_size(light)
-    # The captures are taken on a Retina display, so the pixels are twice the
-    # size the page should reserve. Halving keeps the layout honest.
-    display_width = width // 2
-    display_height = height // 2
+    def render_figure(prefix: str, light_img: Path, dark_img: Path, extra_class: str) -> str:
+        width, height = png_size(light_img)
+        # The captures are taken at 2x resolution, so halving keeps layout honest.
+        display_width = width // 2
+        display_height = height // 2
 
-    # A smaller WebP is written beside every capture. Offering it first saves
-    # a visitor roughly two thirds of the download; the PNG stays as the one
-    # the <img> falls back to, so nothing depends on WebP being understood.
-    sources: list[str] = []
-    for scheme, path in (("dark", dark), ("light", light)):
-        query = ' media="(prefers-color-scheme: dark)"' if scheme == "dark" else ""
-        if path.with_suffix(".webp").exists():
-            sources.append(
-                f'      <source srcset="{up}img/{identifier}-{scheme}.webp" '
-                f'type="image/webp"{query}>'
-            )
-        if scheme == "dark":
-            sources.append(
-                f'      <source srcset="{up}img/{identifier}-dark.png"{query}>'
-            )
-    joined = "\n".join(sources)
+        sources: list[str] = []
+        for scheme, path in (("dark", dark_img), ("light", light_img)):
+            query = ' media="(prefers-color-scheme: dark)"' if scheme == "dark" else ""
+            if path.with_suffix(".webp").exists():
+                sources.append(
+                    f'      <source srcset="{up}img/{prefix}{scheme}.webp" '
+                    f'type="image/webp"{query}>'
+                )
+            if scheme == "dark":
+                sources.append(
+                    f'      <source srcset="{up}img/{prefix}dark.png"{query}>'
+                )
+        joined = "\n".join(sources)
 
-    return (
-        f'<figure class="{classes}">\n'
-        f'    <picture>\n'
-        f'{joined}\n'
-        f'      <img src="{up}img/{identifier}-light.png" alt="{shot["alt"]}"\n'
-        f'           width="{display_width}" height="{display_height}" loading="lazy" decoding="async">\n'
-        f'    </picture>{caption_html}\n'
-        f'</figure>'
-    )
+        fig_classes = f"{classes} {extra_class}".strip()
+        return (
+            f'<figure class="{fig_classes}">\n'
+            f'    <picture>\n'
+            f'{joined}\n'
+            f'      <img src="{up}img/{prefix}light.png" alt="{shot["alt"]}"\n'
+            f'           width="{display_width}" height="{display_height}" loading="lazy" decoding="async">\n'
+            f'    </picture>{caption_html}\n'
+            f'</figure>'
+        )
+
+    if win_light.exists() and win_dark.exists():
+        mac_fig = render_figure(f"{identifier}-", light, dark, "shot-platform-mac")
+        win_fig = render_figure(f"{identifier}-windows-", win_light, win_dark, "shot-platform-windows")
+        return f"{mac_fig}\n{win_fig}"
+    else:
+        return render_figure(f"{identifier}-", light, dark, "")
 
 
 # ---------- Assembling ----------

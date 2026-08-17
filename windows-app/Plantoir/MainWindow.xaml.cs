@@ -21,6 +21,9 @@ public sealed partial class MainWindow : Window
     /// <summary>The sidebar pane, reachable from sibling views.</summary>
     public Views.SidebarPane SidebarPane => Sidebar;
 
+    /// <summary>Detail area presenter.</summary>
+    public ContentPresenter DetailPresenter => DetailHost;
+
     public MainWindow(string? folderPath, RememberedWindow? frame)
     {
         InitializeComponent();

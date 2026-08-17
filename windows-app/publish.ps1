@@ -51,6 +51,11 @@ Write-Host "Publishing Plantoir $version" -ForegroundColor Green
 dotnet publish Plantoir\Plantoir.csproj -c Release -r win-x64
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed" }
 $publishDir = "Plantoir\bin\Release\net9.0-windows10.0.19041.0\win-x64\publish"
+$pri = "Plantoir\bin\Release\net9.0-windows10.0.19041.0\win-x64\Plantoir.pri"
+if (Test-Path $pri) {
+    Copy-Item $pri "$publishDir\resources.pri" -Force
+    Copy-Item $pri "$publishDir\Plantoir.pri" -Force
+}
 
 # ---- The MCP server, into the same folder -----------------------------------
 # A second binary, deliberately: Claude Code launches plantoir-mcp.exe itself,

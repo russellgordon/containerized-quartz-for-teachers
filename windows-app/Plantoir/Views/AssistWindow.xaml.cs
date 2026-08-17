@@ -487,6 +487,11 @@ public sealed partial class AssistWindow : Window
         }
     }
 
+    public void AddStagedBubbleForCapture(string speaker, bool fromTeacher, params UIElement[] contents)
+    {
+        AddCard(speaker, contents);
+    }
+
     /// <summary>
     /// The one place a turn is built, so every bubble is the same bubble.
     ///

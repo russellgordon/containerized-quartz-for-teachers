@@ -180,6 +180,12 @@ public sealed class NewCourseDialog : ContentDialog
         Opened += (_, _) => _ = StartCreation();
     }
 
+    public void StageForCapture(string code, string? sections = null)
+    {
+        _codeBox.Text = code;
+        if (sections is not null) _sectionsBox.Text = sections;
+    }
+
     /// <summary>
     /// The Create button stays disabled until there is enough to make a course:
     /// a spaceless, non-duplicate code and a valid section-numbers list (issue 2).

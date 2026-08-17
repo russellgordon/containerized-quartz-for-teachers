@@ -14,12 +14,49 @@ public partial class App : Application
 
     public App()
     {
+        AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+        {
+            try { File.WriteAllText("C:\\Users\\lenov\\Desktop\\Developer\\containerized-quartz-for-teachers\\crash.txt", $"Unhandled: {e.ExceptionObject}"); } catch { }
+        };
+        UnhandledException += (s, e) =>
+        {
+            try { File.WriteAllText("C:\\Users\\lenov\\Desktop\\Developer\\containerized-quartz-for-teachers\\crash.txt", $"XAML Unhandled: {e.Message}\nHR: 0x{e.Exception?.HResult:X8}\n{e.Exception}"); } catch { }
+        };
         InitializeComponent();
+        try
+        {
+            File.WriteAllText("C:\\Users\\lenov\\Desktop\\Developer\\containerized-quartz-for-teachers\\launch.txt", $"App initialized: {string.Join(" | ", Environment.GetCommandLineArgs())}");
+        }
+        catch { }
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         Settings = AppSettings.Load();
+
+        string rawArgs = args.Arguments ?? "";
+        string[] cmdArgs = Environment.GetCommandLineArgs();
+        string outputDir = "";
+
+        int shotIdx = Array.IndexOf(cmdArgs, "--capture-marketing-shots");
+        if (shotIdx >= 0 && shotIdx + 1 < cmdArgs.Length)
+        {
+            outputDir = cmdArgs[shotIdx + 1];
+        }
+        else if (rawArgs.Contains("--capture-marketing-shots"))
+        {
+            string[] parts = rawArgs.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            int idx = Array.IndexOf(parts, "--capture-marketing-shots");
+            if (idx >= 0 && idx + 1 < parts.Length) outputDir = parts[idx + 1].Trim('"');
+        }
+
+        if (!string.IsNullOrEmpty(outputDir))
+        {
+            var bootstrapWindow = new MainWindow(null, null);
+            bootstrapWindow.Activate();
+            _ = MarketingShotCapturer.RunAsync(outputDir);
+            return;
+        }
 
         // Windows has no system restoration: the remembered list is the
         // mechanism. Replay it when the preference asks; otherwise one

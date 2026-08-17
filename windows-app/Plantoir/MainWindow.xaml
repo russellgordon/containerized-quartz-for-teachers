@@ -21,21 +21,13 @@
         <!-- Menu bar: File and Preview commands act on this window. -->
         <MenuBar Grid.Row="0" x:Name="AppMenuBar">
             <MenuBarItem Title="File">
-                <MenuFlyoutItem x:Name="OpenWorkingFolderItem" Text="Open Working Folder…" Click="OpenWorkingFolder_Click">
-                    <MenuFlyoutItem.KeyboardAcceleratorTextOverride>Ctrl+O</MenuFlyoutItem.KeyboardAcceleratorTextOverride>
-                </MenuFlyoutItem>
-                <MenuFlyoutItem x:Name="NewWindowItem" Text="New Window" Click="NewWindow_Click">
-                    <MenuFlyoutItem.KeyboardAcceleratorTextOverride>Ctrl+N</MenuFlyoutItem.KeyboardAcceleratorTextOverride>
-                </MenuFlyoutItem>
+                <MenuFlyoutItem x:Name="OpenWorkingFolderItem" Text="Open Working Folder…" Click="OpenWorkingFolder_Click" KeyboardAcceleratorTextOverride="Ctrl+O" />
+                <MenuFlyoutItem x:Name="NewWindowItem" Text="New Window" Click="NewWindow_Click" KeyboardAcceleratorTextOverride="Ctrl+N" />
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem x:Name="RestoreFromArchiveItem" Text="Restore from Archive…" Click="RestoreFromArchive_Click" IsEnabled="False" />
-                <MenuFlyoutItem x:Name="ReloadCoursesItem" Text="Reload Courses" Click="ReloadCourses_Click">
-                    <MenuFlyoutItem.KeyboardAcceleratorTextOverride>Ctrl+Shift+R</MenuFlyoutItem.KeyboardAcceleratorTextOverride>
-                </MenuFlyoutItem>
+                <MenuFlyoutItem x:Name="ReloadCoursesItem" Text="Reload Courses" Click="ReloadCourses_Click" KeyboardAcceleratorTextOverride="Ctrl+Shift+R" />
                 <MenuFlyoutSeparator />
-                <MenuFlyoutItem x:Name="SettingsItem" Text="Settings…" Click="Settings_Click">
-                    <MenuFlyoutItem.KeyboardAcceleratorTextOverride>Ctrl+,</MenuFlyoutItem.KeyboardAcceleratorTextOverride>
-                </MenuFlyoutItem>
+                <MenuFlyoutItem x:Name="SettingsItem" Text="Settings…" Click="Settings_Click" KeyboardAcceleratorTextOverride="Ctrl+," />
             </MenuBarItem>
             <MenuBarItem Title="Help">
                 <MenuFlyoutItem Text="Report a Problem…" Click="ReportProblem_Click" />
@@ -72,15 +64,15 @@
             <BreadcrumbBar x:Name="FolderCrumbs" Grid.Column="1" VerticalAlignment="Center"
                            ItemClicked="FolderCrumbs_ItemClicked" AutomationProperties.AutomationId="windowPathBar">
                 <BreadcrumbBar.ItemTemplate>
-                    <DataTemplate x:DataType="models:FolderCrumb">
-                        <BreadcrumbBarItem ToolTipService.ToolTip="{x:Bind Path}">
+                    <DataTemplate>
+                        <BreadcrumbBarItem ToolTipService.ToolTip="{Binding Path}">
                             <BreadcrumbBarItem.ContextFlyout>
                                 <MenuFlyout>
                                     <MenuFlyoutItem Text="Show in File Explorer" Click="CrumbShowInExplorer_Click" />
                                     <MenuFlyoutItem Text="Open Folder" Click="CrumbOpenFolder_Click" />
                                 </MenuFlyout>
                             </BreadcrumbBarItem.ContextFlyout>
-                            <TextBlock Text="{x:Bind DisplayName}" DoubleTapped="Crumb_DoubleTapped" />
+                            <TextBlock Text="{Binding DisplayName}" DoubleTapped="Crumb_DoubleTapped" />
                         </BreadcrumbBarItem>
                     </DataTemplate>
                 </BreadcrumbBar.ItemTemplate>

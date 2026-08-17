@@ -119,6 +119,13 @@ is what happened to the test-race item, sitting here for three days with
 "worth ten minutes to check" in the middle of it.
 
 
+- **Windows marketing screenshots & platform-conditional serving on plantoir.app** (Windows, 2026-08-17).
+  The Windows side implemented autonomous screenshot capture in `MarketingShotCapturer.cs` (`Plantoir.exe --capture-marketing-shots <dir>`) and `website/shots/capture_windows.py`.
+  The 5 app-window marketing shots (`courses`, `new-course`, `progress`, `preview`, `assistant`) are captured in Light and Dark mode at 2x HiDPI resolution, optimized with WebP companions into `site/img/`.
+  In `website/build.py`, `picture_element` outputs both Mac (`.shot-platform-mac`) and Windows (`.shot-platform-windows`) `<figure>` blocks when Windows variants exist.
+  `website/layout/base.html` detects Windows visitors via an inline `<script>` in `<head>` and toggles CSS class `is-windows` so Windows visitors see native Windows WinUI 3 screenshots while macOS visitors continue seeing native macOS SwiftUI screenshots.
+
+
 - **Cleanup that fails must not fail a test that passed** (Windows,
   2026-08-14, `0479d44`). An intermittent failure that never reproduced turned
   out to be 23 tests ending with a bare

@@ -32,7 +32,12 @@
 
 <link rel="icon" href="./icon.png">
 <link rel="apple-touch-icon" href="./icon.png">
-
+<script>
+(function() {
+  var isWin = /Win/i.test(navigator.platform || (navigator.userAgentData && navigator.userAgentData.platform) || navigator.userAgent);
+  if (isWin) document.documentElement.classList.add('is-windows');
+})();
+</script>
 <link rel="stylesheet" href="./assets/style.css">
 </head>
 
@@ -62,13 +67,23 @@
   <p class="tagline">Turns a folder of Markdown notes into a fast, searchable class website you own.</p>
 </header>
 
-<figure class="shot">
+<figure class="shot shot-platform-mac">
     <picture>
       <source srcset="./img/preview-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
       <source srcset="./img/preview-dark.png" media="(prefers-color-scheme: dark)">
       <source srcset="./img/preview-light.webp" type="image/webp">
       <img src="./img/preview-light.png" alt="The Plantoir window with a class website shown inside it, beside the list of courses and sections."
            width="850" height="580" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>The site, in the app, before anyone else has seen it.</figcaption>
+</figure>
+<figure class="shot shot-platform-windows">
+    <picture>
+      <source srcset="./img/preview-windows-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="./img/preview-windows-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="./img/preview-windows-light.webp" type="image/webp">
+      <img src="./img/preview-windows-light.png" alt="The Plantoir window with a class website shown inside it, beside the list of courses and sections."
+           width="850" height="531" loading="lazy" decoding="async">
     </picture>
     <figcaption>The site, in the app, before anyone else has seen it.</figcaption>
 </figure>
