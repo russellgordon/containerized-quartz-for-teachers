@@ -55,9 +55,12 @@ linked.
 ## Screenshots
 
 Every image on the site is captured from the real app and the real class
-sites, twice — once with the Mac in light appearance and once in dark. The
-pages then serve the right one with `<picture>`, so no JavaScript is involved
-and a visitor's choice is respected the moment the page loads.
+sites, twice — once in light appearance and once in dark. Screenshots are
+also **platform-aware**: Windows visitors see native Windows WinUI 3
+screenshots, while macOS/other visitors see native macOS SwiftUI screenshots.
+Full architecture and pipeline documentation is in [`SCREENSHOTS.md`](SCREENSHOTS.md).
+
+### Capturing on macOS
 
 ```bash
 python3 website/shots/capture.py            # everything
@@ -66,20 +69,23 @@ python3 website/shots/capture.py --sites    # just the class websites
 ```
 
 It provisions a demo working folder (`~/Teaching` by default) with three
-courses — ENG2D, MCV4U and SCH3U, chosen so that between them the class sites
-show prose, typeset mathematics and chemistry notation — by driving the app's
-own new-course panel. It then builds and publishes those sections, photographs
-the app through the marketing UI tests, photographs the published sites in
-Safari and on an iPhone in the Simulator, and rebuilds the pages.
+courses — ENG2D, MCV4U and SCH3U — by driving the app's own new-course panel.
+It then builds and publishes those sections, photographs the app through the
+marketing UI tests (`mac-app/Tests/QuartzTeachersUITests/MarketingScreenshotTests.swift`),
+photographs the published sites in Safari and on an iPhone in the Simulator, and
+rebuilds the pages.
 
-The first run takes a long time: it builds the site builder, three courses and
-three sites. Later runs reuse all of that, so a re-shoot after an interface
-change is minutes.
+### Capturing on Windows
 
-**The captures themselves are Swift**, in
-`mac-app/Tests/QuartzTeachersUITests/MarketingScreenshotTests.swift`. Each
-attachment is named for its id in `shots.json`; renaming one there without
-renaming it here leaves a placeholder on a published page.
+```powershell
+python website/shots/capture_windows.py
+```
+
+It autonomously launches `Plantoir.exe --capture-marketing-shots site/img`,
+provisions demo courses in `%TEMP%`, stages each view (`courses`, `new-course`,
+`progress`, `preview`, `assistant`) across both `ElementTheme.Light` and
+`ElementTheme.Dark`, captures 2x HiDPI `RenderTargetBitmap`s, generates WebP
+companions, and rebuilds the site.
 
 ### What it borrows and puts back
 

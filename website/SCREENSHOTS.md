@@ -1,0 +1,197 @@
+# Screenshots on plantoir.app
+
+How screenshots are captured, processed, and served across platforms on
+[plantoir.app](https://plantoir.app).
+
+---
+
+## 1. Overview & Architecture
+
+Every screenshot on plantoir.app is photographed directly from the real
+application and live Quartz class websites in both **Light** and **Dark**
+appearance — no synthetic mockups, placeholder illustrations, or headless
+browser approximations.
+
+Furthermore, **screenshots are platform-aware**:
+- Visitors browsing from a **Windows** computer see native Windows WinUI 3
+  screenshots.
+- Visitors browsing from **macOS**, iOS, Linux, or Android see native macOS
+  SwiftUI screenshots.
+
+```
+                  ┌────────────────────────────────────────┐
+                  │          website/shots.json            │
+                  │  (id, alt text, caption, shot type)    │
+                  └──────────────────┬─────────────────────┘
+                                     │
+             ┌───────────────────────┴───────────────────────┐
+             ▼                                               ▼
+   ┌───────────────────┐                           ┌───────────────────┐
+   │  macOS Capture    │                           │  Windows Capture  │
+   │  (capture.py)     │                           │(capture_windows.py│
+   │  XCUITest + Safari│                           │ Plantoir.exe CLI) │
+   └─────────┬─────────┘                           └─────────┬─────────┘
+             │                                               │
+             ▼                                               ▼
+   site/img/<id>-light.png                         site/img/<id>-windows-light.png
+   site/img/<id>-dark.png                          site/img/<id>-windows-dark.png
+   site/img/<id>-light.webp                        site/img/<id>-windows-light.webp
+   site/img/<id>-dark.webp                         site/img/<id>-windows-dark.webp
+             │                                               │
+             └───────────────────────┬───────────────────────┘
+                                     │
+                                     ▼
+                          ┌─────────────────────┐
+                          │  website/build.py   │
+                          │  (picture_element)  │
+                          └──────────┬──────────┘
+                                     │
+                     ┌───────────────┴───────────────┐
+                     ▼                               ▼
+       <figure class="...-mac">        <figure class="...-windows">
+       (Dark/Light <picture> & WebP)   (Dark/Light <picture> & WebP)
+```
+
+---
+
+## 2. The Capture Pipelines
+
+### macOS Capture (`website/shots/capture.py`)
+
+The macOS capture harness is driven by Python and Xcode UI tests:
+
+```bash
+python3 website/shots/capture.py            # captures app + published sites
+python3 website/shots/capture.py --app      # app windows only
+python3 website/shots/capture.py --sites    # class websites only
+```
+
+- **App Windows**: Photographed via `MarketingScreenshotTests.swift` in
+  `mac-app/Tests/QuartzTeachersUITests/`. Uses XCUITest's native window
+  screenshotting to preserve window geometry and transparent rounded corners.
+- **Class Sites**: Photographed in Safari on a real macOS display so native font
+  rasterization, scrollbars, and window chrome are preserved.
+- **Mobile View**: Photographed in the iOS Simulator using RocketSim to render
+  the authentic device bezel.
+- **Appearance Switching**: Machine appearance is toggled between Light and
+  Dark through AppleScript / System Events, and restored when complete.
+
+### Windows Capture (`website/shots/capture_windows.py`)
+
+The Windows capture harness is driven by Python and a built-in CLI mode in
+`Plantoir.exe`:
+
+```powershell
+python website/shots/capture_windows.py
+```
+
+Under the hood:
+1. **Autonomous Invocation**: Executes `Plantoir.exe --capture-marketing-shots <output-dir>`.
+2. **Demo Provisioning**: `MarketingShotCapturer.cs` (`windows-app/Plantoir/Services/MarketingShotCapturer.cs`)
+   creates an isolated demo workspace in `Path.Combine(Path.GetTempPath(), "PlantoirMarketingWorkspace")`
+   populated with `ENG2D`, `MCV4U`, and `SCH3U` from `support/example_content/`.
+3. **Staged Rendering**: For each appearance (`ElementTheme.Light` and `ElementTheme.Dark`),
+   the capturer configures and renders the exact visual states:
+   - `courses`: Main window with multi-course sidebar and Section 1 detail.
+   - `new-course`: `NewCourseDialog` populated with `ENG2D` and Ontario curriculum suggestions.
+   - `progress`: `TaskProgressView` demonstrating deploy milestone progression.
+   - `preview`: Live embedded Quartz preview container.
+   - `assistant`: 560×760 `AssistWindow` with prompt suggestion shelf, teacher/assistant message bubbles, and actionable plan card.
+4. **Direct WinUI 3 Capture**: Uses `RenderTargetBitmap` and `BitmapEncoder`
+   to render the visual tree at 2x HiDPI resolution directly to PNG files,
+   eliminating the need for desktop region cropping or OS-level theme changes.
+
+---
+
+## 3. Image Optimization & Format Strategy
+
+Every captured PNG is processed by `website/shots/images.py`:
+
+1. **Resolution & Sizing**:
+   - Captures are taken at 2x HiDPI resolution (e.g. 2560×1600 for a 1280×800 window).
+   - Images exceeding `WIDEST_WINDOW_PIXELS` (1700px) are scaled proportionally.
+   - HTML `<img width="..." height="...">` attributes are set to **half the pixel dimensions**,
+     reserving crisp 1x logical CSS dimensions while displaying sharp 2x bitmaps on high-DPI displays.
+2. **WebP Generation**:
+   - An optimized `.webp` file is generated beside every `.png`.
+   - WebP files reduce transfer payloads by ~60–70% compared to PNG.
+3. **Fallback Resiliency**:
+   - The `<picture>` element lists WebP `<source>` elements first, falling back to PNG `<img>`
+     tags for maximum client compatibility.
+
+---
+
+## 4. Platform-Conditional Serving
+
+### HTML Generation (`website/build.py`)
+
+When building the site, `picture_element()` in `website/build.py` inspects `site/img/`
+for platform variants. When both Mac and Windows screenshots exist for an ID, it renders
+two distinct `<figure>` blocks:
+
+```html
+<figure class="shot shot-platform-mac">
+    <picture>
+      <source srcset="./img/preview-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="./img/preview-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="./img/preview-light.webp" type="image/webp">
+      <img src="./img/preview-light.png" alt="..." width="850" height="580" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>The site, in the app, before anyone else has seen it.</figcaption>
+</figure>
+
+<figure class="shot shot-platform-windows">
+    <picture>
+      <source srcset="./img/preview-windows-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="./img/preview-windows-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="./img/preview-windows-light.webp" type="image/webp">
+      <img src="./img/preview-windows-light.png" alt="..." width="850" height="531" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>The site, in the app, before anyone else has seen it.</figcaption>
+</figure>
+```
+
+### Client-Side Platform Switching (`website/layout/base.html` & `website/assets/style.css`)
+
+1. **Zero-Flicker Detection**: An inline `<script>` in the `<head>` of `base.html` executes
+   before the DOM body is parsed:
+   ```javascript
+   (function() {
+     var isWin = /Win/i.test(navigator.platform || (navigator.userAgentData && navigator.userAgentData.platform) || navigator.userAgent);
+     if (isWin) document.documentElement.classList.add('is-windows');
+   })();
+   ```
+2. **CSS Rules**:
+   ```css
+   /* By default (macOS, Linux, mobile, or JS-disabled), show macOS screenshots */
+   .shot-platform-windows {
+     display: none;
+   }
+   /* On Windows visitors, show native Windows screenshots */
+   html.is-windows .shot-platform-mac {
+     display: none;
+   }
+   html.is-windows .shot-platform-windows {
+     display: block;
+   }
+   ```
+
+---
+
+## 5. Summary of Captured Assets
+
+| ID | Subject | macOS Files | Windows Files |
+|---|---|---|---|
+| `preview` | Main window with live Quartz preview | `preview-light.png/.webp`<br>`preview-dark.png/.webp` | `preview-windows-light.png/.webp`<br>`preview-windows-dark.png/.webp` |
+| `courses` | Main window course sidebar & detail | `courses-light.png/.webp`<br>`courses-dark.png/.webp` | `courses-windows-light.png/.webp`<br>`courses-windows-dark.png/.webp` |
+| `new-course` | New Course wizard / modal | `new-course-light.png/.webp`<br>`new-course-dark.png/.webp` | `new-course-windows-light.png/.webp`<br>`new-course-windows-dark.png/.webp` |
+| `progress` | Build / deploy milestone progress | `progress-light.png/.webp`<br>`progress-dark.png/.webp` | `progress-windows-light.png/.webp`<br>`progress-windows-dark.png/.webp` |
+| `assistant` | Local AI assistant conversation & cards | `assistant-light.png/.webp`<br>`assistant-dark.png/.webp` | `assistant-windows-light.png/.webp`<br>`assistant-windows-dark.png/.webp` |
+| `site-eng2d` | Rendered class website (English) | `site-eng2d-light.png/.webp`<br>`site-eng2d-dark.png/.webp` | *(Shared browser capture)* |
+| `site-mcv4u` | Rendered class website (Calculus math) | `site-mcv4u-light.png/.webp`<br>`site-mcv4u-dark.png/.webp` | *(Shared browser capture)* |
+| `site-sch3u` | Rendered class website (Chemistry) | `site-sch3u-light.png/.webp`<br>`site-sch3u-dark.png/.webp` | *(Shared browser capture)* |
+| `site-phone` | Rendered class website on iPhone | `site-phone-light.png/.webp`<br>`site-phone-dark.png/.webp` | *(Shared browser capture)* |
+| `coverage` | Curriculum expectation tag browser | `coverage-light.png/.webp`<br>`coverage-dark.png/.webp` | *(Shared browser capture)* |
+| `search` | Quartz live search popover | `search-light.png/.webp`<br>`search-dark.png/.webp` | *(Shared browser capture)* |
+| `colour-schemes`| 4 Quartz built-in colour palettes | `colour-schemes.png/.webp` | *(Shared static composite)* |
+| `light-and-dark`| Split light/dark class page composite | `light-and-dark.png/.webp` | *(Shared static composite)* |
