@@ -105,41 +105,63 @@ public static class MarketingShotCapturer
         }
         Directory.CreateDirectory(workspacePath);
 
-        string repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", ".."));
-        string exampleContentDir = Path.Combine(repoRoot, "support", "example_content");
-        if (!Directory.Exists(exampleContentDir))
-            exampleContentDir = Path.Combine(Directory.GetCurrentDirectory(), "support", "example_content");
+        // Marker launchers required for WorkspaceState.Ready
+        File.WriteAllText(Path.Combine(workspacePath, "preview.ps1"), "# Plantoir Launcher\n");
+        File.WriteAllText(Path.Combine(workspacePath, "preview.sh"), "#!/usr/bin/env bash\n");
+        File.WriteAllText(Path.Combine(workspacePath, "setup.ps1"), "# Plantoir Setup\n");
+        File.WriteAllText(Path.Combine(workspacePath, "deploy.ps1"), "# Plantoir Deploy\n");
+
+        string[] possibleRoots = new[]
+        {
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..")),
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..")),
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..")),
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..")),
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..")),
+            Directory.GetCurrentDirectory(),
+            @"C:\Users\lenov\Desktop\Developer\containerized-quartz-for-teachers"
+        };
+        string? foundRoot = possibleRoots.FirstOrDefault(r => Directory.Exists(Path.Combine(r, "support", "example_content")));
+        string exampleContentDir = foundRoot != null ? Path.Combine(foundRoot, "support", "example_content") : "";
 
         string coursesDir = Path.Combine(workspacePath, "courses");
         Directory.CreateDirectory(coursesDir);
 
-        foreach (string code in DemoCodes)
+        var demoMeta = new (string Code, string Name, string Scheme, string HFont, string BFont)[]
+        {
+            ("ENG2D", "Grade 10 English", "default", "serif", "sans-serif"),
+            ("MCV4U", "Grade 12 Calculus and Vectors", "forest", "sans-serif", "sans-serif"),
+            ("SCH3U", "Grade 11 Chemistry", "ocean", "sans-serif", "sans-serif")
+        };
+
+        foreach (var (code, defaultName, defaultScheme, defaultHFont, defaultBFont) in demoMeta)
         {
             string courseTarget = Path.Combine(coursesDir, code);
             Directory.CreateDirectory(courseTarget);
+            Directory.CreateDirectory(Path.Combine(courseTarget, "shared"));
+            Directory.CreateDirectory(Path.Combine(courseTarget, "section1"));
+            Directory.CreateDirectory(Path.Combine(courseTarget, "section2"));
 
-            string sourceDir = Path.Combine(exampleContentDir, code);
+            string sourceDir = !string.IsNullOrEmpty(exampleContentDir) ? Path.Combine(exampleContentDir, code) : "";
+            string courseName = defaultName;
+            string scheme = defaultScheme;
+            string hFont = defaultHFont;
+            string bFont = defaultBFont;
+
             if (Directory.Exists(sourceDir))
             {
                 string manifestPath = Path.Combine(sourceDir, "manifest.json");
                 if (File.Exists(manifestPath))
                 {
-                    var manifest = JObject.Parse(File.ReadAllText(manifestPath));
-                    var configObj = new JObject
+                    try
                     {
-                        ["course_name"] = manifest["course_name"]?.ToString() ?? code,
-                        ["course_code"] = code,
-                        ["section_count"] = 1,
-                        ["colour_scheme"] = manifest["colour_scheme"]?.ToString() ?? "default",
-                        ["header_font"] = manifest["header_font"]?.ToString() ?? "serif",
-                        ["body_font"] = manifest["body_font"]?.ToString() ?? "sans-serif",
-                        ["use_literal_grade_markers"] = false,
-                        ["use_lcs_terminology"] = false,
-                        ["deploy_target"] = "netlify",
-                        ["deploy_site_name"] = $"{code.ToLowerInvariant()}-gordon-2026-27"
-                    };
-                    var config = CourseConfiguration.FromDictionary(configObj);
-                    config.Write(Path.Combine(courseTarget, "course_config.json"));
+                        var manifest = JObject.Parse(File.ReadAllText(manifestPath));
+                        courseName = manifest["course_name"]?.ToString() ?? defaultName;
+                        scheme = manifest["colour_scheme"]?.ToString() ?? defaultScheme;
+                        hFont = manifest["header_font"]?.ToString() ?? defaultHFont;
+                        bFont = manifest["body_font"]?.ToString() ?? defaultBFont;
+                    }
+                    catch { }
                 }
 
                 string sharedSrc = Path.Combine(sourceDir, "shared");
@@ -148,8 +170,27 @@ public static class MarketingShotCapturer
 
                 string sectionSrc = Path.Combine(sourceDir, "per_section");
                 if (Directory.Exists(sectionSrc))
+                {
                     CopyDirectory(sectionSrc, Path.Combine(courseTarget, "section1"));
+                    CopyDirectory(sectionSrc, Path.Combine(courseTarget, "section2"));
+                }
             }
+
+            var configObj = new JObject
+            {
+                ["course_name"] = courseName,
+                ["course_code"] = code,
+                ["section_count"] = 2,
+                ["colour_scheme"] = scheme,
+                ["header_font"] = hFont,
+                ["body_font"] = bFont,
+                ["use_literal_grade_markers"] = false,
+                ["use_lcs_terminology"] = false,
+                ["deploy_target"] = "netlify",
+                ["deploy_site_name"] = $"{code.ToLowerInvariant()}-gordon-2026-27"
+            };
+            var config = CourseConfiguration.FromDictionary(configObj);
+            config.Write(Path.Combine(courseTarget, "course_config.json"));
         }
     }
 
@@ -190,19 +231,90 @@ public static class MarketingShotCapturer
         ConfigureWindow(window, 1280, 800, theme);
         window.Activate();
 
-        await Task.Delay(500);
+        await Task.Delay(600);
         window.Workspace.Selection = new SidebarSelection.CourseItem("ENG2D");
         await Task.Delay(400);
 
-        // Stage dialog for SBI3U matching macOS marketing test
-        var dialog = new NewCourseDialog(window) { XamlRoot = window.Content.XamlRoot };
+        var dialog = new NewCourseDialog(window);
         dialog.RequestedTheme = theme;
         dialog.StageForCapture("SBI3U", "1, 2");
-        _ = dialog.ShowAsync();
-        await Task.Delay(800);
 
+        var isDark = theme == ElementTheme.Dark;
+        var overlay = new Grid
+        {
+            Background = new SolidColorBrush(Windows.UI.Color.FromArgb(isDark ? (byte)140 : (byte)90, 0, 0, 0)),
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch
+        };
+
+        var dialogCard = new Border
+        {
+            Width = 540,
+            MaxHeight = 680,
+            Background = (Brush)Application.Current.Resources["SolidBackgroundFillColorBaseBrush"],
+            BorderBrush = (Brush)Application.Current.Resources["SurfaceStrokeColorDefaultBrush"],
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(24, 20, 24, 20),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        var dialogLayout = new Grid();
+        dialogLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        dialogLayout.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        dialogLayout.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        var titleBlock = new TextBlock
+        {
+            Text = "New Course",
+            FontSize = 20,
+            FontWeight = FontWeights.SemiBold,
+            Margin = new Thickness(0, 0, 0, 16)
+        };
+        Grid.SetRow(titleBlock, 0);
+        dialogLayout.Children.Add(titleBlock);
+
+        if (dialog.Content is FrameworkElement formContent)
+        {
+            dialog.Content = null;
+            Grid.SetRow(formContent, 1);
+            dialogLayout.Children.Add(formContent);
+        }
+
+        var buttonRow = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Spacing = 8,
+            Margin = new Thickness(0, 16, 0, 0)
+        };
+        var createBtn = new Button
+        {
+            Content = "Create",
+            Style = (Style)Application.Current.Resources["AccentButtonStyle"],
+            MinWidth = 80
+        };
+        var cancelBtn = new Button
+        {
+            Content = "Cancel",
+            MinWidth = 80
+        };
+        buttonRow.Children.Add(createBtn);
+        buttonRow.Children.Add(cancelBtn);
+        Grid.SetRow(buttonRow, 2);
+        dialogLayout.Children.Add(buttonRow);
+
+        dialogCard.Child = dialogLayout;
+        overlay.Children.Add(dialogCard);
+
+        if (window.Content is Grid rootGrid)
+        {
+            rootGrid.Children.Add(overlay);
+        }
+
+        await Task.Delay(800);
         await SaveWindowContentToPngAsync(window, outputPath);
-        dialog.Hide();
         window.Close();
     }
 
