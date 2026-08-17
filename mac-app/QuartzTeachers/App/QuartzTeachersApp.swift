@@ -26,6 +26,21 @@ struct QuartzTeachersApp: App {
             AssistMCPServer.serve(workingFolder: folder)
         }
 
+        // A scheduled deploy, fired by launchd. Checked before anything that
+        // puts a window on screen, and it never returns.
+        //
+        // The agent runs THIS binary rather than `/bin/bash` so that macOS can
+        // attribute the work: the Background Activity notice names Plantoir
+        // instead of "bash", and — the half that actually broke — a script the
+        // app spawns inherits the app's permission to read the teacher's
+        // files. A working folder on the Desktop is protected, and a bare
+        // launchd interpreter is granted nothing, so a real 9:49 PM deploy
+        // failed with "Operation not permitted" on every path while the same
+        // deploy from the app minutes earlier took 144 seconds and worked.
+        if let script = ScheduledDeploy.requestedScript(from: CommandLine.arguments) {
+            ScheduledDeploy.runScheduled(script: script)
+        }
+
         // Writing the contracts in `contracts/` is the other thing this binary
         // does without becoming an app. Same reasoning as the MCP server: the
         // files describe what the app SAYS, which tools it has, and what it

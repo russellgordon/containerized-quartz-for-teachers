@@ -158,12 +158,34 @@ final class ScheduledDeployTests: XCTestCase {
         XCTAssertEqual(reread["RunAtLoad"] as? Bool, false,
                        "Loading the agent must not deploy on the spot")
 
+        // **Launched through PLANTOIR, not through bash**, and the whole
+        // scheduled deploy depends on it. Reported by a teacher: a 9:49 PM
+        // deploy failed with "Operation not permitted" on every path — a
+        // launchd agent running a bare interpreter has no application
+        // identity, so macOS's privacy system grants it nothing, and a
+        // working folder on the Desktop is protected. The same deploy from
+        // the app minutes earlier took 144 seconds and worked.
+        //
+        // It also decides what macOS CALLS the thing: the Background Activity
+        // notice said `"bash" can run in the background`, which names none of
+        // the teacher's applications.
         let programArguments: [String] = try XCTUnwrap(reread["ProgramArguments"] as? [String])
         XCTAssertEqual(programArguments.count, 3)
-        XCTAssertEqual(programArguments[0], "/bin/bash")
-        XCTAssertEqual(programArguments[1], "-c")
+        XCTAssertFalse(programArguments[0].hasSuffix("/bash"),
+                       "A bare interpreter cannot read the teacher's files: \(programArguments[0])")
+        XCTAssertTrue(programArguments[0].contains("Plantoir"),
+                      "The agent must run the signed app: \(programArguments[0])")
+        XCTAssertEqual(programArguments[1], ScheduledDeploy.runFlag)
+        XCTAssertEqual(
+            programArguments[2],
+            ScheduledDeploy.scriptURL(courseCode: "ICS3U", sectionNumber: 1).path
+        )
 
-        let command: String = programArguments[2]
+        // The work itself is unchanged; it moved into a file the app runs.
+        let command: String = ScheduledDeploy.oneShotCommand(
+            courseCode: "ICS3U", sectionNumber: 1,
+            workspaceURL: workspaceURL, deployArguments: arguments
+        )
         let scriptPath: String = workspaceURL.appendingPathComponent("deploy.sh").path
         XCTAssertTrue(command.contains("'\(scriptPath)'"), "The agent runs this folder's own deploy.sh")
         XCTAssertTrue(command.contains(" 'ICS3U' '1'"), "The course code and section ride as separate arguments")
@@ -181,6 +203,49 @@ final class ScheduledDeployTests: XCTestCase {
         XCTAssertTrue((environment["PATH"] ?? "").contains("/opt/homebrew/bin"))
         XCTAssertNotNil(environment[ScheduledDeploy.scheduledForKey],
                         "StartCalendarInterval has no year, so the moment rides in the environment")
+    }
+
+    /// The flag the agent uses is read back the way the app reads it, and an
+    /// ordinary launch is not mistaken for one.
+    @MainActor
+    func testTheRunFlagIsRecognisedAndOrdinaryLaunchesAreNot() {
+        XCTAssertEqual(
+            ScheduledDeploy.requestedScript(from:
+                ["/Applications/Plantoir.app", ScheduledDeploy.runFlag, "/tmp/one.sh"]),
+            "/tmp/one.sh"
+        )
+        XCTAssertNil(ScheduledDeploy.requestedScript(from: ["/Applications/Plantoir.app"]))
+        // A flag with nothing after it must not be read as a request, or the
+        // app would try to run a script called nothing and never open.
+        XCTAssertNil(ScheduledDeploy.requestedScript(from: ["/x", ScheduledDeploy.runFlag]))
+    }
+
+    /// Scheduling writes the script the agent runs, and cancelling takes it
+    /// away — a cancelled deploy must not leave a runnable copy of itself.
+    @MainActor
+    func testTheScriptIsWrittenAndRemovedWithTheAlarm() throws {
+        try prepare()
+        let course: Course = try makeCourse()
+        let commandURL: URL = ScheduledDeploy.scriptURL(courseCode: course.code, sectionNumber: 1)
+        try? FileManager.default.removeItem(at: commandURL)
+
+        let runner: FakeLaunchControl = FakeLaunchControl()
+        XCTAssertNil(ScheduledDeploy.scheduleDeploy(
+            course: course, sectionNumber: 1, when: sixThirtyTomorrow(),
+            workspaceURL: workspaceURL, cloudflareAccountID: "", runner: runner
+        ))
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: commandURL.path),
+                      "The agent has nothing to run")
+        let written: String = try String(contentsOf: commandURL, encoding: .utf8)
+        XCTAssertTrue(written.hasPrefix("#!/bin/bash"), written)
+        XCTAssertTrue(written.contains("deploy.sh"), written)
+
+        ScheduledDeploy.cancelScheduledDeploy(
+            courseCode: course.code, sectionNumber: 1, runner: runner
+        )
+        XCTAssertFalse(FileManager.default.fileExists(atPath: commandURL.path),
+                       "A cancelled deploy left a runnable copy of itself behind")
     }
 
     func testTwoSectionsOfOneCourseGetDifferentAgents() throws {
@@ -381,11 +446,12 @@ final class ScheduledDeployTests: XCTestCase {
             course: course, sectionNumber: 1, when: sixThirtyTomorrow(),
             workspaceURL: workspaceURL, cloudflareAccountID: account, runner: launchControl
         )
-        let data: Data = try Data(contentsOf: ScheduledDeploy.plistURL(courseCode: "ICS3U", sectionNumber: 1))
-        let plist: [String: Any] = try XCTUnwrap(
-            try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
+        // The command moved out of the plist and into the script the app
+        // runs, so it is read from where it now lives.
+        let command: String = try String(
+            contentsOf: ScheduledDeploy.scriptURL(courseCode: "ICS3U", sectionNumber: 1),
+            encoding: .utf8
         )
-        let command: String = try XCTUnwrap((plist["ProgramArguments"] as? [String])?.last)
         XCTAssertTrue(command.contains("'--target' 'cloudflare'"))
         XCTAssertTrue(command.contains("'--account' '\(account)'"),
                       "The agent carries the account, so nothing is asked at half six")

@@ -60,6 +60,32 @@ enum ScheduledDeploy {
         return result.isEmpty ? "COURSE" : result
     }
 
+    /// Where this section's one-shot script is written.
+    ///
+    /// A file rather than a line inside the plist, because launchd no longer
+    /// runs it directly — see `agentPlist` for why. The app runs this file.
+    static func scriptURL(courseCode: String, sectionNumber: Int) -> URL {
+        let label: String = agentLabel(courseCode: courseCode, sectionNumber: sectionNumber)
+        return FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library")
+            .appendingPathComponent("Application Support")
+            .appendingPathComponent("Plantoir")
+            .appendingPathComponent("scheduled")
+            .appendingPathComponent("\(label).sh")
+    }
+
+    /// The flag the agent launches the app with.
+    nonisolated static let runFlag: String = "--run-scheduled-deploy"
+
+    /// The script a `--run-scheduled-deploy` invocation should run, or nil
+    /// when this is an ordinary launch.
+    nonisolated static func requestedScript(from arguments: [String]) -> String? {
+        guard let index = arguments.firstIndex(of: runFlag), index + 1 < arguments.count else {
+            return nil
+        }
+        return arguments[index + 1]
+    }
+
     /// Where this section's agent is written. `~/Library/LaunchAgents` is
     /// the teacher's own folder — no administrator rights, and nothing of
     /// ours outside it.
@@ -227,15 +253,32 @@ enum ScheduledDeploy {
 
         var plist: [String: Any] = [:]
         plist["Label"] = label
+        // **Launched through PLANTOIR, not through bash, and this is the
+        // whole reason a scheduled deploy works at all.**
+        //
+        // It used to be `/bin/bash -c <script>`, which failed in two ways at
+        // once, both reported by a teacher on the same evening:
+        //
+        // 1. **macOS could not name it.** The Background Activity notice said
+        //    `"bash" can run in the background`, which tells somebody nothing
+        //    about which of their applications asked for it, and reads like
+        //    something that should be turned off.
+        // 2. **It had no permission to read the teacher's files.** A launchd
+        //    agent running a bare interpreter has no application identity, so
+        //    macOS's privacy system grants it nothing — and a working folder
+        //    on the Desktop is protected. The log from a real 9:49 PM run is
+        //    `Operation not permitted` on every path, including `getcwd`,
+        //    while the identical deploy from the app seven minutes earlier
+        //    finished in 144 seconds. Same files, same script, different
+        //    caller.
+        //
+        // Running the app's own signed binary fixes both: the notice names
+        // Plantoir, and a script the APP spawns is attributed to the app,
+        // which is exactly why pressing Deploy has always worked.
         plist["ProgramArguments"] = [
-            "/bin/bash",
-            "-c",
-            oneShotCommand(
-                courseCode: courseCode,
-                sectionNumber: sectionNumber,
-                workspaceURL: workspaceURL,
-                deployArguments: deployArguments
-            ),
+            Bundle.main.executableURL?.path ?? "/bin/bash",
+            runFlag,
+            scriptURL(courseCode: courseCode, sectionNumber: sectionNumber).path,
         ]
         plist["StartCalendarInterval"] = schedule
         plist["WorkingDirectory"] = workspaceURL.path
@@ -392,6 +435,27 @@ enum ScheduledDeploy {
         runner.bootOut(label: agentLabel(courseCode: course.code, sectionNumber: sectionNumber))
 
         do {
+            // The script the app will run, written beside nothing else and
+            // executable, so launchd's job is only "start Plantoir with this
+            // file" and every decision stays in one place.
+            let commandURL: URL = ScheduledDeploy.scriptURL(
+                courseCode: course.code, sectionNumber: sectionNumber
+            )
+            try FileManager.default.createDirectory(
+                at: commandURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+            let command: String = "#!/bin/bash\n" + oneShotCommand(
+                courseCode: course.code,
+                sectionNumber: sectionNumber,
+                workspaceURL: workspaceURL,
+                deployArguments: deployArguments
+            ) + "\n"
+            try command.write(to: commandURL, atomically: true, encoding: .utf8)
+            try FileManager.default.setAttributes(
+                [.posixPermissions: 0o755], ofItemAtPath: commandURL.path
+            )
+
             try FileManager.default.createDirectory(
                 at: launchAgentsDirectoryURL(),
                 withIntermediateDirectories: true
@@ -413,6 +477,31 @@ enum ScheduledDeploy {
         return nil
     }
 
+    /// Run the one-shot script and leave, without ever becoming an app.
+    ///
+    /// Never returns. Same shape as `AssistMCPServer.serve` for the same
+    /// reason: a process launched to do one job must not put a window on
+    /// screen, register fonts, or touch the teacher's saved window state.
+    ///
+    /// Output is not captured here — launchd already points the agent's
+    /// stdout and stderr at the section's log, and this process inherits
+    /// them, so the script's own output lands where it always did.
+    nonisolated static func runScheduled(script: String) -> Never {
+        let process: Process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/bash")
+        process.arguments = [script]
+        do {
+            try process.run()
+            process.waitUntilExit()
+            exit(process.terminationStatus)
+        } catch {
+            FileHandle.standardError.write(Data(
+                "Plantoir could not run the scheduled deploy: \(error.localizedDescription)\n".utf8
+            ))
+            exit(1)
+        }
+    }
+
     /// Takes the alarm off. Returns nil on success.
     @discardableResult
     static func cancelScheduledDeploy(
@@ -422,6 +511,11 @@ enum ScheduledDeploy {
     ) -> String? {
         let destinationURL: URL = plistURL(courseCode: courseCode, sectionNumber: sectionNumber)
         runner.bootOut(label: agentLabel(courseCode: courseCode, sectionNumber: sectionNumber))
+        // The script goes with the alarm. A cancelled deploy that left its
+        // command behind would leave a runnable copy of itself on disk.
+        try? FileManager.default.removeItem(
+            at: scriptURL(courseCode: courseCode, sectionNumber: sectionNumber)
+        )
         if FileManager.default.fileExists(atPath: destinationURL.path) {
             do {
                 try FileManager.default.removeItem(at: destinationURL)
