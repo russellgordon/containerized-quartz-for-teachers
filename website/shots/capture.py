@@ -137,8 +137,15 @@ class RememberedWindowFrames:
 
 # ---------- The UI tests ----------
 
-def run_ui_test(test_identifier: str, workspace: Path, label: str) -> Path:
-    """Run one marketing UI test and return its result bundle."""
+def run_ui_test(test_identifier: str, workspace: Path, label: str,
+                allow_failure: bool = False) -> Path:
+    """Run one marketing UI test and return its result bundle.
+
+    With ``allow_failure`` the bundle is returned even when a test failed. The
+    captures are independent of one another, and a run where the assistant was
+    slow to start should still deliver the five shots that did work rather
+    than throwing them away with the sixth.
+    """
     bundle = SCRATCH / f"{label}.xcresult"
     if bundle.exists():
         shutil.rmtree(bundle)
@@ -168,9 +175,14 @@ def run_ui_test(test_identifier: str, workspace: Path, label: str) -> Path:
         text=True,
     )
     if result.returncode != 0:
-        tail = "\n".join(result.stdout.splitlines()[-40:])
-        print(tail, file=sys.stderr)
-        raise SystemExit(f"The UI test {test_identifier} failed.")
+        failures = [line for line in result.stdout.splitlines() if " error: " in line]
+        for line in failures[:10]:
+            print(f"   ✗ {line.strip()}", file=sys.stderr)
+        if not failures:
+            print("\n".join(result.stdout.splitlines()[-30:]), file=sys.stderr)
+        if not allow_failure:
+            raise SystemExit(f"The UI test {test_identifier} failed.")
+        print(f"   Some captures failed; keeping the ones that worked.", file=sys.stderr)
     return bundle
 
 
@@ -382,6 +394,7 @@ def capture_app(workspace: Path) -> None:
                     "QuartzTeachersUITests/MarketingScreenshots",
                     workspace,
                     f"app-{suffix}",
+                    allow_failure=True,
                 )
             saved = export_attachments(bundle, suffix)
             print(f"   saved {len(saved)} image(s): {', '.join(saved)}")
