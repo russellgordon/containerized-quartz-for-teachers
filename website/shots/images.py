@@ -12,12 +12,43 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 # Twice the widest the page ever draws each kind of shot, so a Retina screen
 # still gets a pixel per pixel and nobody downloads more than that.
 WIDEST_WINDOW_PIXELS = 1700
 WIDEST_PHONE_PIXELS = 720
+
+
+# macOS rounds a window's corners, and a window screenshot bakes those curves
+# against whatever was behind them — which comes out as opaque BLACK specks at
+# all four corners, invisible on a dark page and obvious on a light one. The
+# radius is in points; it is scaled to the capture below.
+WINDOW_CORNER_RADIUS_POINTS = 11
+
+
+def mask_window_corners(path: Path, width_in_points: int) -> Path:
+    """Make a window capture's four corners transparent.
+
+    The same result `screencapture -o` gives for a window: the window alone,
+    no shadow, and nothing of the desktop caught in the curve of a corner. A
+    hair more than the true radius is taken, because the pixels just inside
+    the arc are blended with the background too and a one-pixel dark fringe
+    is just as visible as the corner itself.
+    """
+    with Image.open(path) as opened:
+        image = opened.convert("RGBA")
+
+    scale = max(1, round(image.width / width_in_points)) if width_in_points else 2
+    radius = WINDOW_CORNER_RADIUS_POINTS * scale + scale
+
+    mask = Image.new("L", image.size, 0)
+    ImageDraw.Draw(mask).rounded_rectangle(
+        [(0, 0), (image.width - 1, image.height - 1)], radius=radius, fill=255
+    )
+    image.putalpha(mask)
+    image.save(path, format="PNG")
+    return path
 
 
 def prepare(path: Path, widest: int = WIDEST_WINDOW_PIXELS) -> Path:

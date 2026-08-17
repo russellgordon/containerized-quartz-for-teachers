@@ -102,6 +102,15 @@ def png_size(path: Path) -> tuple[int, int]:
 def picture_element(shot: dict, problems: list[str], modifier: str, up: str) -> str:
     """The <picture> for one screenshot, or a placeholder when it is missing."""
     identifier = shot["id"]
+
+    # A STATIC shot is one image that does not follow the visitor's colour
+    # scheme, because the colours in it are the subject. A figure showing what
+    # three different courses look like, or that a built site does both light
+    # and dark, would be arguing against itself if it changed to match the
+    # reader's own setting.
+    if shot.get("static"):
+        return static_element(shot, problems, modifier, up)
+
     light = IMAGE_DIR / f"{identifier}-light.png"
     dark = IMAGE_DIR / f"{identifier}-dark.png"
 
@@ -158,6 +167,44 @@ def picture_element(shot: dict, problems: list[str], modifier: str, up: str) -> 
 
 
 # ---------- Assembling ----------
+
+def static_element(shot: dict, problems: list[str], modifier: str, up: str) -> str:
+    """One image, served to everybody, whatever their colour scheme."""
+    identifier = shot["id"]
+    source = IMAGE_DIR / f"{identifier}.png"
+
+    classes = "shot shot-static"
+    if modifier:
+        classes = f"shot shot-static shot-{modifier}"
+
+    caption = shot.get("caption", "")
+    caption_html = f"\n    <figcaption>{caption}</figcaption>" if caption else ""
+
+    if not source.exists():
+        problems.append(f"screenshot '{identifier}' has not been captured yet")
+        return (
+            f'<figure class="{classes}">\n'
+            f'    <div class="shot-missing">Screenshot pending: {identifier}</div>'
+            f'{caption_html}\n'
+            f'</figure>'
+        )
+
+    width, height = png_size(source)
+    webp = source.with_suffix(".webp")
+    webp_source = ""
+    if webp.exists():
+        webp_source = f'      <source srcset="{up}img/{identifier}.webp" type="image/webp">\n'
+
+    return (
+        f'<figure class="{classes}">\n'
+        f'    <picture>\n'
+        f'{webp_source}'
+        f'      <img src="{up}img/{identifier}.png" alt="{shot["alt"]}"\n'
+        f'           width="{width // 2}" height="{height // 2}" loading="lazy" decoding="async">\n'
+        f'    </picture>{caption_html}\n'
+        f'</figure>'
+    )
+
 
 SHOT_TOKEN = re.compile(r"\{\{shot:([a-z0-9-]+)(?:\|([a-z-]+))?\}\}")
 
@@ -256,6 +303,7 @@ def build(check_only: bool) -> int:
 
     site_values = {
         "site_name": site["name"],
+        "headline": site["headline"],
         "tagline": site["tagline"],
         "base_url": site["base_url"],
         "repo_url": site["repo_url"],

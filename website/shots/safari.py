@@ -112,6 +112,22 @@ class SafariWindow:
         )
         time.sleep(settle_seconds)
 
+    def press(self, keystroke: str, using: str = "") -> None:
+        """Send a keystroke to the front window through System Events.
+
+        Safari's own AppleScript vocabulary cannot type into a page, and
+        running JavaScript from an Apple Event is off by default and cannot be
+        turned on programmatically. System Events can, which is how the search
+        panel gets opened and typed into.
+        """
+        modifier = f" using {using}" if using else ""
+        osascript(
+            f'tell application "Safari" to activate\n'
+            f'delay 0.4\n'
+            f'tell application "System Events" to keystroke "{keystroke}"{modifier}'
+        )
+        time.sleep(1.0)
+
     def capture(self, destination: Path) -> Path:
         """Save the window, corners rounded, at the display's own resolution."""
         destination.parent.mkdir(parents=True, exist_ok=True)

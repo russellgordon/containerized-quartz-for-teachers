@@ -42,7 +42,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from appearance import Appearance          # noqa: E402
-from images import prepare, WIDEST_PHONE_PIXELS, WIDEST_WINDOW_PIXELS  # noqa: E402
+from images import (  # noqa: E402
+    mask_window_corners,
+    prepare,
+    WIDEST_PHONE_PIXELS,
+    WIDEST_WINDOW_PIXELS,
+)
+from composite import fan, side_by_side    # noqa: E402
 from safari import SafariWindow            # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent.parent
@@ -84,7 +90,13 @@ REMEMBERED_FRAME_KEYS = [
 # app's own preference before the run and put back afterwards, because a
 # launch argument does not reliably win against a value the app applies by
 # hand after the window is shown.
-ASSISTANT_FRAME = "{{500, 60}, {520, 900}}"
+ASSISTANT_FRAME = "{{500, 40}, {560, 940}}"
+
+# The width, in points, each captured window is forced to. Only used to work
+# out how many pixels there are per point, so the corner radius comes out
+# right whatever the display.
+WINDOW_POINTS = 1280
+ASSISTANT_WINDOW_POINTS = 560
 
 
 # ---------- Running things ----------
@@ -227,6 +239,11 @@ def export_attachments(bundle: Path, suffix: str) -> list[str]:
             source = exported / attachment["exportedFileName"]
             destination = IMAGE_DIR / f"{shot_name}-{suffix}.png"
             shutil.copy2(source, destination)
+            # Corners first, at capture resolution: masking after the resize
+            # would round a radius that has already been scaled, and leave the
+            # fringe behind.
+            width_in_points = ASSISTANT_WINDOW_POINTS if shot_name == "assistant" else WINDOW_POINTS
+            mask_window_corners(destination, width_in_points)
             prepare(destination, WIDEST_WINDOW_PIXELS)
             saved.append(destination.name)
     return saved
@@ -446,6 +463,64 @@ def site_address(code: str) -> str:
     raise SystemExit(f"No demo site is configured for {code}.")
 
 
+# Captures that exist only to be assembled into the two static figures. They
+# are not referred to by any page, so they live outside site/img/.
+PARTS = SCRATCH / "parts"
+
+
+def capture_parts(window: "SafariWindow", suffix: str) -> None:
+    """Photograph the three course home pages, for the fanned-out figure."""
+    PARTS.mkdir(parents=True, exist_ok=True)
+    for course in DEMO_COURSES:
+        window.load(site_address(course["code"]) + "/", settle_seconds=8.0)
+        destination = PARTS / f"home-{course['code'].lower()}-{suffix}.png"
+        window.capture(destination)
+        print(f"   part {destination.name}")
+
+
+def build_static_figures() -> None:
+    """Assemble the two figures whose subject is colour.
+
+    Both are built from the LIGHT captures of the course home pages, and both
+    are served unchanged to every visitor: a figure comparing three courses'
+    colour schemes must not change colour to match the reader, or it is no
+    longer showing what it claims.
+    """
+    announce("Assembling the colour figures")
+    fanned = [PARTS / f"home-{course['code'].lower()}-light.png" for course in DEMO_COURSES]
+    missing = [path.name for path in fanned if not path.exists()]
+    if missing:
+        print(f"   Missing parts: {', '.join(missing)} — run --sites first.", file=sys.stderr)
+        return
+
+    fan(fanned, IMAGE_DIR / "colour-schemes.png")
+    print("   saved colour-schemes.png")
+
+    pair = [PARTS / "home-eng2d-light.png", PARTS / "home-eng2d-dark.png"]
+    if all(path.exists() for path in pair):
+        side_by_side(pair, IMAGE_DIR / "light-and-dark.png")
+        print("   saved light-and-dark.png")
+    else:
+        print("   Missing the dark half of the light/dark pair.", file=sys.stderr)
+
+
+def capture_search(window: "SafariWindow", shot: dict, suffix: str) -> None:
+    """A class site with its search panel open and a query typed in.
+
+    Quartz binds the search panel to Command-K, which avoids clicking a target
+    whose position depends on the window size.
+    """
+    capture = shot["capture"]
+    window.load(site_address(capture["course"]) + capture.get("path", "/"), settle_seconds=8.0)
+    window.press("k", using="command down")
+    window.press(capture.get("query", "thesis"))
+    time.sleep(2.0)
+    destination = IMAGE_DIR / f"{shot['id']}-{suffix}.png"
+    window.capture(destination)
+    prepare(destination, WIDEST_WINDOW_PIXELS)
+    print(f"   saved {destination.name}")
+
+
 def browser_shots() -> list[dict]:
     """The shots taken in a browser, from the manifest the pages read.
 
@@ -454,10 +529,18 @@ def browser_shots() -> list[dict]:
     is where the typeset mathematics and the chemistry notation are — a course
     home page shows the shape of a site but not what it can carry.
     """
+    return shots_of_kind("browser")
+
+
+def search_shots() -> list[dict]:
+    return shots_of_kind("browser-search")
+
+
+def shots_of_kind(kind: str) -> list[dict]:
     manifest = json.loads((WEBSITE / "shots.json").read_text(encoding="utf-8"))
     wanted: list[dict] = []
     for shot in manifest["shots"]:
-        if shot["capture"].get("kind") == "browser":
+        if shot["capture"].get("kind") == kind:
             wanted.append(shot)
     return wanted
 
@@ -480,6 +563,11 @@ def capture_sites() -> None:
                     window.capture(destination)
                     prepare(destination, WIDEST_WINDOW_PIXELS)
                     print(f"   saved {destination.name}")
+
+                for shot in search_shots():
+                    capture_search(window, shot, suffix)
+
+                capture_parts(window, suffix)
         capture_phone(dark=dark)
 
 
@@ -631,13 +719,16 @@ def main() -> int:
     parser.add_argument("--only", default=None,
                         help="with --app, run one capture (e.g. test6Assistant) instead of all of them")
     parser.add_argument("--sites", action="store_true", help="only photograph the class websites")
+    parser.add_argument("--figures", action="store_true",
+                        help="only reassemble the two colour figures from parts already captured")
     arguments = parser.parse_args()
 
     workspace = Path(arguments.workspace).expanduser()
     if Path.home() not in workspace.parents:
         raise SystemExit("The demo folder has to be inside your home folder, or the site builder sees it as empty.")
 
-    everything = not (arguments.provision or arguments.publish or arguments.app or arguments.sites)
+    everything = not (arguments.provision or arguments.publish or arguments.app
+                      or arguments.sites or arguments.figures)
     SCRATCH.mkdir(parents=True, exist_ok=True)
 
     keeping_awake = stay_awake()
@@ -651,7 +742,10 @@ def main() -> int:
             capture_app(workspace, only=arguments.only)
         if everything or arguments.sites:
             capture_sites()
-        if everything or arguments.app or arguments.sites:
+            build_static_figures()
+        if arguments.figures and not (everything or arguments.sites):
+            build_static_figures()
+        if everything or arguments.app or arguments.sites or arguments.figures:
             rebuild_site()
     finally:
         keeping_awake.terminate()

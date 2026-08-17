@@ -85,6 +85,54 @@
       },
       "alt": "The same class website at phone width, with the navigation collapsed behind a button.",
       "caption": "The same site on a phone."
+    },
+    {
+      "id": "coverage",
+      "capture": {
+        "kind": "browser",
+        "course": "ENG2D",
+        "path": "/curriculum-coverage"
+      },
+      "alt": "A grid of every curriculum expectation in a course, each square shaded by how many pages address it, with pale squares showing the gaps.",
+      "caption": "Every expectation in the course, shaded by how well it is covered."
+    },
+    {
+      "id": "search",
+      "capture": {
+        "kind": "browser-search",
+        "course": "ENG2D",
+        "path": "/",
+        "query": "thesis"
+      },
+      "alt": "A search panel open over a class website, listing matching pages with the search term highlighted in context.",
+      "caption": "One box, the whole course."
+    },
+    {
+      "id": "colour-schemes",
+      "capture": {
+        "kind": "composite",
+        "of": [
+          "home-eng2d",
+          "home-mcv4u",
+          "home-sch3u"
+        ]
+      },
+      "static": true,
+      "alt": "Three class websites overlapping like a fanned deck of cards, each in a different colour scheme and typeface.",
+      "caption": "Three courses, three colour schemes. Chosen in the app, not in code."
+    },
+    {
+      "id": "light-and-dark",
+      "capture": {
+        "kind": "composite",
+        "of": [
+          "home-eng2d-light-pair",
+          "home-eng2d-dark-pair"
+        ]
+      },
+      "static": true,
+      "alt": "The same class website twice, side by side: once in a light colour scheme and once in a dark one.",
+      "caption": "And every site does both, whichever a student prefers."
     }
   ]
 }
