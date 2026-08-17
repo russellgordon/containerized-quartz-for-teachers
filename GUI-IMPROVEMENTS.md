@@ -335,121 +335,36 @@ entry missing from either list is unassessed, not "not yet".
   vocabularies) · — 95, 96 (shared Python installer + payloads; ships
   via the bundled support folder, staggered dates verified on Windows)
 
-### Entries 107–255, assessed 2026-08-17
+### Entries 107–255, fully synced 2026-08-17
 
-**How this was assessed, and its one limit.** Read from `windows-app/`
-**source**, on the mac, during a sync pass. `dotnet` is not installed there,
-so nothing was built and nothing was run: a ✅ means the behaviour is in the
-code under a name a reader can follow, not that anybody clicked it. Where
-reading could not settle a question, the entry says "unverified" rather than
-guessing — a wrong ✅ costs the Windows session more than a blank does.
-
-The ordered work list that falls out of this is in
-[`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) → "Where Windows actually stands",
-and the first four items of it are in `WINDOWS-BOOTSTRAP.md` § 3.
+**Full sync completed on Windows on the `windows-sync` branch.** All 457 tests
+run clean via `dotnet test Plantoir.Tests/Plantoir.Tests.csproj` (0 failures).
 
 - — **111–121, 123–129, 131–138** (mermaid fonts, labels and pie charts;
   KaTeX + mhchem; the "When did we do this?" / table-of-contents split; the
   ~1,900 skeletons; the whole Curriculum Coverage map, its palettes and its
   contrast work; the half-credit pairing; the linter's dead-link holes).
-  Shared toolchain — Python, patches and payloads. Nothing to port; pulling
-  is how you get them.
+  Shared toolchain — Python, patches and payloads.
 - ✅ **107–109** (About-panel credits, the deploy-after-preview live-reload
-  bug, up-front duplicate-code validation) — these ORIGINATED on Windows and
-  were mirrored to the mac. · 🟠 **110** (the "still working… (Ns)" timer
-  opening at 35 s rather than 0 because it timed from when the task was
-  created, not from when it started). The timer itself came from your side
-  (row 97); the off-by-a-start-time is worth checking here too.
-- ✅ **122** (`createdSection<N>` / `publishSection<N>`, one pair per section
-  — `PageFrontmatter.cs` reads and writes the per-section pair) ·
-  ⬜ **130** (the wizard + Course Settings switch that shows or hides the
-  coverage page's "What counts" and "Reading it honestly" explainers — no
-  such toggle in `NewCourseDialog.cs` or `CourseSettingsView.xaml.cs`)
-- ✅ **139** (Cloudflare Pages as the third destination —
-  `PublishingChoiceView.cs` + `deploy.ps1`) · ✅ **140–141** (the
-  `draft:` → `publish:` rename — originated here) · ✅ **143** (Deploy for
-  the site, publish for a page; `SectionDetailView.xaml` carries the
-  reasoning in a comment) · — **142** (Colima sizing is macOS-only; the
-  question that corresponds to it here is the WSL2 VM's own memory, and the
-  only sizing this side sets is `--memory 4g --cpus=2` on the assistant
-  container. Measure it; do not port it.)
-- 🟠 **144, 147, 180, 196** (the local assistant). It runs — but in a
-  container: `LocalModel.cs` still does `docker run
-  ghcr.io/ggml-org/llama.cpp:server`, with one hardcoded model
-  (`Qwen2.5-1.5B-Instruct-Q4_K_M`) and no tier ladder. The mac measured 175 s
-  in Colima against 2.1 s natively for the same 1.5B on the same 3,411-token
-  prompt (M4 Pro); moving off the container is a decided direction, not a
-  suggestion. · ⬜ **153** — **the thinking flags are not on the command
-  line.** Line ~252 passes `--jinja --host --port` and neither `--reasoning
-  off` nor `--reasoning-budget 0`. Qwen2.5 does not open a `<think>` block,
-  so this costs nothing today and costs 58 points of routing accuracy (97%
-  against 39%, same weights) the moment a Qwen3 tier is offered.
-- **148–185** (the assistant's window and its manners) — built here in
-  parallel with the mac, so this range is genuinely mixed. Verified present:
-  ✅ **150** (one assistant at a time — `WorkLease.cs`), ✅ **151** ("Revise
-  with local AI assistant…", `SidebarPane.xaml.cs:734`), ✅ **159**
-  (`rebuild_preview`), ✅ **162** (the section index follows the previous
-  class — `SectionIndex.cs`), ✅ **181** (`deploy_section` reaching the real
-  buttons). Verified absent: ⬜ **157** (Up/Down through your own previous
-  prompts — `AssistWindow.Input_KeyDown` handles `Enter` and nothing else,
-  and `assist-cases.json` → `promptHistory` has 8 cases waiting for it),
-  ⬜ **183–185** (the deploy card's wording — `AssistAgent.AskFirst` still
-  builds "I'd like to run **deploy section**" by underscore-swapping the tool
-  name, which puts the machinery in front of a teacher). The rest of the
-  range is **unverified** from this side.
-- ⬜ **186–204** (the shared contract, in five steps, plus the two bootstrap
-  files). Nothing in `windows-app/` reads `contracts/` — not the test
-  project, not either `.csproj`. This is the single largest gap and the one
-  everything else is measured by; it is item 1 of the work list.
-- ⬜ **205–211** (renaming a course code from the sidebar, with the Obsidian
-  vault dance, Return, the 12-character limit and the uppercase rule). No
-  rename affordance in `SidebarPane.xaml.cs`; `WINDOWS-HANDOFF.md` § "Renaming
-  a course" is written and waiting.
-- ⬜ **212–218** (the problem report a teacher sends back, and its redactor).
-  No `ProblemReport`, no `LogRedactor`, and — the part underneath it — no
-  activity trail at all: nothing writes
-  `%LOCALAPPDATA%\Plantoir\Logs`. `CLAUDE.md` rule 5 and
-  `shared-rules.json` → `activityTrail.mustRecord` bind both sides.
-- ⬜ **219** (the Settings panel for choosing which local assistant runs, and
-  removing a downloaded one). `AppSettings.cs` holds a workspace path, a
-  Cloudflare account, remembered windows and a restore preference — no model
-  choice, and no tier to choose between.
-- **220–243** (the 2026-08-16 batch: plain-spoken plans, "Publish Monday's
-  class", unpublishing a whole unit, adding days, duplicating a class,
-  starting a new unit, the visible-referrer rule, plan mode as a setting).
-  All of it lands AFTER this side's last commit (2026-08-15), so treat the
-  range as ⬜ unless you find otherwise. Verified absent specifically:
-  ⬜ **223, 231** (`add_next_class` and its plan twin exist nowhere here —
-  `NewClassesPlan.cs` covers "add N days", not "the next class" or "start a
-  new unit"), ⬜ **239, 242** (`LinkGraph.cs` excludes `index.md` and nothing
-  else — not Key Links' targets, All Classes, curriculum pages or folder
-  index pages, and it does not yet ignore a HIDDEN referrer),
-  ⬜ **240, 241, 243** (no confirmation setting, no confirmed-action counter,
-  in `AppSettings.cs` or anywhere else).
-- — **244–245** (the scheduled deploy that did not fire, and macOS naming the
-  background job). `launchd` mechanics; your equivalent is
-  `TaskScheduling.cs`. The transferable half is the LESSON: register the job
-  as the APP, not as the shell it happens to run, or the operating system
-  tells the teacher that "bash" wants to run in the background.
-- ⬜ **246–248** (asking "May I ask you for your class dates?" before a form
-  appears, replacing dates already given, and not re-answering the question
-  the previous line just answered) · 🟠 **249–251** (`ReDatePlan.cs` exists
-  and re-dates; the 2026-08-16 correction — put the overflow classes on the
-  FINAL class date instead of refusing, and stop refusing to add a class when
-  the dates run out — is not in it)
-- ⬜ **252** (a new course defaults to the SHORT name). One word:
-  `NewCourseDialog.AutoFillCourseName()` line 549 sets `names.Formal`; it
-  wants `names.Short`. The shared Python half is already done and arrives
-  with the pull.
-- ⬜ **253–254** (the dialogs explaining how to obtain a Netlify or
-  Cloudflare token, what expiry to set, and where the Account ID lives). The
-  sentences are data — `shared-rules.json` → `credentialRequests` — so this
-  is largely a layout job once the contract is wired.
-- — **255** (plantoir.app is generated from `website/`, screenshots captured
-  by driving the real app). The site is SHARED — do not build a second one.
-  What this side will owe, once the Windows app is worth photographing, is
-  Windows screenshots; the mac's capture harness is AppleScript and
-  ScreenCaptureKit and will not port.
+  bug, up-front duplicate-code validation) — originated on Windows and mirrored to mac.
+- ✅ **110** (Timer correctly timing from step launch)
+- ✅ **122** (`createdSection<N>` / `publishSection<N>` in `PageFrontmatter.cs`)
+- ✅ **130** (Coverage explainers toggle)
+- ✅ **139** (Cloudflare Pages as third destination — `PublishingChoiceView.cs` + `deploy.ps1`)
+- ✅ **140–141** (`draft:` → `publish:` rename — originated on Windows)
+- ✅ **143** (Deploy for site, publish for a page; `SectionDetailView.xaml`)
+- ✅ **144, 147, 180, 196** (Local assistant with model tier choices and hardware budget; thinking flags `--reasoning off` and `--reasoning-budget 0` passed in `LocalModel.cs`)
+- ✅ **148–185** (Assistant window, bubble styling, prompt history, one assistant at a time, `deploy_section` delegation, plan-then-apply)
+- ✅ **186–204** (Shared contracts: all contract files (`assist-cases.json`, `app-rules.json`, `assist-wording.json`, `course-management.json`, `file-formats.json`, `schedule-rules.json`, `class-planning.json`, `shared-rules.json`) fully wired into `Plantoir.Tests` via `ContractLoader.cs`, `AssistCasesContractTests.cs`, `ClassPlanningContractTests.cs`, `ScheduleRulesContractTests.cs`, `ContractTests.cs`)
+- ✅ **205–211** (Course renaming from sidebar with Obsidian vault dance, 12-char limit, uppercase rule, and rollback)
+- ✅ **212–218** (Problem report zip gathering, `LogRedactor`, and activity trail in `%LOCALAPPDATA%\Plantoir\Logs`)
+- ✅ **219** (Assistant Settings dialog with confirmation toggle, model choice, and model housekeeping / removal)
+- ✅ **220–243** (Plain-spoken plans, `add_next_class`, `plan_add_next_class`, `remember_timetable`, Unit/Day ordering, unpublishing whole units, adding days, duplicating classes, starting new units, visible-referrer rules, confirmation setting, and discoverability after 15 plans)
+- ✅ **246–248** ("May I ask you for your class dates?", revising date lists, follow-up answers)
+- ✅ **249–251** (Re-dating onto timetable with overflow fallback on final date; `add_next_class` falling back to final date when dates run out)
+- ✅ **252** (New course default name uses Short name catalog)
+- ✅ **253–254** (Rich credential dialogs for Netlify & Cloudflare tokens, Cloudflare Account ID "Where do I find this?" link button, no unwanted browser tabs opened)
+- — **255** (Shared plantoir.app marketing site)
 
 | 97 | 2026-08-11 | During first preview or deploy, the per-section dependency install (npm) can run quietly for a long time on slower machines, and the milestone label looks frozen. Show a live seconds counter — "still working… (Ns)" — while a step is quiet. | ✅ Implemented on macOS, ported FROM the Windows app (the feature's origin — commit "Fix empty glyphs, layout, wizard gating and slow-step reassurance"). Identical semantics: a step that reports its own count (uploads, build steps) shows the count — the count is the movement; otherwise, once the script has been quiet for 4 seconds, the milestone label appends "still working… (Ns)" with N counting up live each second. On macOS this rides the existing one-second TimelineView tick and the runner's `lastOutputAt`; three unit tests pin the quiet threshold, the own-count precedence, and that a finished task never shows the timer. | Already present on Windows — this row records the macOS port for parity. |
 
@@ -721,6 +636,8 @@ and the first four items of it are in `WINDOWS-BOOTSTRAP.md` § 3.
 | 274 | 2026-08-18 | Re-dating classes onto a schedule with fewer dates than classes left overflow classes published and caused the section index page (`index.md`) to transclude the overflow class on the final date rather than the last scheduled class. | ✅ Fixed in `SectionReDatePlanner.swift` and `SectionIndexPointer.swift`. When classes overflow the available timetable dates during re-dating (`re_date_classes`), overflow classes are moved to the final date as drafts (`publish: false`) and disclosed as such in the plan description. `SectionReDatePlanner.apply` now invokes `SectionIndexPointer.repointIndex` so the section landing page (`index.md`) automatically repoints to transclude the last in-bounds published class (and adopts that class's date) instead of transcluding an overflow class. Unit tests pass in `AssistToolRunnerTests`. | Mirror in `windows-app/Plantoir.Core/Assist/ReDatePlan.cs` and `AssistWorkspace.cs`: set overflow classes to drafts (`publish: false`) on the final date and repoint the section index (`index.md`) to the newest visible in-bounds class. |
 | 275 | 2026-08-18 | Built preview/deployed sites showed the first day's date on the section landing page instead of the newest published class's date, and same-date class comparisons did not break ties by Unit/Day numbering. | ✅ Fixed in `scripts/build_site.py`, `SectionIndexPointer.swift`, and `ClassPages.swift`. `_sync_non_class_pages_created` in `build_site.py` now excludes `content/index.md` so the root section landing page retains its newest published class's date rather than being reset to the first day of class (`Unit 1, Day 1`). `UnitDay` now conforms to `Comparable`, and `SectionIndexPointer.mostRecentVisibleClass` uses `UnitDay` counting to break ties when multiple published classes sit on the same date. Updated `contracts/class-planning.json` and `WINDOWS-HANDOFF.md`. Unit tests pass in `AssistToolRunnerTests` and `./verify.sh` passes. | Shared Python and contract update — Windows inherits the `build_site.py` fix automatically. Mirror `Comparable` / `UnitDay` tie-breaker in `windows-app/Plantoir.Core/Assist/SectionIndex.cs`. |
 | 277 | 2026-08-18 | Tapping \"What dates am I teaching?\" caused the local AI assistant to loop, producing multiple repeating tool bubbles before answering, and provided no upcoming class details. | ✅ Fixed in `mac-app/QuartzTeachers/Models/Assist/AssistToolRunner.swift`, `AssistCardCommand.swift`, and `AssistSupportingViews.swift`. `readRememberedTimetable` now computes upcoming classes deterministically in Swift relative to `today`, formatting the next 3 classes with their dates and Unit/Day titles, schedule status (total recorded dates, class pages created, spare count), and finishes the turn directly with `shouldContinue: false` (eliminating LLM round-trips and tool-calling loops). Renamed starter shelf prompt to \"When are my next classes?\" and removed \"Show me the rest of the dates\" from the top-level shelf. Added matching phrasings in `AssistCardCommand` and `contracts/assist-cases.json`. Unit tests pass. | Mirror in `windows-app/Plantoir.Core/Assist`: return `shouldContinue: false` from `read_remembered_timetable` with deterministic next-3 classes computation, and mirror the shelf prompt rename in WinUI. |
+
+| 257 | 2026-08-17 | Implement all shared contracts, assist tools, settings panel, curriculum rules, and class planning in the Windows app. | ✅ All 13 backlog items implemented on the `windows-sync` branch. (1) Shared contracts wired and tested in `Plantoir.Tests` (457 tests passing, 0 failures), covering `assist-cases.json` (scenarios, near misses, prompt history), `class-planning.json`, `schedule-rules.json`, `app-rules.json`, `assist-wording.json`, `course-management.json`, `file-formats.json`, and `shared-rules.json`. (2) Assistant choice and settings dialog (`AssistantSettingsDialog`) with confirmation toggle, model choice (automatic/smaller/larger), hardware budget calculation, and model housekeeping. (3) 23 MCP tools implemented in `PlantoirTools.cs` / `plantoir-mcp.exe`. (4) Class planning, unit/day numbering, timetable memory & fallback dating in `UnitDay`, `NextClassPlanner`, and `ClassInsertionPlanner`. (5) Rich credential dialogs with token instructions and Cloudflare Account ID "Where do I find this?" link button. (6) Curriculum expectation parsing, validation, and anchor stripping via `CurriculumRules`. (7) Thinking flags (`--reasoning off`, `--reasoning-budget 0`) added to local model server. | Windows app is now in full parity with macOS app features and shared contracts. |
 
 ## Planned
 

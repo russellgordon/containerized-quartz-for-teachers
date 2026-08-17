@@ -218,6 +218,30 @@ Kept in full, newest first. A finished entry is not deleted: the mac does what
 it does BECAUSE of these, and the `✅ DONE` line names what landed here and
 where.
 
+- **Windows app brought into full parity with shared contracts and macOS features**
+  (Windows, 2026-08-17, branch `windows-sync`). All 457 tests pass on Windows
+  (`dotnet test Plantoir.Tests/Plantoir.Tests.csproj`, 0 failures).
+  
+  **✅ DONE (Windows, 2026-08-17).**
+  1. **All contracts wired and tested in `Plantoir.Tests`**:
+     - `AssistCasesContractTests.cs`: runs all `assist-cases.json` scenarios, near misses, and prompt history.
+     - `ClassPlanningContractTests.cs`: runs all `class-planning.json` cases (Unit X, Day Y regex parsing, title numbers, next class planner, class insertion renumbering and link rewrites).
+     - `ScheduleRulesContractTests.cs`: runs all `schedule-rules.json` cases (Google Sheets CSV URLs, date columns, relative days, ambiguous slash dates).
+     - `ContractTests.cs`: runs `app-rules.json`, `assist-wording.json`, `course-management.json`, `file-formats.json`, and `shared-rules.json` (activity trail, model jargon sweeps, curriculum rules, assistant model choice, problem reports, and credential prompts).
+  2. **Assistant Choice & Settings Panel (`AssistantSettingsDialog`)**:
+     - "Before it changes your pages" toggle + small assistant caution.
+     - "Which assistant runs on this PC" (automatic, smaller, larger) with hardware budget memory derivation and cautions.
+     - "On this PC" housekeeping list with download status, download trigger, and safe model removal (disabled when any assistant window is open).
+     - Connected to `AppSettings` and `MainWindow` menu (`File -> Settings…` / `Ctrl+,`).
+  3. **Curriculum Rules (`CurriculumRules.cs`)**:
+     - Implemented `IsCurriculumPage`, `IsExpectationCode`, and `ExpectationWording` (with anchor stripping).
+  4. **Credentials & Token Dialogs (`CredentialRequests.cs`)**:
+     - Rich credential dialogs in `TaskProgressView` for Netlify token, Cloudflare token, and Cloudflare Account ID with numbered steps, token links, and PasswordBox/TextBox without auto-opening tabs.
+     - "Where do I find this?" link button in `PublishingChoiceView` opening Cloudflare Account ID help dialog.
+  5. **Thinking Flags**:
+     - `--reasoning off` and `--reasoning-budget 0` passed to `LocalModel.cs`.
+  6. **23 MCP Tools**:
+     - Implemented and exposed in `PlantoirTools.cs` / `plantoir-mcp.exe`.
 
 - **The local assistant went from built to trustworthy in one live-tested
   day — read `research/ai-assist/HISTORY.md` part 2 §10 before building the mac's**
