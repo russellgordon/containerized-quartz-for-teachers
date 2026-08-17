@@ -11,7 +11,7 @@ public readonly record struct UnitDay(int Unit, int Day)
 
     public string Title => $"Unit {Unit}, Day {Day}";
 
-    public static UnitDay? Parse(string title)
+    public static UnitDay? Parse(string? title)
     {
         if (string.IsNullOrWhiteSpace(title)) return null;
         var match = UnitDayRegex.Match(title.Trim());

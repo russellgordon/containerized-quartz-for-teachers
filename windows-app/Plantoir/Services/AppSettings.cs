@@ -37,6 +37,26 @@ public sealed class AppSettings
     /// <summary>No OS-level setting exists here, so it is an app preference — default restore.</summary>
     public bool RestoreWindowsOnLaunch { get; set; } = true;
 
+    /// <summary>
+    /// Which assistant the teacher has chosen: "automatic", "smaller", or "larger".
+    /// </summary>
+    public string AssistantModelChoice { get; set; } = Plantoir.Core.Assist.AssistModelChoice.Automatic;
+
+    /// <summary>
+    /// Whether the assistant asks for confirmation before changing anything.
+    /// </summary>
+    public bool AssistantAsksBeforeChanging { get; set; } = true;
+
+    /// <summary>
+    /// How many plans the teacher has accepted app-wide across all sessions.
+    /// </summary>
+    public int PlansAcceptedCount { get; set; } = 0;
+
+    /// <summary>
+    /// Whether the confirmation switch discovery has been mentioned to the teacher.
+    /// </summary>
+    public bool ConfirmationMentioned { get; set; } = false;
+
     public static string DefaultPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                      "Plantoir", "settings.json");

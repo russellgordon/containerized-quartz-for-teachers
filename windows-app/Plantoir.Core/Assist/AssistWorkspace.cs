@@ -1607,21 +1607,19 @@ public sealed class AssistWorkspace
             string full;
             try { full = PagePaths.ResolveInside(_folder, relative); }
             catch { continue; }
-            if (!IsCurriculum(course.DirectoryPath, full)) continue;
+            if (!CurriculumRules.IsCurriculumPage(full)) continue;
 
             string code = Path.GetFileNameWithoutExtension(full);
             // Index and strand-heading pages are not expectations; an
             // expectation is a leaf, coded like A1.1 or B2.3.
-            if (!System.Text.RegularExpressions.Regex.IsMatch(code, @"^[A-Za-z]\d+\.\d+$")) continue;
+            if (!CurriculumRules.IsExpectationCode(code)) continue;
 
             string body;
             try { body = File.ReadAllText(full); }
             catch { continue; }
 
             // The wording, minus the frontmatter and the block anchor.
-            string text = BodyAfterFrontmatter(body).Trim();
-            int anchor = text.LastIndexOf(" ^", StringComparison.Ordinal);
-            if (anchor > 0) text = text[..anchor].Trim();
+            string text = CurriculumRules.ExpectationWording(body);
 
             found.Add(new Expectation(code, text, relative));
         }
@@ -2141,7 +2139,7 @@ public sealed class AssistWorkspace
                 $"I don’t know when {course.Code} Section {section} meets, so I can’t date a new class. {AssistWording.MayIAskForYourDates}");
 
         var existing = ClassPages(course, section);
-        var existingTitles = existing.Select(Path.GetFileNameWithoutExtension).ToList();
+        var existingTitles = existing.Select(p => Path.GetFileNameWithoutExtension(p) ?? "").ToList();
 
         if (days is { } howMany && howMany > 0 && int.TryParse(unitAsked, out int specificUnit))
         {

@@ -511,6 +511,12 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private async void Settings_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new AssistantSettingsDialog(Workspace.Settings) { XamlRoot = Content.XamlRoot };
+        await dialog.ShowAsync();
+    }
+
     private async void About_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new AboutDialog { XamlRoot = Content.XamlRoot };

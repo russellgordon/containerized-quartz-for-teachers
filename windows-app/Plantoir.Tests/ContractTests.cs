@@ -231,5 +231,123 @@ public class ContractTests
             Assert.Equal(expectSteps, codeReq.Steps);
         }
     }
+
+    [Fact]
+    public void SharedRules_CurriculumRules_MatchesContract()
+    {
+        var doc = ContractLoader.LoadJson("shared-rules.json");
+        var rules = doc["curriculumRules"]!;
+
+        // expectationWording
+        var wordingCases = rules["expectationWording"]!["cases"]!.AsArray();
+        foreach (var c in wordingCases)
+        {
+            if (c is null) continue;
+            string body = c["body"]!.ToString();
+            string expect = c["expect"]!.ToString();
+            string actual = CurriculumRules.ExpectationWording(body);
+            Assert.Equal(expect, actual);
+        }
+
+        // isCurriculumPage
+        var pageCases = rules["isCurriculumPage"]!["cases"]!.AsArray();
+        foreach (var c in pageCases)
+        {
+            if (c is null) continue;
+            string path = c["path"]!.ToString();
+            bool expect = c["expect"]!.GetValue<bool>();
+            bool actual = CurriculumRules.IsCurriculumPage(path);
+            Assert.Equal(expect, actual);
+        }
+
+        // isExpectationCode
+        var codeCases = rules["isExpectationCode"]!["cases"]!.AsArray();
+        foreach (var c in codeCases)
+        {
+            if (c is null) continue;
+            string code = c["code"]!.ToString();
+            bool expect = c["expect"]!.GetValue<bool>();
+            bool actual = CurriculumRules.IsExpectationCode(code);
+            Assert.Equal(expect, actual);
+        }
+    }
+
+    [Fact]
+    public void SharedRules_AssistantModelChoice_MatchesContract()
+    {
+        var doc = ContractLoader.LoadJson("shared-rules.json");
+        var modelChoice = doc["assistantModelChoice"]!;
+
+        Assert.Equal("automatic", modelChoice["defaultChoice"]!.ToString());
+
+        var choices = modelChoice["choices"]!.AsArray();
+        var choiceKeys = choices.Select(c => c!["key"]!.ToString()).ToList();
+        Assert.Equal(new[] { "automatic", "smaller", "larger" }, choiceKeys);
+
+        foreach (var c in choices)
+        {
+            string key = c!["key"]!.ToString();
+            string expectLabel = c["label"]!.ToString();
+            Assert.Equal(expectLabel, AssistModelChoice.Label(key));
+        }
+
+        // Automatic choice resolves at point of use based on budget
+        var budget8Gb = new AssistHardwareBudget(8L * 1024 * 1024 * 1024);
+        var budget16Gb = new AssistHardwareBudget(16L * 1024 * 1024 * 1024);
+
+        Assert.Equal(AssistModelTier.Small, AssistModelChoice.Resolved(AssistModelChoice.Automatic, budget8Gb));
+        Assert.Equal(AssistModelTier.Large, AssistModelChoice.Resolved(AssistModelChoice.Automatic, budget16Gb));
+
+        // Automatic never produces a caution
+        Assert.Null(AssistModelChoice.Caution(AssistModelChoice.Automatic, budget8Gb));
+        Assert.Null(AssistModelChoice.Caution(AssistModelChoice.Automatic, budget16Gb));
+
+        // Hand-picked larger choice on 8 GB machine produces caution naming memory numbers
+        string? caution = AssistModelChoice.Caution(AssistModelChoice.Larger, budget8Gb);
+        Assert.NotNull(caution);
+        Assert.Contains("8 GB", caution);
+        Assert.Contains(AssistModelTier.Large.DisplayName(), caution);
+        Assert.Contains(AssistModelTier.Large.MemoryDescription(), caution);
+    }
+
+    [Fact]
+    public void SharedRules_AssistantModelChoice_NamesNoModel()
+    {
+        var doc = ContractLoader.LoadJson("shared-rules.json");
+        var jargonList = doc["assistantModelChoice"]!["namesNoModel"]!["jargon"]!
+            .AsArray()
+            .Select(j => j!.ToString().ToLowerInvariant())
+            .ToList();
+
+        var budget = new AssistHardwareBudget(8L * 1024 * 1024 * 1024);
+
+        var allStrings = new List<string>
+        {
+            AssistModelTier.Small.DisplayName(),
+            AssistModelTier.Large.DisplayName(),
+            AssistModelTier.Small.ChoiceLabel(),
+            AssistModelTier.Large.ChoiceLabel(),
+            AssistModelTier.Small.SizeGuidance(),
+            AssistModelTier.Large.SizeGuidance(),
+            AssistModelChoice.Label(AssistModelChoice.Automatic),
+            AssistModelChoice.Detail(AssistModelChoice.Automatic, budget),
+            AssistModelChoice.Detail(AssistModelChoice.Smaller, budget),
+            AssistModelChoice.Detail(AssistModelChoice.Larger, budget),
+            AssistModelChoice.Caution(AssistModelChoice.Larger, budget) ?? "",
+        };
+
+        foreach (string text in allStrings)
+        {
+            string lower = text.ToLowerInvariant();
+            foreach (string jargon in jargonList)
+            {
+                Assert.False(
+                    lower.Contains(jargon),
+                    $"User-facing string '{text}' contains forbidden model jargon '{jargon}'");
+            }
+        }
+    }
 }
+
+
 
