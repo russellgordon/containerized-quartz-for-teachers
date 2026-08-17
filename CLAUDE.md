@@ -157,9 +157,23 @@ Neither app contains toolchain logic of its own: they write the same
    The app's quit path and the scripts already enforce this; keep it that way.
    The Colima VM only mounts `$HOME`, so a working folder outside the home
    directory bind-mounts as an empty folder inside the container.
-8. **Swift follows the project style rules**: no `map`/`filter`/`reduce`,
-   `@Observable` (never `ObservableObject`), `// MARK: -` sections, clarity over
-   concision.
+8. **Swift follows the project style rules; the C# deliberately does not.**
+   The Swift in `mac-app/` avoids `map`/`filter`/`reduce`, uses `@Observable`
+   (never `ObservableObject`) and `// MARK: -` sections, and prefers clarity
+   over concision. Those rules live in Russell's MACHINE-WIDE instructions
+   (`~/.claude/CLAUDE.md`, mirrored to `~/.gemini/GEMINI.md`), not in this
+   repository, because they govern his Swift everywhere rather than this
+   project in particular.
+
+   **A Windows session is therefore not missing a rule set** — decided
+   2026-08-17, when it turned out that machine has no global instructions
+   configured and the agent there could see only a rule about a language it
+   never touches. `windows-app/` is ordinary idiomatic C#, LINQ included
+   (`Where`, `Select` and friends appear about 105 times in product code
+   today), and that is the intended state, not drift to be tidied up. Do not
+   "bring the C# into line" with the Swift rules, and do not propose it: the
+   two apps are written by different hands in different languages, and one
+   house style stretched across both would buy nothing a teacher can see.
 9. **Driving the interface leaves the machine as you found it — and gives the
    terminal back.** Written for **macOS sessions**, where the setup is known:
    Russell works at this Mac with the session running in iTerm. (A Windows

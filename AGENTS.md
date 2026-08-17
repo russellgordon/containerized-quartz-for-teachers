@@ -19,3 +19,9 @@ anything: edit `CLAUDE.md`, then run
 Machine-wide instructions (the Swift coding style) live outside this repository
 — in `~/.gemini/GEMINI.md` for Antigravity, `~/.claude/CLAUDE.md` for Claude
 Code. The two are kept as identical copies of each other.
+
+**They are configured on the Mac only, and that is fine.** They govern Swift,
+so a session working in `windows-app/` is not missing anything that binds it —
+see rule 8, which says so in full. If you are that session and you listed your
+loaded rule sets and found only `AGENTS.md` and `.agents/rules/*`, you have
+everything this project asks of you.

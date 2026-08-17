@@ -142,21 +142,10 @@ description: "Plantoir project rules, part 2 of 6 - Rules that override default 
    The app's quit path and the scripts already enforce this; keep it that way.
    The Colima VM only mounts `$HOME`, so a working folder outside the home
    directory bind-mounts as an empty folder inside the container.
-8. **Swift follows the project style rules**: no `map`/`filter`/`reduce`,
-   `@Observable` (never `ObservableObject`), `// MARK: -` sections, clarity over
-   concision.
-9. **Driving the interface leaves the machine as you found it — and gives the
-   terminal back.** Written for **macOS sessions**, where the setup is known:
-   Russell works at this Mac with the session running in iTerm. (A Windows
-   session owes the same courtesy to whatever terminal it was launched from,
-   by whatever means that platform offers.)
-
-   Verifying a change by driving the real app — activating it, sending
-   keystrokes through System Events, taking screenshots — is encouraged: it
-   has already caught bugs that every unit test passed. But when that stretch
-   of work is done, not merely at the end of the whole task, **bring the
-   terminal back to the front**:
-
-   ```bash
-   osascript -e 'tell application "iTerm" to activate'
-   ```
+8. **Swift follows the project style rules; the C# deliberately does not.**
+   The Swift in `mac-app/` avoids `map`/`filter`/`reduce`, uses `@Observable`
+   (never `ObservableObject`) and `// MARK: -` sections, and prefers clarity
+   over concision. Those rules live in Russell's MACHINE-WIDE instructions
+   (`~/.claude/CLAUDE.md`, mirrored to `~/.gemini/GEMINI.md`), not in this
+   repository, because they govern his Swift everywhere rather than this
+   project in particular.
