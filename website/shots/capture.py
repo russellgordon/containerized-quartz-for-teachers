@@ -90,7 +90,7 @@ REMEMBERED_FRAME_KEYS = [
 # app's own preference before the run and put back afterwards, because a
 # launch argument does not reliably win against a value the app applies by
 # hand after the window is shown.
-ASSISTANT_FRAME = "{{500, 40}, {560, 940}}"
+ASSISTANT_FRAME = "{{500, 60}, {560, 760}}"
 
 # The width, in points, each captured window is forced to. Only used to work
 # out how many pixels there are per point, so the corner radius comes out
@@ -135,10 +135,18 @@ def write_defaults(key: str, value: str | None) -> None:
             capture_output=True,
         )
         return
-    subprocess.run(
-        ["defaults", "write", APP_BUNDLE_DEFAULTS_DOMAIN, key, value],
-        capture_output=True,
+    # -string is not optional. A frame is written "{{500, 40}, {560, 940}}",
+    # and to `defaults` those braces are old-style plist syntax: it tries to
+    # parse the value as a DICTIONARY, fails with "Could not parse", writes
+    # nothing, and exits without anybody noticing. The assistant window then
+    # opened at its default size in every capture, which is why it kept coming
+    # back too wide to hold the conversation.
+    result = subprocess.run(
+        ["defaults", "write", APP_BUNDLE_DEFAULTS_DOMAIN, key, "-string", value],
+        capture_output=True, text=True,
     )
+    if result.returncode != 0:
+        print(f"   Could not set {key}: {result.stderr.strip()}", file=sys.stderr)
 
 
 class RememberedWindowFrames:
@@ -156,8 +164,19 @@ class RememberedWindowFrames:
         return False
 
     def stage_assistant_frame(self) -> None:
-        """Put the assistant window where its portrait wants it."""
+        """Put the assistant window where its portrait wants it, and check.
+
+        The app applies this frame by hand when the window appears, so a value
+        that never landed shows up only as a badly proportioned screenshot half
+        an hour later. Reading it back costs nothing.
+        """
         write_defaults("AssistantWindowFrame-ENG2D-1", ASSISTANT_FRAME)
+        written = read_defaults("AssistantWindowFrame-ENG2D-1")
+        if written != ASSISTANT_FRAME:
+            print(f"   The assistant window frame did not take: wanted {ASSISTANT_FRAME}, "
+                  f"got {written!r}", file=sys.stderr)
+        else:
+            print(f"   Assistant window staged at {ASSISTANT_FRAME}")
 
 
 # ---------- The UI tests ----------

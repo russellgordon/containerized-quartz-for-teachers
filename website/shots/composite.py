@@ -54,6 +54,21 @@ def with_shadow(card: Image.Image) -> Image.Image:
     return canvas
 
 
+# The browser's own chrome, in points, at the top of a Safari capture. Cropped
+# off for the fanned figure: three sets of traffic lights and three address
+# bars stacked up read as three browser windows, when the subject is the three
+# SITES. The full-window captures elsewhere on the page keep their chrome.
+CHROME_POINTS = 52
+
+
+def without_chrome(image: Image.Image, width_in_points: int = 1280) -> Image.Image:
+    scale = max(1, round(image.width / width_in_points))
+    top = CHROME_POINTS * scale
+    if top >= image.height:
+        return image
+    return image.crop((0, top, image.width, image.height))
+
+
 def fan(sources: list[Path], destination: Path, visible_fraction: float = 0.42) -> Path:
     """Overlap several captures horizontally, left one behind, right one in front.
 
@@ -61,7 +76,7 @@ def fan(sources: list[Path], destination: Path, visible_fraction: float = 0.42) 
     it — enough of the left edge of each site, which is where its colours and
     its typeface live, to compare them at a glance.
     """
-    cards = [rounded(Image.open(path).convert("RGBA")) for path in sources]
+    cards = [rounded(without_chrome(Image.open(path).convert("RGBA"))) for path in sources]
     if not cards:
         raise SystemExit("Nothing to fan out.")
 
@@ -97,7 +112,7 @@ def fan(sources: list[Path], destination: Path, visible_fraction: float = 0.42) 
 
 def side_by_side(sources: list[Path], destination: Path, gap: int = 34) -> Path:
     """Two captures next to each other, same size, nothing overlapping."""
-    cards = [rounded(Image.open(path).convert("RGBA")) for path in sources]
+    cards = [rounded(without_chrome(Image.open(path).convert("RGBA"))) for path in sources]
     height = min(card.height for card in cards)
     scaled = []
     for card in cards:

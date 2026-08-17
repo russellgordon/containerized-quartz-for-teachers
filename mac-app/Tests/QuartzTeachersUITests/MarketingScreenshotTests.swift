@@ -36,8 +36,8 @@ class MarketingScreenshotCase: XCTestCase {
     /// is that key, and the value is an NSRect string rather than AppKit's
     /// frame format.
     static let assistantFrameKey: String = "AssistantWindowFrame-ENG2D-1"
-    static let assistantWidth: CGFloat = 520
-    static let assistantHeight: CGFloat = 900
+    static let assistantWidth: CGFloat = 560
+    static let assistantHeight: CGFloat = 760
 
     // MARK: - Functions
 
@@ -165,6 +165,50 @@ class MarketingScreenshotCase: XCTestCase {
         return target.exists && target.isHittable
     }
 
+    /// True when the Mac is set to dark appearance.
+    ///
+    /// Read from the global domain rather than from this process's own
+    /// appearance: the test runner is a different application from the one
+    /// being photographed, and only the setting is shared. The key is absent
+    /// entirely when the Mac is light.
+    func systemIsDark() -> Bool {
+        let style: String = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") ?? ""
+        return style.lowercased().contains("dark")
+    }
+
+    /// Make the class site inside the preview match the app around it.
+    ///
+    /// The site chooses its own colours, and the embedded web view does not
+    /// report a light preference — so a light app came back holding a dark
+    /// website, which reads as a rendering fault rather than as a choice.
+    ///
+    /// The site's own toggle offers exactly one of two controls, and WHICH one
+    /// says what theme it is in: a light site offers "Dark mode", a dark site
+    /// offers "Light mode". So the label names the destination, and asking for
+    /// the destination we want is both the test and the fix.
+    func matchSiteToSystemAppearance(in application: XCUIApplication) {
+        let wantDark: Bool = systemIsDark()
+        let destination: String = wantDark ? "Dark mode" : "Light mode"
+
+        // Matched on TITLE as well as label. Inside a web view the control is
+        // a Button carrying its accessible name in `title` — matching only on
+        // `label`, as this did at first, found nothing and silently skipped
+        // the toggle, so a light app kept coming back holding a dark site.
+        let named: NSPredicate = NSPredicate(
+            format: "title == %@ OR label == %@ OR value == %@",
+            destination, destination, destination
+        )
+        let toggle: XCUIElement = application.descendants(matching: .any)
+            .matching(named).firstMatch
+
+        // Present only when the site is in the OTHER mode. Absent means the
+        // site already matches, and there is nothing to do.
+        if toggle.waitForExistence(timeout: 10) && toggle.isHittable {
+            toggle.click()
+            settle(2.5)
+        }
+    }
+
     /// A pause long enough for a view to settle before it is photographed.
     /// Screenshots are the one place where "it exists" is not the same as
     /// "it has finished drawing".
@@ -252,6 +296,7 @@ final class MarketingScreenshots: MarketingScreenshotCase {
         let webView: XCUIElement = application.webViews.firstMatch
         XCTAssertTrue(webView.waitForExistence(timeout: 900), "The built site should appear in the window")
         settle(8.0)
+        matchSiteToSystemAppearance(in: application)
         save(window, as: "preview")
 
         if application.buttons["stopPreviewButton"].exists {
