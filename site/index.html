@@ -100,7 +100,13 @@
   <p>Quick, searchable, and readable on a phone at the back of the room.</p>
   <p>Mathematics is typeset properly. Diagrams are drawn from your notes rather than pasted in as pictures. Every page can link to every other.</p>
   <figure class="shot">
-    <div class="shot-missing">Screenshot pending: site-eng2d</div>
+    <picture>
+      <source srcset="/img/site-eng2d-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="/img/site-eng2d-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="/img/site-eng2d-light.webp" type="image/webp">
+      <img src="/img/site-eng2d-light.png" alt="A Grade 10 English class website in a browser, with a navigation sidebar, a search field and a page of class notes."
+           width="850" height="571" loading="lazy" decoding="async">
+    </picture>
     <figcaption>What a class sees.</figcaption>
 </figure>
 </section>

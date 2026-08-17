@@ -61,9 +61,9 @@
       "capture": {
         "kind": "browser",
         "course": "MCV4U",
-        "path": "/style/what-this-site-can-do#mathematics-typeset-properly"
+        "path": "/concepts/derivative-rules"
       },
-      "alt": "A Grade 12 Calculus and Vectors page showing typeset mathematics, with the course navigation beside it.",
+      "alt": "A Grade 12 Calculus and Vectors page opening with typeset mathematics: a displayed definition and a table of derivative rules.",
       "caption": "The preview is the real site \u2014 equations and all."
     },
     {
@@ -73,8 +73,8 @@
         "course": "SCH3U",
         "path": "/style/what-this-site-can-do#diagrams"
       },
-      "alt": "A Grade 11 Chemistry class website in its own colours and typeface, showing a diagram and a table drawn from the notes.",
-      "caption": "A different subject, a different look \u2014 chosen in the app, not in code."
+      "alt": "A Grade 11 Chemistry page showing a flowchart beside the few lines of text that produced it.",
+      "caption": "Diagrams are written, not drawn \u2014 and edited in seconds."
     },
     {
       "id": "site-phone",

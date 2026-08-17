@@ -135,11 +135,7 @@
 <section>
   <h2>It looks like your course, not like an app</h2>
   <p>Each section picks its own colours, typeface and footer, so two sections of the same course are told apart at a glance.</p>
-  <p>You choose in the app and see a live sample before anything is built.</p>
-  <figure class="shot">
-    <div class="shot-missing">Screenshot pending: site-sch3u</div>
-    <figcaption>A different subject, a different look — chosen in the app, not in code.</figcaption>
-</figure>
+  <p>You choose in the app and see a live sample before anything is built. The example sites further down this page are three different subjects, and none of them looks like the others.</p>
 </section>
 
 <hr class="rule">
@@ -149,7 +145,13 @@
   <p>Preview builds the real site and shows it inside the app window.</p>
   <p>Not an approximation — the same site your class would get, built the same way. Right down to the equations. What you see in the preview is what they see when you publish.</p>
   <figure class="shot">
-    <div class="shot-missing">Screenshot pending: site-mcv4u</div>
+    <picture>
+      <source srcset="/img/site-mcv4u-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="/img/site-mcv4u-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="/img/site-mcv4u-light.webp" type="image/webp">
+      <img src="/img/site-mcv4u-light.png" alt="A Grade 12 Calculus and Vectors page opening with typeset mathematics: a displayed definition and a table of derivative rules."
+           width="850" height="571" loading="lazy" decoding="async">
+    </picture>
     <figcaption>The preview is the real site — equations and all.</figcaption>
 </figure>
 </section>
@@ -166,6 +168,16 @@
     <li><strong>Pages that link to each other</strong>, so a lesson points at the concept behind it and the concept lists the lessons that used it.</li>
     <li><strong>A site that reads well on a phone</strong>, in light or dark, with no separate mobile version to maintain.</li>
   </ul>
+  <figure class="shot">
+    <picture>
+      <source srcset="/img/site-sch3u-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="/img/site-sch3u-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="/img/site-sch3u-light.webp" type="image/webp">
+      <img src="/img/site-sch3u-light.png" alt="A Grade 11 Chemistry page showing a flowchart beside the few lines of text that produced it."
+           width="850" height="571" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>Diagrams are written, not drawn — and edited in seconds.</figcaption>
+</figure>
 </section>
 
 <hr class="rule">
@@ -188,7 +200,13 @@
     <li><span class="label">SCH3U</span> <a href="https://sch3u-gordon-2026-27.netlify.app">Chemistry, Grade 11</a></li>
   </ul>
   <figure class="shot shot-device">
-    <div class="shot-missing">Screenshot pending: site-phone</div>
+    <picture>
+      <source srcset="/img/site-phone-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="/img/site-phone-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="/img/site-phone-light.webp" type="image/webp">
+      <img src="/img/site-phone-light.png" alt="The same class website at phone width, with the navigation collapsed behind a button."
+           width="360" height="736" loading="lazy" decoding="async">
+    </picture>
     <figcaption>The same site on a phone.</figcaption>
 </figure>
 </section>

@@ -520,13 +520,18 @@ def capture_phone(dark: bool) -> None:
 
     url = site_address("ENG2D") + "/"
     run(["xcrun", "simctl", "openurl", udid, url], capture_output=True)
-    time.sleep(12)
-    dismiss_safari_onboarding()
+    time.sleep(15)
+    dismiss_safari_onboarding(udid)
 
     destination = IMAGE_DIR / f"site-phone-{suffix}.png"
     with destination.open("wb") as handle:
         result = subprocess.run(
-            [str(ROCKETSIM), "screenshot", "--background", "transparent", "--bezel", "device"],
+            # --udid, not the focused simulator. Without it RocketSim
+            # photographs whichever simulator is in front — which, on a Mac
+            # with another one already booted, was somebody else's home
+            # screen rather than the class site.
+            [str(ROCKETSIM), "screenshot", "--udid", udid,
+             "--background", "transparent", "--bezel", "device"],
             stdout=handle, stderr=subprocess.PIPE, text=False,
         )
     if result.returncode != 0:
@@ -555,12 +560,12 @@ def simulator_is_booted(udid: str) -> bool:
     return False
 
 
-def dismiss_safari_onboarding() -> None:
+def dismiss_safari_onboarding(udid: str) -> None:
     """Close the first-run popover Mobile Safari shows over the page."""
     if not ROCKETSIM.exists():
         return
     subprocess.run(
-        [str(ROCKETSIM), "interact", "tap", "--label", "Close", "--screen", "latest"],
+        [str(ROCKETSIM), "interact", "tap", "--udid", udid, "--label", "Close"],
         capture_output=True,
     )
     time.sleep(1.5)
