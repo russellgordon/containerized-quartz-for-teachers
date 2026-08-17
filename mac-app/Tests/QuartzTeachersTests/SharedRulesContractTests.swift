@@ -145,6 +145,100 @@ final class SharedRulesContractTests: XCTestCase {
         XCTAssertEqual(section["secretLength"] as? Int, LogRedactor.secretLength)
     }
 
+    // MARK: - Following links
+
+    /// The rules themselves are DATA here; the behaviour they describe is run
+    /// against a real course in `AssistToolRunnerTests`, which reads the same
+    /// two flags. Splitting it that way is deliberate: a synthetic page graph
+    /// can be built to agree with whatever it is asked, and the thing worth
+    /// testing is what happens to files on disk.
+    @MainActor
+    func testFollowingLinksIsDescribedWithItsReasons() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("followingLinks")
+
+        let publishing: [String: Any] = try XCTUnwrap(section["publishing"] as? [String: Any])
+        XCTAssertEqual(publishing["takesLinkedPages"] as? Bool, true)
+        XCTAssertEqual(publishing["transitive"] as? Bool, true)
+        XCTAssertEqual(publishing["disclosedInThePlan"] as? Bool, true)
+        XCTAssertNotNil(publishing["why"] as? String)
+
+        let unpublishing: [String: Any] = try XCTUnwrap(section["unpublishing"] as? [String: Any])
+        XCTAssertEqual(unpublishing["aReferrerCountsOnlyWhenVisible"] as? Bool, true)
+        XCTAssertNotNil(unpublishing["why"] as? String)
+
+        XCTAssertEqual(
+            (section["theOrderIsLoadBearing"] as? [String: Any])?["value"] as? Bool, true
+        )
+    }
+
+    /// The kinds the sweep must never reach, each with the reason it is
+    /// exempt — a list of exemptions nobody explained is a list nobody can
+    /// safely change.
+    @MainActor
+    func testTheExclusionsTheContractNamesAreExplained() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("followingLinks")
+        let kinds: [[String: Any]] = try XCTUnwrap(
+            section["neverTakenDownByFollowingLinks"] as? [[String: Any]]
+        )
+        XCTAssertFalse(kinds.isEmpty)
+        for kind in kinds {
+            XCTAssertNotNil(kind["kind"] as? String)
+            XCTAssertNotNil(kind["why"] as? String, "\(kind) has no reason")
+        }
+        var described: String = ""
+        for kind in kinds {
+            described += ((kind["kind"] as? String) ?? "") + " "
+        }
+        let all: String = described.lowercased()
+        XCTAssertTrue(all.contains("key links"))
+        XCTAssertTrue(all.contains("index.md"))
+        XCTAssertTrue(all.contains("curriculum"))
+    }
+
+    // MARK: - Asking before the assistant changes anything
+
+    @MainActor
+    func testTheConfirmationSettingFollowsTheContract() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("assistantConfirmation")
+        let defaults: UserDefaults = TestDefaults.make()
+        let settings: AppSettings = AppSettings(defaults: defaults)
+
+        if section["defaultsToOn"] as? Bool == true {
+            XCTAssertTrue(settings.assistantAsksBeforeChanging)
+        }
+
+        let mentioned: [String: Any] = try XCTUnwrap(section["mentionedAfter"] as? [String: Any])
+        let after: Int = try XCTUnwrap(mentioned["plansAccepted"] as? Int)
+        XCTAssertEqual(AssistPlanMode.plansBeforeMentioningTheSetting, after)
+
+        if section["sameOnBothAssistants"] as? [String: Any] != nil {
+            for tier in AssistModelTier.allCases {
+                let gate: AssistPlanMode = AssistPlanMode(
+                    tier: tier, settings: AppSettings(defaults: TestDefaults.make())
+                )
+                XCTAssertTrue(gate.isOn, "\(tier) should ask by default")
+                for _ in 0..<after {
+                    gate.recordAccepted()
+                }
+                XCTAssertTrue(gate.shouldOfferToStop, "\(tier) was never told the setting exists")
+                gate.stopAsking()
+                XCTAssertFalse(gate.isOn, "\(tier) refused to be turned off")
+            }
+        }
+
+        if (mentioned["appWide"] as? Bool) == true {
+            let shared: UserDefaults = TestDefaults.make()
+            let first: AssistPlanMode = AssistPlanMode(
+                tier: .large, settings: AppSettings(defaults: shared)
+            )
+            first.recordAccepted()
+            let second: AssistPlanMode = AssistPlanMode(
+                tier: .large, settings: AppSettings(defaults: shared)
+            )
+            XCTAssertEqual(second.plansAccepted, 1, "The count reset when the window did")
+        }
+    }
+
     // MARK: - What a page is called
 
     /// Every case the contract lists, run against the real rule.

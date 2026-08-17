@@ -1651,6 +1651,8 @@ final class AssistToolRunnerTests: XCTestCase {
             "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
         ))
 
+        // The rule this proves is written down in
+        // shared-rules.json → followingLinks, so both apps run it.
         XCTAssertTrue(
             text(ofCourseLevelPage: "Ohm's Law", in: made.course).contains("publishForSection1: false"),
             "A page was left visible, reachable from nothing, held up by a draft: \(outcome.detail)"

@@ -123,6 +123,33 @@
     },
     "rule": "EVERY new feature, and every CHANGED behaviour, that a teacher can see leaves a line on this trail. Adding one means naming the event here and in both apps — not writing free text at a call site, and not deciding it is too small to bother with. The failure this prevents is the one already met in the field: a teacher builds a preview, opens the assistant, asks for a report, and is told there is nothing to report, because the two things they just did were not among the things anybody had thought to record. A feature that leaves no trace is a feature that can only be diagnosed by asking the teacher to do it again, which is the thing they came to you because they could not do."
   },
+  "assistantConfirmation": {
+    "note": "Whether the assistant describes what it is about to do and waits for a button, before anything that changes the built website.",
+    "defaultsToOn": true,
+    "why": "The local model is a router and routers are wrong sometimes. Showing what it understood before it acts turns a misroute from a thing that HAPPENS into a thing a teacher declines.",
+    "sameOnBothAssistants": {
+      "value": true,
+      "why": "The smaller assistant used to refuse to be turned off and was never told the setting existed, on the measured reasoning that one request in five going wrong is not a rate at which anybody should stop reading. That withheld a setting from exactly the machine where knowing about it matters most. The measured number is put in front of the teacher as a caution instead, which respects the measurement AND the person."
+    },
+    "deployingAlwaysAsks": {
+      "value": true,
+      "why": "Deploying puts work in front of students and cannot be taken back by us, so it is gated separately and the setting does not reach it."
+    },
+    "mentionedAfter": {
+      "plansAccepted": 15,
+      "appWide": true,
+      "onlyOnce": true,
+      "why": "For DISCOVERABILITY, not to ask for trust: a switch nobody knows about might as well not exist. App-wide because the count used to reset with every conversation, so a teacher working in short bursts could accept a hundred plans and never be told. Once ever, because a suggestion declined is an answer and asking again is how a helpful mention becomes nagging."
+    },
+    "aCancelDoesNotResetTheCount": {
+      "value": true,
+      "why": "The number measures how much of the assistant's work this teacher has READ, and a cancel is evidence of reading rather than evidence against it."
+    },
+    "oneStoredAnswer": {
+      "value": true,
+      "why": "The switch in Settings and the gate in the conversation are the same value, read fresh each turn - the two windows are open at the same time, and a teacher who turns it off expects the next thing they ask to go straight through."
+    }
+  },
   "assistantModelChoice": {
     "note": "Which assistant runs on a teacher's machine, and what they are allowed to do about it. Shared because these are rules with inputs and outputs, not pictures: the panel that holds them looks nothing alike on the two platforms and must BEHAVE identically. What is deliberately not here is the layout, the keyboard shortcut, and where the settings window lives - see WINDOWS-HANDOFF.md, 'Letting a teacher choose which assistant runs'.",
     "defaultChoice": "automatic",
@@ -287,6 +314,38 @@
       "note": "A leaf expectation is coded like A1.1 or B2.3: one letter, digits, a dot, digits — the WHOLE name, not a prefix. Index and strand-heading pages sit in the same folder and must not be counted."
     },
     "note": "What counts as a curriculum expectation. Written after checking the code rather than from memory: an expectation is not a code found in a page's TEXT, it is a PAGE named by a code inside a curriculum folder. A first draft of this contract asserted text-scanning and was wrong before it was ever run."
+  },
+  "followingLinks": {
+    "note": "What publishing and unpublishing do to the pages a named page LINKS TO. The two verbs are not mirror images and each rule is written once. Shared because both apps sweep the same folders and a difference here silently changes what students can see.",
+    "publishing": {
+      "takesLinkedPages": true,
+      "transitive": true,
+      "disclosedInThePlan": true,
+      "why": "Publishing a page whose links lead somewhere students cannot see is the one thing publishing must never do, so it always takes what it links to, and what those link to in turn. The plan names every page that will become visible, so a teacher agreeing to publish one class can see the four pages going with it."
+    },
+    "unpublishing": {
+      "takesALinkedPageOnlyWhenNothingElseNeedsIt": true,
+      "aReferrerCountsOnlyWhenVisible": true,
+      "why": "'X still links to it' is a reason to keep a page published only when students can SEE X. Counting hidden referrers left pages visible and reachable from nothing, held up by drafts nobody had published - kept alive by a page that is not there. Safe in one direction because of the other: publishing is transitive, so a page taken down here comes back the moment anything visible needs it again."
+    },
+    "neverTakenDownByFollowingLinks": [
+      {
+        "kind": "a page this section's Key Links points at, and the Key Links page itself",
+        "why": "A section cannot do without them; they are the way in to everything else."
+      },
+      {
+        "kind": "a folder's landing page - index.md - which includes All Classes and every sidebar folder",
+        "why": "It is the way IN to a folder rather than a page anything links to, so following links must never take it down."
+      },
+      {
+        "kind": "a curriculum page: any page with a folder segment containing 'curriculum'",
+        "why": "build_site.py's own rule, so a course whose folder is called 'Ontario Curriculum' is covered exactly as a plain one is. In a real course this is every expectation page, the folder's own index, and the page explaining them."
+      }
+    ],
+    "theOrderIsLoadBearing": {
+      "value": true,
+      "why": "The exclusions are checked BEFORE the referrer test, so narrowing what counts as a referrer cannot reach them. Narrowing a sweep rule makes every exclusion above it matter more than it did the day before, which is why the exclusions are the thing to re-test after any change to what gets swept."
+    }
   },
   "note": "Eight rule sets that both apps need and neither platform owns. The MECHANISMS behind several of them differ completely - launchd against Task Scheduler, AppKit against WinUI, ~/Library/Logs against %LOCALAPPDATA% - which is exactly why the rules are written here instead: what must be refused, matched, stripped, or taken out of a problem report does not change with the machinery that does it.",
   "pageNaming": {

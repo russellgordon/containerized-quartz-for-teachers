@@ -2421,6 +2421,124 @@ teacher reads — every one passed the unit suite:
   labelled forms (`--account …`, `Account ID: …`), which is where it actually
   appears.
 
+## More to ask for, and the rules under it (entries 233–243)
+
+A run of work on what a teacher can ask the assistant. The commands are the
+visible half; the rules under them are what a port gets wrong.
+
+### Commands added
+
+| Phrasing | Tool | Notes |
+|---|---|---|
+| `Publish Monday's class` … `Sunday's` | `publish_class_on` | Seven fixed shapes; the day resolves in code. |
+| `Publish Unit 5` / `Unpublish Unit 4` | `publish_pages` / `unpublish_pages` | A whole unit, one class at a time. |
+| `Add five more days to Unit 4` | `add_next_class` | Words or digits. |
+| `Start a new unit for the next class` | `add_next_class` | Day starts again at 1. |
+| `Duplicate Unit 3, Day 2 as my next class` | `add_next_class` | Shifts later classes when room is needed. |
+| `What dates am I teaching?` / `Show me the rest of the dates` | `read_remembered_timetable` | Week first, then the offer. |
+
+All are matched in CODE. Four of them cannot be listed as literals because the
+number or title in them is unbounded, so `assist-cases.json` → `cardPhrasings`
+now has a **`parsed`** array beside `matches`: each family gives its shape, the
+tool, the argument keys it fills, an example, and — the half that matters — a
+`notThis` near-miss it must REFUSE. "Publish Unit 4, Day 3" has a comma, is one
+page, and belongs to the model. Without the refusals a family swallows requests
+that were never its own.
+
+### A whole unit, one class at a time
+
+Unpublish walks the highest day backwards; publish walks Day 1 forwards. The
+per-day rules are the ordinary ones, so each step asks "what else still needs
+this page?" against the state as it actually is at that moment. Publishing
+forwards is also what makes an earlier class claim a shared page's date.
+
+Three things that are easy to get wrong and cheap to get right:
+
+- **Stop the preview ONCE**, not per page. Twenty pages is one act to a teacher.
+- **One undo entry**, merged from every file touched — keeping the EARLIEST
+  before and the LATEST after for a file written more than once, or undo puts a
+  page back the way it was one step ago rather than before the unit was touched.
+- **One sentence back**: "Unit 4 was unpublished."
+
+### Duplicating reuses the insertion planner
+
+`Duplicate Unit 3, Day 2 as my next class` makes Unit 3, Day 3 with the
+source's content and a date of its own. Making room is the existing insertion
+machinery's job rather than a second copy of it: it renames **highest day
+first** so nothing is written over, re-dates onto real meeting days, and
+rewrites every wikilink pointing at a renamed page. When nothing needs moving
+it simply appends.
+
+The copy starts **hidden however the source was** — a duplicate of a published
+lesson is a draft of next week's. And it is **undoable only when nothing else
+moved**: a partial undo that deleted the new page and left every later class
+renamed is worse than no undo, so when classes shuffled the answer points at
+the backup instead.
+
+### Following links, in both directions (`shared-rules.json` → `followingLinks`)
+
+**Publishing** takes what it links to, transitively, and the plan names every
+page that will become visible.
+
+**Unpublishing** takes a linked page only when nothing else needs it — and "X
+still links to it" now counts **only when students can see X**. Counting hidden
+referrers left pages visible and reachable from nothing, held up by drafts
+nobody had published. Safe in one direction because of the other: publishing is
+transitive, so a page taken down comes back the moment anything visible needs it.
+
+**Four kinds are never taken down by following links**, and they are checked
+BEFORE the referrer test: a page Key Links points at (and Key Links itself), a
+folder's landing page (which is All Classes and every sidebar folder), and
+anything with a folder segment containing "curriculum".
+
+> **The order is load-bearing.** Narrowing a sweep rule makes every exclusion
+> above it matter more than it did the day before. The exclusions are the thing
+> to re-test after any change to what gets swept, and there is now a test that
+> sets up exactly the situation the narrowing created — the only page linking to
+> each of the four is HIDDEN — confirmed to fail with the exclusions removed.
+
+### Confirmation is a setting now (`shared-rules.json` → `assistantConfirmation`)
+
+"Ask me before changing anything", in Settings, **on by default**. Deploying
+always asks regardless — it puts work in front of students and cannot be taken
+back.
+
+**Both assistants follow identical rules.** The smaller one used to refuse to be
+turned off and was never told the setting existed, on the measured reasoning
+that one request in five going wrong is not a rate at which anybody should stop
+reading. That withheld a setting from exactly the machine where knowing about it
+matters most. The measured number is put in front of the teacher as a caution
+instead.
+
+**Discoverability:** after **15** plans agreed to — app-wide, across every
+conversation and course — the assistant says once, and only once, that the
+setting exists. The old count was five, per conversation, reset by a Cancel, so
+a teacher working in short bursts could accept a hundred plans and never be
+told. A Cancel no longer resets it either: the number measures how much of the
+assistant's work this teacher has READ.
+
+**One stored answer**, read fresh each turn. The settings window and the
+assistant are open at the same time.
+
+> A mac test caught the trap here: two settings OBJECTS over one defaults store
+> are not the same as one object — each caches what it read at construction, so
+> a change through one was invisible to the other. It would have worked in the
+> app by luck, because both would have been the shared instance.
+
+### Smaller things worth copying
+
+- **`check_section` says three different things about the preview**, decided by
+  a three-way state rather than an "is it running" boolean: building → say when
+  the pages will appear; showing → say nothing; neither → offer a preview. The
+  boolean stays true while the site is SERVED, so a teacher looking at a
+  finished preview was told to wait for a rebuild that had ended minutes ago.
+  The honest signal for "on screen" is the loaded URL, not the process.
+- **"It's already been published."** Asking to publish something already
+  published gets four words, on the plan path too — otherwise plan mode asks a
+  teacher to approve a no-op and then reports that nothing happened. The plan
+  remembers which pages were NAMED, separately from everything links swept in,
+  or "it" counts pages nobody mentioned and comes out plural.
+
 ## Starting a new unit, and asking for the schedule (entries 231–232)
 
 ### "Start a new unit for the next class"

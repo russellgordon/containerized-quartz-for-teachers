@@ -176,12 +176,31 @@ enum AssistContract {
                 "arguments": shape.command.arguments,
             ])
         }
+        var parsed: [[String: Any]] = []
+        for shape in AssistCardCommand.everyParsedShape {
+            parsed.append([
+                "shape": shape.shape,
+                "tool": shape.tool,
+                "fills": shape.fills,
+                "example": shape.example,
+                "notThis": shape.notThis,
+                "becauseNotThis": shape.becauseNotThis,
+            ])
+        }
         return [
             "note": "Matched in CODE and never sent to the model. Trimmed, case-folded, trailing . and ! "
                   + "removed, then compared for EQUALITY. Measured: the model misrouted five of the "
                   + "eleven suggested phrasings in every trial while filling arguments perfectly, so the "
                   + "shapes with no ambiguity in them do not reach it.",
             "matches": matches,
+            "parsedNote": "Families the matcher PARSES rather than compares, because the number or "
+                        + "title in them is unbounded. They are matched in code for the same reason "
+                        + "the literals are — the whole sentence IS the request, and reading an "
+                        + "integer or a title off a fixed shape is not a judgement anybody needs a "
+                        + "language model for. `notThis` is the near-miss each family must REFUSE, "
+                        + "and it is the half that stops a family swallowing requests that belong "
+                        + "to the model.",
+            "parsed": parsed,
         ]
     }
 

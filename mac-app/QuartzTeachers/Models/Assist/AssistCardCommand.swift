@@ -146,6 +146,79 @@ nonisolated struct AssistCardCommand: Sendable, Equatable {
         return nil
     }
 
+    /// A phrasing the matcher PARSES rather than compares, described so the
+    /// other app can implement the same thing.
+    ///
+    /// The literal shapes can be listed; these cannot, because the number in
+    /// them is unbounded — any unit, any count of days, any page title. A
+    /// contract that carried only the literals would say the assistant
+    /// understands eleven sentences when it understands those plus three
+    /// families, and Windows would build eleven.
+    struct ParsedShape: Sendable, Equatable {
+
+        // MARK: - Stored properties
+
+        /// What the sentence looks like, with the variable part in <angle
+        /// brackets>.
+        let shape: String
+
+        /// The tool it always means.
+        let tool: String
+
+        /// The argument keys it fills, and where each comes from.
+        let fills: [String: String]
+
+        /// An example, so a test has something to run.
+        let example: String
+
+        /// A sentence that must NOT match, and why — the near-miss is the
+        /// half that stops a family swallowing requests it should not.
+        let notThis: String
+        let becauseNotThis: String
+    }
+
+    /// Every parsed family, for the contract.
+    static var everyParsedShape: [ParsedShape] {
+        return [
+            ParsedShape(
+                shape: "publish unit <number>",
+                tool: "publish_pages",
+                fills: ["pages": "Unit <number>"],
+                example: "publish unit 5",
+                notThis: "publish unit 4, day 3",
+                becauseNotThis: "A comma means one PAGE was named, which has a title in it for the "
+                              + "model to read out. Only a bare unit number is a whole unit."
+            ),
+            ParsedShape(
+                shape: "unpublish unit <number>",
+                tool: "unpublish_pages",
+                fills: ["pages": "Unit <number>"],
+                example: "unpublish unit 4",
+                notThis: "unpublish unit 4, day 3",
+                becauseNotThis: "As above: a comma names a page, not a unit."
+            ),
+            ParsedShape(
+                shape: "add <count> more days to unit <number>",
+                tool: "add_next_class",
+                fills: ["days": "<count>, as a word up to twelve or a digit",
+                        "unit": "<number>"],
+                example: "add five more days to unit 4",
+                notThis: "add more days to unit 4",
+                becauseNotThis: "No count, so there is nothing to fill `days` with and guessing one "
+                              + "would create a number of pages nobody asked for."
+            ),
+            ParsedShape(
+                shape: "duplicate <page title> as my next class",
+                tool: "add_next_class",
+                fills: ["duplicate": "<page title>, with the capitals the teacher typed"],
+                example: "duplicate Unit 3, Day 2 as my next class",
+                notThis: "duplicate Unit 3, Day 2",
+                becauseNotThis: "The closing half is what makes the sentence unambiguous. Without "
+                              + "it, 'duplicate' could mean several things and belongs with the model."
+            ),
+        ]
+    }
+
     /// One fixed shape, for anything that has to enumerate them — the
     /// contract generator does, and a tuple array cannot be handed out.
     struct FixedShape: Sendable, Equatable {
