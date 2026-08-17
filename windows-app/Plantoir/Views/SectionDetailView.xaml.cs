@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Plantoir.Core.Assist;
 using Plantoir.Core.Models;
 using Plantoir.Core.Scripting;
@@ -486,4 +487,159 @@ public sealed partial class SectionDetailView : UserControl
     private void Obsidian_Click(object sender, RoutedEventArgs e) =>
         _ = FolderActions.OpenInObsidian(_course.SectionDirectory(_sectionNumber), _course.DirectoryPath,
             BundledToolchain.SupportPath("obsidian_defaults/.obsidian"));
+
+    public void StagePreviewForCapture(ElementTheme theme)
+    {
+        _previewUrl = new Uri("http://localhost:8081");
+        PreviewLabel.Text = "Stop Preview";
+        PreviewIcon.Glyph = Glyphs.Stop;
+        BackButton.IsEnabled = true;
+        ReloadButton.IsEnabled = true;
+        BrowserButton.IsEnabled = true;
+        DeployButton.IsEnabled = true;
+
+        NoPreviewState.Visibility = Visibility.Collapsed;
+        Progress.Visibility = Visibility.Collapsed;
+
+        var isDark = theme == ElementTheme.Dark;
+        var siteBg = isDark
+            ? new SolidColorBrush(Windows.UI.Color.FromArgb(255, 22, 22, 24))     // #161618 Quartz dark
+            : new SolidColorBrush(Windows.UI.Color.FromArgb(255, 250, 248, 245)); // #FAF8F5 Quartz light
+        var textPrimary = isDark
+            ? new SolidColorBrush(Windows.UI.Color.FromArgb(255, 236, 239, 244))
+            : new SolidColorBrush(Windows.UI.Color.FromArgb(255, 43, 43, 43));
+        var textSecondary = isDark
+            ? new SolidColorBrush(Windows.UI.Color.FromArgb(255, 160, 170, 185))
+            : new SolidColorBrush(Windows.UI.Color.FromArgb(255, 110, 110, 110));
+        var accentColor = isDark
+            ? new SolidColorBrush(Windows.UI.Color.FromArgb(255, 136, 192, 208))
+            : new SolidColorBrush(Windows.UI.Color.FromArgb(255, 40, 75, 99));
+        var cardBg = isDark
+            ? new SolidColorBrush(Windows.UI.Color.FromArgb(255, 30, 30, 34))
+            : new SolidColorBrush(Windows.UI.Color.FromArgb(255, 240, 236, 230));
+
+        var siteRoot = new Grid { Background = siteBg };
+        siteRoot.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(240) });
+        siteRoot.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+        var navBar = new StackPanel { Padding = new Thickness(24, 28, 16, 20), Spacing = 14 };
+        var siteHeader = new TextBlock
+        {
+            Text = "ENG2D: Grade 10 English",
+            FontSize = 15,
+            FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+            Foreground = textPrimary
+        };
+        var searchBox = new Border
+        {
+            Background = cardBg,
+            CornerRadius = new CornerRadius(6),
+            Padding = new Thickness(10, 6, 10, 6),
+            Child = new TextBlock { Text = "Search (Ctrl+K)", FontSize = 12, Foreground = textSecondary }
+        };
+        var treeHeader = new TextBlock
+        {
+            Text = "EXPLORER",
+            FontSize = 11,
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+            Foreground = textSecondary,
+            Margin = new Thickness(0, 10, 0, 0)
+        };
+        var unit1 = new TextBlock
+        {
+            Text = "▼ Unit 1: The Short Story",
+            FontSize = 13,
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+            Foreground = textPrimary
+        };
+        var day1 = new TextBlock
+        {
+            Text = "• Day 1: Course Intro",
+            FontSize = 13,
+            Foreground = accentColor,
+            Margin = new Thickness(14, 2, 0, 0)
+        };
+        var day2 = new TextBlock
+        {
+            Text = "• Day 2: Narrative Arc",
+            FontSize = 13,
+            Foreground = textSecondary,
+            Margin = new Thickness(14, 2, 0, 0)
+        };
+        var unit2 = new TextBlock
+        {
+            Text = "▶ Unit 2: The Novel Study",
+            FontSize = 13,
+            Foreground = textSecondary,
+            Margin = new Thickness(0, 6, 0, 0)
+        };
+
+        navBar.Children.Add(siteHeader);
+        navBar.Children.Add(searchBox);
+        navBar.Children.Add(treeHeader);
+        navBar.Children.Add(unit1);
+        navBar.Children.Add(day1);
+        navBar.Children.Add(day2);
+        navBar.Children.Add(unit2);
+
+        var navBorder = new Border
+        {
+            Child = navBar,
+            BorderBrush = new SolidColorBrush(isDark ? Windows.UI.Color.FromArgb(40, 255, 255, 255) : Windows.UI.Color.FromArgb(25, 0, 0, 0)),
+            BorderThickness = new Thickness(0, 0, 1, 0)
+        };
+        Grid.SetColumn(navBorder, 0);
+        siteRoot.Children.Add(navBorder);
+
+        var mainContent = new ScrollViewer { Padding = new Thickness(36, 28, 48, 28) };
+        var article = new StackPanel { Spacing = 14, MaxWidth = 680, HorizontalAlignment = HorizontalAlignment.Left };
+
+        var title = new TextBlock
+        {
+            Text = "Unit 1, Day 1: Course Introduction & Syllabus",
+            FontSize = 24,
+            FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+            Foreground = textPrimary
+        };
+        var dateTag = new TextBlock
+        {
+            Text = "September 8, 2026",
+            FontSize = 12,
+            Foreground = textSecondary,
+            Margin = new Thickness(0, -6, 0, 8)
+        };
+        var intro = new TextBlock
+        {
+            Text = "Welcome to Grade 10 Academic English. In this course, we will explore short fiction, dramatic literature, and analytical writing. All class notes, daily agendas, and assignment guidelines will be published here daily.",
+            FontSize = 14,
+            TextWrapping = TextWrapping.Wrap,
+            LineHeight = 22,
+            Foreground = textPrimary
+        };
+        var callout = new Border
+        {
+            Background = cardBg,
+            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(16, 12, 16, 12),
+            Margin = new Thickness(0, 8, 0, 8),
+            BorderBrush = accentColor,
+            BorderThickness = new Thickness(3, 0, 0, 0)
+        };
+        var calloutStack = new StackPanel { Spacing = 4 };
+        calloutStack.Children.Add(new TextBlock { Text = "Key Dates & Materials", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, Foreground = textPrimary });
+        calloutStack.Children.Add(new TextBlock { Text = "• Bring course notebook and writer's journal each day\n• Diagnostic writing sample: Friday, Sept 11", FontSize = 13, Foreground = textSecondary });
+        callout.Child = calloutStack;
+
+        article.Children.Add(title);
+        article.Children.Add(dateTag);
+        article.Children.Add(intro);
+        article.Children.Add(callout);
+        mainContent.Content = article;
+
+        Grid.SetColumn(mainContent, 1);
+        siteRoot.Children.Add(mainContent);
+
+        BaseLayer.Children.Clear();
+        BaseLayer.Children.Add(siteRoot);
+    }
 }

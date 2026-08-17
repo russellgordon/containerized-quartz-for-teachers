@@ -47,6 +47,7 @@ public sealed partial class AssistWindow : Window
     public AssistWindow(string workspacePath, Course course, int section, MainWindow? main = null)
     {
         InitializeComponent();
+        try { SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop(); } catch { }
         _folder = workspacePath;
         _course = course;
         _section = section;

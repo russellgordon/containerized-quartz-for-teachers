@@ -27,6 +27,7 @@ public sealed partial class MainWindow : Window
     public MainWindow(string? folderPath, RememberedWindow? frame)
     {
         InitializeComponent();
+        try { SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop(); } catch { }
         Workspace = new WorkspaceViewModel(App.Settings);
 
         // A remembered window restores exactly; a first run opens at a share of

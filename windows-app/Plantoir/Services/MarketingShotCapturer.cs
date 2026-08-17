@@ -177,8 +177,8 @@ public static class MarketingShotCapturer
         window.Activate();
 
         await Task.Delay(500);
-        window.Workspace.Selection = new SidebarSelection.SectionItem("ENG2D", 1);
-        await Task.Delay(500);
+        window.Workspace.Selection = new SidebarSelection.CourseItem("ENG2D");
+        await Task.Delay(600);
 
         await SaveWindowContentToPngAsync(window, outputPath);
         window.Close();
@@ -191,15 +191,15 @@ public static class MarketingShotCapturer
         window.Activate();
 
         await Task.Delay(500);
-        window.Workspace.Selection = new SidebarSelection.SectionItem("ENG2D", 1);
+        window.Workspace.Selection = new SidebarSelection.CourseItem("ENG2D");
         await Task.Delay(400);
 
-        // Stage dialog
+        // Stage dialog for SBI3U matching macOS marketing test
         var dialog = new NewCourseDialog(window) { XamlRoot = window.Content.XamlRoot };
         dialog.RequestedTheme = theme;
-        dialog.StageForCapture("ENG2D", "1");
+        dialog.StageForCapture("SBI3U", "1, 2");
         _ = dialog.ShowAsync();
-        await Task.Delay(700);
+        await Task.Delay(800);
 
         await SaveWindowContentToPngAsync(window, outputPath);
         dialog.Hide();
@@ -213,17 +213,18 @@ public static class MarketingShotCapturer
         window.Activate();
 
         await Task.Delay(500);
-        window.Workspace.Selection = new SidebarSelection.SectionItem("ENG2D", 1);
+        window.Workspace.Selection = new SidebarSelection.SectionItem("ENG2D", 2);
+        await Task.Delay(400);
 
-        // Stage progress view
+        // Stage progress view for preview build matching macOS progress shot
         var runner = new ScriptRunner(System.Threading.SynchronizationContext.Current);
         var progressView = new TaskProgressView();
         progressView.RequestedTheme = theme;
-        progressView.Show(runner, "Publishing ENG2D Section 1");
+        progressView.Show(runner, "Preparing the preview of ENG2D-S2");
         window.DetailPresenter.Content = progressView;
 
-        runner.Milestones = TaskMilestones.Deploy;
-        runner.ReceiveOutput("Setting up this PC\nBuilding your website builder\nEnsuring container is running\nDeploying from local build\nNetlify site\ndelta deploy manifest\nDelta deploy created: 25 of 230\n");
+        runner.Milestones = TaskMilestones.Preview;
+        runner.ReceiveOutput("Setting up this PC\nBuilding your website builder\nEnsuring container is running\nStarting preview container\n");
 
         await Task.Delay(600);
         await SaveWindowContentToPngAsync(window, outputPath);
@@ -238,8 +239,14 @@ public static class MarketingShotCapturer
 
         await Task.Delay(500);
         window.Workspace.Selection = new SidebarSelection.SectionItem("ENG2D", 1);
-        await Task.Delay(600);
+        await Task.Delay(400);
 
+        if (window.DetailPresenter.Content is SectionDetailView detail)
+        {
+            detail.StagePreviewForCapture(theme);
+        }
+
+        await Task.Delay(600);
         await SaveWindowContentToPngAsync(window, outputPath);
         window.Close();
     }
@@ -268,25 +275,27 @@ public static class MarketingShotCapturer
 
         await Task.Delay(500);
 
-        // Stage message bubbles
+        // Stage teacher message bubble matching macOS assistant test
         var teacherMsg = new TextBlock
         {
-            Text = "Publish tomorrow's class",
+            Text = "Unpublish Unit 2, Day 3",
             TextWrapping = TextWrapping.Wrap,
             Style = (Style)Application.Current.Resources["BodyTextBlockStyle"]
         };
         window.AddStagedBubbleForCapture("You", true, teacherMsg);
 
+        // Stage assistant response bubble
         var assistMsg = new TextBlock
         {
             TextWrapping = TextWrapping.Wrap,
             Style = (Style)Application.Current.Resources["BodyTextBlockStyle"]
         };
-        assistMsg.Inlines.Add(new Run { Text = "Tomorrow's class is " });
-        assistMsg.Inlines.Add(new Run { Text = "Unit 3, Day 2: Writing a Thesis Statement", FontWeight = FontWeights.SemiBold });
-        assistMsg.Inlines.Add(new Run { Text = " (2026-10-14)." });
+        assistMsg.Inlines.Add(new Run { Text = "I will hide " });
+        assistMsg.Inlines.Add(new Run { Text = "Unit 2, Day 3: Character Analysis", FontWeight = FontWeights.SemiBold });
+        assistMsg.Inlines.Add(new Run { Text = " from the website (2026-10-14)." });
         window.AddStagedBubbleForCapture("Assistant", false, assistMsg);
 
+        // Stage plan approval card
         var planPanel = new StackPanel { Spacing = 6 };
         var planHeader = new TextBlock
         {
@@ -296,14 +305,14 @@ public static class MarketingShotCapturer
         };
         var planBody = new TextBlock
         {
-            Text = "This will make 1 page visible to students:\n• Unit 3, Day 2: Writing a Thesis Statement",
+            Text = "This will make 1 page hidden from students:\n• Unit 2, Day 3: Character Analysis",
             TextWrapping = TextWrapping.Wrap,
             Style = (Style)Application.Current.Resources["BodyTextBlockStyle"]
         };
         var btnRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 4, 0, 0) };
-        var btnGo = new Button { Content = "Go", Style = (Style)Application.Current.Resources["AccentButtonStyle"] };
+        var btnApprove = new Button { Content = "Approve", Style = (Style)Application.Current.Resources["AccentButtonStyle"] };
         var btnCancel = new Button { Content = "Cancel" };
-        btnRow.Children.Add(btnGo);
+        btnRow.Children.Add(btnApprove);
         btnRow.Children.Add(btnCancel);
 
         planPanel.Children.Add(planHeader);
@@ -322,6 +331,17 @@ public static class MarketingShotCapturer
         if (window.Content is FrameworkElement root)
         {
             root.RequestedTheme = theme;
+            var bgBrush = theme == ElementTheme.Light
+                ? new SolidColorBrush(Windows.UI.Color.FromArgb(255, 243, 243, 243)) // #F3F3F3 Page Light
+                : new SolidColorBrush(Windows.UI.Color.FromArgb(255, 32, 32, 32));   // #202020 Page Dark
+            if (root is Panel panel)
+            {
+                panel.Background = bgBrush;
+            }
+            else if (root is Control control)
+            {
+                control.Background = bgBrush;
+            }
             root.Width = width;
             root.Height = height;
         }
