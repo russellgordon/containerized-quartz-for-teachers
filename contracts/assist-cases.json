@@ -182,6 +182,34 @@
         },
         "phrasing" : "change my class dates",
         "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "re-date my classes",
+        "tool" : "re_date_classes"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "redate my classes",
+        "tool" : "re_date_classes"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "re-date this section",
+        "tool" : "re_date_classes"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "roll this section over to a new year",
+        "tool" : "re_date_classes"
       }
     ],
     "note" : "Matched in CODE and never sent to the model. Trimmed, case-folded, trailing . and ! removed, then compared for EQUALITY. Measured: the model misrouted five of the eleven suggested phrasings in every trial while filling arguments perfectly, so the shapes with no ambiguity in them do not reach it.",
@@ -530,7 +558,9 @@
       "plan_remember_timetable",
       "remember_timetable",
       "plan_add_next_class",
-      "add_next_class"
+      "add_next_class",
+      "plan_re_date_classes",
+      "re_date_classes"
     ],
     "local" : [
       "list_pages",
@@ -561,6 +591,7 @@
       "add_next_class" : "plan_add_next_class",
       "publish_class_on" : "plan_publish_class_on",
       "publish_pages" : "plan_publish_pages",
+      "re_date_classes" : "plan_re_date_classes",
       "remember_timetable" : "plan_remember_timetable",
       "schedule_deploy" : "plan_scheduled_deploy",
       "unpublish_pages" : "plan_unpublish_pages"
@@ -1463,6 +1494,54 @@
         "function" : {
           "description" : "TEACHERS SAY: \"add an entry for the next class\", \"add tomorrow's class page\", \"start the next class\", \"add the next class\", \"make a page for our next class\", \"set up next day's lesson\". Create the next class page in a section: it continues the unit the last class was in, and takes its date from the section's remembered timetable. Work out no numbers and no dates yourself — this tool does both. It starts unpublished, so students see nothing until the teacher publishes it.",
           "name" : "add_next_class",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "Work out what re-dating a whole section onto its recorded class dates would do, and change nothing. Shows every page that would move and why.",
+          "name" : "plan_re_date_classes",
+          "parameters" : {
+            "properties" : {
+              "course" : {
+                "description" : "The course code, for example ICS3U.",
+                "type" : "string"
+              },
+              "section" : {
+                "description" : "The section number, for example 1.",
+                "type" : "integer"
+              }
+            },
+            "required" : [
+              "course",
+              "section"
+            ],
+            "type" : "object"
+          }
+        },
+        "type" : "function"
+      },
+      {
+        "function" : {
+          "description" : "TEACHERS SAY: \"re-date my classes\", \"roll this section over to a new year\", \"put my classes on this year's dates\". Re-date every class in a section onto the class dates on file, by POSITION — the first class takes the first date — and move the pages each class uses onto that class's day with it. Pages this section's Key Links points at move to the first day of class. Curriculum pages are left alone, because Plantoir dates those itself on every build.",
+          "name" : "re_date_classes",
           "parameters" : {
             "properties" : {
               "course" : {

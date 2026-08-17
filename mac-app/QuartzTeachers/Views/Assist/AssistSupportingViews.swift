@@ -170,6 +170,7 @@ struct AssistPromptShelfView: View {
                 // an answer is invisible until you have already had it.
                 "Show me the rest of the dates",
                 "I have a revised list of class dates",
+                "Re-date my classes",
             ]),
             ("Putting the site online", [
                 "Deploy now",

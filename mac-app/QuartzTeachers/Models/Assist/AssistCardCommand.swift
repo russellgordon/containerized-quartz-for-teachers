@@ -367,5 +367,18 @@ nonisolated struct AssistCardCommand: Sendable, Equatable {
          AssistCardCommand(toolName: "read_remembered_timetable", arguments: ["revise": "yes"])),
         ("change my class dates",
          AssistCardCommand(toolName: "read_remembered_timetable", arguments: ["revise": "yes"])),
+
+        // Re-dating a whole section onto the dates on file — the September
+        // job. Matched in code because there is nothing in the sentence to
+        // read out, and because it is far too big a change to reach through a
+        // router that is right four times in five.
+        ("re-date my classes",
+         AssistCardCommand(toolName: "re_date_classes", arguments: [:])),
+        ("redate my classes",
+         AssistCardCommand(toolName: "re_date_classes", arguments: [:])),
+        ("re-date this section",
+         AssistCardCommand(toolName: "re_date_classes", arguments: [:])),
+        ("roll this section over to a new year",
+         AssistCardCommand(toolName: "re_date_classes", arguments: [:])),
     ]
 }

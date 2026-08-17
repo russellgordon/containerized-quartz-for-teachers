@@ -25,7 +25,7 @@ final class AssistToolRunnerTests: XCTestCase {
     /// changing this figure again should say so out loud, and the accuracy is
     /// worth re-measuring rather than assumed to have survived.
     @MainActor
-    func testTheSurfaceIsExactlyTheTwentyNarrowedTools() {
+    func testTheSurfaceIsExactlyTheNarrowedTools() {
         let expected: Set<String> = [
             "list_pages", "read_page", "check_section",
             "plan_publish_class_on", "publish_class_on",
@@ -35,6 +35,10 @@ final class AssistToolRunnerTests: XCTestCase {
             "deploy_section", "plan_scheduled_deploy", "schedule_deploy", "cancel_scheduled_deploy",
             "read_remembered_timetable", "plan_remember_timetable", "remember_timetable",
             "plan_add_next_class", "add_next_class",
+            // Re-dating a whole section. On the surface so plan mode can find
+            // its twin and an MCP client can call it; OFF the local list, so
+            // the model's own choices are unchanged by it.
+            "plan_re_date_classes", "re_date_classes",
         ]
 
         var names: Set<String> = []
@@ -42,7 +46,7 @@ final class AssistToolRunnerTests: XCTestCase {
             names.insert(tool.name)
         }
         XCTAssertEqual(names, expected)
-        XCTAssertEqual(AssistToolRunner.tools.count, 20, "A tool is defined twice.")
+        XCTAssertEqual(AssistToolRunner.tools.count, expected.count, "A tool is defined twice.")
     }
 
     /// What the LOCAL model is shown: thirteen of the twenty.
@@ -1452,6 +1456,168 @@ final class AssistToolRunnerTests: XCTestCase {
             NextClassPlanner.firstDayOfANewUnit(after: [summary("Field Trip")]).title,
             "Unit 1, Day 1"
         )
+    }
+
+    // MARK: - Re-dating a whole section
+
+    /// The September job: last year's course, this year's dates.
+    ///
+    /// Classes take dates BY POSITION — the first class the first date — and
+    /// the pages each class uses move with it. A page Key Links points at goes
+    /// to the first day of class.
+    @MainActor
+    func testReDatingPutsClassesOnThisYearsDatesByPosition() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2025-09-08",
+                  body: "See [[Stage Directions]].", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "true", date: "2025-09-10",
+                  body: "See [[Blocking]].", in: made.course)
+        try write(page: "Unit 2, Day 1", publish: "true", date: "2025-09-14",
+                  body: "Nothing linked.", in: made.course)
+        try write(courseLevelPage: "Stage Directions", publishForSection1: "true",
+                  dated: "2025-09-08", body: "Upstage.", in: made.course)
+        try write(courseLevelPage: "Blocking", publishForSection1: "true",
+                  dated: "2025-09-10", body: "Where to stand.", in: made.course)
+        try write(courseLevelPage: "Drama Journal", inFolder: "Portfolios",
+                  publishForSection1: "true", dated: "2025-09-08",
+                  body: "All year.", in: made.course)
+        try writeKeyLinks(pointingAt: ["Drama Journal"], in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1,
+                        "dates": "2026-09-08; 2026-09-10; 2026-09-14; 2026-09-16"]
+        ))
+
+        let planned: AssistToolOutcome = await made.runner.run(call: call(
+            "plan_re_date_classes", arguments: ["course": "ICS3U", "section": 1]
+        ))
+        print("\n===== RE-DATE PLAN =====\n\(planned.detail)\n=====\n")
+        XCTAssertTrue(planned.isPlan, planned.detail)
+
+        _ = await made.runner.run(call: call(
+            "re_date_classes", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("created: 2026-09-08"))
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 2", in: made.course).contains("created: 2026-09-10"))
+        XCTAssertTrue(text(ofPage: "Unit 2, Day 1", in: made.course).contains("created: 2026-09-14"))
+
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "Stage Directions", in: made.course)
+                .contains("createdSection1: 2026-09-08")
+        )
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "Blocking", in: made.course)
+                .contains("createdSection1: 2026-09-10")
+        )
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "Drama Journal", inFolder: "Portfolios", in: made.course)
+                .contains("createdSection1: 2026-09-08"),
+            "A page Key Links points at should sit on the first day of class"
+        )
+    }
+
+    /// Fewer dates than classes refuses WHOLE rather than dating some of them.
+    @MainActor
+    func testReDatingRefusesWhenThereAreNotEnoughDates() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        for day in 1...3 {
+            try write(page: "Unit 1, Day \(day)", publish: "true", date: "2025-09-0\(day + 7)",
+                      body: "Class \(day).", in: made.course)
+        }
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+        ))
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "re_date_classes", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertTrue(outcome.summary.contains("3 classes and only 2"), outcome.summary)
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("created: 2025-09-08"),
+                      "It re-dated some of them and gave up")
+    }
+
+    /// Curriculum pages are left alone: the toolchain dates those itself on
+    /// every build, to the LATEST date, and it does it to the copy it
+    /// publishes — so anything written here would be overwritten.
+    @MainActor
+    func testReDatingLeavesCurriculumPagesAlone() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2025-09-08",
+                  body: "See [[A1.1]].", in: made.course)
+        try write(courseLevelPage: "A1.1", inFolder: "Curriculum",
+                  publishForSection1: "true", dated: "2025-09-08",
+                  body: "An expectation.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+        ))
+
+        _ = await made.runner.run(call: call(
+            "re_date_classes", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "A1.1", inFolder: "Curriculum", in: made.course)
+                .contains("createdSection1: 2025-09-08"),
+            "A curriculum page was re-dated; build_site.py owns those"
+        )
+    }
+
+    /// One undo takes the whole re-dating back.
+    @MainActor
+    func testUndoingAReDatingPutsEveryDateBack() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2025-09-08",
+                  body: "One.", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "true", date: "2025-09-10",
+                  body: "Two.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+        ))
+        _ = await made.runner.run(call: call(
+            "re_date_classes", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        let undone: AssistToolOutcome = await made.runner.run(call: call("undo_last_change"))
+        XCTAssertTrue(undone.summary.contains("re-dated"), undone.summary)
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("created: 2025-09-08"))
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 2", in: made.course).contains("created: 2025-09-10"))
+    }
+
+    /// Without dates it asks for them, through the same offer as everything
+    /// else — re-dating IS the schedule, applied.
+    @MainActor
+    func testReDatingWithNoDatesAsksForThem() async throws {
+        let made = try makeRunner()
+        defer {
+            try? FileManager.default.removeItem(at: made.root)
+            SectionSchedulePrompt.shared.stopAsking()
+        }
+        SectionSchedulePrompt.shared.stopAsking()
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2025-09-08",
+                  body: "One.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "re_date_classes", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertTrue(outcome.summary.contains(AssistWording.mayIAskForYourDates), outcome.summary)
+        XCTAssertNotNil(SectionSchedulePrompt.shared.offer)
+        XCTAssertNil(SectionSchedulePrompt.shared.request, "It opened a form unasked")
     }
 
     // MARK: - Asking for the class dates rather than demanding them

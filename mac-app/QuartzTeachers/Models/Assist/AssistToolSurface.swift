@@ -65,6 +65,8 @@ extension AssistToolRunner {
         rememberTimetableTool,
         planAddNextClassTool,
         addNextClassTool,
+        planReDateClassesTool,
+        reDateClassesTool,
     ]
 
     /// The tools the LOCAL model is actually shown.
@@ -85,7 +87,14 @@ extension AssistToolRunner {
     static let localTools: [AssistToolDefinition] = narrowedForTheLocalModel(tools)
 
     /// Names kept off the local list even though they are not plans.
-    static let hiddenFromTheLocalModel: Set<String> = ["remember_timetable"]
+    ///
+    /// `re_date_classes` is here for a second reason worth stating: the
+    /// phrasings that reach it are matched in code, so the model never needs
+    /// to see it — and re-dating two hundred pages is far too large a change
+    /// to reach through a router that is right four times in five. It stays on
+    /// the MCP surface, where the client can hold a bigger list and a person
+    /// is reading every step.
+    static let hiddenFromTheLocalModel: Set<String> = ["remember_timetable", "re_date_classes"]
 
     /// The list above, with the plans and the hidden names taken out.
     private static func narrowedForTheLocalModel(
@@ -515,6 +524,39 @@ extension AssistToolRunner {
         ],
         required: ["course", "section"],
         readOnly: true,
+        needsApproval: false
+    )
+
+    private static let planReDateClassesTool: AssistToolDefinition = AssistToolDefinition(
+        name: "plan_re_date_classes",
+        description: "Work out what re-dating a whole section onto its recorded class dates would do, "
+                   + "and change nothing. Shows every page that would move and why.",
+        parameters: [
+            "course": courseHelp,
+            "section": sectionHelp,
+        ],
+        required: ["course", "section"],
+        readOnly: true,
+        needsApproval: false
+    )
+
+    private static let reDateClassesTool: AssistToolDefinition = AssistToolDefinition(
+        name: "re_date_classes",
+        description: "TEACHERS SAY: \"re-date my classes\", \"roll this section over to a new year\", "
+                   + "\"put my classes on this year's dates\". Re-date every class in a section onto the "
+                   + "class dates on file, by POSITION — the first class takes the first date — and move "
+                   + "the pages each class uses onto that class's day with it. Pages this section's Key "
+                   + "Links points at move to the first day of class. Curriculum pages are left alone, "
+                   + "because Plantoir dates those itself on every build.",
+        parameters: [
+            "course": courseHelp,
+            "section": sectionHelp,
+        ],
+        required: ["course", "section"],
+        readOnly: false,
+        // Not a deploy — nothing reaches students — but it rewrites the date
+        // on every page in the section, so it goes through the plan gate like
+        // every other write and is undoable in one step.
         needsApproval: false
     )
 

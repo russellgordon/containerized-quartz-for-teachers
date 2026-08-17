@@ -225,6 +225,10 @@ final class AssistToolRunner {
             return rememberTimetable(arguments)
         case "plan_add_next_class":
             return planAddNextClass(arguments)
+        case "plan_re_date_classes":
+            return planReDateClasses(arguments)
+        case "re_date_classes":
+            return await reDateClasses(arguments)
         case "add_next_class":
             return addNextClass(arguments)
         case "list_curriculum_expectations":
@@ -2008,6 +2012,112 @@ final class AssistToolRunner {
             courseCode: located.course.code, sectionNumber: located.sectionNumber,
             because: "Duplicating a class needs to know which days this section meets, "
                    + "so the copy can be given a date."
+        )
+    }
+
+    // MARK: - Re-dating a whole section
+
+    /// What re-dating would do. Changes nothing.
+    private func planReDateClasses(_ arguments: [String: Any]) -> AssistToolOutcome {
+        switch reDatePlan(arguments) {
+        case .failure(let problem):
+            askForTheTimetableIfReDatingNeedsIt(problem, arguments)
+            return AssistToolOutcome.couldNotRead(problem.localizedDescription)
+        case .success(let asked):
+            if asked.plan.changesNothing {
+                let already: String = "Every page in \(asked.located.course.code) Section "
+                                    + "\(asked.located.sectionNumber) is already on the day it should be."
+                return AssistToolOutcome.wrote(already, detail: already)
+            }
+            return AssistToolOutcome.planned(
+                "Worked out what re-dating that section would do.",
+                plan: asked.plan.describe()
+            )
+        }
+    }
+
+    /// Carry it out, then put the preview back.
+    private func reDateClasses(_ arguments: [String: Any]) async -> AssistToolOutcome {
+        switch reDatePlan(arguments) {
+        case .failure(let problem):
+            askForTheTimetableIfReDatingNeedsIt(problem, arguments)
+            return AssistToolOutcome.refused(problem.localizedDescription)
+        case .success(let asked):
+            if asked.plan.changesNothing {
+                let already: String = "Every page in \(asked.located.course.code) Section "
+                                    + "\(asked.located.sectionNumber) is already on the day it should be."
+                return AssistToolOutcome.wrote(already, detail: already)
+            }
+
+            let backedUp: Bool = backUpOnceForThisConversation(
+                asked.located.course, forSection: asked.located.sectionNumber
+            )
+            _ = await stopThePreviewBeforeWriting(
+                for: asked.located.course, sectionNumber: asked.located.sectionNumber
+            )
+
+            let change: AssistChange
+            do {
+                change = try SectionReDatePlanner.apply(
+                    asked.plan, forSection: asked.located.sectionNumber, in: asked.located.course
+                )
+            } catch {
+                return AssistToolOutcome.refused(
+                    "Nothing was changed: \(error.localizedDescription)"
+                )
+            }
+            history.record(change)
+
+            let moved: Int = asked.plan.moves.count
+            let summary: String = "Re-dated \(asked.plan.classCount) "
+                                + "\(asked.plan.classCount == 1 ? "class" : "classes") and "
+                                + "\(moved - asked.plan.classCount) "
+                                + "\((moved - asked.plan.classCount) == 1 ? "page" : "pages") "
+                                + "they use."
+            var detail: String = summary
+            if backedUp {
+                detail += "\n\n" + AssistToolRunner.backedUpNote
+            }
+            detail += "\n\n" + (await bringThePreviewUpToDate(
+                for: asked.located.course, sectionNumber: asked.located.sectionNumber
+            ))
+            detail += "\n\nNothing was published or hidden, so students see no change until you "
+                    + "deploy."
+            return AssistToolOutcome.wrote(summary, detail: detail)
+        }
+    }
+
+    private struct PlannedReDate {
+        let located: Located
+        let plan: SectionReDatePlan
+    }
+
+    private func reDatePlan(_ arguments: [String: Any]) -> Result<PlannedReDate, Error> {
+        let found: Result<Located, AssistToolRefusal> = locate(arguments)
+        guard case .success(let located) = found else {
+            return .failure(refusal(from: found))
+        }
+        do {
+            let plan: SectionReDatePlan = try SectionReDatePlanner.plan(
+                forSection: located.sectionNumber,
+                in: located.course,
+                workspaceURL: workspace.workspaceURL
+            )
+            return .success(PlannedReDate(located: located, plan: plan))
+        } catch {
+            return .failure(error)
+        }
+    }
+
+    /// Re-dating needs the schedule; it IS the schedule, applied.
+    private func askForTheTimetableIfReDatingNeedsIt(_ problem: Error, _ arguments: [String: Any]) {
+        guard case SectionReDatePlanner.Problem.noTimetable(let code, let number) = problem else {
+            return
+        }
+        askForTheTimetable(
+            courseCode: code, sectionNumber: number,
+            because: "Re-dating a section puts its classes onto the days it meets, so it needs "
+                   + "those days first."
         )
     }
 

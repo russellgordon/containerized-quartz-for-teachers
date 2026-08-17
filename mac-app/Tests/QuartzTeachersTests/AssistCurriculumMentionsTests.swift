@@ -21,16 +21,23 @@ final class AssistCurriculumMentionsTests: XCTestCase {
     /// The local model sees the narrowed surface, and the MCP client sees that
     /// surface plus the curriculum tools.
     ///
-    /// The count moved from fifteen to twenty when the timetable and next-class
-    /// tools were added, each on purpose — and what the local model is SHOWN
-    /// came back down to thirteen when the `plan_` twins and
-    /// `remember_timetable` were taken off its list. The curriculum tools are
-    /// on neither: which expectations fit a lesson is a judgement about
-    /// meaning, and it is not one to hand a small local model.
+    /// **The number the local model is shown is the one that matters, and it
+    /// has not moved.** The surface itself has grown — fifteen to twenty when
+    /// the timetable and next-class tools arrived, then twenty-two with
+    /// re-dating — while what the model is SHOWN has stayed at thirteen
+    /// throughout, because every schema in the prompt costs a little router
+    /// accuracy and none of those additions is something it has to name.
+    ///
+    /// The curriculum tools are on neither: which expectations fit a lesson is
+    /// a judgement about meaning. Re-dating is off for a different reason —
+    /// its phrasings are matched in code, and rewriting the date on every page
+    /// in a section is too large a change to reach through a router that is
+    /// right four times in five.
     @MainActor
     func testTheLocalModelSurfaceIsNarrowAndTheMcpSurfaceIsLarger() {
-        XCTAssertEqual(AssistToolRunner.tools.count, 20)
-        XCTAssertEqual(AssistToolRunner.localTools.count, 13)
+        XCTAssertEqual(AssistToolRunner.tools.count, 22)
+        XCTAssertEqual(AssistToolRunner.localTools.count, 13,
+                       "What the model is shown must not grow when the surface does")
 
         var shownToTheLocalModel: Set<String> = []
         for tool in AssistToolRunner.localTools {
