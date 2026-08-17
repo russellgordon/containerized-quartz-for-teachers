@@ -228,10 +228,9 @@ The Windows counterpart lives in [`windows-app/`](windows-app/PROGRESS.md)
 number in the table: ✅ implemented (behaviour present in the
 Windows app), 🟠 partial, ⬜ not yet, — no Windows work needed.
 
-**This section sits mid-table and stops at entry 106.** Entries 107–179 —
-the publication-flag rename, the Deploy/Publish reversal, and the whole
-local-assistant body of work among them — have NOT been assessed for
-Windows. An entry missing below is unassessed, not "not yet".
+**Entries 1–106 were assessed as they landed; 107–255 were assessed in one
+pass on 2026-08-17** (see the dated block at the end of this section). An
+entry missing from either list is unassessed, not "not yet".
 
 - ✅ 1 (course-name auto-fill + suggestion buttons) · ✅ 4–6 (caption/
   header vocabulary) · ✅ 7, 9 (list editors: + always enabled, ".md"
@@ -335,6 +334,122 @@ Windows. An entry missing below is unassessed, not "not yet".
   portion and writing use_lcs_terminology; hidden list covers both
   vocabularies) · — 95, 96 (shared Python installer + payloads; ships
   via the bundled support folder, staggered dates verified on Windows)
+
+### Entries 107–255, assessed 2026-08-17
+
+**How this was assessed, and its one limit.** Read from `windows-app/`
+**source**, on the mac, during a sync pass. `dotnet` is not installed there,
+so nothing was built and nothing was run: a ✅ means the behaviour is in the
+code under a name a reader can follow, not that anybody clicked it. Where
+reading could not settle a question, the entry says "unverified" rather than
+guessing — a wrong ✅ costs the Windows session more than a blank does.
+
+The ordered work list that falls out of this is in
+[`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) → "Where Windows actually stands",
+and the first four items of it are in `WINDOWS-BOOTSTRAP.md` § 3.
+
+- — **111–121, 123–129, 131–138** (mermaid fonts, labels and pie charts;
+  KaTeX + mhchem; the "When did we do this?" / table-of-contents split; the
+  ~1,900 skeletons; the whole Curriculum Coverage map, its palettes and its
+  contrast work; the half-credit pairing; the linter's dead-link holes).
+  Shared toolchain — Python, patches and payloads. Nothing to port; pulling
+  is how you get them.
+- ✅ **107–109** (About-panel credits, the deploy-after-preview live-reload
+  bug, up-front duplicate-code validation) — these ORIGINATED on Windows and
+  were mirrored to the mac. · 🟠 **110** (the "still working… (Ns)" timer
+  opening at 35 s rather than 0 because it timed from when the task was
+  created, not from when it started). The timer itself came from your side
+  (row 97); the off-by-a-start-time is worth checking here too.
+- ✅ **122** (`createdSection<N>` / `publishSection<N>`, one pair per section
+  — `PageFrontmatter.cs` reads and writes the per-section pair) ·
+  ⬜ **130** (the wizard + Course Settings switch that shows or hides the
+  coverage page's "What counts" and "Reading it honestly" explainers — no
+  such toggle in `NewCourseDialog.cs` or `CourseSettingsView.xaml.cs`)
+- ✅ **139** (Cloudflare Pages as the third destination —
+  `PublishingChoiceView.cs` + `deploy.ps1`) · ✅ **140–141** (the
+  `draft:` → `publish:` rename — originated here) · ✅ **143** (Deploy for
+  the site, publish for a page; `SectionDetailView.xaml` carries the
+  reasoning in a comment) · — **142** (Colima sizing is macOS-only; the
+  question that corresponds to it here is the WSL2 VM's own memory, and the
+  only sizing this side sets is `--memory 4g --cpus=2` on the assistant
+  container. Measure it; do not port it.)
+- 🟠 **144, 147, 180, 196** (the local assistant). It runs — but in a
+  container: `LocalModel.cs` still does `docker run
+  ghcr.io/ggml-org/llama.cpp:server`, with one hardcoded model
+  (`Qwen2.5-1.5B-Instruct-Q4_K_M`) and no tier ladder. The mac measured 175 s
+  in Colima against 2.1 s natively for the same 1.5B on the same 3,411-token
+  prompt (M4 Pro); moving off the container is a decided direction, not a
+  suggestion. · ⬜ **153** — **the thinking flags are not on the command
+  line.** Line ~252 passes `--jinja --host --port` and neither `--reasoning
+  off` nor `--reasoning-budget 0`. Qwen2.5 does not open a `<think>` block,
+  so this costs nothing today and costs 58 points of routing accuracy (97%
+  against 39%, same weights) the moment a Qwen3 tier is offered.
+- **148–185** (the assistant's window and its manners) — built here in
+  parallel with the mac, so this range is genuinely mixed. Verified present:
+  ✅ **150** (one assistant at a time — `WorkLease.cs`), ✅ **151** ("Revise
+  with local AI assistant…", `SidebarPane.xaml.cs:734`), ✅ **159**
+  (`rebuild_preview`), ✅ **162** (the section index follows the previous
+  class — `SectionIndex.cs`), ✅ **181** (`deploy_section` reaching the real
+  buttons). Verified absent: ⬜ **157** (Up/Down through your own previous
+  prompts — `AssistWindow.Input_KeyDown` handles `Enter` and nothing else,
+  and `assist-cases.json` → `promptHistory` has 8 cases waiting for it),
+  ⬜ **183–185** (the deploy card's wording — `AssistAgent.AskFirst` still
+  builds "I'd like to run **deploy section**" by underscore-swapping the tool
+  name, which puts the machinery in front of a teacher). The rest of the
+  range is **unverified** from this side.
+- ⬜ **186–204** (the shared contract, in five steps, plus the two bootstrap
+  files). Nothing in `windows-app/` reads `contracts/` — not the test
+  project, not either `.csproj`. This is the single largest gap and the one
+  everything else is measured by; it is item 1 of the work list.
+- ⬜ **205–211** (renaming a course code from the sidebar, with the Obsidian
+  vault dance, Return, the 12-character limit and the uppercase rule). No
+  rename affordance in `SidebarPane.xaml.cs`; `WINDOWS-HANDOFF.md` § "Renaming
+  a course" is written and waiting.
+- ⬜ **212–218** (the problem report a teacher sends back, and its redactor).
+  No `ProblemReport`, no `LogRedactor`, and — the part underneath it — no
+  activity trail at all: nothing writes
+  `%LOCALAPPDATA%\Plantoir\Logs`. `CLAUDE.md` rule 5 and
+  `shared-rules.json` → `activityTrail.mustRecord` bind both sides.
+- ⬜ **219** (the Settings panel for choosing which local assistant runs, and
+  removing a downloaded one). `AppSettings.cs` holds a workspace path, a
+  Cloudflare account, remembered windows and a restore preference — no model
+  choice, and no tier to choose between.
+- **220–243** (the 2026-08-16 batch: plain-spoken plans, "Publish Monday's
+  class", unpublishing a whole unit, adding days, duplicating a class,
+  starting a new unit, the visible-referrer rule, plan mode as a setting).
+  All of it lands AFTER this side's last commit (2026-08-15), so treat the
+  range as ⬜ unless you find otherwise. Verified absent specifically:
+  ⬜ **223, 231** (`add_next_class` and its plan twin exist nowhere here —
+  `NewClassesPlan.cs` covers "add N days", not "the next class" or "start a
+  new unit"), ⬜ **239, 242** (`LinkGraph.cs` excludes `index.md` and nothing
+  else — not Key Links' targets, All Classes, curriculum pages or folder
+  index pages, and it does not yet ignore a HIDDEN referrer),
+  ⬜ **240, 241, 243** (no confirmation setting, no confirmed-action counter,
+  in `AppSettings.cs` or anywhere else).
+- — **244–245** (the scheduled deploy that did not fire, and macOS naming the
+  background job). `launchd` mechanics; your equivalent is
+  `TaskScheduling.cs`. The transferable half is the LESSON: register the job
+  as the APP, not as the shell it happens to run, or the operating system
+  tells the teacher that "bash" wants to run in the background.
+- ⬜ **246–248** (asking "May I ask you for your class dates?" before a form
+  appears, replacing dates already given, and not re-answering the question
+  the previous line just answered) · 🟠 **249–251** (`ReDatePlan.cs` exists
+  and re-dates; the 2026-08-16 correction — put the overflow classes on the
+  FINAL class date instead of refusing, and stop refusing to add a class when
+  the dates run out — is not in it)
+- ⬜ **252** (a new course defaults to the SHORT name). One word:
+  `NewCourseDialog.AutoFillCourseName()` line 549 sets `names.Formal`; it
+  wants `names.Short`. The shared Python half is already done and arrives
+  with the pull.
+- ⬜ **253–254** (the dialogs explaining how to obtain a Netlify or
+  Cloudflare token, what expiry to set, and where the Account ID lives). The
+  sentences are data — `shared-rules.json` → `credentialRequests` — so this
+  is largely a layout job once the contract is wired.
+- — **255** (plantoir.app is generated from `website/`, screenshots captured
+  by driving the real app). The site is SHARED — do not build a second one.
+  What this side will owe, once the Windows app is worth photographing, is
+  Windows screenshots; the mac's capture harness is AppleScript and
+  ScreenCaptureKit and will not port.
 
 | 97 | 2026-08-11 | During first preview or deploy, the per-section dependency install (npm) can run quietly for a long time on slower machines, and the milestone label looks frozen. Show a live seconds counter — "still working… (Ns)" — while a step is quiet. | ✅ Implemented on macOS, ported FROM the Windows app (the feature's origin — commit "Fix empty glyphs, layout, wizard gating and slow-step reassurance"). Identical semantics: a step that reports its own count (uploads, build steps) shows the count — the count is the movement; otherwise, once the script has been quiet for 4 seconds, the milestone label appends "still working… (Ns)" with N counting up live each second. On macOS this rides the existing one-second TimelineView tick and the runner's `lastOutputAt`; three unit tests pin the quiet threshold, the own-count precedence, and that a finished task never shows the timer. | Already present on Windows — this row records the macOS port for parity. |
 
@@ -586,6 +701,8 @@ Windows. An entry missing below is unassessed, not "not yet".
 | 254 | 2026-08-16 | Tell the teacher what expiry to set on each token — Netlify's default of 7 days will stop their publishing without warning — and say that a Cloudflare token must INCLUDE their specific account. Then put a button under the Cloudflare Account ID field, in the wizard and in Course Settings, that explains where to find that ID. | ✅ Netlify step 4 is now “Change the expiry — it starts at 7 days… set a date after the end of your school year: next July is a safe choice”, and Cloudflare gained two steps: “Under ‘Account Resources’, choose ‘Include’ and then your own account by name” and “Under ‘TTL’, set the end date to after the end of your school year”. Both launchers print the same steps. The Account ID field in `PublishingChoiceView` — shared by the wizard and Course Settings, so one change covers both — has a **“Where do I find this?”** link button under it, opening the same style of dialog: `CredentialRequest.cloudflareAccountIDHelp`, which shares one `accountIDSteps` list with the launcher-driven twin and differs only in its explanation. What is typed there lands in the field. The grey caption under the field is deleted outright — the button answers the same question on request — while both orange notes stay: what is wrong with the ID typed, and Cloudflare's 25 MB per-file limit. The button carries a `safari` symbol to the left of its text, matching the links inside the dialogs. Trail line records that the instructions were opened, never the ID. | **Verified against the real Cloudflare page while writing it**: the three permission dropdowns are Account / Cloudflare Pages / Edit, “Account Resources” sits below them with Include + the account by name, and “TTL” below that — the steps match the page a teacher actually sees. Everything is in `contracts/app-rules.json`: the sentences under `credentialRequests.requests` (now four), and two authored notes under `credentialPrompts` — `expiryAdviceIsLoadBearing` and `theHelpVariantIsNeverMatched`. **The help variant must never be returned by prompt matching** (a test says so): it can be opened before any token exists, so its twin's “the token you just made” would be a lie. Share ONE steps list between them. On WinUI: a `HyperlinkButton` under the Account ID `TextBox` in the equivalent of `PublishingChoiceView`, opening the same dialog with the value written back on accept — and still no `Start-Process`. |
 | 255 | 2026-08-17 | Build plantoir.app from sources rather than by hand, extend it to four pages (home, features, day to day, support), and capture every screenshot on it automatically — in both light and dark appearance, with the page serving whichever matches the visitor's computer. | ✅ Implemented — `website/` holds the layout, stylesheet and one file per page; `python3 website/build.py` writes `site/`, which Netlify still deploys unchanged. Screenshots come from a new UI-test class (`MarketingScreenshotTests.swift`) driving the real app against a demo working folder of ENG2D, MCV4U and SCH3U created through the app's own new-course panel; `website/shots/capture.py` runs it once per appearance, publishes the three class sites, photographs them in Safari and on an iPhone in the Simulator, and puts back everything it borrowed (the Mac's appearance, the app's remembered window sizes, the frontmost app). The release version line moved from hand-edited HTML into `website/site.json`. | **The site itself is shared — do not build a second one.** What Windows owes it is Windows screenshots, once that app ships: the same shot ids in `website/shots.json`, captured from a Windows machine, saved as `<id>-windows-<light|dark>.png`, and the pages taught to offer them. Two mac-specific mechanisms will NOT port and need Windows answers: window screenshots come from XCUITest's `window.screenshot()` (exact window rectangle, no shadow, transparent corners — a plain region grab picks up the desktop behind the rounded corners), and appearance is switched machine-wide through System Events and restored afterwards. Note the trap that cost time here: `xcodebuild` does not hand its own environment to the test runner, so the demo folder arrives as `TEST_RUNNER_MARKETING_WORKSPACE` — expect an equivalent hop in whatever runner Windows uses. |
 
+
+| 256 | 2026-08-17 | Bring the Windows side of the repository into sync with what the mac has. | ✅ Done, in the three parts that could be done from this side. (a) **The 80 commits were pushed** — `main` had been sitting at `56ffdd53` on `origin` since 2026-08-15, so the entire `contracts/` directory, both bootstrap files and three days of handoff writing existed only on this Mac. Nothing else in this row would have reached them without it. (b) **Entries 107–255 were assessed against `windows-app/` source** and written into the Windows status section above — that section had said "stops at entry 106" since 2026-08-11, which meant 149 entries were sitting in a category ("unassessed") that reads exactly like "not yet" and is not the same thing. (c) **The findings became an ordered work list** in `WINDOWS-HANDOFF.md` → "Where Windows actually stands", with `WINDOWS-BOOTSTRAP.md` § 3 pointed at it. No C# was written: `dotnet` is not installed on this Mac, so anything typed here would arrive unbuilt and untested, which is worse than arriving as a list. | **Read the ordered list before planning anything** — it is the output of this row and it exists so the plan rule in `WINDOWS-BOOTSTRAP.md` § 0 can be satisfied from evidence rather than from reading 3,700 lines of handoff. Four findings are worth knowing before you open it: nothing in `windows-app/` references `contracts/` (not even a `.csproj` include, so the cases the mac runs cannot be run here at all); `AssistAgent.AskFirst` shows a teacher "I'd like to run **deploy section**", which is rule 1 broken in the one place a teacher is most likely to be looking; `LocalModel.cs` passes neither thinking flag, which is free today on Qwen2.5 and costs 58 points of routing the moment a Qwen3 tier appears; and entry 252 is a one-word fix at `NewCourseDialog.cs:549`. The assessment was made by READING, not running — if a ✅ above is wrong, that is a defect in this row and worth saying so. |
 
 ## Planned
 

@@ -74,8 +74,16 @@ real `setup_course.py`, exit 0 with a full course scaffolded, using the same
 ## Spec coverage
 
 Tracked in one place only: the **Windows status** section of
-[`GUI-IMPROVEMENTS.md`](../GUI-IMPROVEMENTS.md) (179 rows). Nothing here
-duplicates it, because a second copy is a copy that goes stale.
+[`GUI-IMPROVEMENTS.md`](../GUI-IMPROVEMENTS.md) (256 rows as of 2026-08-17,
+entries 1–255 assessed). Nothing here duplicates it, because a second copy is
+a copy that goes stale — that count itself had been reading "179 rows" for
+days after the log passed 250.
+
+**What to do with that assessment** is the ordered list in
+[`WINDOWS-HANDOFF.md`](../WINDOWS-HANDOFF.md) → "Where Windows actually
+stands", written 2026-08-17 by reading this app's source from the mac. It was
+read rather than run — `dotnet` is not installed there — so treat it as a
+plan to start from, and report anything it gets wrong in `MAC-HANDOFF.md`.
 
 ## Known rough edges for the next session
 

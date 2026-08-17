@@ -34,9 +34,13 @@ go, without stopping to ask permission for each step.
 
 1. **`CLAUDE.md`** — the rules that override default behaviour. Rules 2 and 4
    bind you as much as the mac side.
-2. **`WINDOWS-HANDOFF.md`** — architecture, the config contract, the WSL2
-   background, and the reasoning behind decisions this side has already made.
-   Long; the section headings are enough to navigate.
+2. **`WINDOWS-HANDOFF.md`** — and inside it, **"Where Windows actually
+   stands"** is the section to read FIRST. It is the ordered work list,
+   refreshed 2026-08-17 by reading this app's own source, and it exists so
+   the plan you write in § 0 starts from evidence rather than from 3,700
+   lines of reference. The rest of the file is architecture, the config
+   contract, the WSL2 background and the reasoning behind past decisions:
+   long, and the section headings are enough to navigate.
 3. **`contracts/README.md`**, then the eight JSON files. The coverage table
    there says what is shared and what deliberately is not.
 4. **`GUI-IMPROVEMENTS.md`**, newest rows first, for what changed recently and
@@ -77,10 +81,22 @@ pure data and will show you the shape.
    underscore-swapping the TOOL NAME ("I'd like to run **deploy section**").
    Replace it with `wording.deployApproval` followed by `wording.deployQuestion`.
    Machinery must never appear in front of a teacher.
-4. **The local model** — move it out of the container onto a hardware-accelerated
-   host backend. See "The requirement: pick whatever makes it FASTEST on
-   Windows". Measure before choosing, and measure on **integrated graphics**,
-   not only on your own machine.
+4. **The activity trail** — `shared-rules.json` → `activityTrail.mustRecord`.
+   Nothing on this side writes `%LOCALAPPDATA%\Plantoir\Logs` yet, and it
+   comes before the rest of the backlog for one reason: every feature after
+   it owes a line, and adding a trail to a dozen finished features costs
+   several times what having it first does.
+5. **The local model** — move it out of the container onto a hardware-accelerated
+   host backend, and add the two thinking flags when you add a Qwen3 tier.
+   See "The requirement: pick whatever makes it FASTEST on Windows". Measure
+   before choosing, and measure on **integrated graphics**, not only on your
+   own machine.
+
+Items 5 onwards — the 2026-08-16 assistant batch, re-dating's two
+corrections, the schedule prompt, course renaming, the assistant-choice
+panel, the token dialogs — are ordered with their reasoning in
+`WINDOWS-HANDOFF.md` → "Where Windows actually stands". Do not re-derive that
+order; it was chosen so each item makes the next one cheaper.
 
 ---
 

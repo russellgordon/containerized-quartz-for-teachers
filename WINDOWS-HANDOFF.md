@@ -8,9 +8,154 @@
 Read this first when working on the Windows app — `windows-app/`, WinUI 3,
 first take built 2026-08-11 — and especially when syncing it after a run of
 macOS-side sessions. It gathers everything a Windows implementation needs; the
-deep dives it links to are kept current. For what is already covered, see
-`GUI-IMPROVEMENTS.md`'s **Windows status** section rather than working through
-this file top to bottom.
+deep dives it links to are kept current. **Do not work through it top to
+bottom.** Start with "Where Windows actually stands" immediately below — the
+ordered work list, refreshed 2026-08-17 — and use `GUI-IMPROVEMENTS.md`'s
+**Windows status** section for the per-entry detail behind it.
+
+## Where Windows actually stands (read from the code, 2026-08-17)
+
+**Read this before planning.** `WINDOWS-BOOTSTRAP.md` § 0 asks you to write a
+plan before touching anything, and a plan needs to start from what is TRUE on
+this side rather than from what the rest of this file describes. So the mac
+read `windows-app/` end to end on 2026-08-17 and wrote down where the code
+actually is. The per-entry version is in `GUI-IMPROVEMENTS.md` → Windows
+status → "Entries 107–255"; this is the ordered work list that fell out of it.
+
+**Its one limit, stated up front:** it was read, not run. `dotnet` is not
+installed on the Mac, so nothing here was built or executed. Every claim below
+is "the code says so", which is enough to plan from and not enough to close a
+ticket with. **If you find one of them wrong, that is a defect in this
+section** — say so in `MAC-HANDOFF.md`, the same way this side is expected to
+say so when the contract is wrong.
+
+**What is already good, so you do not re-derive it.** The launchers, the
+container naming, the port leases, the milestone parsing, the three publishing
+destinations, the per-section `publish:` flags, the Deploy/publish vocabulary,
+the archive and restore work, the assistant's tool surface (19 of the
+contract's 22 tools exist here) and its work lease are all in place. This side
+has also been FIRST on real things — the deploy-after-preview live-reload bug,
+the up-front duplicate-code validation, the "still working… (Ns)" timer — and
+the mac copied them. The list below is a list of gaps, not a verdict.
+
+### The order, and why it is this order
+
+1. **Wire `contracts/` into `Plantoir.Tests`.** Nothing in `windows-app/`
+   references the directory — not a test, not a `.csproj` `Content` include.
+   Everything else on this list is a behaviour you would otherwise verify by
+   opinion. `WINDOWS-BOOTSTRAP.md` § 2 says how; start with
+   `assist-wording.json` and `file-formats.json` because both are pure data.
+   Expect a red suite the first time, and expect it to be informative.
+
+2. **Take the machinery out of the approval line.**
+   `AssistAgent.AskFirst` (`Plantoir.Core/Assist/AssistAgent.cs:585`) builds
+   `I'd like to run **{tool.Replace('_', ' ')}**. Shall I go ahead?` — so a
+   teacher is shown "I'd like to run **deploy section**". That is rule 1
+   broken at the exact moment the teacher is reading most carefully, and the
+   replacement is data you will already have from item 1:
+   `wording.deployApproval` followed by `wording.deployQuestion`. Small, and
+   first for that reason — it is the shortest path from "contracts wired" to
+   "contracts paying".
+
+3. **The two known-failing deploy scenarios**, `assist-cases.json` →
+   scenarios *"deploy with a preview running"* and *"deploy while that section
+   is already busy"*. Unchanged since they were written: this side does not
+   stop the preview before deploying, and `StartDeployForAutomation()` calls
+   `Deploy_Click` directly, walking past the `DeployButton.IsEnabled =
+   !IsBusy` guard. **Await the stop** — a stop still running when the build
+   starts kills the build, and what goes live is the site as it was before.
+
+4. **The activity trail** (`CLAUDE.md` rule 5, `shared-rules.json` →
+   `activityTrail.mustRecord`). Nothing on this side writes
+   `%LOCALAPPDATA%\Plantoir\Logs` at all. It is placed fourth rather than
+   later because it is the thing that makes the items below diagnosable when
+   a teacher reports them: every feature after this one owes a line, and
+   retrofitting a trail across a dozen features is several times the work of
+   having it before you start. The rules for what must never be recorded, and
+   the redact-on-the-way-IN design, are under "Problem reports" below.
+
+5. **The problem report** (entries 212–218) — the dialog, the support address
+   as a link, the redactor, and the "was the local AI assistant involved?"
+   question that only appears when it was. This is item 4's payoff and reads
+   naturally straight after it.
+
+6. **The 2026-08-16 assistant batch** (entries 220–243), which is the largest
+   body of behaviour and the reason the two assistants would otherwise drift
+   apart. Everything in it postdates this side's last commit. Within it, four
+   are verified missing rather than assumed:
+   - `add_next_class` and `plan_add_next_class` exist nowhere here.
+     `NewClassesPlan.cs` covers "add five more days to Unit 4"; it does not
+     cover "add the next class" or "start a new unit for the next class".
+   - `plan_remember_timetable` is likewise absent.
+   - `LinkGraph.cs` excludes `index.md` and nothing else. The rule is now:
+     a page is kept published by a VISIBLE referrer only, and Key Links'
+     targets, All Classes, anything curriculum, and each sidebar folder's own
+     index page do not count as referrers. The order in `reasonToKeep` is
+     load-bearing — see `shared-rules.json` → `followingLinks`.
+   - Confirmation is a SETTING now (`shared-rules.json` →
+     `assistantConfirmation`), with a one-time mention after 15 confirmed
+     actions, app-wide. `AppSettings.cs` has no field for either.
+
+7. **Re-dating's two corrections** (entries 250–251). `ReDatePlan.cs` exists
+   and works; what is missing is the 2026-08-16 change of mind. Refusing when
+   a section has more classes than the new year has days READ as careful and
+   was the opposite — it left every page on last year's dates, which is the
+   state the teacher was trying to leave. Overflow classes now go on the
+   FINAL class date, and adding a class stops refusing when the dates run out
+   for the same reason.
+
+8. **Asking for the schedule** (entries 246–248): ask "May I ask you for your
+   class dates?" with Yes or Cancel before any form appears — a form nobody
+   asked for is a demand, and this one arrived on top of the sentence
+   explaining why it was there. Plus replacing dates already given, and not
+   re-answering the question the preceding line just answered.
+
+9. **Renaming a course code** (entries 205–211) — the Rename item, the
+   Obsidian close-rename-reopen dance, Return in the sidebar, the
+   12-character limit with single spaces, and uppercase always. The whole
+   design is already written up under "Renaming a course (entry 205)" below,
+   including three traps that each cost real time here.
+
+10. **The local model, off the container** (entries 144, 147, 180, 196).
+    `LocalModel.cs` still runs `ghcr.io/ggml-org/llama.cpp:server` under
+    `docker run`. Two separate things: the HOST move (measure on integrated
+    graphics, not only on your machine — see "The requirement: pick whatever
+    makes it FASTEST on Windows"), and the **two thinking flags**, which are
+    absent from the command line today. On Qwen2.5-1.5B they cost nothing,
+    because that template does not open a `<think>` block; the moment a Qwen3
+    tier is offered they are worth 58 points of routing accuracy (97% with
+    thinking off against 39% with it on, identical weights). Add them when
+    you add the tier, not after measuring a bad number.
+
+11. **The assistant-choice Settings panel** (entry 219) — which follows item
+    10, because there is nothing to choose between until there is a ladder.
+
+12. **The token dialogs** (entries 253–254). Mostly a layout job once item 1
+    is done: the sentences are `shared-rules.json` → `credentialRequests`,
+    including what expiry to set (Netlify's default of 7 days will stop a
+    teacher's publishing without warning) and where Cloudflare's Account ID
+    is found.
+
+13. **Two small ones, whenever they are convenient.**
+    `NewCourseDialog.AutoFillCourseName()` line 549 sets `names.Formal` and
+    wants `names.Short` (entry 252 — the shared Python half is already done).
+    And entry 130's switch for the Curriculum Coverage explainers, which
+    exists in neither the wizard nor Course Settings here.
+
+14. **Later, and not yet:** plantoir.app (entry 255) is generated from
+    `website/` and is SHARED — do not build a second one. What this side will
+    owe, once the Windows app is worth photographing, is Windows screenshots.
+    The mac's capture harness is AppleScript plus ScreenCaptureKit and will
+    not port; the requirement is the picture, not the mechanism.
+
+### One thing NOT to do
+
+Do not port entry 142 (Colima sizing) or entries 244–245 (`launchd`). They are
+macOS mechanics. The transferable half of 244–245 is a single lesson worth
+having before you touch `TaskScheduling.cs`: register a scheduled job as the
+APP, not as the shell it happens to run, or the operating system tells the
+teacher that "bash" — or, on the second attempt here, a person's name — wants
+to run in the background.
 
 ## What you are building
 
