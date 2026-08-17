@@ -4,6 +4,42 @@ Ideas and deferred work, in no particular order. Add items freely; remove
 an item when it ships (finished behaviour is recorded in
 [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md), not here).
 
+- **A recreated container publishes pages the teacher HID** — found
+  2026-08-17, while re-shooting the marketing screenshots. Highest-severity
+  item on this list: it exposes material a teacher deliberately held back.
+
+  The Explorer's hide list works through a `filterFn` in
+  `quartz.layout.ts` carrying a `CQ4T-OMIT-ANCHOR` marker. That block is
+  written by `setup_course.py`'s `ensure_quartz_explorer_anchor()`, which
+  patches `/opt/quartz/quartz.layout.ts` **inside the running container**.
+  It is NOT in the image: `docker run --rm <image> grep -c CQ4T-OMIT-ANCHOR
+  /opt/quartz/quartz.layout.ts` returns 0. `build_site.py` only overwrites
+  the CONTENTS of the `omit` Set; it cannot create the filter.
+
+  So any container recreation loses it — and recreation is the documented
+  design whenever the recipe hash changes, i.e. after most toolchain
+  updates. The next preview then copies a pristine scaffold, and
+  `ensure_quartz_layout_anchor()` injects a bare `const omit = new Set([])`
+  "to unblock the build". The Set is then populated and **nothing consumes
+  it**, because there is no filter. The build succeeds, and Curriculum,
+  Learning Goals, Help Sessions, Key Links and Private Notes all appear on
+  the class site.
+
+  Reproduced: `docker rm -f` the working folder's container, then rebuild
+  three courses. All three came back with `filterFn` absent and two
+  warnings printed (`Expected omit set not found`, `Sidebar omit anchor not
+  found`) — and a site that hides nothing. Running
+  `ensure_quartz_explorer_anchor()` in the container fixed all three.
+
+  The fix, in order of value: **bake the anchored Explorer block into the
+  IMAGE** (the Dockerfile already copies `patches/Explorer.tsx`, so this
+  belongs beside it) so every container has it from birth and setup's patch
+  becomes a harmless no-op rather than the only source of truth; make the
+  build's fallback inject the real block instead of a bare Set, so existing
+  containers self-heal; and **stop treating a missing filter as a
+  warning** — "about to publish pages the teacher hid" should refuse to
+  build, not print a line. Gated by `verify.sh`.
+
 - **Nothing verifies that a release actually reached plantoir.app** — noted
   2026-08-14. The `cut-release` skill ends by saying the push "redeploys
   plantoir.app automatically (Netlify watches `site/`)" and stops there. No
