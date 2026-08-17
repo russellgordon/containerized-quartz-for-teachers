@@ -30,10 +30,14 @@ class MarketingScreenshotCase: XCTestCase {
     static let mainWindowFrameKey: String =
         "NSWindow Frame SwiftUI.ModifiedContent<QuartzTeachers.WindowRootView, SwiftUI._FlexFrameLayout>-1-AppWindow-1"
 
-    /// The assistant keeps its own window, remembered per course and section.
-    static let assistantWindowFrameKey: String = "NSWindow Frame AssistantWindow-ENG2D-1"
-    static let assistantWidth: CGFloat = 480
-    static let assistantHeight: CGFloat = 760
+    /// The assistant keeps its own window frame under its own key and applies
+    /// it by hand — SwiftUI owns the autosave name and overwrites anything put
+    /// there, which is why `AssistWindowPlacement` stopped using one. So this
+    /// is that key, and the value is an NSRect string rather than AppKit's
+    /// frame format.
+    static let assistantFrameKey: String = "AssistantWindowFrame-ENG2D-1"
+    static let assistantWidth: CGFloat = 520
+    static let assistantHeight: CGFloat = 900
 
     // MARK: - Functions
 
@@ -56,6 +60,14 @@ class MarketingScreenshotCase: XCTestCase {
             + "\(Int(screen.minX)) \(Int(screen.minY)) \(Int(screen.width)) \(Int(screen.height)) "
     }
 
+    /// An NSRect written the way NSStringFromRect writes it.
+    static func rectArgument(width: CGFloat, height: CGFloat) -> String {
+        let screen: CGRect = NSScreen.screens.first?.frame ?? CGRect(x: 0, y: 0, width: 1512, height: 982)
+        let x: CGFloat = (screen.width - width) / 2
+        let y: CGFloat = (screen.height - height) / 2
+        return "{{\(Int(x)), \(Int(y))}, {\(Int(width)), \(Int(height))}}"
+    }
+
     func launchApp(workspacePath: String) -> XCUIApplication {
         let application: XCUIApplication = XCUIApplication()
         application.launchEnvironment["UITEST_WORKSPACE"] = workspacePath
@@ -65,8 +77,8 @@ class MarketingScreenshotCase: XCTestCase {
                 width: MarketingScreenshotCase.windowWidth,
                 height: MarketingScreenshotCase.windowHeight
             ),
-            "-" + MarketingScreenshotCase.assistantWindowFrameKey,
-            MarketingScreenshotCase.frameArgument(
+            "-" + MarketingScreenshotCase.assistantFrameKey,
+            MarketingScreenshotCase.rectArgument(
                 width: MarketingScreenshotCase.assistantWidth,
                 height: MarketingScreenshotCase.assistantHeight
             ),
@@ -76,7 +88,18 @@ class MarketingScreenshotCase: XCTestCase {
     }
 
     /// Saves one window as an attachment named for its entry in shots.json.
+    ///
+    /// The pointer is parked somewhere harmless first. Left where a click put
+    /// it, it hovers a toolbar button long enough for the tooltip to appear —
+    /// and a screenshot with "Stop previewing this section" floating over the
+    /// toolbar looks like a mistake nobody noticed.
     func save(_ window: XCUIElement, as name: String) {
+        // The empty part of the sidebar, below the last course: the only
+        // large area of the window with nothing under it to explain itself.
+        // The bottom edge was tried first and hovers the working-folder path,
+        // which has a tooltip of its own.
+        window.coordinate(withNormalizedOffset: CGVector(dx: 0.04, dy: 0.75)).hover()
+        Thread.sleep(forTimeInterval: 1.2)
         let attachment: XCTAttachment = XCTAttachment(screenshot: window.screenshot())
         attachment.name = name
         attachment.lifetime = .keepAlways
@@ -99,6 +122,45 @@ class MarketingScreenshotCase: XCTestCase {
         return application.windows.firstMatch
     }
 
+    /// Opens a course's settings and returns the main window.
+    ///
+    /// Selecting a SECTION shows the preview area, which is empty until a
+    /// preview runs — four fifths of the window saying "No Preview Running",
+    /// which is a poor picture of a product. Selecting the COURSE shows the
+    /// settings form, which is full of the thing being described.
+    @discardableResult
+    func openCourse(_ code: String, in application: XCUIApplication) -> XCUIElement {
+        let courseRow: XCUIElement = application.outlines.staticTexts[code]
+        XCTAssertTrue(courseRow.waitForExistence(timeout: 30), "\(code) should be in the sidebar")
+        courseRow.click()
+        XCTAssertTrue(
+            application.textFields["courseNameField"].waitForExistence(timeout: 20),
+            "The settings form for \(code) should appear"
+        )
+        return application.windows.firstMatch
+    }
+
+    /// Scrolls the settings form until a named control is on screen.
+    ///
+    /// The scroll is dispatched at the WINDOW, not at a scroll view found by
+    /// query: asking for `application.scrollViews.firstMatch` returned
+    /// something that swallowed every scroll silently, and the capture came
+    /// back showing the top of the form as though nothing had been asked for.
+    @discardableResult
+    func scrollSettings(in application: XCUIApplication, to identifier: String) -> Bool {
+        let window: XCUIElement = application.windows.firstMatch
+        let target: XCUIElement = application.descendants(matching: .any)
+            .matching(identifier: identifier).firstMatch
+        for _ in 0..<25 {
+            if target.exists && target.isHittable && window.frame.contains(target.frame) {
+                return true
+            }
+            window.scroll(byDeltaX: 0, deltaY: -200)
+            Thread.sleep(forTimeInterval: 0.35)
+        }
+        return target.exists && target.isHittable
+    }
+
     /// A pause long enough for a view to settle before it is photographed.
     /// Screenshots are the one place where "it exists" is not the same as
     /// "it has finished drawing".
@@ -114,13 +176,12 @@ final class MarketingScreenshots: MarketingScreenshotCase {
 
     // MARK: - Functions
 
-    /// The whole product in one picture: courses in the sidebar, one section
-    /// open beside them.
+    /// The whole product in one picture: three courses in the sidebar, and
+    /// one of them open beside them.
     func test1Courses() throws {
         let application: XCUIApplication = launchApp(workspacePath: try demoWorkspacePath())
-        let window: XCUIElement = openSection(1, ofCourse: "ENG2D", in: application)
-        XCTAssertTrue(application.buttons["previewButton"].waitForExistence(timeout: 20))
-        settle()
+        let window: XCUIElement = openCourse("ENG2D", in: application)
+        settle(2.0)
         save(window, as: "courses")
     }
 
@@ -152,21 +213,24 @@ final class MarketingScreenshots: MarketingScreenshotCase {
         application.buttons["wizardCloseButton"].click()
     }
 
-    /// What a section's own settings look like.
+    /// The choices that make one section look unlike another: its colour
+    /// scheme and its typefaces, both shown as live samples.
     func test3Section() throws {
         let application: XCUIApplication = launchApp(workspacePath: try demoWorkspacePath())
-        let window: XCUIElement = openSection(1, ofCourse: "MCV4U", in: application)
-        XCTAssertTrue(application.buttons["previewButton"].waitForExistence(timeout: 20))
+        let window: XCUIElement = openCourse("SCH3U", in: application)
+        scrollSettings(in: application, to: "codeFontPreview")
         settle(2.0)
         save(window, as: "section")
     }
 
-    /// Building a preview: the progress wording on the way, and the finished
-    /// site in the window at the end. One test, because the two are two
-    /// moments of the same run.
-    func test4PreviewAndProgress() throws {
+    /// Progress, described in words while a site is built.
+    ///
+    /// Section 2 on purpose: section 1 has been built and published already,
+    /// so its preview comes back almost at once — the first attempt at this
+    /// photographed the finished site twice and called one of them progress.
+    func test4Progress() throws {
         let application: XCUIApplication = launchApp(workspacePath: try demoWorkspacePath())
-        let window: XCUIElement = openSection(1, ofCourse: "ENG2D", in: application)
+        let window: XCUIElement = openSection(2, ofCourse: "ENG2D", in: application)
 
         let previewButton: XCUIElement = application.buttons["previewButton"]
         XCTAssertTrue(previewButton.waitForExistence(timeout: 20))
@@ -174,14 +238,26 @@ final class MarketingScreenshots: MarketingScreenshotCase {
 
         let milestone: XCUIElement = application.staticTexts["taskMilestoneLabel"]
         XCTAssertTrue(milestone.waitForExistence(timeout: 60), "Progress should be described while the site builds")
-        // Far enough in that the wording is about the site rather than about
-        // starting up, but not so far that the build has finished.
-        settle(8.0)
+        settle(6.0)
         save(window, as: "progress")
+
+        if application.buttons["stopPreviewButton"].exists {
+            application.buttons["stopPreviewButton"].click()
+        }
+    }
+
+    /// The finished site, inside the app, before anyone else has seen it.
+    func test5Preview() throws {
+        let application: XCUIApplication = launchApp(workspacePath: try demoWorkspacePath())
+        let window: XCUIElement = openSection(1, ofCourse: "ENG2D", in: application)
+
+        let previewButton: XCUIElement = application.buttons["previewButton"]
+        XCTAssertTrue(previewButton.waitForExistence(timeout: 20))
+        previewButton.click()
 
         let webView: XCUIElement = application.webViews.firstMatch
         XCTAssertTrue(webView.waitForExistence(timeout: 900), "The built site should appear in the window")
-        settle(6.0)
+        settle(8.0)
         save(window, as: "preview")
 
         if application.buttons["stopPreviewButton"].exists {
@@ -190,7 +266,7 @@ final class MarketingScreenshots: MarketingScreenshotCase {
     }
 
     /// The assistant, holding a plan and waiting to be told to go ahead.
-    func test5Assistant() throws {
+    func test6Assistant() throws {
         let application: XCUIApplication = launchApp(workspacePath: try demoWorkspacePath())
         openSection(1, ofCourse: "ENG2D", in: application)
 
@@ -203,10 +279,45 @@ final class MarketingScreenshots: MarketingScreenshotCase {
         XCTAssertTrue(assistantItem.waitForExistence(timeout: 15), "The section menu should offer the assistant")
         assistantItem.click()
 
+        // Existing is not ready. The window opens immediately and says it is
+        // starting; the box is DISABLED and the shelf of phrasings is not
+        // there at all until the assistant has finished loading, which takes
+        // a while the first time. Every earlier failure here — "no keyboard
+        // focus", "the shelf should offer its groups" — was this one fact
+        // wearing a different hat.
         let input: XCUIElement = application.textFields["assistInputField"]
-        XCTAssertTrue(input.waitForExistence(timeout: 240), "The assistant should be ready")
-        input.click()
-        input.typeText("Hide Unit 4, Day 12 — we didn't get to it")
+        XCTAssertTrue(input.waitForExistence(timeout: 120), "The assistant window should open")
+
+        let readyBy: Date = Date().addingTimeInterval(600)
+        while Date() < readyBy && !input.isEnabled {
+            Thread.sleep(forTimeInterval: 2.0)
+        }
+        XCTAssertTrue(input.isEnabled, "The assistant should finish starting before it is asked for anything")
+        settle(1.5)
+
+        let assistantWindow: XCUIElement = assistantWindowIn(application)
+
+        // The request is CHOSEN from the shelf rather than typed.
+        //
+        // Typing it needed the box to hold keyboard focus, and that turned out
+        // to be a coin toss: the same test passed in one appearance and failed
+        // in the other with "neither element nor any descendant has keyboard
+        // focus", from a window that plainly existed and was plainly on
+        // screen. The shelf puts the same sentence in the box with a click,
+        // and a click needs no focus at all. It also photographs better —
+        // the shelf open beside the answer shows where the phrasings come
+        // from.
+        let phrasing: String = "Unpublish Unit 2, Day 3"
+        let suggestion: XCUIElement = application.buttons["assistSuggestion-\(phrasing)"]
+        if !suggestion.exists || !suggestion.isHittable {
+            let group: XCUIElement = application.staticTexts["Taking it back"]
+            XCTAssertTrue(group.waitForExistence(timeout: 60), "The shelf should offer its groups")
+            group.click()
+            settle(1.0)
+        }
+        XCTAssertTrue(suggestion.waitForExistence(timeout: 30), "The shelf should offer \(phrasing)")
+        suggestion.click()
+        settle(1.0)
         application.buttons["assistSendButton"].click()
 
         // The reply is a plan with a button to approve it; that is the moment
@@ -215,7 +326,6 @@ final class MarketingScreenshots: MarketingScreenshotCase {
         XCTAssertTrue(approve.waitForExistence(timeout: 300), "The assistant should answer with something to approve")
         settle(2.0)
 
-        let assistantWindow: XCUIElement = assistantWindowIn(application)
         save(assistantWindow, as: "assistant")
 
         if application.buttons["assistDeclineButton"].exists {
@@ -301,25 +411,33 @@ final class DemoWorkspaceProvisioning: MarketingScreenshotCase {
         // long time, but watches for the failure panel as well as for success.
         // Waiting only for success turned a folder misconfigured in one second
         // into a test that sat there for half an hour saying nothing.
-        let created: XCUIElement = application.outlines.staticTexts[code]
+        let closeButton: XCUIElement = application.buttons["wizardCloseActionButton"]
+        XCTAssertTrue(closeButton.waitForExistence(timeout: 60), "The panel should show a Close button while it works")
+
         let failure: XCUIElement = application.staticTexts["failureExplanation"]
         let deadline: Date = Date().addingTimeInterval(1800)
+        var finished: Bool = false
         while Date() < deadline {
-            if created.exists {
-                break
-            }
             if failure.exists {
                 XCTFail("Creating \(code) failed: \(failure.label)")
                 return
             }
+            // Close is present throughout and enabled only when work ends.
+            if closeButton.isEnabled {
+                finished = true
+                break
+            }
             Thread.sleep(forTimeInterval: 3.0)
         }
-        XCTAssertTrue(created.exists, "\(code) should appear once setup finishes")
+        XCTAssertTrue(finished, "Creating \(code) did not finish")
 
-        let closeButton: XCUIElement = application.buttons["wizardCloseActionButton"]
-        if closeButton.exists {
-            closeButton.click()
-        }
+        // The sidebar is reloaded BY the Close button, not by the script
+        // finishing — so the course cannot appear until the panel is shut.
+        // Waiting for the row first is a wait that never ends.
+        closeButton.click()
+
+        let created: XCUIElement = application.outlines.staticTexts[code]
+        XCTAssertTrue(created.waitForExistence(timeout: 180), "\(code) should appear in the sidebar once the panel closes")
         Thread.sleep(forTimeInterval: 2.0)
     }
 }
