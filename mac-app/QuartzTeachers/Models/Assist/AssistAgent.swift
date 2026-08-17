@@ -190,6 +190,13 @@ final class AssistAgent {
         await think()
     }
 
+    /// The teacher declined to give their class dates. Said back in the
+    /// transcript, so a conversation reads as one somebody took part in.
+    func noteDatesDeclined() {
+        entries.append(Entry(speaker: .teacher, text: AssistWording.cancelled))
+        entries.append(Entry(speaker: .assistant, text: AssistWording.datesNotGivenYet))
+    }
+
     /// Approve the waiting deploy.
     func approvePending() async {
         guard let pending = pendingApproval else {

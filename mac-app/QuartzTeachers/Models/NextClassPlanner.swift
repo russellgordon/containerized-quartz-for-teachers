@@ -51,7 +51,8 @@ enum NextClassPlanner {
         var errorDescription: String? {
             switch self {
             case .noTimetable(let code, let number):
-                return "I don’t know when \(code) Section \(number) meets, so I can’t date a new class. Plantoir is asking the teacher for this section’s class dates now — once they have given them, ask again."
+                return "I don’t know when \(code) Section \(number) meets, so I can’t date a new class. "
+                     + AssistWording.mayIAskForYourDates
             case .timetableRanOut(let code, let number, let classes, let dates):
                 return "\(code) Section \(number) has \(classes) class page\(classes == 1 ? "" : "s") and only \(dates) class date\(dates == 1 ? "" : "s") on file, so there is no date left for another class. The teacher needs to give the rest of the section’s dates before another class can be added."
             }

@@ -356,5 +356,16 @@ nonisolated struct AssistCardCommand: Sendable, Equatable {
          AssistCardCommand(toolName: "read_remembered_timetable", arguments: ["scope": "all"])),
         ("show me all the dates",
          AssistCardCommand(toolName: "read_remembered_timetable", arguments: ["scope": "all"])),
+
+        // Replacing dates already given. The teacher is volunteering, so this
+        // opens the sheet straight away rather than asking first — the
+        // question "may I ask you for your dates?" has just been answered by
+        // the sentence itself.
+        ("i have a revised list of class dates",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: ["revise": "yes"])),
+        ("i have a new list of class dates",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: ["revise": "yes"])),
+        ("change my class dates",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: ["revise": "yes"])),
     ]
 }

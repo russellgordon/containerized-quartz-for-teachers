@@ -161,6 +161,27 @@
         },
         "phrasing" : "show me all the dates",
         "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+          "revise" : "yes"
+        },
+        "phrasing" : "i have a revised list of class dates",
+        "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+          "revise" : "yes"
+        },
+        "phrasing" : "i have a new list of class dates",
+        "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+          "revise" : "yes"
+        },
+        "phrasing" : "change my class dates",
+        "tool" : "read_remembered_timetable"
       }
     ],
     "note" : "Matched in CODE and never sent to the model. Trimmed, case-folded, trailing . and ! removed, then compared for EQUALITY. Measured: the model misrouted five of the eleven suggested phrasings in every trial while filling arguments perfectly, so the shapes with no ambiguity in them do not reach it.",

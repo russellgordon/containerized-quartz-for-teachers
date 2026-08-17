@@ -169,6 +169,7 @@ struct AssistPromptShelfView: View {
                 // has no way to know it is there — an offer made only inside
                 // an answer is invisible until you have already had it.
                 "Show me the rest of the dates",
+                "I have a revised list of class dates",
             ]),
             ("Putting the site online", [
                 "Deploy now",

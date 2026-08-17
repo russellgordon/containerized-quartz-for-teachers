@@ -1289,8 +1289,12 @@ final class AssistToolRunnerTests: XCTestCase {
         ))
 
         XCTAssertFalse(outcome.shouldContinue)
+        // OFFERED now, not opened — a form on top of the sentence explaining
+        // why it appeared is a demand rather than a question.
+        XCTAssertNil(SectionSchedulePrompt.shared.request,
+                     "A form appeared before the teacher had read the request")
         let asked = try XCTUnwrap(
-            SectionSchedulePrompt.shared.request,
+            SectionSchedulePrompt.shared.offer,
             "The teacher was told no class could be found and never asked for their dates"
         )
         XCTAssertEqual(asked.courseCode, "ICS3U")
@@ -1323,6 +1327,8 @@ final class AssistToolRunnerTests: XCTestCase {
 
         XCTAssertNil(SectionSchedulePrompt.shared.request,
                      "A sheet was opened about dates that are already on file")
+        XCTAssertNil(SectionSchedulePrompt.shared.offer,
+                     "It asked about dates that are already on file")
     }
 
     // MARK: - Starting a new unit
@@ -1446,6 +1452,117 @@ final class AssistToolRunnerTests: XCTestCase {
             NextClassPlanner.firstDayOfANewUnit(after: [summary("Field Trip")]).title,
             "Unit 1, Day 1"
         )
+    }
+
+    // MARK: - Asking for the class dates rather than demanding them
+
+    /// The sheet is OFFERED, not opened. It used to appear on top of the
+    /// sentence explaining why it had appeared.
+    @MainActor
+    func testNeedingDatesOffersRatherThanOpeningTheSheet() async throws {
+        let made = try makeRunner()
+        defer {
+            try? FileManager.default.removeItem(at: made.root)
+            SectionSchedulePrompt.shared.stopAsking()
+        }
+        SectionSchedulePrompt.shared.stopAsking()
+
+        try write(page: "Unit 1, Day 1", publish: "false", date: "2026-09-08",
+                  body: "One.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "add_next_class", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertNil(SectionSchedulePrompt.shared.request,
+                     "A form appeared before the teacher had read the request")
+        let offer = try XCTUnwrap(
+            SectionSchedulePrompt.shared.offer,
+            "Nothing asked the teacher for their dates"
+        )
+        XCTAssertEqual(offer.courseCode, "ICS3U")
+        XCTAssertTrue(outcome.summary.contains(AssistWording.mayIAskForYourDates), outcome.summary)
+
+        // Yes opens it; nothing else does.
+        SectionSchedulePrompt.shared.acceptOffer()
+        XCTAssertNotNil(SectionSchedulePrompt.shared.request)
+        XCTAssertNil(SectionSchedulePrompt.shared.offer)
+    }
+
+    /// And declining opens nothing at all.
+    @MainActor
+    func testDecliningTheOfferOpensNothing() async throws {
+        let made = try makeRunner()
+        defer {
+            try? FileManager.default.removeItem(at: made.root)
+            SectionSchedulePrompt.shared.stopAsking()
+        }
+        SectionSchedulePrompt.shared.stopAsking()
+
+        try write(page: "Unit 1, Day 1", publish: "false", date: "2026-09-08",
+                  body: "One.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "add_next_class", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        SectionSchedulePrompt.shared.declineOffer()
+        XCTAssertNil(SectionSchedulePrompt.shared.offer)
+        XCTAssertNil(SectionSchedulePrompt.shared.request)
+    }
+
+    /// A teacher who VOLUNTEERS dates gets the sheet straight away — asking
+    /// "may I ask you for your dates?" of somebody offering them reads as not
+    /// listening.
+    @MainActor
+    func testARevisedListOpensTheSheetWithoutAsking() async throws {
+        let made = try makeRunner()
+        defer {
+            try? FileManager.default.removeItem(at: made.root)
+            SectionSchedulePrompt.shared.stopAsking()
+        }
+        SectionSchedulePrompt.shared.stopAsking()
+
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+        ))
+        SectionSchedulePrompt.shared.stopAsking()
+
+        let command = try XCTUnwrap(
+            AssistCardCommand.matching("I have a revised list of class dates")
+        )
+        var arguments: [String: Any] = ["course": "ICS3U", "section": 1]
+        for (key, value) in command.arguments {
+            arguments[key] = value
+        }
+        let outcome: AssistToolOutcome = await made.runner.run(
+            call: call(command.toolName, arguments: arguments)
+        )
+
+        XCTAssertNotNil(SectionSchedulePrompt.shared.request,
+                        "The teacher offered their dates and nothing opened")
+        XCTAssertNil(SectionSchedulePrompt.shared.offer, "It asked a question already answered")
+        XCTAssertTrue(outcome.summary.contains("replaces"), outcome.summary)
+    }
+
+    /// Where the dates came from is not a clause that finishes the sentence
+    /// about how many there are.
+    @MainActor
+    func testTheTimetableSummaryDoesNotTrailOffIntoItsSource() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+        ))
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "read_remembered_timetable", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertEqual(outcome.summary, "ICS3U Section 1 meets on 2 recorded days.")
+        XCTAssertFalse(outcome.summary.contains("from "),
+                       "The sentence trails off into where the dates came from: \(outcome.summary)")
     }
 
     // MARK: - "What dates am I teaching?"

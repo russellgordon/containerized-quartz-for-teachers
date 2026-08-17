@@ -246,14 +246,18 @@ final class NextClassTests: XCTestCase {
         XCTAssertTrue(outcome.summary.contains("don’t know when ICS3U Section 1 meets"), outcome.summary)
         XCTAssertFalse(outcome.summary.contains("remember_timetable"),
                        "The local model cannot see that tool, so being sent to it is a dead end")
-        XCTAssertTrue(outcome.summary.contains("asking the teacher"),
-                      "The refusal says who is being asked, so the model knows to wait rather than guess")
+        XCTAssertTrue(outcome.summary.contains(AssistWording.mayIAskForYourDates),
+                      "The refusal asks for what is missing rather than describing it")
         XCTAssertEqual(pageCount(in: made.course), 0, "And nothing was written")
 
-        // The way out is the SHEET, and this is the call that opens it. Left
-        // unwired, the assistant would refuse for ever: the tool that records
-        // dates is off the local surface, so nothing else can ask.
-        let asked = try XCTUnwrap(SectionSchedulePrompt.shared.request,
+        // The way out is the SHEET, and this OFFERS it. Left unwired, the
+        // assistant would refuse for ever: the tool that records dates is off
+        // the local surface, so nothing else can ask. Offered rather than
+        // opened, because a form that arrives on top of the sentence
+        // explaining it is a demand.
+        XCTAssertNil(SectionSchedulePrompt.shared.request,
+                     "A form appeared before the teacher had read the request")
+        let asked = try XCTUnwrap(SectionSchedulePrompt.shared.offer,
                                   "Nothing asked the teacher for the dates")
         XCTAssertEqual(asked.courseCode, "ICS3U")
         XCTAssertEqual(asked.sectionNumber, 1)
@@ -364,11 +368,15 @@ final class NextClassTests: XCTestCase {
             "read_remembered_timetable", arguments: ["course": "ICS3U", "section": 1]
         ))
         XCTAssertTrue(outcome.shouldContinue, "A read hands back so the model can answer.")
-        XCTAssertTrue(outcome.summary.contains("No class dates are recorded"), outcome.summary)
+        XCTAssertTrue(outcome.summary.contains("don't know when"), outcome.summary)
         XCTAssertFalse(outcome.detail.contains("remember_timetable"),
                        "That tool is off the local surface; naming it is a remedy the model cannot reach")
-        XCTAssertTrue(outcome.detail.contains("asking the teacher"), outcome.detail)
-        XCTAssertNotNil(SectionSchedulePrompt.shared.request, "Reading an empty timetable asks for one")
+        // ASKS rather than opening. The sheet used to appear on top of the
+        // sentence explaining why it had appeared.
+        XCTAssertTrue(outcome.summary.contains(AssistWording.mayIAskForYourDates), outcome.summary)
+        XCTAssertNil(SectionSchedulePrompt.shared.request,
+                     "A form appeared before the teacher had read the request")
+        XCTAssertNotNil(SectionSchedulePrompt.shared.offer, "Reading an empty timetable asks for one")
         SectionSchedulePrompt.shared.stopAsking()
     }
 

@@ -297,6 +297,18 @@ struct AssistWindowView: View {
                             agent.declinePending()
                         }
                     }
+                    // "May I ask you for your class dates?" — the offer that
+                    // stands where the sheet used to open by itself.
+                    if let offer = SectionSchedulePrompt.shared.offer,
+                       offer.courseCode == session.courseCode,
+                       offer.sectionNumber == session.sectionNumber {
+                        AssistDatesOfferView(reason: offer.reason) {
+                            SectionSchedulePrompt.shared.acceptOffer()
+                        } decline: {
+                            SectionSchedulePrompt.shared.declineOffer()
+                            session.agent?.noteDatesDeclined()
+                        }
+                    }
                     if let agent = session.agent, agent.planMode.shouldOfferToStop {
                         AssistStopAskingOfferView {
                             agent.planMode.stopAsking()
@@ -682,6 +694,53 @@ private struct AssistApprovalView: View {
     }
 }
 
+
+/// "May I ask you for your class dates?" — Yes, or Cancel.
+///
+/// The schedule sheet used to open the instant anything discovered it needed
+/// dates, ON TOP of the sentence explaining why. So the teacher met a form
+/// before they had read the request, and the request was behind the form. A
+/// form nobody asked for is a demand; this makes it an offer.
+///
+/// "Yes" is the default button here, unlike the plan gate, and the difference
+/// is deliberate: a plan asks permission to CHANGE something, where this asks
+/// permission to ask a question. Somebody who pressed Return without reading
+/// gets a form they can close, not an edit they did not want.
+private struct AssistDatesOfferView: View {
+
+    // MARK: - Stored properties
+
+    let reason: String
+    let accept: () -> Void
+    let decline: () -> Void
+
+    // MARK: - Computed properties
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label(AssistWording.mayIAskForYourDates, systemImage: "calendar")
+                .font(.headline)
+            if !reason.isEmpty {
+                Text(reason)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(.secondary)
+            }
+            Text("They can be typed in, chosen from a file, or read from a shared sheet.")
+                .fixedSize(horizontal: false, vertical: true)
+                .foregroundStyle(.secondary)
+            HStack {
+                Button("Yes", action: accept)
+                    .keyboardShortcut(.defaultAction)
+                    .accessibilityIdentifier("assistGiveDatesButton")
+                Button(AssistWording.cancelled, action: decline)
+                    .accessibilityIdentifier("assistNoDatesButton")
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 10))
+    }
+}
 
 /// Told once, ever: there is a setting for this.
 ///

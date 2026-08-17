@@ -516,11 +516,56 @@ final class SectionSchedulePrompt {
     /// make sense of.
     private(set) var request: Request?
 
+    /// A request the assistant would LIKE to make, waiting on the teacher.
+    ///
+    /// **The sheet used to open the instant something needed dates, on top of
+    /// the answer explaining why** — so the teacher was handed a form before
+    /// they had read the sentence that asked for it, and the sentence was
+    /// behind it. A form is a demand; this makes it an offer. The assistant
+    /// says what it needs and waits for Yes, which is the same courtesy every
+    /// other write in the window already gets.
+    private(set) var offer: Request?
+
     static let shared: SectionSchedulePrompt = SectionSchedulePrompt()
 
     // MARK: - Functions
 
+    /// Say that dates are needed, WITHOUT putting a form on screen. The
+    /// teacher answers, and only a Yes opens the sheet.
+    func offerToAsk(
+        courseCode: String,
+        sectionNumber: Int,
+        workingFolder: URL,
+        because reason: String = ""
+    ) {
+        offer = Request(
+            courseCode: courseCode,
+            sectionNumber: sectionNumber,
+            workingFolder: workingFolder,
+            reason: reason
+        )
+    }
+
+    /// The teacher said yes: now the sheet may open.
+    func acceptOffer() {
+        guard let offer else {
+            return
+        }
+        request = offer
+        self.offer = nil
+    }
+
+    /// The teacher said no. Nothing opens, and nothing is asked again until
+    /// something needs the dates afresh.
+    func declineOffer() {
+        offer = nil
+    }
+
     /// Ask a teacher for a section's class dates.
+    ///
+    /// Opens the sheet immediately, so it is for the case where the teacher
+    /// ASKED — "I have a revised list of class dates" — rather than for
+    /// something that merely discovered it needed them.
     func ask(
         courseCode: String,
         sectionNumber: Int,
@@ -538,6 +583,7 @@ final class SectionSchedulePrompt {
     /// Answered, or waved away.
     func stopAsking() {
         request = nil
+        offer = nil
     }
 
     /// The course a request is about, read from the working folder it names.

@@ -207,6 +207,26 @@ nonisolated enum AssistWording {
         "If you had already deployed this section, undoing it here does not change what students "
         + "see. Deploy again when you want the live site to match."
 
+    // MARK: - Asking for the class dates
+
+    /// The question that stands in front of the schedule sheet.
+    ///
+    /// The sheet used to open the moment something discovered it needed
+    /// dates, ON TOP of the sentence explaining why — so a teacher was handed
+    /// a form before they had read the request, and the request was behind it.
+    /// A form that arrives unasked is a demand. This makes it an offer, which
+    /// is the same courtesy every other write in the window already gets.
+    static let mayIAskForYourDates: String = "May I ask you for your class dates?"
+
+    /// What the teacher is told after saying no.
+    ///
+    /// Deliberately does not re-ask or explain again. They declined a
+    /// question they had just read; repeating it is how an assistant becomes
+    /// something to get past.
+    static let datesNotGivenYet: String =
+        "Right you are. I will not be able to date new classes until I have them — "
+        + "say “I have a revised list of class dates” whenever you would like to give them."
+
     // MARK: - Shared fragments
 
     /// One phrasing for "go and look at what happened", because it was two:

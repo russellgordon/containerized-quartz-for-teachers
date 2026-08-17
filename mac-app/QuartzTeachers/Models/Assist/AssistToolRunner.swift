@@ -1429,6 +1429,22 @@ final class AssistToolRunner {
         }
         let where_: String = "\(located.course.code) Section \(located.sectionNumber)"
 
+        // "I have a revised list of class dates" — the teacher volunteered, so
+        // the sheet opens on the spot. Asking "may I ask you for your dates?"
+        // in reply to somebody offering them is the kind of politeness that
+        // reads as not listening.
+        if text("revise", in: arguments).lowercased() == "yes" {
+            SectionSchedulePrompt.shared.ask(
+                courseCode: located.course.code,
+                sectionNumber: located.sectionNumber,
+                workingFolder: workspace.workspaceURL ?? located.course.directoryURL,
+                because: "Replacing the class dates on file for \(where_)."
+            )
+            let opening: String = "Here you are — the dates for \(where_) are open for editing. "
+                                + "What you save replaces what was there."
+            return AssistToolOutcome.read(opening, detail: opening)
+        }
+
         let remembered: SectionTimetable?
         do {
             remembered = try SectionTimetableStore.read(
@@ -1447,25 +1463,36 @@ final class AssistToolRunner {
             // here would send the model somewhere it cannot go — and the one
             // thing worse than a refusal is a refusal whose remedy does not
             // exist, because the next move is to invent the dates.
-            SectionSchedulePrompt.shared.ask(
+            askForTheTimetable(
                 courseCode: located.course.code,
                 sectionNumber: located.sectionNumber,
-                workingFolder: workspace.workspaceURL ?? located.course.directoryURL,
                 because: "Nothing on file says when \(where_) meets."
             )
-            return AssistToolOutcome.read(
-                "No class dates are recorded for \(where_) yet.",
-                detail: "No class dates are recorded for \(where_) yet, so nothing knows when it meets — "
-                      + "and until they are, a new class page cannot be dated. Plantoir is asking the "
-                      + "teacher for this section's class dates now; say so, and that they can be typed "
-                      + "in, chosen from a file, or read from a shared sheet."
-            )
+            let asking: String = "I don't know when \(where_) meets yet. "
+                               + AssistWording.mayIAskForYourDates
+            return AssistToolOutcome.read(asking, detail: asking)
         }
 
         // "All of them" is asked for by a fixed phrasing the window offers
         // after the short answer — the model is never told this key exists, so
         // the tool's schema is unchanged and its routing is untouched.
         let wantsEveryDate: Bool = text("scope", in: arguments).lowercased() == "all"
+
+        // Taking up the offer at the end of the last answer is a follow-up,
+        // not a fresh question. Repeating the count, the range, what the
+        // dates are for and where they came from — all of which the teacher
+        // has just read — makes the reply look like it did not hear them.
+        // They asked for the rest; they get the rest.
+        if wantsEveryDate {
+            var every: [String] = ["Every date on file:"]
+            for date in remembered.dates {
+                every.append("\(date.weekdayName), \(date.text)")
+            }
+            let all: String = every.joined(separator: "\n")
+            return AssistToolOutcome.read(
+                "All \(remembered.dates.count) dates for \(where_).", detail: all
+            )
+        }
 
         var lines: [String] = []
         lines.append("\(where_) meets on \(remembered.dates.count) "
@@ -1491,12 +1518,7 @@ final class AssistToolRunner {
         }
 
         lines.append("")
-        if wantsEveryDate {
-            lines.append("Every date on file:")
-            for date in remembered.dates {
-                lines.append("\(date.weekdayName), \(date.text)")
-            }
-        } else if thisWeek.isEmpty {
+        if thisWeek.isEmpty {
             lines.append("Nothing in the next seven days.")
         } else {
             lines.append("In the next seven days:")
@@ -1533,16 +1555,19 @@ final class AssistToolRunner {
         // The offer, and the words that take it up. A prompt whose answer
         // nothing understands is worse than no prompt, so the phrasing named
         // here is one the window matches in code — see AssistCardCommand.
-        if !wantsEveryDate && remembered.dates.count > thisWeek.count {
+        if remembered.dates.count > thisWeek.count {
             let rest: Int = remembered.dates.count - thisWeek.count
             lines.append("")
             lines.append("There \(rest == 1 ? "is" : "are") \(rest) more. Say “show me the rest of "
                          + "the dates” if you would like the lot.")
         }
 
+        // "…on 75 recorded days, from pasted by hand." Where the dates came
+        // from is worth knowing and is NOT a clause that finishes this
+        // sentence; it has a line of its own further down.
         return AssistToolOutcome.read(
             "\(where_) meets on \(remembered.dates.count) recorded "
-            + "\(remembered.dates.count == 1 ? "day" : "days"), from \(remembered.source).",
+            + "\(remembered.dates.count == 1 ? "day" : "days").",
             detail: lines.joined(separator: "\n")
         )
     }
@@ -1727,7 +1752,9 @@ final class AssistToolRunner {
         guard let folder = workspace.workspaceURL else {
             return
         }
-        SectionSchedulePrompt.shared.ask(
+        // OFFERED, not opened. A form that appears on top of the sentence
+        // explaining why it appeared is a demand; this asks first.
+        SectionSchedulePrompt.shared.offerToAsk(
             courseCode: courseCode,
             sectionNumber: sectionNumber,
             workingFolder: folder,
