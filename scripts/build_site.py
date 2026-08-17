@@ -2350,19 +2350,26 @@ a.coverage-chip:focus-visible {{
      now, and a rule drawn in it would be invisible. */
   border-top: 1px solid var(--gray);
   margin: 1.3rem 0 1rem;
+  width: 100%;
 }}
 .coverage-legend {{
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.4rem;
-  margin: 1.2rem 0 1.4rem;
+  margin: 0;
   font-size: 0.85rem;
+  /* Containment prevents the long legend text from expanding the panel's
+     intrinsic width: the panel width is set by the expectation columns
+     above, and the legend wraps to fit that width. */
+  contain: inline-size;
+  min-width: 100%;
 }}
 .coverage-legend-row {{
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
+  width: 100%;
 }}
 .coverage-key {{
   display: inline-block;
@@ -2370,9 +2377,15 @@ a.coverage-chip:focus-visible {{
   height: 1.35rem;
   border-radius: 0.22rem;
   flex: none;
+  margin-top: 0.05rem;
   /* The key swatches are the same five colours, so they need the same
      hairline for the same reason. */
   box-shadow: inset 0 0 0 1px var(--gray);
+}}
+.coverage-legend-label {{
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.35;
 }}
 """
     base_scss_path.write_text(text, encoding="utf-8")
@@ -3300,15 +3313,15 @@ it cannot drift from the course.
 
 <div class="coverage-panel">
 <div class="coverage-map">{"".join(columns)}</div>
-</div>
-
+<hr class="coverage-rule">
 <div class="coverage-legend">
-<div class="coverage-legend-row"><span class="coverage-key coverage-0"></span> {COVERAGE_WORDS[0].capitalize()}</div>
-<div class="coverage-legend-row"><span class="coverage-key coverage-1"></span> {COVERAGE_WORDS[1].capitalize()}</div>
-<div class="coverage-legend-row"><span class="coverage-key coverage-2"></span> {COVERAGE_WORDS[2].capitalize()}</div>
-<div class="coverage-legend-row"><span class="coverage-key coverage-3"></span> {COVERAGE_WORDS[3].capitalize()}</div>
-<div class="coverage-legend-row"><span class="coverage-key coverage-4"></span> {COVERAGE_WORDS[4].capitalize()}</div>
-<div class="coverage-legend-row"><span class="coverage-key coverage-2" data-assessed="true"></span> Included in assessed work — the cell carries a ring</div>
+<div class="coverage-legend-row"><span class="coverage-key coverage-0"></span><span class="coverage-legend-label">{COVERAGE_WORDS[0].capitalize()}</span></div>
+<div class="coverage-legend-row"><span class="coverage-key coverage-1"></span><span class="coverage-legend-label">{COVERAGE_WORDS[1].capitalize()}</span></div>
+<div class="coverage-legend-row"><span class="coverage-key coverage-2"></span><span class="coverage-legend-label">{COVERAGE_WORDS[2].capitalize()}</span></div>
+<div class="coverage-legend-row"><span class="coverage-key coverage-3"></span><span class="coverage-legend-label">{COVERAGE_WORDS[3].capitalize()}</span></div>
+<div class="coverage-legend-row"><span class="coverage-key coverage-4"></span><span class="coverage-legend-label">{COVERAGE_WORDS[4].capitalize()}</span></div>
+<div class="coverage-legend-row"><span class="coverage-key coverage-2" data-assessed="true"></span><span class="coverage-legend-label">Included in assessed work — the cell carries a ring</span></div>
+</div>
 </div>
 
 Hover any cell to preview the expectation. The row of small chips under
