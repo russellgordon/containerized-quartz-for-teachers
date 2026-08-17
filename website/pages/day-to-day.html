@@ -1,0 +1,78 @@
+---
+title: A week of teaching — Plantoir
+description: How Plantoir fits into an ordinary teaching week, and how a request typed in plain English handles the fiddly parts.
+nav_label: Day to day
+---
+
+<div class="page-head">
+  <h1>A week of teaching</h1>
+  <p class="standfirst">The measure of a tool like this is not what it can do on a quiet afternoon. It is what it costs on a Tuesday, between two classes, with a lesson that ran long.</p>
+</div>
+
+<hr class="rule">
+
+<section>
+  <h2>Sunday evening</h2>
+  <p>Next week's material gets written the way anything else gets written: as notes, in Obsidian, in whatever order it comes. Nothing is uploaded and nothing is posted; the files simply exist.</p>
+  <p>When the week looks about right, a preview builds the real site so it can be read the way a student would read it — with the search working, the equations set, and the links live. Only then does anything get published.</p>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>The part that used to be fiddly</h2>
+  <p>A course written once and taught to three sections needs to say, page by page, which classes are far enough along to see it. That instruction lives in a small block of settings at the top of each note — a line reading <code>publishForSection1: true</code>, and another for section two, and another for section three.</p>
+  <p>It is not difficult. It is simply the kind of thing that is easy to get backwards at 7:40 in the morning, and getting it backwards means a class sees a page they were not meant to see — or does not see one they were.</p>
+  <p>So the app takes the request in words instead:</p>
+  {{shot:assistant}}
+  <p>An assistant runs on the Mac itself, reads the request, and works out which pages are meant. Before anything is written it says what it is about to do and waits to be told to go ahead. Publishing to students is treated more carefully still: it asks separately, and says plainly that students will see the result.</p>
+  <p>If it gets something wrong, "undo that" puts the pages back — and it will not quietly overwrite work, so a page that has been edited since is left alone and reported rather than reverted.</p>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>What it can be asked to do</h2>
+  <ul class="plain">
+    <li><strong>Publish or hold back a class.</strong> "Publish Thursday's class for section 2." "Hide Unit 4, Day 12 — we did not get to it."</li>
+    <li><strong>Answer what is live.</strong> "What would students see in this section right now?" — asked from the staff room, without opening the site.</li>
+    <li><strong>Add the next class page.</strong> Numbered and dated to match the timetable, ready to write into.</li>
+    <li><strong>Move the dates when the term slips.</strong> A snow day, an assembly, a fire drill: the remaining classes shift, and the page numbering and dates follow.</li>
+    <li><strong>Rebuild the preview</strong> after a batch of edits.</li>
+    <li><strong>Publish now, or later.</strong> "Publish section 1 at seven tomorrow morning" is a complete instruction.</li>
+    <li><strong>Find the curriculum.</strong> List the expectations for the course, and note on a lesson page which ones it covered.</li>
+  </ul>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>Between periods</h2>
+  <p>Most days need one small change: yesterday's class published, tomorrow's held back, a page rebuilt after a correction. Each of those is a sentence and a confirmation, and the app reports what it did in the same plain terms.</p>
+  <p>Longer jobs — building a site, publishing it — describe their progress in words rather than in output, so it is clear at a glance whether to wait or to walk away.</p>
+  {{shot:progress}}
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>How the assistant actually works</h2>
+  <div class="note">
+    <h3>It runs on the computer, not on a service</h3>
+    <p>The assistant is part of the app and works with no internet connection. Course notes are never sent anywhere to be read, and there is no account, no subscription and no per-request cost.</p>
+    <h3>It decides nothing on its own</h3>
+    <p>Its only job is to turn a sentence into the name of an action and the details it needs. Every rule about what may happen, every safety check, and every file that gets written is ordinary program code, and behaves exactly the same whether the request arrived as a sentence or as a menu selection.</p>
+    <h3>It asks before it acts</h3>
+    <p>Anything that changes a file is described first and carried out only on approval. Anything students would see is confirmed separately again.</p>
+    <h3>It is optional</h3>
+    <p>Everything the assistant can do can be done in the app by hand. Teachers who would rather not use it can leave it turned off, and nothing is downloaded for it until it is asked for.</p>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>Friday</h2>
+  <p>The week's material is on the site, the class has a single address that has not changed since September, and the notes are still a folder of files on a laptop — searchable, backed up with everything else, and readable in ten years' time.</p>
+  <p><a href="/features">See the rest of what it does</a>, or <a href="/support">read the common questions</a>.</p>
+</section>

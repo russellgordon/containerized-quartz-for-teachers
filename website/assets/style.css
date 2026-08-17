@@ -1,0 +1,461 @@
+/* plantoir.app
+ *
+ * One stylesheet for every page. The palette is the app's own: warm paper and
+ * soil rather than white and blue-black, so the site and the product look like
+ * the same thing. Both colour schemes are defined here; the page follows
+ * whatever the visitor's computer is set to, and so do the screenshots.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  --paper:      #F7EEDA;
+  --paper-deep: #F0E3C9;
+  --card:       #FCF8EE;
+  --rule:       #DFD4B8;
+  --ink:        #2B2A24;
+  --ink-soft:   #6E6858;
+  --green:      #3E8C26;
+  --green-deep: #2D6620;
+
+  --shadow: 0 1px 2px rgba(43, 42, 36, .06), 0 8px 24px rgba(43, 42, 36, .08);
+}
+
+/* Dark mode. Warm near-black rather than blue-black, so the page still reads
+   as soil and paper. Greens lighten because the roles invert: --green-deep
+   is used for headings and links, which now sit on a dark background. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:      #1C1A15;
+    --paper-deep: #252118;
+    --card:       #24211A;
+    --rule:       #3D382C;
+    --ink:        #EDE7D6;
+    --ink-soft:   #A8A08C;
+    --green:      #A3DD87;
+    --green-deep: #86CC66;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .35);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  padding: 0 24px 96px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 620px; margin: 0 auto; }
+
+/* Keyboard users must be able to see where they are. */
+a:focus-visible,
+.dl:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+
+.skip-link:focus {
+  left: 50%;
+  transform: translateX(-50%);
+  top: 12px;
+  z-index: 10;
+  background: var(--card);
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: var(--green-deep);
+}
+
+/* ---------- Top bar ---------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 0 0;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--green-deep);
+  text-decoration: none;
+}
+
+.brand img { width: 26px; height: 26px; border-radius: 6px; display: block; }
+
+.nav {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 15.5px;
+}
+
+.nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  padding-bottom: 2px;
+  border-bottom: 1.5px solid transparent;
+}
+
+.nav a:hover { color: var(--green-deep); }
+
+.nav a[aria-current="page"] {
+  color: var(--green-deep);
+  border-bottom-color: var(--green);
+}
+
+/* On the front page the mark appears full size just below, so the bar
+   carries navigation alone rather than saying the name twice. */
+.home .brand { display: none; }
+.home .topbar { justify-content: center; }
+
+/* ---------- Masthead ---------- */
+
+header.hero { padding: 66px 0 0; text-align: center; }
+
+header.hero img.mark {
+  width: 104px; height: 104px;
+  border-radius: 23px;
+  display: block; margin: 0 auto 26px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 46px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  color: var(--green-deep);
+}
+
+.tagline {
+  margin: 14px auto 0;
+  max-width: 460px;
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* Inner pages: a title and a standfirst, without the large mark. */
+
+.page-head { padding: 52px 0 0; }
+
+.page-head h1 { font-size: 38px; }
+
+.page-head .standfirst {
+  margin: 16px 0 0;
+  font-size: 20px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* ---------- Rules and sections ---------- */
+
+.rule {
+  height: 1px;
+  background: var(--rule);
+  border: 0;
+  margin: 56px 0;
+}
+
+h2 {
+  margin: 0 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--green-deep);
+}
+
+h3 {
+  margin: 32px 0 8px;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+h3:first-child { margin-top: 0; }
+
+p { margin: 0 0 18px; }
+p:last-child { margin-bottom: 0; }
+
+em { font-style: italic; }
+strong { font-weight: 600; }
+
+a { color: var(--green-deep); text-decoration-thickness: 1px; text-underline-offset: 3px; overflow-wrap: break-word; }
+a:hover { color: var(--green); }
+
+ul.plain { margin: 0 0 18px; padding-left: 22px; }
+ul.plain li { margin-bottom: 8px; }
+ul.plain li:last-child { margin-bottom: 0; }
+
+.lede { font-size: 19px; color: var(--ink-soft); }
+
+code {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 1px 5px;
+  overflow-wrap: break-word;
+}
+
+/* ---------- Steps ---------- */
+
+ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: step; }
+
+ol.steps li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 42px;
+  margin-bottom: 16px;
+}
+
+ol.steps li:last-child { margin-bottom: 0; }
+
+ol.steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0; top: 2px;
+  width: 26px; height: 26px;
+  border: 1px solid var(--green);
+  border-radius: 50%;
+  color: var(--green-deep);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 24px;
+  text-align: center;
+}
+
+/* ---------- Feature list ---------- */
+
+.features { display: grid; gap: 14px; }
+
+.feature {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 22px 24px;
+}
+
+.feature h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--green-deep);
+}
+
+.feature p { margin: 0; color: var(--ink-soft); font-size: 15.5px; }
+
+/* ---------- Screenshots ---------- */
+
+.shot {
+  margin: 34px 0;
+  /* Wider than the text column, because a window shrunk to 620px is
+     unreadable. The column stays where it is; the figure grows around it. */
+  width: min(100% + 200px, calc(100vw - 48px));
+  margin-left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.shot img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+/* A phone-shaped capture should not be blown up to the width of a window. */
+.shot-narrow { width: 100%; margin-left: 0; transform: none; }
+.shot-narrow img { max-width: 320px; }
+
+.shot figcaption {
+  margin-top: 12px;
+  font-size: 14.5px;
+  color: var(--ink-soft);
+}
+
+.shot-missing {
+  border: 1px dashed var(--rule);
+  border-radius: 10px;
+  padding: 60px 20px;
+  color: var(--ink-soft);
+  font-size: 14.5px;
+}
+
+/* ---------- Downloads ---------- */
+
+.downloads { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.dl {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 22px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color .15s, transform .15s;
+}
+
+@media (hover: hover) {
+  .dl:hover { border-color: var(--green); transform: translateY(-2px); color: var(--ink); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dl { transition: none; }
+}
+
+.dl .platform { display: block; font-size: 19px; font-weight: 600; color: var(--green-deep); }
+.dl .meta { display: block; margin-top: 4px; font-size: 14px; color: var(--ink-soft); }
+
+/* The platform that has not shipped yet: present, but plainly not ready. */
+.dl-pending { opacity: .72; }
+.dl-pending .platform { color: var(--ink-soft); }
+
+.version-note { margin-top: 16px; font-size: 15px; color: var(--ink-soft); }
+
+/* ---------- Note panel ---------- */
+
+.note {
+  background: var(--paper-deep);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 22px 24px;
+  font-size: 15.5px;
+}
+
+.note h3 { margin: 0 0 10px; font-size: 16px; font-weight: 600; color: var(--green-deep); }
+.note h3:not(:first-child) { margin-top: 22px; }
+.note p { margin-bottom: 0; color: var(--ink-soft); }
+.note p + p { margin-top: 12px; }
+
+kbd {
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+/* ---------- Questions and answers ---------- */
+
+.qa { border-top: 1px solid var(--rule); }
+
+.qa details {
+  border-bottom: 1px solid var(--rule);
+  padding: 4px 0;
+}
+
+.qa summary {
+  cursor: pointer;
+  padding: 14px 0;
+  font-weight: 600;
+  color: var(--ink);
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.qa summary::-webkit-details-marker { display: none; }
+
+.qa summary::before {
+  content: "＋";
+  color: var(--green-deep);
+  font-weight: 400;
+  flex: none;
+  width: 16px;
+}
+
+.qa details[open] summary::before { content: "－"; }
+
+.qa .answer { padding: 0 0 18px 26px; color: var(--ink-soft); font-size: 15.5px; }
+.qa .answer p:last-child { margin-bottom: 0; }
+
+/* ---------- Links list ---------- */
+
+ul.links { margin: 0; padding: 0; list-style: none; }
+ul.links li { margin-bottom: 10px; }
+ul.links li:last-child { margin-bottom: 0; }
+ul.links .label { display: inline-block; min-width: 100px; color: var(--ink-soft); font-size: 15px; }
+
+/* ---------- Footer ---------- */
+
+.sponsor {
+  background: var(--paper-deep);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 56px;
+  font-size: 15.5px;
+  color: var(--ink-soft);
+}
+
+.sponsor p { margin: 0; }
+
+footer {
+  margin-top: 32px;
+  padding-top: 28px;
+  border-top: 1px solid var(--rule);
+  font-size: 14.5px;
+  line-height: 2;
+  color: var(--ink-soft);
+}
+
+footer .footer-nav { margin-bottom: 10px; }
+footer .footer-nav a { margin-right: 18px; }
+
+@media (max-width: 700px) {
+  .shot { width: 100%; margin-left: 0; transform: none; }
+}
+
+@media (max-width: 560px) {
+  body { padding: 0 20px 72px; }
+  header.hero { padding-top: 40px; }
+  .page-head { padding-top: 36px; }
+  h1 { font-size: 36px; }
+  .page-head h1 { font-size: 31px; }
+  .tagline, .page-head .standfirst { font-size: 18px; }
+  .downloads { grid-template-columns: 1fr; }
+  .rule { margin: 44px 0; }
+  .note { padding: 20px; }
+  .topbar { gap: 12px; padding-top: 18px; }
+  .nav { gap: 16px; font-size: 15px; }
+
+  /* Stack the label above its link instead of squeezing it into a column */
+  ul.links .label { display: block; min-width: 0; margin-bottom: 1px; }
+  ul.links li { margin-bottom: 16px; }
+
+  /* Long key names must be allowed to wrap rather than overflow */
+  kbd { white-space: normal; }
+
+  ol.steps li { padding-left: 38px; }
+}

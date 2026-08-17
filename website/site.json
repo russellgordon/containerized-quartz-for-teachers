@@ -1,0 +1,35 @@
+{
+  "name": "Plantoir",
+  "tagline": "Turns a folder of Markdown notes into a fast, searchable class website you own.",
+  "base_url": "https://plantoir.app",
+  "repo_url": "https://github.com/russellgordon/plantoir",
+  "support_email": "support@plantoir.app",
+  "version": "1.0.0",
+  "released": "August 2026",
+  "nav": [
+    "index",
+    "features",
+    "day-to-day",
+    "support"
+  ],
+  "demo_sites": {
+    "show_links": true,
+    "sites": [
+      {
+        "code": "ENG2D",
+        "label": "English, Grade 10",
+        "url": "https://eng2d-gordon-2026-27.netlify.app"
+      },
+      {
+        "code": "MCV4U",
+        "label": "Calculus and Vectors, Grade 12",
+        "url": "https://mcv4u-gordon-2026-27.netlify.app"
+      },
+      {
+        "code": "SCH3U",
+        "label": "Chemistry, Grade 11",
+        "url": "https://sch3u-gordon-2026-27.netlify.app"
+      }
+    ]
+  }
+}
