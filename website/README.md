@@ -88,6 +88,37 @@ application, and any Safari window it opened. It holds off sleep while it runs
 so a capture started at night survives the displays going dark — but the Mac
 itself has to stay awake and unlocked.
 
+### Things that do not work, and what was done instead
+
+Written down because each cost an afternoon:
+
+- **`xcodebuild` does not hand its environment to the test runner.** The demo
+  folder arrives as `TEST_RUNNER_MARKETING_WORKSPACE`. Passing it unprefixed
+  gives a green run with one skipped test and no screenshots — success, with
+  nothing to show for it. Check the count of captured images, never the exit
+  code.
+- **XCUITest cannot scroll these SwiftUI forms.** Neither
+  `scroll(byDeltaX:deltaY:)`, which is accepted and does nothing, nor
+  `swipeUp()`. So no capture may depend on anything below the fold. That is
+  why there is no shot of the per-section colour and typography controls: the
+  class sites make the same point.
+- **The assistant's box exists long before it works.** The window opens saying
+  it is starting, and the box stays disabled — and a disabled field cannot
+  take keyboard focus — until the model has loaded. Waiting for `isEnabled` is
+  the only readiness signal that means anything.
+- **The prompt shelf cannot be driven.** Its groups are DisclosureTriangles
+  that do not open from a synthesized click, so the phrasings inside them are
+  unreachable from a test.
+- **Quartz serves the previous build immediately.** A section that has been
+  previewed before comes back too fast to photograph its progress, so the
+  harness deletes that section's built pages first.
+- **The class site inside the app's preview renders dark even in a light
+  capture.** Quartz reads `(prefers-color-scheme: light)` and treats anything
+  else as dark, and the embedded web view does not report a light preference.
+  Nothing in the app's own appearance is wrong; the site simply chooses dark.
+  Left as it is rather than clicking the site's own toggle from a test, which
+  would then persist and reverse the problem in the other pass.
+
 ### Why not a headless browser
 
 The class sites are photographed in Safari on a real screen because that is
