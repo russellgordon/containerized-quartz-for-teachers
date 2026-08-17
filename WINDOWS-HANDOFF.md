@@ -824,8 +824,12 @@ The Swift implementation is the reference for all of this:
 `mac-app/QuartzTeachers/Models/Assist/AssistServerHost.swift` (starting and
 health-checking the process, and the flag list with its reasons),
 `AssistModelTier.swift` (the ladder, the vetoes, and how the tier is chosen
-from physical memory), and `AssistModelStore.swift` (download, verification,
-where the weights live).
+from physical memory when the teacher has not chosen for themselves), and
+`AssistModelStore.swift` (download, verification, where the weights live).
+Since entry 219 the memory rule is the DEFAULT rather than the whole answer —
+a teacher can pick a rung outright in Settings; see "Letting a teacher choose
+which assistant runs" below, and note the trap that the engine must be started
+with the chosen tier rather than the machine's.
 
 ### One assistant at a time, machine-wide
 
@@ -2416,6 +2420,619 @@ teacher reads — every one passed the unit suite:
   every BLAKE3 and MD5 digest in deploy output. It is removed only in its
   labelled forms (`--account …`, `Account ID: …`), which is where it actually
   appears.
+
+## Starting a new unit, and asking for the schedule (entries 231–232)
+
+### "Start a new unit for the next class"
+
+Which unit a class belongs to is the one judgement `NextClassPlanner`
+deliberately refuses to make for a teacher, so it is now asked for outright.
+The command reuses that planner whole; only the NUMBER changes.
+
+**Day starts again at 1.** Every course here numbers days within their unit —
+ADA1O runs Unit 1, Day 1…18 and then Unit 2, Day 1 — so a new unit begins at
+Day 1 however far the previous one ran. It does not continue the old count.
+
+**Unpublished pages still count.** A teacher with Unit 4, Day 12 published and
+Days 13 and 14 written but hidden gets **Unit 5, Day 1**, dated to the next
+timetable date with no class against it. Publication state has nothing to do
+with where the next class goes: that is decided by how many pages exist, which
+is the same rule the DATE has always used — count the class pages, take that
+many dates into the timetable. Three units of five days are fifteen classes
+whatever they are called.
+
+Everything else was already right and is untouched: the page is written by
+`PlaceholderClassPlanner.apply`, which starts it `publish: false`, refuses to
+write over an existing page, and checks that twice because the teacher has
+Obsidian open in the other window.
+
+`unit` is not in the tool's schema — the fixed phrasing passes it, the model
+never sees it, and the routing surface is unchanged. Same trick as `when` and
+`scope`.
+
+### Every command that needs the schedule now asks for it
+
+The sheet that collects a section's class dates already existed, and was wired
+to exactly **two** paths: adding a class, and reading the timetable back. Every
+other request that depended on the schedule failed with an explanation and no
+way forward.
+
+Publishing a class by day is the one that exposed it. "I can't find a class on
+Saturday" is a perfectly good sentence and completely useless to a teacher who
+has never given their dates — the thing they need is not a better sentence, it
+is the question nobody asked them. All prompting now goes through one
+`askForTheTimetable`, and the class-by-day path calls it when, and only when,
+no dates are on file.
+
+**Test both directions.** The second test matters as much as the first: it
+must NOT prompt when a timetable IS recorded, because then the request failed
+for some other reason and a sheet about dates is answering a question nobody
+asked. Go through your own tool list and ask, for each one, "what does this do
+when the schedule is missing?" — the answer should never be an explanation on
+its own.
+
+## The assistant sounds like a person, not a report generator (entries 227–229)
+
+Three changes to how answers READ. None of them changes what the assistant
+does, and all three apply to `Plantoir.Core/Assist` unchanged.
+
+### One sentence per page, and no Markdown at all
+
+A plan used to read:
+
+```
+2 pages would change:
+Unit 4, Day 24  —  publish: hidden → visible
+Bananas  —  publishForSection1: hidden → visible  (linked from a page you named)
+```
+
+and now reads:
+
+```
+2 pages would change:
+“Unit 4, Day 24” will become visible.
+“Bananas” will become visible.
+```
+
+Four pieces of bookkeeping were wearing a page title: the frontmatter KEY the
+change lands in, the state it came from, an arrow, and a parenthetical. All
+four are true and none of them is how a person says it — `publishForSection1`
+especially, which is the name of a line in a file being shown to somebody who
+asked to hide a lesson. The pages that stay got the same treatment
+(`“Journal Checklist” stays visible, because “Portfolios” still links to it.`).
+
+**Then a second pass went further, and it is the more instructive one.** The
+dates a class hands its pages were being reported in a LIST OF THEIR OWN,
+under the heading "1 page students have not seen before will take this class's
+date", with the page named again and both dates spelled out. Every fact in it
+was true and the whole block was too much: a teacher had to hold a page name in
+their head across two lists and a blank line to work out that the second was
+about the first. It is now a clause on the line that page already has:
+
+```
+2 pages would change:
+“Unit 4, Day 24” will become visible.
+“Bananas” will become visible, with the same date as “Unit 4, Day 24”.
+```
+
+No raw dates at all. "The same date as Unit 4, Day 24" is what the teacher
+wanted to know; `2026-09-08 → 2027-01-19` is how the app stores it. The rule
+worth carrying: **one line per page, and a second fact about a page belongs on
+that page's line, not in a second list keyed by name.** `AssistPublishDateMove`
+carries `takenFrom` — the class it took the date from — purely so the sentence
+can name it.
+
+**No bold, and no Markdown anywhere in what the app writes.** The four headings
+were the only `**` any assistant string emitted. The reasoning that put them
+there is still true — a plan is scanned for "how much is about to change"
+before it is read — but this is a chat, and **a person answering a question does
+not reach for typography to make a sentence land.** A heading ending in a colon
+with its count as the first word is signal enough. The bubble still PARSES
+Markdown, so a model's own reply renders normally.
+
+One bug to check for on your side, because it is the kind that survives review:
+`1 page students is seeing for the first time`. A verb had been agreed with the
+page COUNT while its actual subject was "students", who are always plural.
+Rephrasing removed the trap rather than fixing the one instance.
+
+### "Publish Monday's class"
+
+The card was "Publish the class on Monday". It now reads the way a teacher
+says it, and **all seven weekdays are fixed phrasings** — `publish monday's
+class` through `publish sunday's class` — so the date is resolved in code and
+can never be one the model invented.
+
+`day(named:today:)` learned weekday names: the next occurrence, **counting
+today when today is a Monday**, because asked on a Monday for "Monday's class"
+a teacher means the class they are about to teach. Forwards only, within seven
+days; somebody who means a class already taught has its Unit and Day in front
+of them and will say so.
+
+Same shape as the `publish tomorrow's class` card that was already there, and
+the same trick: the argument key is `when`, which is **deliberately not in the
+tool's schema**. A fixed phrasing may pass keys the model never sees, which is
+how a whole behaviour is added without touching the surface routing was
+measured against.
+
+The schedule check and the "no class that day" stop already existed. Its
+WORDING did not survive reading: it said "Use list_pages to see what classes
+there are" — a tool name in a sentence that goes **straight to the teacher**,
+because a refusal ends the turn instead of going back to the model. Check every
+refusal on your side for the same thing; `noSuchPage` and `openEndedPublish`
+still name tools and arguments over here and are worth the same pass.
+
+### "What dates am I teaching?" answers with the week
+
+It used to carry **no dates at all** — a count and two endpoints — so a teacher
+asking what they were teaching was told how many days there were and left to go
+and look. It now lists the dates falling in the next seven days, one per line
+with its weekday, then what the dates are FOR, then an offer of the rest. A
+quiet week says "Nothing in the next seven days" rather than printing an empty
+heading.
+
+**The offer had to be made answerable, and this is the part to copy.** A prompt
+whose answer nothing understands is worse than no prompt. "Show me the rest of
+the dates" is matched in code and passes `scope: all` — again a key the schema
+does not mention — and a test asserts that the words the answer OFFERS are
+words the matcher accepts. Wire that assertion up too: it is the one that stops
+a friendly-sounding sentence from being a dead end.
+
+## Dating the pages a class brings with it (entry 226)
+
+The date on a page is what ORDERS it on the site, so a page written weeks early
+carried the day its FILE was made — a fact about the teacher's evening, not
+about the course. Publishing a class now dates the pages it brings.
+
+**A linked page takes the class's date when both hold:**
+
+1. it is **hidden right now**, so this publish is the first time students will
+   see it; and
+2. it is **not itself a class page** — a class's date is its position in the
+   schedule, and nothing may move it.
+
+A page students can already see keeps its date. It has a place on the site
+somebody may have linked to or looked at, and republishing a class must not
+shuffle work that was already out.
+
+The key is `created` for a page in the section's own folder and
+`createdSection<N>` for a course-level page shared between sections. Writing
+the wrong one dates the page for a section the teacher was not talking about.
+
+### The split this exposed, which is the thing to check on your side
+
+`publish_class_on` worked date moves out. `publish_pages` — naming the very
+same class page — passed an **empty list**, so it moved nothing. Same teacher,
+same class, two different results depending on which sentence they used, and
+the by-name route is the one behind the commonest card on the shelf.
+
+Both now call one function. If your side has two code paths into publishing,
+that is where to look first; a rule implemented on one route and not the other
+is invisible until somebody phrases a request the other way.
+
+### One condition was removed, and it will look like a regression
+
+The rule used to move a page only when no OTHER class linked to it, reasoned as
+"a concept page linked from three different lessons belongs to none of them and
+is left exactly where it is."
+
+That reasoning is sound for a page already on the site and **beside the point
+for one nobody can reach**. A hidden page has no place to be left in — it has
+only the day its file was made. Given the choice between "the day this material
+first appears" and "the day somebody happened to type it", the first is what a
+reader wants, even when three classes share it. So a shared page students have
+never seen now moves; a shared page they HAVE seen does not, which is where the
+old reasoning still lives.
+
+Where several classes being published in one go share a page, the **earliest**
+claims it, ties broken by page title so folder order cannot change the answer.
+That is not a new invention: `first_use_dates` in `setup_course.py` already
+dates a shared page to the first class that references it, so a pre-populated
+course and a hand-published one agree.
+
+### "Never published" is inferred, and you should infer it the same way
+
+Nothing on disk records a page's history, so "never published" means "hidden at
+the moment the publish is planned". A page published once and later hidden
+therefore counts as never published and would take a new date. Recording the
+truth would mean a new frontmatter key on every page, agreed between both apps
+and the Python — considered and rejected as costing more than the case is worth.
+If you ever need it to be exact, that is the decision to reopen, and it has to
+be reopened on both sides at once.
+
+Contract: `class-planning.json` → `datingPagesAClassBrings`, with the
+conditions, the key names, the earliest-class rule and the reasoning. Two mac
+tests run it; deserialise rather than retyping.
+
+## Undo: what it SAYS, what it does to the preview, and what it can take back (entries 221–223)
+
+Three faults, all reported from one real session — "Unpublish Unit 4, Day 23"
+followed by "Undo that" — and all three apply to `Plantoir.Core/Assist`.
+
+### A stored clause is not a sentence
+
+The answer read:
+
+> Undid unpublished 2 pages in ADA1O Section 1.
+
+A change stored a past-tense clause and the undo pushed it into `"Undid \(…)."`.
+Three things wrong at once, and they are worth separating because each has its
+own lesson:
+
+1. **Ungrammatical**, because a clause was dropped into a slot that wanted a
+   noun. The fix is not to reword the slot: it is that a clause should only
+   ever appear inside a sentence somebody wrote on purpose. `AssistWording`
+   now owns whole sentences with a subject and a verb, and the clause is a
+   parameter — `undid(_:)` → "Earlier, you unpublished Unit 4, Day 23. Then
+   you asked me to undo that, and I have done so."
+2. **It counted files.** Hiding ONE class writes TWO files, because the
+   section's landing page is repointed inside the same change, so "2 pages"
+   was arithmetically right and unrecognisable to somebody who had asked about
+   Unit 4, Day 23. A change now names the pages whose visibility moved while
+   there are few enough to name, and falls back to a count at three or more.
+   The repointed index is bookkeeping, not what was asked for.
+3. **One slot served success AND refusal.** When every file had been edited
+   since, nothing went back at all — and the code fell through to the same
+   "Undid …" sentence. A teacher was told their change had been taken back
+   while not one file had moved. There are now three distinct sentences: all
+   back, partly back, nothing back.
+
+Seven entries in `assist-wording.json`, carrying a `{change}` placeholder.
+Deserialise them; do not concatenate at the call site.
+
+One more: `nothingToUndo` used to say "I have not changed anything in this
+conversation yet", which was false after remembering a timetable (writes a
+course's settings, touches no page, deliberately not undoable). It now says "I
+have not changed any **pages**". Narrowing a claim is usually cheaper than
+widening the feature.
+
+### The preview has to come down, and it has to come down FIRST
+
+The undo wrote the files and stopped there, so a teacher watching a preview
+saw it go on serving the state they had just asked to leave. The order is
+**stop → wait for the stop → write → start**, which is the order
+`publish_pages` already used, and the wait is the load-bearing part: stopping
+reaches into the container and kills that section's processes, so a stop still
+finishing when the next build begins kills the build too, and what gets served
+is the site as it was before.
+
+It could not be done at all before, for a structural reason worth checking on
+your side: **a change knew only its FILES**, so an undo had no way to say which
+section's preview to touch. A change now carries its course code and section
+number.
+
+It also carries `rebuildsThePreview`, set to whatever the change ITSELF did.
+Publishing and hiding rebuild, so their undo rebuilds. Creating a class page
+does not — it arrives unpublished, so nothing the preview shows changes — and
+neither does taking it away. A blanket rebuild would make "undo that" the
+slowest thing in the window for the one change needing it least.
+
+**Test the ORDER, not the presence.** All four events can fire and still be
+wrong. The mac fake records `[stop-begins, stop-ends, write, start]` with a
+real suspension inside the stop, so "called the stop" and "waited for the stop"
+are distinguishable.
+
+### Taking back a page that was CREATED
+
+"Undo that" after adding a class page answered that the conversation had
+changed nothing, while the page sat in the teacher's folder. The undo list
+holds a before-and-after copy of each file and a created page has no "before",
+so nothing was recorded.
+
+`AssistSavedFile.before` is now **optional, and nil means the change created
+the file** — taking it back deletes it. Optional rather than an empty string on
+purpose: an empty page and an absent one are different states, and a change
+that created a page and left it empty must still be undone by deleting it.
+
+The skip rule needed no change and is worth understanding rather than copying
+blindly: the undo compares what is on disk now against what the change LEFT. A
+page the teacher has since written in does not match, so it is skipped — their
+work is safe. A page the teacher deleted themselves reads back as absent, also
+does not match, and is skipped rather than "restored" by deleting something
+already gone.
+
+The line telling teachers `"Undo that" does not take away a page it created`
+was corrected in the same change. A line describing what a feature used to do
+is worse than no line, because it is believed.
+
+## The shelf is a promise, and promises are measured (entry 224)
+
+The list of phrasings the assistant window offers went from nine to twelve.
+Five capabilities were on no card at all — listing a section's pages, reading
+one back, publishing the class on a named day, adding the next class page, and
+reading back the remembered class dates — so they existed and no teacher was
+told. **Three of the five stayed; two were measured, passed, and were removed
+anyway.** Both halves matter, and the second is the one a port gets wrong:
+
+- **Added:** publish the class on a named day, add the next class page, read
+  back the remembered class dates.
+- **Measured 10/10 and still removed:** "What pages are in this section?" and
+  "Show me Unit 2, Day 3". Not a routing problem — a teacher has the pages in
+  front of them in Obsidian and in the app's own sidebar, so a chat bubble is a
+  worse way to see a page than the two windows already open.
+
+So a card has to pass TWO tests, and reliability is only the first. The second
+is "is this worth asking for?", and it is what keeps the shelf a list of things
+worth suggesting rather than an inventory of the tool surface. The surface is
+thirteen tools; the shelf is twelve phrasings of a different set, and the gap is
+deliberate. `list_pages` and `read_page` are still tools the model uses to look
+things up before it acts — that is the job they are good for.
+
+(`list_pages` also stays in the fixed-shape matcher for a teacher who types the
+phrasing anyway. The shelf is what is worth SUGGESTING; the matcher is what is
+worth MATCHING; they were never the same list.)
+
+**Keep the shelf and the matcher testable against each other.** Over here
+`AssistPromptShelfView.groups` is static and a test asserts every card either
+fires a fixed phrasing or appears on a hand-written list of the model-routed
+ones — so a new card fails the suite until somebody has decided which kind it
+is. That is the drift worth guarding: a card whose wording no longer matches
+its shortcut is a button that quietly goes to the model on a shape the model
+was measured getting wrong, and it looks completely normal. Group TITLES stay
+in a hand-written list, because reading those from the view would only make the
+test agree with the view.
+
+One more thing the audit turned up, worth copying as a habit: an offer made
+only INSIDE an answer is invisible until you have already had that answer.
+"Show me the rest of the dates" lived only in the timetable reply, so a teacher
+who had never asked the question had no way to know it existed. It is on the
+shelf now too.
+
+The rule for adding one:
+
+- **No arguments in the phrasing → match it in code.** It joins the fixed
+  shapes, never reaches the model, and is reliable by construction. Seven of
+  the twelve cards are in this group.
+- **An argument in the phrasing (a page title, a day, a time) → it must go to
+  the model, so measure it before offering it.** They are what
+  `research/ai-assist/shelf-phrasings-results.txt` is evidence for: routing
+  140/140, arguments 60/60, ten trials each, across the fourteen probed before
+  two were dropped.
+
+### The measurement trap, which is the useful half
+
+The first run of that suite left `AssistAgent.dateline()` off the user message.
+"Publish the class on Monday" routed correctly 10 times out of 10 and then
+resolved Monday to a date **a month away**, also 10 out of 10 — because a model
+with no idea what day it is has to invent one. The card was within an edit of
+being dropped and replaced with a hard-coded calendar date.
+
+The harness was wrong, not the product. `AssistAgent.say` appends "(Today is
+2026-08-16, a Sunday.)" to every message, and with it the same phrasing
+resolves exactly. **A probe that does not send what the app sends measures
+nothing — and the number it produces reads exactly like a fault in the
+product.** Check your own harness sends the dateline before believing any
+date-shaped result.
+
+(From the older `trimmed-surface-suite.py`: that line must be APPENDED to the
+user message. Prepending the identical text cost 15 points of routing. The
+position is the finding, so do not tidy it into the system prompt.)
+
+## What a page is CALLED, which is not what its file is called (entry 220)
+
+Reported from a real course. Unpublishing a class printed:
+
+```
+4 linked pages stay published:
+Journal Checklist  —  “index” still links to it.
+Final Reflection   —  “index” still links to it.
+```
+
+Every folder in a course has an `index.md`, so "index" names eleven pages and
+none of them to a teacher. The page they would go and open is the one the
+sidebar calls **Portfolios**. The whole purpose of the "stays published" list
+is to send somebody to the page holding a link, and a name that matches every
+folder sends them nowhere.
+
+**This is not a mac-shaped bug.** `Plantoir.Core/Assist` reads the same
+folders and builds the same page graph; check both halves below.
+
+### Half one: a label is not an identity
+
+A page now carries two names.
+
+- **`title`** — the file name without `.md`. This is the IDENTITY. Wikilinks
+  resolve by file name and every lookup in the page graph goes through it, so
+  it must never be replaced by something nicer to read. A test asserts a link
+  written `[[index]]` still finds the file called `index`.
+- **`displayTitle`** — what a teacher sees it called, used everywhere a page is
+  named in a sentence they read: the unpublish plan, the pages that stay, date
+  moves, `read_page`, `check_section`, curriculum mentions.
+
+The rule is **copied from Quartz's own `quartz/util/fileTrie.ts`** rather than
+invented, so what the assistant says and what the site's sidebar shows cannot
+drift:
+
+```ts
+const nonIndexTitle = this.data?.title === "index" ? undefined : this.data?.title
+return displayNameOverride ?? nonIndexTitle ?? this.fileSegmentHint ?? this.slugSegment ?? ""
+```
+
+which is, for one page: the frontmatter `title:` **unless it is literally
+"index"**, then the FOLDER's name, then the file name. The "unless it is
+literally index" guard is Quartz's own and is worth keeping for Quartz's own
+reason — it is the one answer never worth showing anybody. The middle step
+earns its place even though frontmatter nearly always answers first: a page a
+teacher wrote by hand in Obsidian carries no frontmatter title at all, and
+without it every folder in the course is called "index" again.
+
+If Quartz's rule ever changes, follow it rather than re-deriving one.
+
+### Half two: fixing only the label makes the output WORSE
+
+This is the part to read twice, because the obvious fix is half of it.
+
+Referrers — "which page still links to this one" — were remembered as NAMES and
+looked back up in the page graph. The graph keys pages by file name. Every
+folder landing page is called `index`. So the lookup returned **whichever
+`index.md` the folder walk happened to reach first**, which is very often not
+the one holding the link.
+
+While the answer printed as "index" that was invisible: wrong page, right word.
+Print it as a folder name and it becomes a **confidently wrong** answer. In the
+regression test, the label-only fix named **Concepts** — a folder that does not
+link to the page at all. A teacher sent to Concepts to find a link that lives in
+Portfolios concludes the assistant is lying and stops reading the list; "index"
+merely told them nothing. Useless beats wrong.
+
+The fix is to carry the PAGE rather than its name, and to de-duplicate
+referrers by PATH rather than by name — the name-based de-duplication had its
+own version of the same bug, throwing away the second folder index whenever two
+of them linked to one page.
+
+**The general rule for your side:** if you key referrers, backlinks, or any set
+of pages by name anywhere, `index.md` collapses them all onto one key. Go
+looking for that before you touch the label, not after.
+
+### Testing it
+
+New contract section `shared-rules.json` → `pageNaming`: the three-step rule,
+five cases drawn from the shapes a real course contains, the word that must
+never be shown, and the identity-vs-label rule. Deserialise it rather than
+retyping the cases.
+
+Both end-to-end tests on this side were CONFIRMED to fail against the old code
+before being kept — one against the label, one against the lookup. Do the same:
+a naming test that passes against the old code is testing nothing.
+
+## Letting a teacher choose which assistant runs (entry 219)
+
+Until now the model tier was decided for the teacher and never mentioned:
+`AssistHardwareBudget` read physical memory, picked a rung, and that was the
+whole conversation. That is still the right DEFAULT and it was a poor
+only-option, for two reasons arriving from opposite directions. A teacher on a
+16 GB Mac who also keeps a site building, a browser full of tabs and their
+notes app open may want the smaller one back — the automatic choice sizes
+itself to the machine, not to what else is on it. And a teacher on an 8 GB
+machine who has just closed everything may want the better one for an
+afternoon of planning. Neither is knowable from `sysctl`.
+
+The mac now has **Plantoir ▸ Settings… (⌘,)** with one pane. Windows should
+have the same thing wherever that platform keeps app settings.
+
+### What the panel offers, and the reasoning behind each part
+
+**Three choices, not two.** "Choose for me", "The smaller assistant", "The
+larger assistant". Keeping an explicit automatic option is the part most worth
+copying, and it is not about politeness:
+
+> **The automatic choice is stored as an INTENT, never resolved and written
+> down.** If selecting it wrote "the larger assistant" into preferences the day
+> the teacher first opened the panel, then a later change to the ladder — the
+> 8 GB reconsideration written up further down this file, say — would reach
+> every machine EXCEPT the ones whose teacher had once opened Settings. That is
+> exactly backwards: the people who engaged with the setting get the stalest
+> behaviour. `AssistModelChoice.automatic` resolves at the point of use.
+
+**Both costs, on every option.** Download size AND memory-while-working, e.g.
+"1.12 GB to download, and about 1.75 GB of memory while you are using it."
+They are different decisions — disk is what runs out on a small laptop, memory
+is what makes the machine feel slow and never appears as a number anywhere —
+and neither is guessable from the other: on the mac the larger download is
+2.2x the smaller but 2.9x the memory, because most of the difference is the
+conversation being held rather than the file being read. Derive both from your
+tier table; do not type them into the interface, or they will drift the first
+time a quant changes.
+
+**No model is named, anywhere.** Rule one, and the settings panel is where a
+name would most naturally leak in, because it is the one screen genuinely ABOUT
+the model. `AssistantSettingsTests.testNothingInThePanelNamesAModel` sweeps
+every label, detail, caution and summary the panel can produce against a jargon
+list; write the equivalent.
+
+**A caution, not a block.** A hand-picked rung whose resident size exceeds a
+third of physical memory shows a warning naming BOTH numbers ("This Mac has
+8 GB of memory, and the larger assistant needs about 5.04 GB while it is
+working…") and stays selectable.
+
+> **Rejected: greying it out with the reason beside it.** That was the obvious
+> safe option and it is worse. A teacher who has just quit everything else
+> knows something the operating system does not, and a disabled row gives them
+> no way to act on what they know. The third-of-memory line is not new — it is
+> the same one the automatic ladder has always been held to — which is why
+> "Choose for me" can never produce a caution, and a test asserts that.
+
+**Removing one is refused while an assistant window is open**, and the message
+names the section to close ("Close the assistant for ICS3U Section 2 before
+removing this.") rather than saying it is unavailable — the same shape the
+sidebar already uses.
+
+> The guard is deliberately about ANY open assistant, not about whether that
+> window is using that particular rung. Working out which file is genuinely
+> mapped means tracking state the app does not keep, and getting it wrong
+> deletes weights out from under a running engine. One open assistant, no
+> removals.
+
+**Removing the one currently in use is allowed**, and the panel then says what
+happens next. It is not a broken state — it is the state every machine is in
+before its first download — and the alternative traps a teacher who wants their
+disk space back behind a choice they did not want to change.
+
+### Four traps, three of them found by driving the real app
+
+The unit tests passed while all three of these were live. They were found by
+opening the panel, pressing the buttons, and looking. Budget time for that.
+
+1. **Disk-derived answers are invisible to observation, and the failure is
+   PARTIAL.** Everything the panel says about what is downloaded comes from a
+   file-system call, which no observation system can see. On the mac a
+   `Section`'s content, header and footer each get their own tracking scope —
+   so after a removal the ROWS redrew correctly (they read an observable
+   download state) while the two summary sentences in the footers went on
+   describing a model that had just been deleted. Half a panel updating is far
+   more convincing than none of it updating, which is why it survived review.
+   The fix is a counter the panel bumps whenever it changes the disk, touched
+   by every disk-derived answer. Whatever your framework's rules are, assume
+   they do not cover `File.Exists`.
+
+2. **One store per FILE, not one per place that cares.** The panel and every
+   assistant window each made their own downloader for the same path. Press
+   Download in Settings, then open the assistant while it runs: the second one
+   sees an incomplete file, deletes it — which is the right thing to do to a
+   part-finished attempt, deliberately, since resuming a mismatched range
+   produces a corrupt model that fails much later somewhere less obvious — and
+   starts again. Two transfers writing to one destination, on a school
+   connection, for gigabytes. The mac now has a process-wide registry keyed by
+   tier. Sharing also fixes the quiet half: a download started in one place is
+   visible in the other, because both watch the same object.
+
+3. **Closing the assistant window must cancel only ITS OWN download.**
+   Cancelling on close is right — a teacher who shuts the window has finished,
+   and leaving gigabytes coming down behind their back is not a kindness. But
+   once the stores are shared, the download that window can see may have been
+   started in Settings, where the entire point was to fetch ahead of time and
+   get on with something else. Track who started it. An explicit Stop button is
+   honoured wherever the download came from; a window CLOSING is not.
+
+4. **The tier decides the context size, so the engine must be started with the
+   CHOSEN tier, not the machine's.** This one is a straight regression the
+   moment a choice exists: our server host took the tier off the hardware
+   budget, so a teacher on a large machine picking the smaller assistant would
+   have got the small model with the LARGE model's context window — several
+   times the memory they chose it to save, which is the opposite of what they
+   asked for and invisible until the machine starts swapping. Grep your own
+   code for every place the tier is derived from hardware rather than passed
+   in.
+
+Also worth knowing: macOS HIDES a settings window rather than destroying it,
+so the view and its state outlive every visit — a panel opened in the morning
+would describe the morning's disk for the rest of the day without an explicit
+look-again when the window comes forward. Check what your platform does.
+
+### The trail
+
+Seven new events, all in `shared-rules.json` → `activityTrail.mustRecord`, so
+your suite will redden until you record them — as designed:
+`app settings opened`, `assistant model chosen`, `assistant model download
+started`, `assistant model downloaded`, `assistant model download failed`,
+`assistant model download stopped`, `assistant model removed`.
+
+Two of them are there for reasons worth restating. **`assistant model chosen`
+carries BOTH the button pressed and the assistant it resolved to** — "chose
+automatic" does not answer the question anybody asks months later, because the
+answer depends on the machine and on a rule that can change. And **the stopped
+line exists so that a start with no ending MEANS something**: without it,
+"started downloading, nothing after" is ambiguous between a cancel and a
+hang, and a hang is what somebody would go looking for.
 
 ## Testing
 

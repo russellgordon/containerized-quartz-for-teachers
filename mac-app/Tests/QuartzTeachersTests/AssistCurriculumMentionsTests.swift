@@ -286,7 +286,7 @@ final class AssistCurriculumMentionsTests: XCTestCase {
 
         // And nothing was recorded to undo, because nothing happened.
         let undo: AssistToolOutcome = await made.runner.run(call: call("undo_last_change"))
-        XCTAssertTrue(undo.summary.contains("hasn't changed anything yet"))
+        XCTAssertEqual(undo.summary, AssistWording.nothingToUndo)
     }
 
     // MARK: - Taking it back
@@ -308,7 +308,13 @@ final class AssistCurriculumMentionsTests: XCTestCase {
         XCTAssertNotEqual(text(ofPage: "Loops", in: made.course), before)
 
         let undo: AssistToolOutcome = await made.runner.run(call: call("undo_last_change"))
-        XCTAssertTrue(undo.summary.contains("Undid added 1 curriculum expectation to “Loops”"))
+        // Named rather than quoted — and the sentence it names is a sentence:
+        // "Earlier, you added 1 curriculum expectation to “Loops”. Then you
+        // asked me to undo that, and I have done so."
+        XCTAssertEqual(
+            undo.summary,
+            AssistWording.undid("added 1 curriculum expectation to “Loops”")
+        )
         XCTAssertEqual(text(ofPage: "Loops", in: made.course), before)
     }
 

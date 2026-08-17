@@ -314,7 +314,7 @@ enum AssistCurriculumMentions {
         return AssistCurriculumMentionsPlan(
             courseCode: courseCode,
             sectionNumber: sectionNumber,
-            pageTitle: page.title,
+            pageTitle: page.displayTitle,
             fileURL: page.fileURL,
             relativePath: page.relativePath,
             adding: adding,
@@ -361,8 +361,13 @@ enum AssistCurriculumMentions {
 
         let word: String = plan.adding.count == 1 ? "expectation" : "expectations"
         return AssistChange(
-            description: "added \(plan.adding.count) curriculum \(word) to “\(plan.pageTitle)” "
-                       + "in \(plan.courseCode) Section \(plan.sectionNumber)",
+            whatHappened: "added \(plan.adding.count) curriculum \(word) to “\(plan.pageTitle)”",
+            courseCode: plan.courseCode,
+            sectionNumber: plan.sectionNumber,
+            // Matches what adding them did: this tool does not rebuild the
+            // preview, so taking it back does not either. If that tool ever
+            // starts rebuilding, this flips with it.
+            rebuildsThePreview: false,
             files: [AssistSavedFile(fileURL: plan.fileURL, before: before, after: after)]
         )
     }

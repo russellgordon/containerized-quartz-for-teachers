@@ -23,7 +23,7 @@ final class FakePreview {
     static let deployedMessage: String = AssistWording.deployed(course: "ICS3U", section: "1")
 
     private(set) var events: [String] = []
-    private var running: Bool = true
+    private var state: SectionWindowControllers.PreviewState = .showing
     private var deployRefusal: String?
     private var watchedURL: URL?
     private var textWhenWatched: String?
@@ -40,9 +40,13 @@ final class FakePreview {
                   courseCode: String,
                   sectionNumber: Int,
                   running previewIsRunning: Bool = true,
+                  showing: SectionWindowControllers.PreviewState? = nil,
                   refusingToDeploy refusal: String? = nil) {
         events = []
-        running = previewIsRunning
+        // `running` is kept for the callers that only care whether there is
+        // something to stop; `showing` is for the tests that care WHICH of the
+        // two running states it is in.
+        state = showing ?? (previewIsRunning ? .showing : .notRunning)
         deployRefusal = refusal
         watchedURL = nil
         textWhenWatched = nil
@@ -51,10 +55,10 @@ final class FakePreview {
             courseCode: courseCode,
             sectionNumber: sectionNumber,
             controller: SectionWindowControllers.Controller(
-                isPreviewRunning: { [weak self] in self?.running ?? false },
+                previewState: { [weak self] in self?.state ?? .notRunning },
                 startPreview: { [weak self] in
                     self?.noteWriteIfItHappened()
-                    self?.running = true
+                    self?.state = .showing
                     self?.events.append("start")
                 },
                 stopPreview: { [weak self] in
@@ -67,7 +71,7 @@ final class FakePreview {
                     self?.noteWriteIfItHappened()
                     self?.events.append("stop-begins")
                     try? await Task.sleep(for: .milliseconds(60))
-                    self?.running = false
+                    self?.state = .notRunning
                     self?.noteWriteIfItHappened()
                     self?.events.append("stop-ends")
                 },

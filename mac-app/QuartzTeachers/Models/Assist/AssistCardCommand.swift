@@ -44,6 +44,105 @@ nonisolated struct AssistCardCommand: Sendable, Equatable {
                 return command
             }
         }
+        if let unit = AssistCardCommand.wholeUnit(tidied) {
+            return unit
+        }
+        if let more = AssistCardCommand.moreDays(tidied) {
+            return more
+        }
+        return AssistCardCommand.duplicateClass(tidied, original: message)
+    }
+
+    /// "Duplicate Unit 3, Day 2 as my next class."
+    ///
+    /// The page title is the only thing in it, and it sits between two fixed
+    /// halves — so it can be lifted out here rather than read out by a model.
+    private static func duplicateClass(_ tidied: String, original: String) -> AssistCardCommand? {
+        let opening: String = "duplicate "
+        guard tidied.hasPrefix(opening) else {
+            return nil
+        }
+        // Matched on the lower-cased copy and SLICED from the original, so the
+        // page title travels on with the capitals the teacher typed. Lookup
+        // folds case either way; what this protects is the title being read
+        // back to them in a sentence.
+        let typed: String = original.trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet(charactersIn: ".!"))
+        let body: String = String(tidied.dropFirst(opening.count))
+        for ending in [" as my next class", " as the next class", " as my next lesson"]
+        where body.hasSuffix(ending) {
+            let start: String.Index = typed.index(typed.startIndex, offsetBy: opening.count)
+            let end: String.Index = typed.index(typed.endIndex, offsetBy: -ending.count)
+            guard start < end else {
+                return nil
+            }
+            let title: String = String(typed[start..<end])
+                .trimmingCharacters(in: .whitespaces)
+            if title.isEmpty {
+                return nil
+            }
+            return AssistCardCommand(
+                toolName: "add_next_class", arguments: ["duplicate": title]
+            )
+        }
+        return nil
+    }
+
+    /// "Add five more days to Unit 4", and the same with a digit.
+    ///
+    /// Parsed for the same reason `wholeUnit` is: the whole sentence IS the
+    /// request, and the two numbers in it are numbers rather than judgements.
+    /// Words up to twelve are understood because a teacher asking for a few
+    /// more days writes "five", not "5".
+    private static func moreDays(_ tidied: String) -> AssistCardCommand? {
+        let spelled: [String: Int] = [
+            "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+            "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12,
+        ]
+        // add <count> more days to unit <number>
+        var words: [String] = []
+        for piece in tidied.split(separator: " ") {
+            words.append(String(piece))
+        }
+        guard words.count >= 6, words[0] == "add", words[3] == "days",
+              words[4] == "to", words[5] == "unit", words.count == 7 else {
+            return nil
+        }
+        guard words[2] == "more" else {
+            return nil
+        }
+        let howMany: Int? = spelled[words[1]] ?? Int(words[1])
+        guard let howMany, howMany > 0, let unit = Int(words[6]) else {
+            return nil
+        }
+        return AssistCardCommand(
+            toolName: "add_next_class",
+            arguments: ["unit": "\(unit)", "days": "\(howMany)"]
+        )
+    }
+
+    /// "Publish Unit 5" and "Unpublish Unit 4", for any unit number.
+    ///
+    /// Parsed rather than listed, because unlike the seven weekdays there is
+    /// no fixed set of units to write down. It is still a FIXED SHAPE in every
+    /// way that matters: the whole sentence is the request, the unit number is
+    /// the only thing in it, and reading an integer off the end is not a
+    /// judgement anybody needs a language model for.
+    ///
+    /// Deliberately strict. "Publish Unit 4, Day 3" has a comma and is one
+    /// page, so it is not matched here and goes to the model, which is exactly
+    /// right — that request has a page title in it to read out.
+    private static func wholeUnit(_ tidied: String) -> AssistCardCommand? {
+        for (prefix, tool) in [("unpublish unit ", "unpublish_pages"),
+                               ("publish unit ", "publish_pages")]
+        where tidied.hasPrefix(prefix) {
+            let rest: String = String(tidied.dropFirst(prefix.count))
+                .trimmingCharacters(in: .whitespaces)
+            guard !rest.isEmpty, !rest.contains(","), Int(rest) != nil else {
+                return nil
+            }
+            return AssistCardCommand(toolName: tool, arguments: ["pages": "Unit \(rest)"])
+        }
         return nil
     }
 
@@ -115,5 +214,74 @@ nonisolated struct AssistCardCommand: Sendable, Equatable {
 
         ("publish tomorrow's class",
          AssistCardCommand(toolName: "publish_class_on", arguments: ["when": "tomorrow"])),
+
+        // "Publish Monday's class", and the other six. Same shape as
+        // "tomorrow's class" above: the day is not read OUT of the sentence,
+        // it IS the sentence, so each weekday is its own fixed phrasing with
+        // the answer already written down. `AssistToolRunner.day(named:today:)`
+        // turns "monday" into the next Monday, counting today when today is
+        // one — the reading a person gives it while preparing.
+        //
+        // The model can still answer "publish the class on Monday" and phrasings
+        // like it, and does so at 10/10 because every message carries the
+        // date. These seven simply do not depend on that.
+        ("publish monday's class",
+         AssistCardCommand(toolName: "publish_class_on", arguments: ["when": "monday"])),
+        ("publish tuesday's class",
+         AssistCardCommand(toolName: "publish_class_on", arguments: ["when": "tuesday"])),
+        ("publish wednesday's class",
+         AssistCardCommand(toolName: "publish_class_on", arguments: ["when": "wednesday"])),
+        ("publish thursday's class",
+         AssistCardCommand(toolName: "publish_class_on", arguments: ["when": "thursday"])),
+        ("publish friday's class",
+         AssistCardCommand(toolName: "publish_class_on", arguments: ["when": "friday"])),
+        ("publish saturday's class",
+         AssistCardCommand(toolName: "publish_class_on", arguments: ["when": "saturday"])),
+        ("publish sunday's class",
+         AssistCardCommand(toolName: "publish_class_on", arguments: ["when": "sunday"])),
+
+        // The three below arrived with the shelf being filled out to match
+        // what the assistant can actually do. Each qualifies on the same test
+        // as the rest of this list: one meaning, and NOTHING in the sentence
+        // for the model to read out. A phrasing with an argument in it —
+        // "Publish the class on Monday" — is deliberately not here; reading
+        // arguments out is what the model does reliably, and it was measured
+        // against the shipped surface before being offered.
+        //
+        // The first of them NO LONGER APPEARS ON THE SHELF, and that is on
+        // purpose rather than drift. Listing a section's pages was taken off
+        // as not worth a card — a teacher with Obsidian and the sidebar open
+        // is not asking for a list of file names — but a teacher who types it
+        // anyway deserves the reliable answer rather than a trip to the model.
+        // Same reasoning as the bare word "deploy" further up: the shelf is
+        // what is worth SUGGESTING, this list is what is worth MATCHING, and
+        // they were never the same list.
+        ("what pages are in this section?",
+         AssistCardCommand(toolName: "list_pages", arguments: [:])),
+
+        ("add the next class page",
+         AssistCardCommand(toolName: "add_next_class", arguments: [:])),
+
+        // The same tool, told to begin a new unit rather than carry the
+        // current one on. Which unit a class belongs to is the one judgement
+        // `NextClassPlanner` refuses to make on a teacher's behalf, so it is
+        // asked for outright rather than guessed at from how long the unit has
+        // run. `unit` is not in the tool's schema — see the note above.
+        ("start a new unit for the next class",
+         AssistCardCommand(toolName: "add_next_class", arguments: ["unit": "next"])),
+        ("start a new unit",
+         AssistCardCommand(toolName: "add_next_class", arguments: ["unit": "next"])),
+
+        ("what dates am i teaching?",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: [:])),
+
+        // Takes up the offer the answer above ends with. Matched in code, and
+        // the `scope` key is deliberately absent from the tool's schema: the
+        // model never needs to know it exists, so this adds a whole answer
+        // without touching the surface routing was measured against.
+        ("show me the rest of the dates",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: ["scope": "all"])),
+        ("show me all the dates",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: ["scope": "all"])),
     ]
 }

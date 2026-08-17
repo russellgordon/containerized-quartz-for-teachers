@@ -42,6 +42,14 @@ struct AssistPublishDateMove {
     let page: AssistSectionPage
     let from: CalendarDay?
     let to: CalendarDay
+
+    /// The class whose date this page is taking, as the teacher sees it named.
+    ///
+    /// Carried so the plan can say it in ONE sentence — "“Bananas” will become
+    /// visible, with the same date as “Unit 4, Day 24”" — rather than making a
+    /// teacher hold a page name in their head across two lists and a blank
+    /// line to work out that the second is about the first.
+    let takenFrom: String
 }
 
 /// What publishing (or unpublishing) would do, before anything is done.
@@ -65,6 +73,15 @@ struct AssistPublishPlan {
     /// The pages the model named that matched nothing.
     let unknownNames: [String]
 
+    /// The pages the teacher NAMED that were found — as distinct from
+    /// everything publishing then swept in by following links.
+    ///
+    /// Kept so an answer can be about what they asked for. "Publish Unit 4,
+    /// Day 23" on a class that is already published should say "It's already
+    /// been published", and "it" is the class — not the five linked pages that
+    /// were also already published and that nobody mentioned.
+    let namedPages: [AssistSectionPage]
+
     let changes: [AssistPublishChange]
 
     /// Pages already the way they were asked to be.
@@ -83,6 +100,30 @@ struct AssistPublishPlan {
         return changes.isEmpty && dateMoves.isEmpty
     }
 
+    /// The whole answer, when the whole answer is that there was nothing to
+    /// do — or nil when something else needs saying.
+    ///
+    /// A teacher who asks to publish a class that is already published wants
+    /// four words back, not a plan with a heading and a count and a note that
+    /// nothing was changed because nothing needed to be. The full description
+    /// is still right for every other shape of "nothing changed": a name that
+    /// matched no page has to say so, and a request that found nothing at all
+    /// is not the same as one that found everything already done.
+    var nothingToDoSentence: String? {
+        guard changesNothing, unknownNames.isEmpty, !namedPages.isEmpty else {
+            return nil
+        }
+        // Every page they named is already the way they asked for it.
+        for page in namedPages where page.isVisibleToStudents != publishes {
+            return nil
+        }
+        let done: String = publishes ? "published" : "hidden"
+        if namedPages.count == 1 {
+            return publishes ? "It's already been published." : "It's already hidden."
+        }
+        return "They have already been \(done)."
+    }
+
     var verb: String {
         return publishes ? "publish" : "unpublish"
     }
@@ -91,13 +132,27 @@ struct AssistPublishPlan {
 
     /// The plan in words, meant to be read aloud to a teacher.
     ///
-    /// Two things about the shape of it, both learned from looking at one on
-    /// screen. The headings are **bold** so the counts stand out from the list
-    /// underneath — a plan is scanned for "how much is about to change" before
-    /// it is read. And the list items are NOT indented: a chat bubble is
-    /// narrow, every line of any length wraps, and the wrapped half returns to
-    /// the left margin — so the indent marks only the first line of each item
-    /// and makes the rest harder to follow rather than easier.
+    /// PLAIN TEXT. No markdown, and no bold. The headings used to be wrapped
+    /// in asterisks so the counts stood out from the list underneath — a plan
+    /// is scanned for "how much is about to change" before it is read, and that
+    /// much is still true. But this is a chat, and a person answering a
+    /// question does not reach for typography to make a sentence land. The
+    /// heading already ends in a colon and the count is its first word, which
+    /// is signal enough without the assistant sounding like a report
+    /// generator. (The bubble still PARSES markdown, so a model's own reply
+    /// renders normally — nothing written here emits any.)
+    ///
+    /// The list items are NOT indented: a chat bubble is narrow, every line of
+    /// any length wraps, and the wrapped half returns to the left margin — so
+    /// the indent marks only the first line of each item and makes the rest
+    /// harder to follow rather than easier.
+    ///
+    /// Each item is ONE SENTENCE about one page. What is deliberately gone:
+    /// the frontmatter key a change lands in, an arrow between two states, and
+    /// a parenthetical saying a page was reached by a link. All were true and
+    /// none of them is how a person says it — `publishForSection1` especially,
+    /// which is the name of a line in a file, shown to somebody who asked to
+    /// hide a lesson.
     func describe(mostListed: Int = 15) -> String {
         var lines: [String] = []
         lines.append("\(courseCode) Section \(sectionNumber): \(verb)ing.")
@@ -107,17 +162,31 @@ struct AssistPublishPlan {
             lines.append("No page's visibility would change.")
         } else {
             let word: String = changes.count == 1 ? "page" : "pages"
-            lines.append("**\(changes.count) \(word) would change:**")
+            lines.append("\(changes.count) \(word) would change:")
             var listed: Int = 0
             for change in changes {
                 if listed == mostListed {
                     lines.append("…and \(changes.count - listed) more.")
                     break
                 }
-                let reason: String = change.becauseLinked ? "  (linked from a page you named)" : ""
-                lines.append("\(change.page.title)  —  \(change.key): "
-                             + "\(change.wasVisible ? "visible" : "hidden") → "
-                             + "\(change.willBeVisible ? "visible" : "hidden")\(reason)")
+                // One short sentence per page, and nothing else on the line.
+                //
+                // It used to read `Bananas  —  publishForSection1: visible →
+                // hidden  (linked from a page you named)`, which is four
+                // pieces of bookkeeping wearing a page title: the frontmatter
+                // KEY the change lands in, the state it came from, an arrow,
+                // and a parenthetical. All four are true and none of them is
+                // how a person says it. `publishForSection1` in particular is
+                // the name of a line in a file — the teacher is being shown
+                // the implementation of the thing they asked for.
+                let becoming: String = change.willBeVisible ? "visible" : "hidden"
+                var line: String = "“\(change.page.displayTitle)” will become \(becoming)"
+                // The date, said here rather than in a list of its own.
+                for move in dateMoves
+                where move.page.lowercasedTitle == change.page.lowercasedTitle {
+                    line += ", with the same date as “\(move.takenFrom)”"
+                }
+                lines.append(line + ".")
                 listed += 1
             }
         }
@@ -133,31 +202,39 @@ struct AssistPublishPlan {
         if !kept.isEmpty {
             lines.append("")
             let word: String = kept.count == 1 ? "page stays" : "pages stay"
-            lines.append("**\(kept.count) linked \(word) published:**")
+            lines.append("\(kept.count) linked \(word) visible:")
             var listed: Int = 0
             for staying in kept {
                 if listed == mostListed {
                     lines.append("…and \(kept.count - listed) more.")
                     break
                 }
-                lines.append("\(staying.page.title)  —  \(staying.reason)")
+                // The reasons are written to finish this sentence, and each
+                // ends with its own full stop.
+                lines.append("“\(staying.page.displayTitle)” stays visible, "
+                             + "because \(staying.reason)")
                 listed += 1
             }
         }
 
-        if !dateMoves.isEmpty {
+        // A date move whose page is NOT in the list above has nowhere else to
+        // be said. It should not arise — every page that takes a class's date
+        // is a hidden page this publish is making visible, so it is always one
+        // of the changes — but a silent drop is the wrong way to find out
+        // otherwise.
+        var namedAlready: Set<String> = []
+        for change in changes {
+            namedAlready.insert(change.page.lowercasedTitle)
+        }
+        var orphaned: [AssistPublishDateMove] = []
+        for move in dateMoves where !namedAlready.contains(move.page.lowercasedTitle) {
+            orphaned.append(move)
+        }
+        if !orphaned.isEmpty {
             lines.append("")
-            let word: String = dateMoves.count == 1 ? "page" : "pages"
-            lines.append("**\(dateMoves.count) \(word) no other class uses would take this class's date:**")
-            var listed: Int = 0
-            for move in dateMoves {
-                if listed == mostListed {
-                    lines.append("…and \(dateMoves.count - listed) more.")
-                    break
-                }
-                let from: String = move.from?.text ?? "no date"
-                lines.append("\(move.page.title)  —  \(from) → \(move.to.text)")
-                listed += 1
+            for move in orphaned {
+                lines.append("“\(move.page.displayTitle)” will take the same date as "
+                             + "“\(move.takenFrom)”.")
             }
         }
 
@@ -220,10 +297,19 @@ enum AssistPublishPlanner {
         forSection sectionNumber: Int,
         in course: Course
     ) -> AssistPublishPlan {
+        // Date moves belong on THIS path too, and their absence was the bug.
+        // "Publish tomorrow's class" worked them out; "Publish Unit 2, Day 3" —
+        // naming the very same class page — passed an empty list, so the pages
+        // the class brought with it kept whatever day their file was created
+        // on. Same teacher, same class, two different results depending on
+        // which sentence they used.
+        let moves: [AssistPublishDateMove] = dateMovesFollowingClasses(
+            titles: titles, graph: graph, classPages: classPages
+        )
         return plan(
             publishes: true, titles: titles,
             onOrAfter: onOrAfter, before: before, graph: graph, classPages: classPages,
-            dateMoves: [], forSection: sectionNumber, in: course
+            dateMoves: moves, forSection: sectionNumber, in: course
         )
     }
 
@@ -272,8 +358,11 @@ enum AssistPublishPlanner {
             titles.append(summary.title)
         }
 
-        let moves: [AssistPublishDateMove] = dateMoves(
-            forClassesTitled: titles, on: day, graph: graph, classPages: classPages
+        // The same one rule as the named-pages path above. It used to be a
+        // second rule here with a different condition, which is how the two
+        // routes to the same act came to disagree.
+        let moves: [AssistPublishDateMove] = dateMovesFollowingClasses(
+            titles: titles, graph: graph, classPages: classPages
         )
         return .success(plan(
             publishes: true, titles: titles,
@@ -369,6 +458,7 @@ enum AssistPublishPlanner {
             sectionNumber: sectionNumber,
             publishes: publishes,
             unknownNames: unknownNames,
+            namedPages: named,
             changes: changes,
             alreadyRight: alreadyRight,
             kept: kept,
@@ -446,7 +536,7 @@ enum AssistPublishPlanner {
             goingDown.insert(page.lowercasedTitle)
         }
 
-        let referrers: [String: [String]] = pagesLinkingIn(graph: graph)
+        let referrers: [String: [AssistSectionPage]] = pagesLinkingIn(graph: graph)
         let mustStay: Set<String> = pagesThisSectionCannotDoWithout(graph: graph)
 
         var alsoUnpublished: [AssistSectionPage] = []
@@ -495,7 +585,7 @@ enum AssistPublishPlanner {
     private static func reasonToKeep(
         _ page: AssistSectionPage,
         mustStay: Set<String>,
-        referrers: [String: [String]],
+        referrers: [String: [AssistSectionPage]],
         goingDown: Set<String>,
         graph: AssistSectionGraph,
         in course: Course
@@ -522,38 +612,69 @@ enum AssistPublishPlanner {
     /// A page outside this unpublish that still links to the given one, named
     /// as the teacher would see it — or nil when the pages coming down are the
     /// only ones that point at it.
+    ///
+    /// The referrer is carried as a PAGE rather than as a name, and that is
+    /// load-bearing rather than tidiness. A name would have to be looked back
+    /// up through `graph.page(titled:)`, which keys on the file name — and
+    /// every folder's landing page is called `index`, so eleven different
+    /// pages share one key and the lookup returns whichever came first in path
+    /// order. That was invisible while the answer was printed as "index"; the
+    /// moment it is printed as "Portfolios" it becomes a confidently wrong
+    /// name, which is worse than a useless one.
     private static func pageStillLinking(
         to page: AssistSectionPage,
-        referrers: [String: [String]],
+        referrers: [String: [AssistSectionPage]],
         goingDown: Set<String>,
         graph: AssistSectionGraph
     ) -> String? {
         for referrer in referrers[page.lowercasedTitle] ?? [] {
-            if goingDown.contains(referrer) {
+            if goingDown.contains(referrer.lowercasedTitle) {
                 continue
             }
-            guard let linking = graph.page(titled: referrer) else {
+            // **A HIDDEN page is not a reason to keep anything published.**
+            // "X still links to it" was counted whether or not students could
+            // see X — so a page could sit visible, reachable from nothing,
+            // held up by a draft nobody has published. Kept alive by a page
+            // that is not there.
+            //
+            // Safe in the other direction because publishing is transitive:
+            // when that draft is published, everything it links to is
+            // published with it, and the plan says so. So a page taken down
+            // here comes back the moment anything visible needs it again.
+            if !referrer.isVisibleToStudents {
                 continue
             }
-            return linking.title
+            return referrer.displayTitle
         }
         return nil
     }
 
     /// Which pages link to each page, by lowercased title. A page linking to
     /// itself is not a reason to keep it.
-    private static func pagesLinkingIn(graph: AssistSectionGraph) -> [String: [String]] {
-        var referrers: [String: [String]] = [:]
+    private static func pagesLinkingIn(graph: AssistSectionGraph) -> [String: [AssistSectionPage]] {
+        var referrers: [String: [AssistSectionPage]] = [:]
         for page in graph.pages {
             for target in page.linkedTitles {
                 if target == page.lowercasedTitle {
                     continue
                 }
-                var linking: [String] = referrers[target] ?? []
-                if linking.contains(page.lowercasedTitle) {
+                var linking: [AssistSectionPage] = referrers[target] ?? []
+                // Compared by PATH, not by name. Two folders' landing pages
+                // are both called `index`, and de-duplicating on the name
+                // threw the second one away — so a page linked from both
+                // Portfolios and Style recorded only one of them, and which
+                // one depended on the order the folder was walked in.
+                var already: Bool = false
+                for existing in linking {
+                    if existing.fileURL == page.fileURL {
+                        already = true
+                        break
+                    }
+                }
+                if already {
                     continue
                 }
-                linking.append(page.lowercasedTitle)
+                linking.append(page)
                 referrers[target] = linking
             }
         }
@@ -598,58 +719,149 @@ enum AssistPublishPlanner {
         return found
     }
 
+    // MARK: - A whole unit
+
+    /// The unit a teacher named, if that is what they named: "Unit 4",
+    /// "unit 4", "Unit 4." — but never "Unit 4, Day 3", which is one page.
+    static func unitNamed(_ raw: String) -> Int? {
+        let tidied: String = raw
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet(charactersIn: ".!"))
+            .lowercased()
+        guard tidied.hasPrefix("unit ") else {
+            return nil
+        }
+        let rest: String = String(tidied.dropFirst("unit ".count))
+            .trimmingCharacters(in: .whitespaces)
+        // A comma means they went on to name a day, which is a page.
+        if rest.isEmpty || rest.contains(",") {
+            return nil
+        }
+        return Int(rest)
+    }
+
+    /// A unit's class pages, **highest day first**.
+    ///
+    /// The order is the request, not an implementation detail: unpublishing a
+    /// unit walks backwards from its last day. Doing it that way means every
+    /// step asks "is anything else still using this?" against the state as it
+    /// actually is at that moment, which is the same question a teacher would
+    /// ask taking the unit down by hand, one page at a time, from the end.
+    static func classPages(inUnit unit: Int, from classPages: [ClassPageSummary]) -> [ClassPageSummary] {
+        var found: [ClassPageSummary] = []
+        for summary in classPages {
+            guard let numbers = summary.unitAndDay, numbers.unit == unit else {
+                continue
+            }
+            found.append(summary)
+        }
+        found.sort { first, second in
+            let firstDay: Int = first.unitAndDay?.day ?? 0
+            let secondDay: Int = second.unitAndDay?.day ?? 0
+            return firstDay > secondDay
+        }
+        return found
+    }
+
     // MARK: - Dates
 
-    /// The pages a class uses that no OTHER class uses, and so should sit on
-    /// that class's day.
+    /// A page a class links to takes that class's date **when this publish is
+    /// the first time students will ever see it**.
     ///
-    /// A concept page linked from three different lessons belongs to none of
-    /// them and is left exactly where it is. One linked from a single lesson is
-    /// that lesson's material, and a teacher expects it to appear under the
-    /// same day.
-    static func dateMoves(
-        forClassesTitled titles: [String],
-        on day: CalendarDay,
+    /// The point of it, in a teacher's terms: everything a class brings with it
+    /// should turn up under that class on the site. A worksheet written for
+    /// Unit 2, Day 3 that has been sitting unpublished should appear on Unit 2,
+    /// Day 3's day, not on whatever day it happened to be created.
+    ///
+    /// **Two conditions, and only two.**
+    ///
+    /// 1. The page is **hidden right now**, and this publish is what makes it
+    ///    visible. A page students can already see keeps its date: it has a
+    ///    place on the site that somebody may have linked to or looked at, and
+    ///    republishing a class must not shuffle work that was already out.
+    /// 2. It is **not itself a class page**. A class's date is its position in
+    ///    the schedule; nothing may move it.
+    ///
+    /// **What is deliberately NOT a condition, and used to be.** This rule
+    /// previously moved a page only when no OTHER class linked to it, reasoned
+    /// as: "a concept page linked from three different lessons belongs to none
+    /// of them and is left exactly where it is." That reasoning is sound for a
+    /// page already on the site and beside the point for one that has never
+    /// been seen. A page nobody can reach has no place to be left in — it has
+    /// only the date it was created on, which is the day its FILE was made and
+    /// means nothing to a student. Given the choice between "the day this
+    /// material first appears" and "the day somebody happened to type it", the
+    /// first is the answer a reader wants, even when three classes share it.
+    ///
+    /// Where several of the classes being published reach the same page, the
+    /// EARLIEST one claims it. That is the convention the course installer
+    /// already follows — `first_use_dates` in `setup_course.py` dates a shared
+    /// page to the first class that references it — and matching it means a
+    /// pre-populated course and a hand-published one date their pages the same
+    /// way.
+    ///
+    /// "Never published" is inferred from the page being hidden now, because
+    /// nothing on disk records a page's history. A page published once and
+    /// later hidden therefore counts as never published, and would take a new
+    /// date. Recording the truth would mean a new frontmatter key on every
+    /// page, agreed with the Python and the Windows app; the inference costs
+    /// nothing and is right in every case anybody has met.
+    static func dateMovesFollowingClasses(
+        titles: [String],
         graph: AssistSectionGraph,
         classPages: [ClassPageSummary]
     ) -> [AssistPublishDateMove] {
-        var theseClasses: Set<String> = []
+        // Only the NAMED pages that are really classes with a date. Publishing
+        // an ordinary page moves nothing: there is no class day to inherit.
+        var named: [(page: AssistSectionPage, day: CalendarDay)] = []
         for title in titles {
-            theseClasses.insert(AssistSectionGraph.normalized(title))
-        }
-
-        // How many class pages link to each page, counting the ones being
-        // published as one between them.
-        var usedByOtherClass: Set<String> = []
-        for summary in classPages {
-            let classTitle: String = AssistSectionGraph.normalized(summary.title)
-            if theseClasses.contains(classTitle) {
+            guard let page = graph.page(titled: title), let day = page.date else {
                 continue
             }
-            guard let page = graph.page(titled: summary.title) else {
-                continue
+            var isAClass: Bool = page.isClassPage
+            for summary in classPages
+            where AssistSectionGraph.normalized(summary.title) == page.lowercasedTitle {
+                isAClass = true
             }
-            for target in page.linkedTitles {
-                usedByOtherClass.insert(target)
-            }
-        }
-
-        var starting: [AssistSectionPage] = []
-        for title in titles {
-            if let page = graph.page(titled: title) {
-                starting.append(page)
+            if isAClass {
+                named.append((page: page, day: day))
             }
         }
 
+        // Earliest first, so the first class to use a page is the one that
+        // dates it. Title breaks a tie, so two classes on one day give the
+        // same answer every run rather than depending on folder order.
+        named.sort { first, second in
+            if first.day.text != second.day.text {
+                return first.day.text < second.day.text
+            }
+            return first.page.lowercasedTitle < second.page.lowercasedTitle
+        }
+
+        var claimed: Set<String> = []
         var moves: [AssistPublishDateMove] = []
-        for page in graph.linkedPages(from: starting) {
-            if usedByOtherClass.contains(page.lowercasedTitle) {
-                continue
+        for entry in named {
+            for page in graph.linkedPages(from: [entry.page]) {
+                if claimed.contains(page.lowercasedTitle) {
+                    continue
+                }
+                // Already out where students can see it — leave it alone.
+                if page.isVisibleToStudents {
+                    continue
+                }
+                // A class's date is its place in the schedule.
+                if page.isClassPage {
+                    continue
+                }
+                claimed.insert(page.lowercasedTitle)
+                if page.date == entry.day {
+                    continue
+                }
+                moves.append(AssistPublishDateMove(
+                    page: page, from: page.date, to: entry.day,
+                    takenFrom: entry.page.displayTitle
+                ))
             }
-            if page.date == day {
-                continue
-            }
-            moves.append(AssistPublishDateMove(page: page, from: page.date, to: day))
         }
         return moves
     }
@@ -731,11 +943,47 @@ enum AssistPublishPlanner {
             saved.append(repointed)
         }
 
-        let word: String = saved.count == 1 ? "page" : "pages"
         return AssistChange(
-            description: "\(plan.verb)ed \(saved.count) \(word) in \(plan.courseCode) Section \(sectionNumber)",
+            whatHappened: "\(plan.verb)ed \(AssistPublishPlanner.namingWhatMoved(in: plan, savedCount: saved.count))",
+            courseCode: plan.courseCode,
+            sectionNumber: sectionNumber,
+            // Publishing and hiding rebuild the preview, so taking them back
+            // has to rebuild it too — that was the whole complaint.
+            rebuildsThePreview: true,
             files: saved
         )
+    }
+
+    /// What to call the thing that moved, for a sentence read back to the
+    /// teacher a minute or an hour later.
+    ///
+    /// **Names the pages while there are few enough to name.** The count came
+    /// first and was wrong in a way that only shows up at undo time: asking to
+    /// unpublish one class writes TWO files, because the section's landing page
+    /// is repointed in the same change — so "unpublished 2 pages" was both
+    /// arithmetically right and unrecognisable to somebody who had asked for
+    /// Unit 4, Day 23. The pages whose VISIBILITY moved are what the teacher
+    /// asked about; the index following along is bookkeeping.
+    ///
+    /// Three or more falls back to a count, because a sentence listing nine
+    /// class titles is not a sentence anybody reads.
+    private static func namingWhatMoved(in plan: AssistPublishPlan, savedCount: Int) -> String {
+        var names: [String] = []
+        for change in plan.changes {
+            names.append(change.page.displayTitle)
+        }
+        if names.count == 1 {
+            return names[0]
+        }
+        if names.count == 2 {
+            return names[0] + " and " + names[1]
+        }
+        if names.count > 2 {
+            return "\(names.count) pages"
+        }
+        // Nothing's visibility moved, so this was a date change alone.
+        let word: String = savedCount == 1 ? "page" : "pages"
+        return "\(savedCount) \(word)"
     }
 
     /// Point the section's index at its most recent visible class, and give it
@@ -817,8 +1065,13 @@ enum AssistToolRefusal: LocalizedError, Equatable {
         case .unreadablePage(let title):
             return "“\(title)” could not be read, so nothing was changed."
         case .noClassOn(let day, let code, let number):
-            return "No class in \(code) Section \(number) is dated \(day.text), a \(day.weekdayName). "
-                 + "Use list_pages to see what classes there are."
+            // Named the tool — "Use list_pages to see what classes there are"
+            // — in a sentence that goes straight to the teacher, since a
+            // refusal ends the turn rather than going back to the model. The
+            // way out is now said in the words the window already offers.
+            return "I can't find a class on \(day.weekdayName), \(day.text), in \(code) "
+                 + "Section \(number). Ask me what dates you are teaching to see the ones I know "
+                 + "about, or tell me the name of the class page you meant."
         case .unreadableDate(let raw, let which):
             return "“\(raw)” isn't a date \(which) can use. Give it as YYYY-MM-DD, for example 2026-09-15."
         case .unreadableTime(let raw):

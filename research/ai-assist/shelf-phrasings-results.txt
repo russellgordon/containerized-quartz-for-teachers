@@ -1,0 +1,108 @@
+EVERY PHRASING THE SHELF OFFERS, MEASURED
+=========================================
+
+Date: 2026-08-16
+Engine: llama.cpp b10435, Metal, 48 GB M4 Pro
+Flags: --reasoning off --reasoning-budget 0 --ctx-size 16384 --threads 6
+       --n-gpu-layers 999 --jinja --parallel 1, temperature 0
+Model: Qwen3-4B Q4_K_M (the .large tier)
+Surface: the 13 tools AssistToolRunner.localTools hands the model, produced by
+         tools-from-contract.py from contracts/assist-cases.json.
+Prompt: AssistAgent.systemPrompt verbatim, AND AssistAgent.dateline() appended
+        to the user message the way AssistAgent.say does it.
+Suite: research/ai-assist/shelf-phrasings-suite.py, 14 phrasings x 10 trials.
+
+WHY: the shelf was expanded from nine phrasings to fourteen. Five capabilities
+the assistant had were on no card at all — listing a section's pages, reading
+one back, publishing the class on a named day, adding the next class page, and
+reading back the remembered class dates — so they existed and no teacher was
+told. A card is a PROMISE, so each new one was measured before it was offered.
+
+THE NEAR-MISS, WHICH IS THE USEFUL HALF
+---------------------------------------
+The first run of this suite left AssistAgent.dateline() off the user message.
+"Publish the class on Monday" routed 10/10 correctly and then resolved Monday
+to 2026-09-15 — a month away — in all ten trials, because a model with no idea
+what day it is has to invent one. The card was within an edit of being dropped
+and replaced with a hard-coded calendar date.
+
+It was the HARNESS that was wrong. AssistAgent.say appends "(Today is
+2026-08-16, a Sunday.)" to every message, and with it the same phrasing
+resolves to 2026-08-17 — 10/10. A probe that leaves the dateline off is not
+measuring the shipping configuration, and the number it produces reads exactly
+like a fault in the product.
+
+(The position of that line is itself a finding, from trimmed-surface-suite.py:
+APPENDED it is worth 15 points of routing over PREPENDED. Do not move it.)
+
+RESULTS
+-------
+
+[    ] publish_pages                10/10   0.6s  args 10/10
+       “Publish Unit 2, Day 3”
+[code] publish_class_on             10/10   0.7s  args 10/10
+       “Publish tomorrow's class”
+[    ] publish_class_on             10/10   0.7s  args 10/10
+       “Publish the class on Monday”
+[    ] unpublish_pages              10/10   0.6s  args 10/10
+       “Unpublish Unit 2, Day 3”
+[code] undo_last_change             10/10   0.3s
+       “Undo that”
+[code] check_section                10/10   0.5s
+       “What would students see in this section right now?”
+[code] rebuild_preview              10/10   0.5s
+       “Preview”
+[code] list_pages                   10/10   0.5s
+       “What pages are in this section?”
+[    ] read_page                    10/10   0.6s  args 10/10
+       “Show me Unit 2, Day 3”
+[code] add_next_class               10/10   0.5s
+       “Add the next class page”
+[code] read_remembered_timetable    10/10   0.5s
+       “What dates am I teaching?”
+[code] deploy_section               10/10   0.4s
+       “Deploy now”
+[    ] schedule_deploy              10/10   0.8s  args 10/10
+       “Deploy at 6:30 AM”
+[    ] cancel_scheduled_deploy      10/10   0.5s
+       “Cancel scheduled deploy”
+
+ROUTING 140/140   ARGUMENTS 60/60
+[code] = matched in AssistCardCommand and never sent to the model;
+         probed anyway, to record what would happen if it were.
+
+WHAT THIS SAYS
+--------------
+Nothing on the shelf misroutes, and nothing on it fills an argument wrongly.
+Eight of the fourteen never reach the model at all — they carry no argument to
+read out, so they are matched in AssistCardCommand and are reliable by
+construction. The six that DO carry an argument (a page title, a day, a time)
+are the ones this file is evidence for, and they are the ones to re-run if the
+model, the quant, the context size or a tool description ever changes.
+
+The rule the shelf is held to, unchanged: a card offering something the
+assistant is unreliable at is worse than a card with nothing on it.
+
+SINCE THIS RUN
+--------------
+Two of the fourteen probed above were REMOVED from the shelf on the same day:
+
+  “What pages are in this section?”   (list_pages)
+  “Show me Unit 2, Day 3”             (read_page)
+
+**Not for anything in these numbers** — both scored 10/10, and the second was
+10/10 on its argument too. They were removed because they are not worth a card:
+a teacher has the pages in front of them in Obsidian and in Plantoir's own
+sidebar, so reading one back into a chat bubble is a worse way to see it than
+the two windows already open.
+
+Kept here in full, because a measurement that is later overtaken by a judgement
+about USEFULNESS is exactly the kind of record worth having — the next person
+to propose one of these will find the routing question already answered and the
+product question already decided, and will not spend an afternoon re-measuring
+what was never in doubt.
+
+The suite has been trimmed to the twelve the shelf now offers, so a re-run is
+comparable with the shelf rather than with this file's fourteen rows.
+`list_pages` is still matched in `AssistCardCommand` for a teacher who types
+it; only the card is gone.

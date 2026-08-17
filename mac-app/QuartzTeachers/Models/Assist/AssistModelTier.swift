@@ -135,6 +135,56 @@ nonisolated enum AssistModelTier: String, CaseIterable, Sendable {
         return formatter.string(fromByteCount: downloadBytes)
     }
 
+    /// The teacher-facing name for this rung where the two sit BESIDE each
+    /// other in a list and have to read as a pair.
+    ///
+    /// `displayName` is written to drop into a sentence — "Loading the small
+    /// assistant" — and this one is written to be a label with a radio button
+    /// next to it. They differ by a word on purpose: "small" and "large" read
+    /// as absolute claims about the thing, where "smaller" and "larger" read
+    /// as a comparison, which is what a teacher is actually being asked to
+    /// make. Same rule as everywhere else here — no model is named.
+    var choiceLabel: String {
+        switch self {
+        case .small: return "The smaller assistant"
+        case .large: return "The larger assistant"
+        }
+    }
+
+    /// Roughly how much memory it occupies while the teacher is using it,
+    /// written the way a Mac writes its own memory (1024-based, so it matches
+    /// the number on the About This Mac panel they would compare it against).
+    var memoryDescription: String {
+        let formatter: ByteCountFormatter = ByteCountFormatter()
+        formatter.countStyle = .memory
+        return formatter.string(fromByteCount: residentBytes)
+    }
+
+    /// What choosing this one costs, in the only two units a teacher can act
+    /// on: space on the disk, and memory while it is working.
+    ///
+    /// Both numbers are given because they are different decisions. Disk is
+    /// what a teacher on a 256 GB MacBook Air notices when it runs out;
+    /// memory is what makes the machine feel slow while a class is being
+    /// prepared, and it never shows up as a number anywhere. Neither is
+    /// guessable from the other — the larger download is 2.2x the smaller,
+    /// but it is 2.9x the memory, because most of the difference is the
+    /// conversation being held rather than the file being read.
+    var sizeGuidance: String {
+        switch self {
+        case .small:
+            return "\(downloadDescription) to download, and about \(memoryDescription) of "
+                 + "memory while you are using it. It starts quickly and leaves the most "
+                 + "room for everything else you have open. It misunderstands more often, "
+                 + "so it always shows what it is about to do before doing it."
+        case .large:
+            return "\(downloadDescription) to download, and about \(memoryDescription) of "
+                 + "memory while you are using it. It understands what you ask far more "
+                 + "reliably, and it asks more of the machine — comfortable on a Mac with "
+                 + "16 GB of memory or more."
+        }
+    }
+
     // MARK: - Functions
 
     /// The best tier that fits the budget, never returning nothing: a Mac too
@@ -237,6 +287,30 @@ nonisolated struct AssistHardwareBudget: Sendable, Equatable {
             threads = 6
         }
         return threads
+    }
+
+    /// The most memory the assistant should be resident in while the teacher
+    /// is using the machine for everything else.
+    ///
+    /// A third of physical memory, which is the line the automatic choice has
+    /// always been held to — `AssistModelTierTests` asserts every rung the
+    /// ladder picks stays under it. Naming it here rather than leaving it in
+    /// the test is what lets the settings panel say WHY a hand-picked option
+    /// carries a caution, using the same number the app already trusts.
+    var comfortableResidentBytes: Int64 {
+        return physicalMemoryBytes / 3
+    }
+
+    /// Whether this Mac has room for that model without the teacher noticing.
+    func isComfortable(with tier: AssistModelTier) -> Bool {
+        return tier.residentBytes <= comfortableResidentBytes
+    }
+
+    /// This Mac's memory, written the way the Mac writes it.
+    var memoryDescription: String {
+        let formatter: ByteCountFormatter = ByteCountFormatter()
+        formatter.countStyle = .memory
+        return formatter.string(fromByteCount: physicalMemoryBytes)
     }
 
     /// Whether this Mac can run the assistant at all. Apple silicon only:

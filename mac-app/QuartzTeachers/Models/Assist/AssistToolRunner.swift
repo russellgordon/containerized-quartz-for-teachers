@@ -208,7 +208,7 @@ final class AssistToolRunner {
         case "rebuild_preview":
             return await rebuildPreview(arguments)
         case "undo_last_change":
-            return undoLastChange()
+            return await undoLastChange()
         case "deploy_section":
             return await deploySection(arguments)
         case "plan_scheduled_deploy":
@@ -301,7 +301,7 @@ final class AssistToolRunner {
             ).message)
         }
         guard var body = try? String(contentsOf: page.fileURL, encoding: .utf8) else {
-            return AssistToolOutcome.couldNotRead("“\(page.title)” could not be read.")
+            return AssistToolOutcome.couldNotRead("“\(page.displayTitle)” could not be read.")
         }
 
         // A whole course does not fit in a small model's context, and a page
@@ -313,7 +313,7 @@ final class AssistToolRunner {
         }
 
         return AssistToolOutcome.read(
-            "Read “\(page.title)”.",
+            "Read “\(page.displayTitle)”.",
             detail: "\(page.relativePath)\n\n\(body)"
         )
     }
@@ -379,10 +379,25 @@ final class AssistToolRunner {
             paragraphs.append(lines.joined(separator: "\n"))
         }
 
-        if sectionWindow(for: located.course, sectionNumber: located.sectionNumber)?.isPreviewRunning() == true {
-            let these: String = visible == 1 ? "this page" : "these \(visible) pages"
-            paragraphs.append("The section's preview will show \(these) once any rebuild "
-                              + "in progress finishes.")
+        // What the preview is doing decides which of three things is worth
+        // saying — and for one of them, that nothing is.
+        //
+        // This used to be one sentence behind one boolean, and the boolean was
+        // "is the launcher running", which stays true for as long as the site
+        // is SERVED. So a teacher looking at a finished preview was told their
+        // pages would appear "once any rebuild in progress finishes", about a
+        // rebuild that had finished minutes ago.
+        let these: String = visible == 1 ? "this page" : "these \(visible) pages"
+        let window = sectionWindow(for: located.course, sectionNumber: located.sectionNumber)
+        switch window?.previewState() ?? .notRunning {
+        case .building:
+            paragraphs.append("The preview is building now, and will show \(these) when it finishes.")
+        case .showing:
+            // Nothing. They are looking at it.
+            break
+        case .notRunning:
+            paragraphs.append("Nothing is being previewed at the moment. Say “Preview” if you "
+                              + "would like to look the section over.")
         }
 
         let answer: String = paragraphs.joined(separator: "\n\n")
@@ -415,6 +430,17 @@ final class AssistToolRunner {
     private func publishClassOn(_ arguments: [String: Any]) async -> AssistToolOutcome {
         switch classPlan(arguments) {
         case .failure(let refusal):
+            // "No class on that day" CAN mean the dates were never given. When
+            // it does, the way forward is the sheet, not a better sentence.
+            if case .noClassOn(_, let code, let number) = refusal,
+               let course = course(withCode: code),
+               hasNoTimetable(forSection: number, in: course) {
+                askForTheTimetable(
+                    courseCode: code, sectionNumber: number,
+                    because: "Finding the class taught on a given day needs to know which days "
+                           + "this section meets."
+                )
+            }
             return AssistToolOutcome.refused(refusal.message)
         case .success(let planned):
             return await carryOut(
@@ -474,10 +500,19 @@ final class AssistToolRunner {
     // MARK: - Publishing and unpublishing, which are two different verbs
 
     private func planPublishPages(_ arguments: [String: Any]) -> AssistToolOutcome {
+        if let whole = wholeUnitPlan(arguments, publishing: true) {
+            return whole
+        }
         switch pagePlan(arguments, publishing: true) {
         case .failure(let refusal):
             return AssistToolOutcome.couldNotRead(refusal.message)
         case .success(let planned):
+            // Nothing to agree to. A plan card asking "Shall I go ahead?"
+            // about a page that is already published makes a teacher approve
+            // a no-op, and then tells them nothing happened.
+            if let already = planned.plan.nothingToDoSentence {
+                return AssistToolOutcome.wrote(already, detail: already)
+            }
             return AssistToolOutcome.planned(
                 "Worked out what publishing those pages would do.",
                 plan: planned.plan.describe()
@@ -486,6 +521,9 @@ final class AssistToolRunner {
     }
 
     private func publishPages(_ arguments: [String: Any]) async -> AssistToolOutcome {
+        if let whole = await wholeUnitRequested(arguments, publishing: true) {
+            return whole
+        }
         switch pagePlan(arguments, publishing: true) {
         case .failure(let refusal):
             return AssistToolOutcome.refused(refusal.message)
@@ -501,10 +539,16 @@ final class AssistToolRunner {
     }
 
     private func planUnpublishPages(_ arguments: [String: Any]) -> AssistToolOutcome {
+        if let whole = wholeUnitPlan(arguments, publishing: false) {
+            return whole
+        }
         switch pagePlan(arguments, publishing: false) {
         case .failure(let refusal):
             return AssistToolOutcome.couldNotRead(refusal.message)
         case .success(let planned):
+            if let already = planned.plan.nothingToDoSentence {
+                return AssistToolOutcome.wrote(already, detail: already)
+            }
             return AssistToolOutcome.planned(
                 "Worked out what unpublishing those pages would do.",
                 plan: planned.plan.describe()
@@ -513,6 +557,9 @@ final class AssistToolRunner {
     }
 
     private func unpublishPages(_ arguments: [String: Any]) async -> AssistToolOutcome {
+        if let whole = await wholeUnitRequested(arguments, publishing: false) {
+            return whole
+        }
         switch pagePlan(arguments, publishing: false) {
         case .failure(let refusal):
             return AssistToolOutcome.refused(refusal.message)
@@ -538,6 +585,222 @@ final class AssistToolRunner {
     /// functions above, each of which writes it down literally. It is never
     /// read out of the model's arguments, because that is the one place the
     /// polarity could be inverted.
+    /// The card a teacher agrees to before a whole unit moves.
+    ///
+    /// Needed because plan mode runs the `plan_` twin with the SAME arguments,
+    /// and "Unit 4" is not a page — without this the teacher would be told no
+    /// page is called that, and the thing they asked for would look broken
+    /// rather than pending.
+    private func wholeUnitPlan(
+        _ arguments: [String: Any],
+        publishing: Bool
+    ) -> AssistToolOutcome? {
+        let titles: [String] = names("pages", in: arguments)
+        guard titles.count == 1, let unit = AssistPublishPlanner.unitNamed(titles[0]) else {
+            return nil
+        }
+        let found: Result<Located, AssistToolRefusal> = locate(arguments)
+        guard case .success(let located) = found else {
+            return AssistToolOutcome.couldNotRead(refusal(from: found).message)
+        }
+
+        let all: [ClassPageSummary] = ClassPages.list(
+            forSection: located.sectionNumber, in: located.course
+        )
+        let pages: [ClassPageSummary] = AssistPublishPlanner.classPages(inUnit: unit, from: all)
+        if pages.isEmpty {
+            return AssistToolOutcome.couldNotRead(
+                "I can't find any class pages in Unit \(unit) of \(located.course.code) "
+                + "Section \(located.sectionNumber)."
+            )
+        }
+
+        // Only the ones that would actually move.
+        let graph: AssistSectionGraph = AssistSectionGraph.read(
+            forSection: located.sectionNumber, in: located.course,
+            workspaceURL: workspace.workspaceURL
+        )
+        var moving: [String] = []
+        for summary in pages {
+            guard let page = graph.page(titled: summary.title) else {
+                continue
+            }
+            if page.isVisibleToStudents != publishing {
+                moving.append(page.displayTitle)
+            }
+        }
+        if moving.isEmpty {
+            let already: String = publishing
+                ? "Unit \(unit) has already been published."
+                : "Unit \(unit) is already hidden."
+            return AssistToolOutcome.wrote(already, detail: already)
+        }
+
+        let word: String = moving.count == 1 ? "class" : "classes"
+        let becoming: String = publishing ? "visible" : "hidden"
+        var lines: [String] = []
+        lines.append("\(located.course.code) Section \(located.sectionNumber): "
+                     + "\(publishing ? "publishing" : "unpublishing") Unit \(unit).")
+        lines.append("")
+        lines.append("\(moving.count) \(word) would become \(becoming), "
+                     + "\(publishing ? "starting at" : "starting from") "
+                     + "“\(publishing ? moving[moving.count - 1] : moving[0])”.")
+        if publishing {
+            lines.append("Everything they link to becomes visible with them.")
+        } else {
+            lines.append("Pages only they use come down too; anything still needed stays.")
+        }
+
+        return AssistToolOutcome.planned(
+            "Worked out what \(publishing ? "publishing" : "unpublishing") Unit \(unit) would do.",
+            plan: lines.joined(separator: "\n")
+        )
+    }
+
+    /// "Publish Unit 5" and "Unpublish Unit 4": a whole unit, one class page
+    /// at a time, reported as one thing. Nil when a unit was not what was
+    /// asked for, so every other request falls straight through.
+    ///
+    /// **One page at a time, in order, rather than one plan over all of
+    /// them.** Publishing walks Day 1 forwards; unpublishing walks the highest
+    /// day backwards. That is the order a teacher would do it by hand, and it
+    /// is not only cosmetic: each step's rules — which linked pages come with
+    /// it, which are left because something else still needs them, which take
+    /// the class's date — are asked against the state as it actually is at
+    /// that moment. Walking publish FORWARDS is what makes an earlier class
+    /// claim a shared page's date, which is the same first-use rule the course
+    /// installer follows.
+    ///
+    /// **The preview is stopped ONCE, not once per page.** Every page in the
+    /// unit is one act as far as the teacher is concerned, so stopping and
+    /// starting around each of twenty pages would be twenty rebuilds of a site
+    /// nobody is looking at yet.
+    ///
+    /// **The undo list gets ONE entry.** Every file touched along the way is
+    /// merged into a single change, so "undo that" takes the whole unit back
+    /// rather than the last page of it.
+    private func wholeUnitRequested(
+        _ arguments: [String: Any],
+        publishing: Bool
+    ) async -> AssistToolOutcome? {
+        let titles: [String] = names("pages", in: arguments)
+        guard titles.count == 1, let unit = AssistPublishPlanner.unitNamed(titles[0]) else {
+            return nil
+        }
+        let found: Result<Located, AssistToolRefusal> = locate(arguments)
+        guard case .success(let located) = found else {
+            return AssistToolOutcome.refused(refusal(from: found).message)
+        }
+
+        var pages: [ClassPageSummary] = AssistPublishPlanner.classPages(
+            inUnit: unit,
+            from: ClassPages.list(forSection: located.sectionNumber, in: located.course)
+        )
+        if pages.isEmpty {
+            return AssistToolOutcome.refused(
+                "I can't find any class pages in Unit \(unit) of \(located.course.code) "
+                + "Section \(located.sectionNumber)."
+            )
+        }
+        // Highest day first to take a unit down; Day 1 first to put it up.
+        if publishing {
+            pages.reverse()
+        }
+
+        let backedUp: Bool = backUpOnceForThisConversation(
+            located.course, forSection: located.sectionNumber
+        )
+        _ = await stopThePreviewBeforeWriting(
+            for: located.course, sectionNumber: located.sectionNumber
+        )
+
+        var touched: [AssistSavedFile] = []
+        var changedAnything: Bool = false
+        for summary in pages {
+            let graph: AssistSectionGraph = AssistSectionGraph.read(
+                forSection: located.sectionNumber, in: located.course,
+                workspaceURL: workspace.workspaceURL
+            )
+            let classPages: [ClassPageSummary] = ClassPages.list(
+                forSection: located.sectionNumber, in: located.course
+            )
+            let plan: AssistPublishPlan = publishing
+                ? AssistPublishPlanner.planPublishing(
+                    titles: [summary.title], onOrAfter: nil, before: nil,
+                    graph: graph, classPages: classPages,
+                    forSection: located.sectionNumber, in: located.course)
+                : AssistPublishPlanner.planUnpublishing(
+                    titles: [summary.title], onOrAfter: nil, before: nil,
+                    graph: graph, classPages: classPages,
+                    forSection: located.sectionNumber, in: located.course)
+            if plan.changesNothing {
+                continue
+            }
+            do {
+                let change: AssistChange = try AssistPublishPlanner.apply(
+                    plan, forSection: located.sectionNumber, in: located.course
+                )
+                touched = AssistToolRunner.merging(touched, with: change.files)
+                changedAnything = true
+            } catch {
+                return AssistToolOutcome.refused(
+                    "Unit \(unit) was only partly \(publishing ? "published" : "unpublished"): "
+                    + error.localizedDescription
+                )
+            }
+        }
+
+        let done: String = publishing ? "published" : "unpublished"
+        if !changedAnything {
+            let already: String = publishing
+                ? "Unit \(unit) has already been published."
+                : "Unit \(unit) is already hidden."
+            return AssistToolOutcome.wrote(already, detail: already)
+        }
+
+        history.record(AssistChange(
+            whatHappened: "\(done) Unit \(unit)",
+            courseCode: located.course.code,
+            sectionNumber: located.sectionNumber,
+            rebuildsThePreview: true,
+            files: touched
+        ))
+
+        var detail: String = "Unit \(unit) was \(done)."
+        if backedUp {
+            detail += "\n\n" + AssistToolRunner.backedUpNote
+        }
+        detail += "\n\n" + (await bringThePreviewUpToDate(
+            for: located.course, sectionNumber: located.sectionNumber
+        ))
+
+        return AssistToolOutcome.wrote("Unit \(unit) was \(done).", detail: detail)
+    }
+
+    /// Fold a step's files into what earlier steps touched.
+    ///
+    /// A page written more than once keeps the EARLIEST before and the LATEST
+    /// after, so undoing the merged change puts it back the way it was before
+    /// the whole unit was touched — not the way it was one step ago.
+    private static func merging(
+        _ soFar: [AssistSavedFile], with newer: [AssistSavedFile]
+    ) -> [AssistSavedFile] {
+        var merged: [AssistSavedFile] = soFar
+        for file in newer {
+            var replaced: Bool = false
+            for index in merged.indices where merged[index].fileURL == file.fileURL {
+                merged[index] = AssistSavedFile(
+                    fileURL: file.fileURL, before: merged[index].before, after: file.after
+                )
+                replaced = true
+            }
+            if !replaced {
+                merged.append(file)
+            }
+        }
+        return merged
+    }
+
     private func pagePlan(
         _ arguments: [String: Any],
         publishing: Bool
@@ -672,6 +935,13 @@ final class AssistToolRunner {
         summary: String
     ) async -> AssistToolOutcome {
         if plan.changesNothing {
+            // Four words, when four words are the whole answer. A teacher who
+            // asks to publish a class that is already published does not want
+            // a plan with a heading, a count, and a note that nothing was
+            // changed because nothing needed to be.
+            if let already = plan.nothingToDoSentence {
+                return AssistToolOutcome.wrote(already, detail: already)
+            }
             return AssistToolOutcome.wrote(
                 "Nothing needed changing.",
                 detail: plan.describe() + "\n\nNothing was changed, because nothing needed to be."
@@ -812,41 +1082,133 @@ final class AssistToolRunner {
         )
     }
 
-    private func undoLastChange() -> AssistToolOutcome {
+    /// Put the last change back — and put the section's preview back with it.
+    ///
+    /// **The order is stop → restore → start, and it is the same order
+    /// `publishPages` uses.** It did not used to be: the undo wrote the files
+    /// and stopped, so a teacher who had a preview up watched it go on serving
+    /// the state they had just asked to leave. Worse than stale — a preview
+    /// left running while the pages beneath it are rewritten is serving a
+    /// half-changed site, and the next refresh is a race the teacher cannot see
+    /// they are in.
+    ///
+    /// The stop is AWAITED, and that is load-bearing rather than tidy: stopping
+    /// reaches into the container and kills that section's processes, so a stop
+    /// still finishing when the next build starts kills the build too, and what
+    /// gets served is the site as it was before. `stopThePreviewBeforeWriting`
+    /// waits for the stop to actually finish rather than assuming it did.
+    ///
+    /// Restarting afterwards MATCHES PUBLISH rather than being conditional on a
+    /// preview having been up. Undo is the inverse of a write and should leave
+    /// the section in the same kind of state the write does; a version that
+    /// restarted only when one had been running would make "unpublish" and
+    /// "undo that" behave differently for no reason a teacher could see, which
+    /// is exactly the sort of difference that gets reported months later.
+    private func undoLastChange() async -> AssistToolOutcome {
         if history.isEmpty {
-            let reason: String = "This conversation hasn't changed anything yet, so there is nothing to "
-                               + "undo. Anything older is in Plantoir's Backups list."
-            return AssistToolOutcome.refused(reason)
+            return AssistToolOutcome.refused(AssistWording.nothingToUndo)
         }
 
+        // Looked at before it is taken back, because the preview that has to
+        // come down belongs to the section the change was made in, and a
+        // change used to know only its files.
+        guard let pending = history.nextToUndo else {
+            return AssistToolOutcome.refused(AssistWording.nothingToUndo)
+        }
+        let course: Course? = course(withCode: pending.courseCode)
+
+        // (a) Stop the preview, and wait until it has actually stopped.
+        if let course, pending.rebuildsThePreview {
+            _ = await stopThePreviewBeforeWriting(
+                for: course, sectionNumber: pending.sectionNumber
+            )
+        }
+
+        // (b) Put the files back.
         let result: AssistUndoResult = history.undo()
-        if !result.succeeded && result.restored.isEmpty && result.skipped.isEmpty {
+
+        if result.restored.isEmpty && result.skipped.isEmpty {
             return AssistToolOutcome.refused(result.description)
         }
 
-        let word: String = result.restored.count == 1 ? "file" : "files"
-        var detail: String = "Undid \(result.description) — put \(result.restored.count) \(word) back."
-        if !result.skipped.isEmpty {
-            let skippedWord: String = result.skipped.count == 1 ? "file was" : "files were"
-            detail += "\n\n\(result.skipped.count) \(skippedWord) left alone, because they have changed "
-                    + "since — putting the old copy back would throw away that newer work:"
-            var listed: Int = 0
-            for url in result.skipped {
-                if listed == AssistToolRunner.mostListed {
-                    detail += "\n  …and \(result.skipped.count - listed) more."
-                    break
-                }
-                detail += "\n  " + AssistSectionGraph.relativePath(
-                    of: url, workspaceURL: workspace.workspaceURL
-                )
-                listed += 1
-            }
-            detail += "\n\nThis change is still on the list, so it can be tried again."
+        // Nothing went back, because every file has been edited since. This
+        // must not read like a success, and it used to.
+        if result.restored.isEmpty {
+            var refusal: String = AssistWording.couldNotUndo(
+                result.whatHappened, leftAlone: result.skipped.count
+            )
+            refusal += "\n\n" + listing(result.skipped)
+            refusal += "\n\n" + AssistWording.undoIsStillAvailable
+            return AssistToolOutcome.refused(refusal)
         }
-        detail += "\n\nIf the section had already been deployed, undoing the pages does not take the live "
-                + "site back — it has to be deployed again to bring it in step."
 
-        return AssistToolOutcome.wrote("Undid \(result.description).", detail: detail)
+        let summary: String
+        if result.skipped.isEmpty {
+            summary = AssistWording.undid(result.whatHappened)
+        } else {
+            summary = AssistWording.undidPartly(
+                result.whatHappened, leftAlone: result.skipped.count
+            )
+        }
+
+        var detail: String = summary
+        if !result.skipped.isEmpty {
+            detail += "\n\nThe ones I left alone:\n" + listing(result.skipped)
+            detail += "\n\n" + AssistWording.undoIsStillAvailable
+        }
+
+        // (c) Put the preview back up, built from what is on disk now.
+        if let course, pending.rebuildsThePreview {
+            detail += "\n\n" + (await bringThePreviewUpToDate(
+                for: course, sectionNumber: pending.sectionNumber
+            ))
+        }
+
+        detail += "\n\n" + AssistWording.undoDoesNotReachTheLiveSite
+
+        return AssistToolOutcome.wrote(summary, detail: detail)
+    }
+
+    /// What to call the pages a class-page add created, for the sentence an
+    /// undo reads back later.
+    private static func namingClassesCreated(_ urls: [URL]) -> String {
+        var names: [String] = []
+        for url in urls {
+            names.append(url.deletingPathExtension().lastPathComponent)
+        }
+        if names.count == 1 {
+            return "added the class page \(names[0])"
+        }
+        if names.count == 2 {
+            return "added the class pages \(names[0]) and \(names[1])"
+        }
+        return "added \(names.count) class pages"
+    }
+
+    /// The files an undo left alone, as a list a teacher can go and look at.
+    private func listing(_ urls: [URL]) -> String {
+        var lines: [String] = []
+        var listed: Int = 0
+        for url in urls {
+            if listed == AssistToolRunner.mostListed {
+                lines.append("…and \(urls.count - listed) more.")
+                break
+            }
+            lines.append("  " + AssistSectionGraph.relativePath(
+                of: url, workspaceURL: workspace.workspaceURL
+            ))
+            listed += 1
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    /// The course with this code, or nil when the working folder no longer has
+    /// one — a course renamed or archived mid-conversation.
+    private func course(withCode code: String) -> Course? {
+        for candidate in workspace.courses where candidate.code.lowercased() == code.lowercased() {
+            return candidate
+        }
+        return nil
     }
 
     /// Deploy the section — by doing exactly what the teacher would do with
@@ -965,7 +1327,7 @@ final class AssistToolRunner {
                     lines.append("  \(title) — no page in this section is called that.")
                     continue
                 }
-                lines.append("  \(page.title) — "
+                lines.append("  \(page.displayTitle) — "
                              + (page.isVisibleToStudents
                                 ? "published, so the deploy would carry it."
                                 : "NOT published, so the deploy would ship without it."))
@@ -1100,17 +1462,48 @@ final class AssistToolRunner {
             )
         }
 
+        // "All of them" is asked for by a fixed phrasing the window offers
+        // after the short answer — the model is never told this key exists, so
+        // the tool's schema is unchanged and its routing is untouched.
+        let wantsEveryDate: Bool = text("scope", in: arguments).lowercased() == "all"
+
         var lines: [String] = []
         lines.append("\(where_) meets on \(remembered.dates.count) "
                      + "\(remembered.dates.count == 1 ? "day" : "days"), from "
                      + "\(remembered.firstDate.text) (\(remembered.firstDate.weekdayName)) to "
                      + "\(remembered.lastDate.text) (\(remembered.lastDate.weekdayName)).")
-        lines.append("")
-        var origin: String = "Where they came from: \(remembered.source)."
-        if let when = remembered.recorded {
-            origin += " Recorded \(when.text)."
+
+        // The week first, and only the week.
+        //
+        // The answer used to be a summary with no dates in it at all — a count
+        // and two endpoints — so a teacher asking what they were teaching was
+        // told how many days there were and left to go and look. What they
+        // want is the days themselves, and what they want FIRST is the ones
+        // they are about to teach. A whole semester is 86 lines and buries
+        // that under a scroll.
+        var thisWeek: [CalendarDay] = []
+        let weekEnds: CalendarDay? = AssistToolRunner.shifting(today, byDays: 7)
+        for date in remembered.dates where date >= today {
+            guard let weekEnds, date <= weekEnds else {
+                continue
+            }
+            thisWeek.append(date)
         }
-        lines.append(origin)
+
+        lines.append("")
+        if wantsEveryDate {
+            lines.append("Every date on file:")
+            for date in remembered.dates {
+                lines.append("\(date.weekdayName), \(date.text)")
+            }
+        } else if thisWeek.isEmpty {
+            lines.append("Nothing in the next seven days.")
+        } else {
+            lines.append("In the next seven days:")
+            for date in thisWeek {
+                lines.append("\(date.weekdayName), \(date.text)")
+            }
+        }
 
         // What the dates are actually FOR: the next class takes the next one
         // along, counted by how many class pages the section already has.
@@ -1128,6 +1521,23 @@ final class AssistToolRunner {
             let next: CalendarDay = remembered.dates[existing.count]
             lines.append("\(spare) recorded \(spare == 1 ? "date is" : "dates are") still spare; the next "
                          + "class would fall on \(next.text) (\(next.weekdayName)).")
+        }
+
+        var origin: String = "Where they came from: \(remembered.source)."
+        if let when = remembered.recorded {
+            origin += " Recorded \(when.text)."
+        }
+        lines.append("")
+        lines.append(origin)
+
+        // The offer, and the words that take it up. A prompt whose answer
+        // nothing understands is worse than no prompt, so the phrasing named
+        // here is one the window matches in code — see AssistCardCommand.
+        if !wantsEveryDate && remembered.dates.count > thisWeek.count {
+            let rest: Int = remembered.dates.count - thisWeek.count
+            lines.append("")
+            lines.append("There \(rest == 1 ? "is" : "are") \(rest) more. Say “show me the rest of "
+                         + "the dates” if you would like the lot.")
         }
 
         return AssistToolOutcome.read(
@@ -1251,8 +1661,26 @@ final class AssistToolRunner {
             return .failure(refusal(from: found))
         }
         do {
+            // "Start a new unit for the next class" is a fixed phrasing the
+            // window offers, so the word arrives here literally. The model is
+            // never told these keys exist, which keeps the tool's schema — and
+            // the routing measured against it — unchanged.
+            let unitAsked: String = text("unit", in: arguments).lowercased()
+            let howMany: Int = number("days", in: arguments) ?? 0
+
+            // "Add five more days to Unit 4": a unit NUMBER rather than the
+            // word "next", and a count of days to put on the end of it.
+            if howMany > 0, let unit = Int(unitAsked) {
+                let plan: PlaceholderClassPlan = try NextClassPlanner.plan(
+                    addingDays: howMany, toUnit: unit,
+                    forSection: located.sectionNumber, in: located.course
+                )
+                return .success(PlannedNextClass(located: located, plan: plan))
+            }
+
             let plan: PlaceholderClassPlan = try NextClassPlanner.plan(
-                forSection: located.sectionNumber, in: located.course
+                forSection: located.sectionNumber, in: located.course,
+                startingANewUnit: unitAsked == "next"
             )
             return .success(PlannedNextClass(located: located, plan: plan))
         } catch {
@@ -1279,18 +1707,53 @@ final class AssistToolRunner {
         guard case NextClassPlanner.Problem.noTimetable(let code, let number) = problem else {
             return
         }
-        guard let folder = workspace.workspaceURL else {
-            return
-        }
-        SectionSchedulePrompt.shared.ask(
-            courseCode: code,
-            sectionNumber: number,
-            workingFolder: folder,
+        askForTheTimetable(
+            courseCode: code, sectionNumber: number,
             because: "Adding the next class page needs to know which days this section meets."
         )
     }
 
+    /// Ask for the section's class dates, when a request needed them and there
+    /// are none on file.
+    ///
+    /// **Every command that needs the schedule goes through here.** The sheet
+    /// that collects the dates already existed and was wired to exactly two
+    /// paths — adding a class, and reading the timetable back — so any OTHER
+    /// request depending on the schedule failed with an explanation and no way
+    /// forward. A teacher who has never given their dates cannot act on "I
+    /// can't find a class on Monday": what they need is not a better sentence,
+    /// it is the question nobody asked them.
+    private func askForTheTimetable(courseCode: String, sectionNumber: Int, because: String) {
+        guard let folder = workspace.workspaceURL else {
+            return
+        }
+        SectionSchedulePrompt.shared.ask(
+            courseCode: courseCode,
+            sectionNumber: sectionNumber,
+            workingFolder: folder,
+            because: because
+        )
+    }
+
+    /// Whether this section has any class dates recorded at all.
+    ///
+    /// Asked before prompting, so a request that failed for some OTHER reason
+    /// does not open a sheet about dates — which would be answering a question
+    /// nobody asked.
+    private func hasNoTimetable(forSection sectionNumber: Int, in course: Course) -> Bool {
+        let remembered: SectionTimetable? = try? SectionTimetableStore.read(
+            forSection: sectionNumber, in: course
+        )
+        return remembered == nil
+    }
+
     private func planAddNextClass(_ arguments: [String: Any]) -> AssistToolOutcome {
+        // Duplicating renames pages the teacher's links point at, so it is
+        // described rather than planned-then-described: one description, from
+        // the machinery that will do it.
+        if let duplicated = duplicateClassPlan(arguments) {
+            return duplicated
+        }
         switch nextClassPlan(arguments) {
         case .failure(let problem):
             askForTheTimetableIfThatIsWhatIsMissing(problem)
@@ -1305,7 +1768,226 @@ final class AssistToolRunner {
         }
     }
 
+    /// "Duplicate Unit 3, Day 2 as my next class."
+    ///
+    /// The new page is the NEXT day of the same unit — Unit 3, Day 3 — with
+    /// the source's content and a date of its own from the teacher's schedule.
+    ///
+    /// **Making room is `ClassInsertionPlanner`'s job, not a second copy of
+    /// it.** When Unit 3, Day 3 already exists, everything from there on is
+    /// renamed a day later, re-dated onto the days the class actually meets,
+    /// and every wikilink that pointed at a renamed page is rewritten — which
+    /// is the part a teacher called a huge hassle, and the part that is
+    /// dangerous to get wrong. That planner renames HIGHEST DAY FIRST, so no
+    /// page is ever written over one that has not moved yet. When nothing
+    /// needs moving, the same call simply adds the page at the end.
+    ///
+    /// The copy starts UNPUBLISHED however the source was. A page created by
+    /// duplicating a published lesson is a draft of next week's, and putting
+    /// it in front of students the moment it is made is the one thing it must
+    /// not do.
+    private func duplicateClassRequested(_ arguments: [String: Any]) -> AssistToolOutcome? {
+        guard let asked = duplicateAsked(arguments) else {
+            return nil
+        }
+        guard case .success(let request) = asked else {
+            if case .failure(let message) = asked {
+                return AssistToolOutcome.refused(message)
+            }
+            return nil
+        }
+
+        let backedUp: Bool = backUpOnceForThisConversation(
+            request.located.course, forSection: request.located.sectionNumber
+        )
+
+        let outcome: ClassChangeOutcome
+        do {
+            outcome = try ClassInsertionPlanner.apply(request.plan, in: request.located.course)
+        } catch {
+            return AssistToolOutcome.refused(
+                "Nothing was changed: \(error.localizedDescription)"
+            )
+        }
+
+        // The new page exists as a blank class page; give it the source's
+        // content, its own title and date, and leave it hidden.
+        var copied: String = PageFrontmatter.settingTitle(
+            in: request.sourceText, to: request.newTitle
+        )
+        copied = PageFrontmatter.settingCreated(
+            in: copied,
+            key: PageFrontmatter.createdKey(forSection: request.located.sectionNumber,
+                                            isSectionLocal: true),
+            to: request.newDate,
+            fallbackTail: ClassPages.siblingTimeAndOffset(
+                from: ClassPages.list(forSection: request.located.sectionNumber,
+                                      in: request.located.course),
+                forSection: request.located.sectionNumber
+            )
+        ).text
+        copied = AssistPageVisibility.setting(
+            published: false, in: copied,
+            forSection: request.located.sectionNumber, isSectionLocal: true
+        ).text
+
+        let before: String? = try? String(contentsOf: request.newURL, encoding: .utf8)
+        do {
+            try copied.write(to: request.newURL, atomically: true, encoding: .utf8)
+        } catch {
+            return AssistToolOutcome.refused(
+                "The page was made but could not be filled in: \(error.localizedDescription)"
+            )
+        }
+
+        // Undoable ONLY when nothing else moved. A partial undo that deleted
+        // the new page and left every later class renamed would be worse than
+        // no undo at all, so when classes were shuffled the way back is the
+        // backup taken before any of it.
+        let shuffled: Bool = !request.plan.renames.isEmpty
+        if !shuffled {
+            history.record(AssistChange(
+                whatHappened: "duplicated “\(request.sourceTitle)” as “\(request.newTitle)”",
+                courseCode: request.located.course.code,
+                sectionNumber: request.located.sectionNumber,
+                rebuildsThePreview: false,
+                files: [AssistSavedFile(fileURL: request.newURL, before: before, after: copied)]
+            ))
+        }
+
+        var detail: String = "“\(request.sourceTitle)” was copied to “\(request.newTitle)”, "
+                           + "dated \(request.newDate.text). It is hidden, so nothing changed on "
+                           + "the site — write it, then publish when it is ready."
+        if shuffled {
+            detail += "\n\n" + outcome.message
+            detail += "\n\nBecause other classes moved, “Undo that” will not take this back. "
+                    + "The copy made before any of it is in Plantoir's Backups list."
+        }
+        if backedUp {
+            detail += "\n\n" + AssistToolRunner.backedUpNote
+        }
+
+        return AssistToolOutcome.wrote(
+            "Duplicated “\(request.sourceTitle)” as “\(request.newTitle)”.", detail: detail
+        )
+    }
+
+    /// The card a teacher agrees to before a duplicate, which may move other
+    /// classes.
+    private func duplicateClassPlan(_ arguments: [String: Any]) -> AssistToolOutcome? {
+        guard let asked = duplicateAsked(arguments) else {
+            return nil
+        }
+        guard case .success(let request) = asked else {
+            if case .failure(let message) = asked {
+                return AssistToolOutcome.couldNotRead(message)
+            }
+            return nil
+        }
+        var lines: [String] = []
+        lines.append("“\(request.sourceTitle)” would be copied to “\(request.newTitle)”, "
+                     + "dated \(request.newDate.text).")
+        lines.append("The copy starts hidden, so nothing changes on the site until you publish it.")
+        if !request.plan.renames.isEmpty {
+            lines.append("")
+            lines.append("\(request.plan.renames.count) later "
+                         + "\(request.plan.renames.count == 1 ? "class moves" : "classes move") "
+                         + "a day along to make room, and the links that point at them are "
+                         + "rewritten to match.")
+        }
+        return AssistToolOutcome.planned(
+            "Worked out what duplicating “\(request.sourceTitle)” would do.",
+            plan: lines.joined(separator: "\n")
+        )
+    }
+
+    /// Everything both halves of a duplicate need, or why it cannot be done.
+    private enum DuplicateAsked {
+        case success(DuplicateRequest)
+        case failure(String)
+    }
+
+    private struct DuplicateRequest {
+        let located: Located
+        let plan: ClassInsertionPlan
+        let sourceTitle: String
+        let sourceText: String
+        let newTitle: String
+        let newURL: URL
+        let newDate: CalendarDay
+    }
+
+    private func duplicateAsked(_ arguments: [String: Any]) -> DuplicateAsked? {
+        let named: String = text("duplicate", in: arguments)
+        guard !named.isEmpty else {
+            return nil
+        }
+        let found: Result<Located, AssistToolRefusal> = locate(arguments)
+        guard case .success(let located) = found else {
+            return .failure(refusal(from: found).message)
+        }
+
+        let graph: AssistSectionGraph = AssistSectionGraph.read(
+            forSection: located.sectionNumber, in: located.course,
+            workspaceURL: workspace.workspaceURL
+        )
+        guard let source = graph.page(titled: named) else {
+            return .failure(
+                "No page in \(located.course.code) Section \(located.sectionNumber) is called "
+                + "“\(named)”."
+            )
+        }
+        guard let numbers = UnitDay(pageTitle: source.title) else {
+            return .failure(
+                "“\(source.displayTitle)” isn't a numbered class page, so there is no next day "
+                + "for it to become."
+            )
+        }
+
+        let plan: ClassInsertionPlan
+        do {
+            plan = try ClassInsertionPlanner.plan(
+                unit: numbers.unit, atDay: numbers.day + 1, count: 1,
+                forSection: located.sectionNumber, in: located.course
+            )
+        } catch {
+            askForTheTimetableIfDuplicatingNeedsIt(error, located: located)
+            return .failure(error.localizedDescription)
+        }
+        guard let added = plan.added.first else {
+            return .failure("There is no class date left for another class.")
+        }
+        guard let sourceText = try? String(contentsOf: source.fileURL, encoding: .utf8) else {
+            return .failure("“\(source.displayTitle)” could not be read, so nothing was changed.")
+        }
+
+        return .success(DuplicateRequest(
+            located: located,
+            plan: plan,
+            sourceTitle: source.displayTitle,
+            sourceText: sourceText,
+            newTitle: added.title,
+            newURL: added.fileURL,
+            newDate: added.date
+        ))
+    }
+
+    /// Duplicating needs the schedule too — it dates the copy.
+    private func askForTheTimetableIfDuplicatingNeedsIt(_ problem: Error, located: Located) {
+        guard case ClassInsertionPlanner.Problem.noTimetable = problem else {
+            return
+        }
+        askForTheTimetable(
+            courseCode: located.course.code, sectionNumber: located.sectionNumber,
+            because: "Duplicating a class needs to know which days this section meets, "
+                   + "so the copy can be given a date."
+        )
+    }
+
     private func addNextClass(_ arguments: [String: Any]) -> AssistToolOutcome {
+        if let duplicated = duplicateClassRequested(arguments) {
+            return duplicated
+        }
         switch nextClassPlan(arguments) {
         case .failure(let problem):
             askForTheTimetableIfThatIsWhatIsMissing(problem)
@@ -1336,16 +2018,38 @@ final class AssistToolRunner {
                 )
             }
 
+            // Undoable, which it did not use to be. The undo list holds a
+            // before-and-after copy of each file, and a created page has no
+            // "before" — so it recorded nothing, and "Undo that" afterwards
+            // said the conversation had changed nothing, which was a lie about
+            // a page sitting in the teacher's folder. A created file is now
+            // recorded with no `before` at all, and taking it back deletes it.
+            var createdFiles: [AssistSavedFile] = []
+            for url in outcome.created {
+                guard let written = try? String(contentsOf: url, encoding: .utf8) else {
+                    continue
+                }
+                createdFiles.append(AssistSavedFile(fileURL: url, before: nil, after: written))
+            }
+            if !createdFiles.isEmpty {
+                history.record(AssistChange(
+                    whatHappened: AssistToolRunner.namingClassesCreated(outcome.created),
+                    courseCode: asked.located.course.code,
+                    sectionNumber: asked.located.sectionNumber,
+                    // Matches what creating them did. The page arrives
+                    // unpublished, so neither making it nor taking it away
+                    // changes anything the preview shows.
+                    rebuildsThePreview: false,
+                    files: createdFiles
+                ))
+            }
+
             var detail: String = asked.plan.description + "\n\nDone: \(outcome.message)"
             // No preview rebuild: the page starts unpublished, so rebuilding
             // would take minutes to show exactly what is on screen already.
             detail += "\n\nThe preview was not rebuilt, because an unpublished page does not appear on the "
                     + "site. Publishing it when it is written rebuilds by itself."
-            // Said plainly rather than left to be discovered: an undo puts
-            // files BACK as they were, and a page that did not exist has
-            // nothing to be put back to.
-            detail += "\n\n“Undo that” does not take away a page it created — delete it in Obsidian if it "
-                    + "isn't wanted."
+            detail += "\n\n" + AssistWording.aCreatedPageCanBeTakenBack
             if backedUp {
                 detail += "\n\n" + AssistToolRunner.backedUpNote
             }
@@ -1430,7 +2134,7 @@ final class AssistToolRunner {
             return .failure(.noSuchPage(title, located.course.code, located.sectionNumber))
         }
         guard let pageText = try? String(contentsOf: page.fileURL, encoding: .utf8) else {
-            return .failure(.unreadablePage(page.title))
+            return .failure(.unreadablePage(page.displayTitle))
         }
 
         let plan: AssistCurriculumMentionsPlan = AssistCurriculumMentions.plan(
@@ -1714,8 +2418,56 @@ final class AssistToolRunner {
         case "yesterday":
             return shifting(today, byDays: -1)
         default:
+            if let named = AssistToolRunner.dayNamedByWeekday(tidied, from: today) {
+                return named
+            }
             return CalendarDay(text: raw)
         }
+    }
+
+    /// "monday" → the next Monday, counting today when today IS a Monday.
+    ///
+    /// **Resolved HERE rather than by the model**, which is the whole point of
+    /// it existing. "Publish Monday's class" is one of the window's fixed
+    /// phrasings, so the word "monday" arrives literally and never reaches the
+    /// model — and a date worked out in code cannot be a date the model
+    /// invented. The model can still do the conversion for a sentence a
+    /// teacher phrases their own way; it is measured at 10/10 when it is told
+    /// what today is, and this path does not depend on that.
+    ///
+    /// **Today counts as a match.** Asked on a Monday for "Monday's class", a
+    /// teacher means the class they are about to teach, not the one a week
+    /// away. The same reading a person would give it.
+    ///
+    /// Only forwards, within the next seven days. "Publish Monday's class" is
+    /// said while preparing, and a teacher who means a class already taught
+    /// has its Unit and Day in front of them and will say so.
+    static func dayNamedByWeekday(_ lowercased: String, from today: CalendarDay) -> CalendarDay? {
+        var wanted: String = lowercased
+        // "monday's" and "monday" are the same request; the apostrophe belongs
+        // to the phrasing, not to the day.
+        for suffix in ["'s", "’s"] where wanted.hasSuffix(suffix) {
+            wanted = String(wanted.dropLast(suffix.count))
+        }
+        var isAWeekday: Bool = false
+        for name in ["monday", "tuesday", "wednesday", "thursday",
+                     "friday", "saturday", "sunday"] where name == wanted {
+            isAWeekday = true
+        }
+        if !isAWeekday {
+            return nil
+        }
+        var candidate: CalendarDay = today
+        for _ in 0...7 {
+            if candidate.weekdayName.lowercased() == wanted {
+                return candidate
+            }
+            guard let next = shifting(candidate, byDays: 1) else {
+                return nil
+            }
+            candidate = next
+        }
+        return nil
     }
 
     /// A moment the teacher named: `2026-09-09 06:30`, in 24-hour time and in

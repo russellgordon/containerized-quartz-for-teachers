@@ -218,6 +218,20 @@ clock.
 
 Apple silicon only — the whole design rests on Metal.
 
+**The memory rule is the default, not the last word.** Plantoir ▸ Settings…
+(⌘,) lets a teacher take either rung outright, or leave it on "Choose for me"
+— which is the factory setting and keeps following the table above rather than
+freezing today's answer into their preferences. The same panel downloads a
+model ahead of time and removes one to get the disk space back. The teacher
+never sees a model name there either: the two rungs are "the smaller
+assistant" and "the larger assistant", described by what they cost in disk and
+in memory. A hand-picked rung that would take more than a third of the
+machine carries a caution naming both numbers and stays selectable.
+
+One consequence worth knowing when reading the code: the tier decides the
+context size, so anything that starts the engine must be given the CHOSEN
+tier, never `AssistHardwareBudget.tier`.
+
 Every rung was chosen by measurement, and **two candidates were vetoed for a
 specific failure that no accuracy score would have caught**: asked to *hide* a
 page, Qwen2.5 3B called the publish tool in 9 trials out of 10, and

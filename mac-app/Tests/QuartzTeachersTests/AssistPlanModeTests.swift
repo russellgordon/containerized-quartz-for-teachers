@@ -20,50 +20,73 @@ final class AssistPlanModeTests: XCTestCase {
 
     // MARK: - The small tier
 
-    /// An 8 GB Mac runs the model that gets about one request in five wrong.
-    /// That is not a rate at which anyone should be offered a "stop checking"
-    /// button, so the offer does not exist there.
-    func testTheSmallTierAlwaysShowsPlans() {
-        let mode: AssistPlanMode = AssistPlanMode(tier: .small, defaults: makeDefaults())
-        XCTAssertTrue(mode.isOn)
-        XCTAssertFalse(mode.mayBeTurnedOff)
+    /// **Both assistants behave identically.** Same default, same count, same
+    /// mention, same switch.
+    ///
+    /// The smaller one used to refuse to be turned off and was never told the
+    /// setting existed, on the reasoning that one request in five going wrong
+    /// is not a rate at which anybody should stop reading. That withheld a
+    /// setting from exactly the machine where knowing about it matters most.
+    /// The measured number is put in front of the teacher as a caution
+    /// instead, which respects the measurement and the person.
+    func testBothAssistantsFollowTheSameRules() {
+        for tier in AssistModelTier.allCases {
+            let mode: AssistPlanMode = AssistPlanMode(
+                tier: tier, settings: AppSettings(defaults: makeDefaults())
+            )
+            XCTAssertTrue(mode.isOn, "\(tier) should ask by default")
 
-        for _ in 0..<20 {
+            for _ in 0..<(AssistPlanMode.plansBeforeMentioningTheSetting - 1) {
+                mode.recordAccepted()
+            }
+            XCTAssertFalse(mode.shouldOfferToStop, "\(tier): fourteen is not fifteen")
+
             mode.recordAccepted()
-        }
-        XCTAssertFalse(mode.shouldOfferToStop, "The smaller model must never offer to stop checking")
+            XCTAssertTrue(mode.shouldOfferToStop,
+                          "\(tier) was never told the setting exists")
 
-        // Even asked directly, it declines — so a future caller cannot turn
-        // it off by accident.
-        mode.stopAsking()
-        XCTAssertTrue(mode.isOn, "Plan mode must stay on for the smaller model whatever it is asked")
+            mode.stopAsking()
+            XCTAssertFalse(mode.isOn, "\(tier) refused to be turned off")
+        }
     }
 
-    /// A teacher who turned plan mode off on a capable Mac, then opened a
-    /// course on an 8 GB one, must not inherit that answer.
-    func testTheSmallTierIgnoresARememberedChoice() {
+    /// An answer given in Settings is honoured on both assistants — the
+    /// teacher decides, whichever one is running.
+    func testTheSettingIsHonouredOnBothAssistants() {
         let defaults: UserDefaults = makeDefaults()
-        defaults.set(true, forKey: "AssistPlanModeTurnedOff")
-        XCTAssertTrue(AssistPlanMode(tier: .small, defaults: defaults).isOn)
+        defaults.set(false, forKey: AppSettings.assistantAsksBeforeChangingKey)
+        XCTAssertFalse(AssistPlanMode(tier: .small, settings: AppSettings(defaults: defaults)).isOn)
+        XCTAssertFalse(AssistPlanMode(tier: .large, settings: AppSettings(defaults: defaults)).isOn)
     }
 
     // MARK: - The large tier
 
-    func testTheLargeTierStartsOnAndMayBeTurnedOff() {
-        let mode: AssistPlanMode = AssistPlanMode(tier: .large, defaults: makeDefaults())
+    func testPlansAreShownUntilATeacherSaysOtherwise() {
+        let mode: AssistPlanMode = AssistPlanMode(tier: .large, settings: AppSettings(defaults: makeDefaults()))
         XCTAssertTrue(mode.isOn, "Plans are shown until a teacher says otherwise")
-        XCTAssertTrue(mode.mayBeTurnedOff)
     }
 
-    /// Five in a row, and only once — trust is earned rather than assumed,
-    /// and a teacher who says "keep checking" is not asked again.
-    func testTheOfferArrivesAfterFiveAndOnlyOnce() {
-        let mode: AssistPlanMode = AssistPlanMode(tier: .large, defaults: makeDefaults())
+    /// One sentence for both assistants, and it names where to change it.
+    func testTheExplanationIsTheSameOnBothAndPointsAtTheSetting() {
+        for tier in AssistModelTier.allCases {
+            let mode: AssistPlanMode = AssistPlanMode(
+                tier: tier, settings: AppSettings(defaults: makeDefaults())
+            )
+            XCTAssertTrue(mode.explanation.contains("Settings"), "\(tier): \(mode.explanation)")
+            XCTAssertFalse(mode.explanation.contains("always shows"),
+                           "\(tier) still claims it always shows plans: \(mode.explanation)")
+        }
+    }
 
-        for _ in 0..<4 {
+    /// Fifteen, and only once — the mention is about DISCOVERABILITY, and a
+    /// suggestion declined is an answer.
+    func testTheSettingIsMentionedAfterFifteenAndOnlyOnce() {
+        let mode: AssistPlanMode = AssistPlanMode(tier: .large, settings: AppSettings(defaults: makeDefaults()))
+
+        for _ in 0..<(AssistPlanMode.plansBeforeMentioningTheSetting - 1) {
             mode.recordAccepted()
         }
-        XCTAssertFalse(mode.shouldOfferToStop, "Four is not yet a pattern")
+        XCTAssertFalse(mode.shouldOfferToStop, "Fourteen is not yet fifteen")
 
         mode.recordAccepted()
         XCTAssertTrue(mode.shouldOfferToStop)
@@ -73,33 +96,68 @@ final class AssistPlanModeTests: XCTestCase {
         XCTAssertFalse(mode.shouldOfferToStop, "Declining once means not being pestered again")
     }
 
-    /// A Cancel is the gate doing its job. Somebody who has just stopped the
-    /// assistant doing the wrong thing must not then be asked whether they
-    /// would like it to stop asking.
-    func testACancelResetsTheRun() {
-        let mode: AssistPlanMode = AssistPlanMode(tier: .large, defaults: makeDefaults())
+    /// The count is APP-WIDE and outlives the conversation it was earned in.
+    ///
+    /// It used to reset with every window, so a teacher working in short
+    /// bursts could accept a hundred plans across twenty conversations and
+    /// never be told the setting existed.
+    func testThePlanCountIsAppWideAndSurvivesANewConversation() {
+        let defaults: UserDefaults = makeDefaults()
+        let first: AssistPlanMode = AssistPlanMode(tier: .large, settings: AppSettings(defaults: defaults))
+        for _ in 0..<10 {
+            first.recordAccepted()
+        }
+
+        let second: AssistPlanMode = AssistPlanMode(tier: .large, settings: AppSettings(defaults: defaults))
+        XCTAssertEqual(second.plansAccepted, 10, "The count reset when the window did")
+        for _ in 0..<5 {
+            second.recordAccepted()
+        }
+        XCTAssertTrue(second.shouldOfferToStop, "Ten plus five is fifteen, across two windows")
+    }
+
+    /// Once told, never told again — in any window, ever.
+    func testOnceMentionedItIsNeverMentionedAgain() {
+        let defaults: UserDefaults = makeDefaults()
+        let first: AssistPlanMode = AssistPlanMode(tier: .large, settings: AppSettings(defaults: defaults))
+        for _ in 0..<AssistPlanMode.plansBeforeMentioningTheSetting {
+            first.recordAccepted()
+        }
+        XCTAssertTrue(first.shouldOfferToStop)
+        first.noteOfferShown()
+
+        let later: AssistPlanMode = AssistPlanMode(tier: .large, settings: AppSettings(defaults: defaults))
+        for _ in 0..<50 {
+            later.recordAccepted()
+        }
+        XCTAssertFalse(later.shouldOfferToStop,
+                       "A teacher was told twice about the same setting")
+    }
+
+    /// A Cancel does not undo a plan already agreed to. The count measures how
+    /// much of the assistant's work this teacher has READ, and a Cancel is
+    /// evidence of reading rather than evidence against it.
+    func testACancelDoesNotUndoPlansAlreadyAgreedTo() {
+        let mode: AssistPlanMode = AssistPlanMode(tier: .large, settings: AppSettings(defaults: makeDefaults()))
         for _ in 0..<4 {
             mode.recordAccepted()
         }
         mode.recordCancelled()
-        XCTAssertEqual(mode.acceptedInARow, 0)
-
-        mode.recordAccepted()
-        XCTAssertFalse(mode.shouldOfferToStop, "The run starts again after a Cancel")
+        XCTAssertEqual(mode.plansAccepted, 4)
     }
 
     /// The answer outlives the window it was given in.
     func testTurningItOffIsRemembered() {
         let defaults: UserDefaults = makeDefaults()
-        let first: AssistPlanMode = AssistPlanMode(tier: .large, defaults: defaults)
+        let first: AssistPlanMode = AssistPlanMode(tier: .large, settings: AppSettings(defaults: defaults))
         first.stopAsking()
         XCTAssertFalse(first.isOn)
 
-        XCTAssertFalse(AssistPlanMode(tier: .large, defaults: defaults).isOn,
+        XCTAssertFalse(AssistPlanMode(tier: .large, settings: AppSettings(defaults: defaults)).isOn,
                        "A new conversation keeps the teacher's answer")
 
         first.keepAsking()
-        XCTAssertTrue(AssistPlanMode(tier: .large, defaults: defaults).isOn,
+        XCTAssertTrue(AssistPlanMode(tier: .large, settings: AppSettings(defaults: defaults)).isOn,
                       "And keeps it when they change their mind back")
     }
 

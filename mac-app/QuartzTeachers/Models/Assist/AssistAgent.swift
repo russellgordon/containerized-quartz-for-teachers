@@ -129,6 +129,11 @@ final class AssistAgent {
 
     /// Take what the teacher typed and see it through.
     func say(_ text: String) async {
+        // The settings window and this one are open at the same time, so the
+        // answer is read fresh rather than remembered from when the
+        // conversation started.
+        planMode.followTheSetting()
+
         let trimmed: String = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
             return

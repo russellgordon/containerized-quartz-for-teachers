@@ -96,7 +96,7 @@ enum AssistFixture {
             sectionNumber: 1,
             client: AssistModelClient(baseURL: URL(string: "http://127.0.0.1:1")!),
             tools: tools,
-            planMode: AssistPlanMode(tier: .small, defaults: TestDefaults.make())
+            planMode: AssistPlanMode(tier: .small, settings: AppSettings(defaults: TestDefaults.make()))
         )
     }
 

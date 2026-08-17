@@ -33,6 +33,16 @@ final class AssistServerHost {
     /// What the machine is allowed to give it.
     let budget: AssistHardwareBudget
 
+    /// Which assistant is being started.
+    ///
+    /// Passed in rather than read off `budget.tier`, because since the
+    /// settings panel exists those two can differ: a teacher on a 48 GB Mac
+    /// may have asked for the smaller one. The tier decides the CONTEXT SIZE,
+    /// so taking it from the hardware would hand the small model the large
+    /// model's 16k window — twice the memory it was chosen to save, and the
+    /// saving was the whole reason for the choice.
+    let tier: AssistModelTier
+
     /// The weights.
     private let modelURL: URL
 
@@ -68,9 +78,10 @@ final class AssistServerHost {
 
     // MARK: - Initializer
 
-    init(modelURL: URL, budget: AssistHardwareBudget) {
+    init(modelURL: URL, budget: AssistHardwareBudget, tier: AssistModelTier) {
         self.modelURL = modelURL
         self.budget = budget
+        self.tier = tier
     }
 
     // MARK: - Functions
@@ -98,7 +109,7 @@ final class AssistServerHost {
         process.arguments = AssistServerHost.serverArguments(
             modelPath: modelURL.path,
             port: chosenPort,
-            tier: budget.tier,
+            tier: tier,
             threadCount: budget.threadCount
         )
 

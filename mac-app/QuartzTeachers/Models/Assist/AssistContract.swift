@@ -38,6 +38,9 @@ enum AssistContract {
     /// The placeholder a section number leaves in a generated template.
     static let sectionPlaceholder: String = "{section}"
 
+    /// Stands in for a change's own past-tense clause in the undo sentences.
+    static let changePlaceholder: String = "{change}"
+
     static let wordingFileName: String = "assist-wording.json"
     static let casesFileName: String = "assist-cases.json"
 
@@ -87,6 +90,17 @@ enum AssistContract {
             "previewDidNotBuild": AssistWording.previewDidNotBuild(course: course, section: section),
             "whereTheOutputIs": AssistWording.whereTheOutputIs,
             "nothingToDo": AssistWording.nothingToDo,
+            // Taking something back. The placeholder stands in for the change's
+            // own past-tense clause — "unpublished Unit 4, Day 23" — which is
+            // what makes these sentences rather than slots: the undo used to
+            // read "Undid unpublished 2 pages in ADA1O Section 1."
+            "undid": AssistWording.undid(changePlaceholder),
+            "undidPartly": AssistWording.undidPartly(changePlaceholder, leftAlone: 2),
+            "couldNotUndo": AssistWording.couldNotUndo(changePlaceholder, leftAlone: 2),
+            "undoIsStillAvailable": AssistWording.undoIsStillAvailable,
+            "nothingToUndo": AssistWording.nothingToUndo,
+            "undoDoesNotReachTheLiveSite": AssistWording.undoDoesNotReachTheLiveSite,
+            "aCreatedPageCanBeTakenBack": AssistWording.aCreatedPageCanBeTakenBack,
         ]
         return [
             "note": "Generated from mac-app AssistWording by `Plantoir --write-contracts`. "
@@ -94,6 +108,10 @@ enum AssistContract {
             "placeholders": [
                 "course": "a course code, e.g. ICS3U",
                 "section": "a section number, e.g. 1",
+                "change": "what was done, as a past-tense clause naming it: "
+                        + "\"unpublished Unit 4, Day 23\". Never a bare count — the "
+                        + "teacher asked about a class, not about a number of files.",
+                "leftAlone": "how many pages an undo could not put back, here 2",
             ],
             "wording": table,
         ]

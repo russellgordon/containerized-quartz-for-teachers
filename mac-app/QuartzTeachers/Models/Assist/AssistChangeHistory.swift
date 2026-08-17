@@ -7,8 +7,14 @@ struct AssistSavedFile: Equatable {
 
     let fileURL: URL
 
-    /// The whole file, before.
-    let before: String
+    /// The whole file, before — or **nil when there was no file**, because the
+    /// change CREATED it. Taking that back means deleting the page again
+    /// rather than writing anything.
+    ///
+    /// Optional rather than an empty string on purpose: an empty page and an
+    /// absent one are different states, and a change that created a page it
+    /// then left empty must still be undone by deleting it.
+    let before: String?
 
     /// The whole file, after — kept so an undo can tell "nobody has touched
     /// this since" from "the teacher has been editing it in Obsidian".
@@ -20,11 +26,47 @@ struct AssistChange: Equatable {
 
     // MARK: - Stored properties
 
-    /// What it was, in words meant to be read to a teacher: "published 4 pages
-    /// in ICS3U Section 1".
-    let description: String
+    /// What was done, as a past-tense clause with no course and no section:
+    /// "unpublished Unit 4, Day 23", "added 2 curriculum expectations to
+    /// “Journal Checklist”".
+    ///
+    /// Written to be DROPPED INTO A SENTENCE rather than shown on its own,
+    /// which is the whole reason it is stored separately from `description`.
+    /// The undo used to read "Undid unpublished 2 pages in ADA1O Section 1." —
+    /// a past-tense clause pushed into a slot that wanted a noun, reported by a
+    /// teacher. A clause that only ever appears inside a sentence somebody
+    /// wrote on purpose cannot come out ungrammatical.
+    ///
+    /// It names the PAGES while there are few enough to name, because "2
+    /// pages" is not what the teacher asked for and not what they will
+    /// recognise a minute later — they asked to unpublish Unit 4, Day 23.
+    let whatHappened: String
+
+    /// Which section it happened in — so an undo can put that section's
+    /// preview back, which it could not do while a change knew only its files.
+    let courseCode: String
+    let sectionNumber: Int
+
+    /// Whether taking this back should stop and rebuild the section's preview.
+    ///
+    /// Set to whatever the CHANGE ITSELF did, so an undo costs a teacher the
+    /// same rebuild the original cost them and no more. Publishing and hiding
+    /// pages rebuild, so their undo rebuilds. Creating a class page does not —
+    /// it arrives unpublished, so nothing about the site changes — and neither
+    /// should deleting it again. A blanket rebuild would make "undo that" the
+    /// slowest thing in the window for the one change that needs it least.
+    let rebuildsThePreview: Bool
 
     let files: [AssistSavedFile]
+
+    // MARK: - Computed properties
+
+    /// The same clause with the section on the end, for anywhere that has not
+    /// already said which section it is talking about: "unpublished Unit 4,
+    /// Day 23 in ADA1O Section 1".
+    var description: String {
+        return "\(whatHappened) in \(courseCode) Section \(sectionNumber)"
+    }
 }
 
 /// How an undo went.
@@ -34,6 +76,9 @@ struct AssistUndoResult {
 
     /// What was undone, or why nothing was.
     let description: String
+
+    /// The change's own clause, for the sentence the teacher reads.
+    let whatHappened: String
 
     let restored: [URL]
 
@@ -70,6 +115,15 @@ final class AssistChangeHistory {
         return changes.isEmpty
     }
 
+    /// The change `undo()` would take back, without taking it back.
+    ///
+    /// Needed because an undo has to stop that section's preview BEFORE it
+    /// starts putting files back, and it cannot know which section that is
+    /// until it has looked.
+    var nextToUndo: AssistChange? {
+        return changes.last
+    }
+
     // MARK: - Functions
 
     func record(_ change: AssistChange) {
@@ -83,7 +137,8 @@ final class AssistChangeHistory {
     func undo() -> AssistUndoResult {
         guard let change = changes.last else {
             return AssistUndoResult(
-                description: "This conversation hasn't changed anything yet, so there is nothing to undo.",
+                description: AssistWording.nothingToUndo,
+                whatHappened: "",
                 restored: [],
                 skipped: [],
                 succeeded: false
@@ -94,12 +149,22 @@ final class AssistChangeHistory {
         var skipped: [URL] = []
         for file in change.files {
             let current: String? = try? String(contentsOf: file.fileURL, encoding: .utf8)
+            // Covers the created page too, and covers it correctly: a page the
+            // teacher has since deleted themselves reads back as nil, which
+            // does not match what the change left, so it is skipped rather
+            // than "restored" by deleting something already gone.
             if current != file.after {
                 skipped.append(file.fileURL)
                 continue
             }
             do {
-                try file.before.write(to: file.fileURL, atomically: true, encoding: .utf8)
+                if let before = file.before {
+                    try before.write(to: file.fileURL, atomically: true, encoding: .utf8)
+                } else {
+                    // There was no file before this change. Taking it back
+                    // means taking the page away again.
+                    try FileManager.default.removeItem(at: file.fileURL)
+                }
                 restored.append(file.fileURL)
             } catch {
                 skipped.append(file.fileURL)
@@ -114,6 +179,7 @@ final class AssistChangeHistory {
 
         return AssistUndoResult(
             description: change.description,
+            whatHappened: change.whatHappened,
             restored: restored,
             skipped: skipped,
             succeeded: !restored.isEmpty

@@ -173,7 +173,15 @@ struct SectionDetailView: View {
                 courseCode: course.code,
                 sectionNumber: sectionNumber,
                 controller: SectionWindowControllers.Controller(
-                    isPreviewRunning: { previewRunner.isRunning },
+                    // `previewURL` is the honest signal for "on screen": it
+                    // is cleared at the start of every build and set only when
+                    // the server has answered.
+                    previewState: {
+                        if !previewRunner.isRunning {
+                            return .notRunning
+                        }
+                        return previewURL == nil ? .building : .showing
+                    },
                     startPreview: { startPreview() },
                     stopPreview: { await stopPreviewAndWait() },
                     deploy: { await deployAndWait() }

@@ -56,12 +56,32 @@ final class SectionWindowControllers {
         }
     }
 
+    /// Where a section's preview has got to, from the teacher's side of the
+    /// glass.
+    ///
+    /// A single "is it running" boolean could not tell the two useful states
+    /// apart, because the launcher keeps running the whole time it SERVES the
+    /// site — so a preview mid-build and a preview sitting finished on screen
+    /// looked identical, and the assistant said "once any rebuild in progress
+    /// finishes" to a teacher who was already looking at the finished thing.
+    enum PreviewState: Equatable {
+
+        /// Nothing is up: no build running and nothing on screen.
+        case notRunning
+
+        /// Building. The teacher is watching a progress view, not a site.
+        case building
+
+        /// Built, served, and on screen.
+        case showing
+    }
+
     /// What a section window can be asked to do.
     struct Controller {
 
         // MARK: - Stored properties
 
-        let isPreviewRunning: () -> Bool
+        let previewState: () -> PreviewState
         let startPreview: () -> Void
 
         /// Asynchronous, and that is the whole point of it.
@@ -83,6 +103,15 @@ final class SectionWindowControllers {
         /// is deployed, when the upload has three minutes left, will go and
         /// look at a site that is not there yet.
         let deploy: () async -> AssistSiteWorkResult
+
+        // MARK: - Functions
+
+        /// Whether there is a preview to stop — building or showing, both
+        /// count. Derived rather than stored, so it cannot disagree with
+        /// `previewState`.
+        func isPreviewRunning() -> Bool {
+            return previewState() != .notRunning
+        }
     }
 
     // MARK: - Stored properties

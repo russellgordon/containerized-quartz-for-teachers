@@ -207,6 +207,97 @@ final class ClassPlanningContractTests: XCTestCase {
         )
     }
 
+    // MARK: - Dating the pages a class brings
+
+    /// The frontmatter key, which differs by where the page lives.
+    ///
+    /// A page inside the section's own folder carries `created`; a course-level
+    /// page shared between sections carries one key PER SECTION. Getting this
+    /// wrong dates the page for a section the teacher was not talking about.
+    func testTheDateKeyIsTheOneTheContractNames() throws {
+        let section: [String: Any] = try ClassPlanningContractTests.section("datingPagesAClassBrings")
+        let keys: [String: Any] = try XCTUnwrap(section["frontmatterKey"] as? [String: Any])
+
+        XCTAssertEqual(
+            PageFrontmatter.createdKey(forSection: 1, isSectionLocal: true),
+            keys["sectionLocalPage"] as? String
+        )
+        let shared: String = try XCTUnwrap(keys["courseLevelPage"] as? String)
+        for number in [1, 2, 7] {
+            XCTAssertEqual(
+                PageFrontmatter.createdKey(forSection: number, isSectionLocal: false),
+                shared.replacingOccurrences(of: "<N>", with: "\(number)")
+            )
+        }
+    }
+
+    /// The rule itself, run against the real planner: what moves, what does
+    /// not, and which class claims a page several of them bring.
+    @MainActor
+    func testPagesAClassBringsMoveExactlyAsTheContractSays() throws {
+        let section: [String: Any] = try ClassPlanningContractTests.section("datingPagesAClassBrings")
+
+        let earlier: CalendarDay = try XCTUnwrap(CalendarDay(text: "2026-10-06"))
+        let later: CalendarDay = try XCTUnwrap(CalendarDay(text: "2026-12-01"))
+        let old: CalendarDay = try XCTUnwrap(CalendarDay(text: "2026-08-01"))
+
+        func page(_ title: String, visible: Bool, day: CalendarDay?,
+                  links: [String], folder: String) -> AssistSectionPage {
+            return AssistSectionPage(
+                title: title,
+                displayTitle: title,
+                fileURL: URL(fileURLWithPath: "/courses/ICS3U/\(folder)/\(title).md"),
+                relativePath: "courses/ICS3U/\(folder)/\(title).md",
+                isSectionLocal: folder.contains("Classes"),
+                isVisibleToStudents: visible,
+                date: day,
+                linkedTitles: links.map { $0.lowercased() }
+            )
+        }
+
+        let graph: AssistSectionGraph = AssistSectionGraph(
+            courseCode: "ICS3U", sectionNumber: 1,
+            pages: [
+                page("Unit 2, Day 3", visible: false, day: earlier,
+                     links: ["never seen", "already out"], folder: "section1/All Classes"),
+                page("Unit 4, Day 2", visible: false, day: later,
+                     links: ["never seen"], folder: "section1/All Classes"),
+                page("never seen", visible: false, day: old, links: [], folder: "Concepts"),
+                page("already out", visible: true, day: old, links: [], folder: "Concepts"),
+            ]
+        )
+        func summary(_ title: String, _ day: CalendarDay) -> ClassPageSummary {
+            return ClassPageSummary(
+                title: title,
+                fileURL: URL(fileURLWithPath: "/courses/ICS3U/section1/All Classes/\(title).md"),
+                date: day
+            )
+        }
+        let classes: [ClassPageSummary] = [
+            summary("Unit 2, Day 3", earlier),
+            summary("Unit 4, Day 2", later),
+        ]
+
+        // Named LATEST first — the earliest must still claim the shared page.
+        let moves: [AssistPublishDateMove] = AssistPublishPlanner.dateMovesFollowingClasses(
+            titles: ["Unit 4, Day 2", "Unit 2, Day 3"], graph: graph, classPages: classes
+        )
+
+        var moved: [String: String] = [:]
+        for move in moves {
+            moved[move.page.lowercasedTitle] = move.to.text
+        }
+
+        if (section["sharedPagesMoveToo"] as? [String: Any])?["value"] as? Bool == true {
+            XCTAssertEqual(moved["never seen"], "2026-10-06",
+                           "A never-seen page did not take the earliest class's date")
+        }
+        XCTAssertNil(moved["already out"],
+                     "A page students can already see was re-dated underneath them")
+        XCTAssertNil(moved["unit 2, day 3"], "A class was moved off its own day")
+        XCTAssertNil(moved["unit 4, day 2"], "A class was moved off its own day")
+    }
+
     private static func section(_ name: String) throws -> [String: Any] {
         let url: URL = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent()

@@ -25,6 +25,7 @@ vetoed and for what, and what the flags cost.
 | `reasoning-flag-measurement.txt` | Why thinking must be turned off with **two** flags, and why the fault hid for days: llama.cpp parses the thinking out of the reply, so only the token count and the clock show it. |
 | `tools-from-contract.py` | **Start here for a new measurement.** Writes the tool surface the suites take as input, read from `contracts/assist-cases.json` — which is generated from the app, so a run cannot be against a surface that does not ship. `local` (13 tools) is what the on-device model sees; `mcp` (23) is Claude Code's. |
 | `thirteen-tool-surface-results.txt` | The **current** shipping surface, 42 probes × 10 trials on both tiers. Also records the description-steer regression: fixing one probe in a tool description broke three others. |
+| `shelf-phrasings-results.txt` | **Every phrasing the assistant window offers**, word for word, 14 × 10 trials — the evidence the shelf is allowed to promise them. Also records a harness fault worth more than the result: measured without `AssistAgent.dateline()`, "Publish the class on Monday" resolved to a date a month away 10/10 and nearly cost a good card. |
 
 **Earlier runs, superseded but kept**
 
@@ -34,7 +35,7 @@ vetoed and for what, and what the flags cost.
 | `twenty-tool-surface-results.txt` | `thirteen-tool-surface-results.txt`. Measured the 20-tool surface, which is what the MCP client sees but not what the local model is shown. |
 | `trimmed-surface-results.txt`, `shipped-surface-results.txt`, `promise-card-results.txt`, `cache-restore-results.txt` | Windows-side, in-container runs. The prompt-cache save/restore work in the last one is what running the model natively made unnecessary. |
 
-**The harnesses** — `trimmed-surface-suite.py` (the 29-probe suite the
+**The harnesses** — `shelf-phrasings-suite.py` (the shelf, with the app's own system prompt AND its dateline), `trimmed-surface-suite.py` (the 29-probe suite the
 Windows-comparable numbers come from), `shipped-surface-suite.py`,
 `routing-suite.py`, `adversarial-suite.py`, `narrow-tools.py` (the real
 narrowing code, so a surface under test is the shipped one), and two

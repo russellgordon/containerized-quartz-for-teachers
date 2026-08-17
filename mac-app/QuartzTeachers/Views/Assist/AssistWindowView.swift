@@ -242,12 +242,12 @@ struct AssistWindowView: View {
 
         case .needsDownload(let tier):
             AssistDownloadView(tier: tier, store: session.store) {
-                session.store.download()
+                session.beginDownload()
             }
 
         case .downloading(let fraction, let received, let total):
             AssistDownloadProgressView(fractionComplete: fraction, receivedBytes: received, totalBytes: total) {
-                session.store.cancel()
+                session.stopDownload()
             }
 
         case .starting:
@@ -683,12 +683,24 @@ private struct AssistApprovalView: View {
 }
 
 
-/// The one-time offer to stop showing plans.
+/// Told once, ever: there is a setting for this.
 ///
-/// Offered after five plans accepted without a Cancel, while getting it
-/// right five times running is still fresh — rather than months later in a
-/// settings pane nobody opens. "Keep checking" is the default button: the
-/// teacher who pressed Return without reading keeps the safer arrangement.
+/// **It exists for DISCOVERABILITY, not to ask for trust.** Whether the
+/// assistant checks first is the teacher's decision and lives in Settings; a
+/// switch nobody knows about might as well not exist, so after fifteen plans
+/// read and agreed to — app-wide, across every conversation and course — the
+/// assistant says where it is. That is enough of a feel for the thing to
+/// judge whether they want the gate.
+///
+/// Fifteen rather than five, and app-wide rather than per window, because the
+/// old count reset with every conversation: a teacher working in short bursts
+/// could accept a hundred plans and never be told, having never hit five in
+/// one sitting.
+///
+/// Once, and then never again — in this window or any other. A suggestion
+/// declined is an answer, and asking twice is how a helpful mention becomes
+/// nagging. "Keep checking" is the default button: the teacher who pressed
+/// Return without reading keeps the safer arrangement.
 private struct AssistStopAskingOfferView: View {
 
     // MARK: - Stored properties
@@ -699,14 +711,15 @@ private struct AssistStopAskingOfferView: View {
     // MARK: - Computed properties
 
     private var message: String {
-        return "That is five in a row you have said yes to. I can just do what you "
-             + "ask from now on — you can still undo anything, and Restore puts the "
-             + "whole section back to how it was when we started."
+        return "You have said yes to \(AssistPlanMode.plansBeforeMentioningTheSetting) of my "
+             + "plans now. If you would rather I just did what you ask, there is a switch for "
+             + "it in Plantoir ▸ Settings — “Ask me before changing anything”. You can turn it "
+             + "back on there whenever you like, and “Undo that” still takes back anything I do."
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("Shall I stop checking first?", systemImage: "checkmark.seal")
+            Label("There is a setting for this", systemImage: "checkmark.seal")
                 .font(.headline)
             Text(message)
                 .fixedSize(horizontal: false, vertical: true)

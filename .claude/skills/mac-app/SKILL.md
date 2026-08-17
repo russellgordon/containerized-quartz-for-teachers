@@ -9,20 +9,25 @@ Russell tests by **running the app on this Mac**, not by reading a diff and
 not inside Xcode's test runner. So a change is not delivered until the app is
 built and he has been told, in one line, what he has to do to see it.
 
-**Quit and relaunch it for him, every time, without asking.** He decided
-this on 2026-08-15 and it is standing authorisation — do not re-ask. Quit
-gracefully so the app can stop its containers on the way out:
+**Build it and LEAVE IT QUIT. Do not relaunch it for him.** This reverses the
+standing authorisation given on 2026-08-15, and the reason is worth keeping
+because it is not obvious from the code: **relaunching makes the app jump in
+front of whatever he is doing.** `open` activates, so a rebuild he did not ask
+for at that second steals focus from the window he was typing in. He launches
+from the Dock when he is ready to test, and that launch is his.
+
+Quit any copy YOU were driving, gracefully, so the app can stop its containers
+on the way out — then stop:
 
 ```bash
 osascript -e 'quit app "Plantoir"' 2>/dev/null
-sleep 1
-open "$APP"
 ```
 
-Two conditions on that:
+Two conditions still hold:
 
-- **Only after a build that SUCCEEDED.** Quitting his working copy to
-  replace it with nothing is the one way this rule can hurt him.
+- **Only after a build that SUCCEEDED**, with the bundle confirmed present.
+  Quitting his working copy to replace it with nothing is the one genuinely
+  damaging move available here.
 - **Say what quitting discarded, if it plausibly did.** A conversation's
   undo history dies with its window, an unsaved settings form is lost, and a
   running preview stops. He accepted that trade for a faster loop; he did
@@ -47,28 +52,34 @@ Two conditions on that:
      -destination 'platform=macOS' -only-testing:QuartzTeachersTests test
    ```
 
-3. **Check the bundle exists, then restart it in front of him.**
+3. **Check the bundle exists, then leave the app quit for him.**
 
    ```bash
    APP=$(ls -d ~/Library/Developer/Xcode/DerivedData/Plantoir-*/Build/Products/Debug/Plantoir.app | head -1)
    [ -d "$APP" ] || { echo "NOT BUILT — stop; do not quit his running copy"; exit 1; }
    osascript -e 'quit app "Plantoir"' 2>/dev/null
-   sleep 1
-   open "$APP"
    ```
 
-   **Never restart without checking the bundle exists.** A clean DELETES it
-   (see below), and quitting his working copy to replace it with nothing is
-   the one genuinely damaging move available here.
+   **Never quit without checking the bundle exists.** A clean DELETES it (see
+   below), and quitting his working copy to replace it with nothing is the one
+   genuinely damaging move available here.
 
-   His Dock entry points straight at that build path, so nothing needs
-   copying or re-pointing; the icon opens whatever was last built.
+   **And do not `open` it afterwards.** `open` activates, so it makes the app
+   jump in front of whatever he is doing. His Dock entry points straight at
+   that build path — nothing needs copying or re-pointing, and the icon opens
+   whatever was last built, when he chooses.
 
 **If you drove the interface to check the change** — activating the app,
 sending keystrokes, taking screenshots — bring the terminal back to the front
 when that stretch is done, and put back anything the test borrowed (system
-appearance, another app's state). Rule 7 in [`CLAUDE.md`](../../../CLAUDE.md)
-says why.
+appearance, another app's state). Rule 9 in [`CLAUDE.md`](../../../CLAUDE.md)
+says why. (It was numbered 7 when this was written; the list has grown since.)
+
+**And rebuild before you report back.** Rule 10 there: the moment you believe
+the change addresses what was asked is the moment Russell goes to test it, and
+his Dock icon opens whatever was last built. A plain `build` has to be the LAST
+build of the session — `xcodebuild test` leaves a test-host bundle behind and
+terminates any running copy, so testing after building undoes it.
 
 ```bash
 osascript -e 'tell application "iTerm" to activate'
@@ -76,10 +87,10 @@ osascript -e 'tell application "iTerm" to activate'
 
 The one-line summary is the part that saves him time. It is one of:
 
-> Relaunched — nothing else needed.
-> Relaunched — you will need a NEW COURSE (code XYZ) to see this.
-> Relaunched — you will need a NEW WORKING FOLDER to see this.
-> Relaunched — note the open conversation's undo history went with it.
+> Rebuilt and quit — launch it from the Dock; nothing else needed.
+> Rebuilt and quit — you will need a NEW COURSE (code XYZ) to see this.
+> Rebuilt and quit — you will need a NEW WORKING FOLDER to see this.
+> Rebuilt and quit — note the open conversation's undo history went with it.
 
 ## When a clean build is required
 

@@ -6,7 +6,24 @@ struct AssistSectionPage {
     // MARK: - Stored properties
 
     /// The file name without `.md` — which is also the name links use.
+    ///
+    /// This is an IDENTITY, not a label. Wikilinks resolve by file name, so
+    /// every lookup in this graph goes through it and it must never be
+    /// replaced by something a teacher would rather read. What to SHOW them
+    /// is `displayTitle`, which is a different question with a different
+    /// answer.
     let title: String
+
+    /// What the teacher sees this page called — on the site, in Obsidian's
+    /// sidebar, and therefore in anything the assistant says about it.
+    ///
+    /// Usually the same as `title`, and emphatically not always. A folder's
+    /// landing page is `index.md` in every folder, so naming it by its file
+    /// gives "index" — which is not what the teacher calls it, and is the
+    /// same word for eleven different pages. Reported from a real course:
+    /// unpublishing a class explained that "index" still linked to a page,
+    /// when the page a teacher would go and look at is called Portfolios.
+    let displayTitle: String
 
     let fileURL: URL
 
@@ -130,6 +147,7 @@ struct AssistSectionGraph {
             )
             pages.append(AssistSectionPage(
                 title: pageURL.deletingPathExtension().lastPathComponent,
+                displayTitle: displayName(forPageAt: pageURL, in: text),
                 fileURL: pageURL,
                 relativePath: relativePath(of: pageURL, workspaceURL: workspaceURL),
                 isSectionLocal: isSectionLocal,
@@ -141,6 +159,55 @@ struct AssistSectionGraph {
             ))
         }
         return AssistSectionGraph(courseCode: course.code, sectionNumber: sectionNumber, pages: pages)
+    }
+
+    /// What a teacher calls this page, which is not always what the file is
+    /// called.
+    ///
+    /// **Deliberately the same rule the site's own sidebar uses**, copied from
+    /// Quartz rather than guessed at, because the whole point is that the
+    /// assistant names a page the way the teacher will find it. Quartz's
+    /// `fileTrie.ts` computes a node's `displayName` as:
+    ///
+    /// ```
+    /// const nonIndexTitle = this.data?.title === "index" ? undefined : this.data?.title
+    /// return displayNameOverride ?? nonIndexTitle ?? fileSegmentHint ?? slugSegment ?? ""
+    /// ```
+    ///
+    /// which is, in order: the frontmatter `title:` — **unless it is literally
+    /// "index"**, which is thrown away — then the folder's own path segment.
+    /// The three steps here are that, for one page:
+    ///
+    /// 1. the frontmatter `title:`, which every page the wizard writes has;
+    /// 2. for `index.md`, the FOLDER's name — the thing a teacher sees in the
+    ///    sidebar as "Portfolios";
+    /// 3. otherwise the file name, which is the ordinary case.
+    ///
+    /// Step 2 earns its place even though step 1 nearly always answers first: a
+    /// page a teacher wrote by hand in Obsidian carries no frontmatter title at
+    /// all, and without it every folder in the course would be called "index".
+    /// The "unless it is literally index" guard is Quartz's and is kept for the
+    /// same reason it exists there — a title of "index" is the one answer that
+    /// is never worth showing anybody.
+    ///
+    /// If Quartz's rule ever changes, this is the place to follow it.
+    static func displayName(forPageAt url: URL, in pageText: String) -> String {
+        if let declared = PageFrontmatter.rawValue(forKey: "title", in: pageText) {
+            let tidied: String = declared
+                .trimmingCharacters(in: CharacterSet(charactersIn: "\"'"))
+                .trimmingCharacters(in: .whitespaces)
+            if !tidied.isEmpty && tidied.lowercased() != "index" {
+                return tidied
+            }
+        }
+        let fileName: String = url.deletingPathExtension().lastPathComponent
+        if fileName.lowercased() == "index" {
+            let folder: String = url.deletingLastPathComponent().lastPathComponent
+            if !folder.isEmpty {
+                return folder
+            }
+        }
+        return fileName
     }
 
     /// The page with this title, however it was capitalised, and whether or not

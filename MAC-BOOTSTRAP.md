@@ -85,14 +85,24 @@ Toolchain changes (`scripts/`, `support/`, `patches/`, the launchers, the
 Dockerfile) are gated by `./verify.sh` instead — from a non-interactive shell,
 `script -q /dev/null ./verify.sh`.
 
-### 5. Build it, relaunch it, and say what he must do to see it
+### 5. Build it, leave it quit, and say what he must do to see it
 
 Use the **`mac-app` skill** — it carries the whole loop, including the two
 traps that cost real time (Xcode skipping a folder-reference resource copy, and
-⌘R giving you a second instance beside the running one). Quit and relaunch for
-him after a build that SUCCEEDED; that is standing authorisation. Then one line:
+⌘R giving you a second instance beside the running one). Then one line:
 "nothing else needed", or "you will need a new course (code XYZ)", or "the open
 conversation's undo history went with it".
+
+**Rebuild when you believe the work is done, and leave the app QUIT** — rule 10
+in [`CLAUDE.md`](CLAUDE.md). He launches from the Dock himself, which points at
+the same DerivedData Debug bundle `xcodebuild` writes. (An earlier version of
+this step said to quit and relaunch for him, and called it standing
+authorisation. That is no longer what he wants: the launch is his.)
+
+**The plain `build` has to be the LAST build of the session.** `xcodebuild test`
+rebuilds the bundle as a test host and terminates any running copy, so running
+the suite AFTER building undoes this step and leaves him launching a test-host
+bundle from the Dock. Test, then build, then stop.
 
 ### 6. Write it up, and commit as you go
 

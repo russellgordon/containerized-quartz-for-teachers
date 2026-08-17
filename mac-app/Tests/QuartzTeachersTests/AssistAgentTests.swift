@@ -37,7 +37,7 @@ final class AssistAgentTests: XCTestCase {
             // Never contacted: a fixed phrase is answered without the model.
             client: AssistModelClient(baseURL: URL(string: "http://127.0.0.1:1")!),
             tools: made.runner,
-            planMode: AssistPlanMode(tier: .small, defaults: UserDefaults())
+            planMode: AssistPlanMode(tier: .small, settings: AppSettings(defaults: UserDefaults()))
         )
         await agent.say("Undo that")
 
@@ -74,7 +74,7 @@ final class AssistAgentTests: XCTestCase {
             // survive that. Tying the record to a reply lost exactly this case.
             client: AssistModelClient(baseURL: URL(string: "http://127.0.0.1:1")!),
             tools: made.runner,
-            planMode: AssistPlanMode(tier: .small, defaults: UserDefaults())
+            planMode: AssistPlanMode(tier: .small, settings: AppSettings(defaults: UserDefaults()))
         )
         await agent.say("Hide the page about loops")
 

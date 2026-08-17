@@ -195,7 +195,11 @@ enum PlaceholderClassPlanner {
         if !appearedInBetween.isEmpty {
             message += " \(SectionTimetableStore.list(appearedInBetween)) appeared while you were deciding and \(appearedInBetween.count == 1 ? "was" : "were") left exactly as \(appearedInBetween.count == 1 ? "it is" : "they are")."
         }
-        return ClassChangeOutcome(message: message, backupURL: backupURL)
+        var createdURLs: [URL] = []
+        for planned in written {
+            createdURLs.append(planned.fileURL)
+        }
+        return ClassChangeOutcome(message: message, backupURL: backupURL, created: createdURLs)
     }
 }
 

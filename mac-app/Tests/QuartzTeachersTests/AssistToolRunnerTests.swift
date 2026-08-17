@@ -724,6 +724,84 @@ final class AssistToolRunnerTests: XCTestCase {
         )
     }
 
+    /// Reported from a real course (ADA1O Section 1): unpublishing a class
+    /// said four pages were staying published because **"index"** still linked
+    /// to them.
+    ///
+    /// Every folder in a course has an `index.md`, so "index" is a name the
+    /// teacher cannot act on — the page they would go and open is the one the
+    /// sidebar calls **Portfolios**. Naming it that way is not cosmetic: the
+    /// whole purpose of the "stays published" list is to let a teacher go and
+    /// look at the page holding a link, and a name that matches eleven pages
+    /// tells them nowhere to go.
+    @MainActor
+    func testAFolderLandingPageIsNamedAfterItsFolderNotAfterItsFile() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 23", publish: "true",
+                  body: "See [[Journal Checklist]].", in: made.course)
+        try write(courseLevelPage: "Journal Checklist", inFolder: "Portfolios",
+                  publishForSection1: "true", body: "What to hand in.", in: made.course)
+        try write(folderIndex: "Portfolios", titled: "Portfolios", publishForSection1: "true",
+                  body: "The hub: [[Journal Checklist]].", in: made.course)
+
+        let planned: AssistToolOutcome = await made.runner.run(call: call(
+            "plan_unpublish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4, Day 23"]
+        ))
+
+        XCTAssertTrue(
+            planned.detail.contains("“Portfolios” still links to it."),
+            "The teacher must be told the page they can actually go and open: \(planned.detail)"
+        )
+        XCTAssertFalse(
+            planned.detail.contains("index"),
+            "“index” names eleven pages and none of them to a teacher: \(planned.detail)"
+        )
+    }
+
+    /// The trap the fix above would otherwise have walked into.
+    ///
+    /// Referrers used to be remembered by FILE NAME, and every folder landing
+    /// page is called `index` — so looking the name back up returned whichever
+    /// `index.md` the folder walk happened to reach first. While the answer was
+    /// printed as "index" that was invisible. Printing it as a folder name
+    /// turns it into a CONFIDENTLY WRONG answer, which is worse than a useless
+    /// one: a teacher sent to Concepts to find a link that is in Portfolios
+    /// concludes the assistant is lying and stops reading the list.
+    @MainActor
+    func testTheRightFolderIsNamedWhenSeveralFoldersHaveALandingPage() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 23", publish: "true",
+                  body: "See [[Journal Checklist]].", in: made.course)
+        try write(courseLevelPage: "Journal Checklist", inFolder: "Portfolios",
+                  publishForSection1: "true", body: "What to hand in.", in: made.course)
+        // Sorts before Portfolios, and links to something else entirely.
+        try write(courseLevelPage: "Stage Directions", inFolder: "Concepts",
+                  publishForSection1: "true", body: "Upstage, downstage.", in: made.course)
+        try write(folderIndex: "Concepts", titled: "Concepts", publishForSection1: "true",
+                  body: "Ideas: [[Stage Directions]].", in: made.course)
+        try write(folderIndex: "Portfolios", titled: "Portfolios", publishForSection1: "true",
+                  body: "The hub: [[Journal Checklist]].", in: made.course)
+
+        let planned: AssistToolOutcome = await made.runner.run(call: call(
+            "plan_unpublish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4, Day 23"]
+        ))
+
+        XCTAssertTrue(
+            planned.detail.contains("“Portfolios” still links to it."),
+            "Named the wrong folder's landing page: \(planned.detail)"
+        )
+        XCTAssertFalse(
+            planned.detail.contains("“Concepts” still links to it."),
+            "Concepts does not link to Journal Checklist: \(planned.detail)"
+        )
+    }
+
     /// The rule that keeps this from breaking another class: a page something
     /// else still links to stays published — and the plan SAYS so, naming what
     /// still links to it.
@@ -1074,7 +1152,9 @@ final class AssistToolRunnerTests: XCTestCase {
             "publish_class_on", arguments: ["course": "ICS3U", "section": 1, "date": "2026-12-25"]
         ))
         XCTAssertFalse(outcome.shouldContinue, "A refused write is still the end of the turn.")
-        XCTAssertTrue(outcome.summary.contains("No class"))
+        XCTAssertTrue(outcome.summary.contains("can't find a class"), outcome.summary)
+        XCTAssertFalse(outcome.summary.contains("list_pages"),
+                       "A tool name was shown to a teacher: \(outcome.summary)")
         XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: false"))
     }
 
@@ -1148,7 +1228,7 @@ final class AssistToolRunnerTests: XCTestCase {
         try write(page: "Unit 1, Day 2", publish: "false", body: "Two.", in: made.course)
 
         let nothingYet: AssistToolOutcome = await made.runner.run(call: call("undo_last_change"))
-        XCTAssertTrue(nothingYet.summary.contains("nothing to undo"))
+        XCTAssertEqual(nothingYet.summary, AssistWording.nothingToUndo)
 
         _ = await made.runner.run(call: call(
             "publish_pages",
@@ -1179,7 +1259,1553 @@ final class AssistToolRunnerTests: XCTestCase {
         XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: false"))
         XCTAssertTrue(text(ofPage: "Unit 1, Day 2", in: made.course).contains("Written since."),
                       "Newer work is never thrown away by an undo.")
-        XCTAssertTrue(partly.detail.contains("left alone"))
+        XCTAssertTrue(partly.detail.contains("left alone"), partly.detail)
+    }
+
+    // MARK: - Asking for the schedule when it is missing
+
+    /// A request that needs the dates, from a teacher who has never given
+    /// them, opens the sheet that collects them.
+    ///
+    /// The sheet already existed and was wired to exactly two paths — adding a
+    /// class, and reading the timetable back — so any OTHER request depending
+    /// on the schedule failed with an explanation and no way forward. "I can't
+    /// find a class on Monday" is not something a teacher who has never given
+    /// their dates can act on; what they need is the question nobody asked.
+    @MainActor
+    func testARequestNeedingTheScheduleAsksForItWhenThereIsNone() async throws {
+        let made = try makeRunner()
+        defer {
+            try? FileManager.default.removeItem(at: made.root)
+            SectionSchedulePrompt.shared.stopAsking()
+        }
+        SectionSchedulePrompt.shared.stopAsking()
+
+        try write(page: "Unit 1, Day 1", publish: "false", date: "2026-09-08",
+                  body: "One.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "publish_class_on", arguments: ["course": "ICS3U", "section": 1, "when": "saturday"]
+        ))
+
+        XCTAssertFalse(outcome.shouldContinue)
+        let asked = try XCTUnwrap(
+            SectionSchedulePrompt.shared.request,
+            "The teacher was told no class could be found and never asked for their dates"
+        )
+        XCTAssertEqual(asked.courseCode, "ICS3U")
+        XCTAssertEqual(asked.sectionNumber, 1)
+        XCTAssertFalse(asked.reason.isEmpty, "The sheet has to say why it is asking")
+    }
+
+    /// And it does NOT ask when the dates are already on file — the request
+    /// failed for some other reason, and a sheet about dates would be
+    /// answering a question nobody asked.
+    @MainActor
+    func testItDoesNotAskForTheScheduleWhenOneIsAlreadyOnFile() async throws {
+        let made = try makeRunner()
+        defer {
+            try? FileManager.default.removeItem(at: made.root)
+            SectionSchedulePrompt.shared.stopAsking()
+        }
+
+        try write(page: "Unit 1, Day 1", publish: "false", date: "2026-09-08",
+                  body: "One.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+        ))
+        SectionSchedulePrompt.shared.stopAsking()
+
+        _ = await made.runner.run(call: call(
+            "publish_class_on", arguments: ["course": "ICS3U", "section": 1, "when": "saturday"]
+        ))
+
+        XCTAssertNil(SectionSchedulePrompt.shared.request,
+                     "A sheet was opened about dates that are already on file")
+    }
+
+    // MARK: - Starting a new unit
+
+    /// The clean case: the last class is Unit 4, Day 12 and nothing follows it.
+    @MainActor
+    func testStartingANewUnitAfterTheLastClassMakesDayOneOfTheNextUnit() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 11", publish: "true", date: "2026-09-08",
+                  body: "Eleven.", in: made.course)
+        try write(page: "Unit 4, Day 12", publish: "true", date: "2026-09-10",
+                  body: "Twelve.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1,
+                        "dates": "2026-09-08; 2026-09-10; 2026-09-14"]
+        ))
+
+        let command = try XCTUnwrap(
+            AssistCardCommand.matching("Start a new unit for the next class")
+        )
+        var arguments: [String: Any] = ["course": "ICS3U", "section": 1]
+        for (key, value) in command.arguments {
+            arguments[key] = value
+        }
+        let outcome: AssistToolOutcome = await made.runner.run(
+            call: call(command.toolName, arguments: arguments)
+        )
+
+        XCTAssertTrue(outcome.summary.contains("Unit 5, Day 1"), outcome.summary)
+        let made5: String = text(ofPage: "Unit 5, Day 1", in: made.course)
+        XCTAssertFalse(made5.isEmpty, "Unit 5, Day 1 was not created")
+        XCTAssertTrue(made5.contains("publish: false"), "A new class page must start hidden")
+        XCTAssertTrue(made5.contains("created: 2026-09-14"),
+                      "It should take the next date with no class against it: \(made5)")
+    }
+
+    /// The case with pages already written but not published.
+    ///
+    /// Unit 4 has Days 13 and 14 sitting unpublished. Publication state has
+    /// nothing to do with where the next class goes — the new unit still
+    /// begins at Day 1, and it takes the next date with no class against it,
+    /// which is decided by how many pages exist rather than by what students
+    /// can see.
+    @MainActor
+    func testUnpublishedClassesStillCountWhenStartingANewUnit() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 12", publish: "true", date: "2026-09-08",
+                  body: "Twelve.", in: made.course)
+        try write(page: "Unit 4, Day 13", publish: "false", date: "2026-09-10",
+                  body: "Thirteen.", in: made.course)
+        try write(page: "Unit 4, Day 14", publish: "false", date: "2026-09-14",
+                  body: "Fourteen.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1,
+                        "dates": "2026-09-08; 2026-09-10; 2026-09-14; 2026-09-16"]
+        ))
+
+        _ = await made.runner.run(call: call(
+            "add_next_class", arguments: ["course": "ICS3U", "section": 1, "unit": "next"]
+        ))
+
+        let made5: String = text(ofPage: "Unit 5, Day 1", in: made.course)
+        XCTAssertFalse(made5.isEmpty, "Unit 5, Day 1 was not created")
+        XCTAssertTrue(made5.contains("publish: false"))
+        XCTAssertTrue(made5.contains("created: 2026-09-16"),
+                      "The three existing pages hold the first three dates: \(made5)")
+    }
+
+    /// Without the instruction, the unit carries on as before.
+    @MainActor
+    func testTheNextClassStaysInTheSameUnitUnlessAskedOtherwise() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 12", publish: "true", date: "2026-09-08",
+                  body: "Twelve.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+        ))
+
+        _ = await made.runner.run(call: call(
+            "add_next_class", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertFalse(text(ofPage: "Unit 4, Day 13", in: made.course).isEmpty,
+                       "The plain request should carry the unit on")
+        XCTAssertTrue(text(ofPage: "Unit 5, Day 1", in: made.course).isEmpty,
+                      "It started a new unit without being asked")
+    }
+
+    /// The numbering rule on its own, including the empty section.
+    @MainActor
+    func testANewUnitAlwaysBeginsAtDayOne() {
+        func summary(_ title: String) -> ClassPageSummary {
+            return ClassPageSummary(
+                title: title,
+                fileURL: URL(fileURLWithPath: "/c/section1/All Classes/\(title).md"),
+                date: nil
+            )
+        }
+        XCTAssertEqual(
+            NextClassPlanner.firstDayOfANewUnit(after: [summary("Unit 4, Day 12")]).title,
+            "Unit 5, Day 1"
+        )
+        XCTAssertEqual(
+            NextClassPlanner.firstDayOfANewUnit(
+                after: [summary("Unit 4, Day 12"), summary("Unit 4, Day 14")]
+            ).title,
+            "Unit 5, Day 1",
+            "The day a unit ran to does not change where the next unit starts"
+        )
+        // Nothing numbered yet: there is no unit to move past.
+        XCTAssertEqual(
+            NextClassPlanner.firstDayOfANewUnit(after: [summary("Field Trip")]).title,
+            "Unit 1, Day 1"
+        )
+    }
+
+    // MARK: - "What dates am I teaching?"
+
+    /// The week first, then an offer — and the offer names words the window
+    /// actually understands.
+    ///
+    /// The answer used to carry no dates at all: a count and two endpoints, so
+    /// a teacher asking what they were teaching was told how many days there
+    /// were and left to go and look.
+    @MainActor
+    func testTheTimetableAnswersWithTheWeekThenOffersTheRest() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        // The fixture's clock is 2026-09-08. Three dates fall inside the next
+        // seven days; the fourth is a fortnight out.
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1,
+                        "dates": "2026-09-08; 2026-09-10; 2026-09-14; 2026-09-24"]
+        ))
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "read_remembered_timetable", arguments: ["course": "ICS3U", "section": 1]
+        ))
+        print("\n===== WHAT DATES AM I TEACHING =====")
+        print(outcome.detail)
+        print("====================================\n")
+
+        XCTAssertTrue(outcome.detail.contains("In the next seven days:"), outcome.detail)
+        for inside in ["2026-09-08", "2026-09-10", "2026-09-14"] {
+            XCTAssertTrue(outcome.detail.contains(inside), "\(inside) missing: \(outcome.detail)")
+        }
+        // Checked as a LIST ENTRY: the last date also appears in the opening
+        // line's range, so a bare substring test would fail on correct output.
+        XCTAssertFalse(outcome.detail.contains("Thursday, 2026-09-24"),
+                       "A date a fortnight out was listed with this week's: \(outcome.detail)")
+
+        // The offer, and the words it names must be words the window matches.
+        XCTAssertTrue(outcome.detail.contains("There is 1 more."), outcome.detail)
+        let offered: String = "show me the rest of the dates"
+        XCTAssertTrue(outcome.detail.lowercased().contains(offered), outcome.detail)
+        XCTAssertEqual(AssistCardCommand.matching(offered)?.toolName, "read_remembered_timetable",
+                       "The assistant offered words nothing understands")
+    }
+
+    /// Taking the offer up lists the lot.
+    @MainActor
+    func testAskingForTheRestListsEveryDate() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1,
+                        "dates": "2026-09-08; 2026-09-10; 2026-09-14; 2026-09-24"]
+        ))
+
+        let command = try XCTUnwrap(AssistCardCommand.matching("Show me the rest of the dates"))
+        var arguments: [String: Any] = ["course": "ICS3U", "section": 1]
+        for (key, value) in command.arguments {
+            arguments[key] = value
+        }
+        let outcome: AssistToolOutcome = await made.runner.run(
+            call: call(command.toolName, arguments: arguments)
+        )
+
+        XCTAssertTrue(outcome.detail.contains("Every date on file:"), outcome.detail)
+        for every in ["2026-09-08", "2026-09-10", "2026-09-14", "2026-09-24"] {
+            XCTAssertTrue(outcome.detail.contains(every), "\(every) missing: \(outcome.detail)")
+        }
+        XCTAssertFalse(outcome.detail.contains("show me the rest of the dates"),
+                       "Still offering the rest after showing it: \(outcome.detail)")
+    }
+
+    /// A quiet week says so rather than printing an empty heading.
+    @MainActor
+    func testAQuietWeekSaysSoAndStillOffersTheRest() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-11-02; 2026-11-04"]
+        ))
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "read_remembered_timetable", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        XCTAssertTrue(outcome.detail.contains("Nothing in the next seven days."), outcome.detail)
+        XCTAssertTrue(outcome.detail.contains("There are 2 more."), outcome.detail)
+    }
+
+    // MARK: - "Publish Monday's class"
+
+    /// Every weekday is a fixed phrasing, so the date is worked out in code and
+    /// cannot be one the model invented.
+    @MainActor
+    func testEachWeekdaysClassIsAFixedPhrasing() {
+        for day in ["Monday", "Tuesday", "Wednesday", "Thursday",
+                    "Friday", "Saturday", "Sunday"] {
+            let matched = AssistCardCommand.matching("Publish \(day)'s class")
+            XCTAssertEqual(matched?.toolName, "publish_class_on", day)
+            XCTAssertEqual(matched?.arguments["when"], day.lowercased(), day)
+        }
+    }
+
+    /// "monday" means the next Monday — and TODAY when today is a Monday,
+    /// which is the reading a person gives it while preparing that morning.
+    @MainActor
+    func testAWeekdayNameResolvesForwardsAndCountsToday() throws {
+        // 2026-08-17 is a Monday.
+        let monday: CalendarDay = try XCTUnwrap(CalendarDay(text: "2026-08-17"))
+        let sunday: CalendarDay = try XCTUnwrap(CalendarDay(text: "2026-08-16"))
+
+        XCTAssertEqual(AssistToolRunner.day(named: "monday", today: sunday)?.text, "2026-08-17")
+        XCTAssertEqual(AssistToolRunner.day(named: "monday", today: monday)?.text, "2026-08-17",
+                       "Asked on a Monday, “Monday” is today's class")
+        XCTAssertEqual(AssistToolRunner.day(named: "friday", today: monday)?.text, "2026-08-21")
+        XCTAssertEqual(AssistToolRunner.day(named: "sunday", today: monday)?.text, "2026-08-23")
+
+        // The apostrophe belongs to the phrasing, not to the day.
+        XCTAssertEqual(AssistToolRunner.day(named: "monday's", today: sunday)?.text, "2026-08-17")
+
+        // The forms that already worked still do.
+        XCTAssertEqual(AssistToolRunner.day(named: "tomorrow", today: sunday)?.text, "2026-08-17")
+        XCTAssertEqual(AssistToolRunner.day(named: "2026-10-06", today: sunday)?.text, "2026-10-06")
+        XCTAssertNil(AssistToolRunner.day(named: "someday", today: sunday))
+    }
+
+    /// A weekday with no class stops and says so — in words, without naming a
+    /// tool at a teacher.
+    @MainActor
+    func testAWeekdayWithNoClassStopsAndExplains() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "false", date: "2026-09-08",
+                  body: "The only class.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "publish_class_on", arguments: ["course": "ICS3U", "section": 1, "when": "saturday"]
+        ))
+
+        XCTAssertFalse(outcome.shouldContinue, "It has to stop, not carry on")
+        XCTAssertTrue(outcome.summary.contains("Saturday"), outcome.summary)
+        XCTAssertTrue(outcome.summary.contains("can't find a class"), outcome.summary)
+        XCTAssertFalse(outcome.summary.contains("list_pages"),
+                       "A tool name was shown to a teacher: \(outcome.summary)")
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: false"),
+                      "Nothing should have been published")
+    }
+
+    /// And a weekday that DOES have a class publishes that class.
+    @MainActor
+    func testAWeekdayWithAClassPublishesThatClass() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        // The fixture's clock is fixed at 2026-09-08, which IS a Tuesday — so
+        // this exercises the today-counts rule as well: asked on a Tuesday for
+        // "Tuesday's class", a teacher means the one they are about to teach.
+        let today: CalendarDay = try XCTUnwrap(CalendarDay(text: "2026-09-08"))
+        let tuesday: CalendarDay = try XCTUnwrap(
+            AssistToolRunner.day(named: "tuesday", today: today)
+        )
+        XCTAssertEqual(tuesday.text, "2026-09-08")
+        try write(page: "Unit 2, Day 3", publish: "false", date: tuesday.text,
+                  body: "Tuesday's lesson.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "publish_class_on", arguments: ["course": "ICS3U", "section": 1, "when": "tuesday"]
+        ))
+
+        XCTAssertFalse(outcome.shouldContinue)
+        XCTAssertTrue(text(ofPage: "Unit 2, Day 3", in: made.course).contains("publish: true"),
+                      outcome.summary)
+    }
+
+    // MARK: - Only a VISIBLE page keeps another one published
+
+    /// A page held up by a draft nobody has published comes down.
+    ///
+    /// "X still links to it" was counted whether or not students could see X,
+    /// so a page could sit visible, reachable from nothing, kept alive by a
+    /// page that is not there.
+    @MainActor
+    func testAHiddenPageDoesNotKeepAnotherPagePublished() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", body: "See [[Ohm's Law]].", in: made.course)
+        // Written but never published — so it cannot be a reason to keep
+        // anything visible.
+        try write(page: "Unit 1, Day 2", publish: "false", body: "Also [[Ohm's Law]].",
+                  in: made.course)
+        try write(courseLevelPage: "Ohm's Law", publishForSection1: "true",
+                  body: "Voltage over current.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "Ohm's Law", in: made.course).contains("publishForSection1: false"),
+            "A page was left visible, reachable from nothing, held up by a draft: \(outcome.detail)"
+        )
+        XCTAssertFalse(outcome.detail.contains("Unit 1, Day 2"),
+                       "A hidden page was named as a reason to keep something: \(outcome.detail)")
+    }
+
+    /// And a VISIBLE page still keeps it, which is the rule that stops one
+    /// class being broken to tidy another.
+    @MainActor
+    func testAVisiblePageStillKeepsAnotherPagePublished() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", body: "See [[Ohm's Law]].", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "true", body: "Also [[Ohm's Law]].", in: made.course)
+        try write(courseLevelPage: "Ohm's Law", publishForSection1: "true",
+                  body: "Voltage over current.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "Ohm's Law", in: made.course).contains("publishForSection1: true"),
+            "Hiding this week's lesson broke last week's"
+        )
+        XCTAssertTrue(outcome.detail.contains("“Unit 1, Day 2” still links to it"), outcome.detail)
+    }
+
+    /// The corollary, which already held and is now pinned: publishing a class
+    /// publishes the hidden pages it links to, and SAYS so in the plan.
+    @MainActor
+    func testPublishingAClassPublishesTheHiddenPagesItLinksToAndSaysSo() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "false", body: "See [[Ohm's Law]].", in: made.course)
+        try write(courseLevelPage: "Ohm's Law", publishForSection1: "false",
+                  body: "Voltage over current.", in: made.course)
+
+        let planned: AssistToolOutcome = await made.runner.run(call: call(
+            "plan_publish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+        XCTAssertTrue(planned.detail.contains("“Ohm's Law” will become visible"),
+                      "The plan did not disclose the linked page: \(planned.detail)")
+
+        _ = await made.runner.run(call: call(
+            "publish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "Ohm's Law", in: made.course).contains("publishForSection1: true")
+        )
+    }
+
+    /// The four kinds of page the visible-referrer rule must never reach.
+    ///
+    /// Narrowing "X still links to it" to VISIBLE referrers made more pages
+    /// eligible to come down, so the exclusions above it matter more than they
+    /// did. Each is checked with the ONLY page linking to it hidden — the
+    /// exact situation the narrowing created — and each must survive:
+    ///
+    /// * a page **Key Links** points at,
+    /// * **All Classes**, and every other folder landing page,
+    /// * anything under **Curriculum**,
+    /// * the **index page of a sidebar folder**.
+    ///
+    /// They sit above the referrer test in `reasonToKeep`, so this is a test
+    /// that the ORDER is load-bearing rather than incidental.
+    @MainActor
+    func testTheKindsOfPageThatAreNeverTakenDownByFollowingLinks() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        // The class being unpublished links to one of each.
+        try write(page: "Unit 1, Day 1", publish: "true",
+                  body: "See [[Drama Journal]], [[All Classes]], [[A1.1]] and [[Portfolios]].",
+                  in: made.course)
+        // …and the ONLY other page linking to them is hidden, so without the
+        // exclusions every one of these would now be swept.
+        try write(page: "Unit 1, Day 2", publish: "false",
+                  body: "Also [[Drama Journal]], [[All Classes]], [[A1.1]] and [[Portfolios]].",
+                  in: made.course)
+
+        try write(courseLevelPage: "Drama Journal", inFolder: "Portfolios",
+                  publishForSection1: "true", body: "The journal.", in: made.course)
+        try write(courseLevelPage: "A1.1", inFolder: "Curriculum",
+                  publishForSection1: "true", body: "An expectation.", in: made.course)
+        try write(folderIndex: "Portfolios", titled: "Portfolios",
+                  publishForSection1: "true", body: "The hub.", in: made.course)
+        try writeKeyLinks(pointingAt: ["Drama Journal"], in: made.course)
+        try writeAllClassesIndex(in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+        XCTAssertFalse(outcome.shouldContinue)
+
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "Drama Journal", inFolder: "Portfolios", in: made.course)
+                .contains("publishForSection1: true"),
+            "A page Key Links points at was taken down"
+        )
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "A1.1", inFolder: "Curriculum", in: made.course)
+                .contains("publishForSection1: true"),
+            "A curriculum page was taken down"
+        )
+        XCTAssertTrue(
+            folderIndexText("Portfolios", in: made.course).contains("publishForSection1: true"),
+            "A sidebar folder's landing page was taken down"
+        )
+        XCTAssertTrue(
+            allClassesIndexText(in: made.course).contains("publish: true"),
+            "All Classes was taken down"
+        )
+    }
+
+    /// A section's Key Links page, which decides what a section cannot do
+    /// without.
+    @MainActor
+    private func writeKeyLinks(pointingAt titles: [String], in course: Course) throws {
+        var body: String = "---\ntitle: Key Links\npublish: true\n"
+        body += "created: 2026-09-08T07:00:00.000-0400\n---\n\n"
+        for title in titles {
+            body += "- [[\(title)]]\n"
+        }
+        let folder: URL = course.directoryURL.appendingPathComponent("section1")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try body.write(to: folder.appendingPathComponent("Key Links.md"),
+                       atomically: true, encoding: .utf8)
+    }
+
+    /// The All Classes listing, which is a folder landing page.
+    @MainActor
+    private func writeAllClassesIndex(in course: Course) throws {
+        let body: String = """
+        ---
+        title: All Classes
+        publish: true
+        created: 2026-09-08T07:00:00.000-0400
+        ---
+
+        One page per class.
+        """
+        let folder: URL = ClassPages.folderURL(forSection: 1, in: course)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try body.write(to: folder.appendingPathComponent("index.md"),
+                       atomically: true, encoding: .utf8)
+    }
+
+    @MainActor
+    private func folderIndexText(_ folder: String, in course: Course) -> String {
+        let url: URL = course.directoryURL.appendingPathComponent(folder)
+            .appendingPathComponent("index.md")
+        return (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+    }
+
+    @MainActor
+    private func allClassesIndexText(in course: Course) -> String {
+        let url: URL = ClassPages.folderURL(forSection: 1, in: course)
+            .appendingPathComponent("index.md")
+        return (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+    }
+
+    // MARK: - Duplicating a class
+
+    /// "Duplicate Unit 3, Day 2 as my next class" — the copy is the next day
+    /// of the same unit, with the source's content and a date of its own.
+    @MainActor
+    func testDuplicatingAClassCopiesItToTheNextDayWithItsOwnDate() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 3, Day 1", publish: "true", date: "2026-09-08",
+                  body: "First.", in: made.course)
+        try write(page: "Unit 3, Day 2", publish: "true", date: "2026-09-10",
+                  body: "The workshop plan, written out in full.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1,
+                        "dates": "2026-09-08; 2026-09-10; 2026-09-14; 2026-09-16"]
+        ))
+
+        let command = try XCTUnwrap(
+            AssistCardCommand.matching("Duplicate Unit 3, Day 2 as my next class")
+        )
+        XCTAssertEqual(command.arguments["duplicate"], "Unit 3, Day 2")
+        var arguments: [String: Any] = ["course": "ICS3U", "section": 1]
+        for (key, value) in command.arguments {
+            arguments[key] = value
+        }
+        let outcome: AssistToolOutcome = await made.runner.run(
+            call: call(command.toolName, arguments: arguments)
+        )
+
+        let copy: String = text(ofPage: "Unit 3, Day 3", in: made.course)
+        XCTAssertFalse(copy.isEmpty, "Unit 3, Day 3 was not created: \(outcome.detail)")
+        XCTAssertTrue(copy.contains("The workshop plan, written out in full."),
+                      "The content was not copied: \(copy)")
+        XCTAssertTrue(copy.contains("title: Unit 3, Day 3"), copy)
+        XCTAssertTrue(copy.contains("created: 2026-09-14"),
+                      "The copy should take the next free date: \(copy)")
+        XCTAssertTrue(copy.contains("publish: false"),
+                      "A duplicate of a PUBLISHED lesson must still start hidden: \(copy)")
+        // The source is untouched.
+        XCTAssertTrue(text(ofPage: "Unit 3, Day 2", in: made.course).contains("publish: true"))
+    }
+
+    /// And when the next day already exists, the classes after it shift along
+    /// to make room — which is `ClassInsertionPlanner`'s job, renaming from the
+    /// highest day down so nothing is written over.
+    @MainActor
+    func testDuplicatingShiftsLaterClassesToMakeRoom() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 3, Day 1", publish: "false", date: "2026-09-08",
+                  body: "First.", in: made.course)
+        try write(page: "Unit 3, Day 2", publish: "false", date: "2026-09-10",
+                  body: "The one to copy.", in: made.course)
+        try write(page: "Unit 3, Day 3", publish: "false", date: "2026-09-14",
+                  body: "Was Day 3.", in: made.course)
+        try write(page: "Unit 3, Day 4", publish: "false", date: "2026-09-16",
+                  body: "Was Day 4.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1,
+                        "dates": "2026-09-08; 2026-09-10; 2026-09-14; 2026-09-16; 2026-09-18"]
+        ))
+
+        _ = await made.runner.run(call: call(
+            "add_next_class",
+            arguments: ["course": "ICS3U", "section": 1, "duplicate": "Unit 3, Day 2"]
+        ))
+
+        // The copy landed at Day 3, and the old Day 3 and Day 4 moved along.
+        XCTAssertTrue(text(ofPage: "Unit 3, Day 3", in: made.course).contains("The one to copy."))
+        XCTAssertTrue(text(ofPage: "Unit 3, Day 4", in: made.course).contains("Was Day 3."))
+        XCTAssertTrue(text(ofPage: "Unit 3, Day 5", in: made.course).contains("Was Day 4."))
+    }
+
+    /// A page nobody has is refused in words.
+    @MainActor
+    func testDuplicatingAPageThatIsNotThereIsRefused() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+        try write(page: "Unit 3, Day 1", publish: "false", date: "2026-09-08",
+                  body: "One.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "add_next_class",
+            arguments: ["course": "ICS3U", "section": 1, "duplicate": "Unit 9, Day 9"]
+        ))
+        XCTAssertFalse(outcome.shouldContinue)
+        XCTAssertTrue(outcome.summary.contains("Unit 9, Day 9"), outcome.summary)
+    }
+
+    // MARK: - A whole unit at a time
+
+    /// The phrasings are matched in code, for any unit number.
+    @MainActor
+    func testWholeUnitPhrasingsAreMatchedInCode() {
+        for unit in [1, 4, 12] {
+            XCTAssertEqual(
+                AssistCardCommand.matching("Unpublish Unit \(unit)")?.arguments["pages"],
+                "Unit \(unit)"
+            )
+            XCTAssertEqual(
+                AssistCardCommand.matching("Unpublish Unit \(unit)")?.toolName, "unpublish_pages"
+            )
+            XCTAssertEqual(
+                AssistCardCommand.matching("Publish Unit \(unit)")?.toolName, "publish_pages"
+            )
+        }
+        // One page, not a unit — this must still go to the model, which has a
+        // page title to read out of it.
+        XCTAssertNil(AssistCardCommand.matching("Publish Unit 4, Day 3"))
+    }
+
+    /// "Unpublish Unit 4" takes every class in the unit down and says one
+    /// thing about it.
+    @MainActor
+    func testUnpublishingAWholeUnitTakesEveryClassDownAndReportsOnce() async throws {
+        let made = try makeRunner()
+        defer {
+            try? FileManager.default.removeItem(at: made.root)
+            FakePreview.shared.forget()
+        }
+
+        for day in 1...3 {
+            try write(page: "Unit 4, Day \(day)", publish: "true", date: "2026-09-0\(day + 7)",
+                      body: "Day \(day).", in: made.course)
+        }
+        try write(page: "Unit 5, Day 1", publish: "true", date: "2026-09-14",
+                  body: "A later unit.", in: made.course)
+
+        FakePreview.shared.register(
+            folderPath: made.root.path, courseCode: "ICS3U", sectionNumber: 1
+        )
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4"]
+        ))
+
+        XCTAssertEqual(outcome.summary, "Unit 4 was unpublished.")
+        for day in 1...3 {
+            XCTAssertTrue(
+                text(ofPage: "Unit 4, Day \(day)", in: made.course).contains("publish: false"),
+                "Unit 4, Day \(day) is still published"
+            )
+        }
+        XCTAssertTrue(text(ofPage: "Unit 5, Day 1", in: made.course).contains("publish: true"),
+                      "A class outside the unit was taken down")
+
+        // Stopped once, started once — not once per page.
+        XCTAssertEqual(FakePreview.shared.events.filter { $0 == "stop-begins" }.count, 1)
+        XCTAssertEqual(FakePreview.shared.events.filter { $0 == "start" }.count, 1)
+        XCTAssertEqual(FakePreview.shared.events.first, "stop-begins")
+        XCTAssertEqual(FakePreview.shared.events.last, "start")
+    }
+
+    /// "Publish Unit 5" is the mirror, walking Day 1 forwards.
+    @MainActor
+    func testPublishingAWholeUnitPutsEveryClassUp() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        for day in 1...3 {
+            try write(page: "Unit 5, Day \(day)", publish: "false", date: "2026-09-0\(day + 7)",
+                      body: "Day \(day).", in: made.course)
+        }
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "publish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 5"]
+        ))
+
+        XCTAssertEqual(outcome.summary, "Unit 5 was published.")
+        for day in 1...3 {
+            XCTAssertTrue(
+                text(ofPage: "Unit 5, Day \(day)", in: made.course).contains("publish: true"),
+                "Unit 5, Day \(day) is still hidden"
+            )
+        }
+    }
+
+    /// The whole unit is ONE thing on the undo list, not one page of it.
+    @MainActor
+    func testUndoingAWholeUnitPutsAllOfItBack() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        for day in 1...3 {
+            try write(page: "Unit 4, Day \(day)", publish: "true", date: "2026-09-0\(day + 7)",
+                      body: "Day \(day).", in: made.course)
+        }
+
+        _ = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4"]
+        ))
+        let undone: AssistToolOutcome = await made.runner.run(call: call("undo_last_change"))
+
+        XCTAssertEqual(undone.summary, AssistWording.undid("unpublished Unit 4"))
+        for day in 1...3 {
+            XCTAssertTrue(
+                text(ofPage: "Unit 4, Day \(day)", in: made.course).contains("publish: true"),
+                "Unit 4, Day \(day) did not come back"
+            )
+        }
+    }
+
+    /// A unit already in the state asked for says so, and writes nothing.
+    @MainActor
+    func testAUnitAlreadyHiddenSaysSo() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 1", publish: "false", date: "2026-09-08",
+                  body: "One.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4"]
+        ))
+        XCTAssertEqual(outcome.summary, "Unit 4 is already hidden.")
+    }
+
+    /// A unit nobody has is said plainly.
+    @MainActor
+    func testAUnitThatDoesNotExistIsRefusedInWords() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08",
+                  body: "One.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 9"]
+        ))
+        XCTAssertTrue(outcome.summary.contains("can't find any class pages in Unit 9"),
+                      outcome.summary)
+    }
+
+    // MARK: - Adding several days to a unit
+
+    /// "Add five more days to Unit 4" continues from the last day that EXISTS
+    /// in that unit — published or not — and dates them from the schedule.
+    @MainActor
+    func testAddingMoreDaysToAUnitContinuesFromTheLastOneThatExists() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 1", publish: "true", date: "2026-09-08",
+                  body: "One.", in: made.course)
+        try write(page: "Unit 4, Day 2", publish: "false", date: "2026-09-10",
+                  body: "Written, not shown.", in: made.course)
+        // Two pages already hold the first two dates, so five more days needs
+        // seven dates on file.
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1,
+                        "dates": "2026-09-08; 2026-09-10; 2026-09-14; 2026-09-16; "
+                               + "2026-09-18; 2026-09-22; 2026-09-24"]
+        ))
+
+        let command = try XCTUnwrap(AssistCardCommand.matching("Add five more days to unit 4"))
+        XCTAssertEqual(command.toolName, "add_next_class")
+        var arguments: [String: Any] = ["course": "ICS3U", "section": 1]
+        for (key, value) in command.arguments {
+            arguments[key] = value
+        }
+        _ = await made.runner.run(call: call(command.toolName, arguments: arguments))
+
+        // Day 2 exists but is hidden — numbering still continues past it, so
+        // the five new days are 3 to 7 rather than 2 to 6.
+        for day in 3...7 {
+            let page: String = text(ofPage: "Unit 4, Day \(day)", in: made.course)
+            XCTAssertFalse(page.isEmpty, "Unit 4, Day \(day) was not created")
+            XCTAssertTrue(page.contains("publish: false"), "Day \(day) should start hidden")
+        }
+        // Two pages existed, so the new ones take the third date onwards.
+        let expected: [Int: String] = [
+            3: "2026-09-14", 4: "2026-09-16", 5: "2026-09-18",
+            6: "2026-09-22", 7: "2026-09-24",
+        ]
+        for (day, date) in expected {
+            XCTAssertTrue(
+                text(ofPage: "Unit 4, Day \(day)", in: made.course).contains("created: \(date)"),
+                "Unit 4, Day \(day) should fall on \(date)"
+            )
+        }
+    }
+
+    /// Asking for more days than the timetable has left refuses whole, rather
+    /// than creating some and leaving the teacher to work out how many.
+    ///
+    /// The same rule a single new class follows, and the schedule sheet opens
+    /// on the back of it — the remedy is more dates, and the app can ask.
+    @MainActor
+    func testAskingForMoreDaysThanThereAreDatesRefusesWhole() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 1", publish: "true", date: "2026-09-08",
+                  body: "One.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+        ))
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "add_next_class",
+            arguments: ["course": "ICS3U", "section": 1, "unit": "4", "days": "5"]
+        ))
+
+        XCTAssertTrue(outcome.summary.contains("no date left"), outcome.summary)
+        XCTAssertTrue(text(ofPage: "Unit 4, Day 2", in: made.course).isEmpty,
+                      "It created some of them and refused the rest")
+    }
+
+    /// The digits work as well as the words.
+    @MainActor
+    func testAddingDaysAcceptsAWordOrANumber() {
+        for phrasing in ["Add five more days to unit 4", "Add 5 more days to unit 4"] {
+            let matched = AssistCardCommand.matching(phrasing)
+            XCTAssertEqual(matched?.arguments["days"], "5", phrasing)
+            XCTAssertEqual(matched?.arguments["unit"], "4", phrasing)
+        }
+        XCTAssertNil(AssistCardCommand.matching("Add more days to unit 4"))
+    }
+
+    // MARK: - Asking for something that is already done
+
+    /// "Publish Unit 4, Day 23" on a class that is already published gets four
+    /// words back, not a plan.
+    @MainActor
+    func testPublishingAPageThatIsAlreadyPublishedSaysSoAndNothingElse() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 23", publish: "true", date: "2026-09-08",
+                  body: "See [[Bananas]].", in: made.course)
+        try write(courseLevelPage: "Bananas", publishForSection1: "true",
+                  body: "Yellow.", in: made.course)
+
+        for tool in ["plan_publish_pages", "publish_pages"] {
+            let outcome: AssistToolOutcome = await made.runner.run(call: call(
+                tool, arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4, Day 23"]
+            ))
+            XCTAssertEqual(outcome.summary, "It's already been published.", tool)
+            XCTAssertEqual(outcome.detail, "It's already been published.", tool)
+            XCTAssertFalse(outcome.isPlan, "\(tool) asked to approve a no-op")
+            // None of the plan's furniture.
+            for furniture in ["would change", "Shall I", "Nothing needed changing",
+                              "already visible", "Section 1: publishing"] {
+                XCTAssertFalse(outcome.detail.contains(furniture),
+                               "\(tool) still says “\(furniture)”: \(outcome.detail)")
+            }
+        }
+    }
+
+    /// And the mirror, for hiding.
+    @MainActor
+    func testUnpublishingAPageThatIsAlreadyHiddenSaysSo() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 23", publish: "false", date: "2026-09-08",
+                  body: "Nothing yet.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4, Day 23"]
+        ))
+        XCTAssertEqual(outcome.summary, "It's already hidden.")
+    }
+
+    /// Two pages, both already done, get the plural.
+    @MainActor
+    func testTwoPagesAlreadyPublishedGetThePlural() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08",
+                  body: "One.", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "true", date: "2026-09-10",
+                  body: "Two.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "publish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1; Unit 1, Day 2"]
+        ))
+        XCTAssertEqual(outcome.summary, "They have already been published.")
+    }
+
+    /// A page that does NOT exist still gets the full answer — "already done"
+    /// and "no such page" are different things and must not be confused.
+    @MainActor
+    func testANameThatMatchesNoPageStillGetsTheFullAnswer() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 23", publish: "true", date: "2026-09-08",
+                  body: "Done.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "publish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4, Day 23; Bananas"]
+        ))
+        XCTAssertNotEqual(outcome.summary, "It's already been published.")
+        XCTAssertTrue(outcome.detail.contains("Bananas"),
+                      "The page nobody has was not mentioned: \(outcome.detail)")
+    }
+
+    /// And a page that genuinely needs publishing is unaffected.
+    @MainActor
+    func testAPageThatNeedsPublishingStillGetsAPlan() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 23", publish: "false", date: "2026-09-08",
+                  body: "Ready.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "plan_publish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4, Day 23"]
+        ))
+        XCTAssertTrue(outcome.isPlan)
+        XCTAssertTrue(outcome.detail.contains("will become visible"), outcome.detail)
+    }
+
+    // MARK: - What check_section says about the preview
+
+    /// Three states, three different things worth saying — and for one of
+    /// them, that nothing is.
+    ///
+    /// Reported: a teacher looking at a finished preview was told their pages
+    /// would appear "once any rebuild in progress finishes", about a rebuild
+    /// that had finished minutes earlier. The sentence sat behind a single
+    /// boolean meaning "is the launcher running", which stays true for as long
+    /// as the site is SERVED — so building and built looked identical.
+    @MainActor
+    func testWhatIsSaidAboutThePreviewDependsOnWhatItIsDoing() async throws {
+        let made = try makeRunner()
+        defer {
+            try? FileManager.default.removeItem(at: made.root)
+            FakePreview.shared.forget()
+        }
+        try write(page: "Unit 1, Day 1", publish: "true", body: "One.", in: made.course)
+
+        // Building: say when the pages will appear.
+        FakePreview.shared.register(
+            folderPath: made.root.path, courseCode: "ICS3U", sectionNumber: 1, showing: .building
+        )
+        var outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "check_section", arguments: ["course": "ICS3U", "section": 1]
+        ))
+        XCTAssertTrue(outcome.summary.contains("The preview is building now"), outcome.summary)
+        XCTAssertFalse(outcome.summary.contains("Say “Preview”"), outcome.summary)
+
+        // Showing: they are looking at it. Say nothing.
+        FakePreview.shared.register(
+            folderPath: made.root.path, courseCode: "ICS3U", sectionNumber: 1, showing: .showing
+        )
+        outcome = await made.runner.run(call: call(
+            "check_section", arguments: ["course": "ICS3U", "section": 1]
+        ))
+        XCTAssertFalse(outcome.summary.contains("preview is building"), outcome.summary)
+        XCTAssertFalse(outcome.summary.contains("once any rebuild"), outcome.summary)
+        XCTAssertFalse(outcome.summary.contains("Say “Preview”"),
+                       "Told to preview a section already on screen: \(outcome.summary)")
+
+        // Nothing up at all: offer.
+        FakePreview.shared.register(
+            folderPath: made.root.path, courseCode: "ICS3U", sectionNumber: 1, showing: .notRunning
+        )
+        outcome = await made.runner.run(call: call(
+            "check_section", arguments: ["course": "ICS3U", "section": 1]
+        ))
+        XCTAssertTrue(outcome.summary.contains("Nothing is being previewed"), outcome.summary)
+        XCTAssertTrue(outcome.summary.contains("Say “Preview”"), outcome.summary)
+    }
+
+    /// With no section window at all there is nothing on screen either, so the
+    /// same offer is the right answer.
+    @MainActor
+    func testCheckingWithNoWindowOpenSuggestsAPreview() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+        SectionWindowControllers.shared.forgetAll()
+
+        try write(page: "Unit 1, Day 1", publish: "true", body: "One.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "check_section", arguments: ["course": "ICS3U", "section": 1]
+        ))
+        XCTAssertTrue(outcome.summary.contains("Nothing is being previewed"), outcome.summary)
+    }
+
+    // MARK: - How a plan reads
+
+    /// The plan a teacher actually sees, printed, for both verbs.
+    ///
+    /// It reported `Bananas  —  publishForSection1: hidden → visible  (linked
+    /// from a page you named)` — four pieces of bookkeeping wearing a page
+    /// title, including the name of a line in a file. This pins the shape it
+    /// reads in now, and prints it so a person can look at it rather than
+    /// taking a diff's word for it.
+    @MainActor
+    func testAPlanReadsAsSentencesWithNoMarkdownOrMachinery() async throws {
+        for publishing in [false, true] {
+            let made = try makeRunner()
+            defer { try? FileManager.default.removeItem(at: made.root) }
+
+            let was: String = publishing ? "false" : "true"
+            try write(page: "Unit 4, Day 24", publish: was, date: "2027-01-19",
+                      body: "See [[Bananas]].", in: made.course)
+            try write(courseLevelPage: "Bananas", publishForSection1: was,
+                      dated: "2026-09-08", body: "Yellow.", in: made.course)
+
+            let outcome: AssistToolOutcome = await made.runner.run(call: call(
+                publishing ? "plan_publish_pages" : "plan_unpublish_pages",
+                arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4, Day 24"]
+            ))
+
+            print("\n===== \(publishing ? "PUBLISHING" : "UNPUBLISHING") =====")
+            print(outcome.detail)
+            print("=====================\n")
+
+            let becoming: String = publishing ? "visible" : "hidden"
+            XCTAssertTrue(outcome.detail.contains("“Unit 4, Day 24” will become \(becoming)."),
+                          outcome.detail)
+            if publishing {
+                // The date is a clause on the page's OWN line, not a second
+                // list a teacher has to match up by name.
+                XCTAssertTrue(
+                    outcome.detail.contains(
+                        "“Bananas” will become visible, with the same date as “Unit 4, Day 24”."
+                    ),
+                    outcome.detail
+                )
+                XCTAssertFalse(outcome.detail.contains("students have not seen before"),
+                               "The date block is still there: \(outcome.detail)")
+                XCTAssertFalse(outcome.detail.contains("2026-09-08"),
+                               "A raw date is still being shown: \(outcome.detail)")
+            } else {
+                XCTAssertTrue(outcome.detail.contains("“Bananas” will become hidden."),
+                              outcome.detail)
+            }
+
+            // None of the machinery, in either direction.
+            for machinery in ["**", "→", "publishForSection1", "publish: hidden",
+                              "publish: visible", "(linked from a page you named)"] {
+                XCTAssertFalse(outcome.detail.contains(machinery),
+                               "“\(machinery)” is still in the plan: \(outcome.detail)")
+            }
+            // The grammar bug that reached a teacher: "1 page students is …".
+            XCTAssertFalse(outcome.detail.contains("students is "), outcome.detail)
+        }
+    }
+
+    // MARK: - A class dates the pages it brings with it
+
+    /// The reported change: publishing a class page by NAME dates the pages it
+    /// links to, when this publish is the first time students will see them.
+    ///
+    /// The date a page carries is what orders it on the site, and a page
+    /// written weeks early carried the day its FILE was made — which is a fact
+    /// about the teacher's evening, not about the course. It should turn up
+    /// under the class that brings it.
+    @MainActor
+    func testPublishingAClassDatesTheNeverSeenPagesItLinksTo() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 2, Day 3", publish: "false", date: "2026-10-06",
+                  body: "See [[Blocking and Stage Areas]].", in: made.course)
+        try write(courseLevelPage: "Blocking and Stage Areas", publishForSection1: "false",
+                  dated: "2026-08-01", body: "Upstage, downstage.", in: made.course)
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "publish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 2, Day 3"]
+        ))
+        XCTAssertFalse(outcome.shouldContinue)
+
+        let linked: String = text(ofCourseLevelPage: "Blocking and Stage Areas", in: made.course)
+        XCTAssertTrue(linked.contains("publishForSection1: true"), linked)
+        XCTAssertTrue(linked.contains("createdSection1: 2026-10-06"),
+                      "The page a class brought with it kept the day its file was made: \(linked)")
+    }
+
+    /// A page students can ALREADY see keeps its date.
+    ///
+    /// It has a place on the site somebody may have linked to or looked at, and
+    /// republishing a class must not shuffle work that was already out.
+    @MainActor
+    func testAPageStudentsCanAlreadySeeKeepsItsDate() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 2, Day 3", publish: "false", date: "2026-10-06",
+                  body: "See [[Drama Journal]].", in: made.course)
+        try write(courseLevelPage: "Drama Journal", publishForSection1: "true",
+                  dated: "2026-08-01", body: "Write it up.", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "publish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 2, Day 3"]
+        ))
+
+        let linked: String = text(ofCourseLevelPage: "Drama Journal", in: made.course)
+        XCTAssertTrue(linked.contains("createdSection1: 2026-08-01"),
+                      "A page already out was re-dated underneath the teacher: \(linked)")
+    }
+
+    /// A never-seen page moves even when SEVERAL classes link to it.
+    ///
+    /// The rule used to leave a shared page alone — "it belongs to none of
+    /// them" — which is sound for a page already on the site and beside the
+    /// point for one nobody can reach. A page students cannot see has no place
+    /// to be left in; it has only the day its file was made.
+    @MainActor
+    func testASharedPageNobodyHasSeenStillTakesTheClassesDate() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 2, Day 3", publish: "false", date: "2026-10-06",
+                  body: "See [[Journal Checklist]].", in: made.course)
+        try write(page: "Unit 3, Day 1", publish: "false", date: "2026-11-02",
+                  body: "See [[Journal Checklist]] again.", in: made.course)
+        try write(page: "Unit 4, Day 2", publish: "false", date: "2026-12-01",
+                  body: "And [[Journal Checklist]].", in: made.course)
+        try write(courseLevelPage: "Journal Checklist", publishForSection1: "false",
+                  dated: "2026-08-01", body: "What to hand in.", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "publish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 2, Day 3"]
+        ))
+
+        let linked: String = text(ofCourseLevelPage: "Journal Checklist", in: made.course)
+        XCTAssertTrue(linked.contains("createdSection1: 2026-10-06"), linked)
+    }
+
+    /// When several classes are published at once, the EARLIEST claims a page
+    /// they share — the same convention the course installer already follows.
+    @MainActor
+    func testTheEarliestClassClaimsAPageSeveralOfThemBring() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 2", publish: "false", date: "2026-12-01",
+                  body: "See [[Warm-Up Routine]].", in: made.course)
+        try write(page: "Unit 2, Day 3", publish: "false", date: "2026-10-06",
+                  body: "See [[Warm-Up Routine]].", in: made.course)
+        try write(courseLevelPage: "Warm-Up Routine", publishForSection1: "false",
+                  dated: "2026-08-01", body: "Stretch.", in: made.course)
+
+        // Named LATEST first, so an implementation that simply took the first
+        // title it was given would get this wrong.
+        _ = await made.runner.run(call: call(
+            "publish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4, Day 2; Unit 2, Day 3"]
+        ))
+
+        let linked: String = text(ofCourseLevelPage: "Warm-Up Routine", in: made.course)
+        XCTAssertTrue(linked.contains("createdSection1: 2026-10-06"),
+                      "The later class claimed a page the earlier one brings: \(linked)")
+    }
+
+    /// A class page's date is its place in the schedule. Nothing may move it.
+    @MainActor
+    func testOneClassNeverRedatesAnother() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 2, Day 3", publish: "false", date: "2026-10-06",
+                  body: "Carrying on from [[Unit 2, Day 2]].", in: made.course)
+        try write(page: "Unit 2, Day 2", publish: "false", date: "2026-10-05",
+                  body: "The one before.", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "publish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 2, Day 3"]
+        ))
+
+        XCTAssertTrue(text(ofPage: "Unit 2, Day 2", in: made.course).contains("created: 2026-10-05"),
+                      "A class was moved off its own day in the schedule")
+    }
+
+    /// Publishing an ordinary page moves nothing — there is no class day to
+    /// inherit, and inventing one would be worse than leaving it alone.
+    @MainActor
+    func testPublishingAnOrdinaryPageMovesNoDates() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(courseLevelPage: "Stage Directions", publishForSection1: "false",
+                  dated: "2026-08-01", body: "See [[Blocking and Stage Areas]].", in: made.course)
+        try write(courseLevelPage: "Blocking and Stage Areas", publishForSection1: "false",
+                  dated: "2026-08-02", body: "Upstage.", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "publish_pages",
+            arguments: ["course": "ICS3U", "section": 1, "pages": "Stage Directions"]
+        ))
+
+        XCTAssertTrue(
+            text(ofCourseLevelPage: "Blocking and Stage Areas", in: made.course)
+                .contains("createdSection1: 2026-08-02"),
+            "An ordinary page dated a page it links to"
+        )
+    }
+
+    /// The two ways of saying the same thing agree.
+    ///
+    /// This is the bug that started it: "Publish tomorrow's class" worked the
+    /// dates out and "Publish Unit 2, Day 3" — naming the very same page —
+    /// passed an empty list, so the same teacher got two different results
+    /// depending on which sentence they used.
+    @MainActor
+    func testNamingTheClassAndNamingItsDayGiveTheSameDates() async throws {
+        for byName in [true, false] {
+            let made = try makeRunner()
+            defer { try? FileManager.default.removeItem(at: made.root) }
+
+            try write(page: "Unit 2, Day 3", publish: "false", date: "2026-10-06",
+                      body: "See [[Blocking and Stage Areas]].", in: made.course)
+            try write(courseLevelPage: "Blocking and Stage Areas", publishForSection1: "false",
+                      dated: "2026-08-01", body: "Upstage.", in: made.course)
+
+            if byName {
+                _ = await made.runner.run(call: call(
+                    "publish_pages",
+                    arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 2, Day 3"]
+                ))
+            } else {
+                _ = await made.runner.run(call: call(
+                    "publish_class_on",
+                    arguments: ["course": "ICS3U", "section": 1, "date": "2026-10-06"]
+                ))
+            }
+
+            XCTAssertTrue(
+                text(ofCourseLevelPage: "Blocking and Stage Areas", in: made.course)
+                    .contains("createdSection1: 2026-10-06"),
+                "byName=\(byName) did not date the page the class brought"
+            )
+        }
+    }
+
+    // MARK: - What an undo SAYS
+
+    /// Reported from a real course: "Undid unpublished 2 pages in ADA1O
+    /// Section 1."
+    ///
+    /// Three faults in one sentence. It was ungrammatical — a past-tense
+    /// clause pushed into a slot that wanted a noun. It counted FILES, so
+    /// hiding one class read as two pages, because the section's landing page
+    /// is repointed in the same change. And it named neither the page the
+    /// teacher asked about nor the fact that they had asked for the undo.
+    @MainActor
+    func testTheUndoReadsAsASentenceAndNamesThePage() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 23", publish: "true", body: "The last class.", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4, Day 23"]
+        ))
+        let undone: AssistToolOutcome = await made.runner.run(call: call("undo_last_change"))
+
+        XCTAssertEqual(undone.summary, AssistWording.undid("unpublished Unit 4, Day 23"))
+        XCTAssertTrue(undone.summary.contains("Unit 4, Day 23"),
+                      "The teacher asked about a class, not about a number of files")
+        XCTAssertFalse(undone.summary.contains("Undid unpublished"),
+                       "Ungrammatical: \(undone.summary)")
+        XCTAssertFalse(undone.summary.contains("2 pages"),
+                       "The landing page following along is bookkeeping, not what was asked for")
+    }
+
+    /// Every kind of change reads as a sentence, not only the reported one.
+    ///
+    /// "Undo that" applies to whatever was done last, so each producer of an
+    /// undoable change has to supply a clause that survives being dropped into
+    /// one. A clause that only reads well for publishing is a bug waiting for
+    /// whichever teacher uses the other tool first.
+    @MainActor
+    func testEveryKindOfChangeUndoesIntoAGrammaticalSentence() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "false", body: "One.", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "false", body: "Two.", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "publish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+        let one: AssistToolOutcome = await made.runner.run(call: call("undo_last_change"))
+        XCTAssertEqual(one.summary, AssistWording.undid("published Unit 1, Day 1"))
+
+        _ = await made.runner.run(call: call(
+            "publish_pages", arguments: ["course": "ICS3U", "section": 1,
+                                         "pages": "Unit 1, Day 1; Unit 1, Day 2"]
+        ))
+        let two: AssistToolOutcome = await made.runner.run(call: call("undo_last_change"))
+        XCTAssertEqual(two.summary, AssistWording.undid("published Unit 1, Day 1 and Unit 1, Day 2"))
+
+        // Whatever the shape, it is one sentence about a person doing a thing.
+        for summary in [one.summary, two.summary] {
+            XCTAssertTrue(summary.hasPrefix("Earlier, you "), summary)
+            XCTAssertTrue(summary.hasSuffix("."), summary)
+        }
+    }
+
+    /// The failure that read as a success.
+    ///
+    /// When every file has been edited since, NOTHING goes back — and the old
+    /// code fell through to the same "Undid …" sentence it used when the undo
+    /// had worked. A teacher was told their change had been taken back while
+    /// not one file had moved.
+    @MainActor
+    func testAnUndoThatCouldNotPutAnythingBackSaysSoRatherThanClaimingSuccess() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "false", body: "One.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "publish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+
+        // The teacher writes the lesson, in Obsidian, before changing their
+        // mind about publishing it.
+        let pageURL: URL = ClassPages.folderURL(forSection: 1, in: made.course)
+            .appendingPathComponent("Unit 1, Day 1.md")
+        let indexURL: URL = made.course.directoryURL
+            .appendingPathComponent("section1").appendingPathComponent("index.md")
+        for url in [pageURL, indexURL] where FileManager.default.fileExists(atPath: url.path) {
+            let now: String = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+            try (now + "\n\nWritten since.\n").write(to: url, atomically: true, encoding: .utf8)
+        }
+
+        let outcome: AssistToolOutcome = await made.runner.run(call: call("undo_last_change"))
+
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: true"),
+                      "Nothing should have gone back")
+        XCTAssertFalse(outcome.summary.hasPrefix("Earlier, you published Unit 1, Day 1. Then"),
+                       "Reported success while changing nothing: \(outcome.summary)")
+        XCTAssertTrue(outcome.summary.contains("I have not changed anything"), outcome.summary)
+    }
+
+    // MARK: - What an undo DOES to the preview
+
+    /// Reported from a real course: the undo made the file edits and left the
+    /// preview serving the state the teacher had just asked to leave.
+    ///
+    /// The order is the assertion, not the presence of the events. Stop,
+    /// write, start — and the stop must FINISH before the write, because a
+    /// preview left serving while the pages beneath it are rewritten is
+    /// serving a half-changed site.
+    @MainActor
+    func testUndoingStopsThePreviewWaitsWritesAndStartsItAgain() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+        defer { FakePreview.shared.forget() }
+
+        try write(page: "Unit 1, Day 1", publish: "true", body: "One.", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "unpublish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 1, Day 1"]
+        ))
+
+        FakePreview.shared.register(
+            folderPath: made.root.path, courseCode: "ICS3U", sectionNumber: 1
+        )
+        FakePreview.shared.watch(pageAt: ClassPages.folderURL(forSection: 1, in: made.course)
+            .appendingPathComponent("Unit 1, Day 1.md"))
+
+        _ = await made.runner.run(call: call("undo_last_change"))
+
+        XCTAssertEqual(
+            FakePreview.shared.events,
+            ["stop-begins", "stop-ends", "write", "start"],
+            "The undo must stop the preview, wait for it, then write, then start it again"
+        )
+    }
+
+    /// And it does NOT rebuild for a change that never touched the preview.
+    ///
+    /// A created class page arrives unpublished, so making it changed nothing
+    /// the preview shows and taking it away changes nothing either. A blanket
+    /// rebuild would make "undo that" the slowest thing in the window for the
+    /// one change needing it least.
+    @MainActor
+    func testUndoingSomethingThePreviewNeverShowedDoesNotRebuildIt() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+        defer { FakePreview.shared.forget() }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08", body: "One.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+        ))
+        _ = await made.runner.run(call: call(
+            "add_next_class", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        FakePreview.shared.register(
+            folderPath: made.root.path, courseCode: "ICS3U", sectionNumber: 1
+        )
+        _ = await made.runner.run(call: call("undo_last_change"))
+
+        XCTAssertEqual(FakePreview.shared.events, [],
+                       "Nothing the preview shows changed, so nothing should have been rebuilt")
+    }
+
+    // MARK: - Taking back a page that was created
+
+    /// "Undo that" after adding a class page used to answer that the
+    /// conversation had changed nothing — while the page sat in the teacher's
+    /// folder. The undo list held before-and-after copies, and a created page
+    /// has no "before", so nothing was recorded at all.
+    @MainActor
+    func testUndoTakesAwayAClassPageItCreated() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08", body: "One.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+        ))
+
+        let added: AssistToolOutcome = await made.runner.run(call: call(
+            "add_next_class", arguments: ["course": "ICS3U", "section": 1]
+        ))
+        XCTAssertTrue(added.detail.contains("takes the page away again"),
+                      "The teacher has to be told the way out: \(added.detail)")
+
+        let created: [URL] = try classPageURLs(in: made.course).filter { url in
+            return url.lastPathComponent != "Unit 1, Day 1.md"
+                && url.lastPathComponent.lowercased() != "index.md"
+        }
+        XCTAssertEqual(created.count, 1, "One page should have been created")
+
+        let undone: AssistToolOutcome = await made.runner.run(call: call("undo_last_change"))
+
+        XCTAssertTrue(undone.summary.hasPrefix("Earlier, you added the class page "), undone.summary)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: created[0].path),
+                       "The page it created is still there after an undo")
+    }
+
+    /// And it leaves the page alone once the teacher has written in it — the
+    /// same rule that protects an edited page from an undo of a publish.
+    @MainActor
+    func testUndoLeavesACreatedPageAloneOnceTheTeacherHasWrittenInIt() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08", body: "One.", in: made.course)
+        _ = await made.runner.run(call: call(
+            "remember_timetable",
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+        ))
+        _ = await made.runner.run(call: call(
+            "add_next_class", arguments: ["course": "ICS3U", "section": 1]
+        ))
+
+        let created: [URL] = try classPageURLs(in: made.course).filter { url in
+            return url.lastPathComponent != "Unit 1, Day 1.md"
+                && url.lastPathComponent.lowercased() != "index.md"
+        }
+        XCTAssertEqual(created.count, 1)
+        let lesson: String = (try? String(contentsOf: created[0], encoding: .utf8)) ?? ""
+        try (lesson + "\n\nWhat we did today.\n").write(
+            to: created[0], atomically: true, encoding: .utf8
+        )
+
+        let undone: AssistToolOutcome = await made.runner.run(call: call("undo_last_change"))
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: created[0].path),
+                      "An undo threw away work the teacher had written")
+        XCTAssertTrue(undone.summary.contains("I have not changed anything"), undone.summary)
+    }
+
+    /// Every class page file in a section, for the two tests above.
+    @MainActor
+    private func classPageURLs(in course: Course) throws -> [URL] {
+        let folder: URL = ClassPages.folderURL(forSection: 1, in: course)
+        let all: [URL] = (try? FileManager.default.contentsOfDirectory(
+            at: folder, includingPropertiesForKeys: nil
+        )) ?? []
+        var pages: [URL] = []
+        for url in all where url.pathExtension.lowercased() == "md" {
+            pages.append(url)
+        }
+        return pages
     }
 
     // MARK: - Backing up, once per conversation
@@ -1484,13 +3110,14 @@ final class AssistToolRunnerTests: XCTestCase {
     private func write(courseLevelPage title: String,
                        inFolder folder: String = "Concepts",
                        publishForSection1: String,
+                       dated: String = "2026-09-08",
                        body: String,
                        in course: Course) throws {
         let text: String = """
         ---
         title: \(title)
         publishForSection1: \(publishForSection1)
-        createdSection1: 2026-09-08T07:00:00.000-0400
+        createdSection1: \(dated)T07:00:00.000-0400
         ---
 
         \(body)
@@ -1499,6 +3126,30 @@ final class AssistToolRunnerTests: XCTestCase {
         try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
         try text.write(
             to: folderURL.appendingPathComponent(title + ".md"),
+            atomically: true, encoding: .utf8
+        )
+    }
+
+    /// A folder's landing page — `index.md` inside a folder, which is what
+    /// every folder in a real course has and what the fixtures could not make
+    /// until the naming bug was reported.
+    @MainActor
+    private func write(folderIndex folder: String,
+                       titled title: String?,
+                       publishForSection1: String,
+                       body: String,
+                       in course: Course) throws {
+        var frontmatter: String = "---\n"
+        if let title {
+            frontmatter += "title: \(title)\n"
+        }
+        frontmatter += "publishForSection1: \(publishForSection1)\n"
+        frontmatter += "createdSection1: 2026-09-08T07:00:00.000-0400\n---\n\n"
+
+        let folderURL: URL = course.directoryURL.appendingPathComponent(folder)
+        try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
+        try (frontmatter + body).write(
+            to: folderURL.appendingPathComponent("index.md"),
             atomically: true, encoding: .utf8
         )
     }

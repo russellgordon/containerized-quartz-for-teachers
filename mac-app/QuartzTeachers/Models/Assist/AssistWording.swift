@@ -128,6 +128,85 @@ nonisolated enum AssistWording {
              + AssistWording.whereTheOutputIs
     }
 
+    // MARK: - Taking something back
+
+    /// Every one of these is a whole sentence with a subject and a verb, and
+    /// that is the point of them being here rather than assembled at the call
+    /// site.
+    ///
+    /// They used to be built by pushing a stored clause into a slot —
+    /// `"Undid \(description)."` — which produced **"Undid unpublished 2 pages
+    /// in ADA1O Section 1."** for a teacher who had asked to unpublish one
+    /// class. Three things were wrong with it at once: it was ungrammatical,
+    /// it counted files rather than naming what the teacher had asked for, and
+    /// the same slot was reused for a refusal, so a REFUSAL to undo anything
+    /// also came out reading like a report of success.
+    ///
+    /// `whatHappened` is always a past-tense clause naming what was done —
+    /// "unpublished Unit 4, Day 23" — so it can only ever land inside a
+    /// sentence written on purpose.
+
+    /// The undo worked, and everything went back.
+    static func undid(_ whatHappened: String) -> String {
+        return "Earlier, you \(whatHappened). Then you asked me to undo that, and I have done so."
+    }
+
+    /// The undo worked, but some files had been edited since and were left as
+    /// they are — so this must NOT read like a clean success.
+    static func undidPartly(_ whatHappened: String, leftAlone: Int) -> String {
+        let pages: String = leftAlone == 1 ? "one page" : "\(leftAlone) pages"
+        return "Earlier, you \(whatHappened). You have asked me to undo that, and I have put back "
+             + "everything I still recognised — but I left \(pages) alone, because they have been "
+             + "edited since."
+    }
+
+    /// Nothing could go back, because every file has been edited since.
+    ///
+    /// The one that most needed writing. It used to fall through to the
+    /// success sentence, so a teacher was told their change had been undone
+    /// when not one file had moved.
+    static func couldNotUndo(_ whatHappened: String, leftAlone: Int) -> String {
+        let pages: String = leftAlone == 1 ? "that page has" : "those \(leftAlone) pages have"
+        return "Earlier, you \(whatHappened), and you have asked me to undo that — but I have not "
+             + "changed anything, because \(pages) been edited since. Putting my old copy back "
+             + "would throw away that newer work."
+    }
+
+    /// Why a partly-done undo is still on the list.
+    static let undoIsStillAvailable: String =
+        "That change is still on the list, so you can ask me to undo it again once you have "
+        + "dealt with the pages I left alone."
+
+    /// There is nothing on the list at all.
+    ///
+    /// "No PAGES", not "nothing", and the distinction is load-bearing. The old
+    /// sentence said "I have not changed anything in this conversation yet",
+    /// which was a lie in two situations: after creating a class page (now
+    /// undoable, so it no longer arises) and after remembering a timetable,
+    /// which writes a course's settings and touches no page at all and is
+    /// deliberately not on the list. Narrowing the claim to pages makes it
+    /// true in every case without making it longer.
+    static let nothingToUndo: String =
+        "There is nothing on my undo list — I have not changed any pages in this conversation yet. "
+        + "Anything older is in Plantoir's Backups list."
+
+    /// Said when a class page is created, because a teacher has to know
+    /// whether the way out is "Undo that" or the Finder.
+    ///
+    /// This sentence used to say the opposite — "“Undo that” does not take
+    /// away a page it created — delete it in Obsidian if it isn't wanted" —
+    /// which was true of the old undo list and is now wrong. A line describing
+    /// what a feature USED to do is worse than no line, because it is believed.
+    static let aCreatedPageCanBeTakenBack: String =
+        "“Undo that” takes the page away again, as long as you have not written anything in it yet. "
+        + "Once you have, it is yours and I will leave it alone."
+
+    /// The standing caveat: an undo reaches the teacher's own files and their
+    /// preview, and stops there.
+    static let undoDoesNotReachTheLiveSite: String =
+        "If you had already deployed this section, undoing it here does not change what students "
+        + "see. Deploy again when you want the live site to match."
+
     // MARK: - Shared fragments
 
     /// One phrasing for "go and look at what happened", because it was two:

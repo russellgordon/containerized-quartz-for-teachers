@@ -74,6 +74,46 @@
         "carries": "course, section, and the reason",
         "event": "assistant could not answer",
         "why": "The failure that leaves nothing else behind: no tool, no turn, no output. Without this line 'I asked it something and nothing happened' is unfalsifiable."
+      },
+      {
+        "carries": "which assistant the teacher is set to use",
+        "event": "app settings opened",
+        "why": "The settings panel is where a teacher changes how much of their Mac the assistant may take, and 'it got slow last week' is a report about a change nobody else can date. Recording the state on the way IN also means a trail shows what the setting was even when the teacher looked and changed nothing."
+      },
+      {
+        "carries": "which assistant was chosen, and which one that lands on for this Mac",
+        "event": "assistant model chosen",
+        "why": "The choice is the single biggest lever a teacher has over the assistant's accuracy AND over the machine's memory, so almost every later report about either is explained by this line. Both halves are recorded because 'chose automatic' does not answer the question anybody is asking months later - the resolved answer depends on the Mac and on a rule that can change."
+      },
+      {
+        "carries": "which assistant, and how big the download is",
+        "event": "assistant model download started",
+        "why": "Gigabytes over a school connection, and the commonest failure is that it never finished. A start with no matching finish is the whole diagnosis, and it cannot be seen without recording the start."
+      },
+      {
+        "carries": "which assistant, and how big the download was",
+        "event": "assistant model downloaded",
+        "why": "The other half of the pair above. It also dates when a Mac gained several gigabytes, which is the answer to a disk-space question that otherwise looks like it has nothing to do with Plantoir."
+      },
+      {
+        "carries": "which assistant, and the reason it failed",
+        "event": "assistant model download failed",
+        "why": "Same reasoning as 'settings could not be saved': recording only the successes hides exactly the case worth seeing. A captive portal answers 200 with something that is not a model, so the failure here is a wrong-size file rather than a network error, and that sentence is worth having verbatim."
+      },
+      {
+        "carries": "which assistant, and how much space it freed",
+        "event": "assistant model removed",
+        "why": "Removing one is allowed even when it is the one in use - the next time the assistant is opened it offers to download it again. Without this line that re-download looks like the app losing a file on its own, which is a report about a bug that is not there."
+      },
+      {
+        "carries": "which assistant",
+        "event": "assistant model download stopped",
+        "why": "A start with no ending line reads as a stall, and a stall is what somebody would go looking for. Recording the stop is what makes the absence of a stop mean something - it turns 'started, nothing after' from ambiguous into a genuine finding."
+      },
+      {
+        "carries": "whether the assistant now asks before changing anything",
+        "event": "assistant confirmation changed",
+        "why": "Turning off the confirmation step changes what every later request DOES - it goes straight through instead of stopping for a button. A report that says 'it just did it without asking' is explained entirely by this line, and without it the behaviour looks like a bug in the gate rather than a setting somebody chose."
       }
     ],
     "note": "The breadcrumb trail: what the teacher was doing, in the order they did it, in ONE file. Task records answer 'what did that publish print'; they do not answer the question support opens with, which is 'what were you doing when it went wrong'. Two files each holding half a story force whoever reads them to interleave by timestamp in their head, and they will get it wrong - so the assistant's turns go in here too. The list below is the MINIMUM: an app may record more, but a missing event is a gap in both apps at once. Deliberately coarse - every line is something a teacher would recognise as an action they took, never a view redraw or a state change, because the failure mode of logging everything is that the one line that mattered is on page forty.",
@@ -82,6 +122,80 @@
       "why": "The teacher's own words go on their own line behind a fixed prefix, so leaving them out of a report is dropping lines by prefix rather than parsing anything. They are kept locally because a routing problem cannot be looked into without the sentence that caused it, and withheld from the report unless the teacher ticks the box, because their words are the one thing here unmistakably theirs to hand over."
     },
     "rule": "EVERY new feature, and every CHANGED behaviour, that a teacher can see leaves a line on this trail. Adding one means naming the event here and in both apps — not writing free text at a call site, and not deciding it is too small to bother with. The failure this prevents is the one already met in the field: a teacher builds a preview, opens the assistant, asks for a report, and is told there is nothing to report, because the two things they just did were not among the things anybody had thought to record. A feature that leaves no trace is a feature that can only be diagnosed by asking the teacher to do it again, which is the thing they came to you because they could not do."
+  },
+  "assistantModelChoice": {
+    "note": "Which assistant runs on a teacher's machine, and what they are allowed to do about it. Shared because these are rules with inputs and outputs, not pictures: the panel that holds them looks nothing alike on the two platforms and must BEHAVE identically. What is deliberately not here is the layout, the keyboard shortcut, and where the settings window lives - see WINDOWS-HANDOFF.md, 'Letting a teacher choose which assistant runs'.",
+    "defaultChoice": "automatic",
+    "choices": [
+      {
+        "key": "automatic",
+        "label": "Choose for me",
+        "namesATier": false
+      },
+      {
+        "key": "smaller",
+        "label": "The smaller assistant",
+        "namesATier": true
+      },
+      {
+        "key": "larger",
+        "label": "The larger assistant",
+        "namesATier": true
+      }
+    ],
+    "automaticResolvesAtPointOfUse": {
+      "value": true,
+      "why": "The automatic choice is stored as an INTENT and resolved every time it is used, never resolved once and written into preferences. Storing the answer would mean a later change to the tier ladder reached every machine EXCEPT the ones whose teacher had opened Settings - so the people who engaged with the setting would get the stalest behaviour."
+    },
+    "comfortFraction": {
+      "denominator": 3,
+      "why": "A model is comfortable on a machine when its resident size is at most a third of physical memory. Not a new number: it is the line the automatic ladder has always been held to, which is why the automatic choice can never produce a caution and a test asserts that."
+    },
+    "caution": {
+      "appearsWhen": "a hand-picked choice is not comfortable on this machine",
+      "neverAppearsFor": "automatic",
+      "mustName": [
+        "this machine's memory",
+        "the chosen assistant's memory while working"
+      ],
+      "blocksTheChoice": false,
+      "why": "A caution rather than a disabled row. A teacher who has just quit everything else knows something the operating system does not, and greying the option out with the reason beside it gives them no way to act on what they know. What they are owed is both numbers in one sentence, so the choice is informed rather than prevented."
+    },
+    "removal": {
+      "refusedWhileAnyAssistantWindowIsOpen": true,
+      "messageNamesTheSectionToClose": true,
+      "theCurrentlyChosenOneMayBeRemoved": true,
+      "why": "The refusal is about ANY open assistant, not about whether that window happens to use that rung: working out which file is genuinely mapped means tracking state neither app keeps, and getting it wrong deletes weights out from under a running engine. Removing the CHOSEN one is allowed on purpose - it is not a broken state, it is the state every machine is in before its first download, and refusing would trap a teacher who wants their disk space back behind a choice they did not want to change."
+    },
+    "guidance": {
+      "mustNameDownloadSize": true,
+      "mustNameMemoryWhileWorking": true,
+      "why": "Two different decisions, and neither is guessable from the other: disk is what runs out on a small laptop, memory is what makes the machine feel slow while a class is being prepared and never appears as a number anywhere. On the mac the larger download is 2.2x the smaller but 2.9x the memory, because most of the difference is the conversation being held rather than the file being read. Derive both from the tier table; typing them into the interface guarantees they drift the first time a quant changes."
+    },
+    "namesNoModel": {
+      "value": true,
+      "jargon": [
+        "qwen",
+        "llama",
+        "gguf",
+        "instruct",
+        "1.5b",
+        "4b",
+        "7b",
+        "3b",
+        "quant",
+        "token",
+        "context window",
+        "parameter",
+        "docker",
+        "container",
+        "toolchain",
+        "gpu",
+        "metal",
+        "inference"
+      ],
+      "why": "Rule one, applied where it is hardest: the settings panel is the one screen genuinely ABOUT the model, so a name leaks in most naturally here. Sweep every label, detail, caution and summary the panel can produce against this list rather than spot-checking."
+    }
   },
   "curriculumRules": {
     "expectationWording": {
@@ -175,6 +289,47 @@
     "note": "What counts as a curriculum expectation. Written after checking the code rather than from memory: an expectation is not a code found in a page's TEXT, it is a PAGE named by a code inside a curriculum folder. A first draft of this contract asserted text-scanning and was wrong before it was ever run."
   },
   "note": "Eight rule sets that both apps need and neither platform owns. The MECHANISMS behind several of them differ completely - launchd against Task Scheduler, AppKit against WinUI, ~/Library/Logs against %LOCALAPPDATA% - which is exactly why the rules are written here instead: what must be refused, matched, stripped, or taken out of a problem report does not change with the machinery that does it.",
+  "pageNaming": {
+    "note": "What a page is CALLED when the assistant talks about it, which is not what its file is called. Shared because it is a rule with inputs and outputs and because both apps read the same folders: a teacher told that 'index' still links to a page has been told nothing, since every folder in a course has an index.md. Reported from a real course (ADA1O Section 1).",
+    "theRule": [
+      "the frontmatter title, unless it is literally 'index'",
+      "for a file called index.md, the name of its FOLDER",
+      "otherwise the file name without .md"
+    ],
+    "why": "Copied from Quartz's own fileTrie.ts displayName rather than invented, so what the assistant says and what the site's sidebar shows cannot drift: `const nonIndexTitle = data?.title === 'index' ? undefined : data?.title; return displayNameOverride ?? nonIndexTitle ?? fileSegmentHint ?? slugSegment`. If Quartz's rule changes, follow it.",
+    "neverShown": "index",
+    "identityIsSeparateFromLabel": {
+      "value": true,
+      "why": "A page's FILE NAME stays the identity, because wikilinks resolve by file name and every lookup in the page graph goes through it. Only the label changes. The trap is what happens in between: a referrer remembered by NAME and looked back up resolves 'index' to whichever folder's landing page came first in the walk, which was invisible while the answer printed as 'index' and becomes a confidently WRONG folder name the moment it does not. Carry the page, not its name."
+    },
+    "cases": [
+      {
+        "file": "Portfolios/index.md",
+        "frontmatterTitle": "Portfolios",
+        "shown": "Portfolios"
+      },
+      {
+        "file": "Warm-Ups/index.md",
+        "frontmatterTitle": null,
+        "shown": "Warm-Ups"
+      },
+      {
+        "file": "Style/index.md",
+        "frontmatterTitle": "index",
+        "shown": "Style"
+      },
+      {
+        "file": "Portfolios/Journal Checklist.md",
+        "frontmatterTitle": "Journal Checklist",
+        "shown": "Journal Checklist"
+      },
+      {
+        "file": "Concepts/Stage Directions.md",
+        "frontmatterTitle": null,
+        "shown": "Stage Directions"
+      }
+    ]
+  },
   "problemReportDialog": {
     "askAboutPromptsWhen": [
       {

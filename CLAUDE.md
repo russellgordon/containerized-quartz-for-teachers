@@ -132,8 +132,25 @@ Neither app contains toolchain logic of its own: they write the same
    is the sole developer here and the history is linear; a branch only adds a
    merge he has to undo. (The "for now" is his — if this project gains other
    contributors, a later instruction to branch supersedes this rather than
-   contradicting it.) Commit only when asked, and end the message with the
-   `Co-Authored-By` trailer.
+   contradicting it.) End every message with the `Co-Authored-By` trailer.
+
+   **When a session is ITERATING on something — a run of changes each building
+   on the last, the shape this project's work usually takes — commit as you
+   go, without being asked each time.** Finish a coherent piece, get its tests
+   green, rebuild, and commit it; then start the next. This is a standing
+   order, not a per-session permission.
+
+   The failure it prevents is one session's worth of unrelated work sitting in
+   one working tree: forty files changed, a dozen decisions tangled together,
+   and no way to read back what was done for which reason — or to undo one
+   piece without unpicking the rest. A commit per piece is also the only thing
+   that makes `GUI-IMPROVEMENTS.md` rows and the code agree, since each row
+   then has a commit behind it.
+
+   "A coherent piece" is one thing a teacher could notice, with its tests and
+   its write-up. Not one file, and not a whole afternoon. Outside an iterative
+   run — a one-off question, an experiment, something half-finished — the
+   older rule still holds: ask first.
 
 7. **Colima is shared with other projects** on this machine (Supabase local dev,
    among others). Never `colima stop` unless `docker ps -q` comes back empty.
@@ -167,6 +184,57 @@ Neither app contains toolchain logic of its own: they write the same
    back it up first, and check afterwards that it matches), and leave no
    half-finished edit open in the app. Say what you touched and that you put
    it back.
+
+10. **When you think the work is done, rebuild the app before you say so.**
+    Not after every edit — at the point you believe the change addresses what
+    was asked and you are about to report back. That is the moment Russell goes
+    to test it, and his Dock icon points at the Debug build in DerivedData
+    (`~/Library/Developer/Xcode/DerivedData/Plantoir-*/Build/Products/Debug/Plantoir.app`,
+    the same bundle `xcodebuild` writes), so "rebuild it" and "make it ready to
+    test" are the same act:
+
+    ```bash
+    cd mac-app
+    xcodegen generate     # if files were added or removed, or project.yml changed
+    xcodebuild -project Plantoir.xcodeproj -scheme Plantoir -configuration Debug build
+    ```
+
+    Then say plainly that it is ready. The cost of forgetting is not a wasted
+    rebuild: he launches from the Dock, tests the OLD binary, and reports
+    behaviour that was fixed an hour ago — which then gets investigated as a new
+    fault. A report of "done" that leaves a stale binary behind is not done.
+
+    Three things make this go wrong quietly, all of them met in practice:
+
+    - **`xcodebuild test` is not a build you can leave behind.** It rebuilds the
+      bundle as a TEST HOST, with XCTest frameworks inside it, and it TERMINATES
+      any running copy — the test host is the app. So a plain `build` has to come
+      *after* the last test run, not before it, and an app that was running when
+      you started testing is not running when you finish.
+    - **Do not verify the bundle with `strings` or `nm` on
+      `Contents/MacOS/Plantoir`.** That file is a ~59 KB stub; the code is in
+      `Plantoir.debug.dylib` beside it. Checking the stub reports zero matches
+      for everything — including sentences that have shipped for weeks — which
+      reads exactly like a build that did not take. Check the dylib, or check
+      nothing.
+    - **Rebuild, then LEAVE IT QUIT — do not relaunch it for him.** The reason
+      is the same one behind rule 9: `open` ACTIVATES, so relaunching makes the
+      app jump in front of whatever he is doing and steals focus from the window
+      he was typing in. He opens it from the Dock when he is ready, and that
+      launch is his. (This reverses an earlier standing authorisation to quit
+      and relaunch every time; `MAC-BOOTSTRAP.md` step 5 and the `mac-app` skill
+      have been corrected to match.) Quit any copy you were driving — but only
+      after a build that SUCCEEDED and with the bundle confirmed present, since
+      quitting his working copy to replace it with nothing is the one genuinely
+      damaging move available here.
+
+    The [`mac-app` skill](.claude/skills/mac-app/SKILL.md) carries the rest —
+    when a plain rebuild is not enough, how to clean without leaving the Dock
+    icon pointing at nothing, and what to tell him he must do to see the change.
+    Invoke it rather than reconstructing its steps. Toolchain edits have a
+    second, separate chain to travel besides ("Editing the toolchain: two traps
+    that cost real time", below); rebuilding the app is the first link of it,
+    not a substitute for it.
 
 ## Setting up on a new machine
 
@@ -454,7 +522,7 @@ it rather than restating it:
 | How is a teacher's list of class dates read? | [`contracts/schedule-rules.json`](contracts/schedule-rules.json). |
 | Which page titles carry numbers, what is the next class called, what happens when room is made for one? | [`contracts/class-planning.json`](contracts/class-planning.json). |
 | What are the backup and archive files called, and what section number is offered next? | [`contracts/course-management.json`](contracts/course-management.json). |
-| What does a scheduled deploy refuse, what does the sidebar filter show, what is stripped from console output, what counts as a curriculum expectation, what is taken out of (and kept in) a problem report, **which events every feature must record on the trail**, and when the report asks about the local AI assistant? | [`contracts/shared-rules.json`](contracts/shared-rules.json). |
+| What does a scheduled deploy refuse, what does the sidebar filter show, what is stripped from console output, what counts as a curriculum expectation, what is taken out of (and kept in) a problem report, **which events every feature must record on the trail**, when the report asks about the local AI assistant, and **which local assistant a teacher may choose (and when one may be removed)**? | [`contracts/shared-rules.json`](contracts/shared-rules.json). |
 | What keys does `course_config.json` carry, and what decides whether students see a page? | [`contracts/file-formats.json`](contracts/file-formats.json) — a FORMAT rather than a behaviour, and the one both apps write and the Python reads. |
 | WHY is it that way, and what was rejected? | [`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md) for anything an implementer needs; a code comment for anything a reader of that file needs. |
 | WHAT changed, WHEN, and what it cost | [`GUI-IMPROVEMENTS.md`](GUI-IMPROVEMENTS.md) — a dated log. **Append-only history, not a specification**: a row records what was true that day, and is not edited when the behaviour changes again. Never quote a row as the current wording. |
@@ -498,7 +566,7 @@ agreed. What follows is the same reading order, in short:
 2. **[`WINDOWS-HANDOFF.md`](WINDOWS-HANDOFF.md)** — architecture, the config
    contract, and the reasoning behind the decisions. Long, and the section
    headings are enough to navigate.
-3. **[`contracts/README.md`](contracts/README.md)**, then the eight JSON files — its coverage table says what is shared and what deliberately is not.
+3. **[`contracts/README.md`](contracts/README.md)**, then the JSON files — its coverage table says what is shared and what deliberately is not.
    These are the acceptance list: wire them into `Plantoir.Tests` and the
    assistant's behaviour is tested rather than eyeballed. **Do not retype the
    sentences or the scenarios into your test files** — deserialise them.

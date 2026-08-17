@@ -4,13 +4,30 @@ import SwiftUI
 /// What the assistant tells a teacher it is good at — kept on screen for
 /// the whole conversation, not just at the start.
 ///
-/// These nine are not decoration. They are measured — the routing suite probes
-/// them word for word — and several are matched in code rather than routed,
-/// precisely so that what the window promises is what the window delivers. A
-/// card offering something the assistant is unreliable at is worse than a card
-/// with nothing on it: "What would publishing Unit 3, Day 1 change?" was
-/// removed for exactly that reason, having gone to the wrong tool on both
-/// models ten times out of ten.
+/// These twelve are not decoration. They are measured — the routing suite
+/// probes them word for word — and most are matched in code rather than
+/// routed, precisely so that what the window promises is what the window
+/// delivers. A card offering something the assistant is unreliable at is worse
+/// than a card with nothing on it: "What would publishing Unit 3, Day 1
+/// change?" was removed for exactly that reason, having gone to the wrong tool
+/// on both models ten times out of ten.
+///
+/// **Two tests, and a card has to pass both.** It sat at nine for a while and
+/// was missing things the assistant could genuinely do, so nobody was told
+/// about them; the fix for that is the first test:
+///
+/// 1. **Is it reliable?** A phrasing with NO arguments to read out belongs in
+///    `AssistCardCommand.fixedShapes` and is then reliable by construction; a
+///    phrasing carrying a page title or a date has to go to the model, so it
+///    is measured BEFORE it goes on the card, not after.
+/// 2. **Is it worth asking for?** Listing a section's pages and reading one
+///    back passed the first test at 10/10 and failed this one — a teacher has
+///    Obsidian and Plantoir's sidebar open, so a chat bubble is a worse way to
+///    see a page than the two windows already in front of them.
+///
+/// The second test is the one that keeps this a list rather than an inventory.
+/// The tool surface is thirteen; the shelf is twelve of a different set, and
+/// the gap is deliberate.
 ///
 /// **Why it stays, and why it folds.** It used to appear only while the
 /// conversation was empty, which meant the teacher saw the list once, at the
@@ -68,8 +85,16 @@ struct AssistPromptShelfView: View {
 
     /// Grouped the way a teacher thinks about them, not the way the tools
     /// are organised.
-    private var groups: [(String, [String])] {
-        return [
+    ///
+    /// Static, and not private, so a test can read the real list rather than a
+    /// copy of it. What a test must NOT do is take the group TITLES from here
+    /// — those are checked against a list written out by hand, or the test
+    /// would simply agree with whatever the view said. The PHRASINGS are the
+    /// opposite case: reading them here is the only way to catch a card whose
+    /// wording has drifted away from the matcher that was supposed to serve
+    /// it, which is a button that quietly goes to the model on a shape the
+    /// model was measured getting wrong.
+    static let groups: [(String, [String])] = [
             // NOT "showing work to students". Publishing a page marks it for
             // inclusion — it goes into the next preview and the next deploy —
             // and DEPLOYING is the act that reaches students. A title saying
@@ -86,9 +111,26 @@ struct AssistPromptShelfView: View {
                 // the true one.
                 "Publish Unit 2, Day 3",
                 "Publish tomorrow's class",
+                // Reads the way a teacher says it, and — unlike the earlier
+                // "Publish the class on Monday" — it never reaches the model:
+                // all seven weekdays are fixed phrasings, so the date is
+                // worked out in code and cannot be one the model invented.
+                //
+                // The model still handles a teacher's own phrasing at 10/10,
+                // because every message carries the date. That measurement is
+                // in research/ai-assist/shelf-phrasings-results.txt, along with
+                // the near-miss worth knowing: probed WITHOUT the dateline the
+                // same request landed a month away, 10 out of 10, and a good
+                // card was nearly dropped for a fault that belonged to the
+                // harness.
+                "Publish Monday's class",
+                // A whole unit, one class at a time. Parsed rather than
+                // listed, because there is no fixed set of unit numbers.
+                "Publish Unit 5",
             ]),
             ("Taking it back", [
                 "Unpublish Unit 2, Day 3",
+                "Unpublish Unit 4",
                 "Undo that",
             ]),
             ("Checking", [
@@ -100,14 +142,40 @@ struct AssistPromptShelfView: View {
                 // the Preview button in the section window does, so it wears
                 // the same word.
                 "Preview",
+                // Listing a section's pages and reading one back were both
+                // tried here and REMOVED, and the reason is not routing —
+                // both measured 10/10. They are simply not worth a card. A
+                // teacher has the pages in front of them in Obsidian and in
+                // Plantoir's own sidebar, so reading one back into a chat
+                // bubble is a worse way to see it than the two windows they
+                // already have open, and a list of file names answers a
+                // question nobody with a folder open is asking.
+                //
+                // The TOOLS stay (`list_pages`, `read_page`): the model uses
+                // them to look things up before it acts, which is the job
+                // they are actually good for. Not everything the assistant
+                // can do is worth telling a teacher they can ask for — a
+                // shelf is a list of things worth ASKING FOR, not an
+                // inventory of the tool surface.
+            ]),
+            ("Planning classes", [
+                "Add the next class page",
+                "Start a new unit for the next class",
+                "Add five more days to Unit 4",
+                "Duplicate Unit 3, Day 2 as my next class",
+                "What dates am I teaching?",
+                // The follow-up the timetable answer offers. On the shelf as
+                // well because a teacher who has not asked the question yet
+                // has no way to know it is there — an offer made only inside
+                // an answer is invisible until you have already had it.
+                "Show me the rest of the dates",
             ]),
             ("Putting the site online", [
                 "Deploy now",
                 "Deploy at 6:30 AM",
                 "Cancel scheduled deploy",
             ]),
-        ]
-    }
+    ]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -116,7 +184,7 @@ struct AssistPromptShelfView: View {
             // and does not tap again. Saying "then change it" is the important
             // half: these are shapes to start from, and "Publish Unit 2, Day
             // 3" is almost never the page actually wanted.
-            Text("Things you can ask for — tap one to put it in the box, then change it to suit. Return or tap arrow to submit.")
+            Text("Here are some things you can ask me for. Tap one to put it in the box, change it to suit, then press Return.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -133,7 +201,7 @@ struct AssistPromptShelfView: View {
             // what makes four closed lines occupy four lines.
             ScrollView {
                 VStack(alignment: .leading, spacing: 2) {
-                    ForEach(groups, id: \.0) { group in
+                    ForEach(AssistPromptShelfView.groups, id: \.0) { group in
                         DisclosureGroup(isExpanded: binding(for: group.0)) {
                             VStack(alignment: .leading, spacing: 4) {
                                 ForEach(group.1, id: \.self) { phrasing in

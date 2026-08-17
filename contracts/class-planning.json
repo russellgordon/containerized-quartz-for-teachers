@@ -1,4 +1,38 @@
 {
+  "datingPagesAClassBrings": {
+    "note": "When a class page is published, the pages it links to can take the class's date. Shared because the date is what ORDERS a page on the site, both apps write it, and the Python installer already follows the same convention when it pre-populates a course.",
+    "frontmatterKey": {
+      "sectionLocalPage": "created",
+      "courseLevelPage": "createdSection<N>",
+      "why": "A page inside the section's own folder belongs to one section and carries 'created'. A course-level page is shared between sections and carries one key per section, so hiding or dating it for section 1 says nothing about section 2."
+    },
+    "movesWhen": [
+      "the page is reached by following links from a class page being published",
+      "the page is HIDDEN right now, so this publish is the first time students will see it",
+      "the page is not itself a class page"
+    ],
+    "doesNotMoveWhen": [
+      "the page is already visible to students - it has a place on the site somebody may have linked to or looked at, and republishing a class must not shuffle work that was already out",
+      "the page named for publishing is not a class page - there is no class day to inherit",
+      "the page is a class page - a class's date is its position in the schedule and nothing may move it"
+    ],
+    "sharedPagesMoveToo": {
+      "value": true,
+      "why": "A page several classes link to still moves, as long as students have never seen it. An earlier rule left shared pages alone - 'a concept page linked from three different lessons belongs to none of them' - which is sound for a page already on the site and beside the point for one nobody can reach. A page students cannot see has no place to be left in; it has only the day its FILE was made, which is a fact about the teacher's evening rather than about the course."
+    },
+    "whenSeveralClassesShareAPage": {
+      "rule": "the earliest class claims it",
+      "why": "The same convention the course installer already uses - first_use_dates in setup_course.py dates a shared page to the first class that references it - so a pre-populated course and a hand-published one date their pages the same way. Ties are broken by page title so two classes on one day give the same answer every run rather than depending on folder order."
+    },
+    "bothRoutesAgree": {
+      "value": true,
+      "why": "Naming the class ('publish Unit 2, Day 3') and naming its day ('publish tomorrow's class') are two ways of saying one thing and must date pages identically. They did not: the by-day route worked the dates out and the by-name route passed an empty list, so the same teacher got two different results depending on which sentence they used."
+    },
+    "neverPublishedIsInferred": {
+      "from": "the page being hidden at the moment the publish is planned",
+      "why": "Nothing on disk records a page's history. A page published once and later hidden therefore counts as never published and would take a new date. Recording the truth would mean a new frontmatter key on every page, agreed between both apps and the Python; the inference costs nothing and is right in every case anybody has met."
+    }
+  },
   "insertion": {
     "cases": [
       {

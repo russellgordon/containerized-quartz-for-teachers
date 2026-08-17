@@ -45,7 +45,8 @@ final class AssistSession {
     /// What this Mac is allowed to give the assistant.
     let budget: AssistHardwareBudget
 
-    /// The weights for this Mac.
+    /// The weights this window will use — the teacher's choice applied to
+    /// this Mac, not simply what the Mac would have picked.
     let store: AssistModelStore
 
     /// The conversation, once there is something to have it with.
@@ -65,11 +66,29 @@ final class AssistSession {
     /// The engine.
     private var host: AssistServerHost?
 
+    /// Whether the download in flight was started from THIS window.
+    ///
+    /// It decides what closing the window does. Cancelling on close is
+    /// deliberate — a teacher who shuts the window has finished, and leaving
+    /// gigabytes coming down behind their back is not a kindness. But since
+    /// the stores became shared (`AssistModelStores`), the download this
+    /// window can see may have been started in Settings, where the whole point
+    /// was to fetch it ahead of time and get on with something else. Closing a
+    /// window that merely WATCHED must not cancel that.
+    private var startedTheDownload: Bool = false
+
     // MARK: - Computed properties
 
-    /// The model chosen for this Mac.
+    /// The model this window is running.
+    ///
+    /// Reads it off the STORE rather than recomputing it from the budget. The
+    /// teacher can change the setting while a window is open, and a window
+    /// that then described a different assistant than the one it had loaded
+    /// would be lying about the very thing the setting exists to make visible.
+    /// A window keeps the assistant it opened with; the next one picks up the
+    /// change.
     var tier: AssistModelTier {
-        return budget.tier
+        return store.tier
     }
 
     /// Whether the teacher can type.
@@ -124,10 +143,29 @@ final class AssistSession {
         self.workingFolder = workingFolder
         let budget: AssistHardwareBudget = AssistHardwareBudget.current()
         self.budget = budget
-        self.store = AssistModelStore(tier: budget.tier)
+        let choice: AssistModelChoice = AppSettings.shared.assistantModelChoice
+        self.store = AssistModelStores.store(for: choice.resolved(for: budget))
     }
 
     // MARK: - Functions
+
+    /// The teacher pressed Download in this window.
+    ///
+    /// Goes through the session rather than straight to the store so that the
+    /// window knows it owns this download — see `startedTheDownload`.
+    func beginDownload() {
+        startedTheDownload = true
+        store.download()
+    }
+
+    /// The teacher pressed Stop in this window.
+    ///
+    /// An explicit stop is honoured wherever the download came from: they are
+    /// looking at it and asking for it to end.
+    func stopDownload() {
+        startedTheDownload = false
+        store.cancel()
+    }
 
     /// Work out what this window can offer, and get as far towards a
     /// conversation as it can without asking the teacher anything.
@@ -202,7 +240,7 @@ final class AssistSession {
             course: courseCode, section: sectionNumber
         )
 
-        let host: AssistServerHost = AssistServerHost(modelURL: store.fileURL, budget: budget)
+        let host: AssistServerHost = AssistServerHost(modelURL: store.fileURL, budget: budget, tier: tier)
         self.host = host
         await host.start()
 
@@ -317,7 +355,9 @@ final class AssistSession {
     /// gigabytes of a teacher's RAM after they have finished with it is the
     /// sort of thing that gets an app uninstalled.
     func finish() {
-        store.cancel()
+        if startedTheDownload {
+            store.cancel()
+        }
         host?.stop()
         host = nil
         agent = nil

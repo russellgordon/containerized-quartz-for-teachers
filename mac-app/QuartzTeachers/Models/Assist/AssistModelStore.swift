@@ -37,8 +37,21 @@ final class AssistModelStore {
 
     // MARK: - Computed properties
 
+    /// Somewhere else to keep the weights, for tests only.
+    ///
+    /// The same seam `ActivityTrail.store` has, and for a sharper reason:
+    /// these tests DELETE files. Without a way to point the store at a
+    /// temporary folder, a test of "removing frees the space" would remove
+    /// the weights off the machine it was running on — several gigabytes the
+    /// developer then re-downloads, having been given no reason to connect it
+    /// to a green test run.
+    nonisolated(unsafe) static var directoryOverride: URL?
+
     /// `~/Library/Application Support/Plantoir/models`.
     static var directoryURL: URL {
+        if let override = directoryOverride {
+            return override
+        }
         let base: URL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         return base.appendingPathComponent("Plantoir", isDirectory: true)
                    .appendingPathComponent("models", isDirectory: true)
@@ -99,6 +112,10 @@ final class AssistModelStore {
         try? FileManager.default.removeItem(at: fileURL)
 
         state = .downloading(fractionComplete: 0, receivedBytes: 0, totalBytes: tier.downloadBytes)
+        ActivityTrail.note(
+            .assistantModelDownloadStarted,
+            "started downloading \(tier.displayName) — \(tier.downloadDescription)"
+        )
 
         let delegate: DownloadDelegate = DownloadDelegate(store: self)
         let configuration: URLSessionConfiguration = .default
@@ -111,6 +128,49 @@ final class AssistModelStore {
         task.resume()
     }
 
+    /// Delete the weights to get the space back.
+    ///
+    /// Deliberately NOT hidden behind "are you sure it is not in use" logic
+    /// here: whether it is safe to remove is a question about what windows
+    /// are open, which this type cannot see and `AssistModelLibrary` can.
+    /// This does the deletion and nothing else, so a test can drive it
+    /// without standing an assistant window up.
+    ///
+    /// Removing the model a teacher is currently set to use is allowed on
+    /// purpose — it is not a broken state, it is the state every Mac is in
+    /// before the first download, and opening the assistant offers to fetch
+    /// it again.
+    func remove() {
+        cancel()
+        do {
+            try FileManager.default.removeItem(at: fileURL)
+        } catch {
+            let missing: Bool = (error as NSError).code == NSFileNoSuchFileError
+            if !missing {
+                state = .failed(reason: "Could not remove it: \(error.localizedDescription)")
+                return
+            }
+        }
+        state = .missing
+        ActivityTrail.note(
+            .assistantModelRemoved,
+            "removed \(tier.displayName) — \(tier.downloadDescription) freed"
+        )
+    }
+
+    /// What this tier takes on disk right now, or nil when it is not here.
+    ///
+    /// Reads the actual file rather than reporting `downloadBytes`, so a
+    /// half-finished download is described by its real size instead of by the
+    /// size it was going to be.
+    static func bytesOnDisk(for tier: AssistModelTier) -> Int64? {
+        let url: URL = AssistModelStore.directoryURL.appendingPathComponent(tier.fileName)
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path) else {
+            return nil
+        }
+        return (attributes[.size] as? NSNumber)?.int64Value
+    }
+
     /// Stop a download in flight — the teacher closed the window.
     func cancel() {
         task?.cancel()
@@ -119,6 +179,10 @@ final class AssistModelStore {
         session = nil
         if case .downloading = state {
             state = .missing
+            ActivityTrail.note(
+                .assistantModelDownloadStopped,
+                "stopped downloading \(tier.displayName)"
+            )
         }
     }
 
@@ -147,9 +211,18 @@ final class AssistModelStore {
         // is not a model at all.
         if isReady {
             state = .ready
+            ActivityTrail.note(
+                .assistantModelDownloaded,
+                "finished downloading \(tier.displayName) — \(tier.downloadDescription)"
+            )
         } else {
             try? FileManager.default.removeItem(at: fileURL)
-            state = .failed(reason: "The download finished but the file is the wrong size. Try again.")
+            let reason: String = "The download finished but the file is the wrong size. Try again."
+            state = .failed(reason: reason)
+            ActivityTrail.note(
+                .assistantModelDownloadFailed,
+                "could not download \(tier.displayName) — \(reason)"
+            )
         }
         session?.finishTasksAndInvalidate()
         session = nil
@@ -158,6 +231,10 @@ final class AssistModelStore {
 
     fileprivate func fail(_ message: String) {
         state = .failed(reason: message)
+        ActivityTrail.note(
+            .assistantModelDownloadFailed,
+            "could not download \(tier.displayName) — \(message)"
+        )
         session?.finishTasksAndInvalidate()
         session = nil
         task = nil

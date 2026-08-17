@@ -111,6 +111,14 @@ struct QuartzTeachersApp: App {
         }
         .restorationBehavior(.disabled)
 
+        // The teacher's own settings, at ⌘, where macOS puts them. Declared
+        // as a `Settings` scene rather than as a window of our own so the
+        // menu item, the keyboard shortcut and the window's behaviour all
+        // come from the system and match every other Mac application.
+        Settings {
+            PlantoirSettingsView()
+        }
+
         // The About panel itself: traffic lights only, sized to content,
         // and never restored on relaunch.
         Window("About Plantoir", id: "about") {

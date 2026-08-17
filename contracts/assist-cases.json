@@ -63,6 +63,104 @@
         },
         "phrasing" : "publish tomorrow's class",
         "tool" : "publish_class_on"
+      },
+      {
+        "arguments" : {
+          "when" : "monday"
+        },
+        "phrasing" : "publish monday's class",
+        "tool" : "publish_class_on"
+      },
+      {
+        "arguments" : {
+          "when" : "tuesday"
+        },
+        "phrasing" : "publish tuesday's class",
+        "tool" : "publish_class_on"
+      },
+      {
+        "arguments" : {
+          "when" : "wednesday"
+        },
+        "phrasing" : "publish wednesday's class",
+        "tool" : "publish_class_on"
+      },
+      {
+        "arguments" : {
+          "when" : "thursday"
+        },
+        "phrasing" : "publish thursday's class",
+        "tool" : "publish_class_on"
+      },
+      {
+        "arguments" : {
+          "when" : "friday"
+        },
+        "phrasing" : "publish friday's class",
+        "tool" : "publish_class_on"
+      },
+      {
+        "arguments" : {
+          "when" : "saturday"
+        },
+        "phrasing" : "publish saturday's class",
+        "tool" : "publish_class_on"
+      },
+      {
+        "arguments" : {
+          "when" : "sunday"
+        },
+        "phrasing" : "publish sunday's class",
+        "tool" : "publish_class_on"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "what pages are in this section?",
+        "tool" : "list_pages"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "add the next class page",
+        "tool" : "add_next_class"
+      },
+      {
+        "arguments" : {
+          "unit" : "next"
+        },
+        "phrasing" : "start a new unit for the next class",
+        "tool" : "add_next_class"
+      },
+      {
+        "arguments" : {
+          "unit" : "next"
+        },
+        "phrasing" : "start a new unit",
+        "tool" : "add_next_class"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "what dates am i teaching?",
+        "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+          "scope" : "all"
+        },
+        "phrasing" : "show me the rest of the dates",
+        "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+          "scope" : "all"
+        },
+        "phrasing" : "show me all the dates",
+        "tool" : "read_remembered_timetable"
       }
     ],
     "note" : "Matched in CODE and never sent to the model. Trimmed, case-folded, trailing . and ! removed, then compared for EQUALITY. Measured: the model misrouted five of the eleven suggested phrasings in every trial while filling arguments perfectly, so the shapes with no ambiguity in them do not reach it."

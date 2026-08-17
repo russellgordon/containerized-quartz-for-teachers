@@ -145,6 +145,247 @@ final class SharedRulesContractTests: XCTestCase {
         XCTAssertEqual(section["secretLength"] as? Int, LogRedactor.secretLength)
     }
 
+    // MARK: - What a page is called
+
+    /// Every case the contract lists, run against the real rule.
+    ///
+    /// The cases are the shapes a real course actually contains: a folder
+    /// landing page with a title, one without, one whose title is the word
+    /// that must never be shown, and two ordinary pages.
+    @MainActor
+    func testAPageIsNamedTheWayTheContractSays() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("pageNaming")
+        let cases: [[String: Any]] = try XCTUnwrap(section["cases"] as? [[String: Any]])
+        XCTAssertFalse(cases.isEmpty)
+
+        let neverShown: String = try XCTUnwrap(section["neverShown"] as? String)
+
+        for entry in cases {
+            let file: String = try XCTUnwrap(entry["file"] as? String)
+            let expected: String = try XCTUnwrap(entry["shown"] as? String)
+
+            var pageText: String = "---\npublish: true\n---\n\nSome words.\n"
+            if let declared = entry["frontmatterTitle"] as? String {
+                pageText = "---\ntitle: \(declared)\npublish: true\n---\n\nSome words.\n"
+            }
+
+            let shown: String = AssistSectionGraph.displayName(
+                forPageAt: URL(fileURLWithPath: "/courses/ADA1O/" + file), in: pageText
+            )
+            XCTAssertEqual(shown, expected, "\(file)")
+            XCTAssertNotEqual(shown.lowercased(), neverShown.lowercased(),
+                              "\(file) is shown to a teacher as “\(neverShown)”")
+        }
+    }
+
+    /// The label may change; the IDENTITY may not. Wikilinks resolve by file
+    /// name, so a page must still be findable by the name a teacher typed.
+    @MainActor
+    func testRenamingWhatIsShownDidNotChangeHowLinksResolve() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("pageNaming")
+        let rule: [String: Any] = try XCTUnwrap(
+            section["identityIsSeparateFromLabel"] as? [String: Any]
+        )
+        guard rule["value"] as? Bool == true else {
+            return
+        }
+        let page: AssistSectionPage = AssistSectionPage(
+            title: "index",
+            displayTitle: "Portfolios",
+            fileURL: URL(fileURLWithPath: "/courses/ADA1O/Portfolios/index.md"),
+            relativePath: "courses/ADA1O/Portfolios/index.md",
+            isSectionLocal: false,
+            isVisibleToStudents: true,
+            date: nil,
+            linkedTitles: ["journal checklist"]
+        )
+        let graph: AssistSectionGraph = AssistSectionGraph(
+            courseCode: "ADA1O", sectionNumber: 1, pages: [page]
+        )
+        XCTAssertNotNil(graph.page(titled: "index"),
+                        "A link written [[index]] must still find the file called index")
+        XCTAssertEqual(graph.page(titled: "index")?.displayTitle, "Portfolios")
+    }
+
+    // MARK: - Which assistant runs on this machine
+
+    /// The three choices, their labels, and which of them name a rung.
+    ///
+    /// The list matters as much as the labels: dropping "Choose for me" and
+    /// storing a resolved answer instead is the change that looks like a
+    /// simplification and quietly freezes today's tier ladder into every
+    /// teacher's preferences.
+    @MainActor
+    func testTheChoicesAreTheOnesTheContractLists() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("assistantModelChoice")
+        let choices: [[String: Any]] = try XCTUnwrap(section["choices"] as? [[String: Any]])
+
+        var keys: [String] = []
+        for entry in choices {
+            let key: String = try XCTUnwrap(entry["key"] as? String)
+            keys.append(key)
+            let choice: AssistModelChoice = try XCTUnwrap(
+                AssistModelChoice(rawValue: key), "No choice called \(key)"
+            )
+            XCTAssertEqual(choice.label, entry["label"] as? String)
+            XCTAssertEqual(choice.namedTier != nil, entry["namesATier"] as? Bool)
+        }
+
+        var known: [String] = []
+        for choice in AssistModelChoice.allCases {
+            known.append(choice.rawValue)
+        }
+        XCTAssertEqual(known.sorted(), keys.sorted())
+
+        let fallback: String = try XCTUnwrap(section["defaultChoice"] as? String)
+        XCTAssertEqual(AppSettings(defaults: TestDefaults.make()).assistantModelChoice.rawValue, fallback)
+    }
+
+    /// "Choose for me" keeps meaning choose for me: it resolves differently on
+    /// different machines rather than naming a rung.
+    func testTheAutomaticChoiceResolvesAtThePointOfUse() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("assistantModelChoice")
+        let rule: [String: Any] = try XCTUnwrap(section["automaticResolvesAtPointOfUse"] as? [String: Any])
+        guard rule["value"] as? Bool == true else {
+            return
+        }
+        XCTAssertNil(AssistModelChoice.automatic.namedTier)
+        XCTAssertNotEqual(
+            AssistModelChoice.automatic.resolved(for: SharedRulesContractTests.machine(gigabytes: 8)),
+            AssistModelChoice.automatic.resolved(for: SharedRulesContractTests.machine(gigabytes: 48))
+        )
+    }
+
+    /// The comfort line, the caution it produces, and the promise that the
+    /// automatic choice can never trip it.
+    func testTheCautionFollowsTheFractionInTheContract() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("assistantModelChoice")
+        let fraction: [String: Any] = try XCTUnwrap(section["comfortFraction"] as? [String: Any])
+        let denominator: Int64 = Int64(try XCTUnwrap(fraction["denominator"] as? Int))
+
+        let small: AssistHardwareBudget = SharedRulesContractTests.machine(gigabytes: 8)
+        XCTAssertEqual(small.comfortableResidentBytes, small.physicalMemoryBytes / denominator)
+
+        let caution: String = try XCTUnwrap(AssistModelChoice.larger.caution(for: small))
+        XCTAssertTrue(caution.contains(small.memoryDescription))
+        XCTAssertTrue(caution.contains(AssistModelTier.large.memoryDescription))
+
+        for gigabytes in [4, 8, 16, 32, 48, 128] as [Int64] {
+            XCTAssertNil(
+                AssistModelChoice.automatic.caution(for: SharedRulesContractTests.machine(gigabytes: gigabytes)),
+                "\(gigabytes) GB: the automatic ladder picked something it then warned about"
+            )
+        }
+    }
+
+    /// Both costs, on both rungs, and no model named anywhere the panel can
+    /// put a sentence on screen.
+    @MainActor
+    func testWhatThePanelSaysFollowsTheContract() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("assistantModelChoice")
+        let guidance: [String: Any] = try XCTUnwrap(section["guidance"] as? [String: Any])
+
+        for tier in AssistModelTier.allCases {
+            if guidance["mustNameDownloadSize"] as? Bool == true {
+                XCTAssertTrue(tier.sizeGuidance.contains(tier.downloadDescription), "\(tier)")
+            }
+            if guidance["mustNameMemoryWhileWorking"] as? Bool == true {
+                XCTAssertTrue(tier.sizeGuidance.contains(tier.memoryDescription), "\(tier)")
+            }
+        }
+
+        let naming: [String: Any] = try XCTUnwrap(section["namesNoModel"] as? [String: Any])
+        guard naming["value"] as? Bool == true else {
+            return
+        }
+        let jargon: [String] = try XCTUnwrap(naming["jargon"] as? [String])
+
+        var shown: [String] = []
+        for gigabytes in [8, 48] as [Int64] {
+            let machine: AssistHardwareBudget = SharedRulesContractTests.machine(gigabytes: gigabytes)
+            for choice in AssistModelChoice.allCases {
+                shown.append(choice.label)
+                shown.append(choice.detail(for: machine))
+                if let caution = choice.caution(for: machine) {
+                    shown.append(caution)
+                }
+            }
+            let panel: AssistModelLibrary = AssistModelLibrary(
+                budget: machine, settings: AppSettings(defaults: TestDefaults.make())
+            )
+            shown.append(panel.whatHappensNext)
+        }
+        for tier in AssistModelTier.allCases {
+            shown.append(tier.choiceLabel)
+            shown.append(tier.sizeGuidance)
+        }
+
+        for sentence in shown {
+            let lowered: String = sentence.lowercased()
+            for word in jargon {
+                XCTAssertFalse(lowered.contains(word), "\"\(sentence)\" says '\(word)' to a teacher")
+            }
+        }
+    }
+
+    /// Removing one: refused while an assistant is open, naming the section —
+    /// and allowed for the rung currently chosen.
+    @MainActor
+    func testRemovingFollowsTheContract() throws {
+        let section: [String: Any] = try SharedRulesContractTests.section("assistantModelChoice")
+        let removal: [String: Any] = try XCTUnwrap(section["removal"] as? [String: Any])
+
+        let folder: URL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("plantoir-contract-models-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        AssistModelStore.directoryOverride = folder
+        AssistModelStores.reset()
+        defer {
+            AssistModelStores.reset()
+            AssistModelStore.directoryOverride = nil
+            try? FileManager.default.removeItem(at: folder)
+        }
+
+        let tier: AssistModelTier = .large
+        let file: URL = folder.appendingPathComponent(tier.fileName)
+        FileManager.default.createFile(atPath: file.path, contents: nil)
+        let handle: FileHandle = try FileHandle(forWritingTo: file)
+        try handle.truncate(atOffset: UInt64(tier.downloadBytes))
+        try handle.close()
+
+        let panel: AssistModelLibrary = AssistModelLibrary(
+            budget: SharedRulesContractTests.machine(gigabytes: 48),
+            settings: AppSettings(defaults: TestDefaults.make())
+        )
+
+        if removal["refusedWhileAnyAssistantWindowIsOpen"] as? Bool == true {
+            AssistActivity.begin(folderPath: "/tmp/contract", courseCode: "ICS3U", sectionNumber: 2)
+            defer { AssistActivity.end(folderPath: "/tmp/contract", courseCode: "ICS3U", sectionNumber: 2) }
+            XCTAssertFalse(panel.mayRemove(tier))
+            if removal["messageNamesTheSectionToClose"] as? Bool == true {
+                let reason: String = try XCTUnwrap(panel.reasonItCannotBeRemoved(tier))
+                XCTAssertTrue(reason.contains("ICS3U"), reason)
+                XCTAssertTrue(reason.contains("Section 2"), reason)
+            }
+        }
+
+        if removal["theCurrentlyChosenOneMayBeRemoved"] as? Bool == true {
+            XCTAssertEqual(panel.chosenTier, tier, "This test only means something for the chosen rung")
+            XCTAssertTrue(panel.mayRemove(tier))
+            panel.remove(tier)
+            XCTAssertFalse(panel.isDownloaded(tier))
+        }
+    }
+
+    /// A machine of a given size, for the rules above.
+    private static func machine(gigabytes: Int64) -> AssistHardwareBudget {
+        return AssistHardwareBudget(
+            physicalMemoryBytes: gigabytes * 1_073_741_824,
+            coreCount: 8,
+            performanceCoreCount: 4
+        )
+    }
+
     // MARK: - What the trail must record
 
     /// The standing requirement, as a gate rather than as a paragraph.

@@ -46,6 +46,14 @@ nonisolated enum ActivityTrail {
         case assistantChoseATool = "assistant chose a tool"
         case assistantCouldNotAnswer = "assistant could not answer"
         case assistantMatchedAFixedPhrase = "assistant matched a fixed phrase"
+        case settingsPanelOpened = "app settings opened"
+        case assistantModelChosen = "assistant model chosen"
+        case assistantModelDownloadStarted = "assistant model download started"
+        case assistantModelDownloaded = "assistant model downloaded"
+        case assistantModelDownloadFailed = "assistant model download failed"
+        case assistantModelDownloadStopped = "assistant model download stopped"
+        case assistantModelRemoved = "assistant model removed"
+        case assistantConfirmationChanged = "assistant confirmation changed"
     }
 
     // MARK: - Stored properties
