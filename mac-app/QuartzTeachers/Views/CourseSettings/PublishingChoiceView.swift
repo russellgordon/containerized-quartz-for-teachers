@@ -61,26 +61,27 @@ struct PublishingChoiceView: View {
                     .textFieldStyle(.roundedBorder)
                     .accessibilityIdentifier("cloudflareAccountField")
 
-                // The instructions used to be squeezed into the caption
-                // below, where a teacher had to read four sentences of
-                // dashboard navigation to find out this field wanted a
-                // code from a website they had not opened. They are a
-                // dialog now, on request, and the caption says what the
-                // destination IS again.
-                Button("Where do I find this?") {
+                // The grey caption that used to sit here repeated the
+                // dashboard directions in four lines of small text under a
+                // field that wants one code, whether or not anybody had a
+                // question. It is a dialog now, on request. The Safari mark
+                // matches the dialogs, so a link that leaves the app looks
+                // the same everywhere.
+                Button {
                     showAccountHelp()
+                } label: {
+                    Label("Where do I find this?", systemImage: "safari")
                 }
                 .buttonStyle(.link)
                 .accessibilityIdentifier("cloudflareAccountHelpButton")
 
+                // What is WRONG with what was typed. Not commentary: this
+                // is why the course will not save.
                 if let accountProblem {
-                    // The same orange every other inline warning wears.
                     Text(accountProblem)
                         .font(.caption)
                         .foregroundStyle(.orange)
                         .accessibilityIdentifier("cloudflareAccountProblem")
-                } else {
-                    ExampleCaption("Each section gets its own free site at yourproject.pages.dev. You only enter this once, and every course you publish to Cloudflare uses it. The first publish asks for an API token as well, and explains how to make one.")
                 }
 
                 // Not a warning that comes and goes: a fact about this

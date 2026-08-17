@@ -3258,11 +3258,17 @@ purpose rather than mid-publish. Three things about it:
   and find the field again. The accept button is labelled "Use this ID" rather
   than "Continue", because nothing is waiting on it.
 
-The caption under that field used to carry the dashboard directions in four
-sentences of small grey text; it now says what the destination IS, and the
-directions live in the dialog. On WinUI: a `HyperlinkButton` under the Account
-ID `TextBox`, the same dialog, the value written back on accept — and, still,
-nothing that opens a browser by itself.
+The grey caption under that field is GONE, not reworded: it carried the
+dashboard directions in four lines of small text under a field that wants one
+code, shown whether or not anybody had a question, and the button answers the
+same question on request. The two ORANGE notes stay — what is wrong with the ID
+that was typed, and Cloudflare's 25 MB per-file limit — because one says why the
+course will not save and the other is the single real functional difference
+between the destinations. The button carries a `safari` symbol to the LEFT of
+its text, the same mark the dialogs put on their links, so anything that leaves
+the app looks the same everywhere. On WinUI: a `HyperlinkButton` with the
+equivalent glyph under the Account ID `TextBox`, the same dialog, the value
+written back on accept — and, still, nothing that opens a browser by itself.
 
 **The trail.** `asked for a publishing credential` is in
 `contracts/shared-rules.json` → `activityTrail.mustRecord`, so the Windows
