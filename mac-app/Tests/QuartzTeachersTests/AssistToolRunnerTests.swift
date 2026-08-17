@@ -1520,13 +1520,20 @@ final class AssistToolRunnerTests: XCTestCase {
         )
     }
 
-    /// Fewer dates than classes refuses WHOLE rather than dating some of them.
+    /// More classes than days is the ORDINARY case, not an error.
+    ///
+    /// It used to refuse outright — which reads as careful and is the
+    /// opposite: it left every page on last year's dates, the state the
+    /// teacher asked to be rid of, over a few classes at the end they had not
+    /// thought about yet. A year is rarely the same length twice. The
+    /// leftovers land on the last class date, together, where they cannot be
+    /// missed, and the teacher moves or deletes them as part of planning.
     @MainActor
-    func testReDatingRefusesWhenThereAreNotEnoughDates() async throws {
+    func testClassesWithNoDayOfTheirOwnGoOnTheLastOne() async throws {
         let made = try makeRunner()
         defer { try? FileManager.default.removeItem(at: made.root) }
 
-        for day in 1...3 {
+        for day in 1...4 {
             try write(page: "Unit 1, Day \(day)", publish: "true", date: "2025-09-0\(day + 7)",
                       body: "Class \(day).", in: made.course)
         }
@@ -1535,13 +1542,25 @@ final class AssistToolRunnerTests: XCTestCase {
             arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
         ))
 
-        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+        let planned: AssistToolOutcome = await made.runner.run(call: call(
+            "plan_re_date_classes", arguments: ["course": "ICS3U", "section": 1]
+        ))
+        print("\n===== OVERFLOW PLAN =====\n\(planned.detail)\n=====\n")
+        XCTAssertTrue(planned.detail.contains("2 classes have no day of their own"), planned.detail)
+        XCTAssertTrue(planned.detail.contains("Move or delete them"), planned.detail)
+
+        _ = await made.runner.run(call: call(
             "re_date_classes", arguments: ["course": "ICS3U", "section": 1]
         ))
 
-        XCTAssertTrue(outcome.summary.contains("3 classes and only 2"), outcome.summary)
-        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("created: 2025-09-08"),
-                      "It re-dated some of them and gave up")
+        // The ones that fit.
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("created: 2026-09-08"))
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 2", in: made.course).contains("created: 2026-09-10"))
+        // And the ones that do not, together on the last day.
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 3", in: made.course).contains("created: 2026-09-10"),
+                      "An overflow class was left on last year's date")
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 4", in: made.course).contains("created: 2026-09-10"),
+                      "An overflow class was left on last year's date")
     }
 
     /// Curriculum pages are left alone: the toolchain dates those itself on

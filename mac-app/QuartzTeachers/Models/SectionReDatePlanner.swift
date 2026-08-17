@@ -71,7 +71,6 @@ enum SectionReDatePlanner {
     enum Problem: LocalizedError {
         case noTimetable(String, Int)
         case noClasses(String, Int)
-        case notEnoughDates(String, Int, Int, Int)
 
         var errorDescription: String? {
             switch self {
@@ -81,13 +80,28 @@ enum SectionReDatePlanner {
             case .noClasses(let code, let number):
                 return "\(code) Section \(number) has no numbered class pages, so there is nothing "
                      + "to re-date."
-            case .notEnoughDates(let code, let number, let classes, let dates):
-                return "\(code) Section \(number) has \(classes) classes and only \(dates) class "
-                     + "\(dates == 1 ? "date" : "dates") on file, so \(classes - dates) of them "
-                     + "would have no day to land on. Give me the rest of the dates and ask again."
             }
         }
     }
+
+    // There is deliberately NO "not enough dates" refusal, and this is the
+    // most important comment in the file.
+    //
+    // It used to refuse outright when a section had more classes than the new
+    // year has days: 78 classes, 75 dates, nothing written. That reads as
+    // careful and is the opposite — it leaves EVERY page on last year's dates,
+    // which is the state the teacher asked to be rid of, over three pages at
+    // the end they had not thought about yet.
+    //
+    // A year is rarely the same length twice. Coming up short is the ordinary
+    // case, not the error case, and what a teacher does about it is ordinary
+    // too: move things around, merge two lessons, drop the ones that no longer
+    // fit. That is planning, and planning is theirs.
+    //
+    // So the overflow classes all land on the LAST class date, where they are
+    // impossible to miss — they sit together on the final day of the course —
+    // and the plan says how many and what to do about them. Every other page
+    // is correct meanwhile, which is the whole point of asking.
 
     // MARK: - Functions
 
@@ -103,12 +117,6 @@ enum SectionReDatePlanner {
         if classes.isEmpty {
             throw Problem.noClasses(course.code, sectionNumber)
         }
-        if classes.count > remembered.dates.count {
-            throw Problem.notEnoughDates(
-                course.code, sectionNumber, classes.count, remembered.dates.count
-            )
-        }
-
         let graph: AssistSectionGraph = AssistSectionGraph.read(
             forSection: sectionNumber, in: course, workspaceURL: workspaceURL
         )
@@ -120,7 +128,9 @@ enum SectionReDatePlanner {
         // 1. The classes themselves, by position.
         for (index, summary) in classes.enumerated() {
             spokenFor.insert(AssistSectionGraph.normalized(summary.title))
-            let day: CalendarDay = remembered.dates[index]
+            let day: CalendarDay = SectionReDatePlanner.date(
+                at: index, from: remembered.dates
+            )
             guard let page = graph.page(titled: summary.title) else {
                 continue
             }
@@ -161,7 +171,9 @@ enum SectionReDatePlanner {
             guard let classPage = graph.page(titled: summary.title) else {
                 continue
             }
-            let day: CalendarDay = remembered.dates[index]
+            let day: CalendarDay = SectionReDatePlanner.date(
+                at: index, from: remembered.dates
+            )
             for page in graph.linkedPages(from: [classPage]) {
                 if spokenFor.contains(page.lowercasedTitle) || page.isClassPage || page.isFolderIndex {
                     continue
@@ -186,10 +198,24 @@ enum SectionReDatePlanner {
             sectionNumber: sectionNumber,
             classCount: classes.count,
             firstDay: firstDay,
-            lastDay: remembered.dates[classes.count - 1],
-            spareDates: remembered.dates.count - classes.count,
+            lastDay: SectionReDatePlanner.date(at: classes.count - 1, from: remembered.dates),
+            spareDates: max(0, remembered.dates.count - classes.count),
+            overflowing: max(0, classes.count - remembered.dates.count),
             moves: moves
         )
+    }
+
+    /// The date for the class in this position — and the LAST date for every
+    /// class past the end of the list.
+    ///
+    /// See the note above `Problem`: running out of days is the ordinary case,
+    /// not an error, and stacking the leftovers on the final day puts them
+    /// where a teacher cannot miss them.
+    private static func date(at index: Int, from dates: [CalendarDay]) -> CalendarDay {
+        if index < dates.count {
+            return dates[index]
+        }
+        return dates[dates.count - 1]
     }
 
     /// Carry it out. Returns the change record so it can be undone.
@@ -240,6 +266,10 @@ struct SectionReDatePlan {
     let firstDay: CalendarDay
     let lastDay: CalendarDay
     let spareDates: Int
+
+    /// Classes with no day of their own, all sitting on the last one.
+    let overflowing: Int
+
     let moves: [ReDatedPage]
 
     // MARK: - Computed properties
@@ -268,6 +298,13 @@ struct SectionReDatePlan {
         if spareDates > 0 {
             lines.append("\(spareDates) recorded \(spareDates == 1 ? "date is" : "dates are") "
                          + "left over at the end.")
+        }
+        if overflowing > 0 {
+            lines.append("\(overflowing) \(overflowing == 1 ? "class has" : "classes have") no day "
+                         + "of \(overflowing == 1 ? "its" : "their") own this year, so "
+                         + "\(overflowing == 1 ? "it goes" : "they all go") on "
+                         + "\(lastDay.text) with the last one. Move or delete "
+                         + "\(overflowing == 1 ? "it" : "them") when you have decided what to do.")
         }
         lines.append("")
 
