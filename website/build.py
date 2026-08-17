@@ -99,7 +99,7 @@ def png_size(path: Path) -> tuple[int, int]:
     return width, height
 
 
-def picture_element(shot: dict, problems: list[str], modifier: str) -> str:
+def picture_element(shot: dict, problems: list[str], modifier: str, up: str) -> str:
     """The <picture> for one screenshot, or a placeholder when it is missing."""
     identifier = shot["id"]
     light = IMAGE_DIR / f"{identifier}-light.png"
@@ -137,12 +137,12 @@ def picture_element(shot: dict, problems: list[str], modifier: str) -> str:
         query = ' media="(prefers-color-scheme: dark)"' if scheme == "dark" else ""
         if path.with_suffix(".webp").exists():
             sources.append(
-                f'      <source srcset="/img/{identifier}-{scheme}.webp" '
+                f'      <source srcset="{up}img/{identifier}-{scheme}.webp" '
                 f'type="image/webp"{query}>'
             )
         if scheme == "dark":
             sources.append(
-                f'      <source srcset="/img/{identifier}-dark.png"{query}>'
+                f'      <source srcset="{up}img/{identifier}-dark.png"{query}>'
             )
     joined = "\n".join(sources)
 
@@ -150,7 +150,7 @@ def picture_element(shot: dict, problems: list[str], modifier: str) -> str:
         f'<figure class="{classes}">\n'
         f'    <picture>\n'
         f'{joined}\n'
-        f'      <img src="/img/{identifier}-light.png" alt="{shot["alt"]}"\n'
+        f'      <img src="{up}img/{identifier}-light.png" alt="{shot["alt"]}"\n'
         f'           width="{display_width}" height="{display_height}" loading="lazy" decoding="async">\n'
         f'    </picture>{caption_html}\n'
         f'</figure>'
@@ -162,7 +162,7 @@ def picture_element(shot: dict, problems: list[str], modifier: str) -> str:
 SHOT_TOKEN = re.compile(r"\{\{shot:([a-z0-9-]+)(?:\|([a-z-]+))?\}\}")
 
 
-def expand_shots(body: str, shots: dict, problems: list[str], page_name: str) -> str:
+def expand_shots(body: str, shots: dict, problems: list[str], page_name: str, up: str) -> str:
     def replace(match: re.Match) -> str:
         identifier = match.group(1)
         modifier = match.group(2) or ""
@@ -170,7 +170,7 @@ def expand_shots(body: str, shots: dict, problems: list[str], page_name: str) ->
         if shot is None:
             problems.append(f"{page_name} refers to an unknown screenshot: {identifier}")
             return ""
-        return picture_element(shot, problems, modifier)
+        return picture_element(shot, problems, modifier, up)
 
     return SHOT_TOKEN.sub(replace, body)
 
@@ -199,7 +199,7 @@ def demo_links_html(site: dict) -> str:
     return f'<ul class="links">\n{joined}\n  </ul>'
 
 
-def navigation_html(pages: list[dict], order: list[str], current_slug: str) -> str:
+def navigation_html(pages: list[dict], order: list[str], current_slug: str, up: str) -> str:
     links: list[str] = []
     for slug in order:
         page = None
@@ -208,7 +208,7 @@ def navigation_html(pages: list[dict], order: list[str], current_slug: str) -> s
                 page = candidate
         if page is None:
             continue
-        href = "/" if slug == "index" else f"/{slug}"
+        href = up if slug == "index" else f"{up}{slug}/"
         if slug == current_slug:
             links.append(
                 f'<a href="{href}" aria-current="page">{page["nav_label"]}</a>'
@@ -218,14 +218,14 @@ def navigation_html(pages: list[dict], order: list[str], current_slug: str) -> s
     return "\n      ".join(links)
 
 
-def plain_navigation_html(pages: list[dict], order: list[str]) -> str:
+def plain_navigation_html(pages: list[dict], order: list[str], up: str) -> str:
     """The footer's copy of the navigation: no current-page marking, since
     the footer is a way out of the page rather than a description of it."""
     links: list[str] = []
     for slug in order:
         for candidate in pages:
             if candidate["slug"] == slug:
-                href = "/" if slug == "index" else f"/{slug}"
+                href = up if slug == "index" else f"{up}{slug}/"
                 links.append(f'<a href="{href}">{candidate["nav_label"]}</a>')
     return "\n    ".join(links)
 
@@ -267,8 +267,16 @@ def build(check_only: bool) -> int:
 
     written: list[Path] = []
     for page in pages:
-        body = expand_shots(page["body"], shots, problems, page["slug"] + ".html")
-        body = substitute(body, site_values)
+        # How far this page sits below the site root. Every reference is
+        # written relative to it — stylesheet, images, icon, navigation — so
+        # the site works wherever it is put: at a domain root, or in a folder
+        # on somebody else's server. Root-absolute paths looked fine on
+        # plantoir.app and broke the moment the site was tried in a
+        # subdirectory, where /assets/style.css means the DOMAIN's /assets.
+        up = "./" if page["slug"] == "index" else "../"
+
+        body = expand_shots(page["body"], shots, problems, page["slug"] + ".html", up)
+        body = substitute(body, dict(site_values, up=up))
 
         canonical = site["base_url"]
         if page["slug"] != "index":
@@ -279,8 +287,9 @@ def build(check_only: bool) -> int:
             "title": page["title"],
             "description": page["description"],
             "canonical": canonical,
-            "nav": navigation_html(pages, site["nav"], page["slug"]),
-            "nav_plain": plain_navigation_html(pages, site["nav"]),
+            "up": up,
+            "nav": navigation_html(pages, site["nav"], page["slug"], up),
+            "nav_plain": plain_navigation_html(pages, site["nav"], up),
             "body": body,
             "body_class": page.get("body_class", ""),
         })
