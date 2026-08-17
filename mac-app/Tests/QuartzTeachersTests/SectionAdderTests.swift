@@ -339,4 +339,115 @@ final class SectionAdderTests: XCTestCase {
         XCTAssertNotNil(stamp.range(of: pattern, options: .regularExpression),
                         "\(stamp) should match the wizard's created: form")
     }
+
+    /// When a section is added to a course that already has a sibling section,
+    /// all class pages in All Classes/, transclusions, notes, links, and body
+    /// content are replicated into the new section.
+    @MainActor
+    func testAddingASectionCopiesAllClassPagesAndBodiesFromSiblingSection() throws {
+        let (root, course) = try makeWorkspace()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let sec1URL: URL = course.sectionDirectoryURL(forSection: 1)
+        let allClassesURL: URL = sec1URL.appendingPathComponent("All Classes")
+        try FileManager.default.createDirectory(at: allClassesURL, withIntermediateDirectories: true)
+
+        let siblingIndex: String = """
+        ---
+        title: Grade 11 Introduction to Computer Science, Section 1
+        created: 2026-08-10T14:30:00.000-0400
+        enableToc: false
+        excludeBacklinks: true
+        publish: true
+        ---
+        # Most Recent Class
+        ![[Unit 1, Day 2]]
+
+        ![[Help Sessions]]
+        ![[Key Links]]
+        """
+        try siblingIndex.write(to: sec1URL.appendingPathComponent("index.md"), atomically: true, encoding: .utf8)
+
+        let siblingDay1: String = """
+        ---
+        title: Unit 1, Day 1
+        publish: true
+        created: 2026-09-08T07:00:00.000+0000
+        tags:
+          - unit-1
+        ---
+        ## Agenda
+
+        1. Welcome to ICS3U
+        """
+        try siblingDay1.write(to: allClassesURL.appendingPathComponent("Unit 1, Day 1.md"), atomically: true, encoding: .utf8)
+
+        let siblingDay2: String = """
+        ---
+        title: Unit 1, Day 2
+        publish: true
+        created: 2026-09-09T07:00:00.000+0000
+        tags:
+          - unit-1
+        ---
+        ## Agenda
+
+        1. Variables and types
+        """
+        try siblingDay2.write(to: allClassesURL.appendingPathComponent("Unit 1, Day 2.md"), atomically: true, encoding: .utf8)
+
+        let siblingKeyLinks: String = """
+        ---
+        title: Key Links
+        publish: true
+        created: 2026-08-10T14:30:00.000-0400
+        ---
+        - [[How This Class Works]]
+        - [[Learning Goals]]
+        """
+        try siblingKeyLinks.write(to: sec1URL.appendingPathComponent("Key Links.md"), atomically: true, encoding: .utf8)
+
+        let siblingPrivateNotes: String = """
+        ---
+        title: Private Notes
+        publish: false
+        created: 2026-08-10T14:30:00.000-0400
+        ---
+        %% Private teacher observations %%
+        """
+        try siblingPrivateNotes.write(to: sec1URL.appendingPathComponent("Private Notes.md"), atomically: true, encoding: .utf8)
+
+        try SectionAdder.addSection(2, to: course)
+
+        let sec2URL: URL = course.sectionDirectoryURL(forSection: 2)
+
+        // Root index has new section title, freshened created date, and preserved body
+        let index2: String = try String(contentsOf: sec2URL.appendingPathComponent("index.md"), encoding: .utf8)
+        XCTAssertTrue(index2.contains("title: Grade 11 Introduction to Computer Science, Section 2"))
+        XCTAssertTrue(index2.contains("# Most Recent Class"))
+        XCTAssertTrue(index2.contains("![[Unit 1, Day 2]]"))
+        XCTAssertTrue(index2.contains("![[Help Sessions]]"))
+
+        // Class pages in All Classes/ are replicated with original dates and bodies
+        let day1Path: URL = sec2URL.appendingPathComponent("All Classes/Unit 1, Day 1.md")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: day1Path.path))
+        let day1Text: String = try String(contentsOf: day1Path, encoding: .utf8)
+        XCTAssertTrue(day1Text.contains("created: 2026-09-08T07:00:00.000+0000"), "Class schedule date is preserved")
+        XCTAssertTrue(day1Text.contains("Welcome to ICS3U"))
+        XCTAssertTrue(day1Text.contains("tags:"))
+
+        let day2Path: URL = sec2URL.appendingPathComponent("All Classes/Unit 1, Day 2.md")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: day2Path.path))
+        let day2Text: String = try String(contentsOf: day2Path, encoding: .utf8)
+        XCTAssertTrue(day2Text.contains("Variables and types"))
+
+        // Key Links and Private Notes bodies are preserved
+        let keyLinksText: String = try String(contentsOf: sec2URL.appendingPathComponent("Key Links.md"), encoding: .utf8)
+        XCTAssertTrue(keyLinksText.contains("- [[How This Class Works]]"))
+        XCTAssertTrue(keyLinksText.contains("- [[Learning Goals]]"))
+
+        let privateNotesText: String = try String(contentsOf: sec2URL.appendingPathComponent("Private Notes.md"), encoding: .utf8)
+        XCTAssertTrue(privateNotesText.contains("publish: false"))
+        XCTAssertTrue(privateNotesText.contains("%% Private teacher observations %%"))
+    }
 }

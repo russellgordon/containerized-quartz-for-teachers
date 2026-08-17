@@ -28,35 +28,57 @@ public static class SectionAdder
         string created = Timestamp(DateTimeOffset.Now);
         Directory.CreateDirectory(sectionDir);
 
-        // index.md — frontmatter only, title recomputed for this section.
-        string indexFrontmatter = ScaffoldFrontmatter(
-            SiblingFile("index.md", course),
-            newTitle: SectionTitle(course, number),
-            fallbackTitle: null, fallbackIsDraft: false, created: created);
-        File.WriteAllText(Path.Combine(sectionDir, "index.md"), $"---\n{indexFrontmatter}\n---");
+        string? siblingDir = LowestExistingSiblingSectionDirectory(course);
+        if (siblingDir != null)
+        {
+            ReplicateSiblingSection(siblingDir, sectionDir, course, number, created);
+        }
+
+        string indexFile = Path.Combine(sectionDir, "index.md");
+        if (!File.Exists(indexFile))
+        {
+            string indexFrontmatter = ScaffoldFrontmatter(
+                SiblingFile("index.md", course),
+                newTitle: SectionTitle(course, number),
+                fallbackTitle: null, fallbackIsDraft: false, created: created);
+            File.WriteAllText(indexFile, $"---\n{indexFrontmatter}\n---");
+        }
 
         foreach (string folder in config.PerSectionFolders)
         {
             string folderPath = Path.Combine(sectionDir, folder);
             Directory.CreateDirectory(folderPath);
-            string fm = ScaffoldFrontmatter(
-                SiblingFile(folder + "/index.md", course),
-                newTitle: null, fallbackTitle: folder, fallbackIsDraft: false, created: created);
-            File.WriteAllText(Path.Combine(folderPath, "index.md"),
-                $"---\n{fm}\n---\nThis is the **{folder}** folder. Add Markdown files to this folder to build out your site.");
+            string folderIndex = Path.Combine(folderPath, "index.md");
+            if (!File.Exists(folderIndex))
+            {
+                string fm = ScaffoldFrontmatter(
+                    SiblingFile(folder + "/index.md", course),
+                    newTitle: null, fallbackTitle: folder, fallbackIsDraft: false, created: created);
+                File.WriteAllText(folderIndex,
+                    $"---\n{fm}\n---\nThis is the **{folder}** folder. Add Markdown files to this folder to build out your site.");
+            }
         }
 
         foreach (string fileName in config.PerSectionFiles)
         {
-            string fm = ScaffoldFrontmatter(
-                SiblingFile(fileName, course),
-                newTitle: null,
-                fallbackTitle: fileName.Replace(".md", ""),
-                fallbackIsDraft: UnpublishedFileNames.Contains(fileName),
-                created: created);
-            File.WriteAllText(Path.Combine(sectionDir, fileName),
-                $"---\n{fm}\n---\nThis is the per-section file **{fileName}**.");
+            string filePath = Path.Combine(sectionDir, fileName);
+            if (!File.Exists(filePath))
+            {
+                bool isUnpublished = UnpublishedFileNames.Contains(fileName);
+                string fm = ScaffoldFrontmatter(
+                    SiblingFile(fileName, course),
+                    newTitle: null,
+                    fallbackTitle: fileName.Replace(".md", ""),
+                    fallbackIsDraft: isUnpublished,
+                    created: created);
+                string note = isUnpublished
+                    ? $"This is the per-section file **{fileName}**. It is marked `publish: false`, so it stays out of the built site — a private place for your own notes."
+                    : $"This is the per-section file **{fileName}**.";
+                File.WriteAllText(filePath, $"---\n{fm}\n---\n{note}");
+            }
         }
+
+        ExtendCourseLevelPages(course, number, created);
 
         // Only after the folder is safely written does the config learn about
         // it — a mid-way failure never leaves settings pointing at nothing.
@@ -65,6 +87,194 @@ public static class SectionAdder
         numbers.Sort();
         config.SetSectionNumbers(numbers);
         config.Write(course.ConfigFilePath);
+    }
+
+    internal static string? LowestExistingSiblingSectionDirectory(Course course)
+    {
+        foreach (int n in course.Configuration.SectionNumbers.OrderBy(n => n))
+        {
+            string candidate = course.SectionDirectory(n);
+            if (Directory.Exists(candidate)) return candidate;
+        }
+        return null;
+    }
+
+    private static void ReplicateSiblingSection(string siblingDir, string destinationDir, Course course, int sectionNumber, string created)
+    {
+        foreach (string dirPath in Directory.GetDirectories(siblingDir, "*", SearchOption.AllDirectories))
+        {
+            string relative = Path.GetRelativePath(siblingDir, dirPath);
+            Directory.CreateDirectory(Path.Combine(destinationDir, relative));
+        }
+
+        foreach (string filePath in Directory.GetFiles(siblingDir, "*", SearchOption.AllDirectories))
+        {
+            string relative = Path.GetRelativePath(siblingDir, filePath);
+            string targetPath = Path.Combine(destinationDir, relative);
+            string? dir = Path.GetDirectoryName(targetPath);
+            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+
+            if (Path.GetExtension(filePath).Equals(".md", StringComparison.OrdinalIgnoreCase))
+            {
+                ReplicateMarkdownFile(filePath, targetPath, relative, course, sectionNumber, created);
+            }
+            else
+            {
+                File.Copy(filePath, targetPath, overwrite: true);
+            }
+        }
+    }
+
+    private static void ReplicateMarkdownFile(string sourcePath, string destinationPath, string relativePath, Course course, int sectionNumber, string created)
+    {
+        string text;
+        try { text = File.ReadAllText(sourcePath); }
+        catch
+        {
+            File.Copy(sourcePath, destinationPath, overwrite: true);
+            return;
+        }
+
+        var lines = FrontmatterLines(sourcePath);
+        if (lines == null)
+        {
+            File.WriteAllText(destinationPath, text);
+            return;
+        }
+
+        string normalizedRelative = relativePath.Replace('\\', '/');
+        bool isRootIndex = normalizedRelative == "index.md";
+        bool isTopLevelPerSectionFile = course.Configuration.PerSectionFiles.Contains(normalizedRelative);
+
+        var newLines = new List<string>();
+        foreach (string line in lines)
+        {
+            if (isRootIndex && line.StartsWith("title:", StringComparison.Ordinal))
+            {
+                string newTitle = SectionTitle(course, sectionNumber);
+                newLines.Add("title: " + newTitle);
+            }
+            else if ((isRootIndex || isTopLevelPerSectionFile) && line.StartsWith("created:", StringComparison.Ordinal))
+            {
+                newLines.Add("created: " + created);
+            }
+            else
+            {
+                newLines.Add(line);
+            }
+        }
+
+        int prefixToDrop = ("---\n" + string.Join("\n", lines)).Length;
+        string textNormalized = text.Replace("\r\n", "\n");
+        string restOfText = textNormalized[prefixToDrop..];
+        string rewritten = "---\n" + string.Join("\n", newLines) + restOfText;
+        File.WriteAllText(destinationPath, rewritten);
+    }
+
+    internal static void ExtendCourseLevelPages(Course course, int sectionNumber, string created)
+    {
+        var sectionFolderNames = new HashSet<string>(course.Configuration.SectionNumbers.Select(n => $"section{n}"));
+        if (!Directory.Exists(course.DirectoryPath)) return;
+
+        foreach (string file in Directory.GetFiles(course.DirectoryPath, "*.md", SearchOption.AllDirectories))
+        {
+            string relative = Path.GetRelativePath(course.DirectoryPath, file);
+            string firstSegment = relative.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)[0];
+            if (sectionFolderNames.Contains(firstSegment))
+                continue;
+
+            ExtendFrontmatter(file, sectionNumber, created);
+        }
+    }
+
+    private static void ExtendFrontmatter(string filePath, int sectionNumber, string created)
+    {
+        string text;
+        try { text = File.ReadAllText(filePath); }
+        catch { return; }
+
+        var lines = FrontmatterLines(filePath);
+        if (lines == null || AlreadyHasKeys(sectionNumber, lines)) return;
+
+        int? lowestSection = null;
+        foreach (string line in lines)
+        {
+            int? num = PerSectionKeyNumber(line);
+            if (num.HasValue)
+            {
+                if (!lowestSection.HasValue || num.Value < lowestSection.Value)
+                    lowestSection = num.Value;
+            }
+        }
+        if (!lowestSection.HasValue) return;
+
+        var addition = new List<string> { $"createdSection{sectionNumber}: {created}" };
+        string? publish = PublishValue(lowestSection.Value, lines);
+        if (publish != null)
+            addition.Add($"publishForSection{sectionNumber}: {publish}");
+
+        int lastKeyIndex = -1;
+        for (int i = 0; i < lines.Count; i++)
+        {
+            if (PerSectionKeyNumber(lines[i]) != null)
+                lastKeyIndex = i;
+        }
+
+        var updated = new List<string>();
+        for (int i = 0; i < lines.Count; i++)
+        {
+            updated.Add(lines[i]);
+            if (i == lastKeyIndex)
+                updated.AddRange(addition);
+        }
+
+        string textNormalized = text.Replace("\r\n", "\n");
+        int prefixToDrop = ("---\n" + string.Join("\n", lines)).Length;
+        string body = textNormalized[prefixToDrop..];
+        string rewritten = "---\n" + string.Join("\n", updated) + body;
+        File.WriteAllText(filePath, rewritten);
+    }
+
+    private static bool AlreadyHasKeys(int sectionNumber, List<string> lines)
+    {
+        string[] prefixes = [$"createdSection{sectionNumber}:", $"publishForSection{sectionNumber}:", $"draftSection{sectionNumber}:"];
+        return lines.Any(l => prefixes.Any(p => l.StartsWith(p, StringComparison.Ordinal)));
+    }
+
+    private static string? PublishValue(int sectionNumber, List<string> lines)
+    {
+        string pubPrefix = $"publishForSection{sectionNumber}:";
+        foreach (string line in lines)
+        {
+            if (line.StartsWith(pubPrefix, StringComparison.Ordinal))
+                return line[pubPrefix.Length..].Trim();
+        }
+        string draftPrefix = $"draftSection{sectionNumber}:";
+        foreach (string line in lines)
+        {
+            if (line.StartsWith(draftPrefix, StringComparison.Ordinal))
+            {
+                string val = line[draftPrefix.Length..].Trim().ToLowerInvariant();
+                return val == "true" ? "false" : "true";
+            }
+        }
+        return null;
+    }
+
+    private static int? PerSectionKeyNumber(string line)
+    {
+        string[] prefixes = ["createdSection", "publishForSection", "draftSection"];
+        foreach (string prefix in prefixes)
+        {
+            if (line.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                string rest = line[prefix.Length..];
+                int colon = rest.IndexOf(':');
+                if (colon > 0 && int.TryParse(rest[..colon], out int num))
+                    return num;
+            }
+        }
+        return null;
     }
 
     /// <summary>The first existing copy among ascending section numbers — deterministic.</summary>

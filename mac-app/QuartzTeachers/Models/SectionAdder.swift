@@ -45,55 +45,80 @@ enum SectionAdder {
         try fileManager.createDirectory(at: sectionURL, withIntermediateDirectories: true)
 
         // A new section should behave like the sections beside it — the same
-        // pages published, the same pages held back, the same
-        // display flags. So each scaffolded file copies its frontmatter from
-        // the matching file in an existing section when there is one, and
-        // only falls back to the wizard's plain template when there is not.
-        let indexFrontmatter: String = scaffoldFrontmatter(
-            sibling: siblingFile(named: "index.md", in: course),
-            replacingTitleWith: sectionTitle(for: course, sectionNumber: sectionNumber),
-            created: created
-        )
-        let indexBody: String = """
-        ---
-        \(indexFrontmatter)
-        ---
-        """
-        try indexBody.write(to: sectionURL.appendingPathComponent("index.md"), atomically: true, encoding: .utf8)
+        // pages published, the same pages held back, the same display flags,
+        // and the same unit/day class files and notes. When an existing sibling
+        // section is present, replicate its folder and file tree.
+        if let siblingURL = lowestExistingSiblingSectionURL(in: course) {
+            try replicateSiblingSection(
+                from: siblingURL,
+                to: sectionURL,
+                course: course,
+                sectionNumber: sectionNumber,
+                created: created
+            )
+        }
+
+        // Ensure the landing page and any configured per-section folders and
+        // files exist, falling back to templates if there was no sibling or
+        // if the sibling was missing them.
+        let indexURL: URL = sectionURL.appendingPathComponent("index.md")
+        if !fileManager.fileExists(atPath: indexURL.path) {
+            let indexFrontmatter: String = scaffoldFrontmatter(
+                sibling: siblingFile(named: "index.md", in: course),
+                replacingTitleWith: sectionTitle(for: course, sectionNumber: sectionNumber),
+                created: created
+            )
+            let indexBody: String = """
+            ---
+            \(indexFrontmatter)
+            ---
+            """
+            try indexBody.write(to: indexURL, atomically: true, encoding: .utf8)
+        }
 
         for folderName in course.configuration.perSectionFolders {
             let folderURL: URL = sectionURL.appendingPathComponent(folderName)
             try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true)
-            let folderFrontmatter: String = scaffoldFrontmatter(
-                sibling: siblingFile(named: "\(folderName)/index.md", in: course),
-                replacingTitleWith: nil,
-                fallbackTitle: folderName,
-                created: created
-            )
-            let folderIndex: String = """
-            ---
-            \(folderFrontmatter)
-            ---
-            This is the **\(folderName)** folder. Add Markdown files to this folder to build out your site.
-            """
-            try folderIndex.write(to: folderURL.appendingPathComponent("index.md"), atomically: true, encoding: .utf8)
+            let folderIndexURL: URL = folderURL.appendingPathComponent("index.md")
+            if !fileManager.fileExists(atPath: folderIndexURL.path) {
+                let folderFrontmatter: String = scaffoldFrontmatter(
+                    sibling: siblingFile(named: "\(folderName)/index.md", in: course),
+                    replacingTitleWith: nil,
+                    fallbackTitle: folderName,
+                    created: created
+                )
+                let folderIndex: String = """
+                ---
+                \(folderFrontmatter)
+                ---
+                This is the **\(folderName)** folder. Add Markdown files to this folder to build out your site.
+                """
+                try folderIndex.write(to: folderIndexURL, atomically: true, encoding: .utf8)
+            }
         }
 
         for fileName in course.configuration.perSectionFiles {
-            let fileFrontmatter: String = scaffoldFrontmatter(
-                sibling: siblingFile(named: fileName, in: course),
-                replacingTitleWith: nil,
-                fallbackTitle: fileName.replacingOccurrences(of: ".md", with: ""),
-                fallbackIsDraft: SectionAdder.unpublishedFileNames.contains(fileName),
-                created: created
-            )
-            let fileBody: String = """
-            ---
-            \(fileFrontmatter)
-            ---
-            This is the per-section file **\(fileName)**.
-            """
-            try fileBody.write(to: sectionURL.appendingPathComponent(fileName), atomically: true, encoding: .utf8)
+            let fileURL: URL = sectionURL.appendingPathComponent(fileName)
+            if !fileManager.fileExists(atPath: fileURL.path) {
+                let isUnpublished: Bool = SectionAdder.unpublishedFileNames.contains(fileName)
+                let fileFrontmatter: String = scaffoldFrontmatter(
+                    sibling: siblingFile(named: fileName, in: course),
+                    replacingTitleWith: nil,
+                    fallbackTitle: fileName.replacingOccurrences(of: ".md", with: ""),
+                    fallbackIsDraft: isUnpublished,
+                    created: created
+                )
+                let bodyText: String = isUnpublished
+                    ? "This is the per-section file **\(fileName)**. It is marked `publish: false`, so it stays out of the built site — a private place for your own notes."
+                    : "This is the per-section file **\(fileName)**."
+                let fileBody: String = """
+                ---
+                \(fileFrontmatter)
+                ---
+                \(bodyText)
+                """
+                try fileBody.write(to: fileURL, atomically: true, encoding: .utf8)
+            }
         }
 
         // Course-level pages are shared by every section, but each section
@@ -114,6 +139,124 @@ enum SectionAdder {
         try course.configuration.write(to: course.configFileURL)
     }
 
+    /// Finds the directory of the lowest-numbered section in the course that exists on disk.
+    static func lowestExistingSiblingSectionURL(in course: Course) -> URL? {
+        var numbers: [Int] = course.sectionNumbers
+        numbers.sort()
+        let fileManager: FileManager = FileManager.default
+        for number in numbers {
+            let candidate: URL = course.sectionDirectoryURL(forSection: number)
+            var isDirectory: ObjCBool = false
+            if fileManager.fileExists(atPath: candidate.path, isDirectory: &isDirectory) && isDirectory.boolValue {
+                return candidate
+            }
+        }
+        return nil
+    }
+
+    /// Recursively copies all directories and files from an existing sibling
+    /// section into the new section's folder, adapting markdown frontmatter
+    /// (title for index.md, refreshed created dates for top-level files) while
+    /// preserving all body text, lesson notes, and frontmatter flags.
+    static func replicateSiblingSection(
+        from siblingURL: URL,
+        to destinationURL: URL,
+        course: Course,
+        sectionNumber: Int,
+        created: String
+    ) throws {
+        let fileManager: FileManager = FileManager.default
+        guard let enumerator = fileManager.enumerator(
+            at: siblingURL,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return
+        }
+
+        let resolvedSiblingURL: URL = siblingURL.resolvingSymlinksInPath().standardizedFileURL
+        let siblingPrefix: String = resolvedSiblingURL.path.hasSuffix("/")
+            ? resolvedSiblingURL.path
+            : resolvedSiblingURL.path + "/"
+
+        while let itemURL = enumerator.nextObject() as? URL {
+            let resolvedItemURL: URL = itemURL.resolvingSymlinksInPath().standardizedFileURL
+            let itemPath: String = resolvedItemURL.path
+            guard itemPath.hasPrefix(siblingPrefix) else {
+                continue
+            }
+            let relativePath: String = String(itemPath.dropFirst(siblingPrefix.count))
+            if relativePath.isEmpty {
+                continue
+            }
+
+            let targetURL: URL = destinationURL.appendingPathComponent(relativePath)
+            let resourceValues = try? itemURL.resourceValues(forKeys: [.isDirectoryKey])
+            let isDirectory: Bool = resourceValues?.isDirectory ?? false
+
+            if isDirectory {
+                try fileManager.createDirectory(at: targetURL, withIntermediateDirectories: true)
+            } else {
+                try fileManager.createDirectory(at: targetURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+                if itemURL.pathExtension == "md" {
+                    try replicateMarkdownFile(
+                        from: itemURL,
+                        to: targetURL,
+                        relativePath: relativePath,
+                        course: course,
+                        sectionNumber: sectionNumber,
+                        created: created
+                    )
+                } else {
+                    try fileManager.copyItem(at: itemURL, to: targetURL)
+                }
+            }
+        }
+    }
+
+    /// Replicates a single markdown file from a sibling section to the new section.
+    /// Title is recomputed for the landing page (`index.md`), `created:` is freshened
+    /// for top-level files (`index.md` and `perSectionFiles`), and all other metadata
+    /// and body content are preserved verbatim.
+    static func replicateMarkdownFile(
+        from sourceURL: URL,
+        to destinationURL: URL,
+        relativePath: String,
+        course: Course,
+        sectionNumber: Int,
+        created: String
+    ) throws {
+        guard let text = try? String(contentsOf: sourceURL, encoding: .utf8) else {
+            try FileManager.default.copyItem(at: sourceURL, to: destinationURL)
+            return
+        }
+
+        guard let lines = frontmatterLines(ofFileAt: sourceURL) else {
+            try text.write(to: destinationURL, atomically: true, encoding: .utf8)
+            return
+        }
+
+        let isRootIndex: Bool = relativePath == "index.md"
+        let isTopLevelPerSectionFile: Bool = course.configuration.perSectionFiles.contains(relativePath)
+
+        var newLines: [String] = []
+        for line in lines {
+            if isRootIndex && line.hasPrefix("title:") {
+                let newTitle: String = sectionTitle(for: course, sectionNumber: sectionNumber)
+                newLines.append("title: \(newTitle)")
+            } else if (isRootIndex || isTopLevelPerSectionFile) && line.hasPrefix("created:") {
+                newLines.append("created: \(created)")
+            } else {
+                newLines.append(line)
+            }
+        }
+
+        let prefixToDrop: Int = ("---\n" + lines.joined(separator: "\n")).count
+        let restOfText: String = String(text.dropFirst(prefixToDrop))
+        let rewritten: String = "---\n" + newLines.joined(separator: "\n") + restOfText
+        try rewritten.write(to: destinationURL, atomically: true, encoding: .utf8)
+    }
+
     /// Every markdown page at the course level — the shared folders and
     /// files, everything outside the `sectionN` folders — gains a
     /// `createdSectionN` / `publishForSectionN` pair for the section being added.
@@ -125,7 +268,10 @@ enum SectionAdder {
     /// Pages with no per-section keys are left alone — a plain `created:`
     /// already applies to every section, including this one.
     static func extendCourseLevelPages(in course: Course, toInclude sectionNumber: Int, created: String) {
-        let sectionFolderNames: Set<String> = Set(course.sectionNumbers.map { "section\($0)" })
+        var sectionFolderNames: Set<String> = Set<String>()
+        for number in course.sectionNumbers {
+            sectionFolderNames.insert("section\(number)")
+        }
         let fileManager: FileManager = FileManager.default
         guard let enumerator = fileManager.enumerator(
             at: course.directoryURL, includingPropertiesForKeys: nil
