@@ -40,9 +40,26 @@ struct TaskProgressView: View {
     // MARK: - Computed properties
 
     /// Drives the question alert without writing state during a body.
+    ///
+    /// A request for a publishing credential is deliberately excluded: it
+    /// gets a sheet of its own, because "Paste Netlify token:" is not a
+    /// question anybody can answer without being told where tokens come
+    /// from.
     var awaitingInputBinding: Binding<Bool> {
         return Binding(
-            get: { runner.isAwaitingInput },
+            get: { runner.isAwaitingInput && runner.pendingCredentialRequest == nil },
+            set: { isPresented in
+                if !isPresented {
+                    runner.isAwaitingInput = false
+                }
+            }
+        )
+    }
+
+    /// Drives the credential sheet, on the same terms.
+    var awaitingCredentialBinding: Binding<Bool> {
+        return Binding(
+            get: { runner.isAwaitingInput && runner.pendingCredentialRequest != nil },
             set: { isPresented in
                 if !isPresented {
                     runner.isAwaitingInput = false
@@ -281,6 +298,22 @@ struct TaskProgressView: View {
             }
         } message: {
             Text(runner.pendingQuestion)
+        }
+        // A launcher asking for a Netlify or Cloudflare credential gets a
+        // dialog that explains where one comes from, with the page to make
+        // it on offered as a link rather than opened for them.
+        .sheet(isPresented: awaitingCredentialBinding) {
+            if let request = runner.pendingCredentialRequest {
+                CredentialRequestSheet(
+                    request: request,
+                    onSend: { typed in
+                        runner.send(line: typed)
+                    },
+                    onCancel: {
+                        runner.cancelPendingQuestion()
+                    }
+                )
+            }
         }
         .onChange(of: runner.isAwaitingInput) {
             // Start from the answer the task would have used anyway, so

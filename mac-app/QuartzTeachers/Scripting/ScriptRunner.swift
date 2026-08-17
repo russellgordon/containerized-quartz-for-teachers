@@ -57,6 +57,12 @@ class ScriptRunner {
     /// must not be reported as one.
     var wasStoppedByUser: Bool = false
 
+    /// Set when the pending question is a launcher asking for a
+    /// publishing credential, so the interface can explain how to get one
+    /// rather than repeating the launcher's one-line prompt. Nil for every
+    /// ordinary question.
+    var pendingCredentialRequest: CredentialRequest?
+
     /// The answer the script would use if the teacher simply agreed —
     /// what it showed in square brackets. Offered in the answer field
     /// rather than left in the wording of the question.
@@ -230,6 +236,7 @@ class ScriptRunner {
     /// Sends one line of input to the script, as if typed in Terminal.
     func send(line: String) {
         isAwaitingInput = false
+        pendingCredentialRequest = nil
         guard let terminal else {
             return
         }
@@ -243,6 +250,7 @@ class ScriptRunner {
     func cancelPendingQuestion() {
         wasCancelled = true
         isAwaitingInput = false
+        pendingCredentialRequest = nil
         if pendingCancelToken.isEmpty {
             // No option to decline, so the only way to honour Cancel is
             // to stop the task itself.
@@ -356,6 +364,7 @@ class ScriptRunner {
 
         // Fresh output means the script is working, not waiting.
         isAwaitingInput = false
+        pendingCredentialRequest = nil
         schedulePromptCheck()
     }
 
@@ -377,6 +386,14 @@ class ScriptRunner {
                     self.pendingQuestion = asked.question
                     self.suggestedAnswer = asked.suggestedAnswer
                     self.pendingCancelToken = asked.cancelToken
+                    self.pendingCredentialRequest = CredentialRequest.matching(asked.question)
+                    if let request = self.pendingCredentialRequest {
+                        // A first publish that "never finished" is usually
+                        // this: a task waiting behind a dialog nobody saw.
+                        // The line names WHICH credential; the answer to it
+                        // is a secret and is never recorded.
+                        ActivityTrail.note(.askedForACredential, "asked for the " + request.fieldLabel)
+                    }
                     self.isAwaitingInput = true
                 }
             }

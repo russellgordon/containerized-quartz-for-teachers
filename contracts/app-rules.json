@@ -102,6 +102,109 @@
     ],
     "note" : "What a teacher is told about what they typed. Both apps ask the same questions and must give the same answers; the exact sentences are the product's, so they are asserted by equality rather than by 'contains'."
   },
+  "credentialPrompts" : {
+    "cases" : [
+      {
+        "expectRequest" : "netlifyToken",
+        "prompt" : "Paste Netlify token: "
+      },
+      {
+        "expectRequest" : "cloudflareToken",
+        "prompt" : "Paste Cloudflare token: "
+      },
+      {
+        "expectRequest" : "cloudflareAccountID",
+        "prompt" : "Paste Cloudflare Account ID: "
+      },
+      {
+        "expectRequest" : "",
+        "prompt" : "Enter Netlify site name:"
+      },
+      {
+        "expectRequest" : "",
+        "prompt" : "Choose a different Netlify site name:"
+      },
+      {
+        "expectRequest" : "",
+        "prompt" : "Select folders/files to HIDE (comma-separated numbers):"
+      }
+    ],
+    "everyRequest" : [
+      {
+        "expectLink" : "https://app.netlify.com/user/applications#personal-access-tokens",
+        "expectSecret" : true,
+        "name" : "netlifyToken"
+      },
+      {
+        "expectLink" : "https://dash.cloudflare.com/profile/api-tokens",
+        "expectSecret" : true,
+        "name" : "cloudflareToken"
+      },
+      {
+        "expectLink" : "https://dash.cloudflare.com",
+        "expectSecret" : false,
+        "name" : "cloudflareAccountID"
+      }
+    ],
+    "everyRequestNote" : "An account ID is not a secret and is shown as it is typed; a token is, and is not. Getting that backwards either puts a live credential on a screen a class can see, or hides a code the teacher needs to check they pasted correctly.",
+    "matchedOnWordsNotWholeLine" : "The two launchers word these prompts slightly differently and are free to keep doing so, so the match is on the words that NAME the credential — 'netlify token', 'cloudflare token', 'cloudflare account id' — not on the whole line.",
+    "note" : "Which launcher prompt is a request for a publishing credential, and which one it is. Authored rather than read out of the code, because this is the half that must fail when the matching changes: a prompt that stops being recognised does not crash anything — the teacher simply gets the old one-line question back and no way to answer it.",
+    "whyNoBrowserOpens" : "The launchers used to run `open` (macOS) or `Start-Process` (Windows) on the token page the moment they asked, so a browser tab appeared unasked while the teacher was looking at the app. Reported as disconcerting: an application that takes over the screen reads as something going wrong, not as help. The address is now offered as a link in the dialog and printed in the launcher's own output, and the teacher decides when to follow it. Neither app may open a page on the teacher's behalf here."
+  },
+  "credentialRequests" : {
+    "note" : "What a teacher reads when a first publish stops to ask for a Netlify or Cloudflare credential. The launcher's own prompt is one line — \"Paste Netlify token:\" — which names something most teachers have never heard of and does not say where to get one, so both apps answer it with a dialog: what the credential is for, the steps that produce one, and the page to make it on as a LINK. The link is never opened for them; see credentialPrompts.whyNoBrowserOpens.",
+    "requests" : [
+      {
+        "explanation" : "Netlify hosts this section's website for free, and it needs to know that the publishing is coming from you. It does that with an access token — a long code that acts like a password made just for this app. Creating one takes about a minute, and you will not be asked again: it is saved securely on this computer.",
+        "fieldLabel" : "Netlify token",
+        "isSecret" : true,
+        "linkAddress" : "https://app.netlify.com/user/applications#personal-access-tokens",
+        "linkTitle" : "Open Netlify’s access tokens page",
+        "name" : "netlifyToken",
+        "steps" : [
+          "Open the Netlify page linked below, and sign in if you are asked to.",
+          "Choose “New access token”.",
+          "Describe it as something you will recognise later, such as “Class websites”.",
+          "Set it to never expire, so your publishing does not stop working partway through the year.",
+          "Choose “Generate token”, then copy the long code Netlify shows you — it is only shown once.",
+          "Paste it below."
+        ],
+        "title" : "Connect to Netlify"
+      },
+      {
+        "explanation" : "Cloudflare hosts this section's website for free, and it needs to know that the publishing is coming from you. It does that with an API token — a long code that acts like a password made just for this app. Creating one takes about two minutes, and you will not be asked again: it is saved securely on this computer.",
+        "fieldLabel" : "Cloudflare token",
+        "isSecret" : true,
+        "linkAddress" : "https://dash.cloudflare.com/profile/api-tokens",
+        "linkTitle" : "Open Cloudflare’s API tokens page",
+        "name" : "cloudflareToken",
+        "steps" : [
+          "Open the Cloudflare page linked below, and sign in if you are asked to.",
+          "Choose “Create Token”, then “Create Custom Token”.",
+          "Name it something you will recognise later, such as “Class websites”.",
+          "Give it one permission, chosen from the three dropdowns: Account, then Cloudflare Pages, then Edit.",
+          "Leave everything else as it is, then choose “Continue to summary” and “Create Token”.",
+          "Copy the long code Cloudflare shows you — it is only shown once — and paste it below."
+        ],
+        "title" : "Connect to Cloudflare"
+      },
+      {
+        "explanation" : "The token you just made is allowed to publish, but not to look up which Cloudflare account it belongs to — so the account's ID is needed as well. This is the only time you will be asked for it.",
+        "fieldLabel" : "Account ID",
+        "isSecret" : false,
+        "linkAddress" : "https://dash.cloudflare.com",
+        "linkTitle" : "Open the Cloudflare dashboard",
+        "name" : "cloudflareAccountID",
+        "steps" : [
+          "Open the Cloudflare dashboard linked below.",
+          "Choose “Workers & Pages” from the list on the left.",
+          "Find “Account ID” on the right-hand side, and copy it.",
+          "Paste it below. (It is also the long code in your browser's address bar, just after dash.cloudflare.com/.)"
+        ],
+        "title" : "One more thing from Cloudflare"
+      }
+    ]
+  },
   "deployArguments" : {
     "cases" : [
       {
@@ -220,9 +323,10 @@
   },
   "generated" : {
     "keys" : [
+      "credentialRequests",
       "milestones"
     ],
-    "note" : "Written by `Plantoir --write-contracts` from the app's own types and overwritten: milestones. The rest is hand-written expectation and is preserved."
+    "note" : "Written by `Plantoir --write-contracts` from the app's own types and overwritten: credentialRequests, milestones. The rest is hand-written expectation and is preserved."
   },
   "launcherFlags" : {
     "alsoAccepted" : {

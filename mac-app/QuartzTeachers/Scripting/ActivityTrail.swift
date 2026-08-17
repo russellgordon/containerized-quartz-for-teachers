@@ -39,6 +39,7 @@ nonisolated enum ActivityTrail {
         case settingsCouldNotBeSaved = "settings could not be saved"
         case taskStarted = "task started"
         case taskFinished = "task finished"
+        case askedForACredential = "asked for a publishing credential"
         case assistantOpened = "assistant opened"
         case assistantReady = "assistant ready"
         case assistantWouldNotStart = "assistant would not start"

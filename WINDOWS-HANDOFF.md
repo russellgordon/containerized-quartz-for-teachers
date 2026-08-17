@@ -3152,6 +3152,79 @@ line exists so that a start with no ending MEANS something**: without it,
 "started downloading, nothing after" is ambiguous between a cancel and a
 hang, and a hang is what somebody would go looking for.
 
+## Asking for a Netlify or Cloudflare token (entry 253)
+
+The first publish of a section stops on one line from the launcher:
+
+```
+Paste Netlify token:
+```
+
+Until now that line WAS the question a teacher was asked. Both apps watch the
+running launcher for a prompt and put it in a dialog with a text field — so a
+teacher who has never heard of an access token was shown its name, a box, and a
+Send button, with nothing about where one comes from. Reported as "too terse",
+and it is: the dialog contained no information the teacher did not already lack.
+
+**What replaced it.** `CredentialRequest` (mac: `QuartzTeachers/Scripting/`)
+recognises the three prompts the launchers can stop on, and each carries the
+whole dialog: a title, one short paragraph saying what the credential is for
+and that it is asked only once, numbered steps that produce one, a link to the
+page that makes it, the field's label, and whether the answer is a secret.
+`CredentialRequestSheet` renders it; `TaskProgressView` shows that sheet
+instead of the plain alert whenever `ScriptRunner.pendingCredentialRequest` is
+set.
+
+**The sentences are DATA, so do not retype them.**
+`contracts/app-rules.json` → `credentialRequests.requests` is a generated
+readout of all three, field for field. Deserialise it into the WinUI dialog and
+the two apps say the same thing forever; retype it and they diverge on the
+first wording fix.
+
+**The authored half is `credentialPrompts`**, and it is what fails when the
+matching drifts:
+
+- `cases` — six prompts and the request each produces (three real ones, three
+  ordinary questions that must produce none, so a match that grew too greedy is
+  caught). Windows already parses prompts in `QuestionParser.cs`; the matching
+  itself is three `Contains` checks on the lowered line.
+- `matchedOnWordsNotWholeLine` — match on `netlify token`, `cloudflare token`,
+  `cloudflare account id`, never on the whole line. The two launchers word
+  these prompts differently and are free to keep doing so.
+- `whyNoBrowserOpens` — see below.
+
+**No app and no launcher may open the token page by itself.** Both launchers
+used to do it the moment they asked: `open` in `deploy.sh`, `Start-Process` in
+`deploy.ps1`, three calls each. A browser tab arriving unasked, over the app the
+teacher was looking at, reads as something going WRONG rather than as help —
+that is the report that prompted this entry, in those words ("disconcerting").
+Those six calls are already deleted, `deploy.ps1` included, and a mac test
+greps both launchers for them so they cannot come back. In the dialog the
+address is a `HyperlinkButton` the teacher clicks when they are ready; in a
+terminal it is printed in the steps. **Do not add a "helpfully open it for
+them" convenience to the WinUI dialog.** The printed instructions in both
+launchers were rewritten to the same steps as the dialog, so a teacher at a
+console gets the same explanation.
+
+**Two details that are easy to get backwards.**
+
+- A token is a secret and goes in a `PasswordBox`; a Cloudflare **Account ID is
+  not**, and goes in a plain `TextBox`. Hiding the ID costs the teacher the one
+  check available to them — that what they pasted is what they copied — and
+  showing a token puts a live credential on a screen a class can see.
+  `credentialPrompts.everyRequest` pins both, with each request's link.
+- **Trim the pasted value.** A code copied out of a dashboard often carries a
+  trailing space or newline, which is invisible and rejected, and the teacher is
+  told their token is wrong when it is not.
+
+**The trail.** `asked for a publishing credential` is in
+`contracts/shared-rules.json` → `activityTrail.mustRecord`, so the Windows
+pinning test fails until that enum case exists. It records WHICH credential was
+asked for and never the answer. It is there because a first publish waiting
+behind a dialog nobody noticed is reported as a publish that "never finished",
+and this line is the difference between reading that as a hang and reading it
+as a question waiting.
+
 ## Testing
 
 - The **PowerShell launchers are tested on real Windows** — all three have

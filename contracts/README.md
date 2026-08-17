@@ -24,7 +24,7 @@ mechanics, a measurement taken on one machine: not.
 | [`course-management.json`](course-management.json) | The names the three kinds of zip carry and how they are told apart, what section number is offered next and which entries are refused in whose words, and the grade a course code names. |
 | [`class-planning.json`](class-planning.json) | Which page titles carry numbers, what "the next class" would be called, and — the highest-stakes data here — the ORDER renames must run in when room is made for a class. |
 | [`schedule-rules.json`](schedule-rules.json) | How a teacher's own list of class dates is read: every accepted date form, how an ambiguous `08/09/2026` column is settled or asked about, and what a pasted Google Sheet address becomes. |
-| [`app-rules.json`](app-rules.json) | The app itself: what `deploy.sh` is asked to do for a given configuration, what a teacher is told about an Account ID or a custom domain they typed, how a failure's raw output becomes a sentence, whether a deploy must build first, the progress markers and **where each marker's text comes from**, and the preview's ports. |
+| [`app-rules.json`](app-rules.json) | The app itself: what `deploy.sh` is asked to do for a given configuration, what a teacher is told about an Account ID or a custom domain they typed, how a failure's raw output becomes a sentence, whether a deploy must build first, the progress markers and **where each marker's text comes from**, the preview's ports, and **what a teacher is shown when a first publish stops to ask for a Netlify or Cloudflare credential**. |
 
 ## What is generated and what is written by hand
 
@@ -38,8 +38,13 @@ the boundary is a TOP-LEVEL key — the file names them under `generated.keys`:
 | `nearMisses`, `scenarios` | **Hand-written intent.** The generator preserves them; nothing in the code says what a near miss is, or what ORDER events must happen in — those are decisions, and decisions are why this repository has handoff documents. |
 
 In `app-rules.json` the same split applies: `milestones` is a readout of
-`TaskMilestones` and is overwritten; `deployArguments`, `configurationRules`,
-`previewPorts` and `markerOrigins` are authored and preserved. The rule behind
+`TaskMilestones` and `credentialRequests` a readout of `CredentialRequest` —
+both overwritten; `deployArguments`, `configurationRules`, `previewPorts`,
+`markerOrigins` and `credentialPrompts` are authored and preserved. The pair
+`credentialRequests` / `credentialPrompts` shows the split at its clearest: the
+first is the WORDING, carried so the other app can show the same sentences
+rather than invent its own, and the second is the BEHAVIOUR — which launcher
+prompt is a request for which credential — which must fail when it drifts. The rule behind
 the split is worth stating once — **a readout of the code cannot fail when the
 code changes**, so anything that must catch a regression is written by hand and
 executed against the real function.
@@ -145,6 +150,7 @@ gap nobody has looked at. Counts are test functions, taken 2026-08-16.
 | Whether a deploy must build first | `app-rules.json` → `buildFreshness` | BuildFreshness (6) |
 | Preview ports and the websocket offset | `app-rules.json` → `previewPorts` | PreviewLease (7) |
 | The browser-safe address | `app-rules.json` → `linkRules` | BrowserSafeURL (2) |
+| Asking for a publishing credential | `app-rules.json` → `credentialRequests`, `credentialPrompts` | AppRulesContract (3) |
 | `course_config.json` keys, types, defaults | `file-formats.json` → `courseConfigKeys` | CourseConfiguration (10) |
 | Page visibility: `publish:`, legacy `draft:`, per-section keys | `file-formats.json` → `pageVisibility` | ~33 tests across the suite |
 | Image pins and the Quartz patches | `toolchain.json` | checked against `Dockerfile` and `patches/` |

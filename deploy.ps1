@@ -369,15 +369,18 @@ function Get-CloudflareAccountId([string]$token) {
 # Only reached when the token cannot name its own account.
 function Read-CloudflareAccountId {
 @"
-One more thing: this token cannot list your Cloudflare account, so please
-paste your Account ID as well. You only have to do this once.
+One more thing from Cloudflare.
 
-Where to find it:
-  Open https://dash.cloudflare.com and select Workers and Pages.
-  The Account ID is shown on the right-hand side, and it is also the long
-  code in the address bar just after dash.cloudflare.com/.
+The token you just made is allowed to publish, but not to look up which
+Cloudflare account it belongs to - so the account's ID is needed as well.
+This is the only time you will be asked for it.
+
+  1. Open this page:  https://dash.cloudflare.com
+  2. Choose "Workers & Pages" from the list on the left.
+  3. Find "Account ID" on the right-hand side, and copy it.
+     (It is also the long code in the address bar, just after
+     dash.cloudflare.com/.)
 "@ | Out-Host
-  try { Start-Process "https://dash.cloudflare.com" | Out-Null } catch {}
   $entered = (Read-Host "Paste Cloudflare Account ID").Trim()
   if ($entered -notmatch '^[0-9a-fA-F]{32}$') {
     Write-Host "That does not look like an Account ID (it should be 32 letters and digits)."
@@ -463,16 +466,25 @@ if ($TARGET -eq 'cloudflare') {
   }
   if (-not $CF_TOKEN) {
 @"
-You need a Cloudflare API token to publish to Cloudflare Pages.
-1) Open this page: https://dash.cloudflare.com/profile/api-tokens
-2) Select 'Create Token', then 'Create Custom Token'.
-   Tips:
-   a. Name it something like 'For class website publishing'
-   b. Give it ONE permission: Account - Cloudflare Pages - Edit
-   c. Leave the expiry alone, or set it to never expire
-3) Copy the generated token and paste it here.
+Connect to Cloudflare.
+
+Cloudflare hosts this section's website for free, and it needs to know that
+the publishing is coming from you. It does that with an API token - a long
+code that acts like a password made just for this app. Creating one takes
+about two minutes, and you will not be asked again: it is saved securely on
+this computer.
+
+  1. Open this page:  https://dash.cloudflare.com/profile/api-tokens
+     (Sign in if you are asked to.)
+  2. Choose "Create Token", then "Create Custom Token".
+  3. Name it something you will recognise later, such as "Class websites".
+  4. Give it ONE permission, chosen from the three dropdowns:
+     Account  ->  Cloudflare Pages  ->  Edit
+  5. Leave everything else as it is, then choose "Continue to summary"
+     and "Create Token".
+  6. Copy the long code Cloudflare shows you - it is only shown once - and
+     paste it below. Nothing appears as you paste; that is normal.
 "@ | Out-Host
-    try { Start-Process "https://dash.cloudflare.com/profile/api-tokens" | Out-Null } catch {}
     $pastedSec = Read-Host -AsSecureString "Paste Cloudflare token"
     $plain = $null
     $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($pastedSec)
@@ -536,15 +548,26 @@ if (-not $TOKEN -and (Test-Path $TOKENS_FILE)) {
 
 if (-not $TOKEN) {
 @"
-You need a Netlify Personal Access Token (PAT) to deploy.
-1) Open this page: https://app.netlify.com/user/applications#personal-access-tokens
-2) Create a new token.
-   Tips:
-   a. Name it something like 'For class website deploys'
-   b. Set the expiration time to 'No expiration'
-3) Copy the generated token and paste it here.
+Connect to Netlify.
+
+Netlify hosts this section's website for free, and it needs to know that the
+publishing is coming from you. It does that with an access token - a long
+code that acts like a password made just for this app. Creating one takes
+about a minute, and you will not be asked again: it is saved securely on
+this computer.
+
+  1. Open this page:
+     https://app.netlify.com/user/applications#personal-access-tokens
+     (Sign in if you are asked to.)
+  2. Choose "New access token".
+  3. Describe it as something you will recognise later, such as
+     "Class websites".
+  4. Set it to never expire, so your publishing does not stop working
+     partway through the year.
+  5. Choose "Generate token", then copy the long code Netlify shows you -
+     it is only shown once.
+  6. Paste it below. Nothing appears as you paste; that is normal.
 "@ | Out-Host
-  try { Start-Process "https://app.netlify.com/user/applications#personal-access-tokens" | Out-Null } catch {}
   $pastedSec = Read-Host -AsSecureString "Paste Netlify token"
   $plain = $null
   $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($pastedSec)

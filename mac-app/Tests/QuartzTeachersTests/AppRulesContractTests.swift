@@ -374,6 +374,71 @@ final class AppRulesContractTests: XCTestCase {
         XCTAssertEqual(blocks.first, PreviewLeases.availablePorts.first)
     }
 
+    // MARK: - Asking for a publishing credential
+
+    /// A prompt that stops being recognised does not crash anything: the
+    /// teacher just gets "Paste Netlify token:" back, with no idea what one
+    /// is or where it comes from. So the recognition is authored, and this
+    /// is what fails when it drifts.
+    func testTheCredentialPromptsAreRecognisedAsTheContractSays() throws {
+        let rules: [String: Any] = try AppRulesContractTests.readRules()
+        let section: [String: Any] = try XCTUnwrap(rules["credentialPrompts"] as? [String: Any])
+
+        for testCase in try XCTUnwrap(section["cases"] as? [[String: Any]]) {
+            let prompt: String = try XCTUnwrap(testCase["prompt"] as? String)
+            let expected: String = try XCTUnwrap(testCase["expectRequest"] as? String)
+            let matched: String = CredentialRequest.matching(prompt)?.name ?? ""
+            XCTAssertEqual(matched, expected, "Prompt \"\(prompt)\"")
+        }
+    }
+
+    /// A token shown as it is typed is a live credential on a screen a
+    /// class can see; an account ID hidden is a code the teacher cannot
+    /// check they pasted right. Both directions are wrong, so both are
+    /// pinned — along with the page each request links to.
+    func testEveryCredentialRequestIsTheOneTheContractDescribes() throws {
+        let rules: [String: Any] = try AppRulesContractTests.readRules()
+        let section: [String: Any] = try XCTUnwrap(rules["credentialPrompts"] as? [String: Any])
+
+        for testCase in try XCTUnwrap(section["everyRequest"] as? [[String: Any]]) {
+            let name: String = try XCTUnwrap(testCase["name"] as? String)
+            var found: CredentialRequest?
+            for request in CredentialRequest.all where request.name == name {
+                found = request
+            }
+            let request: CredentialRequest = try XCTUnwrap(found, "No credential request named \(name)")
+            XCTAssertEqual(request.isSecret, try XCTUnwrap(testCase["expectSecret"] as? Bool), name)
+            XCTAssertEqual(
+                request.linkAddress.absoluteString,
+                try XCTUnwrap(testCase["expectLink"] as? String),
+                name
+            )
+            XCTAssertFalse(request.title.isEmpty, name)
+            XCTAssertFalse(request.explanation.isEmpty, name)
+            XCTAssertFalse(request.linkTitle.isEmpty, name)
+            XCTAssertFalse(request.fieldLabel.isEmpty, name)
+            XCTAssertGreaterThanOrEqual(request.steps.count, 3, "\(name) has to say how to get one")
+        }
+
+        // The generated readout is what the OTHER app reads these sentences
+        // out of, so an empty or missing one is a silent divergence.
+        let readout: [String: Any] = try XCTUnwrap(rules["credentialRequests"] as? [String: Any])
+        let written: [[String: Any]] = try XCTUnwrap(readout["requests"] as? [[String: Any]])
+        XCTAssertEqual(written.count, CredentialRequest.all.count)
+    }
+
+    /// The launchers used to open the token page themselves, and a browser
+    /// tab arriving unasked reads as a fault rather than as help. Nothing
+    /// in the toolchain may do that any more.
+    func testNoLauncherOpensTheTokenPageByItself() throws {
+        let root: URL = AppRulesContractTests.repositoryRoot()
+        for name in ["deploy.sh", "deploy.ps1"] {
+            let text: String = try String(contentsOf: root.appendingPathComponent(name), encoding: .utf8)
+            XCTAssertFalse(text.contains("open \"https://"), "\(name) opens a page for the teacher")
+            XCTAssertFalse(text.contains("Start-Process \"https://"), "\(name) opens a page for the teacher")
+        }
+    }
+
     // MARK: - Private
 
     private func roundTripped(_ values: [String: Any]) throws -> CourseConfiguration {

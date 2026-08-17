@@ -36,13 +36,51 @@ enum AppRulesContract {
     static let fileName: String = "app-rules.json"
 
     /// The top-level keys this writes. Everything else is authored.
-    static let generatedKeys: [String] = ["milestones"]
+    static let generatedKeys: [String] = ["credentialRequests", "milestones"]
 
     // MARK: - Functions
 
     /// The generated half, by top-level key.
     static func generated() -> [String: Any] {
-        return ["milestones": milestones()]
+        return [
+            "credentialRequests": credentialRequests(),
+            "milestones": milestones(),
+        ]
+    }
+
+    /// Everything a teacher is shown when a launcher stops to ask for a
+    /// Netlify or Cloudflare credential.
+    ///
+    /// A readout rather than an authored list, for the same reason the
+    /// assistant's sentences are: this is the WORDING, and the point of
+    /// carrying it in the contract is that the other app can show the same
+    /// sentences instead of inventing its own. What must FAIL when the code
+    /// changes is the recognition — which prompt produces which request —
+    /// and that is authored, in `credentialPrompts`.
+    private static func credentialRequests() -> [String: Any] {
+        var written: [String: Any] = [
+            "note": "What a teacher reads when a first publish stops to ask for a Netlify or Cloudflare "
+                  + "credential. The launcher's own prompt is one line — \"Paste Netlify token:\" — which "
+                  + "names something most teachers have never heard of and does not say where to get "
+                  + "one, so both apps answer it with a dialog: what the credential is for, the steps "
+                  + "that produce one, and the page to make it on as a LINK. The link is never opened "
+                  + "for them; see credentialPrompts.whyNoBrowserOpens.",
+        ]
+        var requests: [[String: Any]] = []
+        for request in CredentialRequest.all {
+            requests.append([
+                "name": request.name,
+                "title": request.title,
+                "explanation": request.explanation,
+                "steps": request.steps,
+                "linkTitle": request.linkTitle,
+                "linkAddress": request.linkAddress.absoluteString,
+                "fieldLabel": request.fieldLabel,
+                "isSecret": request.isSecret,
+            ])
+        }
+        written["requests"] = requests
+        return written
     }
 
     /// Every milestone list, as label and marker.
