@@ -2368,7 +2368,10 @@ a.coverage-chip:focus-visible {{
 .coverage-legend-row {{
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
+  /* 0.75rem provides comfortable breathing room between the swatch and
+     the label text, particularly for the assessed swatch whose 3px outline
+     + 2px offset extends 5px outward. */
+  gap: 0.75rem;
   width: 100%;
 }}
 .coverage-key {{
