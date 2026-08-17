@@ -194,16 +194,21 @@ from Phase 5 apply here too.
 
 **The style contract** (gold standard: `ADA1O/shared/Conventions/Tableau.md`):
 
-- Frontmatter: `title:` matching filename, `publish: true`,
-  **except where the title ends in a question mark** — `?` cannot appear in
-  a Windows filename, and Git for Windows refuses to check such a path out
-  at all, which stops the whole repository fast-forwarding on that machine.
-  So a discussion page is `Who Decides.md` with `title: Who Decides?`, and
-  every link to it carries the question mark in its display half:
-  `[[Who Decides|Who Decides?]]` (`[[Who Decides\|Who Decides?]]` inside a
-  table). Both linters reject `<>:"|?*` in a filename. This is not
-  hypothetical: 57 pages across 13 payloads shipped this way and the
-  Windows clone sat three days behind before anyone worked out why.
+- Frontmatter: `title:` is what the page is CALLED on the site, and it does
+  **not** have to match the filename — neither Obsidian nor Quartz cares,
+  which is the whole point of having a `title` field. Match them by default,
+  because it keeps a page easy to find on disk. But when they must differ,
+  the TITLE is the free half and the FILENAME is the constrained one:
+  Windows cannot create `<>:"|?*` in a filename, and Git for Windows refuses
+  to check such a path out at all, which stops the entire repository
+  fast-forwarding on that machine. So a discussion page is `Who Decides.md`
+  titled `Who Decides?`, linked as `[[Who Decides|Who Decides?]]`
+  (`[[Who Decides\|Who Decides?]]` inside a table) so the question mark is
+  still what a student reads. Both linters reject those characters in a
+  filename. Not hypothetical: 57 pages across 13 payloads shipped with `?`
+  in the name and the Windows clone sat 258 commits behind, failing every
+  pull, before anyone worked out why.
+- `publish: true`,
   `created: __CREATED__` (literal), `tags:`, `enableToc: true` only with
   4+ H2s. No H1 in the body. Canadian spelling. Spaced em dashes — like
   this. ~80-column wrap. Direct, warm, concrete, second person to

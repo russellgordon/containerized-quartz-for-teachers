@@ -59,11 +59,18 @@ def check(family: str) -> list:
 
         # Windows cannot create these characters in a filename, and Git for
         # Windows refuses to check such a path out — which stops the whole
-        # repository fast-forwarding on that machine. A skeleton page would
-        # slip past every other check here, because `title` is required to
-        # MATCH the filename, so "Why Bother?.md" titled "Why Bother?" is
-        # consistent, correct-looking and unusable on half the machines
-        # this ships to. A shape wanting a question keeps it in the prose.
+        # repository fast-forwarding on that machine.
+        #
+        # A skeleton page slips past every other check here: this linter
+        # requires `title` to MATCH the filename, so "Why Bother?.md" titled
+        # "Why Bother?" is internally consistent, correct-looking, and
+        # unusable on half the machines this ships to. That matching rule is
+        # a GENERATOR-consistency choice, not a technical one — Obsidian and
+        # Quartz are happy for the two to differ, which is what `title` is
+        # for, and the payloads rely on exactly that (see SKILL.md). A shape
+        # wanting a question mark can therefore either keep it in the prose,
+        # or split the two the way the payloads do; what it may never do is
+        # put one of these characters in the filename.
         for forbidden in '<>:"|?*':
             if forbidden in path.name:
                 problems.append(
