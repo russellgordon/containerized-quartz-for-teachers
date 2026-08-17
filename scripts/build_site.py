@@ -2356,7 +2356,7 @@ a.coverage-chip:focus-visible {{
   flex-direction: column;
   align-items: flex-start;
   gap: 0.4rem;
-  margin: 0;
+  margin: 1.2rem 0 1.4rem;
   font-size: 0.85rem;
 }}
 .coverage-legend-row {{
@@ -3300,7 +3300,8 @@ it cannot drift from the course.
 
 <div class="coverage-panel">
 <div class="coverage-map">{"".join(columns)}</div>
-<hr class="coverage-rule">
+</div>
+
 <div class="coverage-legend">
 <div class="coverage-legend-row"><span class="coverage-key coverage-0"></span> {COVERAGE_WORDS[0].capitalize()}</div>
 <div class="coverage-legend-row"><span class="coverage-key coverage-1"></span> {COVERAGE_WORDS[1].capitalize()}</div>
@@ -3308,7 +3309,6 @@ it cannot drift from the course.
 <div class="coverage-legend-row"><span class="coverage-key coverage-3"></span> {COVERAGE_WORDS[3].capitalize()}</div>
 <div class="coverage-legend-row"><span class="coverage-key coverage-4"></span> {COVERAGE_WORDS[4].capitalize()}</div>
 <div class="coverage-legend-row"><span class="coverage-key coverage-2" data-assessed="true"></span> Included in assessed work — the cell carries a ring</div>
-</div>
 </div>
 
 Hover any cell to preview the expectation. The row of small chips under
