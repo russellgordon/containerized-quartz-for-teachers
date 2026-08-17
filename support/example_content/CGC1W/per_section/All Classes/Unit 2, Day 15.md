@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Is Sustainable Development a Real Thing?]]
+1. Seminar: [[Is Sustainable Development a Real Thing|Is Sustainable Development a Real Thing?]]
 2. [[Arguing About Sustainability]] — the strongest version of each side
 3. Working period
 

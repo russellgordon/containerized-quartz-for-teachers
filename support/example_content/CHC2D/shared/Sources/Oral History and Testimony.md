@@ -57,7 +57,7 @@ it exists to serve. The National Residential School Crisis Line runs 24
 hours at 1-866-925-4419, and it is for anyone in this class.
 
 Take that care into [[Indigenous Peoples and the Second World War]] and
-[[What Did the War Change at Home?]].
+[[What Did the War Change at Home|What Did the War Change at Home?]].
 
 %%curriculum-start%%
 ## Curriculum connection

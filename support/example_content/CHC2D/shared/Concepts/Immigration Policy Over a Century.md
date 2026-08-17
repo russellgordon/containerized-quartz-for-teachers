@@ -42,8 +42,8 @@ country admits people for their labour while making their status
 conditional.
 
 Read the earliest era in [[Who Counted as Canadian]], the sharpest single
-refusal in [[Could Canada Have Done More?]], and the question of who was
-admitted and on what terms in [[Who Was Canada Willing to Admit?]].
+refusal in [[Could Canada Have Done More|Could Canada Have Done More?]], and the question of who was
+admitted and on what terms in [[Who Was Canada Willing to Admit|Who Was Canada Willing to Admit?]].
 
 %%curriculum-start%%
 ## Curriculum connection

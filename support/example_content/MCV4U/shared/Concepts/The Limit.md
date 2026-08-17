@@ -6,7 +6,7 @@ tags:
   - concepts
 enableToc: true
 ---
-At the boards in [[How Fast Right Now?]], your group computed average
+At the boards in [[How Fast Right Now|How Fast Right Now?]], your group computed average
 speeds over shrinking intervals and watched the answers march: $7$,
 $6.1$, $6.01$, $6.001$ — each one closer to something, none of them
 ever arriving. Then someone in your group said the sentence every

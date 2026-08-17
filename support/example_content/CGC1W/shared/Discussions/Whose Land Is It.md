@@ -50,7 +50,7 @@ answer that "certainty" has usually meant certainty for the developer.
 
 Different nations take different positions, and each decides for itself.
 Open with your case, name the fact that would change your mind, and
-expect no verdict — [[Land, Treaty, and Title]] and [[Who Decides?]] go on.
+expect no verdict — [[Land, Treaty, and Title]] and [[Who Decides|Who Decides?]] go on.
 
 %%curriculum-start%%
 ## Curriculum connection

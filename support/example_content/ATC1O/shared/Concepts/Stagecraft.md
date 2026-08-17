@@ -39,7 +39,7 @@ slides on your studio floor is a decision, not an accident. Beyond that,
 costume tells the audience whether you are a group or a set of individuals,
 and it either shows the line of the movement or hides it. Regalia worn in
 Indigenous dance is not costume and is not ours to borrow; that argument
-belongs in [[Does a Dance Belong to a Culture?]].
+belongs in [[Does a Dance Belong to a Culture|Does a Dance Belong to a Culture?]].
 
 ## Space
 

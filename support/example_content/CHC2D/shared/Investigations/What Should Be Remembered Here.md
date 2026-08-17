@@ -57,7 +57,7 @@ marks against.
 
 Set your local finding beside the national record in
 [[Commemoration and Public Memory]], and argue the ethics of it in
-[[Who Gets to Tell the Story?]].
+[[Who Gets to Tell the Story|Who Gets to Tell the Story?]].
 
 %%curriculum-start%%
 ## Curriculum connection

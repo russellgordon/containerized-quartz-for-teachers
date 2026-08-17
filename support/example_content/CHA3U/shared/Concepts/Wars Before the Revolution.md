@@ -59,7 +59,7 @@ British colonists valuable allies. Native nations lost the ability to balance
 one empire against another — which is precisely why Pontiac's war followed.
 
 Weigh those consequences with [[Cause and Consequence]], and carry the
-question into [[Was the Revolution Inevitable?]].
+question into [[Was the Revolution Inevitable|Was the Revolution Inevitable?]].
 
 %%curriculum-start%%
 ## Curriculum connection

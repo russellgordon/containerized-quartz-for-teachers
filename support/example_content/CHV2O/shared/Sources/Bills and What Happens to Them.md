@@ -66,7 +66,7 @@ the debate and committees publish witness testimony. That is often better
 evidence of the range of perspectives on an issue than any news report
 about it, and you can quote it.
 
-Take one into [[Who Decided This?]] and cite it properly in
+Take one into [[Who Decided This|Who Decided This?]] and cite it properly in
 [[The Issue Brief]].
 
 %%curriculum-start%%

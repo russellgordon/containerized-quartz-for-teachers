@@ -71,7 +71,7 @@ and faster to reach than a courtroom and are where a real complaint
 usually starts.
 
 Read what a decision actually looks like in [[Court Decisions]], then
-take a live conflict into [[Whose Rights Win?]].
+take a live conflict into [[Whose Rights Win|Whose Rights Win?]].
 
 %%curriculum-start%%
 ## Curriculum connection

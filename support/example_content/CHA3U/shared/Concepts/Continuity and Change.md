@@ -57,7 +57,7 @@ just at the start. Persistence is easy to assume and surprisingly hard to
 show, which is why [[Interpretation and Historiography]] spends its time on
 who kept saying a thing stayed the same, and when.
 
-Put it to work in [[What Did the Frontier Mean?]] and carry it into
+Put it to work in [[What Did the Frontier Mean|What Did the Frontier Mean?]] and carry it into
 [[Using Evidence]].
 
 %%curriculum-start%%

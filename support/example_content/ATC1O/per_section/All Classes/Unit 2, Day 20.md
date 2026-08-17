@@ -11,7 +11,7 @@ tags:
 ## Agenda
 
 1. Warm-up: [[The Standard Warm-Up]]
-2. Seminar, seated: [[What Counts as Dancing?]]
+2. Seminar, seated: [[What Counts as Dancing|What Counts as Dancing?]]
 3. The argument, on its feet: demonstrating positions
 4. Cool-down
 5. Cool-down

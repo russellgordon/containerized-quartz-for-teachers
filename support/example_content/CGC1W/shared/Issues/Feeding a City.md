@@ -71,7 +71,7 @@ right about something.
 
 Stand inside one link in [[The Farm Visit]], set it against
 [[Feeding a Country]], and argue it in
-[[Does It Matter Where Your Food Comes From?]].
+[[Does It Matter Where Your Food Comes From|Does It Matter Where Your Food Comes From?]].
 
 %%curriculum-start%%
 ## Curriculum connection

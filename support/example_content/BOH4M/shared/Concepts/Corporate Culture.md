@@ -40,7 +40,7 @@ does this place actually reward?"**
 
 Structure and culture push on each other constantly — the point of
 [[Design and Culture]] — and we argue about who is responsible for
-culture in [[Who Owns the Culture?]].
+culture in [[Who Owns the Culture|Who Owns the Culture?]].
 
 %%curriculum-start%%
 ## Curriculum connection

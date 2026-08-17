@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[What Do We Owe the Next Community?]]
+1. Seminar: [[What Do We Owe the Next Community|What Do We Owe the Next Community?]]
 2. [[Global Population Questions]]
 3. Working period
 

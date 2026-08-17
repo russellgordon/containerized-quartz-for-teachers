@@ -28,7 +28,7 @@ where something lives.
 The folders are only half the organisation. The other half is **links**:
 a concept links to the exploration that built it and the practice that
 tests it — [[The Derivative]] points back to the shrinking secants
-that made it necessary in [[How Fast Right Now?]] — and the
+that made it necessary in [[How Fast Right Now|How Fast Right Now?]] — and the
 **Backlinks** panel at the bottom of any page shows every page pointing
 the other way. Start anywhere and follow the thread.
 

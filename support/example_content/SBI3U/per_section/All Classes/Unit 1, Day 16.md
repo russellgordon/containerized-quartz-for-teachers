@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Discussion: [[What Do We Owe Other Species?]] — with your own field
+1. Discussion: [[What Do We Owe Other Species|What Do We Owe Other Species?]] — with your own field
    data on the table
 2. Consolidate the strand: what makes two organisms different, and what
    makes a place diverse

@@ -61,7 +61,7 @@ it. [[Historical Perspective]] explains why the distinction matters.
 
 A ranked explanation with criteria stated first, and one paragraph on the
 counterfactual you consider strongest. Bring the result to
-[[Could the Civil War Have Been Avoided?]] and use it in
+[[Could the Civil War Have Been Avoided|Could the Civil War Have Been Avoided?]] and use it in
 [[The Union Divided]].
 
 %%curriculum-start%%

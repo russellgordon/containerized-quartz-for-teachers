@@ -52,7 +52,7 @@ anyone report progress publicly, is it funded in the actual budget, and does it
 survive the next council. A strategy with none of those is a document, not a
 plan.
 
-Argue the long-term version in [[What Do We Owe the Next Community?]], and see
+Argue the long-term version in [[What Do We Owe the Next Community|What Do We Owe the Next Community?]], and see
 what changes when design starts from a community's own culture in
 [[Designing With Culture in Mind]].
 

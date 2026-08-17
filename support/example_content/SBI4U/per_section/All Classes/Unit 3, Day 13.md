@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Discussion: [[Who Gets the Cure?]]
+1. Discussion: [[Who Gets the Cure|Who Gets the Cure?]]
 2. Consent and genetic data, revisited from Grade 11
 3. Work time: [[Biotechnology Brief]] — brief and appendix
 4. Consolidate the strand

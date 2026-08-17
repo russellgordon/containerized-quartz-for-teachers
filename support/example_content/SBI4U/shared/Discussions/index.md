@@ -7,6 +7,6 @@ tags:
 ---
 Questions biology informs but does not settle.
 
-- [[Who Gets the Cure?]]
-- [[What Can This Planet Support?]]
+- [[Who Gets the Cure|Who Gets the Cure?]]
+- [[What Can This Planet Support|What Can This Planet Support?]]
 - [[Testing on Animals]]

@@ -12,7 +12,7 @@ tags:
 
 1. Number talk: [[Estimation Duels]] — $100$ m in $10$ s: how fast in
    km/h? Closest estimate, no calculator, wins
-2. Random groups: back to your tables from [[How Fast Right Now?]] —
+2. Random groups: back to your tables from [[How Fast Right Now|How Fast Right Now?]] —
    shrink the interval again, and again; record what the averages do
 3. Discuss: being stuck was the plan — [[Why Struggle Is the Point]],
    and [[Getting Unstuck]] when you want a nudge, not an answer

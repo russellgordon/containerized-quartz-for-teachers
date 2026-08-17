@@ -53,7 +53,7 @@ a trip says nothing about the moment you were stopped at a light.
 
 Estimating an instantaneous rate without calculus is straightforward:
 take average rates over shorter and shorter intervals around the point
-and watch them settle. [[How Fast Is It Changing?]] is that
+and watch them settle. [[How Fast Is It Changing|How Fast Is It Changing?]] is that
 investigation, and the settling is exactly the limit that MCV4U will
 make formal.
 

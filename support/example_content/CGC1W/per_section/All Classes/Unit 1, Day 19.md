@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Who Should Pay for the Damage?]]
+1. Seminar: [[Who Should Pay for the Damage|Who Should Pay for the Damage?]]
 2. [[How Communities Value Land and Water]]
 3. Working period
 

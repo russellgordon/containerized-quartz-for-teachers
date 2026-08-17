@@ -53,7 +53,7 @@ are allowed to argue against it. Useful groundwork:
 [[Mapping a Hazard]] for what a hazard line does and does not mean.
 
 Then the harder follow-up: if the answer is no, who moves, who decides,
-and who pays — [[Who Should Pay to Rebuild?]].
+and who pays — [[Who Should Pay to Rebuild|Who Should Pay to Rebuild?]].
 
 %%curriculum-start%%
 ## Curriculum connection

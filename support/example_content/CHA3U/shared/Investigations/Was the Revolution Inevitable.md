@@ -62,7 +62,7 @@ is evidence about what it was for.
 A written judgement with its criteria stated first, using
 [[Cause and Consequence]] to separate long-term conditions from decisions.
 Expect the room to divide, then carry the disagreement into
-[[What Was the Revolution For?]] and the written argument into
+[[What Was the Revolution For|What Was the Revolution For?]] and the written argument into
 [[The Revolution Question]].
 
 %%curriculum-start%%

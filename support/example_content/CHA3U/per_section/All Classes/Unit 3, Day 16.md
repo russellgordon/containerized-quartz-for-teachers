@@ -11,7 +11,7 @@ tags:
 ## Agenda
 
 1. The New Deal: the agencies, the Wagner Act, Social Security
-2. Investigation opened: [[Who Was the New Deal For?]]
+2. Investigation opened: [[Who Was the New Deal For|Who Was the New Deal For?]]
 3. Eligibility rules treated as historical evidence
 
 ## Things to do before our next class

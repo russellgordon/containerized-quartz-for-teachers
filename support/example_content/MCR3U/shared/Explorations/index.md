@@ -16,7 +16,7 @@ stuck is the work, as [[Why Struggle Is the Point]] explains.
 | --- | --- |
 | [[The Function Machine]] | What makes a machine trustworthy? |
 | [[Folding Paper to the Moon]] | How many folds to reach the moon? |
-| [[How High Is That?]] | How do you measure the unreachable? |
+| [[How High Is That\|How High Is That?]] | How do you measure the unreachable? |
 | [[The Ferris Wheel]] | What does going in circles look like over time? |
 | [[Patterns That Count]] | What comes next — and what comes 100th? |
 | [[The Allowance Choice]] | A dollar a week, or a doubling penny? |

@@ -195,6 +195,15 @@ from Phase 5 apply here too.
 **The style contract** (gold standard: `ADA1O/shared/Conventions/Tableau.md`):
 
 - Frontmatter: `title:` matching filename, `publish: true`,
+  **except where the title ends in a question mark** — `?` cannot appear in
+  a Windows filename, and Git for Windows refuses to check such a path out
+  at all, which stops the whole repository fast-forwarding on that machine.
+  So a discussion page is `Who Decides.md` with `title: Who Decides?`, and
+  every link to it carries the question mark in its display half:
+  `[[Who Decides|Who Decides?]]` (`[[Who Decides\|Who Decides?]]` inside a
+  table). Both linters reject `<>:"|?*` in a filename. This is not
+  hypothetical: 57 pages across 13 payloads shipped this way and the
+  Windows clone sat three days behind before anyone worked out why.
   `created: __CREATED__` (literal), `tags:`, `enableToc: true` only with
   4+ H2s. No H1 in the body. Canadian spelling. Spaced em dashes — like
   this. ~80-column wrap. Direct, warm, concrete, second person to

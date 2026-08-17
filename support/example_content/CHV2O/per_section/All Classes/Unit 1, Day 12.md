@@ -11,7 +11,7 @@ tags:
 ## Agenda
 
 1. [[The Issue Brief]] handed in
-2. Seminar: [[Who Should Decide Locally?]]
+2. Seminar: [[Who Should Decide Locally|Who Should Decide Locally?]]
 3. Where a decision should sit, and who is affected either way
 
 ## Things to do before our next class

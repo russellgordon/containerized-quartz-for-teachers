@@ -49,7 +49,7 @@ form counts as beautiful.
 
 Some dances — ceremonial, sacred, or belonging to a specific community —
 are ones we study and watch rather than perform, and regalia is not costume.
-[[Does a Dance Belong to a Culture?]] is the seminar where we argue this out
+[[Does a Dance Belong to a Culture|Does a Dance Belong to a Culture?]] is the seminar where we argue this out
 properly. [[Where a Form Comes From]] traces one form's development in
 depth, and [[Three Forms We Practise]] covers the three we return to all
 year.

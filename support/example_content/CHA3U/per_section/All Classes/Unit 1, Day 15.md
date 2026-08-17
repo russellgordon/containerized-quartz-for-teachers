@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. [[Was the Revolution Inevitable?]] worked as a class
+1. [[Was the Revolution Inevitable|Was the Revolution Inevitable?]] worked as a class
 2. Where the evidence divides, and why
 3. Reading the Declaration for what it claims and what it omits
 

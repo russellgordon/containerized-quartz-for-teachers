@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Was It Worth It?]]
+1. Seminar: [[Was It Worth It|Was It Worth It?]]
 2. Positions tested against evidence, not feeling
 3. Notebook
 

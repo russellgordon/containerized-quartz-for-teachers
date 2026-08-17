@@ -37,7 +37,7 @@ employment fell" is two facts. "The minimum wage increase cost jobs" is a
 claim about what would have happened otherwise, and the honest version of
 it names the comparison — a similar region that did not raise its wage, a
 similar group of workers, a period before the change. See
-[[Does a Minimum Wage Cost Jobs?]], where economists using different
+[[Does a Minimum Wage Cost Jobs|Does a Minimum Wage Cost Jobs?]], where economists using different
 comparison groups reach genuinely different answers from the same data.
 
 ## Whose interest, and does it disqualify them?

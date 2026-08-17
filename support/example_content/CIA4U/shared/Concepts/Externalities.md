@@ -38,7 +38,7 @@ Note also what the second row means. The removal of the consumer fuel
 charge did not remove the externality — it removed the price attached to
 it. Whether a household-level price should exist at all, and who should
 carry the cost if it does not, is exactly the dispute in
-[[Who Should Bear the Cost of Emissions?]]. Where a benefit is so widely
+[[Who Should Bear the Cost of Emissions|Who Should Bear the Cost of Emissions?]]. Where a benefit is so widely
 shared that no individual will pay for it, you have crossed into
 [[Public Goods]].
 

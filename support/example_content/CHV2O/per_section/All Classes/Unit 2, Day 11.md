@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Opened: [[Who Is Missing From the Table?]]
+1. Opened: [[Who Is Missing From the Table|Who Is Missing From the Table?]]
 2. Choosing a body that decides something, meets on a schedule, and publishes
 3. [[Budgets as Statements of Priority]] — what a body funds is what it means
 

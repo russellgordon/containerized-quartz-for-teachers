@@ -62,7 +62,7 @@ seriously.
 > it — because you are going to hand it to them.
 
 [[Commemoration and Public Memory]] is the concept, and the seminars
-[[Does an Apology Matter?]] and [[What Should a Country Remember?]] are
+[[Does an Apology Matter|Does an Apology Matter?]] and [[What Should a Country Remember|What Should a Country Remember?]] are
 where the arguments get tested first.
 
 %%curriculum-start%%

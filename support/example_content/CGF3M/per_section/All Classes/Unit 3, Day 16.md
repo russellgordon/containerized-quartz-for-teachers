@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Should People Live There?]]
+1. Seminar: [[Should People Live There|Should People Live There?]]
 2. Six positions held by real people, each stated fairly before it is challenged
 3. A new subdivision on mapped floodplain, against a shoreline community four generations old
 

@@ -72,7 +72,7 @@ National Archives records that "nearly 70,000 of the evacuees were American
 citizens." Citizenship did not protect them.
 
 Carry the question into [[Movements and Backlash]], and test whose account
-survives in [[Whose Story Gets Taught?]].
+survives in [[Whose Story Gets Taught|Whose Story Gets Taught?]].
 
 %%curriculum-start%%
 ## Curriculum connection

@@ -58,7 +58,7 @@ against one that did not.
 > and why. A range with sources beats a single confident figure.
 
 Take the argument about what to call these events to
-[[Is a Disaster Ever Natural?]].
+[[Is a Disaster Ever Natural|Is a Disaster Ever Natural?]].
 
 %%curriculum-start%%
 ## Curriculum connection

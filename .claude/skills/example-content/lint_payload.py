@@ -65,6 +65,22 @@ def lint(course_code: str) -> int:
         rel = str(page.relative_to(root))
         is_curriculum = curriculum_folder and rel.startswith(f"shared/{curriculum_folder}/")
 
+        # A filename Windows cannot create is a course Windows teachers
+        # cannot have. Git for Windows refuses to check such a path out at
+        # all, so the whole repository stops fast-forwarding there — which
+        # is how 57 pages across 13 payloads went unnoticed for three days
+        # while the Windows clone silently stayed on an August commit.
+        # The question mark belongs in the page's TITLE, where students
+        # read it, and in the link's display half: a discussion page is
+        # named "Who Decides.md" with title "Who Decides?" and is linked
+        # as [[Who Decides|Who Decides?]].
+        for forbidden in '<>:"|?*':
+            if forbidden in page.name:
+                problems.append(
+                    f"{rel}: filename contains {forbidden!r}, which Windows "
+                    f"cannot create — put it in the title and alias the links")
+                break
+
         # Sentinels: every created: line carries one (curriculum pages
         # normally have no created: at all).
         if "created:" in text and "created: __CREATED" not in text and not is_curriculum:

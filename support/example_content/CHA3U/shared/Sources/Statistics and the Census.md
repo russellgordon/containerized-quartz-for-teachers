@@ -63,7 +63,7 @@ published figures disagree, say so and explain why they might — different
 definitions, different years, different coverage — rather than picking the
 one that suits your paragraph.
 
-Take the method into [[Who Was the New Deal For?]], and pair every table
+Take the method into [[Who Was the New Deal For|Who Was the New Deal For?]], and pair every table
 with a human source from [[Testimony and Narrative]].
 
 %%curriculum-start%%

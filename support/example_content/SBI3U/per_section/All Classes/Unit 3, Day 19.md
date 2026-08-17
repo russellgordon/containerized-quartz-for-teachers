@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Discussion: [[Whose Genome Is It?]] — again, now that you have
+1. Discussion: [[Whose Genome Is It|Whose Genome Is It?]] — again, now that you have
    written somebody's risk down
 2. Consolidate the strand: from a molecule to a family's decision
 3. Look ahead: next unit, the systems that keep an animal alive

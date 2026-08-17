@@ -55,7 +55,7 @@ up: if a carbon price is the efficient instrument, and it was removed for
 reasons that were not about efficiency, what does that tell you about how
 economic policy is actually made?
 
-Argue it out in [[Who Should Bear the Cost of Emissions?]].
+Argue it out in [[Who Should Bear the Cost of Emissions|Who Should Bear the Cost of Emissions?]].
 
 %%curriculum-start%%
 ## Curriculum connection

@@ -63,7 +63,7 @@ United States, playing one against the other as long as it could be done.
 Symbols do work too, and they keep working. The Boston Tea Party of 1773 has
 been claimed by movements ever since as a licence for resistance to taxation.
 Ask what such a claim needs to leave out, and take it to
-[[Was the Revolution Inevitable?]].
+[[Was the Revolution Inevitable|Was the Revolution Inevitable?]].
 
 %%curriculum-start%%
 ## Curriculum connection

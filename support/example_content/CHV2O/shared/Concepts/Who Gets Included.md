@@ -66,7 +66,7 @@ absent. Then ask what would have to change for that absence to close:
 meeting times, notice, language, childcare, transport, a seat that does
 not exist yet.
 
-That investigation is [[Who Is Missing From the Table?]], and it is
+That investigation is [[Who Is Missing From the Table|Who Is Missing From the Table?]], and it is
 assessed in [[Whose Voice Is Missing]].
 
 %%curriculum-start%%

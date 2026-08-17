@@ -12,7 +12,7 @@ tags:
 
 1. The war at home: [[The War at Home]]
 2. Production, rationing, women's work, and the second conscription crisis
-3. Investigation: [[What Did the War Change at Home?]]
+3. Investigation: [[What Did the War Change at Home|What Did the War Change at Home?]]
 
 ## Things to do before our next class
 

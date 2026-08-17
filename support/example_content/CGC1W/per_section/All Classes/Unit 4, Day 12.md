@@ -11,7 +11,7 @@ tags:
 ## Agenda
 
 1. Warm-up: a real council agenda from this municipality
-2. How a decision actually gets made: notice, consultation, delegation, vote — [[Who Decides?]]
+2. How a decision actually gets made: notice, consultation, delegation, vote — [[Who Decides|Who Decides?]]
 3. Where the public gets in, and who tends not to be there
 
 ## Things to do before our next class

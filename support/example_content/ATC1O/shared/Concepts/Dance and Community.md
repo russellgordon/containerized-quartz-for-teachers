@@ -51,7 +51,7 @@ floor, and rehearse the entrance and the exit as carefully as the dance.
 [[Dance and Community Task]] asks you to find what dance is already doing where
 you live and to make something for a real audience beyond this room. Whether
 such work changes anything is a genuinely open question, and
-[[Can a Dance Change Anything?]] is where we argue about it.
+[[Can a Dance Change Anything|Can a Dance Change Anything?]] is where we argue about it.
 
 %%curriculum-start%%
 ## Curriculum connection

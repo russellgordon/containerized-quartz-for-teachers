@@ -8,7 +8,7 @@ tags:
 For six classes you have been sneaking up on an instant. Average speed
 over a minute, over a second, over a tenth of a second — each secant a
 little more honest than the last, and at the boards in
-[[How Fast Right Now?]] your group watched the numbers settle toward
+[[How Fast Right Now|How Fast Right Now?]] your group watched the numbers settle toward
 one value they never quite reached. [[The Limit]] gave that value a
 name. The derivative is what you get when you build the whole idea
 into one definition:

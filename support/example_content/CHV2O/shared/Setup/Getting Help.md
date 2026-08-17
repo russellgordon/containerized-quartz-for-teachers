@@ -37,7 +37,7 @@ these five:
    weeks; "the vote on the shelter zoning amendment" can. Narrow it until
    a decision-maker has a name.
 2. **You cannot find who decided it.** Work the trail in
-   [[Who Decided This?]] — order of government, body, instrument, date.
+   [[Who Decided This|Who Decided This?]] — order of government, body, instrument, date.
    The minutes are usually the fastest route.
 3. **Your sources all agree.** Almost always a sign they came from one
    place. [[Judging Civic Information]] fixes this.

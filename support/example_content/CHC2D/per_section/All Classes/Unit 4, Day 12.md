@@ -10,8 +10,8 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[What Should a Country Remember?]]
-2. Investigation: [[What Should Be Remembered Here?]]
+1. Seminar: [[What Should a Country Remember|What Should a Country Remember?]]
+2. Investigation: [[What Should Be Remembered Here|What Should Be Remembered Here?]]
 3. Scanning our own community for commemorations and absences
 
 ## Things to do before our next class

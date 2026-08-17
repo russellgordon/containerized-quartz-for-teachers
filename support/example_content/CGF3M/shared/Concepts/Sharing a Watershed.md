@@ -55,7 +55,7 @@ unit do not line up.
 Rising demand, changing precipitation and moving populations will
 sharpen these questions rather than settle them, which is why
 [[A Warming Planet]] ends up being a resources page as much as a climate
-one. Argue one real case in [[Who Should Pay to Rebuild?]], and see what
+one. Argue one real case in [[Who Should Pay to Rebuild|Who Should Pay to Rebuild?]], and see what
 a shortage does to the people sharing a basin in
 [[The 2021 Prairie Drought]].
 

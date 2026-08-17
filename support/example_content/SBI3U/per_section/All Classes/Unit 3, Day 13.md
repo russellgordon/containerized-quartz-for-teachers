@@ -12,7 +12,7 @@ tags:
 
 1. [[Genetic Technologies]]: reading and altering genomes
 2. Discussion: [[Editing the Germline]]
-3. Discussion: [[Whose Genome Is It?]]
+3. Discussion: [[Whose Genome Is It|Whose Genome Is It?]]
 4. Work time: [[Genetic Counselling Brief]]
 
 ## Things to do before our next class

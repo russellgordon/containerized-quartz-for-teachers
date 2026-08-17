@@ -12,18 +12,18 @@ moved.
 
 **Unit 1 — The land itself**
 
-- [[Who Should Pay for the Damage?]]
+- [[Who Should Pay for the Damage|Who Should Pay for the Damage?]]
 
 **Unit 2 — What we take, what we make**
 
-- [[Is Sustainable Development a Real Thing?]]
-- [[Whose Land Is It?]]
+- [[Is Sustainable Development a Real Thing|Is Sustainable Development a Real Thing?]]
+- [[Whose Land Is It|Whose Land Is It?]]
 
 **Unit 3 — Who lives here**
 
-- [[What Do We Owe the Next Community?]]
+- [[What Do We Owe the Next Community|What Do We Owe the Next Community?]]
 
 **Unit 4 — Liveable communities**
 
-- [[Does It Matter Where Your Food Comes From?]]
-- [[Should We Build There?]]
+- [[Does It Matter Where Your Food Comes From|Does It Matter Where Your Food Comes From?]]
+- [[Should We Build There|Should We Build There?]]

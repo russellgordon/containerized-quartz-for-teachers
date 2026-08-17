@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Random groups — [[How Fast Is It Changing?]] at the boards:
+1. Random groups — [[How Fast Is It Changing|How Fast Is It Changing?]] at the boards:
    secants closing in on a tangent
 2. Discuss: the interval shrank and shrank — what did the slopes
    converge *to*, and is that number real?

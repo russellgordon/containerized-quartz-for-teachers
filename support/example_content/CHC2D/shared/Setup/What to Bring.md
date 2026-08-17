@@ -45,6 +45,6 @@ details a reader needs to find your source again.
 ## One thing not to bring
 
 Certainty. The seminars are built on questions where the evidence
-genuinely divides — [[Was It Worth It?]] is the first — and arriving with
+genuinely divides — [[Was It Worth It|Was It Worth It?]] is the first — and arriving with
 a position you are unwilling to test wastes the period, yours and
 everyone else's.

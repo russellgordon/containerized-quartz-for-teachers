@@ -53,7 +53,7 @@ whether the design changes how the place works rather than how it looks, and
 whether it is still theirs to change in twenty years.
 
 Ask that, in that order, of any project you assess in [[The Local Inquiry]].
-The broader argument is in [[Who Decides?]].
+The broader argument is in [[Who Decides|Who Decides?]].
 
 %%curriculum-start%%
 ## Curriculum connection

@@ -12,7 +12,7 @@ tags:
 
 1. Sprawl, and the alternatives people actually propose
 2. [[Sprawl and Its Alternatives]]
-3. Seminar preparation: [[Should We Build There?]]
+3. Seminar preparation: [[Should We Build There|Should We Build There?]]
 
 ## Things to do before our next class
 

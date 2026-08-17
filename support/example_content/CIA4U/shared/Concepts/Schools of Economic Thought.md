@@ -39,7 +39,7 @@ ownership and transfers; and most governments in practice mix instruments
 that came from theorists who disagreed with each other. The macroeconomic
 machinery behind the demand-side argument is in
 [[Aggregate Supply and Demand]], and the question of what all this growth
-is for is argued in [[Is Growth the Right Goal?]].
+is for is argued in [[Is Growth the Right Goal|Is Growth the Right Goal?]].
 
 %%curriculum-start%%
 ## Curriculum connection

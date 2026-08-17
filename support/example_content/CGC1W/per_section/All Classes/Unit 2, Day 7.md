@@ -10,8 +10,8 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Whose Land Is It?]]
-2. [[Who Decides?]] — governments, industry, communities, courts
+1. Seminar: [[Whose Land Is It|Whose Land Is It?]]
+2. [[Who Decides|Who Decides?]] — governments, industry, communities, courts
 3. Notebook: where do you stand today, and why?
 
 ## Things to do before our next class

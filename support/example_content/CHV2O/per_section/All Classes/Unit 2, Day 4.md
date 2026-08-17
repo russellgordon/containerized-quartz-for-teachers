@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[When Should a Right Give Way?]]
+1. Seminar: [[When Should a Right Give Way|When Should a Right Give Way?]]
 2. Positions taken, and the strongest opposing case stated fairly
 3. Notebook
 

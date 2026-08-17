@@ -69,7 +69,7 @@ the Charter section by number.
 > one criticism that requires no reading.
 
 [[Rights, and What Limits Them]] is the ground for this, and the argument
-continues in [[When Should a Right Give Way?]] before it is assessed in
+continues in [[When Should a Right Give Way|When Should a Right Give Way?]] before it is assessed in
 [[The Rights Case]].
 
 %%curriculum-start%%

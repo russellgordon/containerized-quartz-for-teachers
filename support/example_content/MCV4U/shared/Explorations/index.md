@@ -15,7 +15,7 @@ cross-examination. Expect to be stuck; being stuck is the work, as
 
 | Exploration | The question |
 | --- | --- |
-| [[How Fast Right Now?]] | How fast, at exactly this instant? |
+| [[How Fast Right Now\|How Fast Right Now?]] | How fast, at exactly this instant? |
 | [[Zooming In]] | Does every curve straighten under magnification? |
 | [[The Slope Detective]] | What can $f'$ reveal about a missing $f$? |
 | [[The Box Problem]] | Four cuts, one fold — how big can a box get? |

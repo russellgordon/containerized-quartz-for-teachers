@@ -59,7 +59,7 @@ released since then support Y" is a historiographical sentence. "Historians
 now believe" is not one — there is no such body, and it does no work you can
 be held to.
 
-Take this into [[Whose Story Gets Taught?]] and into
+Take this into [[Whose Story Gets Taught|Whose Story Gets Taught?]] and into
 [[Arts, Culture, and Consumer Society]], where a country tells itself the
 story it wants and then sells it abroad.
 

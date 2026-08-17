@@ -67,7 +67,7 @@ holding the pencil, and what could not safely be said in that decade?
 [[Slavery]] is the ground, [[Machines, Cotton, and Distance]] the
 economics, [[North and South]] where the fifth part leads. Use
 [[Testimony and Narrative]] and [[Government Records]] for the evidence,
-and the investigation [[Whose Story Gets Taught?]] for the last part.
+and the investigation [[Whose Story Gets Taught|Whose Story Gets Taught?]] for the last part.
 
 %%curriculum-start%%
 ## Curriculum connection

@@ -57,7 +57,7 @@ accounting: the price of every deferral was paid by people with no part in
 the negotiation, and a full answer has to say so out loud.
 
 Open with your position, name the evidence that would move you, and take
-the argument into [[What Held the Union Together?]] and
+the argument into [[What Held the Union Together|What Held the Union Together?]] and
 [[The Union Divided]].
 
 %%curriculum-start%%

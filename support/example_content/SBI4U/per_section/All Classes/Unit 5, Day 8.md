@@ -12,7 +12,7 @@ tags:
 
 1. [[Human Population and Sustainability]]: the demographic transition
 2. Ecological footprint, and what 'overpopulation' hides
-3. Discussion: [[What Can This Planet Support?]]
+3. Discussion: [[What Can This Planet Support|What Can This Planet Support?]]
 4. Work time: [[Population Study]]
 
 ## Things to do before our next class

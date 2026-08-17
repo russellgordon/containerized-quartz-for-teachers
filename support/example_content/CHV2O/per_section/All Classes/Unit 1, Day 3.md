@@ -12,7 +12,7 @@ tags:
 
 1. [[How Marks Work]] — and why no mark here depends on your politics
 2. [[Getting Help]] and [[Help Sessions]]
-3. Opened: [[Who Decided This?]] — something in your day was decided by a person, in a room, on a date
+3. Opened: [[Who Decided This|Who Decided This?]] — something in your day was decided by a person, in a room, on a date
 
 ## Things to do before our next class
 

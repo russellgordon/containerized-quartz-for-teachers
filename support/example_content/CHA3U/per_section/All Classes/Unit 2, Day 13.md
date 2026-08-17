@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. [[What Held the Union Together?]] worked as a class
+1. [[What Held the Union Together|What Held the Union Together?]] worked as a class
 2. Compromise as a mechanism, and the date each one expired
 3. Bleeding Kansas, Dred Scott, and Harpers Ferry
 

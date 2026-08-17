@@ -58,7 +58,7 @@ translate them — the wording is evidence about the speaker, and your
 translation is evidence that you understood it.
 
 Practise it in [[Testimony and Narrative]] and in
-[[Could the Civil War Have Been Avoided?]], where the strongest positions
+[[Could the Civil War Have Been Avoided|Could the Civil War Have Been Avoided?]], where the strongest positions
 are the ones argued in 1858 rather than invented now.
 
 %%curriculum-start%%

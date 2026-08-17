@@ -56,8 +56,8 @@ be invited, and they will ask questions.
 > not know before, and should be able to see exactly where you got it.
 > That is a higher bar than a grade, and it is the one worth aiming at.
 
-Rehearse against [[Should People Live There?]] and
-[[Who Should Pay to Rebuild?]] — both questions will be put to you.
+Rehearse against [[Should People Live There|Should People Live There?]] and
+[[Who Should Pay to Rebuild|Who Should Pay to Rebuild?]] — both questions will be put to you.
 
 %%curriculum-start%%
 ## Curriculum connection

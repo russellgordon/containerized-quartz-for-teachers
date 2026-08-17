@@ -60,7 +60,7 @@ terms that withdrew federal enforcement from the South. What replaced it took
 the region another ninety years to dislodge.
 
 Weigh the causes with [[Cause and Consequence]], then take the whole question
-into [[What Held the Union Together?]].
+into [[What Held the Union Together|What Held the Union Together?]].
 
 %%curriculum-start%%
 ## Curriculum connection

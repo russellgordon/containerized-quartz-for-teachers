@@ -57,7 +57,7 @@ and why. Avoid the tidy move of concluding that everyone had their own
 truth: the accounts are not equally supported, and saying which is better
 evidenced is the historical judgement being asked for.
 
-Set the result against [[Whose Story Gets Taught?]] later in the year, and
+Set the result against [[Whose Story Gets Taught|Whose Story Gets Taught?]] later in the year, and
 use it in [[The Union Divided]].
 
 %%curriculum-start%%

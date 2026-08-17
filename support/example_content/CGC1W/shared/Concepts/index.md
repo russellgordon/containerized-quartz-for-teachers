@@ -35,7 +35,7 @@ a textbook to read ahead in.
 - [[The Life of a Product]]
 - [[What Sustainable Development Means]]
 - [[Where the Resources Are]]
-- [[Who Decides?]]
+- [[Who Decides|Who Decides?]]
 - [[Why Industries Locate Where They Do]]
 
 **Unit 3 — Who lives here**

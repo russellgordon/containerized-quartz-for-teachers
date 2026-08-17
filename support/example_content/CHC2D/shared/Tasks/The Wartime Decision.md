@@ -52,7 +52,7 @@ judged.
 > [[Historical Perspective]].
 
 [[The Holocaust and Canada's Response]] and the investigation
-[[Could Canada Have Done More?]] are where several of these decisions
+[[Could Canada Have Done More|Could Canada Have Done More?]] are where several of these decisions
 are worked through first.
 
 %%curriculum-start%%

@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Could the Civil War Have Been Avoided?]]
+1. Seminar: [[Could the Civil War Have Been Avoided|Could the Civil War Have Been Avoided?]]
 2. Contingency and inevitability, argued from evidence rather than hindsight
 3. Notebook
 

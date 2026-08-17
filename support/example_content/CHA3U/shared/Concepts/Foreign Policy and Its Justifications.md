@@ -54,7 +54,7 @@ cover, the reason was sincere and the action outran it, or the reason was
 sincere and the situation changed. The third is the one students never
 consider, and it is often the right one.
 
-Argue it in [[Is the United States an Empire?]], and set the country's
+Argue it in [[Is the United States an Empire|Is the United States an Empire?]], and set the country's
 account of itself beside its record in [[Government Records]].
 
 %%curriculum-start%%

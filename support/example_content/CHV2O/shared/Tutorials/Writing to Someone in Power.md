@@ -15,7 +15,7 @@ one that gets an answer.
 
 **Find the right person.** A letter to the wrong government is forwarded
 or filed. Use [[Who Decides What, and Where]] and, if you are unsure,
-[[Who Decided This?]] to trace the actual authority. Federal members are
+[[Who Decided This|Who Decided This?]] to trace the actual authority. Federal members are
 listed at ourcommons.ca, Ontario members at ola.org, councillors on your
 municipality's site. Most offices prioritise people in their own riding
 or ward and say so openly; being outside it does not disqualify you, but

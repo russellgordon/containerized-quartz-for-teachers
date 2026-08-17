@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Investigation: [[Could Canada Have Done More?]]
+1. Investigation: [[Could Canada Have Done More|Could Canada Have Done More?]]
 2. The MS St. Louis, and what was known, when
 3. The evidence, and the judgement it supports
 

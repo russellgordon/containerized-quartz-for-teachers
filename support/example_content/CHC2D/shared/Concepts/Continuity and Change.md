@@ -49,7 +49,7 @@ back to normal. A 1946 advertisement announcing a new era for the Canadian
 housewife is evidence of what somebody wanted believed in 1946; whether
 anything changed is settled by putting it beside 1939.
 
-Practise the comparison in [[What Did the War Change at Home?]], follow one
+Practise the comparison in [[What Did the War Change at Home|What Did the War Change at Home?]], follow one
 policy across the whole century in [[Immigration Policy Over a Century]],
 and set your two dates before you write in [[Building an Argument]].
 

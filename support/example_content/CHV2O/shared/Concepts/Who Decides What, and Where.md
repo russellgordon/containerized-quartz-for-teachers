@@ -59,8 +59,8 @@ passed in a hurry can still be struck down, and why the public service
 keeps paying pensions through an election. Stability is the product; the
 division of powers is the mechanism.
 
-Work a real decision through it in [[Who Decided This?]], and argue about
-where a decision belongs in [[Who Should Decide Locally?]].
+Work a real decision through it in [[Who Decided This|Who Decided This?]], and argue about
+where a decision belongs in [[Who Should Decide Locally|Who Should Decide Locally?]].
 
 %%curriculum-start%%
 ## Curriculum connection

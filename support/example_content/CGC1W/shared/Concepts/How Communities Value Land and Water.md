@@ -53,7 +53,7 @@ not be summarized as one. Flattening several distinct positions into
 analysis goes wrong here.
 
 You met one of these shorelines directly in [[The Shoreline Study]]. The
-argument itself is [[Whose Land Is It?]].
+argument itself is [[Whose Land Is It|Whose Land Is It?]].
 
 %%curriculum-start%%
 ## Curriculum connection

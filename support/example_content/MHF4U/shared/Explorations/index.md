@@ -20,7 +20,7 @@ cross-examination. Expect to be stuck; being stuck is the work, as
 | [[Wrapping the Circle]] | How many radius-lengths around a circle? |
 | [[The Two Waves]] | Why do two nearly equal tones throb? |
 | [[Undoing the Exponential]] | What undoes $2^x$? |
-| [[How Fast Is It Changing?]] | How fast, at exactly this instant? |
+| [[How Fast Is It Changing\|How Fast Is It Changing?]] | How fast, at exactly this instant? |
 
 Hints nudge; they never march. Ask, and you get a question back — see
 [[Getting Unstuck]]. No solutions appear on these pages, ever: the

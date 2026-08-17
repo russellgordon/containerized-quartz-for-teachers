@@ -12,7 +12,7 @@ tags:
 
 1. Period 6 of 8: peer challenge
 2. Another group attacks your evidence, your map, and your vulnerability section, in that order
-3. [[Should People Live There?]] and [[Who Should Pay to Rebuild?]] put to you, because they will be on the day
+3. [[Should People Live There|Should People Live There?]] and [[Who Should Pay to Rebuild|Who Should Pay to Rebuild?]] put to you, because they will be on the day
 
 ## Things to do before our next class
 

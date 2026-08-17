@@ -53,7 +53,7 @@ accuracy, not an absence of records.
 
 When you compare two nations here, compare like with like and say what you
 are comparing on. That is what [[Historical Perspective]] asks of you, and
-it is the habit that makes [[What Did the Frontier Mean?]] answerable.
+it is the habit that makes [[What Did the Frontier Mean|What Did the Frontier Mean?]] answerable.
 
 %%curriculum-start%%
 ## Curriculum connection

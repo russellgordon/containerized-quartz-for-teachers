@@ -44,7 +44,7 @@ here can be ticked off — each is a question you must answer with evidence.
 - [ ] Which of these effects appears in a price, and which does not?
 
 That last question is the whole of [[Externalities]]; whether more output
-should be the objective at all is [[Is Growth the Right Goal?]].
+should be the objective at all is [[Is Growth the Right Goal|Is Growth the Right Goal?]].
 
 %%curriculum-start%%
 ## Curriculum connection

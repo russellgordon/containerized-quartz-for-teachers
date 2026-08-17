@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Who Counts as American?]]
+1. Seminar: [[Who Counts as American|Who Counts as American?]]
 2. Citizenship in law, and citizenship in practice
 3. Work period
 

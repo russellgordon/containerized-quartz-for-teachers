@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Opened: [[Whose Rights Win?]] — a right against another right
+1. Opened: [[Whose Rights Win|Whose Rights Win?]] — a right against another right
 2. Reconstructing the reasoning before judging it
 3. Choosing a conflict, and finding the decision itself
 

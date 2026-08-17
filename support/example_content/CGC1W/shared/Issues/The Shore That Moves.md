@@ -81,7 +81,7 @@ without being asked about the location.
 
 Gather evidence in [[The Shoreline Study]], write it up in
 [[The Risk Report]], and take the cost question to
-[[Who Should Pay for the Damage?]].
+[[Who Should Pay for the Damage|Who Should Pay for the Damage?]].
 
 %%curriculum-start%%
 ## Curriculum connection

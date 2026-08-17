@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. [[Who Was the New Deal For?]] worked as a class
+1. [[Who Was the New Deal For|Who Was the New Deal For?]] worked as a class
 2. Domestic and agricultural workers, and the exclusions written into the statute
 3. [[Historical Perspective]] revisited — the arguments made at the time, in their own terms
 

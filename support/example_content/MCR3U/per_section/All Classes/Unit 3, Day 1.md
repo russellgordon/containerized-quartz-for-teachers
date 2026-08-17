@@ -11,7 +11,7 @@ tags:
 ## Agenda
 
 1. Number talk: [[Estimation Duels]] — how tall is the gym ceiling?
-2. Random groups — [[How High Is That?]] — out of the classroom, and
+2. Random groups — [[How High Is That|How High Is That?]] — out of the classroom, and
    measure something unreachable
 3. Back at the boards: fold a square, halve an equilateral triangle —
    exact ratios with no calculator anywhere

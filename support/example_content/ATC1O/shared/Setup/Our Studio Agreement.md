@@ -38,7 +38,7 @@ Dance involves contact, and contact requires consent every time.
 - Cross behind someone who is working, never through their space.
 - If you learn a dance that belongs to a community, learn where it comes
   from too, and find out what that community says about sharing it —
-  [[Does a Dance Belong to a Culture?]].
+  [[Does a Dance Belong to a Culture|Does a Dance Belong to a Culture?]].
 
 ## Privacy
 

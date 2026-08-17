@@ -40,7 +40,7 @@ Index, the Genuine Progress Indicator, happiness surveys — exist because
 income leaves out health, education and time. Ask what each one drops.
 
 The distinction driving all of it is in [[Efficiency and Equity]]; the
-international version is argued in [[What Do We Owe Other Countries?]].
+international version is argued in [[What Do We Owe Other Countries|What Do We Owe Other Countries?]].
 
 %%curriculum-start%%
 ## Curriculum connection

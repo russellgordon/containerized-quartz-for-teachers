@@ -58,7 +58,7 @@ without a date attached; look leaders and seat counts up at elections.ca
 and parl.ca on the day you write, and say when you looked.
 
 Build on [[How Canada Is Governed]], [[Who Decides What, and Where]] and
-[[Who Decided This?]].
+[[Who Decided This|Who Decided This?]].
 
 %%curriculum-start%%
 ## Curriculum connection

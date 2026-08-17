@@ -76,7 +76,7 @@ in high-risk flood areas and floodplains where residential flood insurance
 coverage is not available", so "the overwhelming majority of costs for
 this disaster will be borne by government". Insured loss is a floor —
 [[Hazard and Disaster Records]] — and here it is a floor with a known
-reason. Take that to [[Who Should Pay to Rebuild?]].
+reason. Take that to [[Who Should Pay to Rebuild|Who Should Pay to Rebuild?]].
 
 %%curriculum-start%%
 ## Curriculum connection

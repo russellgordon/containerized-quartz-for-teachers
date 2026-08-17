@@ -48,7 +48,7 @@ not. [[Dance and Community Task]] is where you go and look.
 
 You do not have to keep dancing. But knowing where it is means the option
 stays open, which is a different thing from it quietly closing.
-[[Who Is Dance For?]] is the seminar that asks whether any of this was ever
+[[Who Is Dance For|Who Is Dance For?]] is the seminar that asks whether any of this was ever
 about performance, and [[The Portfolio and Reflection]] is where you write it
 down for marks.
 

@@ -49,7 +49,7 @@ silica-poor basalt runs.
 > Earth, and geothermal fields provide heat and electricity. That is why
 > the slopes of active volcanoes are farmed and settled — a cost against
 > a benefit, not an irrational choice. [[Using the Physical Environment]]
-> takes that trade seriously; [[Should People Live There?]] argues it.
+> takes that trade seriously; [[Should People Live There|Should People Live There?]] argues it.
 
 Ontario is intraplate and has no volcanoes, but it does have earthquakes:
 the Western Quebec seismic zone and the Charlevoix zone are monitored

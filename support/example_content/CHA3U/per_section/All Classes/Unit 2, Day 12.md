@@ -12,7 +12,7 @@ tags:
 
 1. [[North and South]] — two economies, two societies, one federal government
 2. The Missouri Compromise and the Compromise of 1850, mapped
-3. Investigation opened: [[What Held the Union Together?]]
+3. Investigation opened: [[What Held the Union Together|What Held the Union Together?]]
 
 ## Things to do before our next class
 

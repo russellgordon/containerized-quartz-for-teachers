@@ -61,7 +61,7 @@ obvious and closer to what you actually did this term:
 - **Regulatory and compliance work** in any industry, which is reading
   rules carefully and advising people who did not read them.
 - **Consultation and engagement roles**, which exist because
-  organisations that skip [[Who Is Missing From the Table?]] get their
+  organisations that skip [[Who Is Missing From the Table|Who Is Missing From the Table?]] get their
   projects stopped.
 - **Anyone who has to write for a decision-maker** — a nurse manager
   requesting staffing, an engineer writing a submission, a coach asking a

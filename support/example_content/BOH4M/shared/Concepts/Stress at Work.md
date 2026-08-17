@@ -47,7 +47,7 @@ lagging indicator and a poor early warning.
 > Ask what it changes about the work. A program that teaches people to
 > cope with an unreasonable workload, while leaving the workload
 > unreasonable, has moved the problem onto the individual — which is
-> exactly the argument in [[Whose Job Is Wellness?]].
+> exactly the argument in [[Whose Job Is Wellness|Whose Job Is Wellness?]].
 
 The case [[The Overwhelmed Supervisor]] gives you a real one to diagnose.
 

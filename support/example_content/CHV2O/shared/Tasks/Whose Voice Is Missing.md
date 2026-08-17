@@ -11,7 +11,7 @@ tags:
 studied.
 
 You investigated a decision-making body in
-[[Who Is Missing From the Table?]]. This task turns that into something a
+[[Who Is Missing From the Table|Who Is Missing From the Table?]]. This task turns that into something a
 real chair could read at a real meeting.
 
 ## What you produce

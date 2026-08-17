@@ -88,7 +88,7 @@ a Federal Court review of the Webequie approval filed in July 2026 — are
    decision here legitimate?
 
 Find each nation's own words through [[Treaty and Territory Sources]], and
-carry this into [[Whose Land Is It?]] and [[Who Decides?]].
+carry this into [[Whose Land Is It|Whose Land Is It?]] and [[Who Decides|Who Decides?]].
 
 %%curriculum-start%%
 ## Curriculum connection

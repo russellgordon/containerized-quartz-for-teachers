@@ -12,7 +12,7 @@ tags:
 
 1. Warm-up: what is normal here that would be strange elsewhere?
 2. Observable and core: [[Corporate Culture]]
-3. Seminar: [[Who Owns the Culture?]]
+3. Seminar: [[Who Owns the Culture|Who Owns the Culture?]]
 
 ## Things to do before our next class
 

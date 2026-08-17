@@ -53,11 +53,11 @@ better history than either celebrating it or dismissing it.
 When a country's films, brands and music arrive somewhere else, they carry a
 version of that country with them, and the receiving society argues about it
 — including in Canada, and including now. That argument is historical
-evidence too, and it belongs in [[Is the United States an Empire?]] as much
+evidence too, and it belongs in [[Is the United States an Empire|Is the United States an Empire?]] as much
 as in any account of the arts.
 
 Trace how the retelling changed in [[Interpretation and Historiography]],
-then put the whole question to work in [[Whose Story Gets Taught?]].
+then put the whole question to work in [[Whose Story Gets Taught|Whose Story Gets Taught?]].
 
 %%curriculum-start%%
 ## Curriculum connection

@@ -18,4 +18,4 @@ tags:
 
 ## Things to do before our next class
 
-- [ ] Prepare [[Does a Dance Belong to a Culture?]]
+- [ ] Prepare [[Does a Dance Belong to a Culture|Does a Dance Belong to a Culture?]]

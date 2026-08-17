@@ -52,7 +52,7 @@ You may propose your own, agreed with me first.
 
 [[Conscription and the Country It Split]] and
 [[Canada Goes to War]] are the ground; the seminar
-[[Was It Worth It?]] is where you will have tested your instincts.
+[[Was It Worth It|Was It Worth It?]] is where you will have tested your instincts.
 
 %%curriculum-start%%
 ## Curriculum connection

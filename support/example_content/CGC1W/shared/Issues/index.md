@@ -24,7 +24,7 @@ whether the situation has changed is part of using them — see
 
 **Unit 3 — Who lives here**
 
-- [[Who Gets the Housing?]]
+- [[Who Gets the Housing|Who Gets the Housing?]]
 
 **Unit 4 — Liveable communities**
 

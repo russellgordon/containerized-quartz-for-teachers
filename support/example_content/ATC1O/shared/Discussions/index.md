@@ -9,13 +9,13 @@ down.
 
 **Unit 2 — Making a dance**
 
-- [[What Counts as Dancing?]]
+- [[What Counts as Dancing|What Counts as Dancing?]]
 
 **Unit 3 — Dance in the world**
 
-- [[Can a Dance Change Anything?]]
-- [[Does a Dance Belong to a Culture?]]
+- [[Can a Dance Change Anything|Can a Dance Change Anything?]]
+- [[Does a Dance Belong to a Culture|Does a Dance Belong to a Culture?]]
 
 **Unit 4 — Bringing it to an audience**
 
-- [[Who Is Dance For?]]
+- [[Who Is Dance For|Who Is Dance For?]]

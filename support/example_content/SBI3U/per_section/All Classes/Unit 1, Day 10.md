@@ -13,7 +13,7 @@ tags:
 1. Outside: quadrats, sampling design, and what counts as random
 2. [[Biodiversity and Why It Matters]] — the three levels
 3. Launch: [[Biodiversity Field Study]]
-4. Discussion: [[What Do We Owe Other Species?]]
+4. Discussion: [[What Do We Owe Other Species|What Do We Owe Other Species?]]
 
 ## Things to do before our next class
 

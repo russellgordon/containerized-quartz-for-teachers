@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. [[Was Conscription Necessary?]] worked as a class
+1. [[Was Conscription Necessary|Was Conscription Necessary?]] worked as a class
 2. Where the evidence divides, and why
 3. [[Cause and Consequence]] named
 

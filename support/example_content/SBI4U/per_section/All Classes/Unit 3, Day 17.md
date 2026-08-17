@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Discussion: [[Who Gets the Cure?]] — with your own brief in hand
+1. Discussion: [[Who Gets the Cure|Who Gets the Cure?]] — with your own brief in hand
 2. Consolidate the strand: from a sequence to a decision about a person
 3. Look ahead: next unit is the body holding all of this steady
 

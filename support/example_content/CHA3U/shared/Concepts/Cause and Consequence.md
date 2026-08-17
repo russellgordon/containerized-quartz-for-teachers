@@ -59,7 +59,7 @@ expect would happen?* An order, a speech, a cabinet memorandum — each states
 or implies an expected result. Set that beside what did happen, and you are
 doing the concept rather than reciting it.
 
-Test it on [[Was the Revolution Inevitable?]], then decide what mattered
+Test it on [[Was the Revolution Inevitable|Was the Revolution Inevitable?]], then decide what mattered
 most using [[Historical Significance]].
 
 %%curriculum-start%%

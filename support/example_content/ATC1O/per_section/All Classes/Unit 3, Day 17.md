@@ -11,7 +11,7 @@ tags:
 ## Agenda
 
 1. Warm-up: [[The Standard Warm-Up]]
-2. Seminar: [[Does a Dance Belong to a Culture?]]
+2. Seminar: [[Does a Dance Belong to a Culture|Does a Dance Belong to a Culture?]]
 3. Ground rules; positions; the argument left open
 4. Journal
 5. Cool-down

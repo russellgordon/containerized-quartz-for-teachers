@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Who Gets to Tell the Story?]]
+1. Seminar: [[Who Gets to Tell the Story|Who Gets to Tell the Story?]]
 2. Whose accounts became the record
 3. Work period
 

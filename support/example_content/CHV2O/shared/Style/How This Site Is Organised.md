@@ -25,7 +25,7 @@ assessed work, and the Ministry expectations behind all of it.
 
 One is material; the other is a question put to it.
 [[Bills and What Happens to Them]] says what that kind of document can
-and cannot show; [[Who Decided This?]] takes several kinds and reaches a
+and cannot show; [[Who Decided This|Who Decided This?]] takes several kinds and reaches a
 judgement about a real decision. Keeping them apart is the difference
 between having evidence and using it.
 

@@ -5,7 +5,7 @@ created: __CREATED__
 tags:
   - concepts
 ---
-In [[How Fast Is It Changing?]], your group could compute the average
+In [[How Fast Is It Changing|How Fast Is It Changing?]], your group could compute the average
 speed of a falling object over any interval — that was just Grade 9
 slope — but the question on the board was harder: how fast is it
 falling *right now*, at the instant $t = 3$? "Right now" is a single

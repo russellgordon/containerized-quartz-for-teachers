@@ -37,7 +37,7 @@ distinct kind of geography problem.
 | Coast | Trade, fishing, cooling water, amenity | Surge, erosion, and rising sea level |
 
 The table's point is that "should people live there" is almost never a
-question about the hazard alone — see [[Should People Live There?]]. It is
+question about the hazard alone — see [[Should People Live There|Should People Live There?]]. It is
 a question about whether the benefits, to these particular people, are
 worth the risks they will actually carry.
 

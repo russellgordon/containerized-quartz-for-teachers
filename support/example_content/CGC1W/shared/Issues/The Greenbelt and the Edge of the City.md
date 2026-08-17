@@ -75,7 +75,7 @@ should shrink and still think this was the wrong way to shrink it.
    boundary decision legitimate?
 
 Argue a real site in [[The Land Use Proposal]], against
-[[Sprawl and Its Alternatives]] and [[Should We Build There?]].
+[[Sprawl and Its Alternatives]] and [[Should We Build There|Should We Build There?]].
 
 [^size]: Use "over 800,000 hectares" and resist a more precise figure.
 Ontario has published no updated hectare count since the 2022 additions

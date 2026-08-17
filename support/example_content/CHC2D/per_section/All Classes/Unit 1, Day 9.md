@@ -12,7 +12,7 @@ tags:
 
 1. The crisis of 1917: [[Conscription and the Country It Split]]
 2. The Military Service Act, the Wartime Elections Act, and what each did
-3. Investigation opened: [[Was Conscription Necessary?]]
+3. Investigation opened: [[Was Conscription Necessary|Was Conscription Necessary?]]
 
 ## Things to do before our next class
 

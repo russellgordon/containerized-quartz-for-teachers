@@ -46,7 +46,7 @@ meaning is contested and conditions usually are not.
 You are inside social dances right now, which makes them hard to see. Consider
 what a school dance requires of you: who dances, who stands at the edge, what
 is embarrassing and what is not, and who decided any of that. Then ask what a
-stranger would conclude about us from watching. [[Who Is Dance For?]] takes
+stranger would conclude about us from watching. [[Who Is Dance For|Who Is Dance For?]] takes
 that up in seminar, and [[Forms From Around the World]] gives you something to
 compare against.
 

@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Does Money Motivate?]]
+1. Seminar: [[Does Money Motivate|Does Money Motivate?]]
 2. [[The Team Project]] delivered; [[The Leadership Profile]] handed in
 3. Retrieval clinic: mixed questions from Units 1 and 2, in teams
 

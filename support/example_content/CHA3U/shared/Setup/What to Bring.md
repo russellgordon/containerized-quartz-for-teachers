@@ -47,6 +47,6 @@ order to find your source again.
 ## One thing not to bring
 
 Certainty. The seminars are built on questions where the evidence genuinely
-divides — [[What Was the Revolution For?]] is the first — and arriving with
+divides — [[What Was the Revolution For|What Was the Revolution For?]] is the first — and arriving with
 a position you are unwilling to test wastes the period, yours and everyone
 else's.

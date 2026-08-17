@@ -62,7 +62,7 @@ learned at home. Argue about the reasoning, not about who holds it, and
 apply the same standard to a law you like and a law you do not — that
 consistency is the whole test. [[Our Working Agreement]] applies in full.
 
-Then use it: [[Whose Rights Win?]] takes a real case through the same
+Then use it: [[Whose Rights Win|Whose Rights Win?]] takes a real case through the same
 steps, and [[The Rights Case]] is where the argument is marked.
 
 %%curriculum-start%%

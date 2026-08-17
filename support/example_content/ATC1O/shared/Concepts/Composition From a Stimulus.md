@@ -48,7 +48,7 @@ having to change position is *about* rain. The second one is choreography.
 If your stimulus belongs to a culture that is not yours — a piece of music, an
 artwork, a ceremony — find out what it is and whether it is meant to be
 borrowed at all. We take that question up directly in
-[[Does a Dance Belong to a Culture?]].
+[[Does a Dance Belong to a Culture|Does a Dance Belong to a Culture?]].
 
 Once you have material, the ordinary tools apply: build phrases, arrange them
 into a form, and test the piece with and without accompaniment, which is the

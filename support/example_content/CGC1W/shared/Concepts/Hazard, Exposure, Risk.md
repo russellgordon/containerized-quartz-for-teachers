@@ -51,7 +51,7 @@ on the hazard side, which is rare.
 
 You will assemble all three factors for one Canadian community in
 [[The Risk Report]]. The question of whether a place should be built on
-at all belongs to [[Should We Build There?]].
+at all belongs to [[Should We Build There|Should We Build There?]].
 
 %%curriculum-start%%
 ## Curriculum connection

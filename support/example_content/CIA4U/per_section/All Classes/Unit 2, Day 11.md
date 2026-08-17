@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Who Should Bear the Cost of Emissions?]] worked to the end
+1. Seminar: [[Who Should Bear the Cost of Emissions|Who Should Bear the Cost of Emissions?]] worked to the end
 2. Where the disagreement is about evidence, and where it is about values
 3. Positions rewritten afterwards, in the light of the argument
 

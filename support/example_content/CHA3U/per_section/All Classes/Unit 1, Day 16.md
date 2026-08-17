@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[What Was the Revolution For?]]
+1. Seminar: [[What Was the Revolution For|What Was the Revolution For?]]
 2. Positions tested against evidence, not feeling
 3. Launch: [[The Revolution Question]] with [[Building an Argument]] — claim, evidence, objection
 

@@ -51,7 +51,7 @@ dealt with.
 > surprise, which is why the interesting question is what the plan does
 > about it before construction starts, not after.
 
-Take the argument apart in [[Should We Build There?]], and follow how these
+Take the argument apart in [[Should We Build There|Should We Build There?]], and follow how these
 same forces spread a city outward in [[Sprawl and Its Alternatives]].
 
 %%curriculum-start%%

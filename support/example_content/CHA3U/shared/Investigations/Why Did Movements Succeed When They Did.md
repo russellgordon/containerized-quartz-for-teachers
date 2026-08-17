@@ -64,7 +64,7 @@ A comparative argument: two movements, one condition, and an explanation of
 why the same condition produced different results. Then a paragraph on what
 you would need to know to be more certain. It leads into
 [[Rights and Movements]], and the disagreement belongs in
-[[Who Counts as American?]].
+[[Who Counts as American|Who Counts as American?]].
 
 %%curriculum-start%%
 ## Curriculum connection

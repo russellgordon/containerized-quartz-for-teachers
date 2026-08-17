@@ -56,7 +56,7 @@ Artists reached some of this first. [[Canada Since 1982]] took shape
 alongside work by writers and filmmakers who put these histories in
 front of a public that had not asked for them. Consider whether a novel
 or a film can do something an official statement cannot — and carry the
-question into [[What Should a Country Remember?]].
+question into [[What Should a Country Remember|What Should a Country Remember?]].
 
 %%curriculum-start%%
 ## Curriculum connection

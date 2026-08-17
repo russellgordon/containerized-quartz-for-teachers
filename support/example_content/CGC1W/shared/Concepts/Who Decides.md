@@ -53,7 +53,7 @@ separate questions worth asking of every case.
 
 Trace the ownership and the jurisdiction before the argument —
 [[Land, Treaty, and Title]] sets out why. The hardest version of this is the
-seminar [[Whose Land Is It?]].
+seminar [[Whose Land Is It|Whose Land Is It?]].
 
 %%curriculum-start%%
 ## Curriculum connection

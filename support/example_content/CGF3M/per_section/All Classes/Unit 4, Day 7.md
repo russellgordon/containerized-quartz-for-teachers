@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Is a Disaster Ever Natural?]]
+1. Seminar: [[Is a Disaster Ever Natural|Is a Disaster Ever Natural?]]
 2. The strongest version of both cases, each carrying one real event
 3. Where the phrase does political work, and where dropping it shades into blaming the people hit
 

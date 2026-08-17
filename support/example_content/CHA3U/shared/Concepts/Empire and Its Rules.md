@@ -57,7 +57,7 @@ colonists on two counts at once — religious prejudice and land hunger — and
 was folded into the list of grievances even though it was not a tax at all.
 
 Trace the outcome in [[Revolution and the Republic It Made]], and take the
-causal question itself into [[Was the Revolution Inevitable?]].
+causal question itself into [[Was the Revolution Inevitable|Was the Revolution Inevitable?]].
 
 %%curriculum-start%%
 ## Curriculum connection

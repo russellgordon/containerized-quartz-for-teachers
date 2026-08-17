@@ -52,8 +52,8 @@ Two questions carry the analysis. *Who asked for this, and how long did they
 have to ask?* And *what does it require of anybody* — money, a curriculum
 change, a return of land, or only a ceremony?
 
-Take it into [[What Should Be Remembered Here?]], argue the ethics in
-[[Does an Apology Matter?]], and build it out in
+Take it into [[What Should Be Remembered Here|What Should Be Remembered Here?]], argue the ethics in
+[[Does an Apology Matter|Does an Apology Matter?]], and build it out in
 [[The Commemoration Inquiry]].
 
 %%curriculum-start%%

@@ -56,7 +56,7 @@ period's actual values, and they are usually the most useful thing on the
 page.
 
 Take it into [[Ideologies in a Fearful Decade]], apply it under pressure in
-[[Could Canada Have Done More?]], and treat it as a duty in
+[[Could Canada Have Done More|Could Canada Have Done More?]], and treat it as a duty in
 [[Oral History and Testimony]].
 
 %%curriculum-start%%

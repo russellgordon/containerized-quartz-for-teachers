@@ -42,7 +42,7 @@ is contested. Deregulating and privatising Crown corporations pushed back.
 > at "this is efficient" has not yet said the policy is good.
 
 The measures behind the second question are in [[Inequality]]; the case
-that growth is the wrong target is argued in [[Is Growth the Right Goal?]].
+that growth is the wrong target is argued in [[Is Growth the Right Goal|Is Growth the Right Goal?]].
 
 %%curriculum-start%%
 ## Curriculum connection

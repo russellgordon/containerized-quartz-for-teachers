@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Is Voting Enough?]]
+1. Seminar: [[Is Voting Enough|Is Voting Enough?]]
 2. [[Writing to Someone in Power]] — how most civic actions are actually made
 3. Groups formed for the culminating task
 

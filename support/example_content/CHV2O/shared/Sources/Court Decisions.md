@@ -69,7 +69,7 @@ Read the summary first, then the facts, then the issues — and only then
 the reasons. Going straight to the reasoning of a case whose facts you do
 not know is the fastest way to misunderstand it.
 
-Then take a real conflict of rights into [[Whose Rights Win?]], with
+Then take a real conflict of rights into [[Whose Rights Win|Whose Rights Win?]], with
 [[Rights, and What Limits Them]] open beside it.
 
 %%curriculum-start%%

@@ -59,7 +59,7 @@ that does not leak your view is harder and more useful than it sounds.
 > is describing an argument on the internet, not the issue.
 
 Build it from [[Your Civic Notebook]], check every source against
-[[Judging Civic Information]], and use [[Who Decided This?]] if you
+[[Judging Civic Information]], and use [[Who Decided This|Who Decided This?]] if you
 cannot work out who holds the power.
 
 %%curriculum-start%%

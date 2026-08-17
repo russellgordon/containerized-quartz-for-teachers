@@ -17,4 +17,4 @@ tags:
 
 ## Things to do before our next class
 
-- [ ] Prepare [[Does Money Motivate?]] — bring a real job.
+- [ ] Prepare [[Does Money Motivate|Does Money Motivate?]] — bring a real job.

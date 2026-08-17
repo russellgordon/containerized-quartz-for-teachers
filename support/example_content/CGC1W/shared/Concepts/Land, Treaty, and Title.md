@@ -62,7 +62,7 @@ hold one common position on it.
 > "Historic treaty" says when a treaty was signed, not whether it still
 > operates. Find out which treaty or territory your school stands on.
 
-The seminar [[Whose Land Is It?]] is where this gets argued — run your
+The seminar [[Whose Land Is It|Whose Land Is It?]] is where this gets argued — run your
 sources through [[Judging a Source]] first.
 
 %%curriculum-start%%

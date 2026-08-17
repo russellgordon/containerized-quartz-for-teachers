@@ -62,8 +62,8 @@ You may propose your own, agreed with me first.
 [[North and South]], [[Removal and Resistance]], and
 [[Politics of a Growing Republic]] are the ground.
 [[Cause and Consequence]] is the concept you are actually being marked
-on, and the investigation [[What Held the Union Together?]] plus the
-seminar [[Could the Civil War Have Been Avoided?]] are where these
+on, and the investigation [[What Held the Union Together|What Held the Union Together?]] plus the
+seminar [[Could the Civil War Have Been Avoided|Could the Civil War Have Been Avoided?]] are where these
 questions were first opened up. For what the newspapers of the period
 will and will not tell you, see [[Newspapers and Print Culture]].
 

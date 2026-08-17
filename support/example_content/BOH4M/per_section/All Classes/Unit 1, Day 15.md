@@ -11,7 +11,7 @@ tags:
 ## Agenda
 
 1. Where the obligation comes from: [[The Responsible Company]]
-2. Seminar: [[Is a Company Responsible?]]
+2. Seminar: [[Is a Company Responsible|Is a Company Responsible?]]
 3. Evidence that costs something — what counts, and what does not
 
 ## Things to do before our next class

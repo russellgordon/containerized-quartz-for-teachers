@@ -55,7 +55,7 @@ expect would happen?* A cabinet minute, a recruiting speech, a memo — each
 one states or implies an expected result. Set that beside what did happen,
 and you are doing the concept rather than reciting it.
 
-Test it on [[Was Conscription Necessary?]], read the split it caused in
+Test it on [[Was Conscription Necessary|Was Conscription Necessary?]], read the split it caused in
 [[Conscription and the Country It Split]], then decide what mattered most
 using [[Historical Significance]].
 

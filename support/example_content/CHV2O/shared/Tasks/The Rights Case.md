@@ -66,7 +66,7 @@ answered.
 > discover, on being asked one hard question, that the reasoning had a
 > gap in it.
 
-[[Whose Rights Win?]] and [[When Should a Right Give Way?]] are where
+[[Whose Rights Win|Whose Rights Win?]] and [[When Should a Right Give Way|When Should a Right Give Way?]] are where
 these arguments get tested before they are written.
 
 %%curriculum-start%%

@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[What Do We Owe Other Countries?]]
+1. Seminar: [[What Do We Owe Other Countries|What Do We Owe Other Countries?]]
 2. Aid, trade, migration and debt relief compared as instruments
 3. The number people guess wrong, retrieved before the argument starts
 

@@ -46,7 +46,7 @@ judging rather than admiring:
   conversation rather than a research project.
 - **Targeted gene editing.** CRISPR-based tools made precise edits cheap
   and quick enough for ordinary laboratories, which is exactly why the
-  argument in [[Who Gets the Cure?]] became urgent rather than
+  argument in [[Who Gets the Cure|Who Gets the Cure?]] became urgent rather than
   theoretical.
 - **Cell culture and stem-cell work.** Growing tissue outside a body
   supports drug testing, transplantable tissue, and disease models that

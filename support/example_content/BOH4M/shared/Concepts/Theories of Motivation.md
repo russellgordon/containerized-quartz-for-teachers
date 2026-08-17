@@ -39,7 +39,7 @@ workplace, and the ones you will test.
 > and insult others.
 
 The practical half of this is in [[Motivation in Practice]]; the argument
-about money is in [[Does Money Motivate?]].
+about money is in [[Does Money Motivate|Does Money Motivate?]].
 
 %%curriculum-start%%
 ## Curriculum connection

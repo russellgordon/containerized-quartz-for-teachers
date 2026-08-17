@@ -57,7 +57,7 @@ need a library card; they are not open to a class. Check what your own
 board and public library already license before you plan around them.
 
 Then test whatever you find with [[Historical Perspective]] and put it to
-work in [[Was Conscription Necessary?]].
+work in [[Was Conscription Necessary|Was Conscription Necessary?]].
 
 %%curriculum-start%%
 ## Curriculum connection

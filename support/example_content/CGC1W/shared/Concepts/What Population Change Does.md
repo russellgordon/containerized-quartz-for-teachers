@@ -52,7 +52,7 @@ people, over this timeframe.* Name who, and name when. A challenge in year two
 is often an advantage in year ten.
 
 Which pressures a government can act on is [[Policy Responses]], and we argue
-the local version in [[What Do We Owe the Next Community?]].
+the local version in [[What Do We Owe the Next Community|What Do We Owe the Next Community?]].
 
 %%curriculum-start%%
 ## Curriculum connection

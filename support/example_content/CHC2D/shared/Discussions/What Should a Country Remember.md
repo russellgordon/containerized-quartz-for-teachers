@@ -52,7 +52,7 @@ the history of people with less standing.
 **A substitute for action.** Remembering a wrong can feel like
 addressing it. Ask, of any commemoration, what changed afterwards.
 
-Take your answer into [[What Should Be Remembered Here?]] and, later,
+Take your answer into [[What Should Be Remembered Here|What Should Be Remembered Here?]] and, later,
 into [[The Commemoration Inquiry]].
 
 %%curriculum-start%%

@@ -54,7 +54,7 @@ criteria rather than guess at them. Write them down before you rank
 anything.
 
 That is the move [[Building an Argument]] runs on, and the one
-[[What Should Be Remembered Here?]] asks you to make about your own place.
+[[What Should Be Remembered Here|What Should Be Remembered Here?]] asks you to make about your own place.
 
 %%curriculum-start%%
 ## Curriculum connection

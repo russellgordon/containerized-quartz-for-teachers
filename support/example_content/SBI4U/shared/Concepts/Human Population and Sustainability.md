@@ -34,7 +34,7 @@ as much as about numbers.
 
 Unlike other species, we change $K$ — agriculture, sanitation, and energy
 have raised it repeatedly. Whether that can continue, and at what cost to
-everything else, is what [[What Can This Planet Support?]] is for.
+everything else, is what [[What Can This Planet Support|What Can This Planet Support?]] is for.
 
 %%curriculum-start%%
 ## Curriculum connection

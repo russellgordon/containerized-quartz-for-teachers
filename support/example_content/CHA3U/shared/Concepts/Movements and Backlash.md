@@ -47,7 +47,7 @@ Black voters had registered, a third of them by federal examiners.
 > dogs into living rooms, a Cold War in which American segregation was an
 > international embarrassment, and decades of NAACP litigation that had
 > already built the legal ground. Argue the combination, and set out your
-> reasoning in [[Why Did Movements Succeed When They Did?]].
+> reasoning in [[Why Did Movements Succeed When They Did|Why Did Movements Succeed When They Did?]].
 
 ## The wider field, and the reaction
 

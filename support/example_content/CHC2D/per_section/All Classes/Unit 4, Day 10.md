@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Does an Apology Matter?]]
+1. Seminar: [[Does an Apology Matter|Does an Apology Matter?]]
 2. Internment redress, residential schools, the head tax, the LGBTQ purge
 3. Work period
 

@@ -61,7 +61,7 @@ both candidates, test both, and report every triangle that survives.
 Finding the second triangle your groupmate missed — or the one you
 missed — is [[Mistakes Are Data]] in its natural habitat.
 
-The sine law carried the measuring work in [[How High Is That?]], and
+The sine law carried the measuring work in [[How High Is That|How High Is That?]], and
 [[Trig Ratios and Laws Practice]] mixes it with the cosine law so
 that *choosing* becomes part of the skill.
 

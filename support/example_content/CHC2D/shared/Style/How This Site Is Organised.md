@@ -26,7 +26,7 @@ assessed work, and the expectations behind all of it.
 
 One is material; the other is a question put to it.
 [[Newspapers and Propaganda]] says what that kind of source can and
-cannot show; [[Was Conscription Necessary?]] takes several kinds and
+cannot show; [[Was Conscription Necessary|Was Conscription Necessary?]] takes several kinds and
 reaches a judgement. Keeping them apart is the difference between having
 evidence and using it.
 

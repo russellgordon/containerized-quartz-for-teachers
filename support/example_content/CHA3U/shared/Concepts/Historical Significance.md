@@ -60,7 +60,7 @@ criteria rather than guess at them. Write them down before you rank
 anything.
 
 That is the move [[Building an Argument]] runs on, and the one
-[[Whose Story Gets Taught?]] asks you to make about a curriculum, including
+[[Whose Story Gets Taught|Whose Story Gets Taught?]] asks you to make about a curriculum, including
 this one.
 
 %%curriculum-start%%

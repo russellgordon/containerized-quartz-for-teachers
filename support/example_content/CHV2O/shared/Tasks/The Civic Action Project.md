@@ -10,7 +10,7 @@ tags:
 action taken and reported on.** Pairs, threes, or alone.
 
 You choose a civic issue you care about, plan an action using
-[[What Would It Take to Change This?]], carry it out in the world outside
+[[What Would It Take to Change This|What Would It Take to Change This?]], carry it out in the world outside
 this building, and report honestly on what happened — including, if this
 is what happened, that nothing changed.
 

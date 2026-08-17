@@ -59,7 +59,7 @@ when you write solutions — it is the step
 [[Showing Your Thinking]] exists for.
 
 The tool-choosing habit — and the triangles of
-[[How High Is That?]] — get their workout in
+[[How High Is That|How High Is That?]] — get their workout in
 [[Trig Ratios and Laws Practice]].
 
 %%curriculum-start%%

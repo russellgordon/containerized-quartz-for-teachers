@@ -44,7 +44,7 @@ for things that cost something:
 > chose *not* to do, and why. A report with no trade-offs in it is
 > marketing, and you can say so — with the evidence — in your analysis.
 
-We argue this out in the seminar [[Is a Company Responsible?]], and you
+We argue this out in the seminar [[Is a Company Responsible|Is a Company Responsible?]], and you
 research one company's record for real in [[The Ethics Brief]].
 
 %%curriculum-start%%

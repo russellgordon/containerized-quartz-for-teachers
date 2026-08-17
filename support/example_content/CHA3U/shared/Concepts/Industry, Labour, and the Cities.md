@@ -65,7 +65,7 @@ failed, and unemployment reached levels the country had no machinery to
 handle. Shanty settlements took the president's name, and drought and ruined
 soil across the southern plains drove farm families west.
 
-Test whether the New Deal reached everyone in [[Who Was the New Deal For?]],
+Test whether the New Deal reached everyone in [[Who Was the New Deal For|Who Was the New Deal For?]],
 and set the labour question beside the racial one in
 [[Jim Crow and Resistance]].
 

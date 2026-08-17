@@ -11,7 +11,7 @@ tags:
 ## Agenda
 
 1. [[The Overwhelmed Supervisor]] — the home's three responses, assessed
-2. Seminar: [[Whose Job Is Wellness?]]
+2. Seminar: [[Whose Job Is Wellness|Whose Job Is Wellness?]]
 3. Team stand-up
 
 ## Things to do before our next class

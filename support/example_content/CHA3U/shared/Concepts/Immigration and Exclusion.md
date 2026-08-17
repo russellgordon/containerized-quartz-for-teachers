@@ -58,7 +58,7 @@ practice, and who continued to do agricultural and domestic work under rules
 that made complaint impossible.
 
 Take the numbers from [[Statistics and the Census]], the wording from
-[[Government Records]], and the argument into [[Who Counts as American?]].
+[[Government Records]], and the argument into [[Who Counts as American|Who Counts as American?]].
 
 %%curriculum-start%%
 ## Curriculum connection

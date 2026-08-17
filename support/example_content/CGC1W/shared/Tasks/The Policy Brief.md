@@ -49,7 +49,7 @@ read by the person you wrote it for.
 > choice.
 
 [[What Population Change Does]] gives you the effects; the discussion
-[[What Do We Owe the Next Community?]] is where the values in your
+[[What Do We Owe the Next Community|What Do We Owe the Next Community?]] is where the values in your
 recommendation get tested.
 
 %%curriculum-start%%

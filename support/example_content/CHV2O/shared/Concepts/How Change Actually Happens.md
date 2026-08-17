@@ -74,7 +74,7 @@ unlikely to change anything, and you would rather find that out in the
 planning than in the report.
 
 Test the routes against a real issue in
-[[What Would It Take to Change This?]] before choosing one for
+[[What Would It Take to Change This|What Would It Take to Change This?]] before choosing one for
 [[The Civic Action Project]].
 
 %%curriculum-start%%

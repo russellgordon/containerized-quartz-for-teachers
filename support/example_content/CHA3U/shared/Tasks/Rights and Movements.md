@@ -63,7 +63,7 @@ minutes.
 [[Jim Crow and Resistance]] and [[Movements and Backlash]] are the two
 halves of this task, and [[The Postwar United States]] is the ground
 under the second. The investigation
-[[Why Did Movements Succeed When They Did?]] is where the causal
+[[Why Did Movements Succeed When They Did|Why Did Movements Succeed When They Did?]] is where the causal
 question gets argued; [[Continuity and Change]] is the concept you are
 being marked on. For first-person accounts, see
 [[Testimony and Narrative]].

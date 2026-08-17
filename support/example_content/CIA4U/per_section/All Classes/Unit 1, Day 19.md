@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Is Growth the Right Goal?]]
+1. Seminar: [[Is Growth the Right Goal|Is Growth the Right Goal?]]
 2. The two questions inside it, kept apart
 3. Positions tested against evidence, with the assumption behind each said out loud
 

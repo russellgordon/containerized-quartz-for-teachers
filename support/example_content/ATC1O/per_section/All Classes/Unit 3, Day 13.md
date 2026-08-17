@@ -11,7 +11,7 @@ tags:
 ## Agenda
 
 1. Warm-up: [[The Standard Warm-Up]]
-2. Seminar: [[Can a Dance Change Anything?]]
+2. Seminar: [[Can a Dance Change Anything|Can a Dance Change Anything?]]
 3. Positions tested against real works
 4. Cool-down
 5. Cool-down

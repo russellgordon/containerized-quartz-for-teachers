@@ -70,7 +70,7 @@ running both ways and no expiry date. Some of those obligations — annual
 payments, harvesting rights, the size of a reserve — have been litigated
 for decades, and courts continue to rule on what the Crown promised and
 whether it delivered. Treaty questions are current legal questions, which
-is why they appear in [[Who Decided This?]] and in
+is why they appear in [[Who Decided This|Who Decided This?]] and in
 [[How Government Works]].
 
 Find which treaty covers your community, read it, and find out which

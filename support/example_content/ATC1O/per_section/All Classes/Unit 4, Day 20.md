@@ -11,7 +11,7 @@ tags:
 ## Agenda
 
 1. Warm-up: [[The Standard Warm-Up]]
-2. Seminar: [[Who Is Dance For?]]
+2. Seminar: [[Who Is Dance For|Who Is Dance For?]]
 3. The year's argument, revisited with everything we now know
 4. Cool-down
 5. Cool-down

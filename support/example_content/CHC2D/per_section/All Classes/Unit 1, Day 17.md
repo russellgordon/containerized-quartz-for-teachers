@@ -12,7 +12,7 @@ tags:
 
 1. [[The War Question]] handed in
 2. Immigration policy after the war: [[Immigration Policy Over a Century]], first half
-3. Investigation: [[Who Was Canada Willing to Admit?]]
+3. Investigation: [[Who Was Canada Willing to Admit|Who Was Canada Willing to Admit?]]
 
 ## Things to do before our next class
 

@@ -61,7 +61,7 @@ in this room will turn out to be about vulnerability. Be ready to argue
 a position that is not yours; you will be asked.
 
 The related question of whether anyone should have been there is
-[[Should People Live There?]].
+[[Should People Live There|Should People Live There?]].
 
 %%curriculum-start%%
 ## Curriculum connection

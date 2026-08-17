@@ -9,18 +9,18 @@ receiving one.
 
 **Unit 1 — Canada, 1914–1929**
 
-- [[Was Conscription Necessary?]]
-- [[Who Was Canada Willing to Admit?]]
+- [[Was Conscription Necessary|Was Conscription Necessary?]]
+- [[Who Was Canada Willing to Admit|Who Was Canada Willing to Admit?]]
 
 **Unit 2 — Canada, 1929–1945**
 
-- [[Could Canada Have Done More?]]
-- [[What Did the War Change at Home?]]
+- [[Could Canada Have Done More|Could Canada Have Done More?]]
+- [[What Did the War Change at Home|What Did the War Change at Home?]]
 
 **Unit 3 — Canada, 1945–1982**
 
-- [[Whose Rights, and When?]]
+- [[Whose Rights, and When|Whose Rights, and When?]]
 
 **Unit 4 — Canada, 1982 to the present**
 
-- [[What Should Be Remembered Here?]]
+- [[What Should Be Remembered Here|What Should Be Remembered Here?]]

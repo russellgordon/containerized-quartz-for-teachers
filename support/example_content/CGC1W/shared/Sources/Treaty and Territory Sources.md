@@ -73,7 +73,7 @@ attributed. Different nations take different positions on the same
 project, and one nation's position can be more layered than a headline
 allows.
 
-Take that standard into [[Whose Land Is It?]] and
+Take that standard into [[Whose Land Is It|Whose Land Is It?]] and
 [[The Resource Investigation]]; the concepts are in
 [[Land, Treaty, and Title]].
 

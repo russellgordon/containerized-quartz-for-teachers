@@ -68,7 +68,7 @@ all four periods — not merely mentionable in them.
 
 [[Historical Significance]] and [[Continuity and Change]] do the work
 here; [[Building an Argument]] and [[Using Evidence]] are the craft. The
-seminars [[Who Counts as American?]] and [[Is the United States an Empire?]]
+seminars [[Who Counts as American|Who Counts as American?]] and [[Is the United States an Empire|Is the United States an Empire?]]
 are where two of these arguments have already been opened, and
 [[Where History Leads]] is worth rereading before you choose.
 

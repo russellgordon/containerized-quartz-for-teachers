@@ -58,7 +58,7 @@ deciding what it thinks. Decide what you claim, then find choreographic means
 for that claim: a piece about the environment that could equally be about
 loneliness has not chosen. Work that argues invites disagreement, which is the
 point — [[The Dance Review]] asks you to analyse a work rather than agree with
-it, and [[Can a Dance Change Anything?]] asks whether any of it does anything.
+it, and [[Can a Dance Change Anything|Can a Dance Change Anything?]] asks whether any of it does anything.
 
 [^grossman]: Danny Grossman, born in San Francisco in 1942, settled in Canada
     and founded the Toronto-based Danny Grossman Dance Company in the

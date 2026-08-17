@@ -12,7 +12,7 @@ tags:
 
 1. The road to 1776: the Stamp Act, the Townshend Duties, the Boston Massacre
 2. [[Cause and Consequence]] — trigger, condition, and the difference between them
-3. Investigation opened: [[Was the Revolution Inevitable?]]
+3. Investigation opened: [[Was the Revolution Inevitable|Was the Revolution Inevitable?]]
 
 ## Things to do before our next class
 

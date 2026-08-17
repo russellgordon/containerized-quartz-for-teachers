@@ -50,7 +50,7 @@ is nearly always a public version of the same document.
 
 A position you are unwilling to test. The seminars in this course are
 built on questions where the evidence and the values genuinely divide —
-[[Who Should Decide Locally?]] is the first — and arriving determined to
+[[Who Should Decide Locally|Who Should Decide Locally?]] is the first — and arriving determined to
 win wastes the period for everyone, including you.
 
 Bring the second thing instead: a willingness to say "I had not thought

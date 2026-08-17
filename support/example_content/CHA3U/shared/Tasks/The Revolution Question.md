@@ -61,8 +61,8 @@ You may propose your own, agreed with me first.
 
 [[Revolution and the Republic It Made]] and [[Wars Before the Revolution]]
 are the ground, [[Who Was Excluded, and By What Rule]] is the pressure,
-and the investigation [[Was the Revolution Inevitable?]] plus the seminar
-[[What Was the Revolution For?]] are where you will have tested your
+and the investigation [[Was the Revolution Inevitable|Was the Revolution Inevitable?]] plus the seminar
+[[What Was the Revolution For|What Was the Revolution For?]] are where you will have tested your
 instincts already. For the shape of the essay, see
 [[Building an Argument]].
 

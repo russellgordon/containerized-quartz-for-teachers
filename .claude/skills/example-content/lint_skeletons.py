@@ -57,6 +57,20 @@ def check(family: str) -> list:
         fields = frontmatter(text)
         is_curriculum = curriculum and f"/{curriculum}/" in f"/{relative}"
 
+        # Windows cannot create these characters in a filename, and Git for
+        # Windows refuses to check such a path out — which stops the whole
+        # repository fast-forwarding on that machine. A skeleton page would
+        # slip past every other check here, because `title` is required to
+        # MATCH the filename, so "Why Bother?.md" titled "Why Bother?" is
+        # consistent, correct-looking and unusable on half the machines
+        # this ships to. A shape wanting a question keeps it in the prose.
+        for forbidden in '<>:"|?*':
+            if forbidden in path.name:
+                problems.append(
+                    f"{relative}: filename contains {forbidden!r}, which "
+                    f"Windows cannot create")
+                break
+
         if not fields:
             problems.append(f"{relative}: no frontmatter")
             continue

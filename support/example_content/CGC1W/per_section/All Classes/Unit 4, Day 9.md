@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Seminar: [[Does It Matter Where Your Food Comes From?]]
+1. Seminar: [[Does It Matter Where Your Food Comes From|Does It Matter Where Your Food Comes From?]]
 2. [[Feeding a Country]] — the system beyond the farm gate
 3. Working period on the proposal
 

@@ -10,7 +10,7 @@ tags:
 ---
 ## Agenda
 
-1. Investigation opened: [[What Did the Frontier Mean?]]
+1. Investigation opened: [[What Did the Frontier Mean|What Did the Frontier Mean?]]
 2. Homesteads, railways, the Dawes Act, and Wounded Knee
 3. Turner's thesis of 1893, and the historians who answered it
 
