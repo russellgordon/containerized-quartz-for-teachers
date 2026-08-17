@@ -578,6 +578,49 @@ def rebuild_site() -> None:
     run([sys.executable, str(WEBSITE / "build.py")], cwd=REPO)
 
 
+def preflight_permissions() -> None:
+    """Trip both permission dialogs immediately, so a human can grant them
+    and walk away instead of finding one part way through an hour-long run.
+
+    Each dialog blocks whatever triggers it until a human answers, and macOS
+    only asks once it is actually needed -- Safari's the first time this
+    process sends it an AppleEvent, XCTest's the first time xcodebuild enables
+    UI automation. Left alone, that means the Safari prompt appears minutes
+    into a --sites run and the XCTest one minutes into --app, which is the
+    opposite of "grant it and leave".
+
+    The XCTest half is tripped with the fixture-based smoke test rather than
+    anything from MarketingScreenshots: it launches against a disposable
+    workspace built into the test bundle, needs no demo folder, no network,
+    and no already-published sites, and normally finishes in well under a
+    minute. Any UI test would trigger the SAME dialog -- xcodebuild asks
+    before the test's own logic runs -- so this one is chosen for speed, not
+    for anything it captures.
+    """
+    announce("Requesting permissions up front (Safari control, then UI automation)")
+    print("   If a system dialog appears for either one, approve it now.")
+
+    try:
+        subprocess.run(
+            ["osascript", "-e", 'tell application "Safari" to activate'],
+            capture_output=True, text=True, timeout=60,
+        )
+    except subprocess.TimeoutExpired:
+        print("   Safari did not respond within a minute -- the dialog may still be waiting.")
+
+    result = run(
+        ["xcodebuild", "-project", str(MAC_APP / "Plantoir.xcodeproj"),
+         "-scheme", "Plantoir", "-configuration", "Debug", "test",
+         "-only-testing:QuartzTeachersUITests/QuartzTeachersUITests/testSidebarShowsExampleCourse"],
+        cwd=MAC_APP, capture_output=True, text=True, timeout=300,
+    )
+    if result.returncode != 0:
+        print("   The preflight test did not pass -- if a permission dialog is still on screen, "
+              "answer it and re-run.", file=sys.stderr)
+    else:
+        print("   Both permissions are in place.")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Capture every screenshot plantoir.app uses.")
     parser.add_argument("--workspace", default=str(DEFAULT_WORKSPACE),
@@ -599,6 +642,7 @@ def main() -> int:
 
     keeping_awake = stay_awake()
     try:
+        preflight_permissions()
         if everything or arguments.provision:
             provision(workspace)
         if everything or arguments.publish:
