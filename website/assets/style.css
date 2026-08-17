@@ -293,6 +293,12 @@ ol.steps li::before {
 .shot-narrow { width: 100%; margin-left: 0; transform: none; }
 .shot-narrow img { max-width: 320px; }
 
+/* A capture that already arrives inside a device bezel needs no frame of
+   its own: a rounded rectangle drawn around a phone's rounded corners reads
+   as a mistake. */
+.shot-device { width: 100%; margin-left: 0; transform: none; }
+.shot-device img { max-width: 290px; border-radius: 0; box-shadow: none; }
+
 .shot figcaption {
   margin-top: 12px;
   font-size: 14.5px;

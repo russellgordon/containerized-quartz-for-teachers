@@ -6,7 +6,7 @@ nav_label: Support
 
 <div class="page-head">
   <h1>Support</h1>
-  <p class="standfirst">Most difficulties fall into a handful of shapes, and they are collected below. When they do not, there is a person at the other end of the address.</p>
+  <p class="standfirst">Most trouble falls into a handful of shapes, and they're collected below. When yours doesn't, there's a person at the other end of the address.</p>
 </div>
 
 <hr class="rule">
@@ -18,8 +18,9 @@ nav_label: Support
     <li><span class="label">Bug reports</span> <a href="{{repo_url}}/issues">Open an issue on GitHub</a></li>
     <li><span class="label">Source</span> <a href="{{repo_url}}">github.com/russellgordon/plantoir</a></li>
   </ul>
-  <p style="margin-top: 20px;">Email suits a question about how to do something, or a situation that is awkward to describe in public. An issue on GitHub suits a fault that can be described in a sentence and reproduced — it is public, so other teachers meeting the same thing find the answer.</p>
-  <p>Plantoir is maintained by one teacher alongside a full teaching load. Replies are not instant, particularly in September and in June, but every report is read.</p>
+  <p style="margin-top: 20px;">Email is right for a question about how to do something, or for anything awkward to describe in public.</p>
+  <p>An issue on GitHub is right for a fault you can describe in a sentence and reproduce. It's public, so the next teacher who hits the same thing finds the answer.</p>
+  <p>Plantoir is maintained by one teacher alongside a full teaching load. Replies aren't instant — least of all in September and June — but every report gets read.</p>
 </section>
 
 <hr class="rule">
@@ -29,56 +30,62 @@ nav_label: Support
   <div class="qa">
 
     <details>
-      <summary>The first build is taking a very long time. Is it stuck?</summary>
+      <summary>The first build is taking forever. Is it stuck?</summary>
       <div class="answer">
-        <p>Almost certainly not. The first time a site is built, the app assembles the machinery that does the building — several minutes of downloading on a normal connection, and longer on a school network. It happens once. Every build after that starts in seconds.</p>
+        <p>Almost certainly not.</p>
+        <p>The first time you build a site, the app assembles the machinery that does the building. That's several minutes of downloading on a normal connection, and longer on a school network. It happens once — every build after that starts in seconds.</p>
         <p>The progress view names the step it has reached. As long as that wording keeps changing, work is happening.</p>
       </div>
     </details>
 
     <details>
-      <summary>macOS says the app cannot be opened.</summary>
+      <summary>macOS says the app can't be opened.</summary>
       <div class="answer">
-        <p>Apps downloaded outside the App Store are checked before they will open. If the warning offers no way past it, control-click the app in Finder and choose <strong>Open</strong> from the menu that appears, then confirm. This is needed once; afterwards it opens normally.</p>
-        <p>Move the app to the Applications folder before opening it. Running it from the Downloads folder works, but the app is then thrown away with the next tidy-up.</p>
+        <p>Apps downloaded outside the App Store get checked before they'll open. If the warning gives you no way past it, control-click the app in Finder, choose <strong>Open</strong> from the menu, and confirm. You'll only need to do that once.</p>
+        <p>Move the app to your Applications folder before you open it. Running it from Downloads works, but it'll disappear with your next tidy-up.</p>
       </div>
     </details>
 
     <details>
       <summary>Does this need an administrator password?</summary>
       <div class="answer">
-        <p>No. Everything the app installs goes inside the user's own Library folder. It is safe to use on a school-managed Mac where administrator rights are not available — though a managed network may block the downloads it needs on first run, which is worth checking with whoever runs it.</p>
+        <p>No. Everything the app installs goes inside your own Library folder.</p>
+        <p>That makes it safe to use on a school-managed Mac where you don't have administrator rights — though a managed network may block the downloads it needs on the first run, which is worth asking about ahead of time.</p>
       </div>
     </details>
 
     <details>
-      <summary>Where do the course files actually live?</summary>
+      <summary>Where do my course files actually live?</summary>
       <div class="answer">
-        <p>In a working folder chosen when the app first runs — an ordinary folder, in an ordinary place, with one folder per course inside it. That folder can be opened in Obsidian, backed up, and copied to another computer like anything else.</p>
-        <p>The working folder must be somewhere inside the home folder. A course kept on an external drive or in a shared folder elsewhere on the disk will appear to be empty when the site is built.</p>
+        <p>In a working folder you choose when the app first runs. An ordinary folder, in an ordinary place, with one folder per course inside it.</p>
+        <p>You can open it in Obsidian, back it up, and copy it to another computer like anything else.</p>
+        <p>One rule: keep it inside your home folder. A course on an external drive, or somewhere else on the disk entirely, will look empty when the site is built.</p>
       </div>
     </details>
 
     <details>
-      <summary>A page is not appearing on the site.</summary>
+      <summary>A page isn't appearing on the site.</summary>
       <div class="answer">
-        <p>Each page carries an instruction saying which classes may see it, and a page that has not been published to a section is left out on purpose. Ask the assistant what students would see in that section, or open the page and check the settings at the top of it.</p>
-        <p>If the page is meant to be visible and still is not, rebuild the preview: the site shows the last build, not the current state of the folder.</p>
+        <p>Every page carries an instruction saying which classes may see it, and a page you haven't published to a section is left out on purpose.</p>
+        <p>Ask the assistant what students would see in that section, or open the page and check the settings at the top of it.</p>
+        <p>If the page should be visible and still isn't, rebuild the preview. The site shows your last build, not the current state of the folder.</p>
       </div>
     </details>
 
     <details>
       <summary>Publishing failed.</summary>
       <div class="answer">
-        <p>Publishing needs a working connection and, the first time, permission to reach the hosting account. The message shown in the section's window says which of those went wrong.</p>
-        <p>If the account details were entered wrongly, they can be cleared and asked for again. Nothing about a failed publish changes what students currently see: the site that is already live stays live.</p>
+        <p>Publishing needs a working connection and, the first time, permission to reach your hosting account. The message in the section's window says which of those went wrong.</p>
+        <p>If you entered the account details incorrectly, you can clear them and be asked again.</p>
+        <p>A failed publish changes nothing for your students. The site that's already live stays live.</p>
       </div>
     </details>
 
     <details>
-      <summary>Can a class site be moved somewhere else later?</summary>
+      <summary>Can I move a class site somewhere else later?</summary>
       <div class="answer">
-        <p>Yes. The built site is a folder of ordinary web pages, so it can be handed to any host — a school's own web space included. The notes it was built from never leave the teacher's computer, so nothing has to be extracted from anywhere.</p>
+        <p>Yes. The built site is a folder of ordinary web pages, so you can hand it to any host — your school's own web space included.</p>
+        <p>And the notes it was built from never left your computer, so there's nothing to extract from anywhere.</p>
       </div>
     </details>
 
@@ -89,31 +96,32 @@ nav_label: Support
 
 <section>
   <h2>Sending a useful report</h2>
-  <p>When something goes wrong, the fastest route to a fix is the report the app makes itself. Choose <strong>Report a Problem…</strong> from the Help menu. The app asks what to include, saves a file, and shows it in Finder so it can be read before it is sent anywhere.</p>
+  <p>When something goes wrong, the quickest route to a fix is the report the app makes itself.</p>
+  <p>Choose <strong>Report a Problem…</strong> from the Help menu. The app asks what to include, saves a file, and shows it to you in Finder so you can read it before it goes anywhere.</p>
   <div class="note">
-    <h3>What it contains</h3>
-    <p>A record of what the app did and when — courses opened, previews built, sites published, and any errors along the way. It is the sequence of events, which is usually enough to identify a fault without asking anyone to reproduce it.</p>
-    <h3>What it never contains</h3>
-    <p>Nothing that was written on a page. No student names, no assessment, no lesson content — the record notes that a page was published, never what the page says. Passwords and account tokens are removed as the record is written, so what is on disk is already safe to hand over.</p>
-    <h3>What is asked before it is made</h3>
-    <p>If sentences have been typed to the assistant, the app asks whether those should be included. They are a teacher's own words, so the answer is theirs to give.</p>
+    <h3>What's in it</h3>
+    <p>A record of what the app did and when — courses opened, previews built, sites published, and any errors along the way. That sequence is usually enough to find a fault without asking you to reproduce it.</p>
+    <h3>What's never in it</h3>
+    <p>Anything you wrote on a page. No student names, no assessment, no lesson content — the record notes that a page was published, never what it says. Passwords and account tokens are stripped as the record is written, so what's on disk is already safe to hand over.</p>
+    <h3>What you're asked first</h3>
+    <p>If you've typed anything to the assistant, the app asks whether to include it. Those are your words, so it's your call.</p>
   </div>
-  <p style="margin-top: 22px;">Attach that file to an email, along with what was expected and what happened instead.</p>
+  <p style="margin-top: 22px;">Attach that file to an email, and say what you expected and what happened instead.</p>
 </section>
 
 <hr class="rule">
 
 <section>
-  <h2>Requirements</h2>
+  <h2>What you need</h2>
   <div class="note">
     <h3>Mac</h3>
-    <p>macOS 15 or later, on Apple silicon or Intel. A few gigabytes of free disk space for the site builder, plus whatever the courses themselves need.</p>
+    <p>macOS 15 or later, Apple silicon or Intel. A few gigabytes of free disk space for the site builder, plus whatever your courses need.</p>
     <h3>Windows</h3>
-    <p>A Windows version is built and being prepared for release. It is not available to download yet.</p>
+    <p>A Windows version is built and being prepared for release. It isn't available to download yet.</p>
     <h3>Internet</h3>
-    <p>Needed on the first run, and whenever a site is published. Writing, building and previewing all work offline.</p>
+    <p>Needed on the first run, and whenever you publish. Writing, building and previewing all work offline.</p>
     <h3>Hosting</h3>
-    <p>A free hosting account, or a folder on a school web server. The app supports both, and switching between them later does not mean rewriting anything.</p>
+    <p>A free hosting account, or a folder on a school web server. The app handles both, and switching later doesn't mean rewriting anything.</p>
   </div>
 </section>
 
@@ -121,7 +129,8 @@ nav_label: Support
 
 <section>
   <h2>Privacy</h2>
-  <p>Course notes stay on the computer they were written on. The app has no accounts, collects no analytics, and sends nothing anywhere on its own. A site becomes public when a section is published, and not before.</p>
-  <p>The assistant runs on the Mac as part of the app. Requests typed to it are not sent to a service and are not used to train anything. It can be left turned off entirely, and the material it needs is only downloaded if it is asked for.</p>
-  <p>Publishing necessarily involves a hosting provider, and the account details for it are kept in the Mac's own keychain rather than in the course folder.</p>
+  <p>Your course notes stay on the computer you wrote them on. The app has no accounts, collects no analytics, and sends nothing anywhere on its own.</p>
+  <p>A site becomes public when you publish a section. Not before.</p>
+  <p>The assistant runs on your Mac as part of the app. What you type to it isn't sent to a service and isn't used to train anything. You can leave it off entirely, and nothing is downloaded for it unless you ask.</p>
+  <p>Publishing does involve a hosting provider, of course. The account details for it are kept in your Mac's keychain rather than in your course folder.</p>
 </section>
