@@ -32,6 +32,9 @@
                 <MenuFlyoutItem x:Name="ReloadCoursesItem" Text="Reload Courses" Click="ReloadCourses_Click">
                     <MenuFlyoutItem.KeyboardAcceleratorTextOverride>Ctrl+Shift+R</MenuFlyoutItem.KeyboardAcceleratorTextOverride>
                 </MenuFlyoutItem>
+            </MenuBarItem>
+            <MenuBarItem Title="Help">
+                <MenuFlyoutItem Text="Report a Problem…" Click="ReportProblem_Click" />
                 <MenuFlyoutSeparator />
                 <MenuFlyoutItem Text="About Plantoir" Click="About_Click" />
             </MenuBarItem>

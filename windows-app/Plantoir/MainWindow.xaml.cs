@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Plantoir.Core.Models;
+using Plantoir.Core.Scripting;
 using Plantoir.Services;
 using Plantoir.ViewModels;
 using Plantoir.Views;
@@ -419,6 +420,95 @@ public sealed partial class MainWindow : Window
     private void RestoreFromArchive_Click(object sender, RoutedEventArgs e)
     {
         if (Workspace.SelectedArchivedItem is { } item) Sidebar.ConfirmRestore(item);
+    }
+
+    private async void ReportProblem_Click(object sender, RoutedEventArgs e)
+    {
+        var store = ProblemReportStore.Standard;
+        if (!store.HasAnythingToReport)
+        {
+            var emptyDialog = new ContentDialog
+            {
+                Title = "Nothing to report yet",
+                Content = "Plantoir has not run any tasks or recorded any actions on this computer yet, so there is nothing to gather.",
+                CloseButtonText = "OK",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = Content.XamlRoot,
+            };
+            await emptyDialog.ShowAsync();
+            return;
+        }
+
+        var contentPanel = new StackPanel { Spacing = 12 };
+        contentPanel.Children.Add(new TextBlock
+        {
+            Text = "This gathers what Plantoir did on the last few things you asked it to do, so somebody can see what went wrong.\n\n" +
+                   "It includes the messages Plantoir showed you while it worked, your course codes and section numbers, " +
+                   "the names of your pages, and what kind of Windows this is. It leaves out what you have written on your pages, " +
+                   "your sign-in details for Netlify or Cloudflare, and your name.\n\n" +
+                   "Save the report, then send it — with the file attached — to:",
+            TextWrapping = TextWrapping.Wrap,
+        });
+
+        var emailButton = new HyperlinkButton
+        {
+            Content = ProblemReportBuilder.SupportEmail,
+            NavigateUri = ProblemReportBuilder.SupportMailUri,
+            Padding = new Thickness(0),
+        };
+        contentPanel.Children.Add(emailButton);
+
+        CheckBox? promptCheckbox = null;
+        if (store.HasAssistantPrompts)
+        {
+            promptCheckbox = new CheckBox
+            {
+                Content = ProblemReportBuilder.IncludePromptsLabel,
+                IsChecked = false,
+            };
+            contentPanel.Children.Add(promptCheckbox);
+        }
+
+        var dialog = new ContentDialog
+        {
+            Title = "Send a report about a problem",
+            Content = contentPanel,
+            PrimaryButtonText = "Save Report…",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = Content.XamlRoot,
+        };
+
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+
+        bool includePrompts = promptCheckbox?.IsChecked == true;
+
+        var picker = new Windows.Storage.Pickers.FileSavePicker();
+        WinRT.Interop.InitializeWithWindow.Initialize(picker,
+            WinRT.Interop.WindowNative.GetWindowHandle(this));
+        picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Desktop;
+        picker.FileTypeChoices.Add("Zip Archive", new List<string> { ".zip" });
+        picker.SuggestedFileName = ProblemReportBuilder.SuggestedFileName(DateTime.Now).Replace(".zip", "");
+
+        var file = await picker.PickSaveFileAsync();
+        if (file is null) return;
+
+        var builder = new ProblemReportBuilder(store);
+        if (builder.BuildZip(file.Path, includePrompts))
+        {
+            FolderActions.ShowInFileExplorer(file.Path);
+        }
+        else
+        {
+            var errDialog = new ContentDialog
+            {
+                Title = "Could not save report",
+                Content = "Plantoir could not gather the report files to save.",
+                CloseButtonText = "OK",
+                XamlRoot = Content.XamlRoot,
+            };
+            await errDialog.ShowAsync();
+        }
     }
 
     private async void About_Click(object sender, RoutedEventArgs e)
