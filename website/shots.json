@@ -1,5 +1,5 @@
 {
-  "note": "One entry per screenshot on plantoir.app. `build.py` reads alt and caption to write the <picture> element; `website/shots/capture.py` reads `capture` to know how each is produced. Every shot is taken twice, once with the Mac in light appearance and once in dark, and saved as site/img/<id>-light.png and -dark.png.",
+  "note": "One entry per screenshot on plantoir.app. `build.py` reads alt and caption to write the <picture> element; `website/shots/capture.py` reads `capture` to know how each is produced. Every shot is taken twice, once with the Mac in light appearance and once in dark, and saved as site/img/<id>-light.png and -dark.png. Paths are lowercase because Quartz serves lowercase URLs and 301s anything else \u2014 a capitalised address would be photographed mid-redirect.",
   "shots": [
     {
       "id": "courses",
@@ -70,7 +70,7 @@
       "capture": {
         "kind": "browser",
         "course": "MCV4U",
-        "path": "/"
+        "path": "/style/what-this-site-can-do#mathematics-typeset-properly"
       },
       "alt": "A Grade 12 Calculus and Vectors page showing typeset mathematics.",
       "caption": "Mathematics is typeset, not photographed."
@@ -80,7 +80,7 @@
       "capture": {
         "kind": "browser",
         "course": "SCH3U",
-        "path": "/"
+        "path": "/style/what-this-site-can-do#diagrams"
       },
       "alt": "A Grade 11 Chemistry page showing a diagram and a table of data.",
       "caption": "Diagrams and tables come straight from the notes."

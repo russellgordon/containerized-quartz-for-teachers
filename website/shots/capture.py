@@ -400,19 +400,44 @@ def capture_app(workspace: Path) -> None:
             print(f"   saved {len(saved)} image(s): {', '.join(saved)}")
 
 
+def site_address(code: str) -> str:
+    for course in DEMO_COURSES:
+        if course["code"] == code:
+            return f"https://{course['site']}.netlify.app"
+    raise SystemExit(f"No demo site is configured for {code}.")
+
+
+def browser_shots() -> list[dict]:
+    """The shots taken in a browser, from the manifest the pages read.
+
+    Each names the course and the page to open. Two of them open the course's
+    own "What This Site Can Do" page rather than its front page, because that
+    is where the typeset mathematics and the chemistry notation are — a course
+    home page shows the shape of a site but not what it can carry.
+    """
+    manifest = json.loads((WEBSITE / "shots.json").read_text(encoding="utf-8"))
+    wanted: list[dict] = []
+    for shot in manifest["shots"]:
+        if shot["capture"].get("kind") == "browser":
+            wanted.append(shot)
+    return wanted
+
+
 def capture_sites() -> None:
     announce("Photographing the class websites")
     IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+    shots = browser_shots()
     for dark in (False, True):
         suffix = "dark" if dark else "light"
         print(f"   {suffix} appearance")
         with Appearance(dark=dark):
             time.sleep(3)
             with SafariWindow(1280, 860) as window:
-                for course in DEMO_COURSES:
-                    url = f"https://{course['site']}.netlify.app/"
+                for shot in shots:
+                    capture = shot["capture"]
+                    url = site_address(capture["course"]) + capture.get("path", "/")
                     window.load(url, settle_seconds=8.0)
-                    destination = IMAGE_DIR / f"site-{course['code'].lower()}-{suffix}.png"
+                    destination = IMAGE_DIR / f"{shot['id']}-{suffix}.png"
                     window.capture(destination)
                     prepare(destination, WIDEST_WINDOW_PIXELS)
                     print(f"   saved {destination.name}")
@@ -454,7 +479,7 @@ def capture_phone(dark: bool) -> None:
          "--dataNetwork", "wifi", "--wifiBars", "3", "--cellularBars", "4"],
         capture_output=True)
 
-    url = f"https://{DEMO_COURSES[0]['site']}.netlify.app/"
+    url = site_address("ENG2D") + "/"
     run(["xcrun", "simctl", "openurl", udid, url], capture_output=True)
     time.sleep(12)
     dismiss_safari_onboarding()
