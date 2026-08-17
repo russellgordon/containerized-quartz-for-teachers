@@ -79,7 +79,13 @@
   <p>It isn't hard. It's just <em>easy to get backwards at 7:40 in the morning</em> — and backwards means a class sees a page you were holding back, or misses one you weren't.</p>
   <p>So ask for it in words instead.</p>
   <figure class="shot">
-    <div class="shot-missing">Screenshot pending: assistant</div>
+    <picture>
+      <source srcset="/img/assistant-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="/img/assistant-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="/img/assistant-light.webp" type="image/webp">
+      <img src="/img/assistant-light.png" alt="The assistant window: a request typed in plain English, and the assistant describing what it is about to change with a button to approve it."
+           width="850" height="427" loading="lazy" decoding="async">
+    </picture>
     <figcaption>It says what it will do, then waits.</figcaption>
 </figure>
   <p>An assistant runs on your Mac, reads what you typed, and works out which pages you meant.</p>

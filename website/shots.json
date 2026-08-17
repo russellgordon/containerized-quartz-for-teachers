@@ -20,15 +20,6 @@
       "caption": "Adding a course takes one panel and about a minute."
     },
     {
-      "id": "section",
-      "capture": {
-        "kind": "app-window",
-        "test": "testSectionSettings"
-      },
-      "alt": "A class section's settings, showing the colour scheme, typography and publishing choices.",
-      "caption": "Each section can look and read differently."
-    },
-    {
       "id": "progress",
       "capture": {
         "kind": "app-window",
@@ -82,8 +73,8 @@
         "course": "SCH3U",
         "path": "/style/what-this-site-can-do#diagrams"
       },
-      "alt": "A Grade 11 Chemistry page showing a diagram and a table of data.",
-      "caption": "Diagrams and tables come straight from the notes."
+      "alt": "A Grade 11 Chemistry class website in its own colours and typeface, showing a diagram and a table drawn from the notes.",
+      "caption": "A different subject, a different look \u2014 chosen in the app, not in code."
     },
     {
       "id": "site-phone",

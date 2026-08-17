@@ -155,7 +155,11 @@ class MarketingScreenshotCase: XCTestCase {
             if target.exists && target.isHittable && window.frame.contains(target.frame) {
                 return true
             }
-            window.scroll(byDeltaX: 0, deltaY: -200)
+            // swipeUp rather than scroll(byDeltaX:deltaY:): the delta form
+            // is accepted and does nothing on these SwiftUI scroll views, so
+            // the capture came back showing the top of the form as though
+            // nothing had been asked for.
+            window.swipeUp()
             Thread.sleep(forTimeInterval: 0.35)
         }
         return target.exists && target.isHittable
@@ -211,16 +215,6 @@ final class MarketingScreenshots: MarketingScreenshotCase {
         save(window, as: "new-course")
 
         application.buttons["wizardCloseButton"].click()
-    }
-
-    /// The choices that make one section look unlike another: its colour
-    /// scheme and its typefaces, both shown as live samples.
-    func test3Section() throws {
-        let application: XCUIApplication = launchApp(workspacePath: try demoWorkspacePath())
-        let window: XCUIElement = openCourse("SCH3U", in: application)
-        scrollSettings(in: application, to: "codeFontPreview")
-        settle(2.0)
-        save(window, as: "section")
     }
 
     /// Progress, described in words while a site is built.
@@ -297,28 +291,24 @@ final class MarketingScreenshots: MarketingScreenshotCase {
 
         let assistantWindow: XCUIElement = assistantWindowIn(application)
 
-        // The request is CHOSEN from the shelf rather than typed.
+        // Typed, now that waiting for the box to be ENABLED has made that
+        // dependable. The first attempts failed with "neither element nor any
+        // descendant has keyboard focus" — not because focus is hard, but
+        // because the box was still disabled while the assistant loaded, and
+        // a disabled field cannot take focus.
         //
-        // Typing it needed the box to hold keyboard focus, and that turned out
-        // to be a coin toss: the same test passed in one appearance and failed
-        // in the other with "neither element nor any descendant has keyboard
-        // focus", from a window that plainly existed and was plainly on
-        // screen. The shelf puts the same sentence in the box with a click,
-        // and a click needs no focus at all. It also photographs better —
-        // the shelf open beside the answer shows where the phrasings come
-        // from.
-        let phrasing: String = "Unpublish Unit 2, Day 3"
-        let suggestion: XCUIElement = application.buttons["assistSuggestion-\(phrasing)"]
-        if !suggestion.exists || !suggestion.isHittable {
-            let group: XCUIElement = application.staticTexts["Taking it back"]
-            XCTAssertTrue(group.waitForExistence(timeout: 60), "The shelf should offer its groups")
-            group.click()
-            settle(1.0)
-        }
-        XCTAssertTrue(suggestion.waitForExistence(timeout: 30), "The shelf should offer \(phrasing)")
-        suggestion.click()
+        // The shelf of ready-made phrasings was tried as a way round it and
+        // rejected: its groups are DisclosureTriangles that do not expand
+        // from a synthesized click, so the suggestion inside one is never
+        // reachable. Typing needs no disclosure to open.
+        input.click()
         settle(1.0)
-        application.buttons["assistSendButton"].click()
+        input.typeText("Unpublish Unit 2, Day 3")
+        settle(0.8)
+
+        let send: XCUIElement = application.buttons["assistSendButton"]
+        XCTAssertTrue(send.isEnabled, "Send should light up once there is something to send")
+        send.click()
 
         // The reply is a plan with a button to approve it; that is the moment
         // worth photographing, because it is the promise the product makes.

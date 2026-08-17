@@ -395,8 +395,33 @@ def publish_demo_sites(workspace: Path) -> None:
 
 # ---------- Capturing ----------
 
-def capture_app(workspace: Path) -> None:
+def clear_built_site(workspace: Path, code: str, section: int) -> None:
+    """Throw away one section's built pages, so previewing it really builds.
+
+    The progress capture needs a build that takes long enough to photograph.
+    Quartz serves the PREVIOUS build the moment the container is up, so a
+    section that has been previewed before comes back almost at once — the
+    first two attempts at this photographed the finished site and filed it as
+    progress. Deleting the output is what makes the picture honest.
+    """
+    built = workspace / "courses" / code / ".merged_output" / f"section{section}"
+    if built.exists():
+        shutil.rmtree(built)
+        print(f"   Cleared the built pages for {code} section {section}, so its preview really builds.")
+
+
+def capture_app(workspace: Path, only: str | None = None) -> None:
+    """Photograph the app, once per appearance.
+
+    ``only`` names a single test to run — `test6Assistant`, say — so a shot
+    that needs another attempt does not cost a re-run of the five that were
+    already right.
+    """
     announce("Photographing the app")
+    clear_built_site(workspace, "ENG2D", 2)
+    target = "QuartzTeachersUITests/MarketingScreenshots"
+    if only:
+        target = f"{target}/{only}"
     with RememberedWindowFrames() as frames:
         frames.stage_assistant_frame()
         for dark in (False, True):
@@ -405,7 +430,7 @@ def capture_app(workspace: Path) -> None:
             with Appearance(dark=dark):
                 time.sleep(3)
                 bundle = run_ui_test(
-                    "QuartzTeachersUITests/MarketingScreenshots",
+                    target,
                     workspace,
                     f"app-{suffix}",
                     allow_failure=True,
@@ -555,6 +580,8 @@ def main() -> int:
     parser.add_argument("--provision", action="store_true", help="only create the demo courses")
     parser.add_argument("--publish", action="store_true", help="only build and publish the demo sites")
     parser.add_argument("--app", action="store_true", help="only photograph the app")
+    parser.add_argument("--only", default=None,
+                        help="with --app, run one capture (e.g. test6Assistant) instead of all of them")
     parser.add_argument("--sites", action="store_true", help="only photograph the class websites")
     arguments = parser.parse_args()
 
@@ -572,7 +599,7 @@ def main() -> int:
         if everything or arguments.publish:
             publish_demo_sites(workspace)
         if everything or arguments.app:
-            capture_app(workspace)
+            capture_app(workspace, only=arguments.only)
         if everything or arguments.sites:
             capture_sites()
         if everything or arguments.app or arguments.sites:
