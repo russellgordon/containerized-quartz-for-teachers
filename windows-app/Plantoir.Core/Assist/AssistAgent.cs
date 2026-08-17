@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Plantoir.Core.Scripting;
 
 namespace Plantoir.Core.Assist;
 
@@ -399,6 +400,7 @@ public sealed class AssistAgent
     private JsonObject? _awaiting;      // a write the teacher has not agreed to yet
 
     public bool IsAwaitingApproval => _awaiting is not null || _offeringPreview;
+    public string? PendingTool => _awaiting?["function"]?["name"]?.GetValue<string>();
 
     /// <summary>
     /// Say something to the assistant and get back everything that happened.
@@ -420,6 +422,8 @@ public sealed class AssistAgent
     /// </summary>
     public async Task<List<Line>> Say(string text, CancellationToken cancellation)
     {
+        ActivityTrail.NotePrompt(text, _courseCode, _section);
+
         if (PreviewAskedForPlainly(text) is { } handled) return handled;
         if (await CardCommand(text, cancellation) is { } commanded) return commanded;
 
@@ -451,11 +455,32 @@ public sealed class AssistAgent
     /// </summary>
     private async Task<List<Line>?> CardCommand(string text, CancellationToken cancellation)
     {
+        if (AssistCardCommand.Matching(text) is { } match)
+        {
+            ActivityTrail.Note(
+                ActivityTrail.Event.AssistantMatchedAFixedPhrase,
+                "matched in code, not sent to the model — ran " + match.ToolName,
+                _courseCode,
+                _section);
+
+            if (match.ToolName.Equals("deploy_section", StringComparison.OrdinalIgnoreCase))
+            {
+                return AskFirst(text, "deploy_section", match.ToJsonObject(_courseCode, _section));
+            }
+            if (match.ToolName.Equals("rebuild_preview", StringComparison.OrdinalIgnoreCase) && ShowPreviewInApp is not null)
+            {
+                ShowPreviewInApp.Invoke();
+                const string said = "The preview is opening in Plantoir's main window — the build shows its progress there.";
+                _messages.Add(new JsonObject { ["role"] = "user", ["content"] = text });
+                _messages.Add(new JsonObject { ["role"] = "assistant", ["content"] = said });
+                return new List<Line> { new("assistant", said) };
+            }
+
+            return await RunCommand(text, match.ToolName, match.ToJsonObject(_courseCode, _section), cancellation);
+        }
+
         string request = text.Trim().TrimEnd('.', '!');
 
-        // Publish/unpublish a NAMED page. Anything dated — "tomorrow's
-        // class" — falls through to the model, which handles dates well now
-        // that it is told the date.
         var withLinks = System.Text.RegularExpressions.Regex.Match(request,
             @"^(?<verb>publish|unpublish)\s+(?<title>.+?),?\s+and everything it links to$",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
@@ -464,12 +489,6 @@ public sealed class AssistAgent
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         var planned = System.Text.RegularExpressions.Regex.Match(request,
             @"^what would publishing\s+(?<title>.+?)\s+change\??$",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        var undo = System.Text.RegularExpressions.Regex.Match(request,
-            @"^(please\s+)?undo(\s+(that|it|the last change))?$",
-            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-        var deployNow = System.Text.RegularExpressions.Regex.Match(request,
-            @"^(please\s+)?deploy(\s+(this|the))?\s+(section|site)(\s+now)?$|^deploy now$",
             System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         var scheduled = System.Text.RegularExpressions.Regex.Match(request,
             @"^deploy tomorrow'?s class at\s+(?<hour>\d{1,2})(:(?<minute>\d{2}))?\s*(?<half>am|pm)$",
@@ -497,14 +516,6 @@ public sealed class AssistAgent
             return await RunCommand(text, "plan_publish_pages",
                                     PageArguments(planned.Groups["title"].Value, includeLinked: true),
                                     cancellation);
-        if (undo.Success)
-            return await RunCommand(text, "undo_last_change", new JsonObject(), cancellation);
-        if (deployNow.Success)
-            return AskFirst(text, "deploy_section", new JsonObject
-            {
-                ["course"] = _courseCode,
-                ["section"] = _section,
-            });
         if (scheduled.Success)
         {
             int hour = int.Parse(scheduled.Groups["hour"].Value);
@@ -580,10 +591,17 @@ public sealed class AssistAgent
     private List<Line> AskFirst(string userText, string tool, JsonObject arguments)
     {
         _awaiting = Synthesise(userText, tool, arguments);
+        if (tool.Equals("deploy_section", StringComparison.OrdinalIgnoreCase))
+        {
+            return new List<Line>
+            {
+                new("assistant", AssistWording.DeployApproval),
+                new("assistant", AssistWording.DeployQuestion, NeedsApproval: true, Pending: tool),
+            };
+        }
         return new List<Line>
         {
-            new("assistant", $"I’d like to run **{tool.Replace('_', ' ')}**. Shall I go ahead?",
-                NeedsApproval: true, Pending: tool),
+            new("assistant", AssistWording.PlanQuestion, NeedsApproval: true, Pending: tool),
         };
     }
 
@@ -659,7 +677,7 @@ public sealed class AssistAgent
         return lines.Concat(await Run(cancellation)).ToList();
     }
 
-    /// <summary>The teacher said no. Tell the model, so it does not simply try again.</summary>
+    /// <summary>The teacher said no. Cancel the waiting action.</summary>
     public async Task<List<Line>> Decline(CancellationToken cancellation)
     {
         if (_offeringPreview)
@@ -671,14 +689,25 @@ public sealed class AssistAgent
         }
 
         if (_awaiting is not { } call) return new List<Line>();
+        string toolName = call["function"]?["name"]?.GetValue<string>() ?? "";
         _awaiting = null;
+
+        if (toolName.Equals("deploy_section", StringComparison.OrdinalIgnoreCase))
+        {
+            _messages.Add(new JsonObject
+            {
+                ["role"] = "assistant",
+                ["content"] = AssistWording.DeployWasCancelled,
+            });
+            return new List<Line> { new("assistant", AssistWording.DeployWasCancelled) };
+        }
+
         _messages.Add(new JsonObject
         {
-            ["role"] = "tool",
-            ["tool_call_id"] = call["id"]?.DeepClone(),
-            ["content"] = "The teacher said no. Do not run this. Ask what they would like instead.",
+            ["role"] = "assistant",
+            ["content"] = AssistWording.PlanWasCancelled,
         });
-        return await Run(cancellation);
+        return new List<Line> { new("assistant", AssistWording.PlanWasCancelled) };
     }
 
     private async Task<List<Line>> Run(CancellationToken cancellation)
@@ -794,6 +823,10 @@ public sealed class AssistAgent
         }
         if (name.Equals("deploy_section", StringComparison.OrdinalIgnoreCase) && StartDeployInApp is not null)
         {
+            if (PreviewIsShowing?.Invoke() == true)
+            {
+                StopPreviewInApp?.Invoke();
+            }
             StartDeployInApp.Invoke();
             _handedToApp = true;
             return Answer(call, "The section is deploying from Plantoir's main window — its progress is shown there.");

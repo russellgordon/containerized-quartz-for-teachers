@@ -375,8 +375,9 @@ public sealed partial class AssistWindow : Window
     private async void Approve_Click(object sender, RoutedEventArgs e)
     {
         if (_agent is null) return;
+        string word = _agent.PendingTool == "deploy_section" ? AssistWording.DeployAccepted : AssistWording.PlanAccepted;
         HideApproval();
-        Say("You", "Go ahead.");
+        Say("You", word);
         await Turn(() => _agent.Approve(_closing.Token));
     }
 
@@ -384,7 +385,7 @@ public sealed partial class AssistWindow : Window
     {
         if (_agent is null) return;
         HideApproval();
-        Say("You", "No.");
+        Say("You", AssistWording.Cancelled);
         await Turn(() => _agent.Decline(_closing.Token));
     }
 

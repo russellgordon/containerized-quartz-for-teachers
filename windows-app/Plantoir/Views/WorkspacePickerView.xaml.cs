@@ -32,10 +32,7 @@ public sealed partial class WorkspacePickerView : UserControl
 
         if (offerInitialize && workspace.WorkspacePath is { } path)
         {
-            var parts = new System.Collections.Generic.List<string>();
-            for (var current = new DirectoryInfo(path); current is not null; current = current.Parent)
-                parts.Insert(0, current.FullName);
-            ChosenCrumbs.ItemsSource = parts.Select(p => new MainWindow.FolderCrumb(p)).ToList();
+            ChosenCrumbs.ItemsSource = FolderCrumb.ForPath(path);
         }
 
         ProblemText.Text = workspace.WorkspaceProblem ?? "";

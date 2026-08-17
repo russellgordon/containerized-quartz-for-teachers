@@ -1,6 +1,7 @@
 using System.Text.Json.Nodes;
 using Plantoir.Core;
 using Plantoir.Core.Assist;
+using Plantoir.Core.Catalogs;
 using Plantoir.Core.Models;
 using Plantoir.Core.Scripting;
 
@@ -84,6 +85,52 @@ public class ContractTests
     }
 
     [Fact]
+    public void CourseManagement_CourseCode_Normalized_And_Problems_MatchesContract()
+    {
+        var doc = ContractLoader.LoadJson("course-management.json");
+        var normalizedCases = doc["courseCode"]!["normalized"]!.AsArray();
+
+        foreach (var c in normalizedCases)
+        {
+            string typed = c!["typed"]!.ToString();
+            string expected = c["expect"]!.ToString();
+            Assert.Equal(expected, CourseCodeValidator.Normalize(typed));
+        }
+
+        var problemCases = doc["courseCode"]!["problems"]!.AsArray();
+        foreach (var c in problemCases)
+        {
+            string typed = c!["typed"]!.ToString();
+            var existing = c["existing"]!.AsArray().Select(e => e!.ToString()).ToList();
+            string? currentCode = c["currentCode"]?.ToString();
+            string? expectProblem = c["expectProblem"]?.ToString();
+            string? expectShort = c["expectShort"]?.ToString();
+
+            var (problem, shortProblem) = CourseCodeValidator.Validate(typed, existing, currentCode);
+            Assert.Equal(expectProblem, problem);
+            Assert.Equal(expectShort, shortProblem);
+        }
+    }
+
+    [Fact]
+    public void CourseManagement_DefaultCourseName_MatchesContract()
+    {
+        string supportFile = ContractLoader.GetSupportPath("ontario_secondary_courses.json");
+        var catalog = CourseNameCatalog.Load(supportFile);
+
+        var doc = ContractLoader.LoadJson("course-management.json");
+        var cases = doc["defaultCourseName"]!["cases"]!.AsArray();
+
+        foreach (var c in cases)
+        {
+            string code = c!["code"]!.ToString();
+            string? expect = c["expect"]?.ToString();
+            string? actual = catalog.DefaultName(code);
+            Assert.Equal(expect, actual);
+        }
+    }
+
+    [Fact]
     public void SharedRules_ActivityTrailEvents_Exist()
     {
         var doc = ContractLoader.LoadJson("shared-rules.json");
@@ -106,4 +153,34 @@ public class ContractTests
         int wsOffset = previewPorts["websocketOffset"]!.GetValue<int>();
         Assert.Equal(1000, wsOffset);
     }
+
+    [Fact]
+    public void SharedRules_WorkingFolderPathBar_MatchesContract()
+    {
+        var doc = ContractLoader.LoadJson("shared-rules.json");
+        var bar = doc["workingFolderPathBar"]!;
+        var actions = bar["actions"]!.AsArray();
+
+        var revealAction = actions.FirstOrDefault(a => a?["action"]?.ToString() == "reveal");
+        Assert.NotNull(revealAction);
+        Assert.Equal("Show in File Explorer", revealAction["windowsLabel"]?.ToString());
+
+        var openAction = actions.FirstOrDefault(a => a?["action"]?.ToString() == "open");
+        Assert.NotNull(openAction);
+        Assert.Equal("Open Folder", openAction["windowsLabel"]?.ToString());
+
+        // Ancestor paths on Windows
+        string path = @"C:\Users\teacher\Desktop\Courses";
+        var crumbs = FolderCrumb.AncestorPaths(path);
+        var expected = new[]
+        {
+            @"C:\",
+            @"C:\Users",
+            @"C:\Users\teacher",
+            @"C:\Users\teacher\Desktop",
+            @"C:\Users\teacher\Desktop\Courses",
+        };
+        Assert.Equal(expected, crumbs);
+    }
 }
+

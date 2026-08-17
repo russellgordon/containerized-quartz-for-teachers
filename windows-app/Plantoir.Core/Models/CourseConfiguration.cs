@@ -106,6 +106,8 @@ public sealed class CourseConfiguration
 
     public string CourseCode => StringValue("course_code");
 
+    public void SetCourseCode(string code) => _values["course_code"] = code;
+
     public string CourseName
     {
         get => StringValue("course_name");

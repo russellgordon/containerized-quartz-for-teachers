@@ -411,6 +411,9 @@ public sealed partial class SidebarPane : UserControl
         var menu = new MenuFlyout();
         menu.Items.Add(ObsidianItem(course.DirectoryPath, course.DirectoryPath));
         menu.Items.Add(new MenuFlyoutSeparator());
+        var renameItem = MenuItem("Rename Course", Glyphs.Edit, () => _ = OpenRenameCourseDialog(course));
+        menu.Items.Add(renameItem);
+        menu.Items.Add(new MenuFlyoutSeparator());
         var addItem = MenuItem("Add Section…", AddSectionGlyph, () => _ = OpenAddSectionDialog(course));
         var busyNote = new MenuFlyoutItem { IsEnabled = false, Visibility = Visibility.Collapsed };
         menu.Items.Add(addItem);
@@ -429,9 +432,8 @@ public sealed partial class SidebarPane : UserControl
         {
             string? reason = Workspace.WorkspacePath is { } folder
                 ? CourseActivity.BusyReason(folder, course.Code) : null;
-            // Add Section rewrites the course's folders and files, so it waits
-            // for everything: a preview reading them, a deploy copying them, an
-            // assistant editing them.
+            // Renaming and Add Section both require the course to be quiet.
+            renameItem.IsEnabled = reason is null;
             addItem.IsEnabled = reason is null;
             busyNote.Text = reason ?? "";
             busyNote.Visibility = reason is null ? Visibility.Collapsed : Visibility.Visible;
@@ -1040,6 +1042,127 @@ public sealed partial class SidebarPane : UserControl
             Workspace.Reload();
             _window.ApplyState();
             Workspace.Selection = new SidebarSelection.SectionItem(course.Code, number);
+        }
+    }
+
+    public async Task OpenRenameCourseDialog(Course course)
+    {
+        if (Workspace.WorkspacePath is not { } folder) return;
+
+        string? busy = CourseActivity.BusyReason(folder, course.Code);
+        if (busy is not null)
+        {
+            await ShowError("Course is busy", $"{course.Code} is previewing or deploying right now. Stop that first, then rename.");
+            return;
+        }
+
+        var codeBox = new TextBox
+        {
+            Text = course.Code,
+            PlaceholderText = "e.g. ICS3U",
+            MaxWidth = 300,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+        };
+        codeBox.SelectAll();
+
+        var warning = new TextBlock
+        {
+            Foreground = (Brush)Application.Current.Resources["SystemFillColorCautionBrush"],
+            TextWrapping = TextWrapping.Wrap,
+            FontSize = 12,
+            Visibility = Visibility.Collapsed,
+        };
+
+        var content = new StackPanel
+        {
+            Spacing = 8,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = $"Choose a new course code for {course.Code}. Letters, numbers, and single spaces up to 12 characters are allowed.",
+                    TextWrapping = TextWrapping.Wrap,
+                },
+                codeBox,
+                warning,
+            },
+        };
+
+        var dialog = new ContentDialog
+        {
+            Title = $"Rename {course.Code}",
+            Content = content,
+            PrimaryButtonText = "Rename",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = XamlRoot,
+        };
+
+        void Validate()
+        {
+            string typed = codeBox.Text;
+            var (problem, _) = CourseCodeValidator.Validate(typed, Workspace.Courses.Select(c => c.Code), course.Code);
+            warning.Text = problem ?? "";
+            warning.Visibility = problem is null ? Visibility.Collapsed : Visibility.Visible;
+            dialog.IsPrimaryButtonEnabled = problem is null && CourseCodeValidator.Normalize(typed).Length > 0;
+        }
+
+        codeBox.TextChanged += (_, _) => Validate();
+        Validate();
+
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+
+        string requestedCode = codeBox.Text.Trim();
+        string newNormalized = CourseCodeValidator.Normalize(requestedCode);
+        if (string.IsNullOrEmpty(newNormalized) || newNormalized == course.Code) return;
+
+        if (FolderActions.ObsidianIsRunning)
+        {
+            var obsidianDialog = new ContentDialog
+            {
+                Title = $"{course.Code} is open in Obsidian",
+                Content = $"Renaming moves the course folder, so Obsidian needs to close and reopen with the new course code {newNormalized}.",
+                PrimaryButtonText = "Close Obsidian and Rename",
+                CloseButtonText = "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = XamlRoot,
+            };
+            if (await obsidianDialog.ShowAsync() != ContentDialogResult.Primary) return;
+
+            await FolderActions.QuitObsidianAndWait();
+        }
+
+        try
+        {
+            string coursesDir = Path.Combine(folder, "courses");
+            var outcome = CourseRenamer.Rename(course, requestedCode, coursesDir, Workspace.Courses.Select(c => c.Code));
+
+            if (FolderActions.ObsidianIsInstalled)
+            {
+                string newVaultPath = Path.Combine(coursesDir, outcome.NewCode);
+                FolderActions.RegisterVault(newVaultPath);
+            }
+
+            Workspace.Reload();
+            _window.ApplyState();
+            Workspace.Selection = new SidebarSelection.CourseItem(outcome.NewCode);
+            Refresh();
+
+            if (CourseRenamer.NoticeAfterRenaming(outcome) is { } notice)
+            {
+                var noticeDialog = new ContentDialog
+                {
+                    Title = notice.Title,
+                    Content = notice.Message,
+                    CloseButtonText = "OK",
+                    XamlRoot = XamlRoot,
+                };
+                _ = noticeDialog.ShowAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            await ShowError("Could not rename course", ex.Message);
         }
     }
 }

@@ -133,18 +133,27 @@ public class AssistAgentTests
     [Fact]
     public void PublishingTomorrowsClassCarriesTheDateTheModelWasGiven()
     {
-        // "Publish tomorrow's class" only works because the dateline rides
-        // on the user turn — without it, every trial fabricated 2023-09-15.
+        // "Publish tomorrow's class, but not the linked pages" only works because
+        // the dateline rides on the user turn — without it, every trial fabricated 2023-09-15.
         var rig = new Rig();
         rig.Model.ThenCalls("publish_class_on",
             """{"course": "VVH2O", "section": 1, "date": "2026-08-15"}""");
 
-        rig.Say("Publish tomorrow's class");
+        rig.Say("Publish tomorrow's class, but not the linked pages");
 
         string userTurn = rig.Model.Asked[0][^1]!["content"]!.GetValue<string>();
-        Assert.StartsWith("Publish tomorrow's class (Today is ", userTurn);
+        Assert.StartsWith("Publish tomorrow's class, but not the linked pages (Today is ", userTurn);
         Assert.Contains(DateTime.Now.ToString("yyyy-MM-dd"), userTurn);
         Assert.Equal("publish_class_on", Assert.Single(rig.Tools.Calls).Name);
+    }
+
+    [Fact]
+    public void PublishTomorrowCarriesItsArgument()
+    {
+        var command = AssistCardCommand.Matching("Publish tomorrow's class");
+        Assert.NotNull(command);
+        Assert.Equal("publish_class_on", command.ToolName);
+        Assert.Equal("tomorrow", command.Arguments["when"]);
     }
 
     // ---- Taking something back down -------------------------------------
@@ -223,11 +232,11 @@ public class AssistAgentTests
     public void AskingWhatStudentsSeeIsAFreeLookup()
     {
         var rig = new Rig();
-        rig.Model.ThenCalls("check_section", """{"course": "VVH2O", "section": 1}""");
-        rig.Model.ThenSays("Students can see 34 pages; nothing is broken.");
+        rig.Tools.Result = "Students can see 34 pages; nothing is broken.";
 
         var lines = rig.Say("What would students see in this section right now?");
 
+        Assert.Empty(rig.Model.Asked);
         Assert.Equal("check_section", Assert.Single(rig.Tools.Calls).Name);
         Assert.False(rig.Agent.IsAwaitingApproval);
         Assert.Contains(lines, l => l.Text.Contains("34 pages"));
@@ -316,6 +325,8 @@ public class AssistAgentTests
         Assert.Empty(rig.AppActions);
         Assert.Empty(rig.Tools.Calls);
         Assert.True(lines[^1].NeedsApproval);
+        Assert.Equal(AssistWording.DeployApproval, lines[^2].Text);
+        Assert.Equal(AssistWording.DeployQuestion, lines[^1].Text);
 
         var answer = rig.Approve();
         Assert.Equal(new[] { "deploy" }, rig.AppActions);
@@ -327,13 +338,13 @@ public class AssistAgentTests
     public void DecliningADeployRunsNothing()
     {
         var rig = new Rig();
-        rig.Model.ThenSays("All right — nothing deployed.");   // the model carries on after the no
 
         rig.Say("Deploy this section now");
-        rig.Decline();
+        var answer = rig.Decline();
 
         Assert.Empty(rig.AppActions);
         Assert.Empty(rig.Tools.Calls);
+        Assert.Equal(AssistWording.DeployWasCancelled, Assert.Single(answer).Text);
     }
 
     [Fact]
@@ -377,7 +388,7 @@ public class AssistAgentTests
     }
 
     [Theory]
-    [InlineData("Publish tomorrow's class")]
+    [InlineData("Publish tomorrow's class, but not the linked pages")]
     [InlineData("Publish the Safety Contract page")]
     [InlineData("I published Unit 4, Day 1 by mistake — unpublish it")]
     [InlineData("What would publishing tomorrow's class change?")]
@@ -462,7 +473,7 @@ public class AssistAgentTests
     {
         var rig = new Rig();   // no scripted replies: Ask returns null
 
-        var lines = rig.Say("Publish tomorrow's class");
+        var lines = rig.Say("Publish tomorrow's class, but not the linked pages");
 
         Assert.Contains("didn’t answer", Assert.Single(lines).Text);
     }

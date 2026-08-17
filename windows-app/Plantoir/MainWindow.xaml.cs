@@ -279,22 +279,36 @@ public sealed partial class MainWindow : Window
     private void RefreshPathBar()
     {
         if (Workspace.WorkspacePath is null) return;
-        var parts = new System.Collections.Generic.List<string>();
-        var directory = new DirectoryInfo(Workspace.WorkspacePath);
-        for (var current = directory; current is not null; current = current.Parent)
-            parts.Insert(0, current.FullName);
-        FolderCrumbs.ItemsSource = parts.Select(p => new FolderCrumb(p)).ToList();
-    }
-
-    public sealed record FolderCrumb(string Path)
-    {
-        public override string ToString() =>
-            System.IO.Path.GetFileName(Path.TrimEnd('\\')) is { Length: > 0 } name ? name : Path;
+        FolderCrumbs.ItemsSource = FolderCrumb.ForPath(Workspace.WorkspacePath);
     }
 
     private void FolderCrumbs_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
     {
         if (args.Item is FolderCrumb crumb) FolderActions.ShowInFileExplorer(crumb.Path);
+    }
+
+    private void CrumbShowInExplorer_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: FolderCrumb crumb })
+        {
+            FolderActions.ShowInFileExplorer(crumb.Path);
+        }
+    }
+
+    private void CrumbOpenFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: FolderCrumb crumb })
+        {
+            FolderActions.OpenFolder(crumb.Path);
+        }
+    }
+
+    private void Crumb_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: FolderCrumb crumb })
+        {
+            FolderActions.OpenFolder(crumb.Path);
+        }
     }
 
     // ---- Detail routing --------------------------------------------------

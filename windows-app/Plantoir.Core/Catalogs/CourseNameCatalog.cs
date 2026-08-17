@@ -37,5 +37,7 @@ public sealed class CourseNameCatalog
         return _entries.TryGetValue(key, out CourseNames? names) ? names : null;
     }
 
+    public string? DefaultName(string code) => Names(code)?.Short;
+
     public int Count => _entries.Count;
 }

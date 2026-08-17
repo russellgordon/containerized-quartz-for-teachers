@@ -546,14 +546,15 @@ public sealed class NewCourseDialog : ContentDialog
 
         if (_nameBox.Text.Length == 0 || _nameBox.Text == _lastAutoFilledName)
         {
-            _nameBox.Text = names.Formal;
-            _lastAutoFilledName = names.Formal;
+            string defaultName = _nameCatalog.DefaultName(_codeBox.Text) ?? names.Short;
+            _nameBox.Text = defaultName;
+            _lastAutoFilledName = defaultName;
         }
         _suggestionsRow.Visibility = Visibility.Visible;
         _suggestionsRow.Children.Add(FormBuilders.ExampleCaption(
             $"Suggested names for {_codeBox.Text.Trim().ToUpperInvariant()}:"));
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
-        foreach (string suggestion in new[] { names.Formal, names.Short }.Distinct())
+        foreach (string suggestion in new[] { names.Short, names.Formal }.Distinct())
         {
             var button = new Button { Content = suggestion, FontSize = 12, Padding = new Thickness(8, 2, 8, 2) };
             button.Click += (_, _) => { _nameBox.Text = suggestion; _lastAutoFilledName = suggestion; };

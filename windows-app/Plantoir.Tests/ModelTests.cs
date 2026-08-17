@@ -720,3 +720,66 @@ public class FolderContainerTests
         finally { FolderContainers.CommandRunnerOverride = null; }
     }
 }
+
+public class CourseRenamerTests
+{
+    [Fact]
+    public void QuietOutcomeYieldsNoNotice()
+    {
+        var outcome = new CourseRenamer.Outcome("ICS4U", Array.Empty<int>(), Array.Empty<int>());
+        Assert.True(outcome.IsQuiet);
+        Assert.Null(CourseRenamer.NoticeAfterRenaming(outcome));
+    }
+
+    [Fact]
+    public void StoppedSectionsYieldNotice()
+    {
+        var outcome = new CourseRenamer.Outcome("ICS4U", new[] { 1, 2 }, Array.Empty<int>());
+        Assert.False(outcome.IsQuiet);
+        var notice = CourseRenamer.NoticeAfterRenaming(outcome);
+        Assert.NotNull(notice);
+        Assert.Equal("Scheduled publishing turned off", notice.Title);
+        Assert.Contains("Section 1, Section 2", notice.Message);
+    }
+
+    [Fact]
+    public void UnstoppedSectionsYieldErrorNotice()
+    {
+        var outcome = new CourseRenamer.Outcome("ICS4U", Array.Empty<int>(), new[] { 3 });
+        Assert.False(outcome.IsQuiet);
+        var notice = CourseRenamer.NoticeAfterRenaming(outcome);
+        Assert.NotNull(notice);
+        Assert.Equal("Scheduled publishing could not be cancelled", notice.Title);
+        Assert.Contains("Section 3", notice.Message);
+    }
+
+    [Fact]
+    public void RenameUpdatesConfigAndMovesDirectory()
+    {
+        string tempDir = Path.Combine(Path.GetTempPath(), "PlantoirRenameTest-" + Guid.NewGuid());
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            string courseDir = Path.Combine(tempDir, "ICS3U");
+            Directory.CreateDirectory(courseDir);
+            string configPath = Path.Combine(courseDir, "course_config.json");
+            File.WriteAllText(configPath, "{\n  \"course_code\": \"ICS3U\",\n  \"sections\": [1]\n}\n");
+
+            var config = CourseConfiguration.Load(configPath);
+            var course = new Course("ICS3U", courseDir, config);
+
+            var outcome = CourseRenamer.Rename(course, "ICS4U", tempDir, new[] { "ICS3U" });
+            Assert.Equal("ICS4U", outcome.NewCode);
+            Assert.False(Directory.Exists(courseDir));
+
+            string newDir = Path.Combine(tempDir, "ICS4U");
+            Assert.True(Directory.Exists(newDir));
+            var newConfig = CourseConfiguration.Load(Path.Combine(newDir, "course_config.json"));
+            Assert.Equal("ICS4U", newConfig.CourseCode);
+        }
+        finally
+        {
+            try { Directory.Delete(tempDir, recursive: true); } catch { }
+        }
+    }
+}
