@@ -20,6 +20,21 @@ enum CourseNameCatalog {
         return entries[normalized]
     }
 
+    /// The name a new course starts with when its code is recognised, or
+    /// nil for a code the lookup does not know.
+    ///
+    /// It is the SHORT name. The formal name is the ministry's string —
+    /// "Introduction to Computer Science, Grade 11, U" — which is correct
+    /// and which almost nobody wants on a website: it is what a teacher
+    /// then has to delete before typing what they actually call the
+    /// course. The short name is closer to that in nearly every case, and
+    /// the formal one is still a single button away for the teacher who
+    /// wants it. Defaulting to the longer string only to have it thrown
+    /// away is the wrong way round.
+    static func defaultName(forCode code: String) -> String? {
+        return names(forCode: code)?.short
+    }
+
     private static func loadEntries() -> [String: CourseNames] {
         guard let url = Bundle.main.url(forResource: "ontario_secondary_courses", withExtension: "json") else {
             return [:]

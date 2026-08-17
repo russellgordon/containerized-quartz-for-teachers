@@ -86,9 +86,13 @@ The skeletons are GENERATED from eleven shapes plus a family table by
 
 - Prompts for the **course code** (default `ICS3U`), uppercased.
 - Looks the code up in `ontario_secondary_courses.json` (1,930 entries) and
-  offers the formal name ("Introduction to Computer Science, Grade 11,
-  University Preparation"), the short name ("Introduction to Computer
-  Science"), or a custom name.
+  offers the short name first ("Intro to Comp Sci"), then the formal name
+  ("Introduction to Computer Science, Grade 11, U"), then a custom name. The
+  short name leads because the formal one is the ministry's string and is
+  almost always deleted before a teacher types what they really call the
+  course; the app's New Course wizard defaults the same way. The rule is
+  pinned in [`contracts/course-management.json`](../contracts/course-management.json)
+  → `defaultCourseName`.
 - **Club support**: if the 4th character of the code is not a digit (course
   codes like `ICS3U` encode grade in position 4; a club might be `CODING`),
   the wizard offers a **custom short label** (≤ 12 characters) to display in

@@ -79,19 +79,19 @@ final class QuartzTeachersUITests: XCTestCase {
         codeField.click()
         codeField.typeText("ICS3U")
 
-        // Typing a known Ontario code should auto-fill the formal name.
+        // Typing a known Ontario code should auto-fill the SHORT name.
         let nameField: XCUIElement = application.textFields["wizardCourseNameField"]
-        let expectedName: String = "Introduction to Computer Science, Grade 11, U"
+        let expectedName: String = "Intro to Comp Sci"
         let autoFilled: NSPredicate = NSPredicate(format: "value == %@", expectedName)
         let expectation: XCTNSPredicateExpectation = XCTNSPredicateExpectation(predicate: autoFilled, object: nameField)
         let waitResult: XCTWaiter.Result = XCTWaiter().wait(for: [expectation], timeout: 5)
         XCTAssertEqual(waitResult, .completed, "The course name should auto-fill from the code; value was: \(String(describing: nameField.value))")
 
-        // The short-name suggestion button should switch the name.
-        let shortNameButton: XCUIElement = application.buttons["suggestedShortNameButton"]
-        XCTAssertTrue(shortNameButton.waitForExistence(timeout: 5))
-        shortNameButton.click()
-        XCTAssertEqual("\(nameField.value ?? "")", "Intro to Comp Sci")
+        // The formal-name suggestion button should switch the name.
+        let formalNameButton: XCUIElement = application.buttons["suggestedFormalNameButton"]
+        XCTAssertTrue(formalNameButton.waitForExistence(timeout: 5))
+        formalNameButton.click()
+        XCTAssertEqual("\(nameField.value ?? "")", "Introduction to Computer Science, Grade 11, U")
 
         saveScreenshot(named: "05-wizard-name-suggestions", of: application)
 

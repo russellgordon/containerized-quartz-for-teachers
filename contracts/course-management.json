@@ -38,6 +38,16 @@
       { "effect": "scheduledPublishingCancelled", "expect": true, "why": "The one thing renaming has to break. A scheduled publish is an alarm held OUTSIDE the working folder, addressed by the old code, and after a rename it would fire at a course that is no longer there. It is turned off and the teacher is told — silently losing a scheduled publish is the failure worth spending an alert on." }
     ]
   },
+  "defaultCourseName": {
+    "cases": [
+      { "code": "ICS3U", "expect": "Intro to Comp Sci" },
+      { "code": "  ics3u  ", "expect": "Intro to Comp Sci", "why": "Trimmed and upper-cased before the lookup, exactly as the code field itself is." },
+      { "code": "SPH4U", "expect": "Physics" },
+      { "code": "CODING", "expect": null, "why": "A club code is in no lookup, so nothing is filled in and the teacher types their own name." },
+      { "code": "", "expect": null }
+    ],
+    "note": "The course name a NEW course starts with, filled in from the code. It is the SHORT name from support/ontario_secondary_courses.json, not the formal one. The formal name is the ministry's string — \"Introduction to Computer Science, Grade 11, U\" — which is correct and which almost nobody wants as a website title: defaulting to it only means the teacher deletes it before typing what they actually call the course. Both names stay one button away in the wizard, and the command-line wizard offers them in the same order (short first, then formal, then a custom name). The fill only ever replaces an empty field or a previous fill of its own, so a teacher's own typing is never overwritten."
+  },
   "gradeLabels": {
     "cases": [
       {

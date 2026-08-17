@@ -300,24 +300,25 @@ struct NewCourseWizardView: View {
                     ExampleCaption("e.g. Introduction to Computer Science")
                 }
 
-                // For known Ontario course codes, offer the same formal and
-                // short names the command-line wizard suggests.
+                // For known Ontario course codes, offer the same short and
+                // formal names the command-line wizard suggests — the short
+                // one first, because it is the one already filled in.
                 if let knownNames = CourseNameCatalog.names(forCode: courseCode) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Suggested names for \(courseCode.trimmingCharacters(in: .whitespaces).uppercased()):")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         HStack {
-                            Button(knownNames.formal) {
-                                courseName = knownNames.formal
-                                lastAutoFilledName = knownNames.formal
-                            }
-                            .accessibilityIdentifier("suggestedFormalNameButton")
                             Button(knownNames.short) {
                                 courseName = knownNames.short
                                 lastAutoFilledName = knownNames.short
                             }
                             .accessibilityIdentifier("suggestedShortNameButton")
+                            Button(knownNames.formal) {
+                                courseName = knownNames.formal
+                                lastAutoFilledName = knownNames.formal
+                            }
+                            .accessibilityIdentifier("suggestedFormalNameButton")
                         }
                         .font(.callout)
                     }
@@ -534,16 +535,18 @@ struct NewCourseWizardView: View {
     }
 
     /// When a known course code is entered, pre-fill the name with the
-    /// formal name — but only if the name field is empty or still holds a
+    /// SHORT name — but only if the name field is empty or still holds a
     /// previous auto-fill, so a teacher's own typing is never replaced.
+    /// Why the short name rather than the formal one is explained on
+    /// `CourseNameCatalog.defaultName(forCode:)`.
     func autoFillCourseName() {
-        guard let knownNames = CourseNameCatalog.names(forCode: courseCode) else {
+        guard let suggestedName = CourseNameCatalog.defaultName(forCode: courseCode) else {
             return
         }
         let mayReplace: Bool = courseName.isEmpty || courseName == lastAutoFilledName
         if mayReplace {
-            courseName = knownNames.formal
-            lastAutoFilledName = knownNames.formal
+            courseName = suggestedName
+            lastAutoFilledName = suggestedName
         }
     }
 

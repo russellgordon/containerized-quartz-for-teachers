@@ -51,6 +51,20 @@ final class CourseManagementContractTests: XCTestCase {
         }
     }
 
+    // MARK: - The name a new course starts with
+
+    func testANewCourseStartsWithTheShortName() throws {
+        let section: [String: Any] = try CourseManagementContractTests.section("defaultCourseName")
+        for testCase in try XCTUnwrap(section["cases"] as? [[String: Any]]) {
+            let code: String = try XCTUnwrap(testCase["code"] as? String)
+            let expected: String? = testCase["expect"] as? String
+            XCTAssertEqual(
+                CourseNameCatalog.defaultName(forCode: code), expected,
+                "\(code) should start life named \(expected ?? "nothing")"
+            )
+        }
+    }
+
     // MARK: - Adding a section
 
     func testTheSuggestedSectionNumberIsTheSmallestFree() throws {

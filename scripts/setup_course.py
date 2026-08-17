@@ -349,10 +349,14 @@ def get_course_name_from_json(course_code):
         formal = course_info["formal_name"]
         short = course_info["short_name"]
 
-        if input(f"Use formal name \"{formal}\"? (y/n): ").strip().lower() == "y":
-            return formal
+        # The SHORT name is offered first, because it is the one a teacher
+        # usually keeps. The formal name is the ministry's string, correct
+        # and rarely wanted on a website — offering it first only means it
+        # gets deleted. Same order as the app's New Course wizard.
         if input(f"Use short name \"{short}\"? (y/n): ").strip().lower() == "y":
             return short
+        if input(f"Use formal name \"{formal}\"? (y/n): ").strip().lower() == "y":
+            return formal
         return input("Enter a custom course name: ").strip()
     except Exception:
         return None
