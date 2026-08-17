@@ -109,6 +109,49 @@ public sealed class PublishingChoiceView
         _accountBox = new TextBox { Text = getAccount(), PlaceholderText = "Account ID" };
         AutomationProperties.SetAutomationId(_accountBox, "cloudflareAccountField");
         _cloudflareArea.Children.Add(FormBuilders.LabeledRow("Cloudflare Account ID", _accountBox));
+
+        var helpButton = new HyperlinkButton
+        {
+            Content = "Where do I find this?",
+            FontSize = 12,
+            Padding = new Thickness(0),
+            Margin = new Thickness(0, 2, 0, 4),
+        };
+        helpButton.Click += async (_, _) =>
+        {
+            var help = Plantoir.Core.Scripting.CredentialRequests.CloudflareAccountIDHelp;
+            var panel = new StackPanel { Spacing = 10, MaxWidth = 460 };
+            panel.Children.Add(new TextBlock { Text = help.Explanation, TextWrapping = TextWrapping.Wrap });
+            var stepsList = new StackPanel { Spacing = 6, Margin = new Thickness(0, 4, 0, 4) };
+            for (int i = 0; i < help.Steps.Count; i++)
+            {
+                stepsList.Children.Add(new TextBlock
+                {
+                    Text = $"{i + 1}. {help.Steps[i]}",
+                    TextWrapping = TextWrapping.Wrap
+                });
+            }
+            panel.Children.Add(stepsList);
+            var linkBtn = new HyperlinkButton
+            {
+                Content = help.LinkTitle,
+                NavigateUri = new Uri(help.LinkAddress),
+                Padding = new Thickness(0)
+            };
+            panel.Children.Add(linkBtn);
+
+            var dialog = new ContentDialog
+            {
+                Title = help.Title,
+                Content = panel,
+                CloseButtonText = "Done",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = _pickerOwner.Content?.XamlRoot
+            };
+            await dialog.ShowAsync();
+        };
+        _cloudflareArea.Children.Add(helpButton);
+
         _cloudflareProblemText = CautionLine("cloudflareAccountProblem");
         _cloudflareArea.Children.Add(_cloudflareProblemText);
         _cloudflareCaption = FormBuilders.ExampleCaption(

@@ -182,5 +182,54 @@ public class ContractTests
         };
         Assert.Equal(expected, crumbs);
     }
+
+    [Fact]
+    public void AppRules_CredentialPrompts_MatchesContract()
+    {
+        var doc = ContractLoader.LoadJson("app-rules.json");
+        var cases = doc["credentialPrompts"]!["cases"]!.AsArray();
+
+        foreach (var c in cases)
+        {
+            if (c is null) continue;
+            string prompt = c["prompt"]!.ToString();
+            string expectRequest = c["expectRequest"]!.ToString();
+
+            var match = CredentialRequests.MatchPrompt(prompt);
+            string actualName = match?.Name ?? "";
+            Assert.Equal(expectRequest, actualName);
+        }
+    }
+
+    [Fact]
+    public void AppRules_CredentialRequests_MatchesContract()
+    {
+        var doc = ContractLoader.LoadJson("app-rules.json");
+        var requests = doc["credentialRequests"]!["requests"]!.AsArray();
+
+        var codeRequests = new Dictionary<string, CredentialRequest>
+        {
+            ["netlifyToken"] = CredentialRequests.NetlifyToken,
+            ["cloudflareToken"] = CredentialRequests.CloudflareToken,
+            ["cloudflareAccountID"] = CredentialRequests.CloudflareAccountID,
+            ["cloudflareAccountIDHelp"] = CredentialRequests.CloudflareAccountIDHelp,
+        };
+
+        foreach (var req in requests)
+        {
+            if (req is null) continue;
+            string name = req["name"]!.ToString();
+            Assert.True(codeRequests.TryGetValue(name, out var codeReq), $"Missing request definition for {name}");
+
+            Assert.Equal(req["title"]!.ToString(), codeReq!.Title);
+            Assert.Equal(req["fieldLabel"]!.ToString(), codeReq.FieldLabel);
+            Assert.Equal(req["isSecret"]!.GetValue<bool>(), codeReq.IsSecret);
+            Assert.Equal(req["linkAddress"]!.ToString(), codeReq.LinkAddress);
+            Assert.Equal(req["linkTitle"]!.ToString(), codeReq.LinkTitle);
+
+            var expectSteps = req["steps"]!.AsArray().Select(s => s!.ToString()).ToList();
+            Assert.Equal(expectSteps, codeReq.Steps);
+        }
+    }
 }
 

@@ -202,28 +202,95 @@ public sealed partial class TaskProgressView : UserControl
         _questionDialogShowing = true;
         try
         {
-            var answerBox = new TextBox
+            var req = Plantoir.Core.Scripting.CredentialRequests.MatchPrompt(runner.PendingQuestion);
+            if (req is not null)
             {
-                Text = runner.SuggestedAnswer,   // agreeing is one keystroke
-                PlaceholderText = "Your answer",
-            };
-            var panel = new StackPanel { Spacing = 12 };
-            panel.Children.Add(new TextBlock { Text = runner.PendingQuestion, TextWrapping = TextWrapping.Wrap });
-            panel.Children.Add(answerBox);
-            var dialog = new ContentDialog
+                var panel = new StackPanel { Spacing = 12, MaxWidth = 480 };
+                panel.Children.Add(new TextBlock { Text = req.Explanation, TextWrapping = TextWrapping.Wrap });
+
+                var stepsList = new StackPanel { Spacing = 6, Margin = new Thickness(0, 4, 0, 4) };
+                for (int i = 0; i < req.Steps.Count; i++)
+                {
+                    stepsList.Children.Add(new TextBlock
+                    {
+                        Text = $"{i + 1}. {req.Steps[i]}",
+                        TextWrapping = TextWrapping.Wrap
+                    });
+                }
+                panel.Children.Add(stepsList);
+
+                var linkBtn = new HyperlinkButton
+                {
+                    Content = req.LinkTitle,
+                    NavigateUri = new Uri(req.LinkAddress),
+                    Padding = new Thickness(0)
+                };
+                panel.Children.Add(linkBtn);
+
+                Control inputControl;
+                Func<string> getAnswer;
+                if (req.IsSecret)
+                {
+                    var pw = new PasswordBox
+                    {
+                        PlaceholderText = req.FieldLabel,
+                        Password = runner.SuggestedAnswer
+                    };
+                    inputControl = pw;
+                    getAnswer = () => pw.Password;
+                }
+                else
+                {
+                    var tb = new TextBox
+                    {
+                        PlaceholderText = req.FieldLabel,
+                        Text = runner.SuggestedAnswer
+                    };
+                    inputControl = tb;
+                    getAnswer = () => tb.Text;
+                }
+
+                panel.Children.Add(inputControl);
+
+                var dialog = new ContentDialog
+                {
+                    Title = req.Title,
+                    Content = panel,
+                    PrimaryButtonText = "Save and continue",
+                    CloseButtonText = "Cancel",
+                    DefaultButton = ContentDialogButton.Primary,
+                    XamlRoot = XamlRoot,
+                };
+                inputControl.Loaded += (_, _) => inputControl.Focus(FocusState.Programmatic);
+                var result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary) runner.SendLine(getAnswer());
+                else runner.CancelPendingQuestion();
+            }
+            else
             {
-                // Neutral title: a task may ask several questions in a row.
-                Title = "Input required",
-                Content = panel,
-                PrimaryButtonText = "Send",
-                CloseButtonText = "Cancel",
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = XamlRoot,
-            };
-            answerBox.Loaded += (_, _) => { answerBox.Focus(FocusState.Programmatic); answerBox.SelectAll(); };
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary) runner.SendLine(answerBox.Text);
-            else runner.CancelPendingQuestion();   // the script's own clean-up runs
+                var answerBox = new TextBox
+                {
+                    Text = runner.SuggestedAnswer,   // agreeing is one keystroke
+                    PlaceholderText = "Your answer",
+                };
+                var panel = new StackPanel { Spacing = 12 };
+                panel.Children.Add(new TextBlock { Text = runner.PendingQuestion, TextWrapping = TextWrapping.Wrap });
+                panel.Children.Add(answerBox);
+                var dialog = new ContentDialog
+                {
+                    // Neutral title: a task may ask several questions in a row.
+                    Title = "Input required",
+                    Content = panel,
+                    PrimaryButtonText = "Send",
+                    CloseButtonText = "Cancel",
+                    DefaultButton = ContentDialogButton.Primary,
+                    XamlRoot = XamlRoot,
+                };
+                answerBox.Loaded += (_, _) => { answerBox.Focus(FocusState.Programmatic); answerBox.SelectAll(); };
+                var result = await dialog.ShowAsync();
+                if (result == ContentDialogResult.Primary) runner.SendLine(answerBox.Text);
+                else runner.CancelPendingQuestion();   // the script's own clean-up runs
+            }
         }
         finally { _questionDialogShowing = false; }
     }
