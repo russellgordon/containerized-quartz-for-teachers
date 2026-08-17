@@ -141,43 +141,47 @@ def picture_element(shot: dict, problems: list[str], modifier: str, up: str) -> 
             f'</figure>'
         )
 
-    def render_figure(prefix: str, light_img: Path, dark_img: Path, extra_class: str) -> str:
-        width, height = png_size(light_img)
-        # The captures are taken at 2x resolution, so halving keeps layout honest.
-        display_width = width // 2
-        display_height = height // 2
+    width, height = png_size(light)
+    display_width = width // 2
+    display_height = height // 2
 
-        sources: list[str] = []
-        for scheme, path in (("dark", dark_img), ("light", light_img)):
-            query = ' media="(prefers-color-scheme: dark)"' if scheme == "dark" else ""
-            if path.with_suffix(".webp").exists():
-                sources.append(
-                    f'      <source srcset="{up}img/{prefix}{scheme}.webp" '
-                    f'type="image/webp"{query}>'
-                )
-            if scheme == "dark":
-                sources.append(
-                    f'      <source srcset="{up}img/{prefix}dark.png"{query}>'
-                )
-        joined = "\n".join(sources)
+    has_windows = win_light.exists() and win_dark.exists()
+    win_prefix = f"{identifier}-windows-" if has_windows else ""
 
-        fig_classes = f"{classes} {extra_class}".strip()
-        return (
-            f'<figure class="{fig_classes}">\n'
-            f'    <picture>\n'
-            f'{joined}\n'
-            f'      <img src="{up}img/{prefix}light.png" alt="{shot["alt"]}"\n'
-            f'           width="{display_width}" height="{display_height}" loading="lazy" decoding="async">\n'
-            f'    </picture>{caption_html}\n'
-            f'</figure>'
-        )
+    sources: list[str] = []
+    for scheme in ("dark", "light"):
+        path = dark if scheme == "dark" else light
+        query = ' media="(prefers-color-scheme: dark)"' if scheme == "dark" else ""
 
-    if win_light.exists() and win_dark.exists():
-        mac_fig = render_figure(f"{identifier}-", light, dark, "shot-platform-mac")
-        win_fig = render_figure(f"{identifier}-windows-", win_light, win_dark, "shot-platform-windows")
-        return f"{mac_fig}\n{win_fig}"
-    else:
-        return render_figure(f"{identifier}-", light, dark, "")
+        if path.with_suffix(".webp").exists():
+            win_webp_attr = ""
+            if has_windows and (IMAGE_DIR / f"{win_prefix}{scheme}.webp").exists():
+                win_webp_attr = f' data-win-srcset="{up}img/{win_prefix}{scheme}.webp"'
+            sources.append(
+                f'      <source srcset="{up}img/{identifier}-{scheme}.webp"{win_webp_attr} '
+                f'type="image/webp"{query}>'
+            )
+
+        if scheme == "dark":
+            win_png_attr = ""
+            if has_windows:
+                win_png_attr = f' data-win-srcset="{up}img/{win_prefix}dark.png"'
+            sources.append(
+                f'      <source srcset="{up}img/{identifier}-dark.png"{win_png_attr}{query}>'
+            )
+
+    joined = "\n".join(sources)
+    win_src_attr = f' data-win-src="{up}img/{win_prefix}light.png"' if has_windows else ""
+
+    return (
+        f'<figure class="{classes}">\n'
+        f'    <picture>\n'
+        f'{joined}\n'
+        f'      <img src="{up}img/{identifier}-light.png"{win_src_attr} alt="{shot["alt"]}"\n'
+        f'           width="{display_width}" height="{display_height}" loading="lazy" decoding="async">\n'
+        f'    </picture>{caption_html}\n'
+        f'</figure>'
+    )
 
 
 # ---------- Assembling ----------

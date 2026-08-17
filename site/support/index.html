@@ -35,7 +35,30 @@
 <script>
 (function() {
   var isWin = /Win/i.test(navigator.platform || (navigator.userAgentData && navigator.userAgentData.platform) || navigator.userAgent);
-  if (isWin) document.documentElement.classList.add('is-windows');
+  if (isWin) {
+    document.documentElement.classList.add('is-windows');
+    function swap(el) {
+      if (el.hasAttribute('data-win-srcset')) el.setAttribute('srcset', el.getAttribute('data-win-srcset'));
+      if (el.hasAttribute('data-win-src')) el.setAttribute('src', el.getAttribute('data-win-src'));
+    }
+    function scan(node) {
+      if (node.nodeType !== 1) return;
+      swap(node);
+      var matches = node.querySelectorAll ? node.querySelectorAll('[data-win-srcset], [data-win-src]') : [];
+      for (var i = 0; i < matches.length; i++) swap(matches[i]);
+    }
+    var observer = new MutationObserver(function(mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        var added = mutations[i].addedNodes;
+        for (var j = 0; j < added.length; j++) scan(added[j]);
+      }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    document.addEventListener('DOMContentLoaded', function() {
+      observer.disconnect();
+      scan(document.body);
+    });
+  }
 })();
 </script>
 <link rel="stylesheet" href="../assets/style.css">

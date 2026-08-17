@@ -35,7 +35,30 @@
 <script>
 (function() {
   var isWin = /Win/i.test(navigator.platform || (navigator.userAgentData && navigator.userAgentData.platform) || navigator.userAgent);
-  if (isWin) document.documentElement.classList.add('is-windows');
+  if (isWin) {
+    document.documentElement.classList.add('is-windows');
+    function swap(el) {
+      if (el.hasAttribute('data-win-srcset')) el.setAttribute('srcset', el.getAttribute('data-win-srcset'));
+      if (el.hasAttribute('data-win-src')) el.setAttribute('src', el.getAttribute('data-win-src'));
+    }
+    function scan(node) {
+      if (node.nodeType !== 1) return;
+      swap(node);
+      var matches = node.querySelectorAll ? node.querySelectorAll('[data-win-srcset], [data-win-src]') : [];
+      for (var i = 0; i < matches.length; i++) swap(matches[i]);
+    }
+    var observer = new MutationObserver(function(mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        var added = mutations[i].addedNodes;
+        for (var j = 0; j < added.length; j++) scan(added[j]);
+      }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    document.addEventListener('DOMContentLoaded', function() {
+      observer.disconnect();
+      scan(document.body);
+    });
+  }
 })();
 </script>
 <link rel="stylesheet" href="./assets/style.css">
@@ -67,23 +90,13 @@
   <p class="tagline">Turns a folder of Markdown notes into a fast, searchable class website you own.</p>
 </header>
 
-<figure class="shot shot-platform-mac">
+<figure class="shot">
     <picture>
-      <source srcset="./img/preview-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
-      <source srcset="./img/preview-dark.png" media="(prefers-color-scheme: dark)">
-      <source srcset="./img/preview-light.webp" type="image/webp">
-      <img src="./img/preview-light.png" alt="The Plantoir window with a class website shown inside it, beside the list of courses and sections."
+      <source srcset="./img/preview-dark.webp" data-win-srcset="./img/preview-windows-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="./img/preview-dark.png" data-win-srcset="./img/preview-windows-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="./img/preview-light.webp" data-win-srcset="./img/preview-windows-light.webp" type="image/webp">
+      <img src="./img/preview-light.png" data-win-src="./img/preview-windows-light.png" alt="The Plantoir window with a class website shown inside it, beside the list of courses and sections."
            width="850" height="580" loading="lazy" decoding="async">
-    </picture>
-    <figcaption>The site, in the app, before anyone else has seen it.</figcaption>
-</figure>
-<figure class="shot shot-platform-windows">
-    <picture>
-      <source srcset="./img/preview-windows-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
-      <source srcset="./img/preview-windows-dark.png" media="(prefers-color-scheme: dark)">
-      <source srcset="./img/preview-windows-light.webp" type="image/webp">
-      <img src="./img/preview-windows-light.png" alt="The Plantoir window with a class website shown inside it, beside the list of courses and sections."
-           width="850" height="531" loading="lazy" decoding="async">
     </picture>
     <figcaption>The site, in the app, before anyone else has seen it.</figcaption>
 </figure>

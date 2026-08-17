@@ -35,7 +35,30 @@
 <script>
 (function() {
   var isWin = /Win/i.test(navigator.platform || (navigator.userAgentData && navigator.userAgentData.platform) || navigator.userAgent);
-  if (isWin) document.documentElement.classList.add('is-windows');
+  if (isWin) {
+    document.documentElement.classList.add('is-windows');
+    function swap(el) {
+      if (el.hasAttribute('data-win-srcset')) el.setAttribute('srcset', el.getAttribute('data-win-srcset'));
+      if (el.hasAttribute('data-win-src')) el.setAttribute('src', el.getAttribute('data-win-src'));
+    }
+    function scan(node) {
+      if (node.nodeType !== 1) return;
+      swap(node);
+      var matches = node.querySelectorAll ? node.querySelectorAll('[data-win-srcset], [data-win-src]') : [];
+      for (var i = 0; i < matches.length; i++) swap(matches[i]);
+    }
+    var observer = new MutationObserver(function(mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        var added = mutations[i].addedNodes;
+        for (var j = 0; j < added.length; j++) scan(added[j]);
+      }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    document.addEventListener('DOMContentLoaded', function() {
+      observer.disconnect();
+      scan(document.body);
+    });
+  }
 })();
 </script>
 <link rel="stylesheet" href="../assets/style.css">
@@ -83,23 +106,13 @@
   <p>That instruction lives in a small block of settings at the top of each note. A line reading <code>publishForSection1: true</code>. Then another for section two. Then another for section three.</p>
   <p>It isn't hard. It's just <em>easy to get backwards at 7:40 in the morning</em> — and backwards means a class sees a page you were holding back, or misses one you weren't.</p>
   <p>So ask for it in words instead.</p>
-  <figure class="shot shot-platform-mac">
+  <figure class="shot">
     <picture>
-      <source srcset="../img/assistant-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
-      <source srcset="../img/assistant-dark.png" media="(prefers-color-scheme: dark)">
-      <source srcset="../img/assistant-light.webp" type="image/webp">
-      <img src="../img/assistant-light.png" alt="The assistant window: a request typed in plain English, and the assistant describing what it is about to change with a button to approve it."
+      <source srcset="../img/assistant-dark.webp" data-win-srcset="../img/assistant-windows-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/assistant-dark.png" data-win-srcset="../img/assistant-windows-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/assistant-light.webp" data-win-srcset="../img/assistant-windows-light.webp" type="image/webp">
+      <img src="../img/assistant-light.png" data-win-src="../img/assistant-windows-light.png" alt="The assistant window: a request typed in plain English, and the assistant describing what it is about to change with a button to approve it."
            width="560" height="940" loading="lazy" decoding="async">
-    </picture>
-    <figcaption>It says what it will do, then waits.</figcaption>
-</figure>
-<figure class="shot shot-platform-windows">
-    <picture>
-      <source srcset="../img/assistant-windows-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
-      <source srcset="../img/assistant-windows-dark.png" media="(prefers-color-scheme: dark)">
-      <source srcset="../img/assistant-windows-light.webp" type="image/webp">
-      <img src="../img/assistant-windows-light.png" alt="The assistant window: a request typed in plain English, and the assistant describing what it is about to change with a button to approve it."
-           width="560" height="760" loading="lazy" decoding="async">
     </picture>
     <figcaption>It says what it will do, then waits.</figcaption>
 </figure>
@@ -130,23 +143,13 @@
   <p>Most days need one small change. Yesterday's class published. Tomorrow's held back. A page rebuilt after a correction.</p>
   <p>Each of those is a sentence and a confirmation, and you're told in plain terms what happened.</p>
   <p>Longer jobs — building a site, publishing it — describe their progress in words rather than in output, so you can tell at a glance whether to wait or to walk away.</p>
-  <figure class="shot shot-platform-mac">
+  <figure class="shot">
     <picture>
-      <source srcset="../img/progress-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
-      <source srcset="../img/progress-dark.png" media="(prefers-color-scheme: dark)">
-      <source srcset="../img/progress-light.webp" type="image/webp">
-      <img src="../img/progress-light.png" alt="A progress view describing, in plain language, the step the site build has reached."
+      <source srcset="../img/progress-dark.webp" data-win-srcset="../img/progress-windows-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/progress-dark.png" data-win-srcset="../img/progress-windows-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/progress-light.webp" data-win-srcset="../img/progress-windows-light.webp" type="image/webp">
+      <img src="../img/progress-light.png" data-win-src="../img/progress-windows-light.png" alt="A progress view describing, in plain language, the step the site build has reached."
            width="850" height="580" loading="lazy" decoding="async">
-    </picture>
-    <figcaption>Progress is described in words, not in log output.</figcaption>
-</figure>
-<figure class="shot shot-platform-windows">
-    <picture>
-      <source srcset="../img/progress-windows-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
-      <source srcset="../img/progress-windows-dark.png" media="(prefers-color-scheme: dark)">
-      <source srcset="../img/progress-windows-light.webp" type="image/webp">
-      <img src="../img/progress-windows-light.png" alt="A progress view describing, in plain language, the step the site build has reached."
-           width="850" height="531" loading="lazy" decoding="async">
     </picture>
     <figcaption>Progress is described in words, not in log output.</figcaption>
 </figure>
