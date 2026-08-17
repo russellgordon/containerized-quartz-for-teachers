@@ -35,9 +35,10 @@ this skill automates its steps 5–6 and the note-writing.
 6. **Confirm WHICH REPOSITORY this release belongs in, before anything is
    published.** These two do not currently agree:
    - `git remote -v` here is `russellgordon/containerized-quartz-for-teachers`
-   - `site/index.html` builds every download link against
+   - the site builds every download link against
      `github.com/russellgordon/plantoir`
-     (`releases/latest/download/<asset-name>`)
+     (`releases/latest/download/<asset-name>`), from `repo_url` in
+     `website/site.json`
    A release published to the wrong one leaves plantoir.app's download
    buttons pointing at a release that does not exist. Do NOT guess and do
    NOT let the remote decide by default: ask the user which repository is
@@ -80,9 +81,19 @@ publishing anything.
 
 ## Publish (after approval)
 
-1. Update the site's version line: in `site/index.html`, rewrite the
-   `class="version-note"` line to the new version and release month/year
-   (keep the "All releases" link). Commit it.
+1. Update the site's version line. It is NOT in the HTML any more —
+   `site/` is generated. Set `version` and `released` in
+   `website/site.json`, then rebuild and check:
+
+```
+python3 website/build.py
+python3 website/build.py --check
+```
+
+   Commit `website/site.json` and the regenerated files under `site/`
+   together. If `--check` reports a screenshot that has never been taken,
+   stop and say so rather than publishing a page with a placeholder on
+   it; `website/README.md` explains the capture run.
 2. Tag and release:
 
 ```
@@ -117,7 +128,7 @@ If no such bundle exists, do not invent one: publish the Windows asset
 alone and say the mac asset is outstanding.
 
 **Redraw the brand images in the same commit as the version line.** After
-editing `site/index.html` and before tagging, run:
+editing `website/site.json` and rebuilding, and before tagging, run:
 
 ```
 python scripts/brand_images.py --install-card

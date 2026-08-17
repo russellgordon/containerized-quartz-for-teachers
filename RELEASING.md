@@ -10,9 +10,11 @@ the git tag must match.
 > list is empty, so the first run of this checklist ships **1.0.0**, which
 > `Plantoir.csproj` already declares — there is nothing to bump. The release
 > notes summarise the product rather than a delta. Note also that
-> `site/index.html` already reads "Version 1.0.0 · Released August 2026" and its
-> two download links already point at `releases/latest/download/…`: those links
-> are dead until the first release exists.
+> `website/site.json` already reads version 1.0.0, released August 2026, and
+> the built page's macOS download link already points at
+> `releases/latest/download/…`: that link is dead until the first release
+> exists. The Windows card deliberately says "Coming soon" rather than linking
+> to an asset that has never been published.
 
 > **Which repository?** plantoir.app's download links resolve against
 > `github.com/russellgordon/plantoir`, but this working copy's `origin` is
@@ -113,9 +115,25 @@ For future-you, mid-school-year, who remembers nothing. The whys are below.
 6. **plantoir.app updates itself**: the site lives in `site/` in this repo, and
    Netlify deploys it on every push (one-time setup: in the Netlify UI, link the
    site to the GitHub repo, publish directory `site/`, no build command).
-   Cutting the release edits the version-note line in `site/index.html` and
-   pushes — nothing manual. It also redraws the brand images and installs the
-   card:
+
+   **`site/` is BUILT, not hand-edited.** The sources are in `website/`; the
+   version and release month are two fields in `website/site.json`. Cutting the
+   release edits those, runs
+
+       python3 website/build.py
+
+   and commits both `website/site.json` and the regenerated `site/`. Editing
+   the built HTML directly works right up until the next build overwrites it.
+   `python3 website/build.py --check` reports any page that still refers to a
+   screenshot nobody has taken — run it before tagging.
+
+   Screenshots are captured from the real app and the real class sites by
+   `python3 website/shots/capture.py`, in both light and dark appearance. That
+   is NOT part of cutting a release: re-shoot when the interface has visibly
+   changed, look at the results, and commit them as their own change. See
+   `website/README.md`.
+
+   Cutting the release also redraws the brand images and installs the card:
 
        python scripts/brand_images.py --install-card
 
@@ -197,7 +215,7 @@ Two things worth knowing about the card in particular:
 
   The brand uses Poppins **Regular and Medium only — no SemiBold**. That
   is measured from the original card, not assumed. Do not "correct" it to
-  600 because `site/index.html` sets `h1 { font-weight: 600 }`; the card
+  600 because `website/assets/style.css` sets `h1 { font-weight: 600 }`; the card
   is a separate artifact and was not rendered from that stylesheet.
 - That file is public and every social platform that has scraped
   plantoir.app has it cached. Replacing it is an outward-facing change,

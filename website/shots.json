@@ -3,61 +3,95 @@
   "shots": [
     {
       "id": "courses",
-      "capture": {"kind": "app-window", "test": "testCourseList"},
+      "capture": {
+        "kind": "app-window",
+        "test": "testCourseList"
+      },
       "alt": "The Plantoir window listing three courses in a sidebar, with one section open beside it.",
       "caption": "Every course and every class section, in one window."
     },
     {
       "id": "new-course",
-      "capture": {"kind": "app-window", "test": "testNewCourseWizard"},
+      "capture": {
+        "kind": "app-window",
+        "test": "testNewCourseWizard"
+      },
       "alt": "The new course panel, with a course code entered and a summary of the pages about to be created.",
       "caption": "Adding a course takes one panel and about a minute."
     },
     {
       "id": "section",
-      "capture": {"kind": "app-window", "test": "testSectionSettings"},
+      "capture": {
+        "kind": "app-window",
+        "test": "testSectionSettings"
+      },
       "alt": "A class section's settings, showing the colour scheme, typography and publishing choices.",
       "caption": "Each section can look and read differently."
     },
     {
       "id": "progress",
-      "capture": {"kind": "app-window", "test": "testBuildProgress"},
+      "capture": {
+        "kind": "app-window",
+        "test": "testBuildProgress"
+      },
       "alt": "A progress view describing, in plain language, the step the site build has reached.",
       "caption": "Progress is described in words, not in log output."
     },
     {
       "id": "preview",
-      "capture": {"kind": "app-window", "test": "testPreviewInWindow"},
+      "capture": {
+        "kind": "app-window",
+        "test": "testPreviewInWindow"
+      },
       "alt": "A finished class website shown inside the Plantoir window, beside the list of sections.",
       "caption": "The site appears in the same window, before anyone else sees it."
     },
     {
       "id": "assistant",
-      "capture": {"kind": "assistant-window", "test": "testAssistant"},
-      "alt": "The assistant window, showing a request typed in plain English and the change it made in response.",
-      "caption": "A sentence, rather than a settings panel."
+      "capture": {
+        "kind": "assistant-window",
+        "test": "testAssistant"
+      },
+      "alt": "The assistant window: a request typed in plain English, and the assistant describing what it is about to change with a button to approve it.",
+      "caption": "It says what it will do, then waits."
     },
     {
       "id": "site-eng2d",
-      "capture": {"kind": "browser", "course": "ENG2D", "path": "/"},
+      "capture": {
+        "kind": "browser",
+        "course": "ENG2D",
+        "path": "/"
+      },
       "alt": "A Grade 10 English class website, with a navigation sidebar, a page of notes and a search field.",
       "caption": "What a class sees: ENG2D."
     },
     {
       "id": "site-mcv4u",
-      "capture": {"kind": "browser", "course": "MCV4U", "path": "/"},
+      "capture": {
+        "kind": "browser",
+        "course": "MCV4U",
+        "path": "/"
+      },
       "alt": "A Grade 12 Calculus and Vectors page showing typeset mathematics.",
       "caption": "Mathematics is typeset, not photographed."
     },
     {
       "id": "site-sch3u",
-      "capture": {"kind": "browser", "course": "SCH3U", "path": "/"},
+      "capture": {
+        "kind": "browser",
+        "course": "SCH3U",
+        "path": "/"
+      },
       "alt": "A Grade 11 Chemistry page showing a diagram and a table of data.",
       "caption": "Diagrams and tables come straight from the notes."
     },
     {
       "id": "site-phone",
-      "capture": {"kind": "browser-phone", "course": "ENG2D", "path": "/"},
+      "capture": {
+        "kind": "browser-phone",
+        "course": "ENG2D",
+        "path": "/"
+      },
       "alt": "The same class website at phone width, with the navigation collapsed behind a button.",
       "caption": "The same site on a phone."
     }
