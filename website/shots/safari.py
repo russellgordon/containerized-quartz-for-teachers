@@ -106,7 +106,7 @@ class SafariWindow:
         )
         time.sleep(0.4)
 
-    def load(self, url: str, settle_seconds: float = 4.0) -> None:
+    def load(self, url: str, settle_seconds: float = 3.0) -> None:
         osascript(
             f'tell application "Safari" to set URL of document of window id {self.window_id} to "{url}"'
         )
@@ -129,23 +129,43 @@ class SafariWindow:
         time.sleep(1.0)
 
     def capture(self, destination: Path) -> Path:
-        """Save the window, corners rounded, at the display's own resolution."""
+        """Save the window itself, by window number.
+
+        `screencapture -l` grabs that WINDOW's contents — the same thing the
+        Option-click window capture gives: no shadow, transparent corners, and
+        crucially independent of what is in front of it.
+
+        The region capture this replaces photographed a RECTANGLE OF SCREEN. It
+        depended on Safari having finished coming to the front, and when that
+        lost a race the result was a screenshot of whatever was behind — once, a
+        terminal window filed as a class website. A wrong screenshot that looks
+        like a right one is the worst failure this harness has, so the mechanism
+        that allows it is gone.
+        """
         destination.parent.mkdir(parents=True, exist_ok=True)
-        osascript(
-            f'tell application "Safari"\n'
-            f'  activate\n'
-            f'  set index of window id {self.window_id} to 1\n'
-            f'end tell'
-        )
-        time.sleep(0.8)
-        region = f"{self.left},{self.top},{self.width},{self.height}"
+        number = self.window_number()
         subprocess.run(
-            ["screencapture", "-x", "-R", region, str(destination)],
+            ["screencapture", "-x", "-o", "-l", str(number), str(destination)],
             check=True,
         )
-        scale = image_scale(destination, self.width)
-        round_corners(destination, CORNER_RADIUS_POINTS * scale)
+        if not destination.exists() or destination.stat().st_size == 0:
+            raise SystemExit(f"screencapture wrote nothing for window {number}.")
         return destination
+
+    def window_number(self) -> int:
+        """The CoreGraphics window number for this Safari window.
+
+        Read fresh each time: window numbers survive a page load, but not a
+        window being closed and reopened, and a stale one captures nothing.
+        """
+        helper = Path(__file__).resolve().parent / "windowid.swift"
+        result = subprocess.run(
+            ["swift", str(helper), "Safari"],
+            capture_output=True, text=True,
+        )
+        if result.returncode != 0 or not result.stdout.strip():
+            raise SystemExit(f"Could not find Safari's window: {result.stderr.strip()}")
+        return int(result.stdout.strip())
 
 
 def image_scale(path: Path, width_in_points: int) -> int:

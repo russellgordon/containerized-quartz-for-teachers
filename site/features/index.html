@@ -63,11 +63,11 @@
 <hr class="rule">
 
 <section>
-  <h2>The point of it</h2>
-  <p>Most systems ask you for the same material twice.</p>
-  <p>Once when you write it. Again when you post it — a form here, an upload there, a dozen clicks to share a single handout.</p>
-  <p>That second pass is where your evenings go.</p>
-  <p>Plantoir removes it. Your notes <em>are</em> the website. Writing a file and saving it is the whole job; publishing is a button.</p>
+  <h2>Why it exists</h2>
+  <p>Sharing one handout with one class shouldn't take a dozen clicks.</p>
+  <p>But it usually does. Find the course. Find the unit. Choose a category from a dropdown, a date from a picker, a visibility setting from another dropdown. Upload. Check it worked.</p>
+  <p>None of that is hard. It's just friction, and it lands on you every single time — which is why the notes you meant to post on Sunday are still sitting on your laptop on Wednesday.</p>
+  <p>Plantoir takes the friction out. Your notes <em>are</em> the website. Writing a file and saving it is the whole job; publishing is a button.</p>
 </section>
 
 <hr class="rule">
@@ -134,8 +134,25 @@
 
 <section>
   <h2>It looks like your course, not like an app</h2>
-  <p>Each section picks its own colours, typeface and footer, so two sections of the same course are told apart at a glance.</p>
-  <p>You choose in the app and see a live sample before anything is built. The example sites further down this page are three different subjects, and none of them looks like the others.</p>
+  <p>Each course and each section picks its own colours, typeface and footer, so two sections of the same course are told apart at a glance.</p>
+  <p>You choose in the app and see a live sample before anything is built.</p>
+  <figure class="shot shot-static">
+    <picture>
+      <source srcset="../img/colour-schemes.webp" type="image/webp">
+      <img src="../img/colour-schemes.png" alt="Three class websites overlapping like a fanned deck of cards, each in a different colour scheme and typeface."
+           width="850" height="286" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>Three courses, three colour schemes. Chosen in the app, not in code.</figcaption>
+</figure>
+  <p>And each of those sites carries light and dark of its own, so a student reading at midnight gets the version they want without you maintaining a second one.</p>
+  <figure class="shot shot-static">
+    <picture>
+      <source srcset="../img/light-and-dark.webp" type="image/webp">
+      <img src="../img/light-and-dark.png" alt="The same class website twice, side by side: once in a light colour scheme and once in a dark one."
+           width="850" height="266" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>And every site does both, whichever a student prefers.</figcaption>
+</figure>
 </section>
 
 <hr class="rule">
@@ -159,14 +176,48 @@
 <hr class="rule">
 
 <section>
-  <h2>What your students get</h2>
+  <h2>Students can search the whole course</h2>
+  <p>A student who half-remembers a definition doesn't have to guess which week it was in.</p>
+  <p>One box searches every page of the course — titles and body text — and shows the match in context before they click. It works on the phone in their hand, and it needs nothing from you: the index is built with the site.</p>
+  <figure class="shot">
+    <picture>
+      <source srcset="../img/search-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/search-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/search-light.webp" type="image/webp">
+      <img src="../img/search-light.png" alt="A search panel open over a class website, listing matching pages with the search term highlighted in context."
+           width="850" height="571" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>One box, the whole course.</figcaption>
+</figure>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>It reads properly on a phone</h2>
+  <p>Which is where a good deal of it will be read: on the bus, at the back of the room, at eleven at night.</p>
+  <p>The navigation folds away, the type stays the right size, and the search still works. There's no separate mobile version to keep in step, because there's only one site.</p>
+  <figure class="shot shot-device">
+    <picture>
+      <source srcset="../img/site-phone-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/site-phone-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/site-phone-light.webp" type="image/webp">
+      <img src="../img/site-phone-light.png" alt="The same class website at phone width, with the navigation collapsed behind a button."
+           width="360" height="736" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>The same site on a phone.</figcaption>
+</figure>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>And the rest of what a page can carry</h2>
   <ul class="plain">
-    <li><strong>Search across the whole course.</strong> A student looking for a definition finds it, instead of scrolling through a term of material.</li>
     <li><strong>Mathematics set properly.</strong> Equations are typeset, not pasted in as pictures — chemistry notation included.</li>
     <li><strong>Diagrams drawn from your notes.</strong> A flowchart or a timeline is a few lines of text, drawn when the site is built. Fixing it means fixing a sentence.</li>
     <li><strong>Code with syntax highlighting</strong>, alongside images, video and PDFs.</li>
     <li><strong>Pages that link to each other</strong>, so a lesson points at the concept behind it and the concept lists the lessons that used it.</li>
-    <li><strong>A site that reads well on a phone</strong>, in light or dark, with no separate mobile version to maintain.</li>
   </ul>
   <figure class="shot">
     <picture>
@@ -178,6 +229,44 @@
     </picture>
     <figcaption>Diagrams are written, not drawn — and edited in seconds.</figcaption>
 </figure>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>It shows you what you've covered</h2>
+  <p>Tag a lesson with the curriculum expectations it addresses, and every build draws a map of the course: each expectation shaded by how many pages reach it.</p>
+  <p>It is built from your own pages, so it cannot drift from the course the way a planning spreadsheet does — and the pale squares tell you in February what you would otherwise find out in June.</p>
+  <figure class="shot">
+    <picture>
+      <source srcset="../img/coverage-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/coverage-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/coverage-light.webp" type="image/webp">
+      <img src="../img/coverage-light.png" alt="A grid of every curriculum expectation in a course, each square shaded by how many pages address it, with pale squares showing the gaps."
+           width="850" height="571" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>Every expectation in the course, shaded by how well it is covered.</figcaption>
+</figure>
+  <p>Ready-made courses arrive with the Ministry's expectations already in place as pages you can link to, so the map has something to work with from the first day.</p>
+</section>
+
+<hr class="rule">
+
+<section>
+  <h2>You can just ask</h2>
+  <p>An assistant runs on your own computer, as part of the app. "Publish Thursday's class for section 2." "Hide Unit 4, Day 12 — we didn't get to it." "What would students see right now?"</p>
+  <p>It tells you what it's about to do and waits for you to say go. Nothing you write is sent anywhere, there's no account and no cost per request, and you can leave it switched off entirely.</p>
+  <figure class="shot">
+    <picture>
+      <source srcset="../img/assistant-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/assistant-dark.png" media="(prefers-color-scheme: dark)">
+      <source srcset="../img/assistant-light.webp" type="image/webp">
+      <img src="../img/assistant-light.png" alt="The assistant window: a request typed in plain English, and the assistant describing what it is about to change with a button to approve it."
+           width="560" height="940" loading="lazy" decoding="async">
+    </picture>
+    <figcaption>It says what it will do, then waits.</figcaption>
+</figure>
+  <p>It exists to take the fiddly parts off your hands — the page-by-page settings that decide which class sees what. <a href="../day-to-day/">How that works across a week</a> is worth five minutes if you teach more than one section.</p>
 </section>
 
 <hr class="rule">
@@ -199,16 +288,6 @@
     <li><span class="label">MCV4U</span> <a href="https://mcv4u-gordon-2026-27.netlify.app">Calculus and Vectors, Grade 12</a></li>
     <li><span class="label">SCH3U</span> <a href="https://sch3u-gordon-2026-27.netlify.app">Chemistry, Grade 11</a></li>
   </ul>
-  <figure class="shot shot-device">
-    <picture>
-      <source srcset="../img/site-phone-dark.webp" type="image/webp" media="(prefers-color-scheme: dark)">
-      <source srcset="../img/site-phone-dark.png" media="(prefers-color-scheme: dark)">
-      <source srcset="../img/site-phone-light.webp" type="image/webp">
-      <img src="../img/site-phone-light.png" alt="The same class website at phone width, with the navigation collapsed behind a button."
-           width="360" height="736" loading="lazy" decoding="async">
-    </picture>
-    <figcaption>The same site on a phone.</figcaption>
-</figure>
 </section>
 
 <hr class="rule">

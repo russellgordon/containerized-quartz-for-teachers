@@ -464,7 +464,7 @@ def capture_app(workspace: Path, only: str | None = None) -> None:
             suffix = "dark" if dark else "light"
             print(f"   {suffix} appearance")
             with Appearance(dark=dark):
-                time.sleep(3)
+                time.sleep(2)
                 bundle = run_ui_test(
                     target,
                     workspace,
@@ -491,7 +491,7 @@ def capture_parts(window: "SafariWindow", suffix: str) -> None:
     """Photograph the three course home pages, for the fanned-out figure."""
     PARTS.mkdir(parents=True, exist_ok=True)
     for course in DEMO_COURSES:
-        window.load(site_address(course["code"]) + "/", settle_seconds=8.0)
+        window.load(site_address(course["code"]) + "/", settle_seconds=3.5)
         destination = PARTS / f"home-{course['code'].lower()}-{suffix}.png"
         window.capture(destination)
         print(f"   part {destination.name}")
@@ -530,7 +530,7 @@ def capture_search(window: "SafariWindow", shot: dict, suffix: str) -> None:
     whose position depends on the window size.
     """
     capture = shot["capture"]
-    window.load(site_address(capture["course"]) + capture.get("path", "/"), settle_seconds=8.0)
+    window.load(site_address(capture["course"]) + capture.get("path", "/"), settle_seconds=3.5)
     window.press("k", using="command down")
     window.press(capture.get("query", "thesis"))
     time.sleep(2.0)
@@ -572,12 +572,12 @@ def capture_sites() -> None:
         suffix = "dark" if dark else "light"
         print(f"   {suffix} appearance")
         with Appearance(dark=dark):
-            time.sleep(3)
+            time.sleep(2)
             with SafariWindow(1280, 860) as window:
                 for shot in shots:
                     capture = shot["capture"]
                     url = site_address(capture["course"]) + capture.get("path", "/")
-                    window.load(url, settle_seconds=8.0)
+                    window.load(url, settle_seconds=3.5)
                     destination = IMAGE_DIR / f"{shot['id']}-{suffix}.png"
                     window.capture(destination)
                     prepare(destination, WIDEST_WINDOW_PIXELS)
@@ -614,9 +614,9 @@ def capture_phone(dark: bool) -> None:
 
     if not was_booted:
         run(["xcrun", "simctl", "boot", udid], capture_output=True)
-        time.sleep(30)
+        time.sleep(20)
     run(["open", "-g", "-a", "Simulator"], capture_output=True)
-    time.sleep(5)
+    time.sleep(4)
 
     run(["xcrun", "simctl", "ui", udid, "appearance", "dark" if dark else "light"],
         capture_output=True)
@@ -627,7 +627,7 @@ def capture_phone(dark: bool) -> None:
 
     url = site_address("ENG2D") + "/"
     run(["xcrun", "simctl", "openurl", udid, url], capture_output=True)
-    time.sleep(15)
+    time.sleep(9)
     dismiss_safari_onboarding(udid)
 
     destination = IMAGE_DIR / f"site-phone-{suffix}.png"

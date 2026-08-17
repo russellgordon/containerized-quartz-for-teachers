@@ -150,10 +150,24 @@ h1 {
   color: var(--green-deep);
 }
 
+/* The three-part line is the promise; the sentence under it explains the
+   promise. So the first is larger and in the ink the headings use, and the
+   second stays quieter — two paragraphs at the same weight would read as one
+   long tagline that repeats itself. */
+.headline {
+  margin: 18px auto 0;
+  max-width: 520px;
+  font-size: 23px;
+  line-height: 1.45;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
 .tagline {
   margin: 14px auto 0;
   max-width: 460px;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.5;
   color: var(--ink-soft);
 }
@@ -298,6 +312,11 @@ ol.steps li::before {
    as a mistake. */
 .shot-device { width: 100%; margin-left: 0; transform: none; }
 .shot-device img { max-width: 290px; border-radius: 0; box-shadow: none; }
+
+/* An assembled figure brings its own rounded corners and its own shadows —
+   the cards inside it are drawn that way — so the frame the other shots get
+   would sit around the outside of the arrangement and spoil it. */
+.shot-static img { border-radius: 0; box-shadow: none; }
 
 .shot figcaption {
   margin-top: 12px;
@@ -449,7 +468,8 @@ footer .footer-nav a { margin-right: 18px; }
   .page-head { padding-top: 36px; }
   h1 { font-size: 36px; }
   .page-head h1 { font-size: 31px; }
-  .tagline, .page-head .standfirst { font-size: 18px; }
+  .headline { font-size: 20px; }
+  .tagline, .page-head .standfirst { font-size: 17px; }
   .downloads { grid-template-columns: 1fr; }
   .rule { margin: 44px 0; }
   .note { padding: 20px; }
