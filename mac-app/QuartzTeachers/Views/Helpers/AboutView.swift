@@ -13,10 +13,12 @@ struct AboutView: View {
 
     // MARK: - Stored properties
 
+    /// Where teachers go to learn more about the app. Set to nil to omit
+    /// the row — it and its spacing disappear together.
+    let websiteURL: URL? = URL(string: "https://plantoir.app")
+
     /// Where teachers write in for help. Set to nil to omit the row —
-    /// it and its spacing disappear together. Email is the ONLY contact
-    /// row: help is coming into the app itself, so the About panel does
-    /// not send people out to a support site.
+    /// it and its spacing disappear together.
     let supportEmailAddress: String? = "support@plantoir.app"
 
     /// Shown at the very bottom. Set to nil to omit the line.
@@ -143,10 +145,22 @@ struct AboutView: View {
             .accessibilityLabel("\(applicationName) icon")
     }
 
-    /// Label and value rows for support details, the values left-aligned
+    /// Label and value rows for website and support details, the values left-aligned
     /// to a common edge.
     var contactDetails: some View {
         Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 16, verticalSpacing: 8) {
+            if let websiteURL {
+                GridRow {
+                    Text("Website")
+                        .font(.system(size: bodySize))
+                        .foregroundStyle(.secondary)
+                    Link(destination: websiteURL) {
+                        Text(websiteURL.absoluteString)
+                            .font(.system(size: bodySize, weight: .semibold))
+                    }
+                }
+            }
+
             if let supportEmailAddress, let supportEmailURL {
                 GridRow {
                     Text("Email")
