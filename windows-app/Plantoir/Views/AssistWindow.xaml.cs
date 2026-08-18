@@ -276,6 +276,7 @@ public sealed partial class AssistWindow : Window
             {
                 Say(Speaker(line.Speaker), line.Text);
                 if (line.NeedsApproval) ShowApproval(line.Text);
+                if (line.Text.Contains(AssistWording.MayIAskForYourDates)) ShowDatesOffer();
             }
         }
         catch (OperationCanceledException) { /* the window is closing */ }
@@ -545,6 +546,76 @@ public sealed partial class AssistWindow : Window
     }
 
     private void HideApproval() => ApprovalBar.Visibility = Visibility.Collapsed;
+
+    /// <summary>
+    /// Presents an inline card asking whether the teacher would like to enter class dates,
+    /// with "Enter class dates" (opens SectionScheduleDialog) and "Not now" buttons.
+    /// </summary>
+    private void ShowDatesOffer()
+    {
+        var box = new StackPanel { Spacing = 10, Margin = new Thickness(0, 4, 0, 4) };
+
+        var headerRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        headerRow.Children.Add(new FontIcon { Glyph = "\uE787", FontSize = 16 });
+        headerRow.Children.Add(new TextBlock
+        {
+            Text = AssistWording.MayIAskForYourDates,
+            FontWeight = FontWeights.SemiBold,
+            FontSize = 14,
+        });
+        box.Children.Add(headerRow);
+
+        var subtext = new TextBlock
+        {
+            Text = "They can be typed in, chosen from a file, or read from a shared sheet.",
+            FontSize = 13,
+            Opacity = 0.8,
+            TextWrapping = TextWrapping.Wrap,
+        };
+        box.Children.Add(subtext);
+
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        var enterBtn = new Button
+        {
+            Content = "Enter class dates",
+            Style = (Style)Application.Current.Resources["AccentButtonStyle"],
+        };
+        var notNowBtn = new Button
+        {
+            Content = "Not now",
+        };
+
+        enterBtn.Click += async (_, _) =>
+        {
+            buttons.Visibility = Visibility.Collapsed;
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            var dialog = new SectionScheduleDialog(_folder, _course, _section, hwnd)
+            {
+                XamlRoot = Root.XamlRoot,
+            };
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary && dialog.SavedDates is { Count: > 0 } dates)
+            {
+                Say("Assistant", $"Remembered {dates.Count} class {(dates.Count == 1 ? "date" : "dates")} for {_course.Code} Section {_section}.");
+            }
+            else
+            {
+                Say("Assistant", "No class dates were recorded.");
+            }
+        };
+
+        notNowBtn.Click += (_, _) =>
+        {
+            buttons.Visibility = Visibility.Collapsed;
+            Say("Assistant", "No class dates recorded. You can add them anytime.");
+        };
+
+        buttons.Children.Add(enterBtn);
+        buttons.Children.Add(notNowBtn);
+        box.Children.Add(buttons);
+
+        AddCard("Assistant", box);
+    }
 
     // ---- Ending ----------------------------------------------------------
 

@@ -527,29 +527,73 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     [Description("Read the class meeting dates Plantoir already knows for a section, changing nothing. " +
                  "CALL THIS FIRST whenever you need to know when a section's classes fall — before asking the " +
                  "teacher for a timetable, and before any tool that needs dates. It is remembered from the last " +
-                 "time they gave one. If it returns nothing, then ask; once they answer, record it with " +
-                 "remember_timetable so nobody has to ask a third time.")]
+                 "time they gave one.")]
     public string ReadRememberedTimetable(
         [Description("The course code, for example ICS3U.")] string course,
-        [Description("The section number, for example 1.")] int section)
+        [Description("The section number, for example 1.")] int section,
+        [Description("Pass \"all\" to list every date on file.")] string scope = "",
+        [Description("Pass \"yes\" to replace the recorded dates.")] string revise = "")
         => Guarded(() =>
         {
             var found = workspace.Course(course);
             int number = workspace.Section(found, section);
+            string where = $"{found.Code} Section {number}";
+
+            if (string.Equals(revise, "yes", StringComparison.OrdinalIgnoreCase))
+            {
+                return $"Here you are — the dates for {where} are open for editing. {AssistWording.MayIAskForYourDates}";
+            }
+
             var remembered = TimetableMemory.Read(workspace.FolderPath, found.Code, number);
-            if (remembered is null)
-                return $"No class dates are recorded for {found.Code} Section {number}. Ask the teacher when " +
-                       "this class meets — a timetable file, or the dates themselves — then call " +
-                       "remember_timetable so this only has to be asked once.";
+            if (remembered is null || remembered.Dates.Count == 0)
+                return $"I don’t know when {where} meets yet. {AssistWording.MayIAskForYourDates}";
+
+            if (string.Equals(scope, "all", StringComparison.OrdinalIgnoreCase))
+            {
+                var all = new StringBuilder();
+                all.AppendLine($"All {remembered.Dates.Count} dates for {where}.");
+                all.AppendLine();
+                all.AppendLine("Every date on file:");
+                foreach (var date in remembered.Dates)
+                    all.AppendLine($"  {date:dddd}, {date:yyyy-MM-dd}");
+                return all.ToString().TrimEnd();
+            }
 
             var text = new StringBuilder();
-            text.AppendLine($"{found.Code} Section {number} meets on {remembered.Dates.Count} dates " +
-                            $"({remembered.Dates[0]:yyyy-MM-dd} to {remembered.Dates[^1]:yyyy-MM-dd}), " +
-                            $"from {remembered.Source}, recorded {remembered.Recorded:yyyy-MM-dd}.");
-            var upcoming = remembered.From(DateOnly.FromDateTime(DateTime.Now));
-            text.AppendLine($"{upcoming.Count} of those are still to come.");
+            text.AppendLine($"{where} meets on {remembered.Dates.Count} {(remembered.Dates.Count == 1 ? "day" : "days")}, from {remembered.Dates[0]:yyyy-MM-dd} ({remembered.Dates[0]:dddd}) to {remembered.Dates[^1]:yyyy-MM-dd} ({remembered.Dates[^1]:dddd}).");
+
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var nextSeven = today.AddDays(7);
+            var thisWeek = remembered.Dates.Where(d => d >= today && d <= nextSeven).ToList();
+
             text.AppendLine();
-            foreach (var date in remembered.Dates) text.AppendLine($"  {date:yyyy-MM-dd} {date.DayOfWeek}");
+            if (thisWeek.Count == 0)
+            {
+                text.AppendLine("Nothing in the next seven days.");
+            }
+            else
+            {
+                text.AppendLine("In the next seven days:");
+                foreach (var date in thisWeek)
+                {
+                    text.AppendLine($"  {date:dddd}, {date:yyyy-MM-dd}");
+                }
+            }
+
+            var classPages = workspace.ClassPages(found, number);
+            int spare = Math.Max(0, remembered.Dates.Count - classPages.Count);
+            text.AppendLine();
+            text.AppendLine($"{where} has {classPages.Count} class {(classPages.Count == 1 ? "page" : "pages")}.");
+            if (spare == 0)
+            {
+                text.AppendLine("Every recorded date is spoken for, so another class cannot be dated until more dates are recorded.");
+            }
+            else if (classPages.Count < remembered.Dates.Count)
+            {
+                var next = remembered.Dates[classPages.Count];
+                text.AppendLine($"{spare} recorded {(spare == 1 ? "date is" : "dates are")} still spare; the next class would fall on {next:yyyy-MM-dd} ({next:dddd}).");
+            }
+
             return text.ToString().TrimEnd();
         });
 
@@ -649,9 +693,9 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     public Task<string> PlanReDateClasses(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
-        [Description(TimetableHelp)] string timetable,
-        [Description(BlockHelp)] string block,
-        CancellationToken cancellation,
+        [Description(TimetableHelp)] string timetable = "",
+        [Description(BlockHelp)] string block = "",
+        CancellationToken cancellation = default,
         [Description("Class page titles, in the order they are taught. Leave empty for an even spread.")]
         string[]? pages = null,
         [Description("Meeting numbers, one for each entry in `pages`, in the same order.")]
@@ -726,9 +770,9 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     public Task<string> ReDateClasses(
         [Description("The course code, for example ICS3U.")] string course,
         [Description("The section number, for example 1.")] int section,
-        [Description(TimetableHelp)] string timetable,
-        [Description(BlockHelp)] string block,
-        CancellationToken cancellation,
+        [Description(TimetableHelp)] string timetable = "",
+        [Description(BlockHelp)] string block = "",
+        CancellationToken cancellation = default,
         [Description("Class page titles, in the order they are taught. Leave empty for an even spread.")]
         string[]? pages = null,
         [Description("Meeting numbers, one for each entry in `pages`, in the same order.")]
@@ -745,7 +789,24 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
     {
         try
         {
-            var parsed = await Load(timetable, block, startYear, cancellation, firstDay);
+            var found = workspace.Course(course);
+            int number = workspace.Section(found, section);
+
+            Timetable parsed;
+            if (string.IsNullOrWhiteSpace(timetable))
+            {
+                var remembered = TimetableMemory.Read(workspace.FolderPath, found.Code, number);
+                if (remembered is null || remembered.Dates.Count == 0)
+                {
+                    return $"I don’t know when {found.Code} Section {number} meets, so I can’t re-date it. {AssistWording.MayIAskForYourDates}";
+                }
+                parsed = Timetable.FromDates(remembered.Dates, remembered.Source);
+            }
+            else
+            {
+                parsed = await Load(timetable, block, startYear, cancellation, firstDay);
+            }
+
             var plan = workspace.PlanReDate(course, section, parsed,
                 pages ?? Array.Empty<string>(), meetings ?? Array.Empty<int>());
 

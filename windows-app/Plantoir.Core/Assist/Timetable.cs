@@ -254,6 +254,22 @@ public sealed class Timetable
     }
 
     /// <summary>
+    /// Construct a timetable directly from a list of dates (e.g. from TimetableMemory).
+    /// </summary>
+    public static Timetable FromDates(IReadOnlyList<DateOnly> dates, string source = "")
+    {
+        var meetings = dates.Select((d, i) => new Meeting(i + 1, d)).ToList();
+        return new Timetable
+        {
+            Block = string.IsNullOrWhiteSpace(source) ? "Class Dates" : source,
+            Meetings = meetings,
+            NonTeachingDays = Array.Empty<NonTeachingDay>(),
+            AvailableBlocks = Array.Empty<string>(),
+            DateFormat = "yyyy-MM-dd",
+        };
+    }
+
+    /// <summary>
     /// An even spread of <paramref name="count"/> classes across the
     /// meetings — the STARTING POINT, not the answer.
     ///

@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Plantoir.Core\Plantoir.Core.csproj" />
+    <ProjectReference Include="..\Plantoir.Mcp\Plantoir.Mcp.csproj" />
   </ItemGroup>
 
   <ItemGroup>

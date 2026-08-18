@@ -1379,6 +1379,64 @@ public class AssistWorkspaceTests : IDisposable
         Assert.Contains("Netlify", Briefing.Words("ICS3U", 1, "Netlify"));
     }
 
+    [Fact]
+    public void ReadRememberedTimetable_WhenEmpty_OffersToAskForDates()
+    {
+        var tools = new Plantoir.Mcp.PlantoirTools(Open());
+        string result = tools.ReadRememberedTimetable("ICS3U", 1);
+        Assert.Contains(AssistWording.MayIAskForYourDates, result);
+        Assert.Contains("I don’t know when ICS3U Section 1 meets yet", result);
+    }
+
+    [Fact]
+    public void ReadRememberedTimetable_WhenScopeAll_ReturnsEveryDate()
+    {
+        var dates = new[] { new DateOnly(2026, 9, 8), new DateOnly(2026, 9, 10), new DateOnly(2026, 9, 14) };
+        TimetableMemory.Write(_folder, "ICS3U", 1, dates, "test sheet", new DateOnly(2026, 9, 1));
+
+        var tools = new Plantoir.Mcp.PlantoirTools(Open());
+        string result = tools.ReadRememberedTimetable("ICS3U", 1, scope: "all");
+        Assert.Contains("All 3 dates for ICS3U Section 1", result);
+        Assert.Contains("2026-09-08", result);
+        Assert.Contains("2026-09-10", result);
+        Assert.Contains("2026-09-14", result);
+    }
+
+    [Fact]
+    public void ReadRememberedTimetable_WhenRevise_OffersToAskForDates()
+    {
+        var dates = new[] { new DateOnly(2026, 9, 8) };
+        TimetableMemory.Write(_folder, "ICS3U", 1, dates, "test sheet", new DateOnly(2026, 9, 1));
+
+        var tools = new Plantoir.Mcp.PlantoirTools(Open());
+        string result = tools.ReadRememberedTimetable("ICS3U", 1, revise: "yes");
+        Assert.Contains(AssistWording.MayIAskForYourDates, result);
+        Assert.Contains("open for editing", result);
+    }
+
+    [Fact]
+    public async Task ReDateClasses_WhenNoDatesOnRecord_OffersToAskForDates()
+    {
+        var tools = new Plantoir.Mcp.PlantoirTools(Open());
+        string result = await tools.ReDateClasses("ICS3U", 1);
+        Assert.Contains(AssistWording.MayIAskForYourDates, result);
+        Assert.Contains("I don’t know when ICS3U Section 1 meets", result);
+    }
+
+    [Fact]
+    public async Task ReDateClasses_UsesRememberedTimetableWhenTimetableOmitted()
+    {
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 1.md", draft: true);
+        Page("ICS3U", "section1/All Classes/Unit 1, Day 2.md", draft: true);
+
+        var dates = new[] { new DateOnly(2026, 9, 8), new DateOnly(2026, 9, 10) };
+        TimetableMemory.Write(_folder, "ICS3U", 1, dates, "test sheet", new DateOnly(2026, 9, 1));
+
+        var tools = new Plantoir.Mcp.PlantoirTools(Open());
+        string result = await tools.ReDateClasses("ICS3U", 1);
+        Assert.Contains("Moved 2 classes", result);
+    }
+
     // ---- Applying --------------------------------------------------------
 
     [Fact]
