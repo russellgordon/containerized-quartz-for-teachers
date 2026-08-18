@@ -392,6 +392,18 @@ final class AppRulesContractTests: XCTestCase {
         }
     }
 
+    /// Minor wording differences in prompts (e.g. personal access token, API token)
+    /// should still route to the correct credential sheet rather than falling back to
+    /// the plain alert.
+    func testPromptVariationsMatchAppropriateCredentialRequest() {
+        XCTAssertEqual(CredentialRequest.matching("Paste Netlify personal access token:")?.name, "netlifyToken")
+        XCTAssertEqual(CredentialRequest.matching("Paste Netlify access token:")?.name, "netlifyToken")
+        XCTAssertEqual(CredentialRequest.matching("Paste your Netlify token:")?.name, "netlifyToken")
+        XCTAssertEqual(CredentialRequest.matching("Paste Cloudflare API token:")?.name, "cloudflareToken")
+        XCTAssertEqual(CredentialRequest.matching("Paste your Cloudflare token:")?.name, "cloudflareToken")
+        XCTAssertEqual(CredentialRequest.matching("Paste your Cloudflare Account ID:")?.name, "cloudflareAccountID")
+    }
+
     /// A token shown as it is typed is a live credential on a screen a
     /// class can see; an account ID hidden is a code the teacher cannot
     /// check they pasted right. Both directions are wrong, so both are

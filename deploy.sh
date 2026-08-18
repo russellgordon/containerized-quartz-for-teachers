@@ -539,6 +539,11 @@ fi
 TOKEN=""
 if [[ "$TARGET" == "netlify" ]]; then
 TOKEN="$(get_token_keychain || true)"
+if [[ -n "$TOKEN" ]] && ! validate_token "$TOKEN"; then
+  echo "⚠️ The saved Netlify token no longer works, so it has been cleared."
+  delete_token_keychain
+  TOKEN=""
+fi
 
 # If legacy file exists, try to migrate it (XOR+base64 scheme first)
 if [[ -f "$TOKENS_FILE" ]]; then

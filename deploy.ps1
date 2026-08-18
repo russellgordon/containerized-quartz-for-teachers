@@ -526,6 +526,11 @@ this computer.
 $TOKEN = ''
 if ($TARGET -eq 'netlify') {
 $TOKEN = Get-TokenFromCredMan
+if ($TOKEN -and -not (Test-TokenValid $TOKEN)) {
+  Write-Host "The saved Netlify token no longer works, so it has been cleared."
+  Remove-TokenInCredMan
+  $TOKEN = $null
+}
 if (-not $TOKEN -and (Test-Path $TOKENS_FILE)) {
   $migrated = $false
   $decoded = Read-LegacyTokenXor

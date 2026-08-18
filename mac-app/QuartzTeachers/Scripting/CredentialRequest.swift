@@ -185,13 +185,13 @@ struct CredentialRequest: Equatable {
     /// by the two launchers and neither wording is worth pinning.
     static func matching(_ question: String) -> CredentialRequest? {
         let wording: String = question.lowercased()
-        if wording.contains("netlify token") {
+        if wording.contains("netlify") && (wording.contains("token") || wording.contains("personal access")) {
             return CredentialRequest.netlifyToken
         }
-        if wording.contains("cloudflare account id") {
+        if wording.contains("cloudflare") && (wording.contains("account id") || wording.contains("account")) {
             return CredentialRequest.cloudflareAccountID
         }
-        if wording.contains("cloudflare token") {
+        if wording.contains("cloudflare") && wording.contains("token") {
             return CredentialRequest.cloudflareToken
         }
         return nil
