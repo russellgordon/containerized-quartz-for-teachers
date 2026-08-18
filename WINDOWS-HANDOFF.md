@@ -59,11 +59,15 @@ the mac copied them. The list below is a list of gaps, not a verdict.
 
 3. **The two known-failing deploy scenarios**, `assist-cases.json` →
    scenarios *"deploy with a preview running"* and *"deploy while that section
-   is already busy"*. Unchanged since they were written: this side does not
-   stop the preview before deploying, and `StartDeployForAutomation()` calls
-   `Deploy_Click` directly, walking past the `DeployButton.IsEnabled =
-   !IsBusy` guard. **Await the stop** — a stop still running when the build
-   starts kills the build, and what goes live is the site as it was before.
+   is already busy"*. The Deploy button in the GUI is now enabled while a
+   preview is active or building (`DeployButton.IsEnabled = !DeployIsRunning`).
+   When Deploy is triggered — either by a teacher clicking Deploy in the
+   window or by the assistant calling `deploy_section` — the deploy routine
+   first stops any active or building preview (`preview.ps1 CODE N -Stop`),
+   awaits container-side process termination, and only then starts the
+   production build and deploy. **Await the stop** — a stop still running when
+   the build starts kills the build, and what goes live is the site as it was
+   before.
 
 4. **The activity trail** (`CLAUDE.md` rule 5, `shared-rules.json` →
    `activityTrail.mustRecord`). Nothing on this side writes
@@ -1640,17 +1644,17 @@ be after the writes. Your `Action?` properties are the same idea; keep them.
    survives being read on its own** — menu labels, tooltips and button titles
    do not qualify, however true they are.
 
-**What the mac does now, and what Windows still needs.** The assistant does
-what the teacher would do with the two buttons: **Stop Preview if one is
-running, wait for it, then Deploy.** Windows stops the preview only for page
-EDITS — `if (edits && PreviewIsShowing?.Invoke() == true) StopPreviewInApp?.Invoke();`
+**What the mac does now, and what Windows still needs.** Both the Deploy
+button in the section window and the assistant follow the same rule: **if a
+preview is running or building, stop it, await the container cleanup, then
+Deploy.** The Deploy button's disabled guard is now `!DeployIsRunning` (not
+`!IsBusy`), so a teacher can click Deploy straight from a running or building
+preview without having to click "Stop Preview" first. Windows stops the preview
+only for page EDITS — `if (edits && PreviewIsShowing?.Invoke() == true) StopPreviewInApp?.Invoke();`
 — and never for a deploy. And `StartDeployForAutomation()` calls `Deploy_Click`
-directly, which walks straight past `DeployButton.IsEnabled = !IsBusy`: the
-guard that stops a teacher deploying mid-preview does not apply to the
-assistant, because a disabled button only disables clicking. So a Windows
-teacher who asks the assistant to deploy while previewing gets a deploy and a
-preview in the same container at once, which is exactly what that guard
-exists to prevent.
+directly without stopping the preview. So a Windows teacher who asks the assistant
+(or clicks Deploy) while previewing would get a deploy and a preview in the same
+container at once.
 
 Two things to get right when you fix it:
 

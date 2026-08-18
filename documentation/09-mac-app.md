@@ -23,7 +23,7 @@ interfaces automatically.
 | Save | Writes `course_config.json`; [`build_site.py`](05-build-pipeline.md) applies it on the next build |
 | Revert | Puts the form's values back to the last-saved file contents |
 | Preview | Runs [`preview.sh`](03-launcher-scripts.md) `--port N` (serve mode) and embeds the announced address in a web view once it responds — up to four sections per folder at once |
-| Deploy | Runs [`deploy.sh`](07-deployment.md) with output streamed into the app (prompts answered inline); the finished live-site link wears the section's custom domain when one is set |
+| Deploy | Runs [`deploy.sh`](07-deployment.md) with output streamed into the app (prompts answered inline); if a preview is running or building, stops it and awaits container cleanup first; the finished live-site link wears the section's custom domain when one is set |
 | New Course | Writes the collected answers as `course_config.json`, then runs the real `./setup.sh`, accepting each prompt's default — the wizard re-reads the file as its saved answers, so scaffolding/backups/Quartz patches are all the wizard's own work |
 | Add Section | Context-click a course; scaffolds the new section the way the wizard would, mirroring sibling sections' frontmatter |
 | Open in Obsidian | Registers the course folder in Obsidian's own vault registry when needed and opens the section at its `index.md` |
