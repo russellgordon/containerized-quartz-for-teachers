@@ -265,6 +265,10 @@ where.
      - `ActivityTrail` logs `asked for a publishing credential` on prompt and instructions open.
   7. **23 MCP Tools**:
      - Implemented and exposed in `PlantoirTools.cs` / `plantoir-mcp.exe`.
+  8. **Prompt Shelf with Collapsible Groups (`AssistPromptShelfView.cs`)**:
+     - Pinned at the top of `AssistWindow` with 5 collapsible categories matching macOS verbatim (19 cards).
+     - Tapping a card fills the input box for editing. Open/shut state is persisted in `AppSettings.AssistPromptShelfOpenGroups`.
+     - Tested in `AssistPromptShelfTests.cs` (473 total tests passing).
 
 - **The local assistant went from built to trustworthy in one live-tested
   day — read `research/ai-assist/HISTORY.md` part 2 §10 before building the mac's**
