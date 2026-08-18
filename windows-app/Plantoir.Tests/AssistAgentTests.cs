@@ -115,7 +115,7 @@ public class AssistAgentTests
         // exact tool, exact arguments, server's build declined, restart
         // offered, and the model never consulted.
         var rig = new Rig();
-        rig.Tools.Result = "Published “Unit 2, Day 3” and the 3 pages it links to.";
+        rig.Tools.Result = "Published “Unit 2, Day 3”.";
 
         var lines = rig.Say("Publish Unit 2, Day 3, and everything it links to");
 
@@ -126,8 +126,7 @@ public class AssistAgentTests
         Assert.Equal("Unit 2, Day 3", call.Arguments["pages"]![0]!.GetValue<string>());
         Assert.False(call.Arguments["preview"]!.GetValue<bool>());
         Assert.Contains(lines, l => l.Text.Contains("Published “Unit 2, Day 3”"));
-        Assert.True(lines[^1].NeedsApproval);
-        Assert.Contains("preview", lines[^1].Text, StringComparison.OrdinalIgnoreCase);
+        Assert.False(lines[^1].NeedsApproval);
     }
 
     [Fact]
@@ -159,11 +158,9 @@ public class AssistAgentTests
     // ---- Taking something back down -------------------------------------
 
     [Fact]
-    public void UnpublishingStopsTheShowingPreviewEditsThenOffersTheRestart()
+    public void UnpublishingStopsTheShowingPreviewAndEdits()
     {
-        // The stop-edit-offer flow, in the order a person would do it. The
-        // first live run skipped all three: the preview kept serving the old
-        // build and the teacher concluded the assistant was stuck.
+        // The stop-edit flow, in the order a person would do it.
         var rig = new Rig { PreviewShowing = true };
         rig.Tools.Result = "Unpublished “Unit 2, Day 3”.";
 
@@ -172,38 +169,19 @@ public class AssistAgentTests
         Assert.Empty(rig.Model.Asked);                        // the card's shape is a command
         Assert.Equal("stop preview", rig.AppActions[0]);      // before the edit
         Assert.False(Assert.Single(rig.Tools.Calls).Arguments["preview"]!.GetValue<bool>());
-        Assert.True(rig.Agent.IsAwaitingApproval);
-        Assert.True(lines[^1].NeedsApproval);
-
-        var answer = rig.Approve();
-        Assert.Contains("show preview", rig.AppActions);
         Assert.False(rig.Agent.IsAwaitingApproval);
-        Assert.Contains("preview is starting", answer[^1].Text);
+        Assert.Contains(lines, l => l.Text.Contains("Unpublished “Unit 2, Day 3”"));
     }
 
     [Fact]
-    public void DecliningTheRestartLeavesThePreviewAloneAndSaysHowToGetItBack()
-    {
-        var rig = new Rig { PreviewShowing = true };
-        rig.Model.ThenCalls("unpublish_pages", """{"course": "VVH2O", "section": 1}""");
-
-        rig.Say("I published Unit 4, Day 1 by mistake — unpublish it");
-        var answer = rig.Decline();
-
-        Assert.DoesNotContain("show preview", rig.AppActions);
-        Assert.False(rig.Agent.IsAwaitingApproval);
-        Assert.Contains("preview the site", answer[^1].Text);
-    }
-
-    [Fact]
-    public void AnEditWithNoPreviewShowingStopsNothingButStillOffers()
+    public void AnEditWithNoPreviewShowingStopsNothing()
     {
         var rig = new Rig { PreviewShowing = false };
 
         var lines = rig.Say("Unpublish Unit 2, Day 3");
 
         Assert.DoesNotContain("stop preview", rig.AppActions);
-        Assert.True(lines[^1].NeedsApproval);
+        Assert.False(rig.Agent.IsAwaitingApproval);
     }
 
     // ---- Looking before you leap ----------------------------------------
@@ -291,7 +269,7 @@ public class AssistAgentTests
     }
 
     [Fact]
-    public void UndoIsACommandAndOffersThePreview()
+    public void UndoIsACommandAndReversesChange()
     {
         // Bare "Undo that" was DECLINED by the model three trials out of
         // three — without conversation context it saw nothing to undo. It
@@ -304,7 +282,7 @@ public class AssistAgentTests
         Assert.Empty(rig.Model.Asked);
         Assert.Equal("undo_last_change", Assert.Single(rig.Tools.Calls).Name);
         Assert.Contains(lines, l => l.Text.Contains("Took back the last change."));
-        Assert.True(lines[^1].NeedsApproval);   // the restart offer
+        Assert.False(lines[^1].NeedsApproval);
     }
 
     // ---- Putting it in front of students ---------------------------------

@@ -400,7 +400,7 @@ public sealed class AssistAgent
 
     private JsonObject? _awaiting;      // a write the teacher has not agreed to yet
 
-    public bool IsAwaitingApproval => _awaiting is not null || _offeringPreview;
+    public bool IsAwaitingApproval => _awaiting is not null;
     public string? PendingTool => _awaiting?["function"]?["name"]?.GetValue<string>();
 
     /// <summary>
@@ -659,15 +659,6 @@ public sealed class AssistAgent
     /// </summary>
     public async Task<List<Line>> Approve(CancellationToken cancellation)
     {
-        if (_offeringPreview)
-        {
-            _offeringPreview = false;
-            ShowPreviewInApp?.Invoke();
-            const string opening = "The preview is starting in Plantoir's main window — the build shows its progress there.";
-            _messages.Add(new JsonObject { ["role"] = "assistant", ["content"] = opening });
-            return new List<Line> { new("assistant", opening) };
-        }
-
         if (_awaiting is not { } call) return new List<Line>();
         _awaiting = null;
 
@@ -681,14 +672,6 @@ public sealed class AssistAgent
     /// <summary>The teacher said no. Cancel the waiting action.</summary>
     public Task<List<Line>> Decline(CancellationToken cancellation)
     {
-        if (_offeringPreview)
-        {
-            _offeringPreview = false;
-            const string later = "All right — say “preview the site” whenever you want it back.";
-            _messages.Add(new JsonObject { ["role"] = "assistant", ["content"] = later });
-            return Task.FromResult(new List<Line> { new("assistant", later) });
-        }
-
         if (_awaiting is not { } call) return Task.FromResult(new List<Line>());
         string toolName = call["function"]?["name"]?.GetValue<string>() ?? "";
         _awaiting = null;
@@ -777,12 +760,15 @@ public sealed class AssistAgent
         return lines;
     }
 
-    /// <summary>
-    /// Whether the last tool handed its work to the main window — and if so,
-    /// the turn is over. Asking the model "what next?" after "the preview is
-    /// opening in the main window" got the same sentence restated, so the
-    /// teacher read it twice and paid ten seconds for the echo.
-    /// </summary>
+    private static readonly HashSet<string> WriteTools = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "publish_pages", "unpublish_pages", "publish_class_on", "undo_last_change",
+        "add_next_class", "schedule_deploy", "cancel_scheduled_deploy",
+        "rebuild_preview", "deploy_section", "re_date_classes", "roll_over_course",
+    };
+
+    private static bool IsWriteTool(string name) => WriteTools.Contains(name);
+
     private bool _handedToApp;
 
     private bool TakeHandedToApp()
@@ -793,18 +779,11 @@ public sealed class AssistAgent
     }
 
     /// <summary>
-    /// Close out a turn whose last tool handed its work to the app. After a
-    /// page edit, the closing line is a QUESTION — restart the preview? —
-    /// answered by the same buttons as a tool approval.
+    /// Close out a turn whose last tool finished work.
     /// </summary>
     private bool TurnEnded(List<Line> lines)
     {
-        if (!TakeHandedToApp()) return false;
-        if (_offeringPreview)
-            lines.Add(new Line("assistant",
-                "Shall I start the preview so you can look the change over?",
-                NeedsApproval: true, Pending: "start the preview"));
-        return true;
+        return TakeHandedToApp();
     }
 
     private async Task<string> RunTool(JsonObject call, List<Line> lines, CancellationToken cancellation)
@@ -856,25 +835,12 @@ public sealed class AssistAgent
             ["tool_call_id"] = call["id"]?.DeepClone(),
             ["content"] = result,
         });
-        if (edits)
-        {
-            _handedToApp = true;
-            _offeringPreview = true;
-        }
-        else if (name.Equals("check_section", StringComparison.OrdinalIgnoreCase))
+        if (IsWriteTool(name) || name.Equals("check_section", StringComparison.OrdinalIgnoreCase))
         {
             _handedToApp = true;
         }
         return result;
     }
-
-    /// <summary>
-    /// A restart OFFERED, not performed. The preview was stopped for the
-    /// edit; whether to spend the minutes rebuilding it now is the
-    /// teacher's call — they may have three more changes coming, and one
-    /// rebuild at the end beats four along the way.
-    /// </summary>
-    private bool _offeringPreview;
 
     /// <summary>Record a tool's answer without having called the server.</summary>
     private string Answer(JsonObject call, string text)
