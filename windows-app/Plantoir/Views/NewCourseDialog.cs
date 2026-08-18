@@ -619,6 +619,7 @@ public sealed class NewCourseDialog : ContentDialog
             .Select(p => int.TryParse(p, out int n) ? n : 0)
             .Where(n => n > 0)
             .Distinct()
+            .OrderBy(n => n)
             .ToList();
 
     // ---- Creation --------------------------------------------------------

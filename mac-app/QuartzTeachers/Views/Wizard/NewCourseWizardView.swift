@@ -177,6 +177,7 @@ struct NewCourseWizardView: View {
                 }
             }
         }
+        result.sort()
         return result
     }
 

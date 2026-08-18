@@ -810,8 +810,8 @@ def get_allowed_section_numbers(config: dict) -> list[int]:
     try:
         seq = config.get("section_numbers")
         if isinstance(seq, list) and seq:
-            # Ensure ints
-            return [int(x) for x in seq]
+            # Ensure ints and sorted
+            return sorted([int(x) for x in seq])
         n = int(config.get("num_sections", 1))
         return list(range(1, n + 1))
     except Exception:

@@ -132,6 +132,10 @@ public class CourseConfigurationTests
         Assert.Equal(new[] { 1 }, FromJson("""{"course_code":"X"}""").SectionNumbers);
 
     [Fact]
+    public void SectionNumbersSortedInAscendingOrder() =>
+        Assert.Equal(new[] { 2, 4, 5, 9 }, FromJson("""{"course_code":"X","section_numbers":[5,4,2,9]}""").SectionNumbers);
+
+    [Fact]
     public void SetSectionNumbersWritesBothKeys()
     {
         var config = FromJson("""{"course_code":"X"}""");

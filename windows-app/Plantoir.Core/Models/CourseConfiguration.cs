@@ -246,6 +246,7 @@ public sealed class CourseConfiguration
                 var parsed = array
                     .Where(t => t.Type is JTokenType.Integer or JTokenType.Float)
                     .Select(t => (int)t)
+                    .OrderBy(n => n)
                     .ToList();
                 if (array.Count == 0 || parsed.Count > 0) return parsed;
             }
@@ -257,8 +258,9 @@ public sealed class CourseConfiguration
     /// <summary>Writes BOTH section_numbers and num_sections = count.</summary>
     public void SetSectionNumbers(IReadOnlyList<int> numbers)
     {
-        _values["section_numbers"] = new JArray(numbers);
-        _values["num_sections"] = numbers.Count;
+        var sorted = numbers.OrderBy(n => n).ToList();
+        _values["section_numbers"] = new JArray(sorted);
+        _values["num_sections"] = sorted.Count;
     }
 
     // ---- Per-section nested maps ({key: {"sections": {"sectionN": v}}}) --

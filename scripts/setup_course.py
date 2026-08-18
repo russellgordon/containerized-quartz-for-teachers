@@ -1730,7 +1730,7 @@ def prompt_section_numbers(num_sections: int, saved_config: dict) -> list[int]:
         print("Section numbers must be positive integers.")
         return prompt_section_numbers(num_sections, saved_config)
 
-    return nums
+    return sorted(nums)
 
 # ---------- NEW: Obsidian defaults copier -----------------------------------
 

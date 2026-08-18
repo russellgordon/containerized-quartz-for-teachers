@@ -144,7 +144,9 @@ class CourseConfiguration {
 
     var sectionNumbers: [Int] {
         if let numbers = values["section_numbers"] as? [Int] {
-            return numbers
+            var sortedNumbers: [Int] = numbers
+            sortedNumbers.sort()
+            return sortedNumbers
         }
         // Older configs may store numbers as NSNumber via JSONSerialization.
         if let rawNumbers = values["section_numbers"] as? [Any] {
@@ -155,6 +157,7 @@ class CourseConfiguration {
                 }
             }
             if !result.isEmpty {
+                result.sort()
                 return result
             }
         }
@@ -350,8 +353,10 @@ class CourseConfiguration {
     /// Replaces the course's timetable section numbers (used when a
     /// section is archived and removed).
     func setSectionNumbers(_ sectionNumbers: [Int]) {
-        values["section_numbers"] = sectionNumbers
-        values["num_sections"] = sectionNumbers.count
+        var sortedNumbers: [Int] = sectionNumbers
+        sortedNumbers.sort()
+        values["section_numbers"] = sortedNumbers
+        values["num_sections"] = sortedNumbers.count
     }
 
     /// The emoji shown beside the site title for a given section.

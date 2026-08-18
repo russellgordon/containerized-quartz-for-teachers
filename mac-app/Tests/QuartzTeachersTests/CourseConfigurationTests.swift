@@ -208,4 +208,24 @@ final class CourseConfigurationTests: XCTestCase {
         XCTAssertNotNil(CourseConfiguration.deployFolderProblem(forPath: base.path),
                         "A read-only folder cannot receive a site")
     }
+
+    @MainActor
+    func testSectionNumbersAreSortedInAscendingOrder() throws {
+        let dictionary: [String: Any] = [
+            "course_code": "MCV4U",
+            "section_numbers": [5, 4, 2, 9],
+            "num_sections": 4
+        ]
+        let data: Data = try JSONSerialization.data(withJSONObject: dictionary, options: [.prettyPrinted, .sortedKeys])
+        let fileURL: URL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("course_config_sorted_test_\(UUID().uuidString).json")
+        try data.write(to: fileURL)
+        let configuration: CourseConfiguration = try CourseConfiguration(contentsOf: fileURL)
+
+        XCTAssertEqual(configuration.sectionNumbers, [2, 4, 5, 9],
+                       "Section numbers should always be sorted in ascending order")
+
+        configuration.setSectionNumbers([8, 1, 6])
+        XCTAssertEqual(configuration.sectionNumbers, [1, 6, 8])
+    }
 }
