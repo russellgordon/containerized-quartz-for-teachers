@@ -362,6 +362,56 @@ def append_sidebar_sharing_styles(base_scss_path: Path):
         print(f"⚠️ Error appending sidebar sharing styles: {e}")
 # --- END ADD ---
 
+# --- ADD: Prevent page title wrapping and allow dynamic shrinking on mobile ---
+def append_page_title_styles(base_scss_path: Path):
+    """
+    Prevents the navbar course code and section number from wrapping onto
+    a second line on mobile by dynamically scaling the page title font size
+    down (up to 50% of its original 1.75rem size) and setting white-space: nowrap.
+
+    On narrow phone viewports with the mobile hamburger button, search bar,
+    and dark mode toggle sharing the top header bar, course titles like
+    "📚 ENG2D S1" could wrap the section onto a second line.
+
+    Using clamp(0.875rem, 4.5vw, 1.75rem) keeps the title at full 1.75rem size
+    on desktop and tablet (where viewport >= 800px), smoothly shrinks it on
+    mobile screens, and ensures it never drops below 0.875rem (50% of original).
+    """
+    if not base_scss_path.exists():
+        print(f"⚠️ base.scss not found at {base_scss_path}")
+        return
+    try:
+        marker = "/* Page title dynamic sizing and no-wrap on mobile */"
+        block = (
+            "\n\n"
+            f"{marker}\n"
+            ".page-title {\n"
+            "  font-size: clamp(0.875rem, 4.5vw, 1.75rem);\n"
+            "  white-space: nowrap;\n"
+            "}\n\n"
+            ".page-title a {\n"
+            "  display: inline-block;\n"
+            "  max-width: 100%;\n"
+            "  overflow: hidden;\n"
+            "  text-overflow: ellipsis;\n"
+            "  white-space: nowrap;\n"
+            "}\n"
+        )
+
+        with open(base_scss_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        if marker in content:
+            print("ℹ️ Page title styles already present in base.scss (no change).")
+            return
+
+        with open(base_scss_path, "w", encoding="utf-8") as f:
+            f.write(content + block)
+        print("✅ Appended page title styles to base.scss")
+    except Exception as e:
+        print(f"⚠️ Error appending page title styles: {e}")
+# --- END ADD ---
+
 # --- ADD: Patch ContentMeta.tsx date format ---
 def patch_date_format(date_tsx_file_path: Path):
     """Update formatDate in Date.tsx to show full weekday, month, and day."""
@@ -3720,6 +3770,7 @@ def build_section_site(
     # itself the next time it is previewed. Both are idempotent and cheap.
     append_mermaid_styles(base_scss)
     append_sidebar_sharing_styles(base_scss)
+    append_page_title_styles(base_scss)
     mermaid_ts = output_dir / "quartz" / "components" / "scripts" / "mermaid.inline.ts"
     theme_ts = output_dir / "quartz" / "util" / "theme.ts"
     head_tsx = output_dir / "quartz" / "components" / "Head.tsx"
