@@ -189,7 +189,6 @@ public sealed partial class MainWindow : Window
         {
             Workspace.Selection = new SidebarSelection.SectionItem(courseCode, section);
             if (DetailHost.Content is SectionDetailView detail) detail.StartPreviewIfIdle();
-            Activate();
         });
     }
 
@@ -204,7 +203,6 @@ public sealed partial class MainWindow : Window
         {
             Workspace.Selection = new SidebarSelection.SectionItem(courseCode, section);
             if (DetailHost.Content is SectionDetailView detail) detail.StartDeployForAutomation();
-            Activate();
         });
     }
 
