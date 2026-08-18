@@ -539,9 +539,8 @@ public sealed partial class AssistWindow : Window
 
     private void ShowApproval(string question)
     {
-        // The tool's name is emphasised in this sentence, and this is the
-        // sentence the teacher is answering yes or no to.
-        Write(ApprovalText, question);
+        bool isDeploy = _agent?.PendingTool == "deploy_section";
+        ApproveButton.Content = isDeploy ? "Deploy" : "Go";
         ApprovalBar.Visibility = Visibility.Visible;
     }
 

@@ -756,8 +756,6 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
                 text.AppendLine("Worth looking at:");
                 foreach (string problem in plan.Problems) text.AppendLine("  • " + problem);
             }
-            if (result.BackupPath is not null)
-                text.Append("\nA backup was made first, so this can be undone from Plantoir’s Backups list.");
             return text.ToString();
         }
         catch (AssistRefusal refusal) { return refusal.Message; }
@@ -822,8 +820,6 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
                 text.AppendLine($"{plan.Problems.Count} thing{(plan.Problems.Count == 1 ? "" : "s")} worth looking at:");
                 foreach (string problem in plan.Problems) text.AppendLine("  • " + problem);
             }
-            if (result.BackupPath is not null)
-                text.Append("\nA backup was made first, so this can be undone from Plantoir’s Backups list.");
             return text.ToString();
         }
         catch (AssistRefusal refusal) { return refusal.Message; }
@@ -872,9 +868,7 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         {
             var plan = workspace.PlanSyncDates(course, section, classes ?? Array.Empty<string>());
             var result = workspace.ApplySyncDates(plan);
-            return result.BackupPath is null
-                ? result.Message
-                : result.Message + "\n\nA backup was made first, so this can be undone from Plantoir’s Backups list.";
+            return result.Message;
         });
 
     // ---- Planning (changes nothing) --------------------------------------
@@ -1047,8 +1041,6 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
             var text = new StringBuilder(result.Message);
             if (plan.Index is { WillChange: true } index)
                 text.Append($"\nThe section's front page now shows “{index.ToClass}”.");
-            if (result.BackupPath is not null)
-                text.Append("\n\nA backup was made first, so this can be undone from Plantoir’s Backups list.");
             return text.ToString();
         }
         catch (AssistRefusal refusal) { return refusal.Message; }
@@ -1161,12 +1153,7 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
             if (plan.ChangesNothing && !preview) return plan.Describe();
 
             var result = await workspace.Apply(plan, Relay(progress), cancellation);
-
-            var text = new StringBuilder(result.Message);
-            if (result.BackupPath is not null)
-                text.Append("\n\nA backup was made first, so this can be undone from Plantoir’s " +
-                            "Backups list if it is not what you wanted.");
-            return text.ToString();
+            return result.Message;
         }
         catch (AssistRefusal refusal) { return refusal.Message; }
         catch (OperationCanceledException) { return "The publish was stopped before it finished."; }

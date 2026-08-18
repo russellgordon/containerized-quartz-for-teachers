@@ -34,27 +34,16 @@
             <StackPanel x:Name="Transcript" Spacing="10" />
         </ScrollViewer>
 
-        <!-- The approval bar. Hidden until a write is actually waiting, so it
-             never reads as a decision the teacher has already been asked for. -->
-        <Border x:Name="ApprovalBar" Grid.Row="3" Visibility="Collapsed"
-                Padding="12" CornerRadius="6"
-                Background="{ThemeResource SystemFillColorCautionBackgroundBrush}">
-            <Grid ColumnSpacing="8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <TextBlock x:Name="ApprovalText" Grid.Column="0" TextWrapping="Wrap"
-                           VerticalAlignment="Center" />
-                <Button x:Name="DeclineButton" Grid.Column="1" Content="No"
-                        Click="Decline_Click"
-                        AutomationProperties.AutomationId="assistDeclineButton" />
-                <Button x:Name="ApproveButton" Grid.Column="2" Content="Go ahead"
-                        Style="{ThemeResource AccentButtonStyle}" Click="Approve_Click"
-                        AutomationProperties.AutomationId="assistApproveButton" />
-            </Grid>
-        </Border>
+        <!-- Approval actions. No banner or repeated question text — just the choice buttons right above the input. -->
+        <StackPanel x:Name="ApprovalBar" Grid.Row="3" Visibility="Collapsed"
+                    Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,2,0,4">
+            <Button x:Name="DeclineButton" Content="Cancel"
+                    Click="Decline_Click"
+                    AutomationProperties.AutomationId="assistDeclineButton" />
+            <Button x:Name="ApproveButton" Content="Go"
+                    Style="{ThemeResource AccentButtonStyle}" Click="Approve_Click"
+                    AutomationProperties.AutomationId="assistApproveButton" />
+        </StackPanel>
 
         <Grid Grid.Row="4" ColumnSpacing="8">
             <Grid.ColumnDefinitions>
