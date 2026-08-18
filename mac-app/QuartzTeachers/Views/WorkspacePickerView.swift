@@ -25,7 +25,7 @@ struct WorkspacePickerView: View {
                     .font(.title2)
                     .bold()
 
-                Text("Pick the folder where your class websites live — the one with your courses inside (for example, “Class Websites” on your Desktop). Starting from scratch? Choose an empty folder instead.")
+                Text("Pick the folder where your course notes live — the one with your courses inside (for example, “Course Notes” on your Desktop). Starting from scratch? Choose an empty folder instead.")
                     .frame(maxWidth: 460)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)

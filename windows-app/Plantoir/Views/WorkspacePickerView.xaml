@@ -13,7 +13,7 @@
             <TextBlock Text="Choose Your Working Folder" FontSize="22" FontWeight="Bold"
                        HorizontalAlignment="Center" />
             <TextBlock MaxWidth="460" TextWrapping="Wrap" TextAlignment="Center" Opacity="0.7"
-                       Text="Pick the folder where your class websites live — the one with your courses inside (for example, &quot;Class Websites&quot; on your Desktop). Starting from scratch? Choose an empty folder instead." />
+                       Text="Pick the folder where your course notes live — the one with your courses inside (for example, &quot;Course Notes&quot; on your Desktop). Starting from scratch? Choose an empty folder instead." />
         </StackPanel>
 
         <!-- Empty-folder confirmation -->
