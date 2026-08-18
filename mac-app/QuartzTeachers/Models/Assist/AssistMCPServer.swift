@@ -68,24 +68,34 @@ enum AssistMCPServer {
         workspace.adoptRestoredPath(workingFolder.path)
         let runner: AssistToolRunner = AssistToolRunner(workspace: workspace)
 
-        while let line = readLine(strippingNewline: true) {
-            if line.isEmpty {
-                continue
+        DispatchQueue.global(qos: .userInitiated).async {
+            while let line = readLine(strippingNewline: true) {
+                if line.isEmpty {
+                    continue
+                }
+                guard let data = line.data(using: .utf8) else {
+                    continue
+                }
+                Task { @MainActor in
+                    guard let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                        return
+                    }
+                    if let reply = await handle(request: request, runner: runner) {
+                        write(reply)
+                    }
+                }
             }
-            guard let data = line.data(using: .utf8),
-                  let request = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                continue
-            }
-            if let reply = handle(request: request, runner: runner) {
-                write(reply)
+            Task { @MainActor in
+                exit(0)
             }
         }
-        exit(0)
+
+        dispatchMain()
     }
 
     /// One request, answered. Returns nil for a notification, which by the
     /// JSON-RPC contract is not replied to at all.
-    private static func handle(request: [String: Any], runner: AssistToolRunner) -> [String: Any]? {
+    private static func handle(request: [String: Any], runner: AssistToolRunner) async -> [String: Any]? {
         let method: String = (request["method"] as? String) ?? ""
         let identifier: Any? = request["id"]
 
@@ -138,10 +148,7 @@ enum AssistMCPServer {
                 )
             )
 
-            // The runner is async and this loop is not; the semaphore is the
-            // join. Safe here because nothing else is running — this process
-            // is a server, not an app, and has no UI to block.
-            let outcome: AssistToolOutcome = runSynchronously(call: call, runner: runner)
+            let outcome: AssistToolOutcome = await runner.run(call: call)
             return success(id: identifier, result: [
                 "content": [["type": "text", "text": outcome.detail]],
             ])
@@ -149,25 +156,6 @@ enum AssistMCPServer {
         default:
             return failure(id: identifier, code: -32601, message: "Unknown method \(method).")
         }
-    }
-
-    /// Bridge the runner's async work into this synchronous read loop.
-    private static func runSynchronously(call: AssistToolCall, runner: AssistToolRunner) -> AssistToolOutcome {
-        let semaphore: DispatchSemaphore = DispatchSemaphore(value: 0)
-        // A box rather than a captured var: the continuation writes it on
-        // another thread and the wait below reads it after the signal.
-        final class Box: @unchecked Sendable {
-            var outcome: AssistToolOutcome?
-        }
-        let box: Box = Box()
-
-        Task { @MainActor in
-            box.outcome = await runner.run(call: call)
-            semaphore.signal()
-        }
-        semaphore.wait()
-
-        return box.outcome ?? AssistToolOutcome.couldNotRead("The tool did not finish.")
     }
 
     // MARK: - JSON-RPC plumbing
