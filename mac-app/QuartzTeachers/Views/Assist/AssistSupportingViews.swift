@@ -163,12 +163,7 @@ struct AssistPromptShelfView: View {
                 "Start a new unit for the next class",
                 "Add five more days to Unit 4",
                 "Duplicate Unit 3, Day 2 as my next class",
-                "What dates am I teaching?",
-                // The follow-up the timetable answer offers. On the shelf as
-                // well because a teacher who has not asked the question yet
-                // has no way to know it is there — an offer made only inside
-                // an answer is invisible until you have already had it.
-                "Show me the rest of the dates",
+                "When are my next classes?",
                 "I have a revised list of class dates",
                 "Re-date my classes",
             ]),

@@ -345,7 +345,21 @@ nonisolated struct AssistCardCommand: Sendable, Equatable {
         ("start a new unit",
          AssistCardCommand(toolName: "add_next_class", arguments: ["unit": "next"])),
 
+        ("when are my next classes?",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: [:])),
+        ("when are my next classes",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: [:])),
+        ("when is my next class?",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: [:])),
+        ("when is my next class",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: [:])),
+        ("when do i teach next?",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: [:])),
+        ("when do i teach next",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: [:])),
         ("what dates am i teaching?",
+         AssistCardCommand(toolName: "read_remembered_timetable", arguments: [:])),
+        ("what dates am i teaching",
          AssistCardCommand(toolName: "read_remembered_timetable", arguments: [:])),
 
         // Takes up the offer the answer above ends with. Matched in code, and

@@ -145,7 +145,56 @@
         "arguments" : {
 
         },
+        "phrasing" : "when are my next classes?",
+        "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "when are my next classes",
+        "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "when is my next class?",
+        "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "when is my next class",
+        "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "when do i teach next?",
+        "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "when do i teach next",
+        "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+
+        },
         "phrasing" : "what dates am i teaching?",
+        "tool" : "read_remembered_timetable"
+      },
+      {
+        "arguments" : {
+
+        },
+        "phrasing" : "what dates am i teaching",
         "tool" : "read_remembered_timetable"
       },
       {

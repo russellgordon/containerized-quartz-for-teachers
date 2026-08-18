@@ -1802,15 +1802,15 @@ final class AssistToolRunnerTests: XCTestCase {
 
         _ = await made.runner.run(call: call(
             "remember_timetable",
-            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
+            arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10", "source": "typed in by hand"]
         ))
         let outcome: AssistToolOutcome = await made.runner.run(call: call(
             "read_remembered_timetable", arguments: ["course": "ICS3U", "section": 1]
         ))
 
-        XCTAssertEqual(outcome.summary, "ICS3U Section 1 meets on 2 recorded days.")
-        XCTAssertFalse(outcome.summary.contains("from "),
+        XCTAssertFalse(outcome.summary.contains("meets on 2 recorded days, from typed in by hand"),
                        "The sentence trails off into where the dates came from: \(outcome.summary)")
+        XCTAssertTrue(outcome.summary.contains("Where they came from: typed in by hand"), outcome.summary)
     }
 
     // MARK: - "What dates am I teaching?"
@@ -1821,13 +1821,18 @@ final class AssistToolRunnerTests: XCTestCase {
     /// The answer used to carry no dates at all: a count and two endpoints, so
     /// a teacher asking what they were teaching was told how many days there
     /// were and left to go and look.
+    /// The next upcoming classes first, with page titles and dates, and an offer
+    /// for all dates — without continuing into the LLM.
     @MainActor
-    func testTheTimetableAnswersWithTheWeekThenOffersTheRest() async throws {
+    func testTheTimetableAnswersWithUpcomingClassesThenOffersTheRest() async throws {
         let made = try makeRunner()
         defer { try? FileManager.default.removeItem(at: made.root) }
 
-        // The fixture's clock is 2026-09-08. Three dates fall inside the next
-        // seven days; the fourth is a fortnight out.
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08", body: "one", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "true", date: "2026-09-10", body: "two", in: made.course)
+
+        // The fixture's clock is 2026-09-08. Three upcoming dates are shown;
+        // the fourth is beyond the top 3.
         _ = await made.runner.run(call: call(
             "remember_timetable",
             arguments: ["course": "ICS3U", "section": 1,
@@ -1837,23 +1842,18 @@ final class AssistToolRunnerTests: XCTestCase {
         let outcome: AssistToolOutcome = await made.runner.run(call: call(
             "read_remembered_timetable", arguments: ["course": "ICS3U", "section": 1]
         ))
-        print("\n===== WHAT DATES AM I TEACHING =====")
-        print(outcome.detail)
-        print("====================================\n")
 
-        XCTAssertTrue(outcome.detail.contains("In the next seven days:"), outcome.detail)
-        for inside in ["2026-09-08", "2026-09-10", "2026-09-14"] {
-            XCTAssertTrue(outcome.detail.contains(inside), "\(inside) missing: \(outcome.detail)")
-        }
-        // Checked as a LIST ENTRY: the last date also appears in the opening
-        // line's range, so a bare substring test would fail on correct output.
-        XCTAssertFalse(outcome.detail.contains("Thursday, 2026-09-24"),
-                       "A date a fortnight out was listed with this week's: \(outcome.detail)")
+        XCTAssertFalse(outcome.shouldContinue, "Deterministic answer finishes turn immediately")
+        XCTAssertTrue(outcome.summary.contains("Your next 3 upcoming classes for ICS3U Section 1:"), outcome.summary)
+        XCTAssertTrue(outcome.summary.contains("Tuesday, 2026-09-08 — Unit 1, Day 1"), outcome.summary)
+        XCTAssertTrue(outcome.summary.contains("Thursday, 2026-09-10 — Unit 1, Day 2"), outcome.summary)
+        XCTAssertTrue(outcome.summary.contains("Monday, 2026-09-14 — (page not yet created)"), outcome.summary)
+        XCTAssertFalse(outcome.summary.contains("Thursday, 2026-09-24"), outcome.summary)
 
         // The offer, and the words it names must be words the window matches.
-        XCTAssertTrue(outcome.detail.contains("There is 1 more."), outcome.detail)
-        let offered: String = "show me the rest of the dates"
-        XCTAssertTrue(outcome.detail.lowercased().contains(offered), outcome.detail)
+        XCTAssertTrue(outcome.summary.contains("There is 1 more."), outcome.summary)
+        let offered: String = "show me all the dates"
+        XCTAssertTrue(outcome.summary.lowercased().contains(offered), outcome.summary)
         XCTAssertEqual(AssistCardCommand.matching(offered)?.toolName, "read_remembered_timetable",
                        "The assistant offered words nothing understands")
     }
@@ -1870,7 +1870,7 @@ final class AssistToolRunnerTests: XCTestCase {
                         "dates": "2026-09-08; 2026-09-10; 2026-09-14; 2026-09-24"]
         ))
 
-        let command = try XCTUnwrap(AssistCardCommand.matching("Show me the rest of the dates"))
+        let command = try XCTUnwrap(AssistCardCommand.matching("Show me all the dates"))
         var arguments: [String: Any] = ["course": "ICS3U", "section": 1]
         for (key, value) in command.arguments {
             arguments[key] = value
@@ -1879,17 +1879,16 @@ final class AssistToolRunnerTests: XCTestCase {
             call: call(command.toolName, arguments: arguments)
         )
 
-        XCTAssertTrue(outcome.detail.contains("Every date on file:"), outcome.detail)
+        XCTAssertFalse(outcome.shouldContinue)
+        XCTAssertTrue(outcome.summary.contains("Every date on file for ICS3U Section 1:"), outcome.summary)
         for every in ["2026-09-08", "2026-09-10", "2026-09-14", "2026-09-24"] {
-            XCTAssertTrue(outcome.detail.contains(every), "\(every) missing: \(outcome.detail)")
+            XCTAssertTrue(outcome.summary.contains(every), "\(every) missing: \(outcome.summary)")
         }
-        XCTAssertFalse(outcome.detail.contains("show me the rest of the dates"),
-                       "Still offering the rest after showing it: \(outcome.detail)")
     }
 
-    /// A quiet week says so rather than printing an empty heading.
+    /// Before the semester starts, it shows the first classes of the semester.
     @MainActor
-    func testAQuietWeekSaysSoAndStillOffersTheRest() async throws {
+    func testBeforeSemesterStartsShowsFirstClasses() async throws {
         let made = try makeRunner()
         defer { try? FileManager.default.removeItem(at: made.root) }
 
@@ -1902,8 +1901,10 @@ final class AssistToolRunnerTests: XCTestCase {
             "read_remembered_timetable", arguments: ["course": "ICS3U", "section": 1]
         ))
 
-        XCTAssertTrue(outcome.detail.contains("Nothing in the next seven days."), outcome.detail)
-        XCTAssertTrue(outcome.detail.contains("There are 2 more."), outcome.detail)
+        XCTAssertFalse(outcome.shouldContinue)
+        XCTAssertTrue(outcome.summary.contains("The semester begins on Monday, 2026-11-02. The first 2 classes are:"), outcome.summary)
+        XCTAssertTrue(outcome.summary.contains("2026-11-02"), outcome.summary)
+        XCTAssertTrue(outcome.summary.contains("2026-11-04"), outcome.summary)
     }
 
     // MARK: - "Publish Monday's class"

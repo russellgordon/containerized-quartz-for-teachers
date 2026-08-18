@@ -374,7 +374,7 @@ final class NextClassTests: XCTestCase {
         let outcome: AssistToolOutcome = await made.runner.run(call: call(
             "read_remembered_timetable", arguments: ["course": "ICS3U", "section": 1]
         ))
-        XCTAssertTrue(outcome.shouldContinue, "A read hands back so the model can answer.")
+        XCTAssertFalse(outcome.shouldContinue, "A read finishes turn immediately without looping into LLM.")
         XCTAssertTrue(outcome.summary.contains("don't know when"), outcome.summary)
         XCTAssertFalse(outcome.detail.contains("remember_timetable"),
                        "That tool is off the local surface; naming it is a remedy the model cannot reach")
@@ -424,8 +424,8 @@ final class NextClassTests: XCTestCase {
             "read_remembered_timetable", arguments: ["course": "ICS3U", "section": 1]
         ))
         XCTAssertTrue(read.detail.contains("timetable.xlsx, block H"))
-        XCTAssertTrue(read.detail.contains("2026-09-08 (Tuesday)"))
-        XCTAssertTrue(read.detail.contains("the next class would fall on 2026-09-08"),
+        XCTAssertTrue(read.detail.contains("2026-09-08"))
+        XCTAssertTrue(read.detail.contains("next class would fall on 2026-09-08"),
                       "Reading it back says what it is for")
 
         // And the dates it just recorded really do date the next class.

@@ -1452,7 +1452,7 @@ final class AssistToolRunner {
             )
             let opening: String = "Here you are — the dates for \(where_) are open for editing. "
                                 + "What you save replaces what was there."
-            return AssistToolOutcome.read(opening, detail: opening)
+            return AssistToolOutcome(summary: opening, detail: opening, shouldContinue: false)
         }
 
         let remembered: SectionTimetable?
@@ -1461,18 +1461,10 @@ final class AssistToolRunner {
                 forSection: located.sectionNumber, in: located.course
             )
         } catch {
-            // A file that IS there and cannot be read whole. Said out loud
-            // rather than reported as "no timetable": the two ask different
-            // things of the teacher.
             return AssistToolOutcome.couldNotRead(error.localizedDescription)
         }
 
         guard let remembered else {
-            // Asks, rather than telling the model to record them. The tool
-            // that writes a timetable is off the local surface, so naming it
-            // here would send the model somewhere it cannot go — and the one
-            // thing worse than a refusal is a refusal whose remedy does not
-            // exist, because the next move is to invent the dates.
             askForTheTimetable(
                 courseCode: located.course.code,
                 sectionNumber: located.sectionNumber,
@@ -1480,7 +1472,7 @@ final class AssistToolRunner {
             )
             let asking: String = "I don't know when \(where_) meets yet. "
                                + AssistWording.mayIAskForYourDates
-            return AssistToolOutcome.read(asking, detail: asking)
+            return AssistToolOutcome(summary: asking, detail: asking, shouldContinue: false)
         }
 
         // "All of them" is asked for by a fixed phrasing the window offers
@@ -1488,71 +1480,76 @@ final class AssistToolRunner {
         // the tool's schema is unchanged and its routing is untouched.
         let wantsEveryDate: Bool = text("scope", in: arguments).lowercased() == "all"
 
-        // Taking up the offer at the end of the last answer is a follow-up,
-        // not a fresh question. Repeating the count, the range, what the
-        // dates are for and where they came from — all of which the teacher
-        // has just read — makes the reply look like it did not hear them.
-        // They asked for the rest; they get the rest.
         if wantsEveryDate {
-            var every: [String] = ["Every date on file:"]
+            var every: [String] = ["Every date on file for \(where_):"]
             for date in remembered.dates {
-                every.append("\(date.weekdayName), \(date.text)")
+                every.append("• \(date.weekdayName), \(date.text)")
             }
             let all: String = every.joined(separator: "\n")
-            return AssistToolOutcome.read(
-                "All \(remembered.dates.count) dates for \(where_).", detail: all
+            return AssistToolOutcome(
+                summary: all,
+                detail: all,
+                shouldContinue: false
             )
         }
 
         var lines: [String] = []
-        lines.append("\(where_) meets on \(remembered.dates.count) "
-                     + "\(remembered.dates.count == 1 ? "day" : "days"), from "
-                     + "\(remembered.firstDate.text) (\(remembered.firstDate.weekdayName)) to "
-                     + "\(remembered.lastDate.text) (\(remembered.lastDate.weekdayName)).")
 
-        // The week first, and only the week.
-        //
-        // The answer used to be a summary with no dates in it at all — a count
-        // and two endpoints — so a teacher asking what they were teaching was
-        // told how many days there were and left to go and look. What they
-        // want is the days themselves, and what they want FIRST is the ones
-        // they are about to teach. A whole semester is 86 lines and buries
-        // that under a scroll.
-        var thisWeek: [CalendarDay] = []
-        let weekEnds: CalendarDay? = AssistToolRunner.shifting(today, byDays: 7)
-        for date in remembered.dates where date >= today {
-            guard let weekEnds, date <= weekEnds else {
-                continue
-            }
-            thisWeek.append(date)
-        }
-
-        lines.append("")
-        if thisWeek.isEmpty {
-            lines.append("Nothing in the next seven days.")
-        } else {
-            lines.append("In the next seven days:")
-            for date in thisWeek {
-                lines.append("\(date.weekdayName), \(date.text)")
-            }
-        }
-
-        // What the dates are actually FOR: the next class takes the next one
-        // along, counted by how many class pages the section already has.
+        // What the dates are actually FOR: map existing class pages by date or schedule index.
         let existing: [ClassPageSummary] = ClassPages.list(
             forSection: located.sectionNumber, in: located.course
         )
-        let spare: Int = remembered.spareDates(after: existing.count)
+        var classByDate: [String: String] = [:]
+        for page in existing {
+            if let date = page.date {
+                classByDate[date.text] = page.title
+            }
+        }
+
+        // Determine upcoming classes (up to 3) relative to today.
+        var upcomingDates: [CalendarDay] = []
+        if today < remembered.firstDate {
+            for (idx, date) in remembered.dates.enumerated() {
+                if idx < 3 {
+                    upcomingDates.append(date)
+                }
+            }
+            let countStr: String = upcomingDates.count == 1 ? "first class is" : "first \(upcomingDates.count) classes are"
+            lines.append("The semester begins on \(remembered.firstDate.weekdayName), \(remembered.firstDate.text). The \(countStr):")
+        } else {
+            for date in remembered.dates {
+                if date >= today && upcomingDates.count < 3 {
+                    upcomingDates.append(date)
+                }
+            }
+            if upcomingDates.isEmpty {
+                lines.append("All \(remembered.dates.count) scheduled classes for \(where_) have concluded (last class was on \(remembered.lastDate.weekdayName), \(remembered.lastDate.text)).")
+            } else {
+                let countStr: String = upcomingDates.count == 1 ? "upcoming class" : "\(upcomingDates.count) upcoming classes"
+                lines.append("Your next \(countStr) for \(where_):")
+            }
+        }
+
+        for date in upcomingDates {
+            var classTitle: String = ""
+            if let title = classByDate[date.text] {
+                classTitle = title
+            } else if let idx = remembered.dates.firstIndex(of: date), idx < existing.count {
+                classTitle = existing[idx].title
+            } else {
+                classTitle = "(page not yet created)"
+            }
+            lines.append("• \(date.weekdayName), \(date.text) — \(classTitle)")
+        }
+
         lines.append("")
-        lines.append("\(where_) has \(existing.count) class "
-                     + "\(existing.count == 1 ? "page" : "pages").")
+        let spare: Int = remembered.spareDates(after: existing.count)
+        lines.append("\(where_) has \(existing.count) class \(existing.count == 1 ? "page" : "pages") across \(remembered.dates.count) recorded dates (\(spare) spare).")
         if spare == 0 {
-            lines.append("Every recorded date is spoken for, so another class cannot be dated until more "
-                         + "dates are recorded.")
+            lines.append("Every recorded date is spoken for, so another class cannot be dated until more dates are recorded.")
         } else {
             let next: CalendarDay = remembered.dates[existing.count]
-            lines.append("\(spare) recorded \(spare == 1 ? "date is" : "dates are") still spare; the next "
-                         + "class would fall on \(next.text) (\(next.weekdayName)).")
+            lines.append("The next class would fall on \(next.text) (\(next.weekdayName)).")
         }
 
         var origin: String = "Where they came from: \(remembered.source)."
@@ -1562,23 +1559,17 @@ final class AssistToolRunner {
         lines.append("")
         lines.append(origin)
 
-        // The offer, and the words that take it up. A prompt whose answer
-        // nothing understands is worse than no prompt, so the phrasing named
-        // here is one the window matches in code — see AssistCardCommand.
-        if remembered.dates.count > thisWeek.count {
-            let rest: Int = remembered.dates.count - thisWeek.count
+        if remembered.dates.count > upcomingDates.count {
+            let rest: Int = remembered.dates.count - upcomingDates.count
             lines.append("")
-            lines.append("There \(rest == 1 ? "is" : "are") \(rest) more. Say “show me the rest of "
-                         + "the dates” if you would like the lot.")
+            lines.append("There \(rest == 1 ? "is" : "are") \(rest) more. Say “show me all the dates” to see the full schedule.")
         }
 
-        // "…on 75 recorded days, from pasted by hand." Where the dates came
-        // from is worth knowing and is NOT a clause that finishes this
-        // sentence; it has a line of its own further down.
-        return AssistToolOutcome.read(
-            "\(where_) meets on \(remembered.dates.count) recorded "
-            + "\(remembered.dates.count == 1 ? "day" : "days").",
-            detail: lines.joined(separator: "\n")
+        let fullAnswer: String = lines.joined(separator: "\n")
+        return AssistToolOutcome(
+            summary: fullAnswer,
+            detail: fullAnswer,
+            shouldContinue: false
         )
     }
 
