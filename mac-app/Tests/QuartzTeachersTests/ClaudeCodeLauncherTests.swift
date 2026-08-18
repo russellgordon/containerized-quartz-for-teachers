@@ -68,15 +68,34 @@ final class ClaudeCodeLauncherTests: XCTestCase {
         XCTAssertEqual(withSingleQuotes, "'I'\\''m a teacher'")
     }
 
-    func testEscapeForAppleScriptLiteral() {
-        let simple: String = ClaudeCodeLauncher.escapeForAppleScriptLiteral("hello")
-        XCTAssertEqual(simple, "hello")
+    func testWriteLauncherScriptCreatesExecutableFile() throws {
+        let tempWorkspace: String = "/Users/teacher/Teaching"
+        let courseCode: String = "ICS3U_TEST"
+        let dummyClaude: String = "/usr/local/bin/claude"
+        let dummyConfig: String = "/path/to/mcp.json"
+        let prompt: String = "Hello Claude"
 
-        let withQuotes: String = ClaudeCodeLauncher.escapeForAppleScriptLiteral("hello \"world\"")
-        XCTAssertEqual(withQuotes, "hello \\\"world\\\"")
+        let scriptPath: String = try ClaudeCodeLauncher.writeLauncherScript(
+            workspacePath: tempWorkspace,
+            courseCode: courseCode,
+            claudePath: dummyClaude,
+            configPath: dummyConfig,
+            prompt: prompt
+        )
+        defer {
+            try? FileManager.default.removeItem(atPath: scriptPath)
+        }
 
-        let withBackslash: String = ClaudeCodeLauncher.escapeForAppleScriptLiteral("hello\\world")
-        XCTAssertEqual(withBackslash, "hello\\\\world")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: scriptPath))
+
+        let content: String = try String(contentsOfFile: scriptPath, encoding: .utf8)
+        XCTAssertTrue(content.contains("#!/bin/bash"))
+        XCTAssertTrue(content.contains("cd '\(tempWorkspace)' || exit 1"))
+        XCTAssertTrue(content.contains("'\(dummyClaude)' --mcp-config '\(dummyConfig)' --strict-mcp-config '\(prompt)'"))
+
+        let attributes: [FileAttributeKey: Any] = try FileManager.default.attributesOfItem(atPath: scriptPath)
+        let permissions: NSNumber? = attributes[.posixPermissions] as? NSNumber
+        XCTAssertEqual(permissions?.intValue, 0o755)
     }
 
     func testFindServerReturnsPath() {

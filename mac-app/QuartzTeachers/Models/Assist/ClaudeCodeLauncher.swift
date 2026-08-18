@@ -110,14 +110,23 @@ nonisolated enum ClaudeCodeLauncher {
         }
 
         let prompt: String = greeting(courseCode: courseCode, courseName: courseName)
-        let shellCommand: String = "cd " + escapeForShell(workspacePath)
-            + " && " + escapeForShell(claude)
-            + " --mcp-config " + escapeForShell(configPath)
-            + " --strict-mcp-config " + escapeForShell(prompt)
+
+        let scriptPath: String
+        do {
+            scriptPath = try writeLauncherScript(
+                workspacePath: workspacePath,
+                courseCode: courseCode,
+                claudePath: claude,
+                configPath: configPath,
+                prompt: prompt
+            )
+        } catch {
+            return false
+        }
 
         ActivityTrail.note(.assistantOpened, "started Claude Code for \(courseCode)")
 
-        return launchTerminal(workspacePath: workspacePath, shellCommand: shellCommand)
+        return launchTerminal(scriptPath: scriptPath)
     }
 
     /// The opening message. It names the course and points at the plan tools,
@@ -166,59 +175,57 @@ nonisolated enum ClaudeCodeLauncher {
         return targetFile.path
     }
 
+    /// Writes an executable `.command` launcher script in the app's data directory.
+    static func writeLauncherScript(
+        workspacePath: String,
+        courseCode: String,
+        claudePath: String,
+        configPath: String,
+        prompt: String
+    ) throws -> String {
+        let appSupportDirectory: URL = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Application Support/Plantoir/assist")
+        try FileManager.default.createDirectory(at: appSupportDirectory, withIntermediateDirectories: true)
+
+        let scriptContent: String = """
+        #!/bin/bash
+        cd \(escapeForShell(workspacePath)) || exit 1
+        \(escapeForShell(claudePath)) --mcp-config \(escapeForShell(configPath)) --strict-mcp-config \(escapeForShell(prompt))
+        """
+
+        let scriptFile: URL = appSupportDirectory.appendingPathComponent("launch-\(courseCode).command")
+        try scriptContent.write(to: scriptFile, atomically: true, encoding: .utf8)
+
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: scriptFile.path)
+        return scriptFile.path
+    }
+
     /// Single-quote a string safely for POSIX shell execution.
     static func escapeForShell(_ text: String) -> String {
         return "'" + text.replacingOccurrences(of: "'", with: "'\\''") + "'"
     }
 
-    /// Escape characters for embedding within an AppleScript string literal.
-    static func escapeForAppleScriptLiteral(_ text: String) -> String {
-        return text
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
-    }
-
-    /// Launches a terminal emulator running the specified shell command.
-    private static func launchTerminal(workspacePath: String, shellCommand: String) -> Bool {
-        let escapedCommand: String = escapeForAppleScriptLiteral(shellCommand)
-
-        // If iTerm2 is running, prefer opening a new window in iTerm2.
+    /// Launches a terminal emulator running the generated .command script.
+    ///
+    /// Uses LaunchServices via `NSWorkspace` instead of AppleScript/AppleEvents
+    /// so macOS does not require Automation / AppleEvents permissions.
+    private static func launchTerminal(scriptPath: String) -> Bool {
         let itermBundleID: String = "com.googlecode.iterm2"
         let isITermRunning: Bool = !NSRunningApplication.runningApplications(
             withBundleIdentifier: itermBundleID
         ).isEmpty
 
         if isITermRunning {
-            let itermScript: String = """
-            tell application "iTerm"
-                activate
-                set newWindow to (create window with default profile)
-                tell current session of newWindow
-                    write text "\(escapedCommand)"
-                end tell
-            end tell
-            """
-            if runAppleScript(itermScript) {
+            if NSWorkspace.shared.openFile(scriptPath, withApplication: "iTerm") {
                 return true
             }
         }
 
-        // Standard macOS Terminal.app fallback (present on all Macs).
-        let terminalScript: String = """
-        tell application "Terminal"
-            activate
-            do script "\(escapedCommand)"
-        end tell
-        """
-        return runAppleScript(terminalScript)
-    }
-
-    private static func runAppleScript(_ source: String) -> Bool {
-        var errorInfo: NSDictionary?
-        guard let script: NSAppleScript = NSAppleScript(source: source) else {
-            return false
+        if NSWorkspace.shared.openFile(scriptPath, withApplication: "Terminal") {
+            return true
         }
-        script.executeAndReturnError(&errorInfo)
-        return errorInfo == nil
+
+        let scriptURL: URL = URL(fileURLWithPath: scriptPath)
+        return NSWorkspace.shared.open(scriptURL)
     }
 }
