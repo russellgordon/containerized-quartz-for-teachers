@@ -885,6 +885,28 @@ public class AssistWorkspaceTests : IDisposable
         finally { try { child.Kill(entireProcessTree: true); } catch { } }
     }
 
+    [Fact]
+    public void LinkGraphFollowingLinksExclusionsAndVisibleReferrers()
+    {
+        Assert.True(LinkGraph.IsLandingPage(@"C:\courses\ICS3U\section1\All Classes\index.md"));
+        Assert.True(LinkGraph.IsLandingPage(@"C:\courses\ICS3U\shared\Concepts\index.md"));
+        Assert.False(LinkGraph.IsLandingPage(@"C:\courses\ICS3U\shared\Concepts\Variables.md"));
+
+        Assert.True(LinkGraph.IsCurriculum(@"C:\courses\ICS3U\shared\Ontario Curriculum\A1.1.md"));
+        Assert.True(LinkGraph.IsCurriculum(@"C:\courses\ICS3U\shared\Curriculum\Expectations.md"));
+        Assert.False(LinkGraph.IsCurriculum(@"C:\courses\ICS3U\shared\Concepts\Curriculum.md")); // filename alone doesn't make it curriculum
+
+        var keyLinksTargets = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            @"C:\courses\ICS3U\shared\Key Links Target.md"
+        };
+        Assert.True(LinkGraph.IsExcludedFromSweep(@"C:\courses\ICS3U\shared\Key Links Target.md", keyLinksTargets));
+        Assert.True(LinkGraph.IsExcludedFromSweep(@"C:\courses\ICS3U\section1\Key Links.md"));
+        Assert.True(LinkGraph.IsExcludedFromSweep(@"C:\courses\ICS3U\section1\index.md"));
+        Assert.True(LinkGraph.IsExcludedFromSweep(@"C:\courses\ICS3U\shared\Curriculum\A1.1.md"));
+        Assert.False(LinkGraph.IsExcludedFromSweep(@"C:\courses\ICS3U\shared\Tasks\Project.md", keyLinksTargets));
+    }
+
     private void WriteWorkLease(string course, string kind, int pid, string name)
     {
         string directory = Path.Combine(_folder, "courses", ".internal", "activity");

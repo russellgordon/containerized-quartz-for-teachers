@@ -100,15 +100,54 @@ public sealed class LinkGraph
         return dangling;
     }
 
+    public IReadOnlyList<string> VisibleSourcesOf(string page, Func<string, bool> isHidden) =>
+        SourcesOf(page).Where(src => !isHidden(src)).ToList();
+
+    /// <summary>
+    /// True when a page is a curriculum page (any folder segment contains "curriculum").
+    /// </summary>
+    public static bool IsCurriculum(string path)
+    {
+        string normalized = path.Replace('\\', '/');
+        var segments = normalized.Split('/');
+        for (int i = 0; i < segments.Length - 1; i++)
+            if (segments[i].Contains("curriculum", StringComparison.OrdinalIgnoreCase))
+                return true;
+        return false;
+    }
+
+    /// <summary>
+    /// True when a page is a folder or section landing page (index.md).
+    /// </summary>
+    public static bool IsLandingPage(string path) =>
+        string.Equals(Path.GetFileName(path), "index.md", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Pages that are never taken down by following links (shared-rules.json -> followingLinks).
+    /// Includes landing pages (index.md), curriculum pages, and Key Links targets.
+    /// </summary>
+    public static bool IsExcludedFromSweep(string path, IReadOnlySet<string>? keyLinksTargets = null)
+    {
+        if (IsLandingPage(path)) return true;
+        if (IsCurriculum(path)) return true;
+        if (string.Equals(Path.GetFileName(path), "Key Links.md", StringComparison.OrdinalIgnoreCase)) return true;
+        if (keyLinksTargets is not null && keyLinksTargets.Contains(Path.GetFullPath(path))) return true;
+        return false;
+    }
+
     /// <summary>
     /// Pages nothing links to. Not an error — a teacher writing next term's
     /// unit ahead produces these on purpose — but they are exactly the pages
     /// a link-following rule can never act on, so they have to be visible
     /// somewhere.
+    ///
+    /// Per shared-rules.json -> followingLinks: landing pages (index.md),
+    /// curriculum pages, and Key Links / its targets do not count as referrers
+    /// or unreferenced orphans.
     /// </summary>
-    public List<string> Unreferenced() =>
+    public List<string> Unreferenced(IReadOnlySet<string>? keyLinksTargets = null) =>
         Pages.Where(p => SourcesOf(p).Count == 0)
-             .Where(p => !string.Equals(Path.GetFileName(p), "index.md", StringComparison.OrdinalIgnoreCase))
+             .Where(p => !IsExcludedFromSweep(p, keyLinksTargets))
              .ToList();
 }
 
