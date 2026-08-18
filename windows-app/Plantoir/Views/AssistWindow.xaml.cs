@@ -138,17 +138,16 @@ public sealed partial class AssistWindow : Window
             note.Text.Text = "The assistant is downloaded.";
         }
 
-        var starting = Say("Assistant", "Starting the assistant…");
-        if (!await _model.Start(new Progress<string>(line => starting.Text = line), _closing.Token))
+        if (!await _model.Start(null, _closing.Token))
         {
-            starting.Text = "The assistant wouldn’t start. Restarting Plantoir usually settles it.";
+            Say("Assistant", "The assistant wouldn’t start. Restarting Plantoir usually settles it.");
             return;
         }
 
         _tools = await McpClient.Start(server, _folder, _course.Code, _closing.Token);
         if (_tools is null)
         {
-            starting.Text = "The assistant started, but Plantoir’s tools didn’t answer. Try opening this window again.";
+            Say("Assistant", "The assistant started, but Plantoir’s tools didn’t answer. Try opening this window again.");
             return;
         }
 
@@ -175,30 +174,6 @@ public sealed partial class AssistWindow : Window
                 lease.SectionNumber == _section),
         };
 
-        // NOT "Ready." — it is not. Reading the instructions takes minutes on
-        // a cold cache, and a teacher told "Ready" who then waits three of them
-        // has been misled by the one line that was supposed to orient them.
-        // The warm-up card below says Ready, when it is.
-        starting.Text = "Started.";
-
-        // The briefing, EVERY time this window opens, and taken straight from
-        // the words rather than through the tool.
-        //
-        // Two reasons. The tool answers a returning section with "this has
-        // been explained already — don't repeat it, carry on with what the
-        // teacher asked", which is an instruction addressed to a MODEL; a
-        // teacher was being shown it, and it reads as the assistant talking
-        // about them rather than to them.
-        //
-        // And once per section turned out to be too rare. These two words
-        // decide whether "published" means students can see it, and a teacher
-        // opening this window a month later has every reason to want the
-        // reminder. It is four sentences at the top of a window they chose to
-        // open, not an interruption. The once-per-section machinery stays for
-        // Claude Code, where an assistant re-explaining itself mid-conversation
-        // genuinely is one.
-        Say("Assistant", Briefing.Words(_course.Code, _section, AssistWorkspace.DestinationOf(_course)));
-
         // Mount the prompt shelf at the top of the window with clickable cards.
         var shelf = new AssistPromptShelfView(phrasing =>
         {
@@ -210,11 +185,7 @@ public sealed partial class AssistWindow : Window
         PromptShelfHost.Content = shelf;
         PromptShelfArea.Visibility = Visibility.Visible;
 
-        // Typing is available from here. The teacher reads the briefing while
-        // the model quietly evaluates that same 6,200-token prefix in the
-        // background; llama.cpp caches it, so their first real question pays
-        // only for the sentence they typed. Waiting once per session was
-        // always the plan — this puts the wait somewhere it costs nothing.
+        // Typing is available from here.
         Input.IsEnabled = true;
         SendButton.IsEnabled = true;
         Input.Focus(FocusState.Programmatic);
