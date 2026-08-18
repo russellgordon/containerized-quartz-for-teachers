@@ -244,7 +244,7 @@ public sealed partial class AssistWindow : Window
     private async void Approve_Click(object sender, RoutedEventArgs e)
     {
         if (_agent is null) return;
-        string word = _agent.PendingTool == "deploy_section" ? AssistWording.DeployAccepted : AssistWording.PlanAccepted;
+        string word = ApproveButton.Content?.ToString() ?? (_agent.PendingTool == "deploy_section" ? AssistWording.DeployAccepted : AssistWording.PlanAccepted);
         HideApproval();
         Say("You", word);
         await Turn(() => _agent.Approve(_closing.Token));
@@ -253,8 +253,9 @@ public sealed partial class AssistWindow : Window
     private async void Decline_Click(object sender, RoutedEventArgs e)
     {
         if (_agent is null) return;
+        string word = DeclineButton.Content?.ToString() ?? AssistWording.Cancelled;
         HideApproval();
-        Say("You", AssistWording.Cancelled);
+        Say("You", word);
         await Turn(() => _agent.Decline(_closing.Token));
     }
 
@@ -395,7 +396,16 @@ public sealed partial class AssistWindow : Window
         {
             var onAccent = (Brush)Application.Current.Resources["TextOnAccentFillColorPrimaryBrush"];
             foreach (var child in panel.Children)
-                if (child is TextBlock block) block.Foreground = onAccent;
+            {
+                if (child is TextBlock block)
+                {
+                    block.Foreground = onAccent;
+                    foreach (var inline in block.Inlines)
+                    {
+                        if (inline is Microsoft.UI.Xaml.Documents.TextElement te) te.Foreground = onAccent;
+                    }
+                }
+            }
         }
 
         Transcript.Children.Add(new Border
@@ -587,6 +597,7 @@ public sealed partial class AssistWindow : Window
         enterBtn.Click += async (_, _) =>
         {
             buttons.Visibility = Visibility.Collapsed;
+            Say("You", "Enter class dates");
             var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
             var dialog = new SectionScheduleDialog(_folder, _course, _section, hwnd)
             {
@@ -606,6 +617,7 @@ public sealed partial class AssistWindow : Window
         notNowBtn.Click += (_, _) =>
         {
             buttons.Visibility = Visibility.Collapsed;
+            Say("You", "Not now");
             Say("Assistant", "No class dates recorded. You can add them anytime.");
         };
 
