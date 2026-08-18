@@ -225,19 +225,19 @@ def main() -> int:
     IMAGE_DIR.mkdir(parents=True, exist_ok=True)
     plantoir_exe = find_or_build_plantoir_exe()
 
-    # 1. App Windows
+    # 1. Browser Sites in Edge (so preview screenshot can embed real site capture)
+    capture_browser_sites()
+
+    # 2. App Windows (uses C:\Users\russellgordon\Teaching and embeds site capture)
     capture_app_windows(plantoir_exe)
 
-    # 2. Optimize App Windows
+    # 3. Optimize App Windows
     shot_ids = ["courses", "new-course", "progress", "preview", "assistant"]
     for shot_id in shot_ids:
         for theme in ("light", "dark"):
             png_path = IMAGE_DIR / f"{shot_id}-windows-{theme}.png"
             if png_path.exists():
                 prepare(png_path, WIDEST_WINDOW_PIXELS)
-
-    # 3. Browser Sites in Edge
-    capture_browser_sites()
 
     # 4. Static Figures
     build_windows_static_figures()

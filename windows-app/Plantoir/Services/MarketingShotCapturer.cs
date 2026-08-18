@@ -50,7 +50,18 @@ public static class MarketingShotCapturer
             Directory.CreateDirectory(outputDir);
             Log($"Starting marketing capture to {outputDir}");
 
-            string workspacePath = Path.Combine(Path.GetTempPath(), "PlantoirMarketingWorkspace");
+            string workspacePath = @"C:\Users\russellgordon\Teaching";
+            try
+            {
+                Directory.CreateDirectory(workspacePath);
+                string testFile = Path.Combine(workspacePath, "write_test.tmp");
+                File.WriteAllText(testFile, "test");
+                File.Delete(testFile);
+            }
+            catch
+            {
+                workspacePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Teaching");
+            }
             ProvisionDemoWorkspace(workspacePath);
             Log($"Workspace provisioned at {workspacePath}");
 
@@ -76,7 +87,8 @@ public static class MarketingShotCapturer
 
                 // ---- 4. Shot: preview ----
                 string previewPath = Path.Combine(outputDir, $"preview-windows-{themeName}.png");
-                await CapturePreviewWindow(workspacePath, theme, previewPath);
+                string siteImagePath = Path.Combine(outputDir, $"site-eng2d-windows-{themeName}.png");
+                await CapturePreviewWindow(workspacePath, theme, previewPath, siteImagePath);
                 Log($"Saved {previewPath}");
 
                 // ---- 5. Shot: assistant ----
@@ -345,7 +357,7 @@ public static class MarketingShotCapturer
         window.Close();
     }
 
-    private static async Task CapturePreviewWindow(string workspacePath, ElementTheme theme, string outputPath)
+    private static async Task CapturePreviewWindow(string workspacePath, ElementTheme theme, string outputPath, string? siteImagePath = null)
     {
         var window = new MainWindow(workspacePath, null);
         ConfigureWindow(window, 1280, 800, theme);
@@ -357,10 +369,10 @@ public static class MarketingShotCapturer
 
         if (window.DetailPresenter.Content is SectionDetailView detail)
         {
-            detail.StagePreviewForCapture(theme);
+            detail.StagePreviewForCapture(theme, siteImagePath);
         }
 
-        await Task.Delay(600);
+        await Task.Delay(1200);
         await SaveWindowContentToPngAsync(window, outputPath);
         window.Close();
     }

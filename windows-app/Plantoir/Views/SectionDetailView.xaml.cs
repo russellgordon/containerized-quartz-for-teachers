@@ -488,7 +488,7 @@ public sealed partial class SectionDetailView : UserControl
         _ = FolderActions.OpenInObsidian(_course.SectionDirectory(_sectionNumber), _course.DirectoryPath,
             BundledToolchain.SupportPath("obsidian_defaults/.obsidian"));
 
-    public void StagePreviewForCapture(ElementTheme theme)
+    public void StagePreviewForCapture(ElementTheme theme, string? siteImagePath = null)
     {
         _previewUrl = new Uri("http://localhost:8081");
         PreviewLabel.Text = "Stop Preview";
@@ -500,6 +500,25 @@ public sealed partial class SectionDetailView : UserControl
 
         NoPreviewState.Visibility = Visibility.Collapsed;
         Progress.Visibility = Visibility.Collapsed;
+
+        if (!string.IsNullOrEmpty(siteImagePath) && File.Exists(siteImagePath))
+        {
+            try
+            {
+                var bitmap = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(new Uri(Path.GetFullPath(siteImagePath)));
+                var img = new Image
+                {
+                    Source = bitmap,
+                    Stretch = Stretch.UniformToFill,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                BaseLayer.Children.Clear();
+                BaseLayer.Children.Add(img);
+                return;
+            }
+            catch { }
+        }
 
         var isDark = theme == ElementTheme.Dark;
         var siteBg = isDark
