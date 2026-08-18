@@ -368,10 +368,8 @@ def append_page_title_styles(base_scss_path: Path):
     Prevents the navbar course code and section number from wrapping onto
     a second line on mobile by dynamically scaling the page title font size
     down (up to 50% of its original 1.75rem size) and setting white-space: nowrap.
-
-    On narrow phone viewports with the mobile hamburger button, search bar,
-    and dark mode toggle sharing the top header bar, course titles like
-    "📚 ENG2D S1" could wrap the section onto a second line.
+    Also vertically centers the course emoji, code, and section with the adjacent
+    search field and controls on mobile.
 
     Using clamp(0.875rem, 4.5vw, 1.75rem) keeps the title at full 1.75rem size
     on desktop and tablet (where viewport >= 800px), smoothly shrinks it on
@@ -388,13 +386,20 @@ def append_page_title_styles(base_scss_path: Path):
             ".page-title {\n"
             "  font-size: clamp(0.875rem, 4.5vw, 1.75rem);\n"
             "  white-space: nowrap;\n"
+            "  margin: 0;\n"
+            "  align-self: center;\n"
+            "  display: flex;\n"
+            "  align-items: center;\n"
+            "  line-height: 1;\n"
             "}\n\n"
             ".page-title a {\n"
-            "  display: inline-block;\n"
+            "  display: inline-flex;\n"
+            "  align-items: center;\n"
             "  max-width: 100%;\n"
             "  overflow: hidden;\n"
             "  text-overflow: ellipsis;\n"
             "  white-space: nowrap;\n"
+            "  line-height: 1;\n"
             "}\n"
         )
 
@@ -402,8 +407,14 @@ def append_page_title_styles(base_scss_path: Path):
             content = f.read()
 
         if marker in content:
-            print("ℹ️ Page title styles already present in base.scss (no change).")
-            return
+            pattern = re.compile(re.escape(marker) + r".*?\.page-title a\s*\{[^}]*\}", re.DOTALL)
+            if pattern.search(content):
+                new_block_body = block.split(f"{marker}\n")[1].rstrip()
+                content = pattern.sub(f"{marker}\n{new_block_body}", content)
+                with open(base_scss_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                print("✅ Updated page title styles in base.scss")
+                return
 
         with open(base_scss_path, "w", encoding="utf-8") as f:
             f.write(content + block)
