@@ -1347,6 +1347,7 @@ def first_use_dates(payload_dir: Path, reference,
     """
     per_section_root = payload_dir / "per_section"
     class_pages = []
+    class_date_by_stem = {}
     if per_section_root.is_dir():
         for page in per_section_root.rglob("*.md"):
             with open(page, "r", encoding="utf-8") as handle:
@@ -1355,6 +1356,9 @@ def first_use_dates(payload_dir: Path, reference,
             if match:
                 ordinal = int(match.group(1))
                 class_pages.append((ordinal, text))
+                class_date = semester_class_timestamp(ordinal, reference, weekday_step,
+                                                      start_school_day)
+                class_date_by_stem[page.stem] = class_date
     class_pages.sort()
 
     link_target_pattern = re.compile(r"!?\[\[([^\]#|]+)")
@@ -1366,6 +1370,19 @@ def first_use_dates(payload_dir: Path, reference,
             target = match.group(1).strip().split("/")[-1]
             if target and target != "index" and target not in dates:
                 dates[target] = class_date
+
+    # The section landing page (index.md) carries the date of the class it
+    # transcludes (e.g. Unit 4, Day 20 or Unit 1, Day 1).
+    index_file = per_section_root / "index.md"
+    if index_file.is_file():
+        with open(index_file, "r", encoding="utf-8") as handle:
+            index_text = handle.read()
+        for match in link_target_pattern.finditer(index_text):
+            target = match.group(1).strip().split("/")[-1]
+            if target in class_date_by_stem:
+                dates["index"] = class_date_by_stem[target]
+                break
+
     return dates
 
 # Content that only makes sense alongside the curriculum pages sits between
