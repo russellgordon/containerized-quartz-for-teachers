@@ -400,9 +400,11 @@ shared Python: course-level pages now arrive with
 - **Stable code signing** (entry from the signing fix): sign dev builds
   with a stable identity or Windows will re-prompt for permissions —
   same class of problem as macOS ad-hoc signing.
-- **Social cards** (entry 88): nothing to do — `scripts/social_card.py`
-  runs inside the container on every build. Only caveat: the colour-emoji
-  font path probed is Debian's; it is inside the image, not on Windows.
+- **Social cards & OpenGraph preview metadata** (entries 88, 268): nothing to do in C# — `scripts/social_card.py`
+  runs inside the container on every build to draw the 1200×630 card. `patches/Head.tsx`
+  wires OpenGraph and Twitter card metadata, and `scripts/build_site.py` / `scripts/deploy.py`
+  sync the live site domain into Quartz's `baseUrl` (falling back to `undefined` when unpublished).
+  Because the entire flow lives in the shared container toolchain, Windows inherits it automatically.
 - **The recipe hash is on the hot path** (entry 118) — and it was slow
   on BOTH platforms, for the same reason in two dialects. The image tag
   is a SHA-256 over every file in `.toolchain/`, and the recipe carries
