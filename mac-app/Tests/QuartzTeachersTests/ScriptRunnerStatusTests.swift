@@ -331,4 +331,23 @@ final class PreviewAddressTests: XCTestCase {
     func testANetlifyDeployAnnouncesNoFolder() {
         XCTAssertNil(ScriptRunner.publishedFolderURL(in: "Site URL: https://example.netlify.app"))
     }
+
+    // MARK: - Cancellation by user
+
+    @MainActor
+    func testCancelByUserSetsCancellationFlagsAndRunsCleanup() {
+        let runner: ScriptRunner = ScriptRunner()
+        var cleanupRan: Bool = false
+
+        XCTAssertFalse(runner.wasCancelled)
+        XCTAssertFalse(runner.wasStoppedByUser)
+
+        runner.cancelByUser(onCleanup: {
+            cleanupRan = true
+        })
+
+        XCTAssertTrue(runner.wasCancelled, "Cancelling by user must mark the run as cancelled")
+        XCTAssertTrue(runner.wasStoppedByUser, "Cancelling by user must mark the run as stopped by user")
+        XCTAssertTrue(cleanupRan, "The cleanup closure must be executed on cancel")
+    }
 }

@@ -264,9 +264,21 @@ struct SectionDetailView: View {
     var consoleArea: some View {
         VStack(spacing: 0) {
             if showsDeployProgress {
-                TaskProgressView(runner: deployRunner, title: "Deploying \(titleText)")
+                TaskProgressView(
+                    runner: deployRunner,
+                    title: "Deploying \(titleText)",
+                    onCancel: {
+                        cancelDeploy()
+                    }
+                )
             } else {
-                TaskProgressView(runner: previewRunner, title: previewTaskTitle)
+                TaskProgressView(
+                    runner: previewRunner,
+                    title: previewTaskTitle,
+                    onCancel: {
+                        cancelPreview()
+                    }
+                )
             }
             Spacer(minLength: 0)
         }
@@ -423,6 +435,34 @@ struct SectionDetailView: View {
         // which is how a rebuilt site kept appearing unchanged.
         previewController.forgetLoadedPage()
         releasePreviewLease()
+    }
+
+    /// Cancels the running preview from the progress view.
+    func cancelPreview() {
+        if previewRunner.isRunning, let workspaceURL = workspace.workspaceURL {
+            PreviewStopper.stopSectionProcesses(
+                courseCode: course.code,
+                sectionNumber: sectionNumber,
+                workspaceURL: workspaceURL
+            )
+        }
+        previewRunner.cancelByUser()
+        previewURL = nil
+        isWaitingForServer = false
+        previewController.forgetLoadedPage()
+        releasePreviewLease()
+    }
+
+    /// Cancels the running deploy from the progress view.
+    func cancelDeploy() {
+        if deployRunner.isRunning, let workspaceURL = workspace.workspaceURL {
+            PreviewStopper.stopSectionProcesses(
+                courseCode: course.code,
+                sectionNumber: sectionNumber,
+                workspaceURL: workspaceURL
+            )
+        }
+        deployRunner.cancelByUser()
     }
 
     /// Hands the port back, whatever ended the preview.

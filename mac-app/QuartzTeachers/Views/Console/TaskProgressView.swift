@@ -15,14 +15,25 @@ struct TaskProgressView: View {
 
     let runner: ScriptRunner
     let title: String
+    let canCancel: Bool
+    let onCancel: (() -> Void)?
 
     @State var isShowingDetails: Bool = false
+    @State var isShowingWhyTakingLong: Bool = false
 
     // MARK: - Initializer
 
-    init(runner: ScriptRunner, title: String, showingDetailsForTesting: Bool = false) {
+    init(
+        runner: ScriptRunner,
+        title: String,
+        showingDetailsForTesting: Bool = false,
+        canCancel: Bool = true,
+        onCancel: (() -> Void)? = nil
+    ) {
         self.runner = runner
         self.title = title
+        self.canCancel = canCancel
+        self.onCancel = onCancel
         _isShowingDetails = State(initialValue: showingDetailsForTesting)
     }
 
@@ -80,63 +91,6 @@ struct TaskProgressView: View {
             AppLog.interface.error("Interface stalled for \(gap, format: .fixed(precision: 1))s (task: \(title, privacy: .public))")
         }
         refreshTracker.lastRefreshAt = date
-
-        // The periodic geometry report below found the layout-under-the-
-        // toolbar bug and may be needed again — but day to day it fills
-        // the log with frame dumps, so it stays commented out. Uncomment
-        // it (and the oversized-view escalation) when chasing a blank or
-        // mis-laid-out window; `reportOversizedViews` below is its
-        // companion and is kept for the same reason.
-        //
-        // // Once every 5 refreshes, describe where things actually are.
-        // refreshTracker.refreshCount += 1
-        // if refreshTracker.refreshCount % 5 != 0 {
-        //     return
-        // }
-        // guard let window = NSApp.windows.first(where: { candidate in candidate.isVisible && !candidate.isSheet }) else {
-        //     AppLog.interface.error("No visible window while a task is running")
-        //     return
-        // }
-        // let windowFrame: NSRect = window.frame
-        // let contentFrame: NSRect = window.contentView?.frame ?? .zero
-        // let contentSubviewCount: Int = window.contentView?.subviews.count ?? 0
-        // var deepestFrame: NSRect = .zero
-        // if let firstSubview = window.contentView?.subviews.first {
-        //     deepestFrame = firstSubview.frame
-        // }
-        // AppLog.interface.info("""
-        //     window \(NSStringFromRect(windowFrame), privacy: .public) \
-        //     content \(NSStringFromRect(contentFrame), privacy: .public) \
-        //     subviews \(contentSubviewCount) \
-        //     first \(NSStringFromRect(deepestFrame), privacy: .public)
-        //     """)
-        //
-        // // When the hierarchy is taller than the window, name every view
-        // // responsible — this is what identifies the culprit.
-        // if deepestFrame.height > windowFrame.height + 1 {
-        //     if let contentView = window.contentView {
-        //         TaskProgressView.reportOversizedViews(in: contentView, limit: windowFrame.height, depth: 0)
-        //     }
-        // }
-    }
-
-    /// Logs each view taller than the window, with its class and frame.
-    static func reportOversizedViews(in view: NSView, limit: CGFloat, depth: Int) {
-        if depth > 12 {
-            return
-        }
-        for subview in view.subviews {
-            if subview.frame.height > limit + 1 {
-                let indent: String = String(repeating: "  ", count: depth)
-                AppLog.interface.error("""
-                    OVERSIZED \(indent, privacy: .public)\
-                    \(String(describing: type(of: subview)), privacy: .public) \
-                    \(NSStringFromRect(subview.frame), privacy: .public) \
-                    subviews \(subview.subviews.count)
-                    """)
-            }
-            reportOversizedViews(in: subview, limit: limit, depth: depth + 1)
-        }
     }
 
     // MARK: - Body
@@ -162,12 +116,46 @@ struct TaskProgressView: View {
                             ProgressView(value: runner.progressFraction)
                                 .progressViewStyle(.linear)
                                 .animation(.easeInOut(duration: 0.4), value: runner.progressFraction)
-                            // The TimelineView above ticks once a second,
-                            // so the "still working… (Ns)" timer counts up
-                            // even while the script itself is quiet.
-                            Text(runner.milestoneText(asOf: context.date))
-                                .foregroundStyle(.secondary)
-                                .accessibilityIdentifier("taskMilestoneLabel")
+                        }
+
+                        HStack(alignment: .center) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                if !runner.milestones.isEmpty {
+                                    // The TimelineView above ticks once a second,
+                                    // so the "still working… (Ns)" timer counts up
+                                    // even while the script itself is quiet.
+                                    Text(runner.milestoneText(asOf: context.date))
+                                        .foregroundStyle(.secondary)
+                                        .accessibilityIdentifier("taskMilestoneLabel")
+                                }
+
+                                Button {
+                                    isShowingWhyTakingLong.toggle()
+                                } label: {
+                                    Label("Why might this take a while?", systemImage: "questionmark.circle")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                                .popover(isPresented: $isShowingWhyTakingLong, arrowEdge: .bottom) {
+                                    WhyTakingLongView()
+                                }
+                                .accessibilityIdentifier("whyTakingLongButton")
+                            }
+
+                            Spacer()
+
+                            if canCancel && !runner.wasCancelled {
+                                Button("Cancel") {
+                                    if let onCancel {
+                                        onCancel()
+                                    } else {
+                                        runner.cancelByUser()
+                                    }
+                                }
+                                .buttonStyle(.bordered)
+                                .accessibilityIdentifier("taskCancelButton")
+                            }
                         }
                     } else if let exitCode = runner.lastExitCode {
                         HStack(spacing: 8) {

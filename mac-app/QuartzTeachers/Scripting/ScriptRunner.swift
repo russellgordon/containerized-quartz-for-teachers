@@ -275,6 +275,26 @@ class ScriptRunner {
         terminate()
     }
 
+    /// Cancels the task because the teacher asked to cancel it.
+    ///
+    /// Sends an interrupt signal (Control-C) through the pseudo-terminal
+    /// so the foreground process group can handle signal traps and exit
+    /// cleanly, falling back to a direct process termination after two seconds.
+    func cancelByUser(onCleanup: (() -> Void)? = nil) {
+        wasCancelled = true
+        wasStoppedByUser = true
+        onCleanup?()
+        send(rawText: "\u{03}")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            guard let self else {
+                return
+            }
+            if self.isRunning {
+                self.terminate()
+            }
+        }
+    }
+
     /// Stops the running script.
     ///
     /// Note: this terminates the script process itself. A Quartz preview

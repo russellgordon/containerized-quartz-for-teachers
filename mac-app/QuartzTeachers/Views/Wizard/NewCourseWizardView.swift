@@ -203,7 +203,7 @@ struct NewCourseWizardView: View {
             .padding()
 
             if hasStarted {
-                TaskProgressView(runner: creator.runner, title: progressTitle)
+                TaskProgressView(runner: creator.runner, title: progressTitle, canCancel: false)
                 Spacer(minLength: 0)
             } else {
                 exampleCourseInvitation

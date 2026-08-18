@@ -3488,6 +3488,28 @@ choosing a Netlify/Cloudflare subdomain:
 
 All requests are serialized in `contracts/app-rules.json` → `credentialRequests.requests`.
 
+## Task cancellation and duration explanation in TaskProgressView (entry 271)
+
+Previewing and deploying can take significant time on first run (building the local engine image, installing dependencies, performing full compilations, or uploading initial sites). Teachers can now cancel a preview or deploy mid-flight from the GUI, and see a plain-language explanation of why a task might take a while.
+
+### 1. Cancel button & avoiding orphan processes
+
+- **UI Placement**: A bordered `Cancel` button sits in the bottom-trailing corner of `TaskProgressView`, below the progress bar and step description. It is visible only while `runner.isRunning` and `!runner.wasCancelled`.
+- **Signal Handling (Control-C)**: Rather than abruptly killing the shell process (which would orphan child commands like `docker buildx` or `wrangler`), `cancelByUser()` writes `\x03` (`Control-C`) into the pseudo-terminal (`PseudoTerminal` on macOS, `ConPTY` / `PtyDriver` on Windows). This delivers `SIGINT` to the foreground process group and lets scripts run their cleanup traps.
+- **Safety Timeout**: If the process has not terminated within 2 seconds of the interrupt, direct process termination is invoked.
+- **Container Cleanup**: `cancelPreview()` and `cancelDeploy()` call `PreviewStopper.stopSectionProcesses(...)` (`preview.ps1 CODE N -Stop` on Windows), which finds and terminates any container processes running in `.merged_output/sectionN`.
+- **Outcome Status**: Cancelling marks `wasCancelled = true` and `wasStoppedByUser = true`. `TaskProgressView` shows the orange `Cancelled` badge and `"<Title> was cancelled."`, and the run is not reported as an error.
+
+### 2. "Why might this take a while?" popover
+
+Below the milestone label on the leading side, a subtle `Why might this take a while?` button with a `questionmark.circle` icon opens a popover / flyout displaying four plain-language bullet points (strictly adhering to Rule 1 — no "Docker", "container", "Colima", "toolchain", "Node", or "npm" jargon):
+- **First-time setup**: Getting everything ready for the first time takes a couple of minutes to set up your website builder. Future previews and deploys will be much faster (usually just a few seconds).
+- **First-time publishing**: Uploading your entire website for the first time takes a bit longer. Future publishes only upload the pages you’ve changed.
+- **Photos and attachments**: Courses with many images, documents, or media files take extra time to prepare and upload.
+- **Internet connection**: When publishing online, upload speed depends on your current internet connection.
+
+On Windows: implement as a WinUI `Flyout` or `TeachingTip` triggered by a `HyperlinkButton` or subtle button with a matching question mark icon.
+
 ## plantoir.app is generated, and its screenshots are taken by a robot (entry 255)
 
 The marketing site used to be one hand-written `site/index.html`. It is now
