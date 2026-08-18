@@ -56,6 +56,9 @@ struct SidebarView: View {
     /// Why a scheduled deploy could not be cancelled, shown as an alert.
     @State var scheduleProblem: String?
 
+    /// Why a Claude session could not be started, shown as an alert.
+    @State var claudeProblem: String?
+
     // MARK: - Body
 
     var body: some View {
@@ -94,6 +97,7 @@ struct SidebarView: View {
                                         // often, and burying it under the
                                         // editing and folder actions made it
                                         // read as an afterthought.
+                                        reviseWithClaudeItem(course: course)
                                         reviseWithAIItem(course: course, sectionNumber: sectionNumber)
                                         Divider()
                                         openInObsidianItem(
@@ -144,6 +148,7 @@ struct SidebarView: View {
                                 .tag(SidebarSelection.course(course.code))
                                 .accessibilityIdentifier("sidebar-\(course.code)")
                                 .contextMenu {
+                                    reviseWithClaudeItem(course: course)
                                     openInObsidianItem(revealing: course.directoryURL, vaultURL: course.directoryURL)
                                     Divider()
                                     // Renaming moves the folder a preview is
@@ -412,6 +417,13 @@ struct SidebarView: View {
             }
         } message: {
             Text(removalProblem ?? "")
+        }
+        .alert("Claude didn’t open", isPresented: claudeProblemBinding) {
+            Button("OK") {
+                claudeProblem = nil
+            }
+        } message: {
+            Text(claudeProblem ?? "")
         }
         .sheet(item: $addSectionCourse) { course in
             AddSectionSheet(course: course) { sectionNumber in
@@ -754,6 +766,17 @@ struct SidebarView: View {
         )
     }
 
+    var claudeProblemBinding: Binding<Bool> {
+        return Binding(
+            get: { claudeProblem != nil },
+            set: { isPresented in
+                if !isPresented {
+                    claudeProblem = nil
+                }
+            }
+        )
+    }
+
     // MARK: - Functions
 
     /// When this section next deploys on its own, or nil when nothing is
@@ -824,6 +847,32 @@ struct SidebarView: View {
             FolderActions.openInObsidian(revealing: folderURL, vaultURL: vaultURL)
         }
         .disabled(!FolderActions.obsidianIsInstalled)
+    }
+
+    /// Opens a Claude Code session in a terminal, connected to this course
+    /// through Plantoir's MCP server.
+    ///
+    /// Hidden when Claude Code is not installed — a teacher who does not have
+    /// Claude should not be shown a menu item that opens onto an error.
+    @ViewBuilder
+    func reviseWithClaudeItem(course: Course) -> some View {
+        if ClaudeCodeLauncher.isAvailable, let folder = workspace.workspaceURL {
+            Button("Revise with Claude…", systemImage: "sparkles") {
+                reviseWithClaude(course: course, folder: folder)
+            }
+            .accessibilityIdentifier("reviseWithClaude-\(course.code)")
+        }
+    }
+
+    func reviseWithClaude(course: Course, folder: URL) {
+        if ClaudeCodeLauncher.open(
+            workspacePath: folder.path,
+            courseCode: course.code,
+            courseName: course.configuration.courseName
+        ) {
+            return
+        }
+        claudeProblem = "Plantoir couldn’t start a Claude session for \(course.code). If Claude Code was updated or moved recently, restarting Plantoir may be enough."
     }
 
     /// Opens the assistant for one section, in a window of its own.

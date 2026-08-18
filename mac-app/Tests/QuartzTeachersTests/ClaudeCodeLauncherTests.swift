@@ -1,0 +1,89 @@
+import XCTest
+@testable import QuartzTeachers
+
+final class ClaudeCodeLauncherTests: XCTestCase {
+
+    // MARK: - Functions
+
+    func testGreetingWithDistinctCourseName() {
+        let text: String = ClaudeCodeLauncher.greeting(courseCode: "ICS3U", courseName: "Grade 11 Computer Science")
+        XCTAssertTrue(text.contains("I'm a teacher working on ICS3U (Grade 11 Computer Science) in Plantoir."))
+        XCTAssertTrue(text.contains("Use the plantoir tools for anything to do with this course."))
+        XCTAssertTrue(text.contains("Start by listing its sections so we both know what's there."))
+        XCTAssertTrue(text.contains("Before changing anything, use the matching plan tool first and show me what it says, in plain words, and wait for me to agree."))
+        XCTAssertFalse(text.contains("\""))
+    }
+
+    func testGreetingWithIdenticalCourseName() {
+        let text: String = ClaudeCodeLauncher.greeting(courseCode: "ICS3U", courseName: "ICS3U")
+        XCTAssertTrue(text.contains("I'm a teacher working on ICS3U in Plantoir."))
+        XCTAssertFalse(text.contains("ICS3U (ICS3U)"))
+    }
+
+    func testGreetingWithEmptyCourseName() {
+        let text: String = ClaudeCodeLauncher.greeting(courseCode: "ICS3U", courseName: "   ")
+        XCTAssertTrue(text.contains("I'm a teacher working on ICS3U in Plantoir."))
+        XCTAssertFalse(text.contains("("))
+    }
+
+    func testWriteConfigCreatesValidJSON() throws {
+        let tempWorkspace: String = "/Users/teacher/Teaching"
+        let courseCode: String = "ICS3U_TEST"
+        let dummyServer: String = "/Applications/Plantoir.app/Contents/MacOS/Plantoir"
+
+        let configPath: String = try ClaudeCodeLauncher.writeConfig(
+            workspacePath: tempWorkspace,
+            courseCode: courseCode,
+            serverPath: dummyServer
+        )
+        defer {
+            try? FileManager.default.removeItem(atPath: configPath)
+        }
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: configPath))
+
+        let data: Data = try Data(contentsOf: URL(fileURLWithPath: configPath))
+        let jsonObject: [String: Any]? = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        XCTAssertNotNil(jsonObject)
+
+        let mcpServers: [String: Any]? = jsonObject?["mcpServers"] as? [String: Any]
+        XCTAssertNotNil(mcpServers)
+
+        let plantoirServer: [String: Any]? = mcpServers?["plantoir"] as? [String: Any]
+        XCTAssertNotNil(plantoirServer)
+        XCTAssertEqual(plantoirServer?["command"] as? String, dummyServer)
+
+        let args: [String]? = plantoirServer?["args"] as? [String]
+        XCTAssertEqual(args, ["--mcp-stdio", tempWorkspace])
+    }
+
+    func testEscapeForShellSingleQuotes() {
+        let simple: String = ClaudeCodeLauncher.escapeForShell("/path/to/folder")
+        XCTAssertEqual(simple, "'/path/to/folder'")
+
+        let withSpaces: String = ClaudeCodeLauncher.escapeForShell("/path/with space/folder")
+        XCTAssertEqual(withSpaces, "'/path/with space/folder'")
+
+        let withSingleQuotes: String = ClaudeCodeLauncher.escapeForShell("I'm a teacher")
+        XCTAssertEqual(withSingleQuotes, "'I'\\''m a teacher'")
+    }
+
+    func testEscapeForAppleScriptLiteral() {
+        let simple: String = ClaudeCodeLauncher.escapeForAppleScriptLiteral("hello")
+        XCTAssertEqual(simple, "hello")
+
+        let withQuotes: String = ClaudeCodeLauncher.escapeForAppleScriptLiteral("hello \"world\"")
+        XCTAssertEqual(withQuotes, "hello \\\"world\\\"")
+
+        let withBackslash: String = ClaudeCodeLauncher.escapeForAppleScriptLiteral("hello\\world")
+        XCTAssertEqual(withBackslash, "hello\\\\world")
+    }
+
+    func testFindServerReturnsPath() {
+        let server: String? = ClaudeCodeLauncher.findServer()
+        XCTAssertNotNil(server)
+        if let server {
+            XCTAssertTrue(FileManager.default.fileExists(atPath: server))
+        }
+    }
+}
