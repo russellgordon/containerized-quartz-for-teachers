@@ -14,20 +14,7 @@ public partial class App : Application
 
     public App()
     {
-        AppDomain.CurrentDomain.UnhandledException += (s, e) =>
-        {
-            try { File.WriteAllText("C:\\Users\\lenov\\Desktop\\Developer\\containerized-quartz-for-teachers\\crash.txt", $"Unhandled: {e.ExceptionObject}"); } catch { }
-        };
-        UnhandledException += (s, e) =>
-        {
-            try { File.WriteAllText("C:\\Users\\lenov\\Desktop\\Developer\\containerized-quartz-for-teachers\\crash.txt", $"XAML Unhandled: {e.Message}\nHR: 0x{e.Exception?.HResult:X8}\n{e.Exception}"); } catch { }
-        };
         InitializeComponent();
-        try
-        {
-            File.WriteAllText("C:\\Users\\lenov\\Desktop\\Developer\\containerized-quartz-for-teachers\\launch.txt", $"App initialized: {string.Join(" | ", Environment.GetCommandLineArgs())}");
-        }
-        catch { }
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
