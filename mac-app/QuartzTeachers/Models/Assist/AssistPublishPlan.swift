@@ -939,7 +939,7 @@ enum AssistPublishPlanner {
         // takes the index back with them. An undo that restored the lessons
         // and left the front page pointing at the wrong one would be a worse
         // state than either.
-        if let repointed = repointingTheIndex(forSection: sectionNumber, in: course) {
+        if let repointed = SectionIndexPointer.repointIndex(forSection: sectionNumber, in: course) {
             saved.append(repointed)
         }
 
@@ -984,53 +984,6 @@ enum AssistPublishPlanner {
         // Nothing's visibility moved, so this was a date change alone.
         let word: String = savedCount == 1 ? "page" : "pages"
         return "\(savedCount) \(word)"
-    }
-
-    /// Point the section's index at its most recent visible class, and give it
-    /// that class's date — or nil when it already does.
-    ///
-    /// Read back from disk rather than worked out from the plan: the pages
-    /// have just been written, so the graph is the truth, and a second
-    /// calculation of "which class is newest now" is a second thing to get
-    /// wrong.
-    ///
-    /// Silent when there is nothing to do. A section with no dated visible
-    /// class has no right answer, and leaving the index alone is better than
-    /// pointing it somewhere arbitrary.
-    private static func repointingTheIndex(
-        forSection sectionNumber: Int,
-        in course: Course
-    ) -> AssistSavedFile? {
-        let graph: AssistSectionGraph = AssistSectionGraph.read(
-            forSection: sectionNumber, in: course, workspaceURL: nil
-        )
-        guard let newest = SectionIndexPointer.mostRecentVisibleClass(in: graph) else {
-            return nil
-        }
-
-        let indexURL: URL = SectionIndexPointer.indexURL(forSection: sectionNumber, in: course)
-        guard let before = try? String(contentsOf: indexURL, encoding: .utf8) else {
-            return nil
-        }
-
-        var classTitles: Set<String> = []
-        for page in graph.pages where page.isClassPage {
-            classTitles.insert(page.lowercasedTitle)
-        }
-
-        let tail: String = ClassPages.siblingTimeAndOffset(
-            from: ClassPages.list(forSection: sectionNumber, in: course),
-            forSection: sectionNumber
-        )
-        guard let result = SectionIndexPointer.repointing(
-            before, at: newest, classTitles: classTitles, createdTail: tail
-        ) else {
-            return nil
-        }
-        guard (try? result.text.write(to: indexURL, atomically: true, encoding: .utf8)) != nil else {
-            return nil
-        }
-        return AssistSavedFile(fileURL: indexURL, before: before, after: result.text)
     }
 }
 

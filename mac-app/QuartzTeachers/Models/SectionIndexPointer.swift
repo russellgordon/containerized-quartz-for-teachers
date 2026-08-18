@@ -132,4 +132,42 @@ enum SectionIndexPointer {
         return course.sectionDirectoryURL(forSection: sectionNumber)
             .appendingPathComponent("index.md")
     }
+
+    /// Repoints the section landing page at its newest visible class, returning
+    /// the saved file record when modified.
+    static func repointIndex(
+        forSection sectionNumber: Int,
+        in course: Course
+    ) -> AssistSavedFile? {
+        let graph: AssistSectionGraph = AssistSectionGraph.read(
+            forSection: sectionNumber, in: course, workspaceURL: nil
+        )
+        guard let newest = SectionIndexPointer.mostRecentVisibleClass(in: graph) else {
+            return nil
+        }
+
+        let indexURL: URL = SectionIndexPointer.indexURL(forSection: sectionNumber, in: course)
+        guard let before = try? String(contentsOf: indexURL, encoding: .utf8) else {
+            return nil
+        }
+
+        var classTitles: Set<String> = []
+        for page in graph.pages where page.isClassPage {
+            classTitles.insert(page.lowercasedTitle)
+        }
+
+        let tail: String = ClassPages.siblingTimeAndOffset(
+            from: ClassPages.list(forSection: sectionNumber, in: course),
+            forSection: sectionNumber
+        )
+        guard let result = SectionIndexPointer.repointing(
+            before, at: newest, classTitles: classTitles, createdTail: tail
+        ) else {
+            return nil
+        }
+        guard (try? result.text.write(to: indexURL, atomically: true, encoding: .utf8)) != nil else {
+            return nil
+        }
+        return AssistSavedFile(fileURL: indexURL, before: before, after: result.text)
+    }
 }

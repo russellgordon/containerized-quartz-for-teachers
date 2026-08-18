@@ -1565,6 +1565,9 @@ final class AssistToolRunnerTests: XCTestCase {
             try write(page: "Unit 1, Day \(day)", publish: "true", date: "2025-09-0\(day + 7)",
                       body: "Class \(day).", in: made.course)
         }
+        // Landing page initially pointed at Day 4
+        try writeSectionIndex(pointingAt: "Unit 1, Day 4", in: made.course)
+
         _ = await made.runner.run(call: call(
             "remember_timetable",
             arguments: ["course": "ICS3U", "section": 1, "dates": "2026-09-08; 2026-09-10"]
@@ -1575,20 +1578,32 @@ final class AssistToolRunnerTests: XCTestCase {
         ))
         print("\n===== OVERFLOW PLAN =====\n\(planned.detail)\n=====\n")
         XCTAssertTrue(planned.detail.contains("2 classes have no day of their own"), planned.detail)
-        XCTAssertTrue(planned.detail.contains("Move or delete them"), planned.detail)
+        XCTAssertTrue(planned.detail.contains("Move, publish or delete them"), planned.detail)
 
         _ = await made.runner.run(call: call(
             "re_date_classes", arguments: ["course": "ICS3U", "section": 1]
         ))
 
-        // The ones that fit.
+        // The ones that fit stay published and get their scheduled dates.
         XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("created: 2026-09-08"))
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: true"))
         XCTAssertTrue(text(ofPage: "Unit 1, Day 2", in: made.course).contains("created: 2026-09-10"))
-        // And the ones that do not, together on the last day.
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 2", in: made.course).contains("publish: true"))
+
+        // And the ones that do not land on the last day as drafts (publish: false).
         XCTAssertTrue(text(ofPage: "Unit 1, Day 3", in: made.course).contains("created: 2026-09-10"),
                       "An overflow class was left on last year's date")
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 3", in: made.course).contains("publish: false"),
+                      "An overflow class must become a draft")
         XCTAssertTrue(text(ofPage: "Unit 1, Day 4", in: made.course).contains("created: 2026-09-10"),
                       "An overflow class was left on last year's date")
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 4", in: made.course).contains("publish: false"),
+                      "An overflow class must become a draft")
+
+        // The landing page should now transclude the last in-bounds published class (Unit 1, Day 2).
+        let indexText: String = try sectionIndexText(in: made.course)
+        XCTAssertTrue(indexText.contains("![[Unit 1, Day 2]]"),
+                      "The section index must repoint to the newest published class, not an overflow draft: \(indexText)")
     }
 
     /// Curriculum pages are left alone: the toolchain dates those itself on

@@ -27,6 +27,10 @@ struct ReDatedPage: Equatable {
     let from: CalendarDay?
     let to: CalendarDay
     let reason: Reason
+
+    /// Whether this page is being unpublished (e.g. overflow classes with no
+    /// schedule date of their own that are set to draft).
+    let unpublishes: Bool
 }
 
 /// Re-dating a whole section onto a new list of class dates.
@@ -98,10 +102,10 @@ enum SectionReDatePlanner {
     // too: move things around, merge two lessons, drop the ones that no longer
     // fit. That is planning, and planning is theirs.
     //
-    // So the overflow classes all land on the LAST class date, where they are
-    // impossible to miss — they sit together on the final day of the course —
-    // and the plan says how many and what to do about them. Every other page
-    // is correct meanwhile, which is the whole point of asking.
+    // So the overflow classes all land on the LAST class date as drafts, where
+    // they are impossible to miss — they sit together on the final day of the
+    // course — and the plan says how many and what to do about them. Every
+    // other page is correct meanwhile, which is the whole point of asking.
 
     // MARK: - Functions
 
@@ -134,13 +138,16 @@ enum SectionReDatePlanner {
             guard let page = graph.page(titled: summary.title) else {
                 continue
             }
-            if page.date == day {
+            let isOverflow: Bool = index >= remembered.dates.count
+            let unpublishes: Bool = isOverflow && page.isVisibleToStudents
+            if page.date == day && !unpublishes {
                 continue
             }
             moves.append(ReDatedPage(
                 title: page.displayTitle, fileURL: page.fileURL,
                 isSectionLocal: page.isSectionLocal,
-                from: page.date, to: day, reason: .aClass
+                from: page.date, to: day, reason: .aClass,
+                unpublishes: unpublishes
             ))
         }
 
@@ -162,7 +169,8 @@ enum SectionReDatePlanner {
             moves.append(ReDatedPage(
                 title: page.displayTitle, fileURL: page.fileURL,
                 isSectionLocal: page.isSectionLocal,
-                from: page.date, to: firstDay, reason: .yearRound
+                from: page.date, to: firstDay, reason: .yearRound,
+                unpublishes: false
             ))
         }
 
@@ -188,7 +196,8 @@ enum SectionReDatePlanner {
                 moves.append(ReDatedPage(
                     title: page.displayTitle, fileURL: page.fileURL,
                     isSectionLocal: page.isSectionLocal,
-                    from: page.date, to: day, reason: .broughtBy(classPage.displayTitle)
+                    from: page.date, to: day, reason: .broughtBy(classPage.displayTitle),
+                    unpublishes: false
                 ))
             }
         }
@@ -229,7 +238,7 @@ enum SectionReDatePlanner {
         var saved: [AssistSavedFile] = []
         for move in plan.moves {
             let before: String = try String(contentsOf: move.fileURL, encoding: .utf8)
-            let after: String = PageFrontmatter.settingCreated(
+            var after: String = PageFrontmatter.settingCreated(
                 in: before,
                 key: PageFrontmatter.createdKey(
                     forSection: sectionNumber, isSectionLocal: move.isSectionLocal
@@ -237,11 +246,23 @@ enum SectionReDatePlanner {
                 to: move.to,
                 fallbackTail: tail
             ).text
+            if move.unpublishes {
+                after = AssistPageVisibility.setting(
+                    published: false,
+                    in: after,
+                    forSection: sectionNumber,
+                    isSectionLocal: move.isSectionLocal
+                ).text
+            }
             if after == before {
                 continue
             }
             try after.write(to: move.fileURL, atomically: true, encoding: .utf8)
             saved.append(AssistSavedFile(fileURL: move.fileURL, before: before, after: after))
+        }
+
+        if let repointed = SectionIndexPointer.repointIndex(forSection: sectionNumber, in: course) {
+            saved.append(repointed)
         }
 
         return AssistChange(
@@ -303,7 +324,7 @@ struct SectionReDatePlan {
             lines.append("\(overflowing) \(overflowing == 1 ? "class has" : "classes have") no day "
                          + "of \(overflowing == 1 ? "its" : "their") own this year, so "
                          + "\(overflowing == 1 ? "it goes" : "they all go") on "
-                         + "\(lastDay.text) with the last one. Move or delete "
+                         + "\(lastDay.text) with the last one as \(overflowing == 1 ? "a draft" : "drafts"). Move, publish or delete "
                          + "\(overflowing == 1 ? "it" : "them") when you have decided what to do.")
         }
         lines.append("")
@@ -318,7 +339,11 @@ struct SectionReDatePlan {
             }
             switch move.reason {
             case .aClass:
-                lines.append("“\(move.title)” moves to \(move.to.text).")
+                if move.unpublishes {
+                    lines.append("“\(move.title)” moves to \(move.to.text) and becomes a draft because it has no class date.")
+                } else {
+                    lines.append("“\(move.title)” moves to \(move.to.text).")
+                }
             case .broughtBy(let classTitle):
                 lines.append("“\(move.title)” moves to \(move.to.text), with “\(classTitle)”.")
             case .yearRound:
