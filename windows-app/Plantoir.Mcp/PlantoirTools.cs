@@ -3,6 +3,7 @@ using System.Text;
 using ModelContextProtocol;
 using ModelContextProtocol.Server;
 using Plantoir.Core.Assist;
+using Plantoir.Core.Models;
 
 namespace Plantoir.Mcp;
 
@@ -173,7 +174,8 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
 
     [McpServerTool(Name = "check_section", Title = "Check what students would see",
                    ReadOnly = true, Destructive = false)]
-    [Description("TEACHERS SAY: \"what do students see right now?\", \"is anything broken?\", \"what's live?\". " +
+    [Description("TEACHERS SAY: \"what do students see right now?\", \"what would students see in this section right now?\", " +
+                 "\"is anything broken?\", \"what's live?\". " +
                  "Check a section's website as students would meet it, changing nothing. Reports two things that " +
                  "publishing and unpublishing tools cannot see for themselves: links on visible pages that lead to a hidden " +
                  "page (students click and find nothing), and pages nothing links to — which are still published and " +
@@ -191,38 +193,56 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
             var dangling = graph.DanglingLinks(isHidden);
             var orphans = graph.Unreferenced().Where(p => !isHidden(p)).ToList();
 
-            var text = new StringBuilder();
-            text.AppendLine($"{found.Code} Section {number}: {graph.Pages.Count} pages, " +
-                            $"{graph.Pages.Count(p => !isHidden(p))} visible to students.");
-            text.AppendLine();
+            int visible = graph.Pages.Count(p => !isHidden(p));
+            string pageWord = visible == 1 ? "page" : "pages";
+
+            var paragraphs = new List<string>
+            {
+                $"Students would see {visible} {pageWord} in {found.Code} Section {number}."
+            };
 
             if (dangling.Count == 0)
-                text.AppendLine("No visible page links to a unpublished one.");
+            {
+                paragraphs.Add("None of the visible pages link to unpublished pages, ensuring " +
+                               "that all links are functional and point to published content.");
+            }
             else
             {
-                text.AppendLine($"{dangling.Count} link{(dangling.Count == 1 ? "" : "s")} " +
-                                "would take a student to a page that isn’t there:");
+                var lines = new List<string>();
+                string word = dangling.Count == 1 ? "link" : "links";
+                lines.Add($"{dangling.Count} {word} would take a student to a page that isn’t there:");
                 foreach (var link in dangling.Take(MostListed))
-                    text.AppendLine($"  {workspace.Relative(link.From)}  →  " +
-                                    $"{Path.GetFileNameWithoutExtension(link.To)}  (hidden)");
+                    lines.Add($"• {workspace.Relative(link.From)}  →  {Path.GetFileNameWithoutExtension(link.To)}  (hidden)");
                 if (dangling.Count > MostListed)
-                    text.AppendLine($"  …and {dangling.Count - MostListed} more.");
+                    lines.Add($"…and {dangling.Count - MostListed} more.");
+                lines.Add("Either publish the page each one points at, or take the link off the page that points at it.");
+                paragraphs.Add(string.Join("\n", lines));
             }
-            text.AppendLine();
 
-            if (orphans.Count == 0)
-                text.AppendLine("Every visible page is linked from somewhere.");
-            else
+            if (orphans.Count > 0)
             {
-                text.AppendLine($"{orphans.Count} visible page{(orphans.Count == 1 ? " is" : "s are")} " +
-                                "linked from nowhere. Students can still reach these through the site’s " +
-                                "explorer, and no publish or hide rule that follows links will ever touch them:");
+                var lines = new List<string>();
+                string word = orphans.Count == 1 ? "page is" : "pages are";
+                lines.Add($"{orphans.Count} visible {word} linked from nowhere. Students can still reach these through the site’s " +
+                          "explorer, and no publish or hide rule that follows links will ever touch them:");
                 foreach (string page in orphans.Take(MostListed))
-                    text.AppendLine("  " + workspace.Relative(page));
+                    lines.Add("• " + workspace.Relative(page));
                 if (orphans.Count > MostListed)
-                    text.AppendLine($"  …and {orphans.Count - MostListed} more.");
+                    lines.Add($"…and {orphans.Count - MostListed} more.");
+                paragraphs.Add(string.Join("\n", lines));
             }
-            return text.ToString().TrimEnd();
+
+            bool isShowing = PreviewLeases.Active.Any(l =>
+                l.FolderPath == workspace.FolderPath &&
+                string.Equals(l.CourseCode, found.Code, StringComparison.OrdinalIgnoreCase) &&
+                l.SectionNumber == number);
+
+            if (!isShowing)
+            {
+                paragraphs.Add("Nothing is being previewed at the moment. Say “Preview” if you would like to look the section over.");
+            }
+
+            return string.Join("\n\n", paragraphs);
         });
 
     // ---- Rolling a course onto a real timetable --------------------------

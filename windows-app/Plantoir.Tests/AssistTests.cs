@@ -907,6 +907,22 @@ public class AssistWorkspaceTests : IDisposable
         Assert.False(LinkGraph.IsExcludedFromSweep(@"C:\courses\ICS3U\shared\Tasks\Project.md", keyLinksTargets));
     }
 
+    [Fact]
+    public void CheckSectionReturnsExpectedSummary()
+    {
+        AddCourse("MCV4U", "Calculus", 1);
+        Page("MCV4U", "section1/All Classes/Unit 1, Day 1.md", draft: false);
+        Page("MCV4U", "section1/All Classes/Unit 1, Day 2.md", draft: false);
+
+        var workspace = Open();
+        var tools = new Plantoir.Mcp.PlantoirTools(workspace);
+        string result = tools.CheckSection("MCV4U", 1);
+
+        Assert.Contains("Students would see 2 pages in MCV4U Section 1.", result);
+        Assert.Contains("None of the visible pages link to unpublished pages, ensuring that all links are functional and point to published content.", result);
+        Assert.Contains("Nothing is being previewed at the moment. Say “Preview” if you would like to look the section over.", result);
+    }
+
     private void WriteWorkLease(string course, string kind, int pid, string name)
     {
         string directory = Path.Combine(_folder, "courses", ".internal", "activity");

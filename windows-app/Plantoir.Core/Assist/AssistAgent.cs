@@ -678,17 +678,17 @@ public sealed class AssistAgent
     }
 
     /// <summary>The teacher said no. Cancel the waiting action.</summary>
-    public async Task<List<Line>> Decline(CancellationToken cancellation)
+    public Task<List<Line>> Decline(CancellationToken cancellation)
     {
         if (_offeringPreview)
         {
             _offeringPreview = false;
             const string later = "All right — say “preview the site” whenever you want it back.";
             _messages.Add(new JsonObject { ["role"] = "assistant", ["content"] = later });
-            return new List<Line> { new("assistant", later) };
+            return Task.FromResult(new List<Line> { new("assistant", later) });
         }
 
-        if (_awaiting is not { } call) return new List<Line>();
+        if (_awaiting is not { } call) return Task.FromResult(new List<Line>());
         string toolName = call["function"]?["name"]?.GetValue<string>() ?? "";
         _awaiting = null;
 
@@ -699,7 +699,7 @@ public sealed class AssistAgent
                 ["role"] = "assistant",
                 ["content"] = AssistWording.DeployWasCancelled,
             });
-            return new List<Line> { new("assistant", AssistWording.DeployWasCancelled) };
+            return Task.FromResult(new List<Line> { new("assistant", AssistWording.DeployWasCancelled) });
         }
 
         _messages.Add(new JsonObject
@@ -707,7 +707,7 @@ public sealed class AssistAgent
             ["role"] = "assistant",
             ["content"] = AssistWording.PlanWasCancelled,
         });
-        return new List<Line> { new("assistant", AssistWording.PlanWasCancelled) };
+        return Task.FromResult(new List<Line> { new("assistant", AssistWording.PlanWasCancelled) });
     }
 
     private async Task<List<Line>> Run(CancellationToken cancellation)
@@ -850,6 +850,10 @@ public sealed class AssistAgent
         {
             _handedToApp = true;
             _offeringPreview = true;
+        }
+        else if (name.Equals("check_section", StringComparison.OrdinalIgnoreCase))
+        {
+            _handedToApp = true;
         }
         return result;
     }
