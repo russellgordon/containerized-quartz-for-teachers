@@ -57,6 +57,11 @@ public sealed class AppSettings
     /// </summary>
     public bool ConfirmationMentioned { get; set; } = false;
 
+    /// <summary>
+    /// Which prompt shelf groups are open in the local AI assistant window (pipe-separated).
+    /// </summary>
+    public string AssistPromptShelfOpenGroups { get; set; } = "";
+
     public static string DefaultPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                      "Plantoir", "settings.json");

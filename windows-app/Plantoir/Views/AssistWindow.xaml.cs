@@ -199,15 +199,16 @@ public sealed partial class AssistWindow : Window
         // genuinely is one.
         Say("Assistant", Briefing.Words(_course.Code, _section, AssistWorkspace.DestinationOf(_course)));
 
-        // What to say, in the words that work.
-        //
-        // A small model matches text; it does not infer intent. So rather than
-        // leaving a teacher to discover which phrasings land — and the first
-        // real use of this window opened with "Hello, what is your name?",
-        // which is the one question it can only answer slowly and unhelpfully
-        // — the examples are put in front of them before they type. These are
-        // the shapes the routing was measured on.
-        Say("Assistant", AssistAgent.ExampleRequests);
+        // Mount the prompt shelf at the top of the window with clickable cards.
+        var shelf = new AssistPromptShelfView(phrasing =>
+        {
+            Input.Text = phrasing;
+            Input.SelectionStart = phrasing.Length;
+            Input.SelectionLength = 0;
+            Input.Focus(FocusState.Programmatic);
+        });
+        PromptShelfHost.Content = shelf;
+        PromptShelfArea.Visibility = Visibility.Visible;
 
         // Typing is available from here. The teacher reads the briefing while
         // the model quietly evaluates that same 6,200-token prefix in the

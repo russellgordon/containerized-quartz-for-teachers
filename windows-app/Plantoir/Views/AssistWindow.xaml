@@ -8,6 +8,7 @@
           Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -19,15 +20,23 @@
                        Style="{ThemeResource CaptionTextBlockStyle}" TextWrapping="Wrap" />
         </StackPanel>
 
+        <!-- The prompt shelf of things a teacher can ask for -->
+        <Border x:Name="PromptShelfArea" Grid.Row="1" Visibility="Collapsed"
+                BorderThickness="0,0,0,1"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Padding="0,0,0,8" Margin="0,0,0,4">
+            <ContentControl x:Name="PromptShelfHost" HorizontalContentAlignment="Stretch" />
+        </Border>
+
         <!-- The transcript. Every turn is a card, so a plan the teacher is
              being asked to approve is visibly a thing said, not chrome. -->
-        <ScrollViewer x:Name="TranscriptScroller" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer x:Name="TranscriptScroller" Grid.Row="2" VerticalScrollBarVisibility="Auto">
             <StackPanel x:Name="Transcript" Spacing="10" />
         </ScrollViewer>
 
         <!-- The approval bar. Hidden until a write is actually waiting, so it
              never reads as a decision the teacher has already been asked for. -->
-        <Border x:Name="ApprovalBar" Grid.Row="2" Visibility="Collapsed"
+        <Border x:Name="ApprovalBar" Grid.Row="3" Visibility="Collapsed"
                 Padding="12" CornerRadius="6"
                 Background="{ThemeResource SystemFillColorCautionBackgroundBrush}">
             <Grid ColumnSpacing="8">
@@ -47,12 +56,12 @@
             </Grid>
         </Border>
 
-        <Grid Grid.Row="3" ColumnSpacing="8">
+        <Grid Grid.Row="4" ColumnSpacing="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBox x:Name="Input" Grid.Column="0" PlaceholderText="Ask for a change…"
+            <TextBox x:Name="Input" Grid.Column="0" PlaceholderText="Ask about this section…"
                      IsEnabled="False" KeyDown="Input_KeyDown"
                      AutomationProperties.AutomationId="assistInput" />
             <Button x:Name="SendButton" Grid.Column="1" Content="Send" IsEnabled="False"
