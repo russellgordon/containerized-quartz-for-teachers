@@ -364,6 +364,12 @@ public sealed class AssistAgent
     /// <summary>Deploy through the main window's own flow, console and all. Any thread.</summary>
     public Action? StartDeployInApp { get; set; }
 
+    /// <summary>Async version of StartDeployInApp.</summary>
+    public Func<Task>? StartDeployInAppAsync { get; set; }
+
+    /// <summary>Check if the section is currently busy.</summary>
+    public Func<bool>? SectionIsBusy { get; set; }
+
     /// <summary>
     /// Whether this section's preview is on screen right now, asked of the
     /// window. It decides what a page edit must do about the preview: the
@@ -381,6 +387,9 @@ public sealed class AssistAgent
     /// so the only honest preview is a restarted one.
     /// </summary>
     public Action? StopPreviewInApp { get; set; }
+
+    /// <summary>Async version of StopPreviewInApp.</summary>
+    public Func<Task>? StopPreviewInAppAsync { get; set; }
 
     /// <summary>
     /// Tools that change pages. They run on the server as pure file edits —
@@ -589,7 +598,7 @@ public sealed class AssistAgent
         return lines;
     }
 
-    private List<Line> AskFirst(string userText, string tool, JsonObject arguments)
+    internal List<Line> AskFirst(string userText, string tool, JsonObject arguments)
     {
         _awaiting = Synthesise(userText, tool, arguments);
         if (tool.Equals("deploy_section", StringComparison.OrdinalIgnoreCase))
@@ -786,7 +795,7 @@ public sealed class AssistAgent
         return TakeHandedToApp();
     }
 
-    private async Task<string> RunTool(JsonObject call, List<Line> lines, CancellationToken cancellation)
+    internal async Task<string> RunTool(JsonObject call, List<Line> lines, CancellationToken cancellation)
     {
         string name = call["function"]?["name"]?.GetValue<string>() ?? "";
         var arguments = new JsonObject();
@@ -808,17 +817,39 @@ public sealed class AssistAgent
         {
             ShowPreviewInApp.Invoke();
             _handedToApp = true;
-            return Answer(call, "The preview is opening in Plantoir's main window — the build shows its progress there.");
+            return Answer(call, AssistWording.PreviewIsRebuilding(_courseCode, _section.ToString()));
         }
         if (name.Equals("deploy_section", StringComparison.OrdinalIgnoreCase) && StartDeployInApp is not null)
         {
+            if (SectionIsBusy?.Invoke() == true)
+            {
+                StartDeployInApp.Invoke();
+                _handedToApp = true;
+                return Answer(call, AssistWording.SectionIsBusy(_courseCode, _section.ToString()));
+            }
+
             if (PreviewIsShowing?.Invoke() == true)
             {
-                StopPreviewInApp?.Invoke();
+                if (StopPreviewInAppAsync is not null)
+                {
+                    await StopPreviewInAppAsync.Invoke();
+                }
+                else
+                {
+                    StopPreviewInApp?.Invoke();
+                }
             }
-            StartDeployInApp.Invoke();
+
+            if (StartDeployInAppAsync is not null)
+            {
+                await StartDeployInAppAsync.Invoke();
+            }
+            else
+            {
+                StartDeployInApp.Invoke();
+            }
             _handedToApp = true;
-            return Answer(call, "The section is deploying from Plantoir's main window — its progress is shown there.");
+            return Answer(call, AssistWording.Deployed(_courseCode, _section.ToString()));
         }
 
         // A page edit does what a person would do: stop the preview, change
@@ -826,7 +857,18 @@ public sealed class AssistAgent
         // (preview declined), so the work happens once, in the main window.
         bool edits = EditsPages.Contains(name);
         if (TakesPreviewFlag.Contains(name)) arguments["preview"] = false;
-        if (edits && PreviewIsShowing?.Invoke() == true) StopPreviewInApp?.Invoke();
+        bool hadPreview = PreviewIsShowing?.Invoke() == true;
+        if (edits && hadPreview)
+        {
+            if (StopPreviewInAppAsync is not null)
+            {
+                await StopPreviewInAppAsync.Invoke();
+            }
+            else
+            {
+                StopPreviewInApp?.Invoke();
+            }
+        }
 
         string result = await _tools.CallTool(name, arguments, OnToolProgress, cancellation);
         _messages.Add(new JsonObject
@@ -838,6 +880,10 @@ public sealed class AssistAgent
         if (IsWriteTool(name) || name.Equals("check_section", StringComparison.OrdinalIgnoreCase))
         {
             _handedToApp = true;
+        }
+        if (edits && hadPreview && ShowPreviewInApp is not null)
+        {
+            ShowPreviewInApp.Invoke();
         }
         return result;
     }

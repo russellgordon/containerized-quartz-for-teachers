@@ -165,7 +165,16 @@ public sealed partial class AssistWindow : Window
             // once, on screen — rather than running again behind the chat.
             ShowPreviewInApp = () => _main?.ShowPreviewFor(_course.Code, _section),
             StartDeployInApp = () => _main?.DeployFor(_course.Code, _section),
+            StartDeployInAppAsync = async () =>
+            {
+                if (_main is not null) await _main.DeployForAsync(_course.Code, _section);
+            },
             StopPreviewInApp = () => _main?.StopPreviewFor(_course.Code, _section),
+            StopPreviewInAppAsync = async () =>
+            {
+                if (_main is not null) await _main.StopPreviewForAsync(_course.Code, _section);
+            },
+            SectionIsBusy = () => _main?.IsSectionBusy(_course.Code, _section) == true,
             // Same process as the previews, so the in-memory leases are the
             // truth about whether one is on screen.
             PreviewIsShowing = () => PreviewLeases.Active.Any(lease =>

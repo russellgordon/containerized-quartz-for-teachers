@@ -45,7 +45,7 @@ public sealed partial class SectionDetailView : UserControl
     private bool _isWaitingForServer;
     private CancellationTokenSource? _serverWait;
 
-    private bool IsBusy => _previewRunner.IsRunning || _deployRunner.IsRunning;
+    internal bool IsBusy => _previewRunner.IsRunning || _deployRunner.IsRunning;
     private string TitleText => $"{_course.Code}-S{_sectionNumber}";
 
     public SectionDetailView(MainWindow window, Course course, int sectionNumber)
@@ -150,6 +150,15 @@ public sealed partial class SectionDetailView : UserControl
     public void StopPreviewIfRunning()
     {
         if (_previewRunner.IsRunning) StopPreview();
+    }
+
+    /// <summary>Asynchronously stop the preview if running, awaiting container process termination.</summary>
+    public async Task StopPreviewIfRunningAsync()
+    {
+        if (_previewRunner.IsRunning || _isWaitingForServer || _previewUrl is not null)
+        {
+            await StopPreviewAsync();
+        }
     }
 
     /// <summary>Smoke-test entry: open the console details pane.</summary>
@@ -330,6 +339,26 @@ public sealed partial class SectionDetailView : UserControl
         if (_previewRunner.IsRunning) _previewRunner.StopByUser();
         if (hadPreview && _window.Workspace.WorkspacePath is { } workspacePath)
             PreviewStopper.StopSectionProcesses(workspacePath, _course.Code, _sectionNumber);
+        _previewUrl = null;
+        _lastLoadedUrl = null;
+        _isWaitingForServer = false;
+        ReleaseLease();
+        RefreshChrome();
+    }
+
+    public async Task StopPreviewAsync()
+    {
+        bool hadPreview = _previewRunner.IsRunning || _isWaitingForServer || _previewUrl is not null;
+        _serverWait?.Cancel();
+        if (_previewRunner.IsRunning)
+        {
+            _previewRunner.StopByUser();
+            await _previewRunner.WaitUntilFinished();
+        }
+        if (hadPreview && _window.Workspace.WorkspacePath is { } workspacePath)
+        {
+            await PreviewStopper.StopSectionProcessesAsync(workspacePath, _course.Code, _sectionNumber);
+        }
         _previewUrl = null;
         _lastLoadedUrl = null;
         _isWaitingForServer = false;

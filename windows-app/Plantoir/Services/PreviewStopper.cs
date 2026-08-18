@@ -57,4 +57,50 @@ public static class PreviewStopper
             // Best-effort: a failed cleanup must never break the stop itself.
         }
     }
+
+    public static async Task StopSectionProcessesAsync(string workspacePath, string courseCode, int sectionNumber)
+    {
+        try
+        {
+            string scriptPath = Path.Combine(workspacePath, "preview.ps1");
+            if (!File.Exists(scriptPath)) return;
+            var info = new ProcessStartInfo
+            {
+                FileName = "powershell.exe",
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                WorkingDirectory = workspacePath,
+            };
+            info.ArgumentList.Add("-NoLogo");
+            info.ArgumentList.Add("-NoProfile");
+            info.ArgumentList.Add("-ExecutionPolicy");
+            info.ArgumentList.Add("Bypass");
+            info.ArgumentList.Add("-File");
+            info.ArgumentList.Add(scriptPath);
+            info.ArgumentList.Add(courseCode);
+            info.ArgumentList.Add(sectionNumber.ToString());
+            info.ArgumentList.Add("--stop");
+
+            var process = Process.Start(info);
+            if (process is null) return;
+            var tcs = new TaskCompletionSource();
+            process.OutputDataReceived += (_, _) => { };
+            process.ErrorDataReceived += (_, _) => { };
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.EnableRaisingEvents = true;
+            process.Exited += (_, _) =>
+            {
+                tcs.TrySetResult();
+                process.Dispose();
+            };
+            await tcs.Task;
+        }
+        catch
+        {
+            // Best-effort: a failed cleanup must never break the stop itself.
+        }
+    }
 }

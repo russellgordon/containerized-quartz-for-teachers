@@ -265,7 +265,7 @@ public class AssistAgentTests
         Assert.Empty(rig.Tools.Calls);
         Assert.Contains("show preview", rig.AppActions);
         Assert.Single(rig.Model.Asked);
-        Assert.Contains(lines, l => l.Text.Contains("main window"));
+        Assert.Contains(lines, l => l.Text.Contains(AssistWording.PreviewIsRebuilding("VVH2O", "1")));
     }
 
     [Fact]
@@ -309,7 +309,7 @@ public class AssistAgentTests
         var answer = rig.Approve();
         Assert.Equal(new[] { "deploy" }, rig.AppActions);
         Assert.Empty(rig.Tools.Calls);
-        Assert.Contains(answer, l => l.Text.Contains("main window"));
+        Assert.Contains(answer, l => l.Text.Contains(AssistWording.Deployed("VVH2O", "1")));
     }
 
     [Fact]

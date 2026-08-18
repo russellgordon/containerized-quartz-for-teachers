@@ -206,6 +206,33 @@ public sealed partial class MainWindow : Window
         });
     }
 
+    public async Task DeployForAsync(string courseCode, int section)
+    {
+        var tcs = new TaskCompletionSource();
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                Workspace.Selection = new SidebarSelection.SectionItem(courseCode, section);
+                if (DetailHost.Content is SectionDetailView detail) detail.StartDeployForAutomation();
+            }
+            finally
+            {
+                tcs.TrySetResult();
+            }
+        });
+        await tcs.Task;
+    }
+
+    public bool IsSectionBusy(string courseCode, int section)
+    {
+        if (DetailHost.Content is SectionDetailView detail)
+        {
+            return detail.IsBusy;
+        }
+        return false;
+    }
+
     /// <summary>
     /// Stop a section's preview, for the assistant — the first half of
     /// stop, edit, start again. No Activate: a stop is not the moment to
@@ -218,6 +245,27 @@ public sealed partial class MainWindow : Window
             Workspace.Selection = new SidebarSelection.SectionItem(courseCode, section);
             if (DetailHost.Content is SectionDetailView detail) detail.StopPreviewIfRunning();
         });
+    }
+
+    public async Task StopPreviewForAsync(string courseCode, int section)
+    {
+        var tcs = new TaskCompletionSource();
+        DispatcherQueue.TryEnqueue(async () =>
+        {
+            try
+            {
+                Workspace.Selection = new SidebarSelection.SectionItem(courseCode, section);
+                if (DetailHost.Content is SectionDetailView detail)
+                {
+                    await detail.StopPreviewIfRunningAsync();
+                }
+            }
+            finally
+            {
+                tcs.TrySetResult();
+            }
+        });
+        await tcs.Task;
     }
 
     /// <summary>
