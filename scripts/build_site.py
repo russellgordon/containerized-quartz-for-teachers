@@ -67,6 +67,127 @@ def patch_quartz_locale(quartz_config_path: Path, locale_code: str):
     except Exception as e:
         print(f"⚠️ Error patching Quartz locale: {e}")
 
+# --- Base URL helper & resolution -------------------------------------------
+def clean_base_url(val: str | None) -> str:
+    """Normalize a domain/baseUrl: strip http(s):// scheme, whitespace, and trailing slashes."""
+    if not val:
+        return ""
+    val = val.strip()
+    val = re.sub(r"^https?://", "", val, flags=re.IGNORECASE)
+    val = val.rstrip("/")
+    return val
+
+def resolve_section_domain(course_dir: Path, config: dict, section_number: int) -> str:
+    """
+    Find the public hostname/domain for this course section.
+    Checks:
+      1. Advanced custom domain in course_config.json
+      2. Netlify site marker in .netlify_sites/sectionN.json (or legacy .netlify_site.json)
+      3. Cloudflare site marker in .cloudflare_sites/sectionN.json
+    Returns empty string if not yet published / no domain assigned.
+    """
+    section_key = f"section{section_number}"
+
+    # 1. Custom domain from course_config.json
+    custom_domains = config.get("custom_domains", {})
+    if isinstance(custom_domains, dict):
+        section_custom_domain = (custom_domains.get("sections") or {}).get(section_key)
+        if section_custom_domain:
+            cleaned = clean_base_url(section_custom_domain)
+            if cleaned:
+                return cleaned
+
+    # 2. Netlify site marker (.netlify_sites/sectionN.json or legacy .netlify_site.json)
+    stable_netlify = course_dir / ".netlify_sites" / f"{section_key}.json"
+    if stable_netlify.is_file():
+        try:
+            data = json.loads(stable_netlify.read_text(encoding="utf-8"))
+            if data.get("custom_domain"):
+                return clean_base_url(data["custom_domain"])
+            if data.get("ssl_url"):
+                return clean_base_url(data["ssl_url"])
+            if data.get("url"):
+                return clean_base_url(data["url"])
+            if data.get("name"):
+                return f"{data['name']}.netlify.app"
+        except Exception:
+            pass
+
+    legacy_netlify = course_dir / section_key / ".netlify_site.json"
+    if legacy_netlify.is_file():
+        try:
+            data = json.loads(legacy_netlify.read_text(encoding="utf-8"))
+            if data.get("custom_domain"):
+                return clean_base_url(data["custom_domain"])
+            if data.get("ssl_url"):
+                return clean_base_url(data["ssl_url"])
+            if data.get("url"):
+                return clean_base_url(data["url"])
+            if data.get("name"):
+                return f"{data['name']}.netlify.app"
+        except Exception:
+            pass
+
+    # 3. Cloudflare site marker (.cloudflare_sites/sectionN.json)
+    stable_cf = course_dir / ".cloudflare_sites" / f"{section_key}.json"
+    if stable_cf.is_file():
+        try:
+            data = json.loads(stable_cf.read_text(encoding="utf-8"))
+            if data.get("subdomain"):
+                return clean_base_url(data["subdomain"])
+            if data.get("name"):
+                return f"{data['name']}.pages.dev"
+            if data.get("production_branch_url"):
+                return clean_base_url(data["production_branch_url"])
+        except Exception:
+            pass
+
+    return ""
+
+def patch_quartz_base_url(quartz_config_path: Path, base_url: str):
+    """
+    Ensure `baseUrl: "<domain>",` in quartz.config.ts matches `base_url` (or empty string if not deployed).
+    """
+    if not quartz_config_path.exists():
+        print(f"⚠️ quartz.config.ts not found at {quartz_config_path}")
+        return
+    try:
+        src = quartz_config_path.read_text(encoding="utf-8")
+        clean_val = clean_base_url(base_url)
+
+        # 1) Targeted replacement: baseUrl: "..." or baseUrl: '...'
+        pattern = re.compile(r'(baseUrl\s*:\s*)(["\'])([^"\']*)(\2)')
+        def _repl(m: re.Match) -> str:
+            quote = m.group(2)
+            return f'{m.group(1)}{quote}{clean_val}{quote}'
+        new_src, n = pattern.subn(_repl, src, count=1)
+
+        # 2) Fallback: replace baseUrl: undefined or baseUrl: null
+        if n == 0:
+            pattern2 = re.compile(r'(baseUrl\s*:\s*)(undefined|null)')
+            new_src, n = pattern2.subn(rf'\g<1>"{clean_val}"', src, count=1)
+
+        if n > 0 and new_src != src:
+            result = subprocess.run(
+                ["tee", str(quartz_config_path)],
+                input=new_src.encode("utf-8"),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            if result.returncode != 0:
+                print("❌ Failed to set baseUrl in quartz.config.ts:", result.stderr.decode())
+            else:
+                if clean_val:
+                    print(f'✅ Set Quartz baseUrl → "{clean_val}"')
+                else:
+                    print('✅ Cleared Quartz baseUrl')
+        elif n > 0:
+            pass
+        else:
+            print("⚠️ Could not find baseUrl in quartz.config.ts to update")
+    except Exception as e:
+        print(f"⚠️ Error updating baseUrl in quartz.config.ts: {e}")
+
 # --- ADD: Patch typography fonts in quartz.config.ts -------------------------
 def _escape_font(val: str) -> str:
     # Guard against stray quotes in family names
@@ -3970,6 +4091,20 @@ def build_section_site(
     locale_code = (config.get("locale") or "en-US").strip() or "en-US"
     patch_quartz_locale(config_path, locale_code)
     # --------------------------------------------------------------------------
+
+    # --- ADD: PATCH baseUrl in quartz.config.ts based on section deploy domain ---
+    section_domain = resolve_section_domain(course_dir, config, section_number)
+    patch_quartz_base_url(config_path, section_domain)
+    # --------------------------------------------------------------------------
+
+    # Ensure patched Head.tsx is present in output_dir so social cards never point to quartz.jzhao.xyz
+    head_src = Path("/opt/quartz/quartz/components/Head.tsx")
+    head_dst = output_dir / "quartz" / "components" / "Head.tsx"
+    if head_src.is_file() and head_dst.parent.is_dir():
+        try:
+            shutil.copy2(head_src, head_dst)
+        except Exception as e:
+            print(f"⚠️ Could not copy patched Head.tsx: {e}")
 
     # Apply per-section colour scheme, if configured
     color_map = config.get("color_schemes", {})

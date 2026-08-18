@@ -31,6 +31,13 @@
       "does": "What a folder's own page shows.",
       "file": "FolderContent.tsx",
       "replaces": "quartz/components/pages/FolderContent.tsx"
+    },
+    {
+      "cannotBeDropped": "Without it social preview tags point to Jacky Zhao's domain when baseUrl is empty or unconfigured.",
+      "does": "Constructs OpenGraph and Twitter meta tags using the section's baseUrl when present, or page-relative paths when absent, rather than defaulting to quartz.jzhao.xyz.",
+      "file": "Head.tsx",
+      "replaces": "quartz/components/Head.tsx",
+      "whyNotStock": "Stock Quartz unconditionally constructs og:image as https://${cfg.baseUrl}/static/og-image.png, which points to Jacky Zhao's site when baseUrl defaults to quartz.jzhao.xyz and generates invalid URLs when baseUrl is empty. The patch falls back to page-relative static/og-image.png when baseUrl is not configured."
     }
   ],
   "pins": [

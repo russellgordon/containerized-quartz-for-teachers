@@ -103,6 +103,22 @@ Forgetting the flag therefore leaves a page visible, which is a far kinder
 mistake than a page disappearing without anybody noticing. The switch itself
 is C1-13 — the image carries the filter, the build points the config at it.
 
+### A5. `Head.tsx` (open-graph metadata & base URL fallback)
+
+Stock behaviour: `og:image` is constructed unconditionally as
+`https://${cfg.baseUrl}/static/og-image.png`. When `baseUrl` defaults to
+`quartz.jzhao.xyz`, preview cards point to Jacky Zhao's site; when `baseUrl` is
+cleared, it emits an invalid `https:///static/og-image.png` URL.
+
+Changes:
+
+1. Checks `const hasBaseUrl = Boolean(cfg.baseUrl && cfg.baseUrl.trim().length > 0)`.
+2. Uses `https://${cfg.baseUrl}/static/og-image.png` when `baseUrl` is
+   configured, or falls back to page-relative `joinSegments(baseDir, "static/og-image.png")`
+   when `baseUrl` is absent.
+3. Guards `twitter:domain`, `og:url`, and `twitter:url` so they are emitted
+   only when `hasBaseUrl` is true.
+
 ---
 
 ## B. Patches applied at setup time to the scaffold
@@ -216,6 +232,7 @@ build means a re-run of the setup wizard (or a hand edit of
 | C2-21 | **Curriculum coverage map styles** | `quartz/styles/base.scss` (appended) | The grid, chips, and the five-step red → orange → yellow → green → blue scale for the generated `Curriculum Coverage` page. The colours are deliberately NOT taken from the course's colour scheme — the map's whole meaning is that ordered reading, and a scheme that recoloured it would destroy that. The scale was SEARCHED rather than picked by eye: `scripts/choose_coverage_scale.py` scores candidates on CIEDE2000 separation and through deuteranopia and protanopia simulation, which is why the top step is blue rather than a darker green — the closest pair an ordinary-sighted reader now sees is ΔE 31, against ΔE 10 before. Cells carry the expectation's code and nothing else: a digit in every cell turned the map into a table of numbers, so the count now reaches a screen reader through the cell's label and a teacher through the hover preview. The legend is a vertical list below a rule, worded "addressed once", "addressed twice", and so on. The ring marking assessed work is two rings — white inside dark — so that it stays legible on all five cell colours; a single tone disappeared on either the yellow or the darkest step depending on which was chosen. The style block is REPLACED rather than skipped when it is already present, so a stylesheet surviving from an earlier build still picks up changes. |
 | C2-22 | **Backlinks "structural pages" set** | `quartz/components/Backlinks.tsx` | Rewrites the `const structural = new Set<string>([…])` block behind the `// CQ4T-STRUCTURAL-ANCHOR` comment in `support/Backlinks.tsx`, inserting the course's curriculum folder name and `Curriculum Coverage` in both title and slug form. Those pages link to everything by nature, so without this every content page's backlinks panel is dominated by the curriculum index and the generated coverage map — noise that buries the pages a teacher actually wants to see listed. |
 | C2-23 | **Page title text shrinking & navbar vertical centering** | `quartz/styles/base.scss` (appended) | Prevents the navbar course code and section number from wrapping onto a second line on mobile by dynamically scaling the page title font size (`clamp(0.875rem, 4.5vw, 1.75rem)`) down to 50% of its original size and setting `white-space: nowrap`, while vertically centering the course emoji, code, section, and the light/dark mode toggle button with the adjacent search field. |
+| C2-24 | **Deploy domain & `baseUrl` sync** | `quartz.config.ts` | Sets `baseUrl` to the section's actual public domain (from advanced custom domains, `.netlify_sites/`, or `.cloudflare_sites/`), or clears it when unpublished. Ensures OpenGraph (`og:image`, `og:url`) and Twitter card tags point to the teacher's live site rather than the stock `quartz.jzhao.xyz` default. |
 
 ### C3. Content-level transformations (every build)
 

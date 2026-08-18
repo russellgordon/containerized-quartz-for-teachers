@@ -91,6 +91,55 @@ def sanitize_netlify_name(name: str) -> str:
     name = re.sub(r"-{2,}", "-", name).strip("-")
     return name or "site"
 
+def clean_base_url(val: str | None) -> str:
+    """Normalize a domain/baseUrl: strip http(s):// scheme, whitespace, and trailing slashes."""
+    if not val:
+        return ""
+    val = val.strip()
+    val = re.sub(r"^https?://", "", val, flags=re.IGNORECASE)
+    val = val.rstrip("/")
+    return val
+
+def ensure_base_url_and_rebuild(section_dir: Path, target_domain: str):
+    """
+    If quartz.config.ts in section_dir has a baseUrl that does not match target_domain,
+    update it and rebuild for production so OpenGraph and Twitter meta tags reflect
+    the deployed site domain.
+    """
+    config_path = section_dir / "quartz.config.ts"
+    if not config_path.is_file():
+        return
+    clean_target = clean_base_url(target_domain)
+    if not clean_target:
+        return
+    try:
+        src = config_path.read_text(encoding="utf-8")
+        m = re.search(r'baseUrl\s*:\s*(["\'])([^"\']*)(\1)', src)
+        current_val = m.group(2) if m else None
+        if current_val == clean_target:
+            return
+
+        pattern = re.compile(r'(baseUrl\s*:\s*)(["\'])([^"\']*)(\2)')
+        def _repl(match: re.Match) -> str:
+            quote = match.group(2)
+            return f'{match.group(1)}{quote}{clean_target}{quote}'
+        new_src, count = pattern.subn(_repl, src, count=1)
+        if count == 0:
+            pattern2 = re.compile(r'(baseUrl\s*:\s*)(undefined|null)')
+            new_src, count = pattern2.subn(rf'\g<1>"{clean_target}"', src, count=1)
+
+        if count > 0:
+            config_path.write_text(new_src, encoding="utf-8")
+            print(f" Updating Quartz baseUrl to '{clean_target}' and rebuilding for production…")
+            env = os.environ.copy()
+            env.setdefault("TZ", "UTC")
+            env.setdefault("SOURCE_DATE_EPOCH", "1704067200")
+            subprocess.run(["npx", "quartz", "build", "--concurrency", "1"],
+                           cwd=section_dir, env=env, check=True)
+            print("✅ Production build updated with live site domain.")
+    except Exception as e:
+        print(f"⚠️ Could not sync baseUrl into quartz.config.ts: {e}")
+
 # ---------- Teacher profile (unchanged) ----------
 COURSES_ROOT = Path("/teaching/courses")
 # Hidden global store for non-secret preferences (e.g., teacher profile)
@@ -584,13 +633,15 @@ def publish_to_cloudflare(public_dir: Path, course_dir: Path, course_code: str,
         })
         print(f" Cloudflare project ready: {project_name}")
 
+    marker = load_cloudflare_marker(course_dir, section) or {}
+    host = marker.get("subdomain") or f"{project_name}.pages.dev"
+    ensure_base_url_and_rebuild(public_dir.parent, host)
+
     print(" Uploading the built site to Cloudflare…")
     deploy_to_cloudflare(public_dir, project_name, token, account_id)
 
     # The marker's subdomain is authoritative when Cloudflare has given one;
     # otherwise the production address is <project>.pages.dev by construction.
-    marker = load_cloudflare_marker(course_dir, section) or {}
-    host = marker.get("subdomain") or f"{project_name}.pages.dev"
     print(f" Live URL: https://{host}")
     print("\n✅ Deploy complete.")
 
@@ -890,6 +941,10 @@ def main():
     if not site_id:
         print("❌ Could not determine Netlify site ID.")
         sys.exit(1)
+
+    target_domain = clean_base_url(site_url)
+    if target_domain:
+        ensure_base_url_and_rebuild(section_dir, target_domain)
 
     # Always delta deploy to PRODUCTION (as requested)
     print(" Preparing delta deploy manifest…")
