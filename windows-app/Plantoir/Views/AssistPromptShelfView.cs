@@ -40,7 +40,7 @@ public sealed class AssistPromptShelfView : UserControl
             Opacity = 0.75,
             Margin = new Thickness(0, 0, 0, 4),
         };
-        intro.SetResourceReference(TextBlock.StyleProperty, "CaptionTextBlockStyle");
+        try { intro.Style = (Style)Application.Current.Resources["CaptionTextBlockStyle"]; } catch { }
         root.Children.Add(intro);
 
         var groupsContainer = new StackPanel { Spacing = 2 };
@@ -96,9 +96,8 @@ public sealed class AssistPromptShelfView : UserControl
         {
             Text = title,
             FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-            VerticalAlignment = VerticalAlignment.Center,
         };
-        titleBlock.SetResourceReference(TextBlock.StyleProperty, "BodyStrongTextBlockStyle");
+        try { titleBlock.Style = (Style)Application.Current.Resources["BodyStrongTextBlockStyle"]; } catch { }
         Grid.SetColumn(titleBlock, 1);
         headerGrid.Children.Add(titleBlock);
 
