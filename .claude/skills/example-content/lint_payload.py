@@ -264,7 +264,7 @@ def lint(course_code: str) -> int:
                 folder_of[page.stem] = parts[1]
         content_folders = {
             f for f in folder_of.values()
-            if f not in {"Setup", "Style", curriculum_folder}
+            if f not in {"Setup", "Style", "Tutorials", curriculum_folder}
         }
         for bullet in bullets:
             match = re.search(r"\[\[([^\]|#]+)", bullet)
@@ -287,28 +287,42 @@ def lint(course_code: str) -> int:
                 )
 
         tour = "- [[What This Site Can Do]]"
+        hunt = "- [[Scavenger Hunt]]"
         if tour not in bullets:
             problems.append(f"per_section/Key Links.md: missing {tour}")
+        if hunt not in bullets:
+            problems.append(f"per_section/Key Links.md: missing {hunt}")
 
         # The curriculum links close the list: the expectations, then the
-        # coverage map that the build inserts directly beneath them.
+        # coverage map that the build inserts directly beneath them, followed
+        # by the Scavenger Hunt orientation link.
         if curriculum_folder:
             expected_link = f"- [[{curriculum_folder}/index|Curriculum Expectations]]"
-            if expected_link in bullets and bullets[-1] != expected_link:
+            if expected_link in bullets:
+                if bullets[-1] != hunt:
+                    problems.append(
+                        "per_section/Key Links.md: Scavenger Hunt must be the LAST entry"
+                    )
+                if len(bullets) >= 2 and bullets[-2] != expected_link:
+                    problems.append(
+                        "per_section/Key Links.md: Curriculum Expectations must come "
+                        "immediately before Scavenger Hunt"
+                    )
+                if len(bullets) >= 3 and bullets[-3] != tour:
+                    problems.append(
+                        "per_section/Key Links.md: What This Site Can Do must come "
+                        "immediately before the curriculum links"
+                    )
+        elif bullets:
+            if bullets[-1] != hunt:
                 problems.append(
-                    "per_section/Key Links.md: Curriculum Expectations must be the "
-                    "LAST entry — the build inserts Curriculum Coverage below it, "
-                    "so the two curriculum links end the list together"
+                    "per_section/Key Links.md: Scavenger Hunt must be the LAST entry"
                 )
-            if expected_link in bullets and len(bullets) >= 2 and bullets[-2] != tour:
+            if len(bullets) >= 2 and bullets[-2] != tour:
                 problems.append(
                     "per_section/Key Links.md: What This Site Can Do must come "
-                    "immediately before the curriculum links"
+                    "immediately before Scavenger Hunt"
                 )
-        elif bullets and bullets[-1] != tour:
-            problems.append(
-                "per_section/Key Links.md: with no curriculum folder, What This "
-                "Site Can Do must be the LAST entry")
 
     # The section landing page's "Most Recent Class" must transclude the
     # newest PUBLISHED class page — the point of that heading.
@@ -374,7 +388,7 @@ def lint(course_code: str) -> int:
     for stem in first_hop:
         second_hop |= page_links.get(stem, set())
     reachable = class_pages | first_hop | second_hop
-    exempt = {"index", "Key Links", "Private Notes", "Scratch Page", "_DUPLICATE ME"}
+    exempt = {"index", "Key Links", "Private Notes", "Scratch Page", "_DUPLICATE ME", "Scavenger Hunt"}
     for page in pages:
         rel = str(page.relative_to(root))
         if page.stem in exempt or page.stem in reachable:

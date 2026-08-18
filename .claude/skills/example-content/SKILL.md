@@ -402,22 +402,22 @@ reads: Notion, Student Course Outline, Ministry Course of Study,
 Learning Goals, Ontario Curriculum, College Board Curriculum. The linter
 fails any link into a content folder.
 
-**The two curriculum links close the list**, in this order:
+**The orientation links close the list**, in this order:
 
 ```
 - [[What This Site Can Do]]
 %%curriculum-start%%
 - [[Curriculum/index|Curriculum Expectations]]
 %%curriculum-end%%
+- [[Scavenger Hunt]]
 ```
 
-The `Curriculum Expectations` link is a must in every payload and must
-be the LAST bullet, wrapped in curriculum markers so that declining the
-curriculum removes it cleanly — it is easy to lose when adapting a
-previous payload, because stripping curriculum blocks wholesale deletes
-it. The build inserts `Curriculum Coverage` directly beneath it, so the
-two curriculum links end the panel together, and the site tour sits
-immediately above them. All three positions are enforced.
+The `Curriculum Expectations` link is a must in every payload, wrapped in
+curriculum markers so that declining the curriculum removes it cleanly — it is
+easy to lose when adapting a previous payload, because stripping curriculum
+blocks wholesale deletes it. The build inserts `Curriculum Coverage` directly
+beneath it, so the two curriculum links sit together, with `What This Site Can Do`
+above and `Scavenger Hunt` at the very end of Key Links. All positions are enforced.
 
 **The Concepts `index.md` lists every concept page, grouped by unit, as a
 bulleted list — one link per line.** Reference:

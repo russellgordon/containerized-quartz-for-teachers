@@ -17,3 +17,4 @@ excludeBacklinks: true
 %%curriculum-start%%
 - [[Curriculum/index|Curriculum Expectations]]
 %%curriculum-end%%
+- [[Scavenger Hunt]]

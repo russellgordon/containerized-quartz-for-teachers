@@ -127,8 +127,8 @@ def check(family: str) -> list:
     else:
         bullets = [line.strip() for line in key_links.read_text(encoding="utf-8").splitlines()
                    if line.startswith("- ")]
-        if not bullets or bullets[-1] != "- [[What This Site Can Do]]":
-            problems.append("per_section/Key Links.md: the site tour must be the LAST entry")
+        if not bullets or bullets[-1] != "- [[Scavenger Hunt]]":
+            problems.append("per_section/Key Links.md: Scavenger Hunt must be the LAST entry")
         if f"- [[{curriculum}/index|Curriculum Expectations]]" not in bullets:
             problems.append("per_section/Key Links.md: missing the Curriculum Expectations link")
 
