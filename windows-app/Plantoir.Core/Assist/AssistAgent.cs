@@ -84,10 +84,9 @@ public sealed class AssistAgent
         // Finding your way about.
         "list_pages", "read_page", "check_section",
         // Publishing a class, which is the commonest request by a wide margin.
-        "plan_publish_class_on", "publish_class_on",
+        "publish_class_on",
         // Publishing and unpublishing pages by name.
-        "plan_publish_pages", "publish_pages",
-        "plan_unpublish_pages", "unpublish_pages",
+        "publish_pages", "unpublish_pages",
         // Seeing the result, and taking it back.
         "rebuild_preview", "undo_last_change",
         // Putting it in front of students, now or at half six tomorrow.
@@ -99,7 +98,9 @@ public sealed class AssistAgent
         // every one of these until a button is pressed, and the tool's own
         // description tells the assistant to send the teacher to the preview
         // first.
-        "deploy_section", "plan_scheduled_deploy", "schedule_deploy", "cancel_scheduled_deploy",
+        "deploy_section", "schedule_deploy", "cancel_scheduled_deploy",
+        // Timetable and next class.
+        "read_remembered_timetable", "add_next_class",
     };
 
     /// <summary>
@@ -736,9 +737,12 @@ public sealed class AssistAgent
             // reason: it was written for the model, not the teacher.
             string said = reply["content"]?.GetValue<string>() ?? "";
             if (_dateline.Length > 0) said = said.Replace(_dateline, "");
-            if (!acting && said.Trim().Length > 0) lines.Add(new Line("assistant", said.Trim()));
-
-            if (!acting) return lines;
+            if (!acting)
+            {
+                string trimmed = said.Trim();
+                lines.Add(new Line("assistant", string.IsNullOrEmpty(trimmed) ? AssistWording.NothingToDo : trimmed));
+                return lines;
+            }
 
             // One at a time, so a teacher reading the transcript can follow it.
             var call = calls![0] as JsonObject;
@@ -751,9 +755,15 @@ public sealed class AssistAgent
                 // is not a confirmation, and the measurements say the model
                 // will occasionally reach for the opposite of what was asked.
                 _awaiting = call;
-                lines.Add(new Line("assistant",
-                    $"I’d like to run **{name.Replace('_', ' ')}**. Shall I go ahead?",
-                    NeedsApproval: true, Pending: name));
+                if (name.Equals("deploy_section", StringComparison.OrdinalIgnoreCase))
+                {
+                    lines.Add(new Line("assistant", AssistWording.DeployApproval));
+                    lines.Add(new Line("assistant", AssistWording.DeployQuestion, NeedsApproval: true, Pending: name));
+                }
+                else
+                {
+                    lines.Add(new Line("assistant", AssistWording.PlanQuestion, NeedsApproval: true, Pending: name));
+                }
                 return lines;
             }
 

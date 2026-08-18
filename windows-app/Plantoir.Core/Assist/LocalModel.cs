@@ -384,7 +384,7 @@ public sealed class LocalModel : IChatModel, IDisposable
         var request = new JsonObject
         {
             ["model"] = "local",
-            ["temperature"] = 0.1,
+            ["temperature"] = 0,
             ["max_tokens"] = 512,
             ["messages"] = messages.DeepClone(),
             ["tools"] = tools.DeepClone(),

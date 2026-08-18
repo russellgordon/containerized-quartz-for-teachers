@@ -489,7 +489,7 @@ public class AssistAgentTests
         string[] needed =
         {
             "publish_pages", "publish_class_on", "unpublish_pages",
-            "plan_publish_pages", "check_section", "rebuild_preview",
+            "check_section", "rebuild_preview",
             "undo_last_change", "deploy_section", "schedule_deploy",
             "cancel_scheduled_deploy",
         };

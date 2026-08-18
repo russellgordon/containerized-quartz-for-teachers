@@ -984,7 +984,7 @@ public sealed class AssistWorkspace
         _undo?.End();
 
         if (!plan.Publishes)
-            return new AssistResult(true, Summary(changed, previewed: false, course.Code, section), backup);
+            return new AssistResult(true, Summary(changed, previewed: false, course.Code, section, plan.Hiding), backup);
 
         // Publishing builds a PREVIEW, and stops there.
         //
@@ -1005,7 +1005,7 @@ public sealed class AssistWorkspace
             return new AssistResult(false,
                 $"{WhatSurvived(changed)}, but the preview couldn’t be built. {build.Message}", backup);
 
-        return new AssistResult(true, Summary(changed, previewed: true, course.Code, section), backup);
+        return new AssistResult(true, Summary(changed, previewed: true, course.Code, section, plan.Hiding), backup);
     }
 
     /// <summary>
@@ -1042,15 +1042,16 @@ public sealed class AssistWorkspace
             ? "No page needed changing, and the course was backed up"
             : $"{changed.Count} page{(changed.Count == 1 ? " was" : "s were")} changed and the course was backed up";
 
-    private static string Summary(IReadOnlyList<string> changed, bool previewed, string code, int section)
+    private static string Summary(IReadOnlyList<string> changed, bool previewed, string code, int section, bool hiding = false)
     {
-        string what = changed.Count == 0
-            ? "No page needed changing"
-            : $"Changed {changed.Count} page{(changed.Count == 1 ? "" : "s")} ({string.Join(", ", changed)})";
+        if (changed.Count == 0) return "Nothing needed changing.";
+        string verb = hiding ? "Unpublished" : "Published";
+        string what = changed.Count == 1
+            ? $"{verb} “{changed[0]}”."
+            : $"{verb} {changed.Count} pages ({string.Join(", ", changed)}).";
         return previewed
-            ? $"{what}, and rebuilt the preview of {code} Section {section}. " +
-              "Look it over in Plantoir, and deploy it there when you're happy."
-            : what + ".";
+            ? $"{what.TrimEnd('.')} and rebuilt the preview of {code} Section {section}."
+            : what;
     }
 
     /// <summary>

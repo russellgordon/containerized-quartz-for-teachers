@@ -1024,3 +1024,14 @@ where.
   one run in three, a baffling null, and months of being written off as flaky.
   If that setting is ever flipped, put these classes in a serialised group
   first.
+
+- **Align Windows Local AI Assistant brevity and concise responses with macOS**
+  (Windows, 2026-08-17). Windows assistant responses were adjusted to match the
+  crisp, informative single-sentence outputs on macOS.
+  1. Removed `plan_` tools from `ForTheLocalModel` narrowing — plan mode is handled
+     directly by code rather than by the model schema.
+  2. Updated `AssistWorkspace.Summary()` to return clean past-tense sentences ("Published “Unit 2, Day 3”." / "Nothing needed changing.") rather than multi-clause paragraphs.
+  3. Set `temperature: 0` in `LocalModel.Ask()` for deterministic tool routing.
+  4. Updated tool approval line in `AssistAgent.Run()` to use `AssistWording.DeployApproval` / `AssistWording.DeployQuestion`.
+  
+  **✅ DONE (Windows, 2026-08-17).** Recorded in GUI improvement log row 263. All 479 tests passing.
