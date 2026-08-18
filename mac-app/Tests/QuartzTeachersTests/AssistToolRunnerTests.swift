@@ -348,6 +348,26 @@ final class AssistToolRunnerTests: XCTestCase {
         XCTAssertTrue(index.contains("created: 2026-09-10"), index)
     }
 
+    /// When multiple published classes share the same date (e.g. multi-class
+    /// day or overflow), the landing page follows the highest Unit x, Day y.
+    @MainActor
+    func testSectionIndexSelectsHighestUnitDayWhenDatesAreEqual() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 4, Day 20", publish: "true", date: "2027-01-18", body: "twenty", in: made.course)
+        try write(page: "Unit 4, Day 21", publish: "false", date: "2027-01-18", body: "twenty one", in: made.course)
+        try writeSectionIndex(pointingAt: "Unit 4, Day 20", in: made.course)
+
+        _ = await made.runner.run(call: call(
+            "publish_pages", arguments: ["course": "ICS3U", "section": 1, "pages": "Unit 4, Day 21"]
+        ))
+
+        let index: String = try sectionIndexText(in: made.course)
+        XCTAssertTrue(index.contains("![[Unit 4, Day 21]]"), index)
+        XCTAssertTrue(index.contains("created: 2027-01-18"), index)
+    }
+
     /// The landing page transcludes other things too. Repointing Key Links at
     /// a lesson would be a far worse bug than the one this fixes.
     @MainActor

@@ -36,7 +36,7 @@
   "datingNonClassPages": {
     "note": "Pages that are not linked from a Unit x, Day y page, and are not themselves a Unit x, Day y page (such as sidebar pages, Curriculum pages, and Key Links pages not referenced in any class lesson), inherit the same date as the first class of the year (Unit 1, Day 1) when a site is previewed or deployed, and upon course setup.",
     "appliesTo": [
-      "sidebar pages (e.g., section index.md, folder index.md files)",
+      "sidebar pages (e.g., folder index.md files — the section landing page carries its newest published class's date)",
       "Key Links pages that are not linked from any Unit x, Day y class page",
       "Curriculum pages (index, expectation notes, and unreferenced expectations)",
       "standalone reference or utility pages not linked from any class page"

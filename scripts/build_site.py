@@ -1633,6 +1633,10 @@ def _sync_non_class_pages_created(content_root: Path, first_class_dt: datetime) 
             except Exception:
                 continue
 
+            # The root section landing page (content/index.md) carries the date of
+            # the section's newest published class; it is never reset to the first day.
+            if fp == content_root / "index.md":
+                continue
             title = str(post.get("title") or "")
             if _is_class_page(fp, title):
                 continue

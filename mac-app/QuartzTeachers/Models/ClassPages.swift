@@ -45,7 +45,18 @@ struct UnitDay: Equatable, Hashable {
         self.unit = unit
         self.day = day
     }
+
+    // MARK: - Functions
+
+    static func < (lhs: UnitDay, rhs: UnitDay) -> Bool {
+        if lhs.unit != rhs.unit {
+            return lhs.unit < rhs.unit
+        }
+        return lhs.day < rhs.day
+    }
 }
+
+extension UnitDay: Comparable {}
 
 /// One class page as the planners see it: what it is called, where it is, and
 /// which day it sits on.

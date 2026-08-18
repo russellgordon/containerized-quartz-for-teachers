@@ -48,9 +48,13 @@ enum SectionIndexPointer {
     /// student. Undated pages cannot be compared and are passed over rather
     /// than guessed at; a section with no dated visible class has no answer,
     /// and saying so is better than pointing somewhere arbitrary.
+    ///
+    /// When two visible classes sit on the same date (e.g. overflow lessons or
+    /// multi-class days), the higher Unit x, Day y count wins.
     static func mostRecentVisibleClass(in graph: AssistSectionGraph) -> AssistSectionPage? {
         var newest: AssistSectionPage?
         var newestDay: CalendarDay?
+        var newestUnitDay: UnitDay?
         for page in graph.pages {
             if !page.isClassPage || !page.isVisibleToStudents {
                 continue
@@ -58,11 +62,23 @@ enum SectionIndexPointer {
             guard let day = page.date else {
                 continue
             }
-            if let soFar = newestDay, day.text <= soFar.text {
-                continue
+            let unitDay: UnitDay? = UnitDay(pageTitle: page.title)
+            if let soFarDay = newestDay {
+                if day.text < soFarDay.text {
+                    continue
+                } else if day.text == soFarDay.text {
+                    if let ud = unitDay, let soFarUD = newestUnitDay {
+                        if ud <= soFarUD {
+                            continue
+                        }
+                    } else if unitDay == nil && newestUnitDay != nil {
+                        continue
+                    }
+                }
             }
             newest = page
             newestDay = day
+            newestUnitDay = unitDay
         }
         return newest
     }

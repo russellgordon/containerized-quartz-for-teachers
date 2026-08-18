@@ -2932,7 +2932,8 @@ Now, all non-class pages inherit the date of the first class of the year
    date (or the earliest class date in the section), performs a BFS traversal
    from all class pages following wikilinks transitively to find all reachable
    content pages, and sets `created:` to the `Unit 1, Day 1` timestamp for all
-   remaining non-class pages.
+   remaining non-class pages (excluding the root section landing page
+   `content/index.md`, which carries the date of its newest published class).
 2. **During course setup (`scripts/setup_course.py`)**:
    `install_example_content` sets `first_class_date` as the default for all
    non-class pages so that new courses created from skeletons or payloads carry
