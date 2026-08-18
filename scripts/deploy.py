@@ -119,14 +119,10 @@ def ensure_base_url_and_rebuild(section_dir: Path, target_domain: str):
         if current_val == clean_target:
             return
 
-        pattern = re.compile(r'(baseUrl\s*:\s*)(["\'])([^"\']*)(\2)')
+        pattern = re.compile(r'(baseUrl\s*:\s*)(["\'][^"\']*["\']|undefined|null)')
         def _repl(match: re.Match) -> str:
-            quote = match.group(2)
-            return f'{match.group(1)}{quote}{clean_target}{quote}'
+            return f'{match.group(1)}"{clean_target}"'
         new_src, count = pattern.subn(_repl, src, count=1)
-        if count == 0:
-            pattern2 = re.compile(r'(baseUrl\s*:\s*)(undefined|null)')
-            new_src, count = pattern2.subn(rf'\g<1>"{clean_target}"', src, count=1)
 
         if count > 0:
             config_path.write_text(new_src, encoding="utf-8")

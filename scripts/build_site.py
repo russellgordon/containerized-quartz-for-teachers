@@ -154,18 +154,13 @@ def patch_quartz_base_url(quartz_config_path: Path, base_url: str):
     try:
         src = quartz_config_path.read_text(encoding="utf-8")
         clean_val = clean_base_url(base_url)
+        replacement = f'"{clean_val}"' if clean_val else 'undefined'
 
-        # 1) Targeted replacement: baseUrl: "..." or baseUrl: '...'
-        pattern = re.compile(r'(baseUrl\s*:\s*)(["\'])([^"\']*)(\2)')
+        # Match baseUrl: "...", baseUrl: '...', baseUrl: undefined, baseUrl: null
+        pattern = re.compile(r'(baseUrl\s*:\s*)(["\'][^"\']*["\']|undefined|null)')
         def _repl(m: re.Match) -> str:
-            quote = m.group(2)
-            return f'{m.group(1)}{quote}{clean_val}{quote}'
+            return f'{m.group(1)}{replacement}'
         new_src, n = pattern.subn(_repl, src, count=1)
-
-        # 2) Fallback: replace baseUrl: undefined or baseUrl: null
-        if n == 0:
-            pattern2 = re.compile(r'(baseUrl\s*:\s*)(undefined|null)')
-            new_src, n = pattern2.subn(rf'\g<1>"{clean_val}"', src, count=1)
 
         if n > 0 and new_src != src:
             result = subprocess.run(
