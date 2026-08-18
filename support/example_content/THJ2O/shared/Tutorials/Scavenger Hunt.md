@@ -224,12 +224,13 @@ Below is our current extra help schedule:
 You often want to keep notes to yourself (answer keys, pacing reminders for next year, student accommodations) without students ever seeing them.
 
 ### 1. In-line Teacher Comments
-Wrap any text in double percent marks: `%% private note %%`.
-```markdown
-Please complete questions 1 through 5 for tomorrow.
-%% Note for next year: Most students struggled with #3; allocate 10 extra minutes to review it. %%
-```
-In Obsidian, you can see the comment in grey text while editing. When Plantoir builds your website, these comments are **completely stripped out before the site is generated** — private comments never leave your computer, so they literally do not exist on the website your students see.
+In Obsidian, wrap any private text in double percent signs: `%` `% private note %` `%.
+
+For example, when writing your lesson notes:
+- Public line: `Please complete questions 1 through 5 for tomorrow.`
+- Private line: `%` `% Note for next year: Most students struggled with #3; allocate 10 extra minutes. %` `%`
+
+In Obsidian, you will see the comment in grey text while editing. When Plantoir builds your website, these comments are **completely stripped out before the site is generated** — private comments never leave your computer, so they literally do not exist on the website your students see.
 
 ### 2. Holding Back a Page (`publish: false`)
 At the very top of every file is a header between two lines of dashes `---` (called frontmatter). 
@@ -241,7 +242,7 @@ This lets you plan next week's unit or draft a quiz in advance without students 
 ### Your Goal
 In the practice box below:
 1. Write a public instruction for students.
-2. Add a private teacher-only comment wrapped in `%%` marks.
+2. Add a private teacher-only comment wrapped in double percent signs (`%` `%).
 
 ### Practice Sandbox 6
 *(Add your notes below)*
@@ -250,17 +251,18 @@ Students: Please bring your project rough draft to class tomorrow.
 (Add a private comment below this line that will never leave your computer)
 
 > [!tip]- Need a hint? (click to expand)
-> Type `%% Remember to prepare the sample rubrics on the front table before period 2. %%`.
+> In Obsidian, wrap your private note in two percent signs before and after:
+> `%` `% Remember to prepare the sample rubrics on the front table before period 2. %` `%`
 
 > [!success]- Solution & Visual Check (click to expand)
-> **What you type in editing view:**
-> ```markdown
-> Students: Please bring your project rough draft to class tomorrow.
-> %% Reminder to self: Period 2 is running 10 minutes ahead of Period 4. %%
-> ```
+> **What you type in Obsidian editing view:**
+> - Line 1: `Students: Please bring your project rough draft to class tomorrow.`
+> - Line 2: `%` `% Reminder to self: Period 2 is running 10 minutes ahead of Period 4. %` `%`
 > 
-> **How it looks to your students:**
-> Students will only see the public sentence. The `%%` comment is stripped out during the build and never exists on the published site!
+> **How it looks to your students on the published website:**
+> > Students: Please bring your project rough draft to class tomorrow.
+> 
+> *(The private comment is completely stripped out during the build and never exists on the published site!)*
 
 ---
 
@@ -297,7 +299,7 @@ Keep this table handy whenever you are writing course notes:
 | **Collapsible self-check** | `> [!question]- Quiz Title` | Box with hidden content that expands on click |
 | **Section heading** | `## Topic Title` | Header + automatically added to Table of Contents |
 | **Highlight vocabulary** | `==Key term==` | Bright highlight to draw student attention |
-| **Private teacher note** | `%% Note to self %%` | Stripped during build; never leaves your computer |
+| **Private teacher note** | `%` `% Note to self %` `%` | Stripped during build; never leaves your computer |
 | **Hold back a draft** | `publish: false` in header | Never published or uploaded until you set to true |
 
 You are now fully equipped to build and run an incredible, connected course website. Whenever you want to create a new page, look for `_DUPLICATE ME.md` in any folder, duplicate it, and start writing!
