@@ -350,7 +350,7 @@ def lint(course_code: str) -> int:
 
     # Teaching-order dates only work when content pages are linked from
     # class pages. Warn (not fail) for shared pages never linked by any
-    # class — they will carry the install-time date.
+    # class — they will carry the Unit 1, Day 1 date.
     unlinked = []
     for page in pages:
         rel = str(page.relative_to(root))
@@ -488,7 +488,7 @@ def lint(course_code: str) -> int:
     for problem in problems:
         print(f"PROBLEM  {problem}")
     for rel in unlinked:
-        print(f"note     no class links {rel} (it will carry the install-time date)")
+        print(f"note     no class links {rel} (it will carry the Unit 1, Day 1 date)")
     print("clean" if not problems else f"{len(problems)} problem(s)")
     return 1 if problems else 0
 

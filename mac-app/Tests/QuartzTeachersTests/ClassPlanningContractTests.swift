@@ -298,6 +298,17 @@ final class ClassPlanningContractTests: XCTestCase {
         XCTAssertNil(moved["unit 4, day 2"], "A class was moved off its own day")
     }
 
+    // MARK: - Dating non-class pages
+
+    func testNonClassPagesContractExistsAndIsDocumented() throws {
+        let section: [String: Any] = try ClassPlanningContractTests.section("datingNonClassPages")
+        XCTAssertNotNil(section["note"])
+        let appliesTo: [String] = try XCTUnwrap(section["appliesTo"] as? [String])
+        XCTAssertFalse(appliesTo.isEmpty)
+        XCTAssertNotNil(section["dateInherited"])
+        XCTAssertNotNil(section["why"])
+    }
+
     private static func section(_ name: String) throws -> [String: Any] {
         let url: URL = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent()

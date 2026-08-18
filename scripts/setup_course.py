@@ -1343,7 +1343,7 @@ def first_use_dates(payload_dir: Path, reference,
     what lets each category page (Conventions, Discussions, ...) list its
     pages in the order the course actually met them, which has meaning
     for students. Pages no class links to are absent from the map and
-    keep the install-time date.
+    inherit the first class date (Unit 1, Day 1) or the install-time date.
     """
     per_section_root = payload_dir / "per_section"
     class_pages = []
@@ -1632,6 +1632,9 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
     class_use_dates = (first_use_dates(payload_dir, reference, weekday_step,
                                        start_school_day)
                        if reference is not None else {})
+    first_class_date = (semester_class_timestamp(1, reference, weekday_step,
+                                                start_school_day)
+                        if reference is not None else None)
     written = 0
 
     def top_level_allowed(entry: Path, allowed_folders: list, allowed_files: list) -> bool:
@@ -1657,7 +1660,7 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
                 destination = course_path / source.relative_to(shared_root)
                 if install_payload_file(source, destination, now_str,
                                         include_curriculum, page_names,
-                                        first_use_date=class_use_dates.get(source.stem),
+                                        first_use_date=class_use_dates.get(source.stem) or first_class_date,
                                         shared_sections=section_numbers,
                                         course_code=course_code,
                                         course_name=course_name):
@@ -1679,6 +1682,7 @@ def install_example_content(course_path: Path, payload_dir: Path, manifest: dict
                                             include_curriculum, page_names,
                                             section_number=sec,
                                             reference=reference,
+                                            first_use_date=class_use_dates.get(source.stem) or first_class_date,
                                             course_code=course_code,
                                             course_name=course_name,
                                             weekday_step=weekday_step,

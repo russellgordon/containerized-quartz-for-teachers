@@ -33,6 +33,17 @@
       "why": "Nothing on disk records a page's history. A page published once and later hidden therefore counts as never published and would take a new date. Recording the truth would mean a new frontmatter key on every page, agreed between both apps and the Python; the inference costs nothing and is right in every case anybody has met."
     }
   },
+  "datingNonClassPages": {
+    "note": "Pages that are not linked from a Unit x, Day y page, and are not themselves a Unit x, Day y page (such as sidebar pages, Curriculum pages, and Key Links pages not referenced in any class lesson), inherit the same date as the first class of the year (Unit 1, Day 1) when a site is previewed or deployed, and upon course setup.",
+    "appliesTo": [
+      "sidebar pages (e.g., section index.md, folder index.md files)",
+      "Key Links pages that are not linked from any Unit x, Day y class page",
+      "Curriculum pages (index, expectation notes, and unreferenced expectations)",
+      "standalone reference or utility pages not linked from any class page"
+    ],
+    "dateInherited": "the date of Unit 1, Day 1 (or the earliest class of the year)",
+    "why": "Pages that serve the course as a whole belong to the start of the semester rather than carrying arbitrary install timestamps, changing build timestamps, or file creation times."
+  },
   "insertion": {
     "cases": [
       {

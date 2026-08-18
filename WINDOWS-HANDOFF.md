@@ -2906,6 +2906,37 @@ Contract: `class-planning.json` → `datingPagesAClassBrings`, with the
 conditions, the key names, the earliest-class rule and the reasoning. Two mac
 tests run it; deserialise rather than retyping.
 
+### Non-class pages inherit the date of the first class of the year (Unit 1, Day 1)
+
+Pages that serve the course as a whole — sidebar landing pages (`index.md`),
+folder index files (`All Classes/index.md`, `Concepts/index.md`, etc.),
+`Key Links.md`, standalone reference or policy pages listed in Key Links but not
+linked from any lesson, and Curriculum expectations pages not transcluded in a
+lesson — are **non-class pages**.
+
+Previously, curriculum pages synced to the section's latest date during build,
+while other non-class pages retained whatever date was generated at course
+creation time or file creation time.
+
+Now, all non-class pages inherit the date of the first class of the year
+(`Unit 1, Day 1`):
+1. **During preview and deploy (`scripts/build_site.py`)**:
+   `_sync_non_class_pages_created` scans `content_root`, finds `Unit 1, Day 1`'s
+   date (or the earliest class date in the section), performs a BFS traversal
+   from all class pages following wikilinks transitively to find all reachable
+   content pages, and sets `created:` to the `Unit 1, Day 1` timestamp for all
+   remaining non-class pages.
+2. **During course setup (`scripts/setup_course.py`)**:
+   `install_example_content` sets `first_class_date` as the default for all
+   non-class pages so that new courses created from skeletons or payloads carry
+   this date from the start.
+
+Because this logic is implemented in the shared Python scripts
+(`scripts/build_site.py` and `scripts/setup_course.py`), the Windows app inherits
+the behaviour automatically.
+
+Contract: `contracts/class-planning.json` → `datingNonClassPages`.
+
 ## Undo: what it SAYS, what it does to the preview, and what it can take back (entries 221–223)
 
 Three faults, all reported from one real session — "Unpublish Unit 4, Day 23"

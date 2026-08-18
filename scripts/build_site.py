@@ -1179,14 +1179,13 @@ def _current_created_timestamp() -> str:
 # ---------------------------------------------------------------------------
 
 
-# === NEW: Curriculum 'created' synchronization helpers ======================
+# === Non-class pages 'created' synchronization helpers ====================
 def _is_in_curriculum_folder(path: Path) -> bool:
     """
     True if any directory segment in the file's path contains 'curriculum' (case-insensitive).
     We check parent folders only; filenames themselves do not trigger this.
     """
     parts = list(path.parts)
-    # Drop filename
     if parts:
         parts = parts[:-1]
     for seg in parts:
@@ -1270,9 +1269,34 @@ def _format_created_timestamp_from_dt(dt: datetime) -> str:
             dt = dt.astimezone()
     return dt.strftime("%Y-%m-%dT%H:%M:%S") + ".000" + dt.strftime("%z")
 
-def _find_latest_created_in_section(content_root: Path) -> datetime | None:
-    """Scan all .md under content_root and return the max frontmatter 'created' datetime (aware)."""
-    latest = None
+def _is_class_page(path: Path, title: str | None = None) -> bool:
+    """
+    True if the file represents a class page (e.g., 'Unit 1, Day 1.md' or titled 'Unit 1, Day 1').
+    Folder index files ('index.md') are never class pages.
+    """
+    if path.name.lower() == "index.md":
+        return False
+    stem = path.stem.strip()
+    if re.match(r"^Unit\s+\d+,\s*Day\s+\d+$", stem, re.IGNORECASE):
+        return True
+    if title:
+        trimmed_title = title.strip()
+        if re.match(r"^Unit\s+\d+,\s*Day\s+\d+$", trimmed_title, re.IGNORECASE):
+            return True
+    if "class" in path.parent.name.lower():
+        return True
+    return False
+
+def _find_first_class_created(content_root: Path) -> datetime | None:
+    """
+    Find the frontmatter 'created' datetime of the first class of the year (Unit 1, Day 1).
+    If Unit 1, Day 1 is not found or has no valid created date, falls back to the earliest
+    dated class page, or the earliest dated markdown page in content_root.
+    """
+    first_class_unit1_day1_dt = None
+    earliest_class_dt = None
+    earliest_any_dt = None
+
     for root, dirs, files in os.walk(content_root):
         for name in files:
             if not name.lower().endswith(".md"):
@@ -1280,62 +1304,159 @@ def _find_latest_created_in_section(content_root: Path) -> datetime | None:
             fp = Path(root) / name
             try:
                 post = frontmatter.load(fp)
-                raw = post.get("created")
-                dt = _parse_created_value(raw)
-                if dt is not None:
-                    if (latest is None) or (dt > latest):
-                        latest = dt
             except Exception:
-                # ignore unreadable files
                 continue
-    return latest
 
-def _sync_curriculum_created(content_root: Path, latest_dt: datetime) -> tuple[int, int, int]:
-    """
-    For each curriculum .md file, if its 'created' is absent or older than latest_dt,
-    update it to latest_dt (formatted canonically). Returns (updated, skipped, folder_count).
-    """
-    if latest_dt is None:
-        return (0, 0, 0)
+            raw = post.get("created")
+            dt = _parse_created_value(raw)
+            if dt is None:
+                continue
 
+            if (earliest_any_dt is None) or (dt < earliest_any_dt):
+                earliest_any_dt = dt
+
+            title = str(post.get("title") or "")
+            is_class = _is_class_page(fp, title)
+            if is_class:
+                if (earliest_class_dt is None) or (dt < earliest_class_dt):
+                    earliest_class_dt = dt
+
+                stem = fp.stem.strip()
+                if re.match(r"^Unit\s+0*1,\s*Day\s+0*1$", stem, re.IGNORECASE) or \
+                   re.match(r"^Unit\s+0*1,\s*Day\s+0*1$", title.strip(), re.IGNORECASE):
+                    first_class_unit1_day1_dt = dt
+
+    if first_class_unit1_day1_dt is not None:
+        return first_class_unit1_day1_dt
+    if earliest_class_dt is not None:
+        return earliest_class_dt
+    return earliest_any_dt
+
+def _extract_wikilink_targets(text: str) -> set[str]:
+    """Extract all normalized wikilink target names from markdown text, excluding code fences."""
+    outside_fences = re.sub(r"```[\s\S]*?```", "", text)
+    outside_fences = re.sub(r"`[^`\n]*`", "", outside_fences)
+    link_pattern = re.compile(r"!?\[\[([^\]|#]+?)(?:\\?\|[^\]]*)?(?:#[^\]|]*)?\]\]")
+    targets = set()
+    for match in link_pattern.finditer(outside_fences):
+        target = match.group(1).strip().rstrip("\\")
+        if not target:
+            continue
+        stem = target.split("/")[-1].strip()
+        if stem.lower().endswith(".md"):
+            stem = stem[:-3].strip()
+        if stem:
+            targets.add(stem.lower())
+        norm_path = target.lower()
+        if norm_path.endswith(".md"):
+            norm_path = norm_path[:-3].strip()
+        if norm_path:
+            targets.add(norm_path)
+    return targets
+
+def _find_class_reachable_pages(content_root: Path) -> set[Path]:
+    """
+    Find all pages in content_root that are reachable (directly or transitively)
+    from any Unit x, Day y class page via wikilinks.
+    """
+    pages_by_stem: dict[str, list[Path]] = {}
+    pages_by_rel: dict[str, Path] = {}
+    all_pages: dict[Path, frontmatter.Post] = {}
+
+    for root, dirs, files in os.walk(content_root):
+        for name in files:
+            if not name.lower().endswith(".md"):
+                continue
+            fp = Path(root) / name
+            try:
+                post = frontmatter.load(fp)
+                all_pages[fp] = post
+            except Exception:
+                continue
+
+            stem_lower = fp.stem.lower()
+            pages_by_stem.setdefault(stem_lower, []).append(fp)
+            try:
+                rel = fp.relative_to(content_root).as_posix().lower()
+                if rel.endswith(".md"):
+                    rel = rel[:-3]
+                pages_by_rel[rel] = fp
+            except Exception:
+                pass
+
+    class_page_paths: list[Path] = []
+    for fp, post in all_pages.items():
+        title = str(post.get("title") or "")
+        if _is_class_page(fp, title):
+            class_page_paths.append(fp)
+
+    visited: set[Path] = set(class_page_paths)
+    queue: list[Path] = list(class_page_paths)
+
+    while queue:
+        current_fp = queue.pop(0)
+        post = all_pages.get(current_fp)
+        if post is None:
+            continue
+
+        targets = _extract_wikilink_targets(post.content)
+        for target in targets:
+            matched_paths = []
+            if target in pages_by_rel:
+                matched_paths.append(pages_by_rel[target])
+            if target in pages_by_stem:
+                matched_paths.extend(pages_by_stem[target])
+
+            for target_fp in matched_paths:
+                if target_fp not in visited:
+                    visited.add(target_fp)
+                    queue.append(target_fp)
+
+    return visited
+
+def _sync_non_class_pages_created(content_root: Path, first_class_dt: datetime) -> tuple[int, int]:
+    """
+    For all non-class pages (pages not linked from a Unit x, Day y page and not themselves
+    a Unit x, Day y page), update their frontmatter 'created' timestamp to first_class_dt.
+    Returns (updated_count, total_non_class_count).
+    """
+    if first_class_dt is None:
+        return (0, 0)
+
+    reachable_from_classes = _find_class_reachable_pages(content_root)
+    stamp = _format_created_timestamp_from_dt(first_class_dt)
     updated = 0
-    skipped = 0
-    seen_folders = set()
+    total_non_class = 0
 
     for root, dirs, files in os.walk(content_root):
         for name in files:
             if not name.lower().endswith(".md"):
                 continue
             fp = Path(root) / name
-            if not _is_in_curriculum_folder(fp):
-                continue
             try:
                 post = frontmatter.load(fp)
             except Exception:
-                skipped += 1
                 continue
 
-            curr = _parse_created_value(post.get("created"))
-            if (curr is None) or (curr < latest_dt):
-                post["created"] = _format_created_timestamp_from_dt(latest_dt)
+            title = str(post.get("title") or "")
+            if _is_class_page(fp, title):
+                continue
+            if fp in reachable_from_classes:
+                continue
+
+            total_non_class += 1
+            curr_created = post.get("created")
+            curr_dt = _parse_created_value(curr_created)
+            if curr_dt is None or _format_created_timestamp_from_dt(curr_dt) != stamp:
+                post["created"] = stamp
                 try:
                     with open(fp, "w", encoding="utf-8") as f:
                         f.write(frontmatter.dumps(post))
                     updated += 1
-                    # Track folder for summary
-                    try:
-                        for seg in fp.parents:
-                            if "curriculum" in seg.name.lower():
-                                seen_folders.add(str(seg))
-                                break
-                    except Exception:
-                        pass
                 except Exception:
-                    skipped += 1
-            else:
-                skipped += 1
+                    pass
 
-    return (updated, skipped, len(seen_folders))
+    return (updated, total_non_class)
 # ===========================================================================
 
 
@@ -3691,15 +3812,15 @@ def build_section_site(
             print(f"  📄 Copied per-section file: {file_name}")
 
 
-    # === NEW: Post-pass — sync Curriculum 'created' timestamps =================
-    print("\n📆 Post-processing: syncing 'created' for Curriculum pages (if needed)...")
-    latest = _find_latest_created_in_section(content_root)
-    if latest is None:
-        print("ℹ️ No parseable 'created' dates found in this section — leaving Curriculum files unchanged.")
+    # === Post-pass — sync 'created' timestamps for non-class pages =============
+    print("\n📆 Post-processing: syncing 'created' for non-class pages (sidebar, Key Links, Curriculum)...")
+    first_class_dt = _find_first_class_created(content_root)
+    if first_class_dt is None:
+        print("ℹ️ No parseable class dates found in this section — leaving non-class pages unchanged.")
     else:
-        updated, skipped, folders = _sync_curriculum_created(content_root, latest)
-        stamp = _format_created_timestamp_from_dt(latest)
-        print(f"📆 Synced Curriculum 'created' → {stamp} for {updated} file(s) across {folders} folder(s) (skipped {skipped}).")
+        updated, total = _sync_non_class_pages_created(content_root, first_class_dt)
+        stamp = _format_created_timestamp_from_dt(first_class_dt)
+        print(f"📆 Synced non-class pages 'created' → {stamp} for {updated} file(s) ({total} non-class file(s) in total).")
     # ===========================================================================
 
     # === Curriculum coverage heat map =========================================
