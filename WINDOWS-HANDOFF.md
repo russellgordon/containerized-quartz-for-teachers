@@ -3425,6 +3425,31 @@ as a question waiting. The same event covers a teacher opening the Account ID
 instructions from the button — the line says which credential they went looking
 for, which is the same question being answered a different way round.
 
+**Teacher Surname & Site Name Dialogs (entry 260).**
+The same `CredentialRequest` model and `CredentialRequestSheet` dialog are used
+when `scripts/deploy.py` asks for the teacher's surname on first deploy or when
+choosing a Netlify/Cloudflare subdomain:
+
+- `teacherSurname` (`isSecret: false`, `linkAddress: null`): explains why the surname
+  is needed (to create recognizable website addresses like `mcv4u-s1-2026-gordon`
+  and prevent collisions across classes), saved once on the machine. Matched on
+  prompts containing `"last name"` or `"surname"`.
+- `siteName` (`isSecret: false`, `linkAddress: null`): explains that website addresses
+  on Netlify and Cloudflare Pages are shared globally and must be unique. Outlines
+  suggested naming patterns (`<course>-s<section>-<year>-<surname>`, `<school>-...`).
+  Matched on prompts containing `"enter netlify site name"`, `"netlify site name"`,
+  or `"website name"`.
+- `siteNameConflict` (`isSecret: false`, `linkAddress: null`): presented when a chosen
+  address is already taken, guiding the teacher to append a numeric suffix or school initials.
+  Matched on prompts containing `"choose a different netlify site name"`.
+- **Pre-filling suggested answers**: `TaskProgressView` passes `runner.suggestedAnswer`
+  (e.g., extracted from brackets `[mcv4u-s1-2026-gordon]`) as `initialAnswer` into the dialog,
+  so the teacher can accept the recommendation with a single press or edit it.
+- **Link button visibility**: `CredentialRequestSheet` only renders the link button if
+  `linkAddress` is present and `linkTitle` is non-empty.
+
+All requests are serialized in `contracts/app-rules.json` → `credentialRequests.requests`.
+
 ## plantoir.app is generated, and its screenshots are taken by a robot (entry 255)
 
 The marketing site used to be one hand-written `site/index.html`. It is now

@@ -117,12 +117,20 @@
         "prompt" : "Paste Cloudflare Account ID: "
       },
       {
-        "expectRequest" : "",
+        "expectRequest" : "teacherSurname",
+        "prompt" : "First time setup... what is your last name? (letters only):"
+      },
+      {
+        "expectRequest" : "teacherSurname",
+        "prompt" : "Please enter letters only for your last name (e.g., 'Gordon'):"
+      },
+      {
+        "expectRequest" : "siteName",
         "prompt" : "Enter Netlify site name:"
       },
       {
-        "expectRequest" : "",
-        "prompt" : "Choose a different Netlify site name:"
+        "expectRequest" : "siteNameConflict",
+        "prompt" : "Choose a different Netlify site name (or 'q' to cancel):"
       },
       {
         "expectRequest" : "",
@@ -153,6 +161,21 @@
         "expectLink" : "https://dash.cloudflare.com",
         "expectSecret" : false,
         "name" : "cloudflareAccountIDHelp"
+      },
+      {
+        "expectLink" : "",
+        "expectSecret" : false,
+        "name" : "teacherSurname"
+      },
+      {
+        "expectLink" : "",
+        "expectSecret" : false,
+        "name" : "siteName"
+      },
+      {
+        "expectLink" : "",
+        "expectSecret" : false,
+        "name" : "siteNameConflict"
       }
     ],
     "everyRequestNote" : "An account ID is not a secret and is shown as it is typed; a token is, and is not. Getting that backwards either puts a live credential on a screen a class can see, or hides a code the teacher needs to check they pasted correctly.",
@@ -230,6 +253,47 @@
           "Paste it below. (It is also the long code in your browser's address bar, just after dash.cloudflare.com/.)"
         ],
         "title" : "Where to find your Account ID"
+      },
+      {
+        "explanation" : "Your surname is used to create a clear, recognizable web address for your students and families (such as mcv4u-s1-2026-gordon), and to prevent naming conflicts with other classes. It is saved on this computer and only asked once.",
+        "fieldLabel" : "Surname",
+        "isSecret" : false,
+        "linkAddress" : "",
+        "linkTitle" : "",
+        "name" : "teacherSurname",
+        "steps" : [
+          "Type your surname below using letters only (for example, “Gordon”).",
+          "It will be combined with course codes and the school year to name your class websites."
+        ],
+        "title" : "Teacher Surname"
+      },
+      {
+        "explanation" : "Every website published to Netlify (*.netlify.app) or Cloudflare Pages (*.pages.dev) needs a unique web address. On Netlify, this name is shared globally with all users across the world.",
+        "fieldLabel" : "Website address",
+        "isSecret" : false,
+        "linkAddress" : "",
+        "linkTitle" : "",
+        "name" : "siteName",
+        "steps" : [
+          "Standard address (recommended): <course>-s<section>-<year>-<surname> (e.g. mcv4u-s1-2026-gordon)",
+          "With school abbreviation: <school>-<course>-s<section>-<year>-<surname> (e.g. lcs-mcv4u-s1-2026-gordon)",
+          "Use only lowercase letters, numbers, and hyphens."
+        ],
+        "title" : "Choose a Website Address"
+      },
+      {
+        "explanation" : "That website address is already in use by another site on Netlify. You can add a number suffix or include your school's initials to make it unique.",
+        "fieldLabel" : "Website address",
+        "isSecret" : false,
+        "linkAddress" : "",
+        "linkTitle" : "",
+        "name" : "siteNameConflict",
+        "steps" : [
+          "Add a number suffix (such as -01, pre-filled below).",
+          "Or add your school's initials (e.g. lcs-mcv4u-s1-2026-gordon).",
+          "Use only lowercase letters, numbers, and hyphens."
+        ],
+        "title" : "Website Address Already Taken"
       }
     ]
   },

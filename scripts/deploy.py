@@ -183,7 +183,11 @@ def get_or_prompt_teacher_last_name() -> str:
     if ln:
         return ln
     # First run under this /teaching/courses folder
-    raw = input(" First time setup... what is your last name? (letters only): ").strip()
+    print("\nTeacher Surname.")
+    print("Your surname is used to create a clear, recognizable web address for your")
+    print("students and families (such as mcv4u-s1-2026-gordon), and to prevent naming")
+    print("conflicts with other classes. It is saved on this computer and only asked once.\n")
+    raw = input("First time setup... what is your last name? (letters only): ").strip()
     ln = sanitize_last_name(raw)
     while not ln:
         raw = input("Please enter letters only for your last name (e.g., 'Gordon'): ").strip()
@@ -292,6 +296,9 @@ def maybe_create_netlify_site_simple(token: str, team_slug: str | None, course_c
         base = suggest_site_base(course_code, section, teacher_last_name)
     else:
         base = sanitize_netlify_name(f"{course_code or 'course'}-s{section or '1'}-{NOW.year}")
+    print("\nChoose a Website Address.")
+    print("Every website published to Netlify (*.netlify.app) needs a unique web address.")
+    print("This name is shared globally with all users across the world.\n")
     site_name = prompt("Enter Netlify site name", default=base).strip() or base
     path = f"/accounts/{team_slug}/sites" if team_slug else "/sites"
     attempt = 0
@@ -307,8 +314,9 @@ def maybe_create_netlify_site_simple(token: str, team_slug: str | None, course_c
             if _is_netlify_name_conflict(e):
                 attempt += 1
                 suggestion = f"{base}-{attempt:02d}"
-                print(f"⚠️ Netlify site name '{site_name}' is not available (already in use).")
-                print(" Tip: names must be globally unique across Netlify and use letters, numbers, and hyphens.")
+                print(f"\n⚠️ Website Address Already Taken.")
+                print(f"The address '{site_name}' is already in use by another site on Netlify.")
+                print("Tip: Add your school's initials (e.g. lcs-mcv4u-s1-2026-gordon) or a number suffix.\n")
                 new_name = prompt("Choose a different Netlify site name (or 'q' to cancel)", default=suggestion).strip()
                 if new_name.lower() in {"q", "quit", "exit"}:
                     raise RuntimeError("User cancelled Netlify site creation after name conflict.") from e

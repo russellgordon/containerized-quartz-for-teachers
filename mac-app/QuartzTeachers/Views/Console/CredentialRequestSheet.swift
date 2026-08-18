@@ -49,22 +49,26 @@ struct CredentialRequestSheet: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(.secondary)
 
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(Array(request.steps.enumerated()), id: \.offset) { pair in
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text("\(pair.offset + 1).")
-                            .monospacedDigit()
-                            .foregroundStyle(.secondary)
-                        Text(pair.element)
-                            .fixedSize(horizontal: false, vertical: true)
+            if !request.steps.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(Array(request.steps.enumerated()), id: \.offset) { pair in
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text("\(pair.offset + 1).")
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                            Text(pair.element)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                 }
             }
 
-            Link(destination: request.linkAddress) {
-                Label(request.linkTitle, systemImage: "safari")
+            if let linkAddress = request.linkAddress, !request.linkTitle.isEmpty {
+                Link(destination: linkAddress) {
+                    Label(request.linkTitle, systemImage: "safari")
+                }
+                .accessibilityIdentifier("credentialLink")
             }
-            .accessibilityIdentifier("credentialLink")
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(request.fieldLabel)
@@ -73,7 +77,7 @@ struct CredentialRequestSheet: View {
                 // own placeholder says what to do, rather than repeating
                 // the label back.
                 if request.isSecret {
-                    SecureField("Paste it here", text: $answer)
+                    SecureField(request.fieldPlaceholder, text: $answer)
                         .textFieldStyle(.roundedBorder)
                         .labelsHidden()
                         .accessibilityIdentifier("credentialField")
@@ -81,7 +85,7 @@ struct CredentialRequestSheet: View {
                             sendAnswer()
                         }
                 } else {
-                    TextField("Paste it here", text: $answer)
+                    TextField(request.fieldPlaceholder, text: $answer)
                         .textFieldStyle(.roundedBorder)
                         .labelsHidden()
                         .accessibilityIdentifier("credentialField")

@@ -35,10 +35,13 @@ struct CredentialRequest: Equatable {
     var linkTitle: String
 
     /// Where the link goes.
-    var linkAddress: URL
+    var linkAddress: URL?
 
     /// The label beside the field the answer is typed into.
     var fieldLabel: String
+
+    /// The placeholder text inside the field when empty.
+    var fieldPlaceholder: String
 
     /// True when the answer is a secret and must not be shown as it is
     /// typed. A token is; an account's ID is not.
@@ -71,6 +74,7 @@ struct CredentialRequest: Equatable {
             linkTitle: "Open Netlify’s access tokens page",
             linkAddress: URL(string: "https://app.netlify.com/user/applications#personal-access-tokens")!,
             fieldLabel: "Netlify token",
+            fieldPlaceholder: "Paste it here",
             isSecret: true
         )
     }
@@ -104,6 +108,7 @@ struct CredentialRequest: Equatable {
             linkTitle: "Open Cloudflare’s API tokens page",
             linkAddress: URL(string: "https://dash.cloudflare.com/profile/api-tokens")!,
             fieldLabel: "Cloudflare token",
+            fieldPlaceholder: "Paste it here",
             isSecret: true
         )
     }
@@ -134,6 +139,7 @@ struct CredentialRequest: Equatable {
             linkTitle: "Open the Cloudflare dashboard",
             linkAddress: URL(string: "https://dash.cloudflare.com")!,
             fieldLabel: "Account ID",
+            fieldPlaceholder: "Paste it here",
             isSecret: false
         )
     }
@@ -161,6 +167,69 @@ struct CredentialRequest: Equatable {
             linkTitle: "Open the Cloudflare dashboard",
             linkAddress: URL(string: "https://dash.cloudflare.com")!,
             fieldLabel: "Account ID",
+            fieldPlaceholder: "Paste it here",
+            isSecret: false
+        )
+    }
+
+    /// The teacher's surname, asked once per working folder on a first deploy
+    /// so that website addresses can be built automatically.
+    static var teacherSurname: CredentialRequest {
+        return CredentialRequest(
+            name: "teacherSurname",
+            title: "Teacher Surname",
+            explanation: "Your surname is used to create a clear, recognizable web address for your "
+                       + "students and families (such as mcv4u-s1-2026-gordon), and to prevent naming "
+                       + "conflicts with other classes. It is saved on this computer and only asked once.",
+            steps: [
+                "Type your surname below using letters only (for example, “Gordon”).",
+                "It will be combined with course codes and the school year to name your class websites.",
+            ],
+            linkTitle: "",
+            linkAddress: nil,
+            fieldLabel: "Surname",
+            fieldPlaceholder: "e.g. Gordon",
+            isSecret: false
+        )
+    }
+
+    /// The website address (subdomain), asked the first time a section is published.
+    static var siteName: CredentialRequest {
+        return CredentialRequest(
+            name: "siteName",
+            title: "Choose a Website Address",
+            explanation: "Every website published to Netlify (*.netlify.app) or Cloudflare Pages "
+                       + "(*.pages.dev) needs a unique web address. On Netlify, this name is shared "
+                       + "globally with all users across the world.",
+            steps: [
+                "Standard address (recommended): <course>-s<section>-<year>-<surname> (e.g. mcv4u-s1-2026-gordon)",
+                "With school abbreviation: <school>-<course>-s<section>-<year>-<surname> (e.g. lcs-mcv4u-s1-2026-gordon)",
+                "Use only lowercase letters, numbers, and hyphens.",
+            ],
+            linkTitle: "",
+            linkAddress: nil,
+            fieldLabel: "Website address",
+            fieldPlaceholder: "e.g. mcv4u-s1-2026-gordon",
+            isSecret: false
+        )
+    }
+
+    /// Prompted when the chosen website address is already taken on Netlify.
+    static var siteNameConflict: CredentialRequest {
+        return CredentialRequest(
+            name: "siteNameConflict",
+            title: "Website Address Already Taken",
+            explanation: "That website address is already in use by another site on Netlify. You can "
+                       + "add a number suffix or include your school's initials to make it unique.",
+            steps: [
+                "Add a number suffix (such as -01, pre-filled below).",
+                "Or add your school's initials (e.g. lcs-mcv4u-s1-2026-gordon).",
+                "Use only lowercase letters, numbers, and hyphens.",
+            ],
+            linkTitle: "",
+            linkAddress: nil,
+            fieldLabel: "Website address",
+            fieldPlaceholder: "e.g. mcv4u-s1-2026-gordon-01",
             isSecret: false
         )
     }
@@ -172,6 +241,9 @@ struct CredentialRequest: Equatable {
             CredentialRequest.cloudflareToken,
             CredentialRequest.cloudflareAccountID,
             CredentialRequest.cloudflareAccountIDHelp,
+            CredentialRequest.teacherSurname,
+            CredentialRequest.siteName,
+            CredentialRequest.siteNameConflict,
         ]
     }
 
@@ -185,6 +257,15 @@ struct CredentialRequest: Equatable {
     /// by the two launchers and neither wording is worth pinning.
     static func matching(_ question: String) -> CredentialRequest? {
         let wording: String = question.lowercased()
+        if wording.contains("last name") || wording.contains("surname") {
+            return CredentialRequest.teacherSurname
+        }
+        if wording.contains("choose a different netlify site name") || wording.contains("different netlify site name") {
+            return CredentialRequest.siteNameConflict
+        }
+        if wording.contains("enter netlify site name") || wording.contains("netlify site name") || wording.contains("website name") {
+            return CredentialRequest.siteName
+        }
         if wording.contains("netlify") && (wording.contains("token") || wording.contains("personal access")) {
             return CredentialRequest.netlifyToken
         }

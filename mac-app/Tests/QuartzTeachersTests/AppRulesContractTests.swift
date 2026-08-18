@@ -402,6 +402,10 @@ final class AppRulesContractTests: XCTestCase {
         XCTAssertEqual(CredentialRequest.matching("Paste Cloudflare API token:")?.name, "cloudflareToken")
         XCTAssertEqual(CredentialRequest.matching("Paste your Cloudflare token:")?.name, "cloudflareToken")
         XCTAssertEqual(CredentialRequest.matching("Paste your Cloudflare Account ID:")?.name, "cloudflareAccountID")
+        XCTAssertEqual(CredentialRequest.matching("First time setup... what is your last name? (letters only):")?.name, "teacherSurname")
+        XCTAssertEqual(CredentialRequest.matching("Please enter letters only for your last name (e.g., 'Gordon'):")?.name, "teacherSurname")
+        XCTAssertEqual(CredentialRequest.matching("Enter Netlify site name:")?.name, "siteName")
+        XCTAssertEqual(CredentialRequest.matching("Choose a different Netlify site name (or 'q' to cancel):")?.name, "siteNameConflict")
     }
 
     /// A token shown as it is typed is a live credential on a screen a
@@ -420,16 +424,16 @@ final class AppRulesContractTests: XCTestCase {
             }
             let request: CredentialRequest = try XCTUnwrap(found, "No credential request named \(name)")
             XCTAssertEqual(request.isSecret, try XCTUnwrap(testCase["expectSecret"] as? Bool), name)
+            let expectLink: String = try XCTUnwrap(testCase["expectLink"] as? String)
             XCTAssertEqual(
-                request.linkAddress.absoluteString,
-                try XCTUnwrap(testCase["expectLink"] as? String),
+                request.linkAddress?.absoluteString ?? "",
+                expectLink,
                 name
             )
             XCTAssertFalse(request.title.isEmpty, name)
             XCTAssertFalse(request.explanation.isEmpty, name)
-            XCTAssertFalse(request.linkTitle.isEmpty, name)
             XCTAssertFalse(request.fieldLabel.isEmpty, name)
-            XCTAssertGreaterThanOrEqual(request.steps.count, 3, "\(name) has to say how to get one")
+            XCTAssertGreaterThanOrEqual(request.steps.count, 2, "\(name) has to say how to get one")
         }
 
         // The generated readout is what the OTHER app reads these sentences

@@ -74,7 +74,7 @@ enum AppRulesContract {
                 "explanation": request.explanation,
                 "steps": request.steps,
                 "linkTitle": request.linkTitle,
-                "linkAddress": request.linkAddress.absoluteString,
+                "linkAddress": request.linkAddress?.absoluteString ?? "",
                 "fieldLabel": request.fieldLabel,
                 "isSecret": request.isSecret,
             ])

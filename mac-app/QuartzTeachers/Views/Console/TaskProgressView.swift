@@ -306,6 +306,7 @@ struct TaskProgressView: View {
             if let request = runner.pendingCredentialRequest {
                 CredentialRequestSheet(
                     request: request,
+                    initialAnswer: runner.suggestedAnswer,
                     onSend: { typed in
                         runner.send(line: typed)
                     },
