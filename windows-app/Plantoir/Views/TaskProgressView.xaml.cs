@@ -205,6 +205,9 @@ public sealed partial class TaskProgressView : UserControl
             var req = Plantoir.Core.Scripting.CredentialRequests.MatchPrompt(runner.PendingQuestion);
             if (req is not null)
             {
+                Plantoir.Core.Scripting.ActivityTrail.Note(
+                    Plantoir.Core.Scripting.ActivityTrail.Event.AskedForACredential,
+                    $"asked for the {req.FieldLabel}");
                 var panel = new StackPanel { Spacing = 12, MaxWidth = 480 };
                 panel.Children.Add(new TextBlock { Text = req.Explanation, TextWrapping = TextWrapping.Wrap });
 

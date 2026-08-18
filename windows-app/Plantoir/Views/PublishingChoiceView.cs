@@ -119,6 +119,9 @@ public sealed class PublishingChoiceView
         };
         helpButton.Click += async (_, _) =>
         {
+            Plantoir.Core.Scripting.ActivityTrail.Note(
+                Plantoir.Core.Scripting.ActivityTrail.Event.AskedForACredential,
+                "opened instructions for Cloudflare Account ID");
             var help = Plantoir.Core.Scripting.CredentialRequests.CloudflareAccountIDHelp;
             var panel = new StackPanel { Spacing = 10, MaxWidth = 460 };
             panel.Children.Add(new TextBlock { Text = help.Explanation, TextWrapping = TextWrapping.Wrap });
