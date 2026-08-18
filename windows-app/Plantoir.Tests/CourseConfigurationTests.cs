@@ -249,4 +249,36 @@ public class CourseConfigurationTests
         }
         finally { File.Delete(path); }
     }
+
+    [Fact]
+    public void CurriculumCoverageAndNotesAccessorsAndRule()
+    {
+        var config = FromJson("""
+        {
+          "course_code": "ICS3U",
+          "num_sections": 2,
+          "section_numbers": [1, 2],
+          "include_curriculum_coverage": { "sections": { "section1": true, "section2": false } },
+          "include_coverage_notes": { "sections": { "section1": true, "section2": true } }
+        }
+        """);
+
+        Assert.True(config.IncludesCurriculumCoverage(1));
+        Assert.False(config.IncludesCurriculumCoverage(2));
+        Assert.True(config.IncludesCoverageNotes(1));
+        // Section 2 coverage is false, so notes must be false
+        Assert.False(config.IncludesCoverageNotes(2));
+        Assert.False(config.OverallIncludesCurriculumCoverage);
+
+        // Disabling coverage disables notes
+        config.SetIncludesCurriculumCoverage(1, false);
+        Assert.False(config.IncludesCurriculumCoverage(1));
+        Assert.False(config.IncludesCoverageNotes(1));
+
+        // CoverageNotesEnabled pure function
+        Assert.True(CourseConfiguration.CoverageNotesEnabled(true, true));
+        Assert.False(CourseConfiguration.CoverageNotesEnabled(true, false));
+        Assert.False(CourseConfiguration.CoverageNotesEnabled(false, true));
+        Assert.False(CourseConfiguration.CoverageNotesEnabled(false, false));
+    }
 }

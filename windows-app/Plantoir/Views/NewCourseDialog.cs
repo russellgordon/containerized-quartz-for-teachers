@@ -59,10 +59,12 @@ public sealed class NewCourseDialog : ContentDialog
     private readonly TextBlock _gradeWarningSlot;
     private bool _started;
 
-    // Starting Content (rows 92–94): the ready-made pages and their two
+    // Starting Content (rows 92–94, 130): the ready-made pages and their
     // toggles, plus the terminology switch for the factory structure.
     private bool _prepopulate = true;
     private bool _includeCurriculum = true;
+    private bool _includeCurriculumCoverage = true;
+    private bool _includeCoverageNotes = true;
     private bool _useLcs;
 
     // Publishing (rows 101–102): Netlify by default, or a folder on this PC.
@@ -474,6 +476,9 @@ public sealed class NewCourseDialog : ContentDialog
             _startingContentBody.Children.Add(prepopRow);
 
             ToggleSwitch? curriculumToggle = null;
+            ToggleSwitch? coverageToggle = null;
+            ToggleSwitch? coverageNotesToggle = null;
+
             if (ExampleContentCatalog.IncludesCurriculum(ExampleContentRoot, NormalizedCode))
             {
                 curriculumToggle = new ToggleSwitch
@@ -484,17 +489,74 @@ public sealed class NewCourseDialog : ContentDialog
                     OffContent = "",
                 };
                 AutomationProperties.SetAutomationId(curriculumToggle, "curriculumToggle");
-                curriculumToggle.Toggled += (_, _) => _includeCurriculum = curriculumToggle.IsOn;
                 var curriculumRow = FormBuilders.LabeledRow("Include Ontario curriculum pages", curriculumToggle);
                 curriculumRow.Children.Add(FormBuilders.ExampleCaption(
                     "Every expectation as its own page, so lessons and tasks can link to exactly what they address"));
                 _startingContentBody.Children.Add(curriculumRow);
+
+                coverageToggle = new ToggleSwitch
+                {
+                    IsOn = _includeCurriculumCoverage,
+                    IsEnabled = _prepopulate && _includeCurriculum,
+                    OnContent = "",
+                    OffContent = "",
+                };
+                AutomationProperties.SetAutomationId(coverageToggle, "curriculumCoverageToggle");
+                var coverageRow = FormBuilders.LabeledRow("Include Curriculum Coverage map", coverageToggle);
+                coverageRow.Children.Add(FormBuilders.ExampleCaption(
+                    "Generates a page showing which specific and overall expectations are addressed"));
+                _startingContentBody.Children.Add(coverageRow);
+
+                coverageNotesToggle = new ToggleSwitch
+                {
+                    IsOn = _includeCoverageNotes,
+                    IsEnabled = _prepopulate && _includeCurriculum && _includeCurriculumCoverage,
+                    OnContent = "",
+                    OffContent = "",
+                };
+                AutomationProperties.SetAutomationId(coverageNotesToggle, "curriculumCoverageNotesToggle");
+                var coverageNotesRow = FormBuilders.LabeledRow("Include explanations on Curriculum Coverage page", coverageNotesToggle);
+                coverageNotesRow.Children.Add(FormBuilders.ExampleCaption(
+                    "Shows “What counts” and “Reading it honestly” sections on the page"));
+                _startingContentBody.Children.Add(coverageNotesRow);
+
+                curriculumToggle.Toggled += (_, _) =>
+                {
+                    _includeCurriculum = curriculumToggle.IsOn;
+                    if (coverageToggle is not null)
+                    {
+                        coverageToggle.IsEnabled = _prepopulate && _includeCurriculum;
+                        if (!_includeCurriculum) coverageToggle.IsOn = false;
+                    }
+                    if (coverageNotesToggle is not null)
+                    {
+                        coverageNotesToggle.IsEnabled = _prepopulate && _includeCurriculum && _includeCurriculumCoverage;
+                        if (!_includeCurriculum) coverageNotesToggle.IsOn = false;
+                    }
+                };
+
+                coverageToggle.Toggled += (_, _) =>
+                {
+                    _includeCurriculumCoverage = coverageToggle.IsOn;
+                    if (coverageNotesToggle is not null)
+                    {
+                        coverageNotesToggle.IsEnabled = _prepopulate && _includeCurriculum && _includeCurriculumCoverage;
+                        if (!_includeCurriculumCoverage) coverageNotesToggle.IsOn = false;
+                    }
+                };
+
+                coverageNotesToggle.Toggled += (_, _) =>
+                {
+                    _includeCoverageNotes = coverageNotesToggle.IsOn;
+                };
             }
 
             prepopToggle.Toggled += (_, _) =>
             {
                 _prepopulate = prepopToggle.IsOn;
                 if (curriculumToggle is not null) curriculumToggle.IsEnabled = _prepopulate;
+                if (coverageToggle is not null) coverageToggle.IsEnabled = _prepopulate && _includeCurriculum;
+                if (coverageNotesToggle is not null) coverageNotesToggle.IsEnabled = _prepopulate && _includeCurriculum && _includeCurriculumCoverage;
                 RefreshStructureArea();
             };
         }
@@ -761,6 +823,8 @@ public sealed class NewCourseDialog : ContentDialog
             ["show_grade_in_title"] = PerSection(_ => _showsGrade),
             ["prepopulate_example_content"] = hasContent && _prepopulate,
             ["include_curriculum_pages"] = hasContent && _prepopulate && includesCurriculum && _includeCurriculum,
+            ["include_curriculum_coverage"] = PerSection(_ => _includeCurriculumCoverage),
+            ["include_coverage_notes"] = PerSection(_ => CourseConfiguration.CoverageNotesEnabled(_includeCurriculumCoverage, _includeCoverageNotes)),
             ["use_lcs_terminology"] = _useLcs,
             ["deploy_target"] = _deployTarget,
             ["deploy_folder_path"] = _deployFolderPath,

@@ -107,6 +107,44 @@ public sealed partial class CourseSettingsView : UserControl
         expandBox.SelectionChanged += (_, _) => { Config.ExpandOnFolderClick = expandBox.SelectedIndex == 0; MarkChanged(); };
         Form.Children.Add(FormBuilders.LabeledRow("Sidebar folders expand when clicking", expandBox));
 
+        var coverageToggle = new ToggleSwitch { IsOn = Config.OverallIncludesCurriculumCoverage, OnContent = "", OffContent = "" };
+        var notesToggle = new ToggleSwitch
+        {
+            IsOn = Config.OverallIncludesCoverageNotes,
+            IsEnabled = Config.OverallIncludesCurriculumCoverage,
+            OnContent = "",
+            OffContent = "",
+        };
+
+        coverageToggle.Toggled += (_, _) =>
+        {
+            foreach (int section in Config.SectionNumbers)
+                Config.SetIncludesCurriculumCoverage(section, coverageToggle.IsOn);
+            notesToggle.IsEnabled = coverageToggle.IsOn;
+            if (!coverageToggle.IsOn)
+            {
+                notesToggle.IsOn = false;
+                foreach (int section in Config.SectionNumbers)
+                    Config.SetIncludesCoverageNotes(section, false);
+            }
+            MarkChanged();
+        };
+        var coverageRow = FormBuilders.LabeledRow("Include Curriculum Coverage map", coverageToggle);
+        coverageRow.Children.Add(FormBuilders.ExampleCaption(
+            "Generates a page showing which specific and overall expectations are addressed"));
+        Form.Children.Add(coverageRow);
+
+        notesToggle.Toggled += (_, _) =>
+        {
+            foreach (int section in Config.SectionNumbers)
+                Config.SetIncludesCoverageNotes(section, notesToggle.IsOn);
+            MarkChanged();
+        };
+        var notesRow = FormBuilders.LabeledRow("Include explanations on Curriculum Coverage page", notesToggle);
+        notesRow.Children.Add(FormBuilders.ExampleCaption(
+            "Shows “What counts” and “Reading it honestly” sections on the page"));
+        Form.Children.Add(notesRow);
+
         // -------- Publishing (course-level: every section goes the same way) --------
         Form.Children.Add(FormBuilders.SectionHeaderWithCaption("Deploying", null));
         _publishingChoice = new PublishingChoiceView(_window,

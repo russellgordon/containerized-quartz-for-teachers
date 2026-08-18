@@ -306,6 +306,48 @@ public sealed class CourseConfiguration
         SetNestedValue("show_grade_in_title", "sections", SectionKey(section), value);
     }
 
+    public bool IncludesCurriculumCoverage(int section)
+    {
+        if (_values["include_curriculum_coverage"] is JValue { Type: JTokenType.Boolean } legacy)
+            return (bool)legacy;
+        return NestedBool("include_curriculum_coverage", "sections", SectionKey(section), true);
+    }
+
+    public void SetIncludesCurriculumCoverage(int section, bool value)
+    {
+        if (_values["include_curriculum_coverage"] is JValue { Type: JTokenType.Boolean })
+            _values["include_curriculum_coverage"] = new JObject();
+        SetNestedValue("include_curriculum_coverage", "sections", SectionKey(section), value);
+        if (!value)
+        {
+            SetIncludesCoverageNotes(section, false);
+        }
+    }
+
+    public bool IncludesCoverageNotes(int section)
+    {
+        if (!IncludesCurriculumCoverage(section)) return false;
+        if (_values["include_coverage_notes"] is JValue { Type: JTokenType.Boolean } legacy)
+            return (bool)legacy;
+        return NestedBool("include_coverage_notes", "sections", SectionKey(section), true);
+    }
+
+    public void SetIncludesCoverageNotes(int section, bool value)
+    {
+        if (_values["include_coverage_notes"] is JValue { Type: JTokenType.Boolean })
+            _values["include_coverage_notes"] = new JObject();
+        SetNestedValue("include_coverage_notes", "sections", SectionKey(section), value);
+    }
+
+    public bool OverallIncludesCurriculumCoverage =>
+        SectionNumbers.All(IncludesCurriculumCoverage);
+
+    public bool OverallIncludesCoverageNotes =>
+        SectionNumbers.All(IncludesCoverageNotes);
+
+    public static bool CoverageNotesEnabled(bool coverageEnabled, bool notesEnabled) =>
+        coverageEnabled && notesEnabled;
+
     /// <summary>color_schemes is FLAT — {"color_schemes": {"sectionN": "id"}}, no "sections" wrapper.</summary>
     public string ColourSchemeId(int section) =>
         _values["color_schemes"] is JObject map && map[SectionKey(section)] is JValue { Type: JTokenType.String } v
