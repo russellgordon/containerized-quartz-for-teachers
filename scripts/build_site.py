@@ -362,14 +362,14 @@ def append_sidebar_sharing_styles(base_scss_path: Path):
         print(f"⚠️ Error appending sidebar sharing styles: {e}")
 # --- END ADD ---
 
-# --- ADD: Prevent page title wrapping and allow dynamic shrinking on mobile ---
+# --- ADD: Prevent page title wrapping and vertically center navbar elements ---
 def append_page_title_styles(base_scss_path: Path):
     """
     Prevents the navbar course code and section number from wrapping onto
     a second line on mobile by dynamically scaling the page title font size
     down (up to 50% of its original 1.75rem size) and setting white-space: nowrap.
-    Also vertically centers the course emoji, code, and section with the adjacent
-    search field and controls on mobile.
+    Also vertically centers the course emoji, code, and section as well as the
+    light/dark mode toggle button with the adjacent search field.
 
     Using clamp(0.875rem, 4.5vw, 1.75rem) keeps the title at full 1.75rem size
     on desktop and tablet (where viewport >= 800px), smoothly shrinks it on
@@ -400,6 +400,17 @@ def append_page_title_styles(base_scss_path: Path):
             "  text-overflow: ellipsis;\n"
             "  white-space: nowrap;\n"
             "  line-height: 1;\n"
+            "}\n\n"
+            ".darkmode {\n"
+            "  height: 2rem;\n"
+            "  display: inline-flex;\n"
+            "  align-items: center;\n"
+            "  justify-content: center;\n"
+            "  vertical-align: middle;\n\n"
+            "  & svg {\n"
+            "    position: relative;\n"
+            "    top: 0;\n"
+            "  }\n"
             "}\n"
         )
 
@@ -407,20 +418,20 @@ def append_page_title_styles(base_scss_path: Path):
             content = f.read()
 
         if marker in content:
-            pattern = re.compile(re.escape(marker) + r".*?\.page-title a\s*\{[^}]*\}", re.DOTALL)
+            pattern = re.compile(re.escape(marker) + r".*?(?:\.darkmode\s*\{.*?\n\}|\.page-title a\s*\{[^}]*\})", re.DOTALL)
             if pattern.search(content):
                 new_block_body = block.split(f"{marker}\n")[1].rstrip()
                 content = pattern.sub(f"{marker}\n{new_block_body}", content)
                 with open(base_scss_path, "w", encoding="utf-8") as f:
                     f.write(content)
-                print("✅ Updated page title styles in base.scss")
+                print("✅ Updated navbar header styles in base.scss")
                 return
 
         with open(base_scss_path, "w", encoding="utf-8") as f:
             f.write(content + block)
-        print("✅ Appended page title styles to base.scss")
+        print("✅ Appended navbar header styles to base.scss")
     except Exception as e:
-        print(f"⚠️ Error appending page title styles: {e}")
+        print(f"⚠️ Error appending navbar header styles: {e}")
 # --- END ADD ---
 
 # --- ADD: Patch ContentMeta.tsx date format ---
