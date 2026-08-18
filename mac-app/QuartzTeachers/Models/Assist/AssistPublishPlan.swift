@@ -404,7 +404,7 @@ enum AssistPublishPlanner {
         // The dates are compared here rather than by the model: "every class
         // from September 15th" is one call, and a comparison the model never
         // makes is a comparison it never gets wrong.
-        if onOrAfter != nil || before != nil {
+        if titles.isEmpty && (onOrAfter != nil || before != nil) {
             for summary in classPages {
                 guard let date = summary.date else {
                     continue

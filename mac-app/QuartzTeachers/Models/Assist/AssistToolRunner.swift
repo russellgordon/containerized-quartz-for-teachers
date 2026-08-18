@@ -819,18 +819,24 @@ final class AssistToolRunner {
         let beforeText: String = text("before", in: arguments)
 
         var onOrAfter: CalendarDay? = nil
-        if !onOrAfterText.isEmpty {
-            guard let day = CalendarDay(text: onOrAfterText) else {
-                return .failure(.unreadableDate(onOrAfterText, "onOrAfter"))
-            }
-            onOrAfter = day
-        }
         var before: CalendarDay? = nil
-        if !beforeText.isEmpty {
-            guard let day = CalendarDay(text: beforeText) else {
-                return .failure(.unreadableDate(beforeText, "before"))
+
+        // Dates are only evaluated when no specific pages were named. If pages
+        // were named, date boundaries are ignored so dateline leakage from the
+        // prompt cannot accidentally sweep other classes.
+        if titles.isEmpty {
+            if !onOrAfterText.isEmpty {
+                guard let day = CalendarDay(text: onOrAfterText) else {
+                    return .failure(.unreadableDate(onOrAfterText, "onOrAfter"))
+                }
+                onOrAfter = day
             }
-            before = day
+            if !beforeText.isEmpty {
+                guard let day = CalendarDay(text: beforeText) else {
+                    return .failure(.unreadableDate(beforeText, "before"))
+                }
+                before = day
+            }
         }
 
         if titles.isEmpty && onOrAfter == nil && before == nil {

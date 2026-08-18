@@ -409,7 +409,7 @@ public sealed class AssistWorkspace
         // onwards" is a comparison, and comparisons are exactly what a model
         // should never be doing on a teacher's behalf — the whole design moves
         // that work here.
-        if (onOrAfter is not null || before is not null)
+        if (pageTitles.Count == 0 && (onOrAfter is not null || before is not null))
         {
             var matched = 0;
             foreach (string path in ClassPages(course, section))

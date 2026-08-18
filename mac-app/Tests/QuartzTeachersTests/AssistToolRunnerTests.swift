@@ -728,6 +728,34 @@ final class AssistToolRunnerTests: XCTestCase {
         )
     }
 
+    /// When a teacher names specific pages, date boundaries supplied in the
+    /// same call (such as dateline leakage from the prompt) must be ignored so
+    /// other classes in the date range are not accidentally swept.
+    @MainActor
+    func testNamedPagesPublishAndUnpublishIgnoreExtraneousDateBounds() async throws {
+        let made = try makeRunner()
+        defer { try? FileManager.default.removeItem(at: made.root) }
+
+        try write(page: "Unit 1, Day 1", publish: "true", date: "2026-09-08", body: "Lesson 1.", in: made.course)
+        try write(page: "Unit 1, Day 2", publish: "true", date: "2026-09-09", body: "Lesson 2.", in: made.course)
+
+        // Unpublish Unit 1, Day 1 with an extraneous onOrAfter date that covers Day 2 as well.
+        let outcome: AssistToolOutcome = await made.runner.run(call: call(
+            "unpublish_pages",
+            arguments: [
+                "course": "ICS3U",
+                "section": 1,
+                "pages": "Unit 1, Day 1",
+                "onOrAfter": "2026-09-08",
+            ]
+        ))
+        XCTAssertFalse(outcome.shouldContinue)
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 1", in: made.course).contains("publish: false"),
+                      "The named page must be unpublished.")
+        XCTAssertTrue(text(ofPage: "Unit 1, Day 2", in: made.course).contains("publish: true"),
+                      "Other classes in the date range must remain untouched when a specific page was named.")
+    }
+
     /// Reported from a real course (ADA1O Section 1): unpublishing a class
     /// said four pages were staying published because **"index"** still linked
     /// to them.
