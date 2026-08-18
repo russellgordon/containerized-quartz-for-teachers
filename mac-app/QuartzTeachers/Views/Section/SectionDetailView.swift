@@ -134,7 +134,7 @@ struct SectionDetailView: View {
                     startDeploy()
                 }
                 .labelStyle(.titleAndIcon)
-                .disabled(isBusy)
+                .disabled(deployRunner.isRunning)
                 .help("Deploy this section's website")
                 .accessibilityIdentifier("deployButton")
 
@@ -475,12 +475,20 @@ struct SectionDetailView: View {
             )
         }
 
+        // Stop any running or building preview before deploying, and wait for
+        // container processes to exit so they cannot kill or race the deploy build.
+        if previewRunner.isRunning {
+            await stopPreviewAndWait()
+        } else {
+            await PreviewStopper.waitForStopsToFinish(
+                courseCode: course.code, sectionNumber: sectionNumber
+            )
+        }
+
         // What the Deploy button's `disabled` says, said in words. The
-        // assistant reaches this by pressing the button while the window is
-        // already busy — a teacher cannot, because the button is greyed out,
-        // and finding out which of those two it was needs a sentence rather
-        // than nothing happening.
-        if isBusy {
+        // assistant reaches this by pressing the button while a deploy is
+        // already running in this window.
+        if deployRunner.isRunning {
             return AssistSiteWorkResult(
                 succeeded: false,
                 message: AssistWording.sectionIsBusy(

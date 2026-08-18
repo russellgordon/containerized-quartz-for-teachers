@@ -45,6 +45,17 @@ final class ConsoleFocusTests: XCTestCase {
     }
 
     @MainActor
+    func testDeployRunningWhilePreviewIsStoppedShowsDeploy() {
+        let showsDeploy: Bool = SectionDetailView.showsDeployProgress(
+            previewIsRunning: false,
+            deployIsRunning: true,
+            previewStartedAt: earlier,
+            deployStartedAt: later
+        )
+        XCTAssertTrue(showsDeploy, "A deploy running after preview stopped must take the console area")
+    }
+
+    @MainActor
     func testThePreviewPanelStopsClaimingToBePreparingOne() {
         XCTAssertEqual(
             SectionDetailView.previewTaskTitle(isPreparing: true, sectionName: "ICS3U-S5"),

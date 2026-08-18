@@ -443,7 +443,7 @@
         },
         "name" : "deploy with a preview running",
         "when" : "deploy_section",
-        "why" : "The window's Deploy button is greyed out while a preview runs, so what a teacher does is press Stop Preview first. The stop must FINISH before the deploy starts: stop mode finds a section's processes by working directory and would take the deploy's build with it."
+        "why" : "The window's Deploy button stops any running preview first and waits for it to finish: stop mode finds a section's processes by working directory and would take the deploy's build with it."
       },
       {
         "expectEvents" : [
