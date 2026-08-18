@@ -356,6 +356,8 @@ def lint(course_code: str) -> int:
         rel = str(page.relative_to(root))
         if not rel.startswith("shared/") or page.stem == "index":
             continue
+        if page.stem == "_DUPLICATE ME":
+            continue
         if curriculum_folder and rel.startswith(f"shared/{curriculum_folder}/"):
             continue
         if page.stem not in linked_from_classes:
@@ -372,7 +374,7 @@ def lint(course_code: str) -> int:
     for stem in first_hop:
         second_hop |= page_links.get(stem, set())
     reachable = class_pages | first_hop | second_hop
-    exempt = {"index", "Key Links", "Private Notes", "Scratch Page"}
+    exempt = {"index", "Key Links", "Private Notes", "Scratch Page", "_DUPLICATE ME"}
     for page in pages:
         rel = str(page.relative_to(root))
         if page.stem in exempt or page.stem in reachable:

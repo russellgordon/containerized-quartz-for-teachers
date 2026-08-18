@@ -380,7 +380,11 @@ transcluding the NEWEST PUBLISHED class page of the payload's semester
 advancing it + `![[Help Sessions]]` + `![[Key Links]]`) and a populated
 `Key Links.md`. Every folder's `index.md` MUST have
 `title: <Folder Name>` — a literal `title: index` shows "index" as the
-page name on the built site.
+page name on the built site. Every shared content folder (and `Tutorials`)
+also carries a `_DUPLICATE ME.md` template (`title: _DUPLICATE ME`,
+`publish: false`, `created: __CREATED__`) floating to the top in Obsidian
+with authoring guidance, heading/TOC examples, curriculum link reminders,
+and preview shortcuts.
 
 **Key Links is the course's orientation panel, not an index of its
 content.** It holds the things that set the tone and answer a newcomer's
