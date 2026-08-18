@@ -54,7 +54,8 @@ final class ProblemReportTests: XCTestCase {
             explanation: explanation,
             transcript: transcript,
             appDescription: "Plantoir 1.0 (12) · pid 4711 · /Applications/Plantoir.app",
-            systemDescription: "macOS 15.6 · arm64 · 8 cores · 36 GB"
+            systemDescription: "macOS 15.6.0 (24G84) · Darwin 24.6.0 · arm64 · 8 cores · 36 GB",
+            helperDescription: "llama.cpp b10435 (Metal) · Colima v0.10.3 · Lima 2.2.0 · Docker CLI 29.7.2 · Buildx v0.36.1"
         )
     }
 
@@ -67,7 +68,8 @@ final class ProblemReportTests: XCTestCase {
         XCTAssertTrue(text.contains("Failed (exit 1) after 42.3s"), text)
         XCTAssertTrue(text.contains("Netlify is limiting"), text)
         XCTAssertTrue(text.contains("Plantoir 1.0 (12)"), text)
-        XCTAssertTrue(text.contains("macOS 15.6 · arm64"), text)
+        XCTAssertTrue(text.contains("macOS 15.6.0 (24G84)"), text)
+        XCTAssertTrue(text.contains("llama.cpp b10435 (Metal)"), text)
     }
 
     /// A failure nothing recognised is the one worth a person's attention,
@@ -511,5 +513,32 @@ final class ProblemReportTests: XCTestCase {
                 "\"\(forbidden)\" appears in what a teacher reads:\n\(note)"
             )
         }
+    }
+
+    // MARK: - Environment and launch logging
+
+    func testProblemReportEnvironmentCapturesOSAndHelpers() {
+        let system: String = ProblemReportEnvironment.systemDescription
+        XCTAssertTrue(system.contains("macOS"), system)
+        XCTAssertTrue(system.contains("cores"), system)
+        XCTAssertTrue(system.contains("GB"), system)
+
+        let helpers: String = ProblemReportEnvironment.helperDescription
+        XCTAssertTrue(helpers.contains("llama.cpp"), helpers)
+        XCTAssertTrue(helpers.contains("Colima"), helpers)
+        XCTAssertTrue(helpers.contains("Docker CLI"), helpers)
+    }
+
+    func testNoteLaunchEmitsMachineAndHelpersOnTheTrail() {
+        let store: ProblemReportStore = ProblemReportStore(folderURL: folderURL)
+        let previousStore: ProblemReportStore = ActivityTrail.store
+        ActivityTrail.store = store
+        defer { ActivityTrail.store = previousStore }
+
+        ActivityTrail.noteLaunch()
+        let trail: String = store.activityText(includingPrompts: true)
+        XCTAssertTrue(trail.contains("Plantoir opened — Plantoir"), trail)
+        XCTAssertTrue(trail.contains("running on macOS"), trail)
+        XCTAssertTrue(trail.contains("using llama.cpp"), trail)
     }
 }

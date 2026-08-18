@@ -1073,7 +1073,8 @@ class ScriptRunner {
             explanation: explanation,
             transcript: transcriptText,
             appDescription: ProblemReportEnvironment.appDescription,
-            systemDescription: ProblemReportEnvironment.systemDescription
+            systemDescription: ProblemReportEnvironment.systemDescription,
+            helperDescription: ProblemReportEnvironment.helperDescription
         )
         reportStore.write(record)
         recordWrittenAt = Date()

@@ -42,11 +42,43 @@ nonisolated struct RunRecord {
     /// Everything the task printed, already tidied by `TranscriptBuilder`.
     let transcript: String
 
-    /// Which copy of the app wrote this, and which machine it ran on.
-    /// Filled from `ProblemReportEnvironment` in the app and passed as
-    /// plain text so a test can render a record without a bundle.
+    /// Which copy of the app wrote this, which machine it ran on, and which
+    /// helper tools are in place. Filled from `ProblemReportEnvironment` in
+    /// the app and passed as plain text so a test can render a record
+    /// without a bundle.
     let appDescription: String
     let systemDescription: String
+    let helperDescription: String
+
+    // MARK: - Initializer
+
+    init(
+        startedAt: Date,
+        finishedAt: Date,
+        scriptName: String,
+        arguments: [String],
+        workingFolderPath: String,
+        outcome: String,
+        wasFailure: Bool,
+        explanation: String?,
+        transcript: String,
+        appDescription: String,
+        systemDescription: String,
+        helperDescription: String = ProblemReportEnvironment.helperDescription
+    ) {
+        self.startedAt = startedAt
+        self.finishedAt = finishedAt
+        self.scriptName = scriptName
+        self.arguments = arguments
+        self.workingFolderPath = workingFolderPath
+        self.outcome = outcome
+        self.wasFailure = wasFailure
+        self.explanation = explanation
+        self.transcript = transcript
+        self.appDescription = appDescription
+        self.systemDescription = systemDescription
+        self.helperDescription = helperDescription
+    }
 
     /// The longest transcript kept in one record. A record is read from the
     /// END — that is where a failure is — so trimming takes from the front.
@@ -98,6 +130,7 @@ nonisolated struct RunRecord {
         lines.append(labelled("When", RunRecord.readableFormatter(timeZone: timeZone).string(from: startedAt)))
         lines.append(labelled("App", appDescription))
         lines.append(labelled("System", systemDescription))
+        lines.append(labelled("Helpers", helperDescription))
         lines.append(labelled("Task", taskDescription))
         lines.append(labelled("Folder", workingFolderPath))
         lines.append(labelled("Outcome", outcome + " after " + String(format: "%.1f", duration) + "s"))
@@ -172,15 +205,59 @@ nonisolated enum ProblemReportEnvironment {
         return "Plantoir \(shortVersion) (\(buildNumber)) · pid \(processIdentifier) · \(Bundle.main.bundlePath)"
     }
 
-    /// "macOS 15.6 · arm64 · 8 cores · 36 GB"
+    /// "macOS 15.6.0 (24G84) · Darwin 24.6.0 · arm64 · 8 cores · 36 GB"
     static var systemDescription: String {
         let information: ProcessInfo = ProcessInfo.processInfo
         let version: OperatingSystemVersion = information.operatingSystemVersion
         let memoryInGigabytes: Int = Int(information.physicalMemory / 1_073_741_824)
-        return "macOS \(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
-            + " · \(machineArchitecture)"
+        var text: String = "macOS \(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
+        if let build = osBuildNumber {
+            text += " (\(build))"
+        }
+        if let darwin = darwinRelease {
+            text += " · Darwin \(darwin)"
+        }
+        text += " · \(machineArchitecture)"
             + " · \(information.processorCount) cores"
             + " · \(memoryInGigabytes) GB"
+        return text
+    }
+
+    /// "llama.cpp b10435 (Metal) · Colima v0.10.3 · Lima 2.2.0 · Docker CLI 29.7.2 · Buildx v0.36.1"
+    static var helperDescription: String {
+        var parts: [String] = []
+        parts.append("llama.cpp b10435 (Metal)")
+        parts.append("Colima v0.10.3")
+        parts.append("Lima 2.2.0")
+        parts.append("Docker CLI 29.7.2")
+        parts.append("Buildx v0.36.1")
+        return parts.joined(separator: " · ")
+    }
+
+    /// Exact OS build number (e.g. "24G84"), via sysctl kern.osversion.
+    static var osBuildNumber: String? {
+        var size: Int = 0
+        guard sysctlbyname("kern.osversion", nil, &size, nil, 0) == 0, size > 0 else {
+            return nil
+        }
+        var buffer: [CChar] = [CChar](repeating: 0, count: size)
+        guard sysctlbyname("kern.osversion", &buffer, &size, nil, 0) == 0 else {
+            return nil
+        }
+        return String(cString: buffer)
+    }
+
+    /// Darwin kernel release version (e.g. "24.6.0"), via sysctl kern.osrelease.
+    static var darwinRelease: String? {
+        var size: Int = 0
+        guard sysctlbyname("kern.osrelease", nil, &size, nil, 0) == 0, size > 0 else {
+            return nil
+        }
+        var buffer: [CChar] = [CChar](repeating: 0, count: size)
+        guard sysctlbyname("kern.osrelease", &buffer, &size, nil, 0) == 0 else {
+            return nil
+        }
+        return String(cString: buffer)
     }
 
     /// arm64 or x86_64 — which matters here, because the assistant runs

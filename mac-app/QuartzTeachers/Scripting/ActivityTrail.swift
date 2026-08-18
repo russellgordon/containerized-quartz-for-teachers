@@ -34,6 +34,7 @@ nonisolated enum ActivityTrail {
     enum Event: String, CaseIterable, Sendable {
         case appOpened = "app opened"
         case machine = "machine described"
+        case helpers = "helpers described"
         case workingFolderOpened = "working folder opened"
         case settingsSaved = "settings saved"
         case settingsCouldNotBeSaved = "settings could not be saved"
@@ -118,5 +119,6 @@ nonisolated enum ActivityTrail {
     static func noteLaunch() {
         ActivityTrail.note(.appOpened, "Plantoir opened — " + ProblemReportEnvironment.appDescription)
         ActivityTrail.note(.machine, "running on " + ProblemReportEnvironment.systemDescription)
+        ActivityTrail.note(.helpers, "using " + ProblemReportEnvironment.helperDescription)
     }
 }

@@ -11,9 +11,14 @@
         "why": "The bundle path and process id are not decoration. Two copies of the app can run at once, and when they do they take turns rewriting the same working folder; two process ids in one trail is the fastest way to see it. The bundle path answers 'is this build the one I think it is' without asking."
       },
       {
-        "carries": "OS version, architecture, core count, memory",
+        "carries": "OS version, OS build, architecture, core count, memory",
         "event": "machine described",
-        "why": "The assistant runs natively on one architecture and not the other, and the whole toolchain emulates on the wrong one. Memory decides which model tier a teacher gets."
+        "why": "The assistant runs natively on one architecture and not the other, and the whole toolchain emulates on the wrong one. Memory decides which model tier a teacher gets. OS build number and kernel release isolate virtualization, Metal, and WinUI/WSL2 platform issues."
+      },
+      {
+        "carries": "bundled assistant engine and toolchain helper software versions",
+        "event": "helpers described",
+        "why": "The assistant flags and chat template handling depend on the engine build. Static tool versions (Colima, Lima, Docker CLI, Buildx on macOS; WSL2 and container tools on Windows) isolate whether a machine is running on expected helper versions."
       },
       {
         "carries": "the folder path, redacted",
