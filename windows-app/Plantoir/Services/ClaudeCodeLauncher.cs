@@ -72,20 +72,43 @@ public static class ClaudeCodeLauncher
         string? beside = Path.GetDirectoryName(Environment.ProcessPath);
         if (beside is null) return null;
 
+        var candidates = new List<string>();
         string shipped = Path.Combine(beside, "plantoir-mcp.exe");
-        if (File.Exists(shipped)) return shipped;
+        if (File.Exists(shipped)) candidates.Add(shipped);
 
         // Walk up looking for the sibling project's output, whatever the tree
         // between here and it happens to look like.
         var directory = new DirectoryInfo(beside);
         for (int up = 0; up < 8 && directory is not null; up++, directory = directory.Parent)
+        {
             foreach (string configuration in new[] { "Debug", "Release" })
             {
-                string candidate = Path.Combine(directory.FullName, "Plantoir.Mcp",
-                    "bin", configuration, "net9.0", "win-x64", "plantoir-mcp.exe");
-                if (File.Exists(candidate)) return candidate;
+                string[] subPaths =
+                [
+                    Path.Combine(directory.FullName, "Plantoir.Mcp", "bin", configuration, "net9.0", "win-x64", "publish", "plantoir-mcp.exe"),
+                    Path.Combine(directory.FullName, "Plantoir.Mcp", "bin", configuration, "net9.0", "win-x64", "plantoir-mcp.exe"),
+                    Path.Combine(directory.FullName, "Plantoir.Mcp", "bin", configuration, "net9.0", "plantoir-mcp.exe"),
+                    Path.Combine(directory.FullName, "windows-app", "Plantoir.Mcp", "bin", configuration, "net9.0", "win-x64", "publish", "plantoir-mcp.exe"),
+                    Path.Combine(directory.FullName, "windows-app", "Plantoir.Mcp", "bin", configuration, "net9.0", "win-x64", "plantoir-mcp.exe"),
+                    Path.Combine(directory.FullName, "windows-app", "Plantoir.Mcp", "bin", configuration, "net9.0", "plantoir-mcp.exe"),
+                ];
+                foreach (string path in subPaths)
+                {
+                    if (File.Exists(path)) candidates.Add(path);
+                }
             }
-        return null;
+        }
+
+        if (candidates.Count == 0) return null;
+
+        // Pick the most recently written binary so debug builds take precedence over stale release builds
+        return candidates
+            .OrderByDescending(f =>
+            {
+                try { return File.GetLastWriteTimeUtc(f); }
+                catch { return DateTime.MinValue; }
+            })
+            .FirstOrDefault();
     }
 
     private static string? OnPath(string name)

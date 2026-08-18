@@ -67,4 +67,9 @@
   <ItemGroup Condition="Exists('..\Vendor\llama\llama-server.exe')">
     <Content Include="..\Vendor\llama\**" Link="llama\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <!-- Ensure the MCP server binary is always freshly published beside the app -->
+  <Target Name="PublishMcpBesideApp" AfterTargets="Build">
+    <MSBuild Projects="..\Plantoir.Mcp\Plantoir.Mcp.csproj" Targets="Publish" Properties="Configuration=$(Configuration);RuntimeIdentifier=$(RuntimeIdentifier);PublishDir=$(TargetDir)" />
+  </Target>
 </Project>
