@@ -2938,6 +2938,67 @@ def patch_explorer_inline_expand_on_navigate(inline_path: Path):
 
     except Exception as e:
         print(f"⚠️ Error patching explorer.inline.ts: {e}")
+
+def patch_quartz_build_clean(build_ts_path: Path):
+    """
+    Patches quartz/build.ts so that directory cleaning handles virtiofs / Docker
+    bind-mount latency gracefully (with retries and error catch) rather than crashing
+    on ENOTEMPTY when removing existing public/ subdirectories.
+    Idempotent.
+    """
+    if not build_ts_path.exists():
+        return
+    try:
+        src = build_ts_path.read_text(encoding="utf-8")
+        if "CQ4T-CLEAN-PATCH" in src:
+            return
+
+        old_pattern = r'await\s+rimraf\s*\(\s*path\.join\s*\(\s*output\s*,\s*["\']\*["\']\s*\)\s*,\s*\{\s*glob\s*:\s*true\s*\}\s*\)'
+        new_code = (
+            '/* CQ4T-CLEAN-PATCH */\n'
+            '  try {\n'
+            '    await rimraf(path.join(output, "*"), { glob: true, maxRetries: 5, retryDelay: 50 })\n'
+            '  } catch (_rimrafErr) {\n'
+            '    try {\n'
+            '      const fs = await import("fs/promises")\n'
+            '      const entries = await fs.readdir(output, { withFileTypes: true }).catch(() => [])\n'
+            '      for (const entry of entries) {\n'
+            '        const fp = path.join(output, entry.name)\n'
+            '        await fs.rm(fp, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 }).catch(() => {})\n'
+            '      }\n'
+            '    } catch (_ignore) {}\n'
+            '  }'
+        )
+        new_src, count = re.subn(old_pattern, new_code, src, count=1)
+        if count > 0:
+            build_ts_path.write_text(new_src, encoding="utf-8")
+            print("✅ Patched quartz/build.ts output directory cleaner")
+    except Exception as e:
+        print(f"⚠️ Could not patch quartz/build.ts: {e}")
+
+def safe_clean_public_dir(public_dir: Path):
+    """
+    Safely clean the public output directory before running Quartz build,
+    avoiding ENOTEMPTY / rimraf collisions on Docker bind-mounted filesystems.
+    """
+    if not public_dir.exists():
+        return
+    import time
+    for attempt in range(5):
+        try:
+            for item in public_dir.iterdir():
+                if item.is_dir() and not item.is_symlink():
+                    shutil.rmtree(item, ignore_errors=False)
+                else:
+                    item.unlink(missing_ok=True)
+            return
+        except Exception:
+            time.sleep(0.05 * (attempt + 1))
+    try:
+        shutil.rmtree(public_dir, ignore_errors=True)
+        public_dir.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
         
 def patch_folder_click_behavior(quartz_layout_path: Path, expand_on_name: bool):
     """
@@ -3930,6 +3991,7 @@ def build_section_site(
     patch_explorer_inline_expand_on_navigate(explorer_inline)
 
     install_patched_backlinks(output_dir)
+    patch_quartz_build_clean(output_dir / "quartz" / "build.ts")
 
     content_root = output_dir / "content"
     if content_root.exists():
@@ -4168,6 +4230,7 @@ def build_section_site(
     if build_only:
         # Static build ONLY (single build)
         print("\n🏗️  Building static site with Quartz → public/")
+        safe_clean_public_dir(output_dir / "public")
         subprocess.run(["npx", "quartz", "build", "--concurrency", "1"], cwd=output_dir, env=env, check=True)
 
         public_dir = output_dir / "public"
@@ -4184,6 +4247,7 @@ def build_section_site(
         kill_existing_quartz(port)
         kill_existing_quartz(ws_port)
         print(f"\n🚀 Launching Quartz preview on http://localhost:{port}\n")
+        safe_clean_public_dir(output_dir / "public")
         subprocess.run(["npx", "quartz", "build", "--concurrency", "1", "--serve", "--port", str(port), "--wsPort", str(ws_port)], cwd=output_dir, env=env, check=True)
 
 def main():

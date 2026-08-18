@@ -100,6 +100,30 @@ def clean_base_url(val: str | None) -> str:
     val = val.rstrip("/")
     return val
 
+def safe_clean_public_dir(public_dir: Path):
+    """
+    Safely clean the public output directory before running Quartz build,
+    avoiding ENOTEMPTY / rimraf collisions on Docker bind-mounted filesystems.
+    """
+    if not public_dir.exists():
+        return
+    import time
+    for attempt in range(5):
+        try:
+            for item in public_dir.iterdir():
+                if item.is_dir() and not item.is_symlink():
+                    shutil.rmtree(item, ignore_errors=False)
+                else:
+                    item.unlink(missing_ok=True)
+            return
+        except Exception:
+            time.sleep(0.05 * (attempt + 1))
+    try:
+        shutil.rmtree(public_dir, ignore_errors=True)
+        public_dir.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
+
 def ensure_base_url_and_rebuild(section_dir: Path, target_domain: str):
     """
     If quartz.config.ts in section_dir has a baseUrl that does not match target_domain,
@@ -130,6 +154,7 @@ def ensure_base_url_and_rebuild(section_dir: Path, target_domain: str):
             env = os.environ.copy()
             env.setdefault("TZ", "UTC")
             env.setdefault("SOURCE_DATE_EPOCH", "1704067200")
+            safe_clean_public_dir(section_dir / "public")
             try:
                 subprocess.run(["npx", "quartz", "build", "--concurrency", "1"],
                                cwd=section_dir, env=env, check=True)
@@ -857,6 +882,7 @@ def main():
         env = os.environ.copy()
         env.setdefault("TZ", "UTC")
         env.setdefault("SOURCE_DATE_EPOCH", "1704067200")  # match build_site.py
+        safe_clean_public_dir(public_dir)
         try:
             subprocess.run(["npx", "quartz", "build", "--concurrency", "1"],
                            cwd=section_dir, env=env, check=True)

@@ -38,6 +38,13 @@
       "file": "Head.tsx",
       "replaces": "quartz/components/Head.tsx",
       "whyNotStock": "Stock Quartz unconditionally constructs og:image as https://${cfg.baseUrl}/static/og-image.png, which points to Jacky Zhao's site when baseUrl defaults to quartz.jzhao.xyz and generates invalid URLs when baseUrl is empty. The patch falls back to page-relative static/og-image.png when baseUrl is not configured."
+    },
+    {
+      "cannotBeDropped": "Without it fast rebuilds and quick retries fail with ENOTEMPTY errors on bind-mounted host filesystems.",
+      "does": "Cleans the output directory with retries and recursive fallback instead of crashing when rimraf encounters pending host directory unlinks.",
+      "file": "build.ts",
+      "replaces": "quartz/build.ts",
+      "whyNotStock": "Stock Quartz calls rimraf with a wildcard glob that crashes on virtiofs/Docker bind mounts with ENOTEMPTY when removing subdirectories. The patch adds retry options and a recursive fs.rm fallback."
     }
   ],
   "pins": [

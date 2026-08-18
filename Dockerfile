@@ -35,6 +35,7 @@ COPY patches/explorer.inline.ts /opt/quartz/quartz/components/scripts/explorer.i
 COPY patches/publish.ts /opt/quartz/quartz/plugins/filters/publish.ts
 COPY patches/filters-index.ts /opt/quartz/quartz/plugins/filters/index.ts
 COPY patches/Head.tsx /opt/quartz/quartz/components/Head.tsx
+COPY patches/build.ts /opt/quartz/quartz/build.ts
 
 # Copy Quartz scaffold to /opt/quartz-site
 RUN cp -r /opt/quartz /opt/quartz-site
