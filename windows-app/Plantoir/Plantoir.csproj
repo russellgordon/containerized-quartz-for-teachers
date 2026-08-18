@@ -62,4 +62,9 @@
     <Content Include="..\..\scripts\**" Link="Toolchain\scripts\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\support\**" Link="Toolchain\support\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <!-- The native llama engine runs on the host for GPU-accelerated local assistant inference -->
+  <ItemGroup Condition="Exists('..\Vendor\llama\llama-server.exe')">
+    <Content Include="..\Vendor\llama\**" Link="llama\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

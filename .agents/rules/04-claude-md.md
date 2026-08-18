@@ -107,17 +107,15 @@ every rule, safety check and file written is ordinary code that would behave
 identically if the model were replaced by a dropdown menu. The deep dive is
 [`documentation/10-local-ai-assistant.md`](documentation/10-local-ai-assistant.md).
 Code: `mac-app/QuartzTeachers/Models/Assist/` (with `Views/Assist/`), and
-`windows-app/Plantoir.Core/Assist/` plus `windows-app/Plantoir/Services/LocalModel.cs`.
+`windows-app/Plantoir.Core/Assist/` (with `windows-app/Plantoir/Views/AssistWindow.xaml.cs`).
 
-**The mac runs the model natively; Windows still runs it in a container.** The
-asymmetry is the largest number in the feature: Colima is a Linux VM with no
-access to Metal, so the same 1.5B model on the same 3,411-token prompt took
-**175 seconds in a container and 2.1 seconds natively** on an M4 Pro. The mac
-spawns the bundled `llama-server` from `Resources/llama/`. Windows runs
-`ghcr.io/ggml-org/llama.cpp:server` as its own container — **and should stop**:
-moving its model onto the host is a decided direction, written up in
-`WINDOWS-HANDOFF.md`. Do not "unify" these by putting the mac's model back in
-Colima.
+**Both macOS and Windows run the model natively on the host.** Colima on macOS
+and WSL2 on Windows are Linux VMs with no access to host GPU acceleration, where
+a 3,411-token prompt took **~175 seconds in a container vs a few seconds natively**.
+The mac spawns the bundled `llama-server` from `Resources/llama/` with Metal.
+Windows spawns the bundled `llama-server.exe` from `llama\` with Vulkan GPU
+offload (`--n-gpu-layers 999`), falling back to multi-threaded CPU. Neither
+runs the model in a container. Do not put the local model back in Colima or WSL2.
 
 Four things that cost a day each if you do not know them:
 

@@ -53,10 +53,6 @@ public sealed partial class AssistWindow : Window
         _section = section;
         _main = main;
 
-        // The prompt cache is per course and section, because the prefix it
-        // holds is — see LocalModel.CacheIdentity.
-        _model.CacheIdentity = $"{course.Code.ToLowerInvariant()}-s{section}";
-
         Title = $"Revise {course.Code} Section {section}";
         Heading.Text = $"Revising {course.Code} Section {section}";
         Subheading.Text = "Ask for a change in plain words. Every change is backed up and can be undone, " +
@@ -145,8 +141,7 @@ public sealed partial class AssistWindow : Window
         var starting = Say("Assistant", "Starting the assistant…");
         if (!await _model.Start(new Progress<string>(line => starting.Text = line), _closing.Token))
         {
-            starting.Text = "The assistant wouldn’t start. If Docker or WSL was just installed or updated, " +
-                            "restarting this computer usually settles it.";
+            starting.Text = "The assistant wouldn’t start. Restarting Plantoir usually settles it.";
             return;
         }
 
@@ -161,11 +156,6 @@ public sealed partial class AssistWindow : Window
         // measurements. Fewer tools is both better routing and a shorter
         // prompt, and the prompt is what makes the first answer slow.
         var schemas = AssistAgent.NarrowToLocal(await _tools.Tools(_closing.Token), _course.Code);
-
-        // The cache file is named for the exact prefix — schemas and system
-        // prompt — so an app update that changes either retires the old cache
-        // instead of restoring a prefix no conversation will match.
-        _model.StampCacheWith(schemas, AssistAgent.SystemPrompt(_course.Code, _section));
 
         _agent = new AssistAgent(_model, _tools, schemas, _course.Code, _section)
         {
@@ -231,120 +221,26 @@ public sealed partial class AssistWindow : Window
     }
 
     /// <summary>
-    /// Make the model read the tool definitions once, in its own time.
+    /// Prime the model with the tool definitions in the background while the
+    /// teacher reads the briefing and decides what to type.
     ///
-    /// llama.cpp caches the prompt prefix, and every turn in this window shares
-    /// the same one: the system prompt and the 22 tool schemas. Paying for it
-    /// here, while the teacher is reading the briefing, is the difference
-    /// between a five-minute wait on their first question and a few seconds.
-    ///
-    /// Failure is ignored on purpose. Nothing depends on this — if it does not
-    /// finish, or the model is not ready, the teacher's own request simply pays
-    /// the cost it would have paid anyway.
+    /// llama.cpp caches the prompt prefix in memory, so every turn starts warm.
+    /// On the host GPU/CPU this takes a couple seconds and is fire-and-forget:
+    /// if it fails, the first real message simply evaluates the prefix itself.
     /// </summary>
     private async Task WarmUp(JsonArray schemas)
     {
-        // A cache from a previous session, if there is one — this is what turns
-        // three minutes per session into three minutes once. Believed only when
-        // the restore says it restored something: the wording below promises a
-        // short wait, and a failed restore behind "picking up where I left off"
-        // would deliver the three minutes unannounced.
-        bool warmAlready = await Task.Run(() => _model.RestorePrefix(), _closing.Token);
-
-        var note = SayWithBar("Assistant",
-            warmAlready
-                ? "Picking up where I left off…"
-                : "Reading my instructions — this happens once, and takes a few minutes…");
-        var started = DateTime.Now;
-
-        // How long this should take, from the size of what it has to read.
-        //
-        // PROJECTED from elapsed time rather than read from the model, because
-        // the model barely reports it: llama.cpp logs progress once per
-        // completed batch, and measured against a prompt this size that meant
-        // nothing at all for 81 seconds, a single reading of 32%, then silence
-        // until the answer arrived. A bar driven by that would sit at zero,
-        // jump a third of the way, and freeze — which is worse than no bar,
-        // because it looks like something broke.
-        //
-        // So the estimate is arithmetic on two measured numbers: roughly 3.6
-        // characters per token, and roughly 21 tokens a second on two CPU
-        // cores. When a real reading DOES turn up it wins, so the bar is
-        // corrected by the truth whenever the truth is available.
-        double tokens = schemas.ToJsonString().Length / 3.6;
-        // After a restore the model reads a sentence, not the surface: measured
-        // at about twelve seconds against 175 for the same turn cold.
-        double expected = warmAlready ? 15 : Math.Max(20, tokens / 21.0);
-
-        // The agent's OWN opening messages, so the prefix warmed here is the
-        // prefix every later turn actually starts with. Priming a different
-        // shape warms nothing.
-        var warming = _model.Ask(_agent!.PrimingMessages(), schemas, _closing.Token);
-        bool warmed = false;
-
         try
         {
-            while (!warming.IsCompleted)
+            if (_agent is not null)
             {
-                try { await Task.Delay(1000, _closing.Token).ConfigureAwait(true); }
-                catch (OperationCanceledException) { break; }
-
-                int elapsed = (int)(DateTime.Now - started).TotalSeconds;
-                var reported = await Task.Run(() => _model.PromptProgress(), _closing.Token);
-
-                // Never quite reaches the end on the estimate alone: finishing
-                // is what the disappearing bar says, not 100% sitting there.
-                double fraction = Math.Min(0.97, elapsed / expected);
-                if (reported is { } real && real > fraction) fraction = Math.Min(0.99, real);
-
-                note.Bar.IsIndeterminate = false;
-                note.Bar.Value = fraction * 100;
-
-                int left = Math.Max(0, (int)expected - elapsed);
-                note.Text.Text = left > 0
-                    ? $"Reading my instructions — {fraction * 100:0}%. " +
-                      $"{Spent(elapsed)} so far, about {Spent(left)} to go. " +
-                      "This happens once; after it, answers are quick."
-                    : $"Reading my instructions — nearly there. {Spent(elapsed)} so far.";
+                await _model.Ask(_agent.PrimingMessages(), schemas, _closing.Token);
             }
-
-            warmed = await warming is not null;
         }
-        catch { /* a cold cache is slow, not broken */ }
-        finally
+        catch
         {
-            note.Bar.Visibility = Visibility.Collapsed;
-
-            if (warmed)
-            {
-                note.Text.Text = "Ready — ask me for a change whenever you like.";
-
-                // Keep the cache, so the next session starts warm rather than
-                // spending another three minutes on the same instructions.
-                // Only after a warm-up that finished: saving a slot that never
-                // read the prefix writes an empty file that the next session
-                // would mistake for a warm start.
-                if (!_closing.IsCancellationRequested)
-                    _ = Task.Run(() => _model.SavePrefix());
-            }
-            else if (!_closing.IsCancellationRequested)
-            {
-                // Saying "Ready" here misled a teacher once already: the model
-                // had died mid-warm-up, and Ready was followed by silence.
-                note.Text.Text = "The warm-up didn’t finish. You can still ask — the first " +
-                                 "answer may take a few minutes while I read my instructions.";
-            }
+            // Non-fatal: first turn evaluates prefix if warmup didn't complete
         }
-    }
-
-    /// <summary>A duration a person would say out loud.</summary>
-    private static string Spent(int seconds)
-    {
-        if (seconds < 0) seconds = 0;
-        if (seconds < 60) return $"{seconds}s";
-        int minutes = seconds / 60;
-        int rest = seconds % 60;
-        return rest == 0 ? $"{minutes}m" : $"{minutes}m {rest}s";
     }
 
     // The opening menu of example requests lives on

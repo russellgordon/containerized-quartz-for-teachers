@@ -119,6 +119,15 @@ is what happened to the test-race item, sitting here for three days with
 "worth ten minutes to check" in the middle of it.
 
 
+- **Windows local assistant moved out of WSL2 to host process with Vulkan GPU acceleration** (Windows, 2026-08-17).
+  Windows now runs `llama-server.exe` natively on the host instead of running a Linux container in WSL2.
+  - **Why**: In WSL2 without GPU pass-through, a 3,400 token prompt prefix took ~175 seconds across 2 virtual CPU cores, necessitating an artificial progress countdown bar, a 98 MB disk prefix cache (`--slot-save-path`), and a background keep-awake hack (`_keepWslAwake`). Moving to a native Windows host process enables Direct3D12/Vulkan GPU acceleration across Intel/AMD/NVIDIA graphics and multi-threaded host CPU fallback.
+  - **Vendor fetch & bundling**: Added `windows-app/Vendor/fetch-llama.ps1` downloading pinned build `b10435` (`llama-b10435-bin-win-vulkan-x64.zip`) into `windows-app/Vendor/llama/`. Updated `Plantoir.csproj` to bundle into `llama\` output, and `publish.ps1` to sign `llama-server.exe`.
+  - **Hardware Measurements**: Measured on teacher laptop hardware — `Intel Core i5-8365U CPU @ 1.60GHz` (4C/8T), `Intel UHD Graphics 620` (8062 MiB Vulkan device memory), 16 GB RAM:
+    - *Vulkan GPU (`-ngl 999 -dev Vulkan0`)*: Prompt processing (`pp512`): **25.82 tok/s**, Generation (`tg128`): **7.83 tok/s**, single turn cold response: **~17.99 s**.
+    - *Host CPU fallback (`-ngl 0`)*: Prompt processing (`pp512`): **25.69 tok/s**, Generation (`tg128`): **11.67 tok/s**.
+  - **Simplification**: Removed the fake 3-minute progress countdown and disk KV cache files from `AssistWindow.xaml.cs`. Warmup is now a fast, non-blocking background priming call. 464 tests passing in `Plantoir.Tests`.
+
 - **Windows marketing screenshots & platform-conditional serving on plantoir.app** (Windows, 2026-08-17).
   The Windows side implemented autonomous screenshot capture in `MarketingShotCapturer.cs` (`Plantoir.exe --capture-marketing-shots <dir>`) and `website/shots/capture_windows.py`.
   The 5 app-window marketing shots (`courses`, `new-course`, `progress`, `preview`, `assistant`) are captured in Light and Dark mode at 2x HiDPI resolution, optimized with WebP companions into `site/img/`.

@@ -80,6 +80,9 @@ if ($Sign) {
     # signed ones is exactly what SmartScreen complains about.
     $targets = @("$publishDir\Plantoir.exe", "$publishDir\Plantoir.dll", "$publishDir\Plantoir.Core.dll",
                  "$publishDir\plantoir-mcp.exe")
+    if (Test-Path "$publishDir\llama\llama-server.exe") {
+        $targets += "$publishDir\llama\llama-server.exe"
+    }
     Write-Host "Signing $($targets.Count) binaries via $SigningAccount/$SigningProfile" -ForegroundColor Green
     sign code trusted-signing `
         --trusted-signing-endpoint $SigningEndpoint `

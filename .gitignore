@@ -20,6 +20,7 @@ windows-app/**/obj/
 # Windows release bundles (publish.ps1 output)
 windows-app/dist/
 
-# llama.cpp's macOS build, fetched by mac-app/Vendor/fetch-llama.sh.
-# 25 MB of build output; the script pins the version.
+# llama.cpp builds, fetched by Vendor/fetch-llama scripts.
+# ~25-35 MB of build output; the scripts pin the version.
 mac-app/Vendor/llama/
+windows-app/Vendor/llama/

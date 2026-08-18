@@ -20,9 +20,10 @@ Docker Desktop) unless marked otherwise.
 ## The subsystems that table does not name
 
 - **A built-in local AI assistant.** `Views/AssistWindow.xaml` holds the
-  conversation, `Services/LocalModel.cs` runs a small model with no account
-  and no internet, and `Services/McpClient.cs` drives the same
-  `plantoir-mcp` Claude Code drives — one tool surface, two front ends.
+  conversation, `Plantoir.Core/Assist/LocalModel.cs` runs a small model natively on
+  the Windows host with Vulkan GPU acceleration (no account and no internet), and
+  `Services/McpClient.cs` drives the same `plantoir-mcp` Claude Code drives — one
+  tool surface, two front ends.
 - **Claude Code integration.** `Services/ClaudeCodeLauncher.cs` writes
   `%LOCALAPPDATA%\Plantoir\assist\mcp-<CODE>.json` and launches `claude` with
   `--mcp-config … --strict-mcp-config`, so a teacher's own MCP servers are
