@@ -935,7 +935,6 @@ public sealed class AssistWorkspace
         if (plan.Publishes) RefuseIfPlantoirIsBuilding(course);
 
         string backup;
-        progress?.Report($"Backing up {course.Code} first…");
         try { backup = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory(_folder)); }
         catch (Exception error)
         {
@@ -1361,7 +1360,6 @@ public sealed class AssistWorkspace
         if (plan.ChangesNothing) return new AssistResult(true, "Every class already carries that date.", null);
 
         string backup;
-        progress?.Report($"Backing up {course.Code} first…");
         try { backup = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory(_folder)); }
         catch (Exception error)
         {
@@ -1497,7 +1495,6 @@ public sealed class AssistWorkspace
         if (plan.ChangesNothing) return new AssistResult(true, "Every page already matches its class.", null);
 
         string backup;
-        progress?.Report($"Backing up {course.Code} first…");
         try { backup = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory(_folder)); }
         catch (Exception error)
         {
@@ -1707,7 +1704,6 @@ public sealed class AssistWorkspace
         RefuseIfPlantoirIsBuilding(course);
 
         string backup;
-        progress?.Report($"Backing up {course.Code} first…");
         try { backup = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory(_folder)); }
         catch (Exception error)
         {
@@ -1925,7 +1921,6 @@ public sealed class AssistWorkspace
         RefuseIfPlantoirIsBuilding(course);
 
         string backup;
-        progress?.Report($"Backing up {course.Code} first…");
         try { backup = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory(_folder)); }
         catch (Exception error)
         {
@@ -2171,7 +2166,6 @@ public sealed class AssistWorkspace
         RefuseIfPlantoirIsBuilding(course);
 
         string backup;
-        progress?.Report($"Backing up {course.Code} first…");
         try { backup = CourseArchiver.BackUpCourse(course, Workspace.CoursesDirectory(_folder)); }
         catch (Exception error)
         {

@@ -136,7 +136,6 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         try
         {
             var result = await workspace.Deploy(course, section, Relay(progress), cancellation);
-            progress.Report(new ProgressNotificationValue { Progress = 100, Total = 100, Message = "Finished" });
             return result.Message;
         }
         catch (AssistRefusal refusal) { return refusal.Message; }
@@ -983,7 +982,6 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         {
             var plan = PlanForDay(course, section, date, preview);
             var result = await workspace.Apply(plan, Relay(progress), cancellation);
-            progress.Report(new ProgressNotificationValue { Progress = 100, Total = 100, Message = "Finished" });
 
             var text = new StringBuilder(result.Message);
             if (plan.Index is { WillChange: true } index)
@@ -1073,7 +1071,6 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
         try
         {
             var result = await workspace.RebuildPreview(course, section, Relay(progress), cancellation);
-            progress.Report(new ProgressNotificationValue { Progress = 100, Total = 100, Message = "Finished" });
             return result.Message;
         }
         catch (AssistRefusal refusal) { return refusal.Message; }
@@ -1103,7 +1100,6 @@ public sealed class PlantoirTools(AssistWorkspace workspace)
             if (plan.ChangesNothing && !preview) return plan.Describe();
 
             var result = await workspace.Apply(plan, Relay(progress), cancellation);
-            progress.Report(new ProgressNotificationValue { Progress = 100, Total = 100, Message = "Finished" });
 
             var text = new StringBuilder(result.Message);
             if (result.BackupPath is not null)
