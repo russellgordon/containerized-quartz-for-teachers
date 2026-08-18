@@ -130,11 +130,16 @@ def ensure_base_url_and_rebuild(section_dir: Path, target_domain: str):
             env = os.environ.copy()
             env.setdefault("TZ", "UTC")
             env.setdefault("SOURCE_DATE_EPOCH", "1704067200")
-            subprocess.run(["npx", "quartz", "build", "--concurrency", "1"],
-                           cwd=section_dir, env=env, check=True)
-            print("✅ Production build updated with live site domain.")
+            try:
+                subprocess.run(["npx", "quartz", "build", "--concurrency", "1"],
+                               cwd=section_dir, env=env, check=True)
+                print("✅ Production build updated with live site domain.")
+            except (subprocess.CalledProcessError, OSError) as e:
+                print(f"❌ Production rebuild failed: {e}")
+                sys.exit(1)
     except Exception as e:
         print(f"⚠️ Could not sync baseUrl into quartz.config.ts: {e}")
+        sys.exit(1)
 
 # ---------- Teacher profile (unchanged) ----------
 COURSES_ROOT = Path("/teaching/courses")
