@@ -235,7 +235,7 @@ it does BECAUSE of these, and the `✅ DONE` line names what landed here and
 where.
 
 - **Windows app brought into full parity with shared contracts and macOS features**
-  (Windows, 2026-08-17, branch `windows-sync`). All 457 tests pass on Windows
+  (Windows, 2026-08-17, branch `windows-sync`). All 466 tests pass on Windows
   (`dotnet test Plantoir.Tests/Plantoir.Tests.csproj`, 0 failures).
   
   **✅ DONE (Windows, 2026-08-17).**
@@ -244,19 +244,26 @@ where.
      - `ClassPlanningContractTests.cs`: runs all `class-planning.json` cases (Unit X, Day Y regex parsing, title numbers, next class planner, class insertion renumbering and link rewrites).
      - `ScheduleRulesContractTests.cs`: runs all `schedule-rules.json` cases (Google Sheets CSV URLs, date columns, relative days, ambiguous slash dates).
      - `ContractTests.cs`: runs `app-rules.json`, `assist-wording.json`, `course-management.json`, `file-formats.json`, and `shared-rules.json` (activity trail, model jargon sweeps, curriculum rules, assistant model choice, problem reports, and credential prompts).
-  2. **Assistant Choice & Settings Panel (`AssistantSettingsDialog`)**:
+  2. **Native Host Local AI Assistant with Vulkan GPU Acceleration**:
+     - Pinned `llama.cpp` `b10435` with Vulkan binaries bundled via `windows-app/Vendor/fetch-llama.ps1` and signed in `publish.ps1`.
+     - `LocalModel.cs` spawns native host `llama-server.exe` directly on dynamic loopback port with `--n-gpu-layers 999`, `--reasoning off`, `--reasoning-budget 0`, `--jinja`, `--parallel 1`.
+     - Removed slow WSL2/container execution (~175s -> ~18s end-to-end on Intel UHD 620). Fast background priming.
+  3. **Assistant Choice & Settings Panel (`AssistantSettingsDialog`)**:
      - "Before it changes your pages" toggle + small assistant caution.
      - "Which assistant runs on this PC" (automatic, smaller, larger) with hardware budget memory derivation and cautions.
      - "On this PC" housekeeping list with download status, download trigger, and safe model removal (disabled when any assistant window is open).
      - Connected to `AppSettings` and `MainWindow` menu (`File -> Settings…` / `Ctrl+,`).
-  3. **Curriculum Rules (`CurriculumRules.cs`)**:
-     - Implemented `IsCurriculumPage`, `IsExpectationCode`, and `ExpectationWording` (with anchor stripping).
-  4. **Credentials & Token Dialogs (`CredentialRequests.cs`)**:
+  4. **Curriculum Coverage Map & Notes Toggles (Row 130 parity)**:
+     - Added `include_curriculum_coverage` and `include_coverage_notes` per-section configuration accessors and `CoverageNotesEnabled` pure rule to `CourseConfiguration.cs`.
+     - Added toggle switches with dependent enablement in `CourseSettingsView.xaml.cs` and `NewCourseDialog.cs`.
+  5. **LinkGraph Exclusions & Visible Referrer Sweeps (`shared-rules.json` -> `followingLinks`)**:
+     - `LinkGraph.cs` excludes landing pages (`index.md`), curriculum pages, and Key Links targets from link sweeps.
+     - `VisibleSourcesOf` ensures only visible referrers keep pages published.
+  6. **Credentials & Token Dialogs with ActivityTrail Logging (`CredentialRequests.cs`)**:
      - Rich credential dialogs in `TaskProgressView` for Netlify token, Cloudflare token, and Cloudflare Account ID with numbered steps, token links, and PasswordBox/TextBox without auto-opening tabs.
      - "Where do I find this?" link button in `PublishingChoiceView` opening Cloudflare Account ID help dialog.
-  5. **Thinking Flags**:
-     - `--reasoning off` and `--reasoning-budget 0` passed to `LocalModel.cs`.
-  6. **23 MCP Tools**:
+     - `ActivityTrail` logs `asked for a publishing credential` on prompt and instructions open.
+  7. **23 MCP Tools**:
      - Implemented and exposed in `PlantoirTools.cs` / `plantoir-mcp.exe`.
 
 - **The local assistant went from built to trustworthy in one live-tested
