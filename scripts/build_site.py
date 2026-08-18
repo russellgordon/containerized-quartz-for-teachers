@@ -1272,9 +1272,9 @@ def _format_created_timestamp_from_dt(dt: datetime) -> str:
 def _is_class_page(path: Path, title: str | None = None) -> bool:
     """
     True if the file represents a class page (e.g., 'Unit 1, Day 1.md' or titled 'Unit 1, Day 1').
-    Folder index files ('index.md') are never class pages.
+    Folder index files ('index.md'), Key Links, Curriculum Coverage, and other non-class files are never class pages.
     """
-    if path.name.lower() == "index.md":
+    if path.name.lower() in ("index.md", "key links.md", "curriculum coverage.md"):
         return False
     stem = path.stem.strip()
     if re.match(r"^Unit\s+\d+,\s*Day\s+\d+$", stem, re.IGNORECASE):
@@ -1283,8 +1283,6 @@ def _is_class_page(path: Path, title: str | None = None) -> bool:
         trimmed_title = title.strip()
         if re.match(r"^Unit\s+\d+,\s*Day\s+\d+$", trimmed_title, re.IGNORECASE):
             return True
-    if "class" in path.parent.name.lower():
-        return True
     return False
 
 def _find_first_class_created(content_root: Path) -> datetime | None:
@@ -1333,7 +1331,7 @@ def _find_first_class_created(content_root: Path) -> datetime | None:
     return earliest_any_dt
 
 def _extract_wikilink_targets(text: str) -> set[str]:
-    """Extract all normalized wikilink target names from markdown text, excluding code fences."""
+    """Extract all normalized wikilink target names from markdown text, excluding code fences and index/meta links."""
     outside_fences = re.sub(r"```[\s\S]*?```", "", text)
     outside_fences = re.sub(r"`[^`\n]*`", "", outside_fences)
     link_pattern = re.compile(r"!?\[\[([^\]|#]+?)(?:\\?\|[^\]]*)?(?:#[^\]|]*)?\]\]")
@@ -1345,8 +1343,11 @@ def _extract_wikilink_targets(text: str) -> set[str]:
         stem = target.split("/")[-1].strip()
         if stem.lower().endswith(".md"):
             stem = stem[:-3].strip()
+        stem_lower = stem.lower()
+        if stem_lower in ("index", "key links", "curriculum coverage"):
+            continue
         if stem:
-            targets.add(stem.lower())
+            targets.add(stem_lower)
         norm_path = target.lower()
         if norm_path.endswith(".md"):
             norm_path = norm_path[:-3].strip()
@@ -1375,7 +1376,8 @@ def _find_class_reachable_pages(content_root: Path) -> set[Path]:
                 continue
 
             stem_lower = fp.stem.lower()
-            pages_by_stem.setdefault(stem_lower, []).append(fp)
+            if name.lower() not in ("index.md", "key links.md", "curriculum coverage.md"):
+                pages_by_stem.setdefault(stem_lower, []).append(fp)
             try:
                 rel = fp.relative_to(content_root).as_posix().lower()
                 if rel.endswith(".md"):
@@ -1408,6 +1410,8 @@ def _find_class_reachable_pages(content_root: Path) -> set[Path]:
                 matched_paths.extend(pages_by_stem[target])
 
             for target_fp in matched_paths:
+                if target_fp.name.lower() in ("index.md", "key links.md", "curriculum coverage.md") or _is_class_page(target_fp):
+                    continue
                 if target_fp not in visited:
                     visited.add(target_fp)
                     queue.append(target_fp)
@@ -3359,7 +3363,8 @@ def _coverage_cell(code: str, page: Path, content_root: Path, count: int, assess
 
 
 def build_curriculum_coverage(content_root: Path, course_code: str,
-                             include_notes: bool = True) -> bool:
+                             include_notes: bool = True,
+                             first_class_stamp: str | None = None) -> bool:
     """
     Write the Curriculum Coverage page. Returns True when one was written.
 
@@ -3425,11 +3430,12 @@ def build_curriculum_coverage(content_root: Path, course_code: str,
 
     # The explanatory sections, which the teacher can switch off.
     notes = COVERAGE_NOTES if include_notes else ""
+    created_line = f"created: {first_class_stamp}\n" if first_class_stamp else ""
 
     body = f"""---
 title: Curriculum Coverage
 publish: true
-enableToc: true
+{created_line}enableToc: true
 ---
 Every expectation in {course_code}, coloured by how many pages address it.
 The map is built from this site's own links each time the site is built, so
@@ -3812,33 +3818,32 @@ def build_section_site(
             print(f"  📄 Copied per-section file: {file_name}")
 
 
-    # === Post-pass — sync 'created' timestamps for non-class pages =============
-    print("\n📆 Post-processing: syncing 'created' for non-class pages (sidebar, Key Links, Curriculum)...")
-    first_class_dt = _find_first_class_created(content_root)
-    if first_class_dt is None:
-        print("ℹ️ No parseable class dates found in this section — leaving non-class pages unchanged.")
-    else:
-        updated, total = _sync_non_class_pages_created(content_root, first_class_dt)
-        stamp = _format_created_timestamp_from_dt(first_class_dt)
-        print(f"📆 Synced non-class pages 'created' → {stamp} for {updated} file(s) ({total} non-class file(s) in total).")
-    # ===========================================================================
-
     # === Curriculum coverage heat map =========================================
-    # Built from the assembled content, so it reflects exactly what this
-    # section will publish. Default is ON: a course with curriculum pages
-    # gets the map unless the teacher turned it off in the wizard.
+    first_class_dt = _find_first_class_created(content_root)
+    first_class_stamp = _format_created_timestamp_from_dt(first_class_dt) if first_class_dt else None
+
     if bool(config.get("include_curriculum_coverage", True)):
         # The explanatory sections are a separate choice, and one that only
         # exists while the map does.
         if build_curriculum_coverage(
                 content_root, course_code,
-                include_notes=bool(config.get("include_coverage_notes", True))):
+                include_notes=bool(config.get("include_coverage_notes", True)),
+                first_class_stamp=first_class_stamp):
             link_coverage_from_key_links(content_root)
     else:
         print("ℹ️ Curriculum Coverage page is switched off for this course.")
     set_backlinks_structural_pages(
         output_dir / "quartz" / "components" / "Backlinks.tsx", content_root)
     # ==========================================================================
+
+    # === Post-pass — sync 'created' timestamps for non-class pages =============
+    print("\n📆 Post-processing: syncing 'created' for non-class pages (sidebar, Key Links, Curriculum)...")
+    if first_class_dt is None:
+        print("ℹ️ No parseable class dates found in this section — leaving non-class pages unchanged.")
+    else:
+        updated, total = _sync_non_class_pages_created(content_root, first_class_dt)
+        print(f"📆 Synced non-class pages 'created' → {first_class_stamp} for {updated} file(s) ({total} non-class file(s) in total).")
+    # ===========================================================================
 
     # Copy course config into output root (back-compat)
     shutil.copy2(config_file, output_dir / "course_config.json")
